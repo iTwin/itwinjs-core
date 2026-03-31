@@ -12,7 +12,8 @@ import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, Elem
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
+import { BriefcaseDb, type IModelDb, type InsertElementOptions, type UpdateModelOptions } from "./IModelDb";
+import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
 /**
@@ -511,7 +512,13 @@ export class EditTxn {
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
     this.verifyWriteable();
-    this.iModel.saveFilePropertyImpl(prop, strValue, blobVal);
+    const imodel = this.iModel;
+    if (imodel instanceof BriefcaseDb) {
+      if (imodel.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
+      }
+    }
+    imodel[_nativeDb].saveFileProperty(prop, strValue, blobVal);
   }
 
   /** Update the project extents of the iModel.
@@ -567,7 +574,7 @@ export class EditTxn {
    * @throws EditTxnError if this EditTxn is not active.
    * @beta
    */
-  public saveSettingDictionary(name: string, dict: Record<string, unknown>): void {
+  public saveSettingDictionary(name: string, dict: SettingsContainer): void {
     this.verifyWriteable();
     this.iModel.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
       stmt.bindString(1, EditTxn._settingPropNamespace);

@@ -1287,11 +1287,10 @@ export abstract class IModelDb extends IModel {
    *
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
-   * @throws [IModelError]($common) if the database if the operation failed.
+   * @throws [[IModelError]] if the operation fails.
    * @alpha
    */
-  /** @internal */
-  public async dropSchemasImpl(schemaNames: string[]): Promise<void> {
+  public async dropSchemas(schemaNames: string[]): Promise<void> {
     if (schemaNames.length === 0)
       return;
     if (this[_nativeDb].schemaSyncEnabled())
@@ -1312,17 +1311,6 @@ export abstract class IModelDb extends IModel {
       await this.locks.releaseAllLocks();
       this.clearCaches();
     }
-  }
-
-  /** Removes unused schemas from the database.
-   *
-   * If the removal was successful, the database is automatically saved to disk.
-   * @param schemaNames Array of schema names to drop
-   * @throws [[IModelError]] if the operation fails.
-   * @alpha
-   */
-  public async dropSchemas(schemaNames: string[]): Promise<void> {
-    await this.dropSchemasImpl(schemaNames);
   }
 
   /** Helper to clean up snapshot resources safely
@@ -1503,30 +1491,6 @@ export abstract class IModelDb extends IModel {
       await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
   }
 
-  /** Import an ECSchema. On success, the schema definition is stored in the iModel.
-   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
-   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
-   * @param {SchemaImportOptions} options - options during schema import.
-   * @throws [[EditTxnError]] if the schema lock cannot be obtained or there is a problem importing the schema.
-   * @note Changes are saved if importSchemas is successful and abandoned if not successful.
-   * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
-   * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
-   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
-   * @see querySchemaVersion
-   */
-  /** @internal */
-  public async importSchemasImpl(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (schemaFileNames.length === 0)
-      return;
-
-    await this.importSchemasInternal(
-      schemaFileNames,
-      options,
-      (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions)
-    );
-  }
-
   /** Import ECSchema(s). On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -1543,29 +1507,13 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    await this.importSchemasImpl(schemaFileNames, options);
-  }
-
-  /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
-   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
-   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
-   * @param {SchemaImportOptions} options - options during schema import.
-   * @throws [[EditTxnError]] if the schema lock cannot be obtained or there is a problem importing the schema.
-   * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
-   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
-   * @see querySchemaVersion
-   * @alpha
-   */
-  /** @internal */
-  public async importSchemaStringsImpl(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    if (serializedXmlSchemas.length === 0)
+    if (schemaFileNames.length === 0)
       return;
 
     await this.importSchemasInternal(
-      serializedXmlSchemas,
+      schemaFileNames,
       options,
-      (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions)
+      (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions)
     );
   }
 
@@ -1581,17 +1529,14 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void> {
-    await this.importSchemaStringsImpl(serializedXmlSchemas, options);
-  }
+    if (serializedXmlSchemas.length === 0)
+      return;
 
-  /** @internal */
-  public saveFilePropertyImpl(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    if (this instanceof BriefcaseDb) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
-      }
-    }
-    this[_nativeDb].saveFileProperty(prop, strValue, blobVal);
+    await this.importSchemasInternal(
+      serializedXmlSchemas,
+      options,
+      (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions)
+    );
   }
 
   /** Find an opened instance of any subclass of IModelDb, by filename
@@ -1739,7 +1684,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Allows locally registering a schema for this imodel, in constrast to [Schemas.registerSchema] which is a global operation
+   * Allows locally registering a schema for this imodel, in contrast to [Schemas.registerSchema] which is a global operation
    */
   public get schemaMap(): SchemaMap {
     if (this._schemaMap === undefined)
@@ -2895,7 +2840,7 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws Error if insertion fails.
+      * @throws [[IModelError]] if insertion fails.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
@@ -2915,7 +2860,7 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws Error if update fails.
+    * @throws [[IModelError]] if update fails.
      * @deprecated Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {

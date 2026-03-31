@@ -59,7 +59,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 export class EditCommand implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
     abandonChanges(): Promise<void>;
-    abandonEdits(): void;
+    abandonEdits(): Promise<void>;
     protected appData?: SaveChangesArgs["appData"];
     protected beginEditing(): void;
     static commandId: string;

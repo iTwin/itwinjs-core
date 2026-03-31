@@ -292,7 +292,6 @@ import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
-import { TxnType } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UpgradeOptions } from '@itwin/core-common';
@@ -2634,7 +2633,7 @@ export class EditTxn {
     saveChanges(args?: string | SaveChangesArgs): void;
     saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
-    saveSettingDictionary(name: string, dict: Record<string, unknown>): void;
+    saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
     updateEcefLocation(ecef: EcefLocationProps): Promise<void>;
@@ -3904,8 +3903,6 @@ export abstract class IModelDb extends IModel {
     detachDb(alias: string): void;
     // @alpha
     dropSchemas(schemaNames: string[]): Promise<void>;
-    // @internal (undocumented)
-    dropSchemasImpl(schemaNames: string[]): Promise<void>;
     // @beta
     elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
     // @beta
@@ -3952,12 +3949,8 @@ export abstract class IModelDb extends IModel {
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
-    // @internal (undocumented)
-    importSchemasImpl(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
-    // @internal (undocumented)
-    importSchemaStringsImpl(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
@@ -4036,8 +4029,6 @@ export abstract class IModelDb extends IModel {
     saveChanges(args: SaveChangesArgs): void;
     // @deprecated
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
-    // @internal (undocumented)
-    saveFilePropertyImpl(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta @deprecated
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @preview
@@ -7477,10 +7468,6 @@ export class TxnManager {
 
 // @alpha
 export type TxnMode = "direct" | "indirect";
-
-export { TxnProps }
-
-export { TxnType }
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {
