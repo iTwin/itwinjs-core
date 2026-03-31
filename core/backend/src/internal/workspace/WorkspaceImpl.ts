@@ -412,8 +412,6 @@ class WorkspaceImpl implements Workspace {
             if (undefined === settingsJson)
               throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
-            db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
-
             this.settings.addJson(dictProps, settingsJson);
             const dict = this.settings.getDictionary(dictProps);
             if (dict) {
@@ -428,8 +426,9 @@ class WorkspaceImpl implements Workspace {
           }
         }
       } catch (e) {
-        db.close();
         problems?.push(e as WorkspaceDbLoadError);
+      } finally {
+        db.close();
       }
     }
   }
