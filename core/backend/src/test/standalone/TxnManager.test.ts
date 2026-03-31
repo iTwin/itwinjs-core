@@ -1066,3 +1066,67 @@ describe("TxnManager", () => {
     });
   });
 });
+
+describe("RebaseManager", () => {
+  it("dispose clears all event listeners", () => {
+    let testFileName: string;
+    IModelTestUtils.registerTestBimSchema();
+    testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    const listener = () => {};
+    const events: Array<keyof typeof rebaser> = [
+      "onPullMergeBegin",
+      "onRebaseBegin",
+      "onRebaseTxnBegin",
+      "onRebaseTxnEnd",
+      "onRebaseEnd",
+      "onPullMergeEnd",
+      "onApplyIncomingChangesBegin",
+      "onApplyIncomingChangesEnd",
+      "onReverseLocalChangesBegin",
+      "onReverseLocalChangesEnd",
+      "onDownloadChangesetsBegin",
+      "onDownloadChangesetsEnd",
+    ];
+
+    for (const name of events)
+      (rebaser[name] as BeEvent<any>).addListener(listener);
+
+    for (const name of events)
+      expect((rebaser[name] as BeEvent<any>).numberOfListeners).to.equal(1, `expected 1 listener on ${String(name)} before dispose`);
+
+    rebaser.dispose();
+
+    for (const name of events)
+      expect((rebaser[name] as BeEvent<any>).numberOfListeners).to.equal(0, `expected 0 listeners on ${String(name)} after dispose`);
+
+    db.close();
+    IModelJsFs.removeSync(testFileName);
+  });
+
+  it("rebaser.dispose is called when iModel is closed", () => {
+    let testFileName: string;
+    IModelTestUtils.registerTestBimSchema();
+    testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    const listener = () => {};
+    rebaser.onRebaseBegin.addListener(listener);
+    rebaser.onRebaseEnd.addListener(listener);
+    expect(rebaser.onRebaseBegin.numberOfListeners).to.equal(1);
+    expect(rebaser.onRebaseEnd.numberOfListeners).to.equal(1);
+
+    db.close();
+
+    expect(rebaser.onRebaseBegin.numberOfListeners).to.equal(0);
+    expect(rebaser.onRebaseEnd.numberOfListeners).to.equal(0);
+
+    IModelJsFs.removeSync(testFileName);
+  });
+});
