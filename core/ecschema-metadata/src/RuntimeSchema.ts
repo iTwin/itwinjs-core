@@ -203,8 +203,11 @@ export class RuntimeClass {
     const d = this._data;
     if (d.mixinCount === 0) return [];
     const result: RuntimeClass[] = [];
-    for (let i = 0; i < d.mixinCount; i++)
-      result.push(createRuntimeClass(this._ctx, this._ctx.classMixins[d.mixinStartIdx + i]));
+    for (let i = 0; i < d.mixinCount; i++) {
+      const mixinIdx = this._ctx.classMixins[d.mixinStartIdx + i];
+      if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref from excluded schema
+      result.push(createRuntimeClass(this._ctx, mixinIdx));
+    }
     return result;
   }
 
