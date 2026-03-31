@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { Point2d, Point3d } from "@itwin/core-geometry";
+import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
 /**
@@ -352,15 +352,29 @@ export enum QueryParamType {
  *
  * @example
  * Parameter By Index:
- * ```sql
- * SELECT a, v FROM test.Foo WHERE a=? AND b=?
+ * ```ts
+ * const binder = new QueryBinder();
+ * binder.bindString(1, "MyCode");
+ * binder.bindInt(2, 42);
+ *
+ * const reader = iModel.createQueryReader("SELECT a, v FROM test.Foo WHERE a=? AND b=?", binder);
+ * for await (const row of reader) {
+ *   // do something with the query result
+ * }
  * ```
  * The first `?` is index 1 and the second `?` is index 2. The parameter index starts with 1 and not 0.
  *
  * @example
  * Parameter By Name:
- * ```sql
- * SELECT a, v FROM test.Foo WHERE a=:name_a AND b=:name_b
+ * ```ts
+ * const binder = new QueryBinder();
+ * binder.bindString("name_a", "A");
+ * binder.bindString("name_b", "B");
+ *
+ * const reader = iModel.createQueryReader("SELECT a, v FROM test.Foo WHERE a=:name_a AND b=:name_b", binder);
+ * for await (const row of reader) {
+ *   // do something with the query result
+ * }
  * ```
  * Using "name_a" as the `indexOrName` will bind the provided value to `name_a` in the query. And the same goes for
  * using "name_b" and the `name_b` binding respectively.
@@ -603,6 +617,26 @@ export class QueryBinder {
     return this;
   }
 
+  /**
+   * Bind range3d value to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
+  public bindRange3d(indexOrName: string | number, val: LowAndHighXYZ) {
+    this.verify(indexOrName);
+    const name = String(indexOrName);
+    const buffer = new Uint8Array(Range3d.toFloat64Array(val).buffer);
+    const base64 = Base64.fromUint8Array(buffer);
+    Object.defineProperty(this._args, name, {
+      enumerable: true, value: {
+        type: QueryParamType.Blob,
+        value: base64,
+      },
+    });
+    return this;
+  }
+
   private static bind(params: QueryBinder, nameOrId: string | number, val: any) {
     if (typeof val === "boolean") {
       params.bindBoolean(nameOrId, val);
@@ -616,6 +650,8 @@ export class QueryBinder {
       params.bindPoint2d(nameOrId, val);
     } else if (val instanceof Point3d) {
       params.bindPoint3d(nameOrId, val);
+    } else if (val instanceof Range3d) {
+      params.bindRange3d(nameOrId, val);
     } else if (val instanceof Array && (val.length === 0 || (val.every((item) => typeof item === "string" && Id64.isValidId64(item))))) {
       params.bindIdSet(nameOrId, val);
     } else if (typeof val === "undefined" || val === null) {
