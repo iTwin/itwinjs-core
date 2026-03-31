@@ -6,7 +6,7 @@
 // Vitest wrapper: delegates to the plugin's Electron test orchestrator.
 // See @itwin/vitest-certa-bridge/electron for the full sharding/session implementation.
 
-import { assert, describe, it } from "vitest";
+import { describe, it } from "vitest";
 import { runElectronTests } from "@itwin/vitest-certa-bridge/electron";
 import * as path from "path";
 
@@ -66,7 +66,9 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
         for (const err of sr.errors)
           lines.push(`    ✗ ${err}`);
       }
-      assert.fail(lines.join("\n"));
+      const error = new Error(lines.join("\n"));
+      error.stack = error.message;
+      throw error;
     }
   }, 1_200_000);
 });
