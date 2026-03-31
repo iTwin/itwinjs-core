@@ -11,7 +11,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
 import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
-import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainerProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
@@ -228,6 +228,26 @@ describe("WorkspaceFile", () => {
     expect(settings.getSetting("editor/tabSize")).equals(2);
     expect(settings.getSetting("editor/wordWrap")).equals("on");
     expect(settings.getSetting("editor/shared")).equals("second");
+  });
+
+  it("settingsWorkspaceDbName continues loading sibling dictionaries after a resource fails", async () => {
+    const containerProps = { containerId: "load-all-continue-on-error", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all-continue-on-error" });
+    db.addString("dict-valid", JSON.stringify({ "editor/continueAfterError": true }));
+    db.addString("dict-invalid", "not valid json");
+    db.close();
+
+    const problems: WorkspaceDbLoadError[] = [];
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.defaults,
+      dbName: settingsWorkspaceDbName,
+      // Force this valid resource to be evaluated last.
+      resourceName: "dict-valid",
+    }, problems);
+
+    expect(workspace.settings.getSetting("editor/continueAfterError")).to.equal(true);
+    expect(problems.length).to.equal(1);
   });
 
 

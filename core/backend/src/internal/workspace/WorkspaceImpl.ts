@@ -404,25 +404,29 @@ class WorkspaceImpl implements Workspace {
           : [prop.resourceName ?? settingsResourceName];
 
         for (const resourceName of resourceNames) {
-          const manifest = db.manifest;
-          const dictProps: SettingsDictionaryProps = { name: resourceName, workspaceDb: db, priority: prop.priority };
-          // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
-          if (undefined === this.settings.getDictionary(dictProps)) {
-            const settingsJson = db.getString(resourceName);
-            if (undefined === settingsJson)
-              throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+          try {
+            const manifest = db.manifest;
+            const dictProps: SettingsDictionaryProps = { name: resourceName, workspaceDb: db, priority: prop.priority };
+            // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
+            if (undefined === this.settings.getDictionary(dictProps)) {
+              const settingsJson = db.getString(resourceName);
+              if (undefined === settingsJson)
+                throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
-            this.settings.addJson(dictProps, settingsJson);
-            const dict = this.settings.getDictionary(dictProps);
-            if (dict) {
-              Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
-              // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
-              const nested = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
-              if (nested !== undefined) {
-                IModelHost.settingsSchemas.validateSetting<WorkspaceDbSettingsProps[]>(nested, WorkspaceSettingNames.settingsWorkspaces);
-                await this.loadSettingsDictionary(nested, problems);
+              this.settings.addJson(dictProps, settingsJson);
+              const dict = this.settings.getDictionary(dictProps);
+              if (dict) {
+                Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
+                // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
+                const nested = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
+                if (nested !== undefined) {
+                  IModelHost.settingsSchemas.validateSetting<WorkspaceDbSettingsProps[]>(nested, WorkspaceSettingNames.settingsWorkspaces);
+                  await this.loadSettingsDictionary(nested, problems);
+                }
               }
             }
+          } catch (e) {
+            problems?.push(e as WorkspaceDbLoadError);
           }
         }
       } catch (e) {
