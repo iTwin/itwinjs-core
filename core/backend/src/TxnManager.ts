@@ -446,6 +446,24 @@ export class RebaseManager {
 
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
+  /** Disposes of this RebaseManager, clearing all event listeners.
+   * @alpha
+   */
+  public dispose(): void {
+    this.onPullMergeBegin.clear();
+    this.onRebaseBegin.clear();
+    this.onRebaseTxnBegin.clear();
+    this.onRebaseTxnEnd.clear();
+    this.onRebaseEnd.clear();
+    this.onPullMergeEnd.clear();
+    this.onApplyIncomingChangesBegin.clear();
+    this.onApplyIncomingChangesEnd.clear();
+    this.onReverseLocalChangesBegin.clear();
+    this.onReverseLocalChangesEnd.clear();
+    this.onDownloadChangesetsBegin.clear();
+    this.onDownloadChangesetsEnd.clear();
+  }
+
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
    * on top of the latest pulled changes from the remote source.
@@ -864,6 +882,7 @@ export class TxnManager {
     this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
+      this.rebaser.dispose();
     });
   }
 

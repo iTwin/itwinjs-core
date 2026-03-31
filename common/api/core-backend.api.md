@@ -5511,6 +5511,7 @@ export class RebaseManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     canAbort(): boolean;
+    dispose(): void;
     inProgress(): boolean;
     get isAborting(): boolean;
     get isMerging(): boolean;
