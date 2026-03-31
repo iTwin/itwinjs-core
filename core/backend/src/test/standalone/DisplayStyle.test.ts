@@ -20,45 +20,46 @@ describe("DisplayStyle", () => {
       guid: Guid.createValue(),
     });
 
-    function roundTrip(sky: SkyBoxProps): void {
-      const props = { environment: { sky } };
-      const name = Guid.createValue();
-      const id = withEditTxn(localDb, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, props));
-      expect(id).not.to.equal("0");
+    withEditTxn(localDb, (txn) => {
+      function roundTrip(sky: SkyBoxProps): void {
+        const props = { environment: { sky } };
+        const name = Guid.createValue();
+        const id = DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, props);
+        expect(id).not.to.equal("0");
 
-      const style = localDb.elements.getElement<DisplayStyle3d>(id);
-      const sky2 = style.jsonProperties.styles.environment.sky!;
-      expect(sky2).not.to.be.undefined;
-      for (const key of Object.keys(sky)) {
-        const propName = key as keyof SkyBoxProps;
-        expect(sky2[propName]).to.deep.equal(sky[propName]);
+        const style = localDb.elements.getElement<DisplayStyle3d>(id);
+        const sky2 = style.jsonProperties.styles.environment.sky!;
+        expect(sky2).not.to.be.undefined;
+        for (const key of Object.keys(sky)) {
+          const propName = key as keyof SkyBoxProps;
+          expect(sky2[propName]).to.deep.equal(sky[propName]);
+        }
       }
-    }
 
-    roundTrip({ display: true });
-    roundTrip({ display: false });
+      roundTrip({ display: true });
+      roundTrip({ display: false });
 
-    roundTrip({ twoColor: true });
-    roundTrip({ twoColor: false });
+      roundTrip({ twoColor: true });
+      roundTrip({ twoColor: false });
 
-    roundTrip({ skyColor: 0x123456 });
-    roundTrip({ groundColor: 42 });
-    roundTrip({ zenithColor: 0x43 });
-    roundTrip({ nadirColor: 0 });
+      roundTrip({ skyColor: 0x123456 });
+      roundTrip({ groundColor: 42 });
+      roundTrip({ zenithColor: 0x43 });
+      roundTrip({ nadirColor: 0 });
 
-    roundTrip({ skyExponent: 0.2 });
-    roundTrip({ groundExponent: -2.2 });
+      roundTrip({ skyExponent: 0.2 });
+      roundTrip({ groundExponent: -2.2 });
 
-    roundTrip({ image: { type: SkyBoxImageType.None } });
+      roundTrip({ image: { type: SkyBoxImageType.None } });
 
-    roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "0x123" } });
-    roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "images/sky.jpg" } });
+      roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "0x123" } });
+      roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "images/sky.jpg" } });
 
-    roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" } } });
-    roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "front.jpg", back: "back.png", left: "left.jpeg", right: "right.jpg", top: "top.png", bottom: "bottom.png" } } });
+      roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" } } });
+      roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "front.jpg", back: "back.png", left: "left.jpeg", right: "right.jpg", top: "top.png", bottom: "bottom.png" } } });
+      txn.abandonChanges();
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    localDb.abandonChanges();
     localDb.close();
   });
 

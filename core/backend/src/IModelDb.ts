@@ -117,11 +117,6 @@ class ImplicitWriteTxn extends EditTxn {
       throw err;
     }
   }
-
-  public override abandonChanges(): void {
-    this.iModel.clearCaches({ instanceCachesOnly: true });
-    this.iModel[_nativeDb].abandonChanges();
-  }
 }
 
 /** Options for [[IModelDb.Models.updateModel]]
