@@ -13,7 +13,7 @@ import { BlobContainer } from "../../BlobContainerService";
 import { IModelHost } from "../../IModelHost";
 import { setOnlineStatus } from "../../internal/OnlineStatus";
 import { WorkspaceSqliteDb } from "../../internal/workspace/WorkspaceSqliteDb";
-import { SettingsContainers, SettingsEditor, settingsResourceName } from "../../workspace/SettingsEditor";
+import { SettingsEditor, settingsResourceName } from "../../workspace/SettingsEditor";
 import { TestUtils } from "../TestUtils";
 
 describe("ITwin Workspace", () => {
@@ -214,12 +214,12 @@ describe("ITwin Workspace", () => {
 
   it("deleteSettingDictionary is a no-op when no iTwin settings container exists", async () => {
     const iTwinId = Guid.createValue();
-    const getContainerId = sinon.stub(SettingsContainers, "getITwinContainerId").resolves(undefined);
+    const getEditor = sinon.stub(SettingsEditor, "getForITwin").resolves(undefined);
     const constructStub = sinon.stub(SettingsEditor, "constructForITwin");
 
     await IModelHost.deleteSettingDictionary(iTwinId, "myDict");
 
-    expect(getContainerId.calledOnceWithExactly(iTwinId)).to.be.true;
+    expect(getEditor.calledOnceWithExactly(iTwinId)).to.be.true;
     expect(constructStub.called).to.be.false;
   });
 
@@ -228,19 +228,17 @@ describe("ITwin Workspace", () => {
     const removeString = sinon.spy();
     const close = sinon.spy();
 
-    sinon.stub(SettingsContainers, "getITwinContainerId").resolves("itwin-container-id");
-
     const withEditableDb = sinon.stub().callsFake(async (_user: string, operation: (db: any) => void) => {
       operation({ removeString });
     });
-    const constructStub = sinon.stub(SettingsEditor, "constructForITwin").resolves({
+    const getEditor = sinon.stub(SettingsEditor, "getForITwin").resolves({
       editor: { close } as any,
       container: { withEditableDb } as any,
     });
 
     await IModelHost.deleteSettingDictionary(iTwinId, "myDict");
 
-    expect(constructStub.calledOnceWithExactly(iTwinId)).to.be.true;
+    expect(getEditor.calledOnceWithExactly(iTwinId)).to.be.true;
     expect(withEditableDb.calledOnce).to.be.true;
     expect(withEditableDb.firstCall.args[0]).to.equal(IModelHost.userMoniker);
     expect(removeString.calledOnceWithExactly("myDict")).to.be.true;

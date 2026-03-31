@@ -503,11 +503,11 @@ export class IModelHost {
    * @beta
    */
   public static async deleteSettingDictionary(iTwinId: GuidString, name: string): Promise<void> {
-    const containerId = await SettingsContainers.getITwinContainerId(iTwinId);
-    if (containerId === undefined)
+    const settingsEditor = await SettingsEditor.getForITwin(iTwinId);
+    if (undefined === settingsEditor)
       return;
 
-    const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
+    const { editor, container } = settingsEditor;
     try {
       await container.withEditableDb(this.userMoniker, (db) => {
         db.removeString(name);

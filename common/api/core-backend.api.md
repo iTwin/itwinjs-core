@@ -6001,6 +6001,10 @@ export namespace SettingsEditor {
         editor: WorkspaceEditor;
         container: EditableWorkspaceContainer;
     }>;
+    export function getForITwin(iTwinId: GuidString): Promise<{
+        editor: WorkspaceEditor;
+        container: EditableWorkspaceContainer;
+    } | undefined>;
 }
 
 // @beta

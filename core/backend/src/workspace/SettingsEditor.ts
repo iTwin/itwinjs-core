@@ -11,7 +11,7 @@ import { GuidString } from "@itwin/core-bentley";
 import { GetWorkspaceContainerArgs, WorkspaceContainerId } from "./Workspace";
 import { BlobContainer } from "../BlobContainerService";
 import { IModelHost } from "../IModelHost";
-import { constructSettingsEditorForITwin } from "../internal/workspace/SettingsEditorImpl";
+import { constructSettingsEditorForITwin, getSettingsEditorForITwin } from "../internal/workspace/SettingsEditorImpl";
 import { EditableWorkspaceContainer, WorkspaceEditor } from "./WorkspaceEditor";
 
 /** The default resource name used to store settings in a [[WorkspaceDb]].
@@ -22,7 +22,7 @@ import { EditableWorkspaceContainer, WorkspaceEditor } from "./WorkspaceEditor";
  */
 export const settingsResourceName = "settingsDictionary";
 
-/** @beta */
+/** @internal */
 export namespace SettingsEditor {
   /** The type of workspace container used to store settings. */
   export const containerType = "settings";
@@ -34,6 +34,16 @@ export namespace SettingsEditor {
    */
   export async function constructForITwin(iTwinId: GuidString): Promise<{ editor: WorkspaceEditor; container: EditableWorkspaceContainer }> {
     return constructSettingsEditorForITwin(iTwinId);
+  }
+
+  /**
+   * Obtain a [[SettingsEditor]] for the existing settings container associated with an iTwin.
+   * @returns The editor and container, or `undefined` if no settings container exists for the iTwin.
+   * @note The caller becomes the owner of the SettingsEditor and is responsible for calling [[SettingsEditor.close]] on it when finished.
+   * @note It is illegal to have more than one SettingsEditor active in a single session.
+   */
+  export async function getForITwin(iTwinId: GuidString): Promise<{ editor: WorkspaceEditor; container: EditableWorkspaceContainer } | undefined> {
+    return getSettingsEditorForITwin(iTwinId);
   }
 }
 
