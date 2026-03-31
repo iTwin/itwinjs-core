@@ -5994,7 +5994,7 @@ export interface SettingsDictionarySource {
     readonly workspaceDb?: WorkspaceDb;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export namespace SettingsEditor {
     const containerType = "settings";
     export function constructForITwin(iTwinId: GuidString): Promise<{
