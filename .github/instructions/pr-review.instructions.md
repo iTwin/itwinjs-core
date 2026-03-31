@@ -19,6 +19,7 @@ In addition to your standard review checks, pay special attention to issues that
 ## APIs, invariants, and reuse
 
 - For public or beta API changes, verify release tags, `rush extract-api` output, and required `rush change` files.
+- In this lockstep monorepo, do not flag generated `rush change` files that use `"type": "none"` as having an incorrect bump type.
 - Only ask for `docs/changehistory/NextVersion.md` and migration guidance when the PR introduces a breaking change or a significant new user-visible feature.
 - Prefer comments about weak invariants over local style nits: push undefined or loading handling upward, remove redundant state, require props through types, and reuse shared helpers instead of duplicating logic.
 - Call out duplicated conditionals, repeated heuristics, or ad hoc string matching when a shared helper or stronger type would make the behavior safer.
