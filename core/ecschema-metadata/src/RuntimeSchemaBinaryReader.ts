@@ -290,7 +290,9 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
           });
           enumeratorCount++;
         }
-      } catch { /* ignore malformed JSON */ }
+      } catch (e) {
+        Logger.logWarning("ecschema-metadata.RuntimeSchema", `Malformed EnumValues JSON for enumeration "${eName}": ${e}`);
+      }
     }
 
     const eIdx = builder.addEnumeration({
