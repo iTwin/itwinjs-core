@@ -248,4 +248,28 @@ describe("ITwin Workspace", () => {
     expect(removeString.calledOnceWithExactly("myDict")).to.be.true;
     expect(close.calledOnce).to.be.true;
   });
+
+  it("saveSettingDictionary closes editor even on error", async () => {
+    const iTwinId = Guid.createValue();
+    const close = sinon.spy();
+    sinon.stub(SettingsEditor, "constructForITwin").resolves({
+      editor: { close } as any,
+      container: { withEditableDb: sinon.stub().rejects(new Error("write failed")) } as any,
+    });
+
+    await expect(IModelHost.saveSettingDictionary(iTwinId, "x", {})).to.be.rejectedWith("write failed");
+    expect(close.calledOnce).to.be.true;
+  });
+
+  it("deleteSettingDictionary closes editor even on error", async () => {
+    const iTwinId = Guid.createValue();
+    const close = sinon.spy();
+    sinon.stub(SettingsEditor, "getForITwin").resolves({
+      editor: { close } as any,
+      container: { withEditableDb: sinon.stub().rejects(new Error("delete failed")) } as any,
+    });
+
+    await expect(IModelHost.deleteSettingDictionary(iTwinId, "x")).to.be.rejectedWith("delete failed");
+    expect(close.calledOnce).to.be.true;
+  });
 });
