@@ -331,9 +331,9 @@ describe("CurveFactory", () => {
     let y0 = 0;
 
     const verifyPointsAndRadii = (
-      pointsAndRadii0: Array<[Point3d, number]>, lineStr: LineSegment3d | LineString3d, radius0: number | number[], isClosed: boolean,
+      pointsAndRadii0: Array<[Point3d, number]>, lineStr: LineSegment3d | LineString3d, radius0: number | number[],
     ) => {
-      const len = isClosed ? lineStr.points.length - 1 : lineStr.points.length; // ignore duplicate point at end of closed linestring
+      const len = lineStr.points.length;
       ck.testNearNumber(
         pointsAndRadii0.length, len, Geometry.smallMetricDistance,
         "expect pointsAndRadii to match linestring point count",
@@ -363,7 +363,10 @@ describe("CurveFactory", () => {
               pointsAndRadii0,
               "expect to be able to extract points and radii from filleted linestring for single radius with no cusp"
             );
-            verifyPointsAndRadii(pointsAndRadii0!, lineStr, radius0, isClosed);
+            const expectedLineStr = (filletClosure && !isClosed)
+              ? LineString3d.create([...lineStr.points, lineStr.pointAt(0)!])
+              : lineStr;
+            verifyPointsAndRadii(pointsAndRadii0!, expectedLineStr, radius0);
             y0 += 8;
           }
           y0 += 8;
@@ -433,7 +436,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for closed chain with array of radii"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii, true);
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
 
     // open chain; array of radii
     y0 += 10;
@@ -446,7 +449,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for open chain with array of radii"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii, false);
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
 
     // closed chain that starts with a line segment
     x0 += 10;
@@ -464,8 +467,8 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for closed chain that starts with a line segment"
     );
-    const reorderedLineString = LineString3d.create(points[1], points[2], points[3], points[4], points[5], points[0]);
-    verifyPointsAndRadii(pointsAndRadii!, reorderedLineString, radius, false);
+    const reorderedLineString = LineString3d.create(points[1], points[2], points[3], points[4], points[5], points[0], points[1]);
+    verifyPointsAndRadii(pointsAndRadii!, reorderedLineString, radius);
 
     // chain is a linestring
     x0 += 10;
@@ -479,7 +482,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for a chain that is a linestring"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString0, radius, true);
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radius);
 
     // closed chain that includes linestring
     y0 += 10;
@@ -502,7 +505,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for closed chain that includes linestring"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii, true);
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
 
     // open chain that includes linestring
     y0 += 10;
@@ -524,7 +527,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for open chain that includes linestring"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii, false);
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
 
     // special case with 2 points
     x0 += 10;
@@ -538,7 +541,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for special case with 2 points"
     );
-    verifyPointsAndRadii(pointsAndRadii!, line, radius, false);
+    verifyPointsAndRadii(pointsAndRadii!, line, radius);
     y0 += 10;
     line = LineString3d.create([0, 0], [5, 0]);
     chain = Path.create(line);
@@ -548,7 +551,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for special case with 2 points"
     );
-    verifyPointsAndRadii(pointsAndRadii!, line, radius, false);
+    verifyPointsAndRadii(pointsAndRadii!, line, radius);
 
     // special case with 3 points
     x0 += 10;
@@ -562,7 +565,12 @@ describe("CurveFactory", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special case with 3 points"
       );
-      verifyPointsAndRadii(pointsAndRadii!, line, radius, false);
+      let expectedLine: LineSegment3d | LineString3d;
+      if (filletClosure)
+        expectedLine = LineString3d.create([0, 0], [5, 0], [7, 5], [0, 0]);
+      else
+        expectedLine = line;
+      verifyPointsAndRadii(pointsAndRadii!, expectedLine, radius);
       y0 += 10;
     }
 
@@ -579,7 +587,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for adjacent lines case 1"
     );
-    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [5, 0], [7, 0]), radius, false);
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [5, 0], [7, 0]), radius);
     // case 2
     y0 += 10;
     line0 = LineString3d.create([0, 0], [2, 0], [3, 0]);
@@ -591,7 +599,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for adjacent lines case 2"
     );
-    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [2, 0], [3, 0], [5, 0], [7, 0]), radius, false);
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [2, 0], [3, 0], [5, 0], [7, 0]), radius);
     // case 3
     y0 += 10;
     line0 = LineSegment3d.createXYXY(0, 0, 3, 0);
@@ -603,7 +611,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for adjacent lines case 3"
     );
-    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [3, 0], [5, 0], [7, 0]), radius, false);
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [3, 0], [5, 0], [7, 0]), radius);
 
     // chain with a bspline child
     x0 += 10;
@@ -645,7 +653,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for anti-parallel case 1 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([-5, 5], [0, 5], [-5, 5], [-5, 0]), [0, 0, 5, 0], false);
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([-5, 5], [0, 5], [-5, 5], [-5, 0]), [0, 0, 5, 0]);
     // case 2
     y0 += 10;
     let arc1 = Arc3d.createXY(Point3d.create(0, 10), 5, AngleSweep.createStartEndDegrees(180, 270));
@@ -671,8 +679,7 @@ describe("CurveFactory", () => {
     verifyPointsAndRadii(
       pointsAndRadii!,
       LineString3d.create([-5, 10], [-5, 5], [0, 5], [-5, 5], [-5, 0]),
-      [0, 5, 0, 5, 0],
-      false
+      [0, 5, 0, 5, 0]
     );
 
     // special degenerate cases where a fillet takes up the entire edge
@@ -703,16 +710,16 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 1 with relaxed validation"
       );
       let expectedLineString0: LineString3d;
-      let expectedRadii0: number[];
+      let expectedRadii0: number[] | number;
       // joints between arcs are added to the output
       if (filletClosure) {
-        expectedLineString0 = LineString3d.create([0, s / 2], [0, 0], [s / 2, 0], [s, 0], [s, s / 2], [s, s], [s / 2, s], [0, s]);
-        expectedRadii0 = [0, s / 2, 0, s / 2, 0, s / 2, 0, s / 2];
+        expectedLineString0 = LineString3d.create([0, s / 2], [0, 0], [s / 2, 0], [s, 0], [s, s / 2], [s, s], [s / 2, s], [0, s], [0, s / 2]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0, s / 2, 0, s / 2, 0];
       } else {
         expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
         expectedRadii0 = [0, s / 2, 0, s / 2, 0];
       }
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
       // insert 0-length segments between arcs to make the chain valid
       y0 += 10;
       let validChain = new Path();
@@ -728,7 +735,7 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for " +
         "special degenerate case 1 with zero length segments added to make chain valid"
       );
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
 
       // case 2
       y0 += 10;
@@ -752,7 +759,11 @@ describe("CurveFactory", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 2 with relaxed validation"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radius, false);
+      if (filletClosure)
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s], [0, s], [0, 0]);
+      else
+        expectedLineString0 = square;
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
       // insert 0-length segments where arc tangent is not parallel to line segment tangent to make the chain valid
       y0 += 10;
       validChain = new Path();
@@ -769,8 +780,9 @@ describe("CurveFactory", () => {
       ck.testDefined(
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for " +
-        "special degenerate case 2 with zero length segments added to make chain valid");
-      verifyPointsAndRadii(pointsAndRadii!, square, radius, false);
+        "special degenerate case 2 with zero length segments added to make chain valid"
+      );
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
 
       // case 3
       y0 += 10;
@@ -794,7 +806,7 @@ describe("CurveFactory", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 3 with relaxed validation"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radius, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
       // insert 0-length segments where arc tangent is not parallel to line segment tangent to make the chain valid
       y0 += 10;
       validChain = new Path();
@@ -812,7 +824,7 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for " +
         "special degenerate case 3 with zero length segments added to make chain valid"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radius, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
 
       // case 4
       y0 += 10;
@@ -824,7 +836,11 @@ describe("CurveFactory", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii for special degenerate case 4"
       );
-      verifyPointsAndRadii(pointsAndRadii!, square, radii, false);
+      if (filletClosure)
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      else
+        expectedRadii0 = radii;
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
       y0 += 10;
       radii = [0, s / 2, s / 2, 0];
 
@@ -849,9 +865,15 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 5 with relaxed validation"
       );
       // joints between arcs are added to the output
-      expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
-      expectedRadii0 = [0, s / 2, 0, s / 2, 0];
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
+      if (filletClosure) {
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s], [0, 0]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0, 0];
+      } else {
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      }
+
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
       // insert 0-length segments between arcs to make the chain valid
       y0 += 10;
       validChain = new Path();
@@ -867,7 +889,7 @@ describe("CurveFactory", () => {
         "expect to be able to extract points and radii from filleted linestring for " +
         "special degenerate case 5 with zero length segments added to make chain valid"
       );
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0, false);
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
     }
 
     // extra special degenerate cases
@@ -895,7 +917,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 1 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
 
     // case 2
     y0 += 10;
@@ -920,7 +942,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 2 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
 
     // case 3
     y0 += 10;
@@ -945,7 +967,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 3 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
 
     // case 4
     y0 += 10;
@@ -970,7 +992,7 @@ describe("CurveFactory", () => {
       pointsAndRadii,
       "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 4 with relaxed validation"
     );
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radii, false);
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
 
     // case 5
     y0 += 10;
@@ -997,7 +1019,7 @@ describe("CurveFactory", () => {
     );
     let expectedLineString = LineString3d.create([0, -4], [4, 0], [4, -1], [5, -1], [6, -1], [6, 0], [10, -4]);
     let expectedRadii = [0, 0, 1, 0, 1, 0, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 6
     y0 += 10;
@@ -1024,7 +1046,7 @@ describe("CurveFactory", () => {
     );
     expectedLineString = LineString3d.create([0, 0], [4, 0], [4, 2], [6, 2], [8, 2], [8, 0], [6, -2]);
     expectedRadii = [0, 0, 2, 0, 2, 0, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // 180+ degree sweeps
     x0 += 20;
@@ -1051,7 +1073,7 @@ describe("CurveFactory", () => {
     );
     expectedLineString = LineString3d.create([3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0]);
     expectedRadii = [0, 3, 0, 3, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 2: 270 degree sweep with anti-parallel line segments on either side
     y0 += 10;
@@ -1082,7 +1104,7 @@ describe("CurveFactory", () => {
       [3, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -3]
     );
     expectedRadii = [0, 0, 3, 0, 3, 0, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 3: 270 degree sweep with non-parallel line segments on either side
     y0 += 10;
@@ -1113,7 +1135,7 @@ describe("CurveFactory", () => {
       [10, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -10]
     );
     expectedRadii = [0, 0, 3, 0, 3, 0, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 4: 3 neighbor arcs; middle one with 270 degree sweep
     y0 += 10;
@@ -1145,7 +1167,7 @@ describe("CurveFactory", () => {
       [-4.77231083, -6.21939656], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
     );
     expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 5: 1 large arcs broken to 3 smaller arcs by the caller with zero-length segments in between
     y0 += 10;
@@ -1163,7 +1185,7 @@ describe("CurveFactory", () => {
     );
     expectedLineString = LineString3d.create([1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]);
     expectedRadii = [0, 1, 0, 1, 0, 1, 0];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 6: full circle (360 degree sweep)
     y0 += 10;
@@ -1187,10 +1209,10 @@ describe("CurveFactory", () => {
       "expect to be able to extract points and radii from filleted linestring for 360 degree sweeps case 6 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [3, 0], [3, 5.19615242], [-1.5, 2.59807621], [-6, 0], [-1.5, -2.59807621], [3, -5.19615242]
+      [3, 0], [3, 5.19615242], [-1.5, 2.59807621], [-6, 0], [-1.5, -2.59807621], [3, -5.19615242], [3, 0]
     );
-    expectedRadii = [0, 3, 0, 3, 0, 3];
-    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii, false);
+    expectedRadii = [0, 3, 0, 3, 0, 3, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // Loop input
     x0 += 10;
@@ -1201,14 +1223,15 @@ describe("CurveFactory", () => {
       Point3d.create(4, 0, 0),
       Point3d.create(4, 4, 0),
       Point3d.create(0, 4, 0),
+      Point3d.create(0, 0, 0),
     );
-    const path = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: true })!;
+    const path = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: false })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
     const loop = Loop.create(...path.children);
 
     pointsAndRadii = CurveFactory.fromFilletedLineString(loop);
-    ck.testDefined(pointsAndRadii, "expect fromFilletedLineString to work on Path");
-    verifyPointsAndRadii(pointsAndRadii!, lineString, radius, false);
+    ck.testDefined(pointsAndRadii, "expect fromFilletedLineString to work on Loop");
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radius);
 
     // fromFilletedLineString should not mutate the input path
     x0 += 10;

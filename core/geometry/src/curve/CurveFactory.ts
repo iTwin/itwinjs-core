@@ -270,8 +270,13 @@ export class CurveFactory {
     }
     return filletedLineString;
   }
-  /** Split `arc` at each interior fraction and append the pieces with zero-length line segments at split points. */
-  private static splitArc(output: Path, arc: Arc3d, fractions: number[]): void {
+  /**
+   * Split `arc` according to the partition given by `fractions` and append the pieces to `output` with zero-length
+   * line segments in between.
+   * @param fractions a complete partition of the fractional parameter space, e.g., [0, 0.5, 1] splits the arc into
+   * two pieces.
+   */
+  private static splitAndAppendArc(output: Path, arc: Arc3d, fractions: number[]): void {
     const pt = Point3d.createZero();
     for (let k = 0; k < fractions.length - 1; k++) {
       output.tryAddChild(arc.clonePartialCurve(fractions[k], fractions[k + 1]));
@@ -286,9 +291,9 @@ export class CurveFactory {
    * * If there are 2 connected arcs, add a zero-length line segment between them.
    * * If there is a pair of arc and line segment/string with non-parallel tangents, add a zero-length line segment
    * between them.
-   * * If there is an arc with sweep between 180 and 360 degrees, break the arc into 2 pieces and add a zero-length
-   * line segment between them. Break 360 degrees arc to 3 pieces. Return `undefined` if there is an arc with sweep
-   * greater than 360 degrees.
+   * * If there is an arc with sweep degrees in [180, 360), break the arc into 2 pieces separated by a zero-length
+   * line segment. Similarly, break a 360-degree arc into 3 pieces separated by 2 zero-length line segments. Return
+   * `undefined` if there is an arc with sweep greater than 360 degrees.
    */
   private static updatePathForRelaxedValidation(
     filletedLineString: Path, isClosed: boolean, parallelOptions?: PerpParallelOptions,
@@ -297,7 +302,9 @@ export class CurveFactory {
     const numOfChildren = filletedLineString.children.length;
     for (let i = 0; i < numOfChildren; i++) { // examine each child and its predecessor
       const child = filletedLineString.children[i];
-      if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) > 360)
+      const arcSweep = child instanceof Arc3d ? Math.abs(child.sweep.sweepDegrees) : undefined;
+      const sweepTol = Geometry.smallAngleDegrees;
+      if (arcSweep !== undefined && arcSweep > 360 + sweepTol)
         return undefined;
       if (!isClosed && i === 0) {
         newFilletedLineString.tryAddChild(child);
@@ -314,13 +321,13 @@ export class CurveFactory {
       const twoConnectedArcs = child instanceof Arc3d && prevChild instanceof Arc3d;
       // apply relaxed validation rules
       if (twoConnectedArcs || arcLineStringCorner) {
-        newFilletedLineString.tryAddChild(LineSegment3d.create(child.startPoint(), child.startPoint()));
+        const linePoint = child.startPoint();
+        newFilletedLineString.tryAddChild(LineSegment3d.create(linePoint, linePoint));
       }
-      if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) > 180 - Geometry.smallAngleDegrees
-        && Math.abs(child.sweep.sweepDegrees) < 360) {
-        CurveFactory.splitArc(newFilletedLineString, child, [0, 0.5, 1]); // 2 pieces
-      } else if (child instanceof Arc3d && Math.abs(child.sweep.sweepDegrees) === 360) {
-        CurveFactory.splitArc(newFilletedLineString, child, [0, 1 / 3, 2 / 3, 1]); // 3 pieces
+      if (arcSweep !== undefined && arcSweep > 180 - sweepTol && arcSweep <= 360 - sweepTol) {
+        CurveFactory.splitAndAppendArc(newFilletedLineString, child as Arc3d, [0, 0.5, 1]); // 2 pieces
+      } else if (arcSweep !== undefined && arcSweep > 360 - sweepTol && arcSweep <= 360 + sweepTol) {
+        CurveFactory.splitAndAppendArc(newFilletedLineString, child as Arc3d, [0, 1 / 3, 2 / 3, 1]); // 3 pieces
       } else {
         newFilletedLineString.tryAddChild(child);
       }
@@ -364,15 +371,13 @@ export class CurveFactory {
     if (filletedLineString.children.length === 0)
       return undefined;
     const relaxedValidation = options?.relaxedValidation ?? false;
-    let validatedFilletedLineString = filletedLineString;
+    let validatedFilletedLineString: Path | undefined = filletedLineString;
     if (!isClosed)
       validatedFilletedLineString = this.validateOpenPathStartEnd(validatedFilletedLineString);
-    if (relaxedValidation) {
-      const ret = this.updatePathForRelaxedValidation(validatedFilletedLineString, isClosed, options?.parallelOptions);
-      if (ret === undefined)
-        return undefined;
-      validatedFilletedLineString = ret;
-    }
+    if (relaxedValidation)
+      validatedFilletedLineString = this.updatePathForRelaxedValidation(validatedFilletedLineString, isClosed, options?.parallelOptions);
+    if (validatedFilletedLineString === undefined)
+      return undefined;
     const numOfChildren = validatedFilletedLineString.children.length;
     // validate the children
     for (let i = 0; i < numOfChildren; i++) {
@@ -420,7 +425,7 @@ export class CurveFactory {
    * * To treat more input chains as valid, pass `options.relaxedValidation = true`. Internally, this setting performs
    * several transformations on the input to produce a valid filleted linestring:
    *   * Each `Arc3d` whose sweep is between 180 and 360 degrees is split into 2 arcs of equal sweep separated by a
-   * zero-length `LineSegment3d`. A 360 degrees arc is split into 3 arcs of equal sweep with 2 zero-length
+   *  zero-length `LineSegment3d`. A 360-degree arc is split into 3 arcs of equal sweep separated by 2 zero-length
    * `LineSegment3d`s. Arcs with sweep greater than 360 degrees are not allowed.
    *   * Adjacent `Arc3d`s are separated by a zero-length `LineSegment3d`.
    *   * An `Arc3d` that is not G1 continuous with its neighbor is separated from its neighbor by a zero-length
@@ -479,6 +484,8 @@ export class CurveFactory {
       if (endPoint)
         result.push([endPoint, 0]);
     }
+    if (isClosed)
+      result.push(result[0]);
     return result;
   }
   /**
