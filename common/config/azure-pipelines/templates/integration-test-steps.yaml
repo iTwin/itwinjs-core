@@ -91,15 +91,17 @@ steps:
     displayName: "Run Core Full Stack Tests (Chrome) [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
+  # macOS only: Windows hosted agents lack a stable GPU backend for the volume
+  # of WebGL rendering in 68 test files (WARP crashes with 0xC0000409).
+  # Chrome integration tests cover the same code paths on Windows, and
+  # core/electron validates basic Electron functionality there.
   - script: npm run test:integration:electron
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-      # Single shard on non-Linux: Windows SwiftShader has limited GPU resources,
-      # macOS can hit intermittent shard timeouts on self-hosted ARM agents.
       VITEST_ELECTRON_SHARD_COUNT: "1"
-    displayName: "Run Core Full Stack Tests (Electron) [Non-Linux]"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+    displayName: "Run Core Full Stack Tests (Electron) [macOS]"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
 
   # ── Electron test benchmark (A/B: 1 shard = sequential baseline, 4 shards = parallel) ──────────
   # Enable by passing runBenchmark: true to this template. Results are published as a pipeline
