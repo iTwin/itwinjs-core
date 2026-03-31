@@ -435,7 +435,7 @@ export class IModelHost {
     const isContainerProps = typeof args !== "string";
     const workspace = constructWorkspace(new ITwinWorkspaceSettings());
 
-    const workspacePromise = (async () => {
+    try {
       const containerProps: GetWorkspaceContainerArgs | undefined = isContainerProps ? args : await SettingsContainers.getITwinContainerProps(args);
 
       if (undefined === containerProps)
@@ -467,12 +467,10 @@ export class IModelHost {
       }
 
       return workspace;
-    })().catch((error) => {
+    } catch (error) {
       workspace.close();
       throw error;
-    });
-
-    return workspacePromise;
+    }
   }
 
   /** Save a named [[SettingsDictionary]] to the iTwin's settings container.
