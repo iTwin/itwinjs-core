@@ -94,6 +94,7 @@ describe("ITwin Workspace", () => {
     const workspace = await IModelHost.getITwinWorkspace(iTwinId);
     expect(workspace.settings.getString("app/testA")).to.equal("value-a");
     expect(workspace.settings.getString("app/testB")).to.equal("value-b");
+    workspace.close();
   });
 
   it("returns an empty iTwin workspace if no root settings container exists", async () => {
@@ -105,6 +106,7 @@ describe("ITwin Workspace", () => {
     const workspace = await IModelHost.getITwinWorkspace(iTwinId);
     expect(workspace.settings.dictionaries.length).to.equal(0);
     expect(workspace.settings.getString("app/testA")).to.be.undefined;
+    workspace.close();
   });
 
   it("fails if multiple iTwin settings containers exist for the same iTwin", async () => {
@@ -154,6 +156,7 @@ describe("ITwin Workspace", () => {
     expect(workspace.settings.getString("app/testA")).to.equal("value-a");
     expect(queryContainersMetadata.called).to.be.false;
     expect(requestToken.called).to.be.false;
+    workspace.close();
   });
 
   it("getITwinWorkspace loads all named dictionaries from the settings container", async () => {
@@ -186,6 +189,7 @@ describe("ITwin Workspace", () => {
     const workspace = await IModelHost.getITwinWorkspace(iTwinId);
     expect(workspace.settings.getString("app/testA")).to.equal("value-a");
     expect(workspace.settings.getString("app/testB")).to.equal("value-b");
+    workspace.close();
   });
 
   it("saveSettingDictionary saves a named dictionary and closes the editor", async () => {
