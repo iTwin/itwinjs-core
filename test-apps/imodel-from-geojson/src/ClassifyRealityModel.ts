@@ -117,7 +117,7 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
 
   await withEditTxn(iModelDb, "insert classified reality model", async (txn) => {
     const displayStyleId = DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
-    await txn.updateProjectExtents(projectExtents);
+    txn.updateProjectExtents(projectExtents);
     const modelSelectorId: Id64String = ModelSelector.insertWithTxn(txn, IModel.dictionaryId, name, []);
     const categorySelectorId: Id64String = CategorySelector.insertWithTxn(txn, IModel.dictionaryId, name, [classifierCategoryId]);
     OrthographicViewDefinition.insertWithTxn(txn, IModel.dictionaryId, name, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);

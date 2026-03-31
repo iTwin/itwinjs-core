@@ -607,7 +607,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
 
       await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-        b1.deleteFileProperty({ namespace: "test", name: "test" });
+        b1Txn.deleteFileProperty({ namespace: "test", name: "test" });
       })).to.be.rejectedWith("Cannot delete file property while in an indirect change scope");
 
       chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
@@ -619,7 +619,7 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
 
       chai.expect(() => b1.txns.withIndirectTxnMode(() => {
-        b1.deleteFileProperty({ namespace: "test", name: "test" });
+        b1Txn.deleteFileProperty({ namespace: "test", name: "test" });
       })).to.be.throws("Cannot delete file property while in an indirect change scope");
 
       b1Txn.saveChanges();

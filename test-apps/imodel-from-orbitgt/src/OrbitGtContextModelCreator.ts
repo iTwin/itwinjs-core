@@ -89,7 +89,7 @@ export class OrbitGtContextIModelCreator {
         this.definitionModelId = DefinitionModel.insertWithTxn(txn, IModelDb.rootSubjectId, "Definitions");
         this.physicalModelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, "Empty Model");
         this.insertSpatialView(txn, "OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], geoLocated);
-        await txn.updateProjectExtents(worldRange);
+        txn.updateProjectExtents(worldRange);
       });
     } catch (error) {
       process.stdout.write(`Error creating model from: ${blobFileName} Error: ${error}`);

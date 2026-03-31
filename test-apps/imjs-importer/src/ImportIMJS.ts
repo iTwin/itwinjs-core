@@ -142,7 +142,7 @@ export class ImportIMJS {
             const featureModelExtents = featureModel.queryExtents();
             await withEditTxn(this.iModelDb, async (txn) => {
               this.insertSpatialViewOneModel(txn, `Spatial View${fileName}`, range, physicalModelId);
-              await txn.updateProjectExtents(featureModelExtents);
+              txn.updateProjectExtents(featureModelExtents);
             });
 
             ModelIdGroup.announceModel(modelGroups, physicalModelId, baseSize, range);

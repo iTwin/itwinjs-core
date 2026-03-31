@@ -49,7 +49,7 @@ function loadEnv(envFile: string) {
 let electronAuth: ElectronMainAuthorization;
 
 function shouldLogToConsole(): boolean {
-  return process.env.IMODELJS_CORE_FULL_STACK_BACKEND_LOG_TO_CONSOLE === "1";
+  return process.env.ITWINJS_CORE_FULL_STACK_BACKEND_LOG_TO_CONSOLE === "1";
 }
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {

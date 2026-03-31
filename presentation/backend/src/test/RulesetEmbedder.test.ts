@@ -646,3 +646,39 @@ describe("RulesetEmbedder", () => {
     });
   });
 });
+
+describe("Ruleset.createRulesetCode", () => {
+  it("creates code without version", () => {
+    const codeSpecId = "0xabc";
+    const imodelStub = {
+      codeSpecs: {
+        getByName: sinon.stub().returns({ id: codeSpecId }),
+      },
+    } as unknown as IModelDb;
+    const modelId = "0x1";
+    const ruleset: Ruleset = { id: "my-ruleset", rules: [] };
+
+    const code = RulesetElements.Ruleset.createRulesetCode(imodelStub, modelId, ruleset);
+
+    expect(code.spec).to.eq(codeSpecId);
+    expect(code.scope).to.eq(modelId);
+    expect(code.value).to.eq("my-ruleset");
+  });
+
+  it("creates code with version", () => {
+    const codeSpecId = "0xdef";
+    const imodelStub = {
+      codeSpecs: {
+        getByName: sinon.stub().returns({ id: codeSpecId }),
+      },
+    } as unknown as IModelDb;
+    const modelId = "0x2";
+    const ruleset: Ruleset = { id: "my-ruleset", version: "1.2.3", rules: [] };
+
+    const code = RulesetElements.Ruleset.createRulesetCode(imodelStub, modelId, ruleset);
+
+    expect(code.spec).to.eq(codeSpecId);
+    expect(code.scope).to.eq(modelId);
+    expect(code.value).to.eq(`my-ruleset@${normalizeVersion("1.2.3")}`);
+  });
+});

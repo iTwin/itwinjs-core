@@ -786,7 +786,7 @@ export class ExtensiveTestScenario {
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     await withEditTxn(sourceDb, async (txn) => {
-      await txn.updateProjectExtents(projectExtents);
+      txn.updateProjectExtents(projectExtents);
       // Insert CodeSpecs
       const codeSpecId1 = sourceDb.codeSpecs.insertWithTxn(txn, "SourceCodeSpec", CodeScopeSpec.Type.Model);
       const codeSpecId2 = sourceDb.codeSpecs.insertWithTxn(txn, "ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);

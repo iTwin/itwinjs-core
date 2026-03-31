@@ -157,7 +157,7 @@ export class RealityModelContextIModelCreator {
       this.definitionModelId = DefinitionModel.insertWithTxn(txn, IModelDb.rootSubjectId, "Definitions");
       this.physicalModelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, "Empty Model");
       this.insertSpatialView(txn, "Reality Model View", worldRange, realityModels, geoLocated);
-      await txn.updateProjectExtents(worldRange);
+      txn.updateProjectExtents(worldRange);
     });
   }
 

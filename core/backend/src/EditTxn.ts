@@ -12,7 +12,7 @@ import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, Elem
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import { BriefcaseDb, type IModelDb, type InsertElementOptions, type UpdateModelOptions } from "./IModelDb";
+import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
@@ -133,9 +133,9 @@ export class EditTxn {
 
   /** End this EditTxn, either by saving or abandoning the changes.
    * @param mode Whether to "save" or "abandon" the changes. Defaults to "save".
-    * @param args Save changes arguments when saving.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if saving changes fails.
+   * @param args Save changes arguments when saving.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if saving changes fails.
    */
   public end(): void;
   public end(mode: "save" | "abandon", args?: string | SaveChangesArgs): void;
@@ -154,8 +154,8 @@ export class EditTxn {
   /** Invoked when the owning iModel is closing.
    * The base implementation commits unsaved changes. Subclasses may override to customize how
    * their changes are handled before the iModel closes.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if saving on close fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if saving on close fails.
    */
   public onClose(): void {
     if (!this.iModel.isReadonly && this.iModel[_nativeDb].hasUnsavedChanges())
@@ -163,7 +163,7 @@ export class EditTxn {
   }
 
   /** Abandon database changes while keeping this EditTxn active.
-    * @throws EditTxnError if this EditTxn is not active.
+   * @throws EditTxnError if this EditTxn is not active.
    */
   public abandonChanges(): void {
     this.verifyWriteable();
@@ -173,8 +173,8 @@ export class EditTxn {
 
   /** Save changes with additional arguments.
    * @param args Save changes arguments.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if the iModel is readonly, if indirect changes are active, or if the native save fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if the iModel is readonly, if indirect changes are active, or if the native save fails.
    */
   public saveChanges(args?: string | SaveChangesArgs): void {
     this.verifyWriteable();
@@ -198,8 +198,8 @@ export class EditTxn {
   /** Insert a new element into the iModel.
    * @param elProps The properties of the new element.
    * @returns The newly inserted element's Id.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws Error if insertion fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws Error if insertion fails.
    */
   public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
     this.verifyWriteable();
@@ -219,8 +219,8 @@ export class EditTxn {
 
   /** Update an existing element in the iModel.
    * @param elProps The properties to update.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws Error if update fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws Error if update fails.
    */
   public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
     this.verifyWriteable();
@@ -248,8 +248,8 @@ export class EditTxn {
 
   /** Delete elements from the iModel.
    * @param ids The Ids of the elements to delete.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws Error if deletion fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws Error if deletion fails.
    */
   public deleteElement(ids: Id64Arg): void {
     this.verifyWriteable();
@@ -270,8 +270,8 @@ export class EditTxn {
   /** Insert a new aspect into the iModel.
    * @param aspectProps The properties of the new aspect.
    * @returns The newly inserted aspect Id.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if insertion fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if insertion fails.
    */
   public insertAspect(aspectProps: ElementAspectProps): Id64String {
     this.verifyWriteable();
@@ -286,8 +286,8 @@ export class EditTxn {
 
   /** Update an existing aspect in the iModel.
    * @param aspectProps The properties of the aspect to update.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if update fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if update fails.
    */
   public updateAspect(aspectProps: ElementAspectProps): void {
     this.verifyWriteable();
@@ -302,8 +302,8 @@ export class EditTxn {
 
   /** Delete one or more aspects from the iModel.
    * @param aspectInstanceIds The Ids of the aspects to delete.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if deletion fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if deletion fails.
    */
   public deleteAspect(aspectInstanceIds: Id64Arg): void {
     this.verifyWriteable();
@@ -321,8 +321,8 @@ export class EditTxn {
   /** Delete definition elements from the iModel when they are not referenced.
    * @param definitionElementIds The Ids of the definition elements to attempt to delete.
    * @returns The set of definition elements that were still in use and therefore not deleted.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if usage queries fail.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if usage queries fail.
    */
   public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
     this.verifyWriteable();
@@ -396,8 +396,8 @@ export class EditTxn {
   /** Insert a new model into the iModel.
    * @param props The data for the new model.
    * @returns The newly inserted model's Id.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if insertion fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if insertion fails.
    */
   public insertModel(props: ModelProps): Id64String {
     this.verifyWriteable();
@@ -412,8 +412,8 @@ export class EditTxn {
 
   /** Update an existing model in the iModel.
    * @param props the properties of the model to change
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if update fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if update fails.
    */
   public updateModel(props: UpdateModelOptions): void {
     this.verifyWriteable();
@@ -431,8 +431,8 @@ export class EditTxn {
 
   /** Update the geometry guid of a model.
    * @param modelId The Id of the model to update.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if the update fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if the update fails.
    */
   public updateGeometryGuid(modelId: Id64String): void {
     this.verifyWriteable();
@@ -444,8 +444,8 @@ export class EditTxn {
 
   /** Delete models from the iModel.
    * @param ids The Ids of the models to delete.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if deletion fails.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if deletion fails.
    */
   public deleteModel(ids: Id64Arg): void {
     this.verifyWriteable();
@@ -465,8 +465,8 @@ export class EditTxn {
   /** Insert a new relationship into the iModel.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if the class is invalid for link-table insertion.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if the class is invalid for link-table insertion.
    */
   public insertRelationship(props: RelationshipProps): Id64String {
     this.verifyWriteable();
@@ -513,7 +513,7 @@ export class EditTxn {
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
     this.verifyWriteable();
     const imodel = this.iModel;
-    if (imodel instanceof BriefcaseDb) {
+    if (imodel.isBriefcaseDb()) {
       if (imodel.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
       }
@@ -521,48 +521,45 @@ export class EditTxn {
     imodel[_nativeDb].saveFileProperty(prop, strValue, blobVal);
   }
 
+  /** Delete a file property from the iModel.
+   * @param prop The file property to delete.
+   * @throws EditTxnError if this EditTxn is not active.
+   */
+  public deleteFileProperty(prop: FilePropertyProps): void {
+    this.saveFileProperty(prop, undefined, undefined);
+  }
+
   /** Update the project extents of the iModel.
    * @param newExtents The new project extents.
-    * @throws EditTxnError if this EditTxn is not active.
-    * @throws IModelError if extents are invalid.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws IModelError if extents are invalid.
    */
-  public async updateProjectExtents(newExtents: Range3dProps): Promise<void> {
+  public updateProjectExtents(newExtents: Range3dProps): void {
     this.verifyWriteable();
     const extents = Range3d.fromJSON(newExtents);
     if (extents.isNull)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
 
-    await this.iModel.acquireSchemaLock();
     this.iModel.projectExtents = extents;
-    this.iModel.updateIModelProps();
-
-    // Set source from calculated to user so connectors preserve the change.
-    const unitsProps: FilePropertyProps = { name: "Units", namespace: "dgn_Db" };
-    const unitsStr = this.iModel.queryFilePropertyString(unitsProps);
-
-    if (undefined === unitsStr)
-      return;
-
-    const unitsVal = JSON.parse(unitsStr);
-    const calculated = 1;
-    if (calculated !== unitsVal.extentsSource) {
-      unitsVal.extentsSource = calculated;
-      this.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
-    }
+    this.updateIModelProps();
   }
 
   /** Update the ECEF location of the iModel.
    * @param ecef The new ECEF location.
    * @throws EditTxnError if this EditTxn is not active.
    */
-  public async updateEcefLocation(ecef: EcefLocationProps): Promise<void> {
+  public updateEcefLocation(ecef: EcefLocationProps): void {
     this.verifyWriteable();
-    await this.iModel.acquireSchemaLock();
-
-    // Clear GCS that caller already determined was invalid.
-    this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
     this.iModel.setEcefLocation(new EcefLocation(ecef));
-    this.iModel.updateIModelProps();
+    this.updateIModelProps();
+  }
+
+  /** Update the iModel props in the database from the current in-memory state.
+   * @throws EditTxnError if this EditTxn is not active.
+   */
+  public updateIModelProps(): void {
+    this.verifyWriteable();
+    this.iModel[_nativeDb].updateIModelProps(this.iModel.toJSON());
   }
 
   private static readonly _settingPropNamespace = "settings";

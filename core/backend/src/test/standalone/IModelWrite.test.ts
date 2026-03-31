@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { EditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
   GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
@@ -888,8 +888,6 @@ describe("IModelWriteTest", () => {
     const version0 = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "projectExtentsTest", version0 });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
-    const iModelTxn = new EditTxn(iModel, "imodel write");
-    iModelTxn.start();
     const changesetIdBeforeExtentsChange = iModel.changeset.id;
     const extents = iModel.projectExtents;
     const newExtents = extents.clone();
@@ -897,8 +895,7 @@ describe("IModelWriteTest", () => {
     newExtents.low.y += 100;
     newExtents.high.x += 100;
     newExtents.high.y += 100;
-    await iModelTxn.updateProjectExtents(newExtents);
-    iModelTxn.saveChanges("update project extents");
+    withEditTxn(iModel, "update project extents", (txn) => txn.updateProjectExtents(newExtents));
     await iModel.pushChanges({ description: "update project extents" });
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
     const iModelBeforeExtentsChange = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(changesetIdBeforeExtentsChange).toJSON() });

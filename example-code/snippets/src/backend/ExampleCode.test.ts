@@ -37,7 +37,7 @@ describe("Example Code", () => {
     newExtents.high.z += .001;
     const txn = new EditTxn(iModel, "update project extents example");
     txn.start();
-    await txn.updateProjectExtents(newExtents);
+    txn.updateProjectExtents(newExtents);
     txn.end("abandon");
     // __PUBLISH_EXTRACT_END__
   });

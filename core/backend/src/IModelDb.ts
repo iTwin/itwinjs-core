@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { EditTxn, withEditTxn } from "./EditTxn";
+import { EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -584,7 +584,7 @@ export abstract class IModelDb extends IModel {
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
-        (this[_activeTxn] ?? this[_implicitTxn]).onClose(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+        this[_nativeDb].saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
       this[_activeTxn] = undefined;
       this[_nativeDb].closeFile();
@@ -1165,8 +1165,7 @@ export abstract class IModelDb extends IModel {
   * @deprecated Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
   */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.projectExtents = newExtents;
-    this.updateIModelProps();
+    this[_implicitTxn].updateProjectExtents(newExtents);
   }
 
   /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
@@ -1192,13 +1191,14 @@ export abstract class IModelDb extends IModel {
    * @deprecated Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public updateEcefLocation(ecef: EcefLocation) {
-    this.setEcefLocation(ecef);
-    this.updateIModelProps();
+    this[_implicitTxn].updateEcefLocation(ecef);
   }
 
-  /** Update the IModelProps of this iModel in the database. */
+  /** Update the IModelProps of this iModel in the database.
+   * @deprecated Use EditTxn.updateIModelProps instead, within an explicit EditTxn scope (or via withEditTxn).
+   */
   public updateIModelProps(): void {
-    this[_nativeDb].updateIModelProps(this.toJSON());
+    this[_implicitTxn].updateIModelProps();
   }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
@@ -2030,14 +2030,10 @@ export abstract class IModelDb extends IModel {
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
+   * @deprecated Use EditTxn.deleteFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
-      }
-    }
-    this[_nativeDb].saveFileProperty(prop, undefined, undefined);
+    this[_implicitTxn].deleteFileProperty(prop);
   }
 
   /** Query for the next available major id for a "file property" from this iModel.
@@ -3578,7 +3574,7 @@ export class BriefcaseDb extends IModelDb {
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
           db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
-          db[_implicitTxn].saveChanges();
+          db[_nativeDb].saveChanges();
         });
         syncAccess.synchronizeWithCloud();
       });
@@ -4267,11 +4263,14 @@ export class SnapshotDb extends IModelDb {
     if (this._restartDefaultTxnTimer)
       clearTimeout(this._restartDefaultTxnTimer);
 
-    if (this._createClassViewsOnClose) {
-      withEditTxn(this, "create class views", () => {
-        this[_nativeDb].createClassViewsInDb();
-      });
-    };
+
+    if (this._createClassViewsOnClose) { // check for flag set during create
+      if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()){
+        throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
+      } else {
+        this[_nativeDb].saveChanges();
+      }
+    }
   }
 }
 
@@ -4308,14 +4307,10 @@ export class StandaloneDb extends BriefcaseDb {
     if (this.isReadonly || !this.txns.hasLocalChanges)
       return;
 
-    const activeTxn = this[_activeTxn];
-    if (undefined !== activeTxn)
-      activeTxn.end();
-
-    // Use explicit transaction to delete pending txns
-    withEditTxn(this, "delete all txns", (_txn) => {
-      this.txns.deleteAllTxns();
-    });
+    const nativeDb = this[_nativeDb];
+    nativeDb.saveChanges();
+    nativeDb.deleteAllTxns();
+    nativeDb.saveChanges();
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
@@ -4375,7 +4370,7 @@ export class StandaloneDb extends BriefcaseDb {
     if (BentleyStatus.SUCCESS !== result)
       throw new IModelError(result, "Error creating class views");
     else
-      this[_implicitTxn].saveChanges();
+      this[_nativeDb].saveChanges();
   }
 
   /** Open a standalone iModel file.

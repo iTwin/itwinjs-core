@@ -2614,6 +2614,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
+    deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
     deleteRelationships(props: ReadonlyArray<RelationshipProps>): void;
@@ -2636,11 +2637,12 @@ export class EditTxn {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     start(): void;
     updateAspect(aspectProps: ElementAspectProps): void;
-    updateEcefLocation(ecef: EcefLocationProps): Promise<void>;
+    updateEcefLocation(ecef: EcefLocationProps): void;
     updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     updateGeometryGuid(modelId: Id64String): void;
+    updateIModelProps(): void;
     updateModel(props: UpdateModelOptions): void;
-    updateProjectExtents(newExtents: Range3dProps): Promise<void>;
+    updateProjectExtents(newExtents: Range3dProps): void;
     updateRelationship(props: RelationshipProps): void;
     // (undocumented)
     protected verifyWriteable(): void;
@@ -3897,6 +3899,7 @@ export abstract class IModelDb extends IModel {
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
+    // @deprecated
     deleteFileProperty(prop: FilePropertyProps): void;
     // @beta @deprecated
     deleteSettingDictionary(name: string): void;
@@ -4047,6 +4050,7 @@ export abstract class IModelDb extends IModel {
     updateEcefLocation(ecef: EcefLocation): void;
     // @beta
     updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
+    // @deprecated
     updateIModelProps(): void;
     // @deprecated
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;

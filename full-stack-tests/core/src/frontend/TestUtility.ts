@@ -22,7 +22,7 @@ export class TestUtility {
   private static _isTrackingOpenIModels = false;
 
   private static shouldLogToConsole(): boolean {
-    return process.env.IMODELJS_FRONTEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
+    return process.env.ITWINJS_FRONTEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
   }
 
   private static trackOpenIModels(): void {

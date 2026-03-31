@@ -1769,7 +1769,7 @@ describe("iModel", () => {
 
       next = iModel.queryNextAvailableFileProperty(myPropsStr);
       assert.equal(2, next, "queryNextAvailableFileProperty str");
-      iModel.deleteFileProperty(myPropsStr);
+      txn.deleteFileProperty(myPropsStr);
       assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
       next = iModel.queryNextAvailableFileProperty(myPropsStr);
       assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
@@ -1847,8 +1847,8 @@ describe("iModel", () => {
 
     assert.isTrue(eventListenedTo);
 
-    withEditTxn(iModel, () => {
-      iModel.updateIModelProps();
+    withEditTxn(iModel, (txn) => {
+      txn.updateIModelProps();
     });
     iModel.close();
 
@@ -1938,9 +1938,9 @@ describe("iModel", () => {
         const testFile = IModelTestUtils.prepareOutputFile("IModel", fileName);
         const iModel = SnapshotDb.createEmpty(testFile, args);
 
-        withEditTxn(iModel, () => {
+        withEditTxn(iModel, (txn) => {
           iModel.setGeographicCoordinateSystem(fileGCS);
-          iModel.updateIModelProps();
+          txn.updateIModelProps();
         });
 
         const testPoint1: XYZProps[] = [];
@@ -2231,8 +2231,8 @@ describe("iModel", () => {
 
     iModel.ecefLocation = ecef;
 
-    withEditTxn(iModel, () => {
-      iModel.updateIModelProps();
+    withEditTxn(iModel, (txn) => {
+      txn.updateIModelProps();
     });
     iModel.close();
 
@@ -2265,8 +2265,8 @@ describe("iModel", () => {
 
     iModel.ecefLocation = ecef;
 
-    withEditTxn(iModel, () => {
-      iModel.updateIModelProps();
+    withEditTxn(iModel, (txn) => {
+      txn.updateIModelProps();
     });
     iModel.close();
 
@@ -2331,8 +2331,8 @@ describe("iModel", () => {
 
     iModel.ecefLocation = ecef;
 
-    withEditTxn(iModel, () => {
-      iModel.updateIModelProps();
+    withEditTxn(iModel, (txn) => {
+      txn.updateIModelProps();
     });
     iModel.close();
 
@@ -2345,8 +2345,8 @@ describe("iModel", () => {
 
     iModel2.geographicCoordinateSystem = gcs;
 
-    withEditTxn(iModel2, () => {
-      iModel2.updateIModelProps();
+    withEditTxn(iModel2, (txn) => {
+      txn.updateIModelProps();
     });
     iModel2.close();
 

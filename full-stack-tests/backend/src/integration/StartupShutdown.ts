@@ -30,7 +30,7 @@ function loadEnv(envFile: string) {
 loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
 function shouldLogToConsole(): boolean {
-  return process.env.IMODELJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
+  return process.env.ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
 }
 
 export function setupIntegrationLogging() {

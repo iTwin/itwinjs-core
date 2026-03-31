@@ -56,7 +56,7 @@ export class DisableNativeAssertions implements Disposable {
 
 export class TestUtils {
   private static shouldLogToConsole(): boolean {
-    return process.env.IMODELJS_CORE_BACKEND_TEST_LOG_TO_CONSOLE === "1";
+    return process.env.ITWINJS_CORE_BACKEND_TEST_LOG_TO_CONSOLE === "1";
   }
 
   public static getCacheDir(fallback: string | undefined = undefined) {
