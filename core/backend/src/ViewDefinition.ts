@@ -285,13 +285,15 @@ export abstract class ViewDefinition extends DefinitionElement {
       elProps.isPrivate = instance.isPrivate;
 
     elProps.categorySelector = instance.categorySelector;
-    elProps.categorySelector?.relClassName?.replace(":", ".");
+    if (elProps.categorySelector?.relClassName)
+      elProps.categorySelector.relClassName = elProps.categorySelector.relClassName.replace(":", ".");
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.categorySelectorId = instance.categorySelector.id;  // for backward compatibility
 
     elProps.displayStyle = instance.displayStyle;
-    elProps.displayStyle?.relClassName?.replace(":", ".");
+    if (elProps.displayStyle?.relClassName)
+      elProps.displayStyle.relClassName = elProps.displayStyle.relClassName.replace(":", ".");
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.displayStyleId = instance.displayStyle.id;  // for backward compatibility
@@ -560,7 +562,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
     elProps.modelSelector = instance.modelSelector;
-    elProps.modelSelector?.relClassName?.replace(":", ".");
+    if (elProps.modelSelector?.relClassName)
+      elProps.modelSelector.relClassName = elProps.modelSelector.relClassName.replace(":", ".");
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.modelSelectorId = instance.modelSelector.id;  // for backward compatibility
@@ -788,7 +791,8 @@ export class ViewDefinition2d extends ViewDefinition {
     const instance = props.row;
 
     elProps.baseModel = instance.baseModel;
-    elProps.baseModel?.relClassName?.replace(":", ".");
+    if (elProps.baseModel?.relClassName)
+      elProps.baseModel.relClassName = elProps.baseModel.relClassName.replace(":", ".");
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.baseModelId = instance.baseModel.id;  // for backward compatibility

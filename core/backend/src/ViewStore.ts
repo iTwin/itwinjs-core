@@ -1071,20 +1071,24 @@ export namespace ViewStore {
     private makeViewDefinitionProps(viewDefinition: ViewDefinitionProps) {
       const viewDef = cloneProps(viewDefinition); // don't modify input
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelector ? viewDef.categorySelector.id : viewDef.categorySelectorId);
+      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelector?.id ?? viewDef.categorySelectorId);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.verifyRowId(tableName.displayStyles, viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId);
+      this.verifyRowId(tableName.displayStyles, viewDef.displayStyle?.id ?? viewDef.displayStyleId);
       const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const effectiveModelSelectorId = spatialViewDefinitionProps.modelSelector?.id ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId;
+      const effectiveModelSelectorId = spatialViewDefinitionProps.modelSelector?.id ?? spatialViewDefinitionProps.modelSelectorId;
       if (effectiveModelSelectorId) {
         this.verifyRowId(tableName.modelSelectors, effectiveModelSelectorId);
       }
 
-      this.toGuidRowMember(viewDef, "baseModelId");
       const viewDef2d = (viewDef as ViewDefinition2dProps);
-      if (viewDef2d.baseModel)
+      if (viewDef2d.baseModel) {
         this.toGuidRowMember(viewDef2d.baseModel, "id");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        viewDef2d.baseModelId = viewDef2d.baseModel.id;  // keep deprecated field in sync
+      } else {
+        this.toGuidRowMember(viewDef, "baseModelId");
+      }
       this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
       const props = viewDef as Partial<ViewDefinitionProps>;
       delete props.id;
@@ -1113,11 +1117,11 @@ export namespace ViewStore {
           isPrivate: args.isPrivate,
           json: JSON.stringify(viewDef),
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          modelSel: maybeRow(spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId),
+          modelSel: maybeRow(spatialViewDefinitionProps.modelSelector?.id ?? spatialViewDefinitionProps.modelSelectorId),
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          categorySel: toRowId(viewDef.categorySelector ? viewDef.categorySelector.id : viewDef.categorySelectorId),
+          categorySel: toRowId(viewDef.categorySelector?.id ?? viewDef.categorySelectorId),
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          displayStyle: toRowId(viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId),
+          displayStyle: toRowId(viewDef.displayStyle?.id ?? viewDef.displayStyleId),
         });
       } catch (e) {
         const err = e as SqliteStatement.DbError;
@@ -1134,11 +1138,11 @@ export namespace ViewStore {
       this.withSqliteStatement(`UPDATE ${tableName.views} SET json=?,modelSel=?,categorySel=?,displayStyle=? WHERE Id=?`, (stmt) => {
         stmt.bindString(1, JSON.stringify(viewDef));
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        stmt.maybeBindInteger(2, maybeRow(spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId));
+        stmt.maybeBindInteger(2, maybeRow(spatialViewDefinitionProps.modelSelector?.id ?? spatialViewDefinitionProps.modelSelectorId));
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        stmt.bindInteger(3, toRowId(viewDef.categorySelector ? viewDef.categorySelector.id : viewDef.categorySelectorId));
+        stmt.bindInteger(3, toRowId(viewDef.categorySelector?.id ?? viewDef.categorySelectorId));
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        stmt.bindInteger(4, toRowId(viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId));
+        stmt.bindInteger(4, toRowId(viewDef.displayStyle?.id ?? viewDef.displayStyleId));
         stmt.bindInteger(5, toRowId(args.viewId));
         stmt.stepForWrite();
       });

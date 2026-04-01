@@ -249,6 +249,13 @@ describe("ViewDefinition", () => {
     expect(viewDefOut.modelSelector?.id).equal(ms1Row);
     expect(viewDefOut.categorySelector?.id).equal(cs1Row);
     expect(viewDefOut.displayStyle?.id).equal(ds1Row);
+    // Verify deprecated *Id props are still populated for backward compatibility
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(viewDefOut.modelSelectorId).equal(ms1Row);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(viewDefOut.categorySelectorId).equal(cs1Row);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(viewDefOut.displayStyleId).equal(ds1Row);
     expect(viewDefOut.cameraOn).equal(false);
     expect(JSON.stringify(viewDefOut.origin)).equal(JSON.stringify(basicProps.origin));
     expect(JSON.stringify(viewDefOut.extents)).equal(JSON.stringify(basicProps.extents));
