@@ -479,13 +479,15 @@ export class CurveFactory {
           result.push([child.pointAtUnchecked(j), 0]);
       }
     }
-    if (!isClosed) {
+    if (isClosed) {
+      if (result.length > 0)
+        result.push(result[0]);
+    } else {
       const endPoint = validatedFilletedLineString.endPoint();
       if (endPoint)
         result.push([endPoint, 0]);
     }
-    if (isClosed)
-      result.push(result[0]);
+
     return result;
   }
   /**
