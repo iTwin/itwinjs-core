@@ -480,7 +480,9 @@ export class CurveFactory {
       }
     }
     if (isClosed) {
-      if (result.length > 0)
+      const [firstPoint] = result[0] ?? [];
+      const [lastPoint] = result[result.length - 1] ?? [];
+      if (firstPoint !== undefined && !firstPoint.isAlmostEqual(lastPoint, options?.distanceTol))
         result.push(result[0]);
     } else {
       const endPoint = validatedFilletedLineString.endPoint();
