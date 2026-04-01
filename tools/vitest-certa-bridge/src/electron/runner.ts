@@ -20,7 +20,7 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import { RssPoller } from "./rss.js";
-import type { ElectronTestResults, ElectronTestRunnerOptions, ShardMetrics, ShardResult } from "./types.js";
+import type { ElectronTestResults, ElectronTestRunnerOptions, ShardResult } from "./types.js";
 
 const DEFAULT_SHARD_COUNT = 4;
 
@@ -299,7 +299,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
         baseEnv,
         grepPattern: effectiveGrep,
         timeout,
-        sampleRss: options.benchmarkMode,
+        sampleRss: false,
       });
       return { shardIndex: index, fileCount: files.length, cacheDir, files, ...result };
     } catch {
@@ -398,15 +398,5 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   }
   console.log(`${"═".repeat(70)}\n`);
 
-  const metrics: ShardMetrics[] | undefined = options.benchmarkMode
-    ? results.map((r) => ({
-      shardIndex: r.shardIndex,
-      testFileCount: r.fileCount,
-      durationMs: r.durationMs,
-      peakRssKb: r.peakRssKb,
-      exitCode: r.exitCode,
-    }))
-    : undefined;
-
-  return { passed: totalPassed, failed: totalFailed, skipped: totalSkipped, shardCount: shards.length, failedShards, shardResults, metrics };
+  return { passed: totalPassed, failed: totalFailed, skipped: totalSkipped, shardCount: shards.length, failedShards, shardResults };
 }

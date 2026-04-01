@@ -28,8 +28,7 @@
     "test:integration:electron": "cross-env VITEST_ELECTRON_GREP=\"#integration\" VITEST_ELECTRON_INVERT=false vitest run --config vitest.electron.config.mts",
     "test:performance": "npm run -s test:performance:chrome && npm run -s test:performance:electron",
     "test:performance:chrome": "vitest run --config vitest.integration.config.mts --testNamePattern \"#performance\"",
-    "test:performance:electron": "cross-env VITEST_ELECTRON_GREP=\"#performance\" VITEST_ELECTRON_INVERT=false vitest run --config vitest.electron.config.mts",
-    "benchmark:electron": "node lib/electron/BenchmarkElectronTests.js"
+    "test:performance:electron": "cross-env VITEST_ELECTRON_GREP=\"#performance\" VITEST_ELECTRON_INVERT=false vitest run --config vitest.electron.config.mts"
   },
   "repository": {},
   "dependencies": {

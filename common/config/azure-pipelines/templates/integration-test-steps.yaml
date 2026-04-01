@@ -1,9 +1,6 @@
 parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
-  - name: runBenchmark
-    type: boolean
-    default: true
 
 steps:
   - template: setup-integration-users.yaml
@@ -102,29 +99,6 @@ steps:
       VITEST_ELECTRON_SHARD_COUNT: "1"
     displayName: "Run Core Full Stack Tests (Electron) [macOS]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
-
-  # ── Electron test benchmark (A/B: 1 shard = sequential baseline, 4 shards = parallel) ──────────
-  # Enable by passing runBenchmark: true to this template. Results are published as a pipeline
-  # artifact so you can compare timing across master vs feature-branch runs.
-  - ${{ if eq(parameters.runBenchmark, true) }}:
-    - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node lib/electron/BenchmarkElectronTests.js
-      workingDirectory: "full-stack-tests/core"
-      env:
-        NODE_ENV: development
-        # A/B: shard=1 simulates sequential (Certa-equivalent), shard=4 is the parallel new approach
-        BENCHMARK_SHARDS: "1,4"
-        BENCHMARK_OUTPUT: "$(Build.ArtifactStagingDirectory)/benchmark/electron-benchmark-report.json"
-      displayName: "Benchmark Electron Tests (1 vs 4 shards)"
-      condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
-      continueOnError: true
-
-    - task: PublishPipelineArtifact@1
-      displayName: "Publish Electron Benchmark Report"
-      inputs:
-        targetPath: "$(Build.ArtifactStagingDirectory)/benchmark"
-        artifact: "electron-benchmark-$(Agent.OS)-node${{ parameters.nodeVersion }}"
-      condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
-      continueOnError: true
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
