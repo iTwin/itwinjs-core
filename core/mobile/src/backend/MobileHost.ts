@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, BriefcaseStatus, expectDefined } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { InternetConnectivityStatus, IpcWebSocketBackend, OverriddenBy, RpcInterfaceDefinition } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
@@ -103,7 +103,9 @@ export interface MobileHostOpts extends NativeHostOpts {
  */
 export class MobileHost {
   private static _device?: MobileDevice;
-  public static get device() { return this._device!; }
+  public static get device() {
+    return expectDefined(this._device, "Mobile device is not initialized.");
+  }
   /**
    * Raised when the mobile OS informs a mobile app that it is running low on memory.
    *
