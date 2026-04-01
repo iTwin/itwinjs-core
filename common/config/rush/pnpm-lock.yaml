@@ -205,7 +205,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
-      '@xmldom/xmldom': ~0.8.5
+      '@xmldom/xmldom': ~0.8.12
       benchmark: ^2.1.4
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -230,7 +230,7 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/sinon': 17.0.2
-      '@xmldom/xmldom': 0.8.5
+      '@xmldom/xmldom': 0.8.12
       benchmark: 2.1.4
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -269,7 +269,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
-      '@xmldom/xmldom': ~0.8.5
+      '@xmldom/xmldom': ~0.8.12
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -282,7 +282,7 @@ importers:
       sinon: ^17.0.2
       typescript: ~5.6.2
     dependencies:
-      '@xmldom/xmldom': 0.8.5
+      '@xmldom/xmldom': 0.8.12
       fs-extra: 8.1.0
       glob: 10.5.0
     devDependencies:
@@ -334,7 +334,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
-      '@xmldom/xmldom': ~0.8.5
+      '@xmldom/xmldom': ~0.8.12
       benchmark: ^2.1.4
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -357,7 +357,7 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/sinon': 17.0.2
-      '@xmldom/xmldom': 0.8.5
+      '@xmldom/xmldom': 0.8.12
       benchmark: 2.1.4
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -1323,7 +1323,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
-      '@xmldom/xmldom': ~0.8.5
+      '@xmldom/xmldom': ~0.8.12
       azurite: ^3.35.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -1350,7 +1350,7 @@ importers:
       '@itwin/imodel-transformer': 0.4.2_kr6ef5wz3afhzh2i3iv4ser4ly
       '@itwin/itwins-client': 1.6.1
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
-      '@xmldom/xmldom': 0.8.5
+      '@xmldom/xmldom': 0.8.12
       azurite: 3.35.0
       fs-extra: 8.1.0
     devDependencies:
@@ -3014,7 +3014,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
-      '@xmldom/xmldom': ~0.8.5
+      '@xmldom/xmldom': ~0.8.12
       chai: ^4.3.10
       chai-string: ^1.5.0
       chalk: ^3.0.0
@@ -3034,7 +3034,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@xmldom/xmldom': 0.8.5
+      '@xmldom/xmldom': 0.8.12
       chai-string: 1.5.0_chai@4.3.10
       chalk: 3.0.0
       commander: 2.14.1
@@ -6323,10 +6323,9 @@ packages:
       webpack-cli: 5.0.1_webpack@5.76.0
     dev: true
 
-  /@xmldom/xmldom/0.8.5:
-    resolution: {integrity: sha512-0dpjDLeCXYThL2YhqZcd/spuwoH+dmnFoND9ZxZkAYxp1IJUB2GP16ow2MJRsjVxy8j1Qv8BJRmN5GKnbDKCmQ==}
+  /@xmldom/xmldom/0.8.12:
+    resolution: {integrity: sha512-9k/gHF6n/pAi/9tqr3m3aqkuiNosYTurLLUtc7xQ9sxB/wm7WPygCv8GYa6mS0fLJEHhqMC1ATYhz++U/lRHqg==}
     engines: {node: '>=10.0.0'}
-    deprecated: this version has critical issues, please update to the latest version
 
   /@xtuc/ieee754/1.2.0:
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
