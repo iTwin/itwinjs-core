@@ -373,7 +373,7 @@ describe("CurveFactory", () => {
         }
         x0 += 10;
       }
-    }
+    };
     let points = [ // non-planar
       Point3d.create(2, 0, 0),
       Point3d.create(2, 5, 1),
