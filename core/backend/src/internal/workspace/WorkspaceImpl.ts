@@ -836,6 +836,4 @@ export function throwWorkspaceDbLoadErrors(message: string, wsLoadErrors: Worksp
 export interface OwnedWorkspace extends Workspace {
   /** Only the owner of a Workspace may close it. */
   close(): void;
-  /** The resolved container props, if this workspace was loaded from a settings container, that is associated with this workspace. */
-  containerProps?: GetWorkspaceContainerArgs;
 }

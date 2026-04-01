@@ -426,6 +426,7 @@ describe("Cloud workspace containers", () => {
       await IModelHost.saveSettingDictionary(iTwin1Id, "app1/config", {
         "app1/max1": 17,
       });
+      initialWorkspace.close();
 
       const updatedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
       expect(updatedWorkspace.settings.getNumber("app1/max1")).equal(17);
@@ -438,11 +439,13 @@ describe("Cloud workspace containers", () => {
       expect(resourceDbs.length).equal(1);
       expect(Workspace.getStringResource({ dbs: resourceDbs, name: resourceName })).equal(resourceValue);
 
+      updatedWorkspace.close();
       await IModelHost.deleteSettingDictionary(iTwin1Id, "app1/resources");
 
       const deletedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
       expect(deletedWorkspace.settings.getNumber("app1/max1")).equal(17);
       expect(deletedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
+      deletedWorkspace.close();
     } finally {
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     }

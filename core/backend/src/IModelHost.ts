@@ -36,12 +36,11 @@ import { type Setting, SettingsContainer, SettingsDictionary, SettingsPriority }
 import { settingsWorkspaceDbName } from "./workspace/SettingsDb";
 import { SettingsContainers, SettingsEditor } from "./workspace/SettingsEditor";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { GetWorkspaceContainerArgs, Workspace, WorkspaceDbLoadError, WorkspaceOpts } from "./workspace/Workspace";
+import { Workspace, WorkspaceDbLoadError, WorkspaceDbSettingsProps, WorkspaceOpts } from "./workspace/Workspace";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
-import { getOnlineStatus } from "./internal/OnlineStatus";
 import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
@@ -418,51 +417,35 @@ export class IModelHost {
   /** Obtain the [[Workspace]] for an iTwin by discovering its settings container.
    * All named dictionary resources in the container's [[WorkspaceDb]] are loaded into the workspace at [[SettingsPriority.iTwin]].
    * @note This method requires an internet connection to discover the container.
-   * To use an iTwin workspace offline, use the overload that accepts [[GetWorkspaceContainerArgs]].
-    * @note The returned workspace is caller-owned. Call `close` when finished.
+   * To use an iTwin workspace offline, use the overload that accepts [[WorkspaceDbSettingsProps]].
+   * @note The returned workspace is caller-owned. Call `close` when finished.
    * @beta
    */
   public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
-  /** Obtain the [[Workspace]] for an iTwin using pre-resolved container props, which does not require an internet connection.
-   * All named dictionary resources in the container's [[WorkspaceDb]] are loaded into the workspace at [[SettingsPriority.iTwin]].
-    * @note Get the container props from the `containerProps` property on a previously returned workspace.
+  /** Obtain the [[Workspace]] for an iTwin.
+   * The supplied [[WorkspaceDbSettingsProps]] are passed directly to [[Workspace.loadSettingsDictionary]].
+    * @note You can derive these from the `settingsSources` property on a previously returned workspace.
     * @note The returned workspace is caller-owned. Call `close` when finished.
    * @beta
    */
-  public static async getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
+  public static async getITwinWorkspace(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[]): Promise<OwnedWorkspace>;
   /** @internal */
-  public static async getITwinWorkspace(args: GuidString | GetWorkspaceContainerArgs): Promise<OwnedWorkspace> {
-    const isContainerProps = typeof args !== "string";
+  public static async getITwinWorkspace(args: GuidString | WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[]): Promise<OwnedWorkspace> {
+    const isITwinId = typeof args === "string";
     const workspace = constructWorkspace(new ITwinWorkspaceSettings());
 
     try {
-      const containerProps: GetWorkspaceContainerArgs | undefined = isContainerProps ? args : await SettingsContainers.getITwinContainerProps(args);
-
-      if (undefined === containerProps)
+      const settingsSources = isITwinId ? await SettingsContainers.getITwinSettingsSources(args) : args;
+      if (undefined === settingsSources)
         return workspace;
 
-      workspace.containerProps = containerProps;
-      const container = workspace.getContainer(containerProps);
-      const cloudContainer = container.cloudContainer;
-      if (undefined !== cloudContainer) {
-        try {
-          if ((!ProcessDetector.isMobileAppBackend && !ProcessDetector.isElectronAppBackend) || getOnlineStatus())
-            cloudContainer.checkForChanges();
-        } catch (error) {
-          Logger.logWarning(loggerCategory, `Failed to check for changes to iTwin settings container ${containerProps.containerId}: ${String(error)}`);
-        }
-      }
+      workspace.settingsSources = settingsSources;
 
       const problems: WorkspaceDbLoadError[] = [];
-      await workspace.loadSettingsDictionary({
-        ...containerProps,
-        priority: SettingsPriority.iTwin,
-        dbName: settingsWorkspaceDbName,
-        includePrerelease: true,
-      }, problems);
+      await workspace.loadSettingsDictionary(settingsSources, problems);
 
       if (problems.length > 0) {
-        const label = isContainerProps ? `container '${args.containerId}'` : `iTwin '${args}'`;
+        const label = isITwinId ? `iTwin '${args}'` : "the supplied settings workspace db properties";
         throwWorkspaceDbLoadErrors(`attempting to load workspace settings for ${label}`, problems);
       }
 

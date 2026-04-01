@@ -315,6 +315,11 @@ export interface Workspace {
   /** @internal */
   [_implementationProhibited]: unknown;
 
+  /** The settings db sources used to populate this workspace, if available.
+   * Useful for reloading the same workspace data later without querying container discovery services.
+   */
+  settingsSources?: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[];
+
   /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`.
    * @internal
    */

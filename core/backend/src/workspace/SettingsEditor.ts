@@ -8,11 +8,13 @@
 
 import { ITwinSettingsError } from "@itwin/core-common";
 import { GuidString } from "@itwin/core-bentley";
-import { GetWorkspaceContainerArgs, WorkspaceContainerId } from "./Workspace";
+import { WorkspaceContainerId, WorkspaceDbSettingsProps } from "./Workspace";
 import { BlobContainer } from "../BlobContainerService";
 import { IModelHost } from "../IModelHost";
 import { constructSettingsEditorForITwin, getSettingsEditorForITwin } from "../internal/workspace/SettingsEditorImpl";
 import { EditableWorkspaceContainer, WorkspaceEditor } from "./WorkspaceEditor";
+import { SettingsPriority } from "./Settings";
+import { settingsWorkspaceDbName } from "./SettingsDb";
 
 /** The default resource name used to store settings in a [[WorkspaceDb]].
  * This is the key under which all settings are stored in the SQLite `strings` table.
@@ -65,7 +67,7 @@ export namespace SettingsContainers {
    * Automatically filters by `containerType: "settings"`.
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
-  export async function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]> {
+  async function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]> {
     if (undefined === BlobContainer.service)
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
@@ -90,23 +92,34 @@ export namespace SettingsContainers {
   }
 
   /**
-   * Look up the single settings container for an iTwin and obtain a read-only access token for it.
-   * @returns The container props needed by [[IModelHost.getITwinWorkspace]], or `undefined` if no settings container exists.
-   * @throws if more than one settings container is found.
+   * Look up the settings container for an iTwin and obtain a read-only access token.
+   * @returns container props needed by [[IModelHost.getITwinWorkspace]].
+   * @note Requires [[IModelHost.authorizationClient]] to be configured.
    * @note Requires [[BlobContainer.service]] to be configured.
    */
-  export async function getITwinContainerProps(iTwinId: GuidString): Promise<GetWorkspaceContainerArgs | undefined> {
-    const containerId = await getITwinContainerId(iTwinId);
-    if (undefined === containerId)
-      return undefined;
-
+  export async function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[] | undefined> {
     if (undefined === BlobContainer.service)
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
-    const tokenProps = await BlobContainer.service.requestToken({ accessLevel: "read", containerId, userToken: await IModelHost.getAccessToken() });
-    if (undefined === tokenProps)
-      return undefined;
+    const userToken = await IModelHost.getAccessToken();
+    const containers = await queryContainers({ iTwinId });
+    if (!containers || containers.length === 0) return undefined;
+    if (containers.length > 1) {
+      ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
+        message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
+        iTwinId,
+      });
+    }
 
-    return { containerId, baseUri: tokenProps.baseUri, storageType: tokenProps.provider, accessToken: tokenProps.token };
+    const tokenProps = await BlobContainer.service.requestToken({ containerId: containers[0].containerId, accessLevel: "read", userToken });
+    return {
+      baseUri: tokenProps.baseUri,
+      containerId: containers[0].containerId,
+      storageType: tokenProps.provider,
+      accessToken: tokenProps.token,
+      priority: SettingsPriority.iTwin,
+      dbName: settingsWorkspaceDbName,
+      includePrerelease: true,
+    };
   }
 }

@@ -4100,7 +4100,7 @@ export class IModelHost {
     // @beta
     static getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
     // @beta
-    static getITwinWorkspace(containerProps: GetWorkspaceContainerArgs): Promise<OwnedWorkspace>;
+    static getITwinWorkspace(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[]): Promise<OwnedWorkspace>;
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
@@ -5958,12 +5958,11 @@ export interface SettingsContainer {
 // @internal
 export namespace SettingsContainers {
     export function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined>;
-    export function getITwinContainerProps(iTwinId: GuidString): Promise<GetWorkspaceContainerArgs | undefined>;
+    export function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps[] | undefined>;
     export interface QueryArgs {
         iTwinId: GuidString;
         label?: string;
     }
-    export function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]>;
 }
 
 // @internal
@@ -7870,6 +7869,7 @@ export interface Workspace {
     settingName: SettingName,
     filter?: Workspace.DbListFilter): WorkspaceDbCloudProps[];
     readonly settings: Settings;
+    settingsSources?: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[];
 }
 
 // @beta (undocumented)

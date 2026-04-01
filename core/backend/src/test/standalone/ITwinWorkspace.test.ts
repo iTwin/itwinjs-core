@@ -13,6 +13,8 @@ import { BlobContainer } from "../../BlobContainerService";
 import { IModelHost } from "../../IModelHost";
 import { setOnlineStatus } from "../../internal/OnlineStatus";
 import { WorkspaceSqliteDb } from "../../internal/workspace/WorkspaceSqliteDb";
+import { SettingsPriority } from "../../workspace/Settings";
+import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
 import { SettingsEditor, settingsResourceName } from "../../workspace/SettingsEditor";
 import { TestUtils } from "../TestUtils";
 
@@ -147,10 +149,12 @@ describe("ITwin Workspace", () => {
     await IModelHost.startup(opts);
 
     const workspace = await IModelHost.getITwinWorkspace({
-      accessToken: "",
       baseUri: "",
       containerId,
       storageType: "azure",
+      priority: SettingsPriority.iTwin,
+      dbName: settingsWorkspaceDbName,
+      includePrerelease: true,
     });
 
     expect(workspace.settings.getString("app/testA")).to.equal("value-a");
