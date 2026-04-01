@@ -163,11 +163,11 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
   displayStyle?: RelatedElementProps;
 
   /** The Id of the [[CategorySelector]] for this view.
-   * @deprecated in 5.8. Use `categorySelector` instead.
+   * @deprecated in 5.9. Use `categorySelector` instead.
    */
   categorySelectorId: ViewIdString;
   /** The Id of the [[DisplayStyle]] for this view.
-   * @deprecated in 5.8. Use `displayStyle` instead.
+   * @deprecated in 5.9. Use `displayStyle` instead.
    */
   displayStyleId: ViewIdString;
   description?: string;
@@ -207,7 +207,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   modelSelector?: RelatedElementProps;
 
   /** The Id of the [[ModelSelector]] for this view.
-   * @deprecated in 5.8. Use `modelSelector` instead.
+   * @deprecated in 5.9. Use `modelSelector` instead.
    */
   modelSelectorId: ViewIdString;
 }
@@ -221,7 +221,7 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModel?: RelatedElementProps;
 
   /** The Id of the base model displayed by this view.
-   * @deprecated in 5.8. Use `baseModel` instead.
+   * @deprecated in 5.9. Use `baseModel` instead.
    */
   baseModelId: Id64String;
   origin: XYProps;
