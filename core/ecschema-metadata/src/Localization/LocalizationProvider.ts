@@ -39,12 +39,10 @@ export class LocalizationProvider implements ILocalizationProvider {
   public async getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined> {
     const cacheKey = `${schemaName}:${locale}`;
 
-    // Check cache first
     if (this._localizationCache.has(cacheKey)) {
       return this._localizationCache.get(cacheKey);
     }
 
-    // Try exact locale match
     let localizationData = await this._loader(schemaName, locale);
 
     // Try fallback to language without region (e.g., "es-CO" → "es")
@@ -54,7 +52,6 @@ export class LocalizationProvider implements ILocalizationProvider {
     }
 
     if (localizationData) {
-      // Validate basic structure
       if (!localizationData.name || !localizationData.locale) {
         throw new Error(`Invalid localization JSON for ${schemaName}:${locale} - missing schema name or locale`);
       }

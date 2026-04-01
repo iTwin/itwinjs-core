@@ -8,9 +8,7 @@
  * @beta
  */
 export interface LocalizedText {
-  /** Localized display label */
   label?: string;
-  /** Localized description */
   description?: string;
 }
 

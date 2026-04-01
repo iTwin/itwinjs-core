@@ -12,13 +12,7 @@ import { ILocalizationProvider } from "./LocalizationProvider";
 import { SchemaLocalizationJson, LocalizedText } from "./LocalizationTypes";
 
 /**
- * Manages schema localization, providing methods to retrieve localized labels and descriptions
- * for schemas and their items. Supports locale fallback.
- *
- * Fallback order:
- * 1. Localized label from localization JSON
- * 2. Original schema item label
- * 3. Schema item name
+ * Manages schema localization to provide localized labels and descriptions
  *
  * @beta
  */
@@ -45,7 +39,7 @@ export class SchemaLocalization {
   }
 
   /**
-   * Set a new locale. This will clear the cache.
+   * Set a new locale.
    */
   public set locale(value: string) {
     if (this._locale !== value) {
@@ -55,7 +49,7 @@ export class SchemaLocalization {
   }
 
   /**
-   * Get the localization provider.
+   * Get localization provider.
    */
   public get provider(): ILocalizationProvider {
     return this._provider;
@@ -63,7 +57,6 @@ export class SchemaLocalization {
 
   /**
    * Load and cache the localization JSON for a schema.
-   * Also loads and caches the base locale if applicable (e.g., "es" when "es-CO" is requested).
    * @param schemaName The name of the schema
    * @returns The localization JSON, or null if not found
    * @internal
@@ -87,7 +80,6 @@ export class SchemaLocalization {
    * @internal
    */
   private async getBaseLocalizationJson(schemaName: string): Promise<SchemaLocalizationJson | null> {
-    // Only try base locale if current locale has a region separator
     if (!this._locale.includes("-")) {
       return null;
     }
@@ -120,7 +112,7 @@ export class SchemaLocalization {
 
   /**
    * Get localized description for a schema.
-   * Fallback: localized description → original description → undefined
+   * Fallback: localized description → original description
    */
   public async getSchemaDescription(schema: Schema): Promise<string | undefined> {
     const localization = await this.getSchemaLocalizationJson(schema.name);
@@ -133,7 +125,7 @@ export class SchemaLocalization {
   }
 
   /**
-   * Get localized label for a schema item (class, enumeration, unit, etc.).
+   * Get localized label for a schema item
    * Fallback: localized label (specific locale) → localized label (base locale) → original label → item name
    */
   public async getSchemaItemLabel(item: SchemaItem): Promise<string> {
@@ -160,7 +152,7 @@ export class SchemaLocalization {
 
   /**
    * Get localized description for a schema item.
-   * Fallback: localized description (specific locale) → localized description (base locale) → original description → undefined
+   * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getSchemaItemDescription(item: SchemaItem): Promise<string | undefined> {
     const localization = await this.getSchemaLocalizationJson(item.schema.name);
@@ -206,7 +198,7 @@ export class SchemaLocalization {
 
   /**
    * Get localized description for a property.
-   * Fallback: localized description (specific locale) → localized description (base locale) → original description → undefined
+   * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getPropertyDescription(ecClass: ECClass, property: Property): Promise<string | undefined> {
     const localization = await this.getSchemaLocalizationJson(ecClass.schema.name);
@@ -247,13 +239,12 @@ export class SchemaLocalization {
   }
 
   /**
-   * Find the localized text for a schema item in the localization JSON.
+   * Find the localized text for a schema item.
    * @internal
    */
   private findItemLocalization(localization: SchemaLocalizationJson, item: SchemaItem): LocalizedText | undefined {
     const itemName = item.name;
 
-    // Check based on schema item type
     if (item.schemaItemType === "EntityClass" ||
       item.schemaItemType === "StructClass" ||
       item.schemaItemType === "CustomAttributeClass" ||

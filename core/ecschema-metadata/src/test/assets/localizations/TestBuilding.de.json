@@ -37,6 +37,22 @@
           "description": "Das Material der Wand"
         }
       }
+    },
+    "Address": {
+      "label": "Adresse",
+      "description": "Eine Postadressenstruktur"
+    },
+    "BuildingMetadata": {
+      "label": "Gebäudemetadaten",
+      "description": "Benutzerdefiniertes Attribut für Gebäudemetadaten"
+    },
+    "BuildingHasRooms": {
+      "label": "Gebäude hat Räume",
+      "description": "Beziehung zwischen Gebäude und Räumen"
+    },
+    "ISpatialElement": {
+      "label": "Räumliches Element",
+      "description": "Mixin für räumliche Elemente"
     }
   },
   "enumerations": {
@@ -59,84 +75,10 @@
       }
     }
   },
-  "classes": {
-    "Building": {
-      "label": "Gebäude",
-      "description": "Eine physische Gebäudestruktur",
-      "properties": {
-        "Height": {
-          "label": "Höhe",
-          "description": "Die Höhe des Gebäudes in Metern"
-        },
-        "FloorCount": {
-          "label": "Stockwerkanzahl",
-          "description": "Die Anzahl der Stockwerke im Gebäude"
-        },
-        "Name": {
-          "label": "Name",
-          "description": "Der Name des Gebäudes"
-        }
-      }
-    },
-    "Wall": {
-      "label": "Wand",
-      "description": "Eine vertikale Baukomponente",
-      "properties": {
-        "Thickness": {
-          "label": "Dicke",
-          "description": "Die Dicke der Wand in Metern"
-        },
-        "Material": {
-          "label": "Material",
-          "description": "Das Material der Wand"
-        }
-      }
-    },
-    "Address": {
-      "label": "Adresse",
-      "description": "Eine Postadressenstruktur"
-    },
-    "BuildingMetadata": {
-      "label": "Gebäudemetadaten",
-      "description": "Benutzerdefiniertes Attribut für Gebäudemetadaten"
-    },
-    "BuildingHasRooms": {
-      "label": "Gebäude hat Räume",
-      "description": "Beziehung zwischen Gebäude und Räumen"
-    },
-    "ISpatialElement": {
-      "label": "Räumliches Element",
-      "description": "Mixin für räumliche Elemente"
-    }
-  },
-  "units": {
-    "M": {
-      "label": "Meter",
-      "description": "Metereinheit"
-    }
-  },
-  "phenomena": {
-    "LENGTH": {
-      "label": "Länge",
-      "description": "Längenphänomen"
-    }
-  },
-  "unitSystems": {
-    "METRIC": {
-      "label": "Metrisch",
-      "description": "Metrisches Einheitensystem"
-    }
-  },
   "propertyCategories": {
     "SpatialCategory": {
       "label": "Räumliche Kategorie",
       "description": "Kategorie für räumliche Eigenschaften"
-    }
-  },
-  "formats": {
-    "DefaultReal": {
-      "label": "Standard-Realformat",
-      "description": "Standardformat für reelle Zahlen"
     }
   },
   "kindOfQuantities": {
@@ -145,10 +87,34 @@
       "description": "Größenart für Länge"
     }
   },
+  "units": {
+    "M": {
+      "label": "Meter",
+      "description": "Metereinheit"
+    }
+  },
+  "unitSystems": {
+    "METRIC": {
+      "label": "Metrisch",
+      "description": "Metrisches Einheitensystem"
+    }
+  },
+  "phenomena": {
+    "LENGTH": {
+      "label": "Länge",
+      "description": "Längenphänomen"
+    }
+  },
   "constants": {
     "PI": {
       "label": "Pi",
       "description": "Mathematische Konstante Pi"
+    }
+  },
+  "formats": {
+    "DefaultReal": {
+      "label": "Standard-Realformat",
+      "description": "Standardformat für reelle Zahlen"
     }
   }
 }
