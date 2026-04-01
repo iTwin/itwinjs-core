@@ -32,8 +32,14 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodel-transformer": "^0.4.2",
     "@itwin/itwins-client": "^1.6.1",
+<<<<<<< HEAD
     "@itwin/service-authorization": "^1.0.0",
     "@xmldom/xmldom": "~0.8.5",
+=======
+    "@itwin/map-layers-formats": "workspace:*",
+    "@itwin/service-authorization": "^2.0.0",
+    "@xmldom/xmldom": "~0.8.12",
+>>>>>>> e066c1387f (Resolve `GHSA-wh4c-j3r5-mjhp` (#9156))
     "azurite": "^3.35.0",
     "fs-extra": "^8.1.0"
   },
@@ -63,7 +69,14 @@
     "spec": [
       "lib/**/*.test.js"
     ],
+<<<<<<< HEAD
     "require": "source-map-support/register",
+=======
+    "require": [
+      "lib/setup.js",
+      "source-map-support/register"
+    ],
+>>>>>>> e066c1387f (Resolve `GHSA-wh4c-j3r5-mjhp` (#9156))
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporter-options": "mochaFile=lib/test/junit_results.xml",
     "timeout": 999999

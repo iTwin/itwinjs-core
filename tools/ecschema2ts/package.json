@@ -60,7 +60,11 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
+<<<<<<< HEAD
     "@xmldom/xmldom": "~0.8.5",
+=======
+    "@xmldom/xmldom": "~0.8.12",
+>>>>>>> e066c1387f (Resolve `GHSA-wh4c-j3r5-mjhp` (#9156))
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",

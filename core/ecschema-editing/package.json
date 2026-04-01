@@ -48,7 +48,11 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
     "@types/sinon": "^17.0.2",
+<<<<<<< HEAD
     "@xmldom/xmldom": "~0.8.5",
+=======
+    "@xmldom/xmldom": "~0.8.12",
+>>>>>>> e066c1387f (Resolve `GHSA-wh4c-j3r5-mjhp` (#9156))
     "benchmark": "^2.1.4",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",

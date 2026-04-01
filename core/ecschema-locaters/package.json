@@ -71,7 +71,11 @@
   "dependencies": {
     "glob": "^10.5.0",
     "fs-extra": "^8.1.0",
+<<<<<<< HEAD
     "@xmldom/xmldom": "~0.8.5"
+=======
+    "@xmldom/xmldom": "~0.8.12"
+>>>>>>> e066c1387f (Resolve `GHSA-wh4c-j3r5-mjhp` (#9156))
   },
   "peerDependencies": {
     "@itwin/ecschema-metadata": "workspace:^4.11.7"
