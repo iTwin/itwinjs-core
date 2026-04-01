@@ -284,11 +284,15 @@ export abstract class ViewDefinition extends DefinitionElement {
     if (instance.isPrivate !== undefined)
       elProps.isPrivate = instance.isPrivate;
 
-    elProps.categorySelector = { id: instance.categorySelector.id, relClassName: instance.categorySelector.relClassName.replace(":", ".") } as RelatedElementProps;
+    elProps.categorySelector = instance.categorySelector;
+    elProps.categorySelector?.relClassName?.replace(":", ".");
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.categorySelectorId = instance.categorySelector.id;  // for backward compatibility
 
-    elProps.displayStyle = { id: instance.displayStyle.id, relClassName: instance.displayStyle.relClassName.replace(":", ".") } as RelatedElementProps;
+    elProps.displayStyle = instance.displayStyle;
+    elProps.displayStyle?.relClassName?.replace(":", ".");
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.displayStyleId = instance.displayStyle.id;  // for backward compatibility
 
@@ -555,7 +559,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
-    elProps.modelSelector = { id: instance.modelSelector.id, relClassName: instance.modelSelector.relClassName.replace(":", ".") } as RelatedElementProps;
+    elProps.modelSelector = instance.modelSelector;
+    elProps.modelSelector?.relClassName?.replace(":", ".");
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.modelSelectorId = instance.modelSelector.id;  // for backward compatibility
@@ -782,7 +787,8 @@ export class ViewDefinition2d extends ViewDefinition {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
 
-    elProps.baseModel = { id: instance.baseModel.id, relClassName: instance.baseModel.relClassName.replace(":", ".") } as RelatedElementProps;
+    elProps.baseModel = instance.baseModel;
+    elProps.baseModel?.relClassName?.replace(":", ".");
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     elProps.baseModelId = instance.baseModel.id;  // for backward compatibility
