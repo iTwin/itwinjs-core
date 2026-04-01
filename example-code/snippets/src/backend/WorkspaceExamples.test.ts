@@ -272,12 +272,15 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
       expect(defaultViewFromRead).to.equal("plan");
       expect(maxItems).to.equal(100);
+      iTwinWorkspace.close();
+      workspace.close();
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.DeleteITwinSetting
       await IModelHost.deleteSettingDictionary(iTwinId, "myApp/settings");
       // __PUBLISH_EXTRACT_END__
       const workspaceAfterDelete = await IModelHost.getITwinWorkspace(iTwinId);
       expect(workspaceAfterDelete.settings.getString("myApp/defaultView")).to.be.undefined;
+      workspaceAfterDelete.close();
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreateWorkspaceDb
       const editor = WorkspaceEditor.construct();
@@ -527,11 +530,11 @@ describe("Workspace Examples", () => {
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveITwinSettingsReferenceInIModel
       const iTwinWorkspaceForModelRef = await IModelHost.getITwinWorkspace(iTwinId);
-      const containerPropsForModelRef = iTwinWorkspaceForModelRef.containerProps;
-      assert(undefined !== containerPropsForModelRef);
+      const settingsSourcesForModelRef = iTwinWorkspaceForModelRef.settingsSources;
+      assert(undefined !== settingsSourcesForModelRef);
 
       iModel.saveSettingDictionary("landscapePro/iModelSettings", {
-        "landscapePro/itwinSettingsRef": containerPropsForModelRef,
+        "landscapePro/itwinSettingsRef": settingsSourcesForModelRef,
       });
       // __PUBLISH_EXTRACT_END__
 
@@ -552,12 +555,14 @@ describe("Workspace Examples", () => {
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.VersionAndPinITwinSettings
       // Pin the iModel to the current version of the iTwin settings.
-      // The containerProps already include the version of the settings WorkspaceDb;
+      // The settingsSources already include the version of the settings WorkspaceDb;
       // saving that version into the iModel locks it to that snapshot.
+      const pinnedSettingsSources = Array.isArray(settingsSourcesForModelRef)
+        ? settingsSourcesForModelRef
+        : [settingsSourcesForModelRef];
+
       iModel.saveSettingDictionary("landscapePro/iModelSettings", {
-        "landscapePro/itwinSettingsRef": {
-          ...containerPropsForModelRef,
-        },
+        "landscapePro/itwinSettingsRef": pinnedSettingsSources,
       });
       // __PUBLISH_EXTRACT_END__
     });

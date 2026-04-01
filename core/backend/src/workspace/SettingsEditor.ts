@@ -97,7 +97,7 @@ export namespace SettingsContainers {
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    * @note Requires [[BlobContainer.service]] to be configured.
    */
-  export async function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[] | undefined> {
+  export async function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps[] | undefined> {
     if (undefined === BlobContainer.service)
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
@@ -112,7 +112,7 @@ export namespace SettingsContainers {
     }
 
     const tokenProps = await BlobContainer.service.requestToken({ containerId: containers[0].containerId, accessLevel: "read", userToken });
-    return {
+    return [{
       baseUri: tokenProps.baseUri,
       containerId: containers[0].containerId,
       storageType: tokenProps.provider,
@@ -120,6 +120,6 @@ export namespace SettingsContainers {
       priority: SettingsPriority.iTwin,
       dbName: settingsWorkspaceDbName,
       includePrerelease: true,
-    };
+    }];
   }
 }
