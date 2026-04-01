@@ -3979,8 +3979,6 @@ export namespace IModelDb {
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
-        // @beta
-        purgeDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
