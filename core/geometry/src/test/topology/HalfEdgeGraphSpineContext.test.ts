@@ -59,7 +59,7 @@ function testSpineLoop(allGeometry: GeometryQuery[], loopPoints: any, x0: number
   context.triangulateForSpine();
   RegularizationContext.announceEdge = undefined;
 
-  const alwaysTrue = function (_node: HalfEdge): boolean { return true; }
+  const alwaysTrue = function (_node: HalfEdge): boolean { return true; };
   //const ignoreExterior =  (node: HalfEdge) => HalfEdge.testMateMaskExterior(node);
   const ignoreExterior = (node: HalfEdge) => !node.isMaskSet(HalfEdgeMask.EXTERIOR);
   GeometryCoreTestIO.captureGeometry(allGeometry,
