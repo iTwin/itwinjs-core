@@ -6297,7 +6297,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
-    modelSelectorId: Id64String;
+    modelSelector: RelatedElementProps;
+    get modelSelectorId(): Id64String;
+    set modelSelectorId(id: Id64String);
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
@@ -7227,7 +7229,9 @@ export class ViewAttachmentLabel extends DetailingSymbol {
 // @public @preview
 export abstract class ViewDefinition extends DefinitionElement {
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
-    categorySelectorId: Id64String;
+    categorySelector: RelatedElementProps;
+    get categorySelectorId(): Id64String;
+    set categorySelectorId(id: Id64String);
     // (undocumented)
     static get className(): string;
     // (undocumented)
@@ -7238,7 +7242,9 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): ViewDefinitionProps;
     abstract get details(): ViewDetails;
-    displayStyleId: Id64String;
+    displayStyle: RelatedElementProps;
+    get displayStyleId(): Id64String;
+    set displayStyleId(id: Id64String);
     getAuxiliaryCoordinateSystemId(): Id64String;
     isDrawingView(): this is DrawingViewDefinition;
     isSpatialView(): this is SpatialViewDefinition;
@@ -7263,7 +7269,9 @@ export abstract class ViewDefinition extends DefinitionElement {
 export class ViewDefinition2d extends ViewDefinition {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
-    baseModelId: Id64String;
+    baseModel: RelatedElementProps;
+    get baseModelId(): Id64String;
+    set baseModelId(id: Id64String);
     // (undocumented)
     static get className(): string;
     // (undocumented)

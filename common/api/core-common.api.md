@@ -9910,7 +9910,8 @@ export interface SpatialClassifiersContainer {
 
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-    // (undocumented)
+    modelSelector?: RelatedElementProps;
+    // @deprecated
     modelSelectorId: ViewIdString;
 }
 
@@ -11391,7 +11392,8 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
     // (undocumented)
     angle: AngleProps;
-    // (undocumented)
+    baseModel?: RelatedElementProps;
+    // @deprecated
     baseModelId: Id64String;
     // (undocumented)
     delta: XYProps;
@@ -11414,11 +11416,13 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
-    // (undocumented)
+    categorySelector?: RelatedElementProps;
+    // @deprecated
     categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
-    // (undocumented)
+    displayStyle?: RelatedElementProps;
+    // @deprecated
     displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {

@@ -239,7 +239,10 @@ export abstract class ViewDefinition extends DefinitionElement {
   public get displayStyleId(): Id64String { return this.displayStyle.id; }
   public set displayStyleId(id: Id64String) { this.displayStyle = { id }; }
 
+  /** The [[CategorySelector]] referenced by this ViewDefinition. */
   public categorySelector: RelatedElementProps;
+
+  /** The [[DisplayStyle]] referenced by this ViewDefinition. */
   public displayStyle: RelatedElementProps;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
@@ -265,7 +268,9 @@ export abstract class ViewDefinition extends DefinitionElement {
    */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "categorySelector", source: "Class" },
+    { propertyName: "categorySelectorId", source: "Class" },
     { propertyName: "displayStyle", source: "Class" },
+    { propertyName: "displayStyleId", source: "Class" },
   ];
 
   /**
@@ -279,13 +284,14 @@ export abstract class ViewDefinition extends DefinitionElement {
     if (instance.isPrivate !== undefined)
       elProps.isPrivate = instance.isPrivate;
 
-    elProps.categorySelector = instance.categorySelector;
+    elProps.categorySelector = { id: instance.categorySelector.id, relClassName: instance.categorySelector.relClassName.replace(":", ".") } as RelatedElementProps;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    elProps.categorySelectorId = instance.categorySelector.id;
+    elProps.categorySelectorId = instance.categorySelector.id;  // for backward compatibility
 
-    elProps.displayStyle = instance.displayStyle;
+    elProps.displayStyle = { id: instance.displayStyle.id, relClassName: instance.displayStyle.relClassName.replace(":", ".") } as RelatedElementProps;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    elProps.displayStyleId = instance.displayStyle.id;
+    elProps.displayStyleId = instance.displayStyle.id;  // for backward compatibility
+
     return elProps;
   }
 
@@ -298,13 +304,9 @@ export abstract class ViewDefinition extends DefinitionElement {
     const inst = super.serialize(props, _iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     inst.categorySelector = props.categorySelector ?? { id: props.categorySelectorId };
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.categorySelectorId = props.categorySelectorId;
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     inst.displayStyle = props.displayStyle ?? { id: props.displayStyleId };
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.displayStyleId = props.displayStyleId;
     return inst;
   }
 
@@ -510,6 +512,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public get modelSelectorId(): Id64String { return this.modelSelector.id; }
   public set modelSelectorId(id: Id64String) { this.modelSelector = { id }; }
 
+  /** Navigation property identifying the [[ModelSelector]] element for this view. */
   public modelSelector: RelatedElementProps;
 
   protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
@@ -541,6 +544,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "modelSelector", source: "Class" },
+    { propertyName: "modelSelectorId", source: "Class" }
   ];
 
   /**
@@ -551,9 +555,11 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
-    elProps.modelSelector = instance.modelSelector;
+    elProps.modelSelector = { id: instance.modelSelector.id, relClassName: instance.modelSelector.relClassName.replace(":", ".") } as RelatedElementProps;
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    elProps.modelSelectorId = instance.modelSelector.id;
+    elProps.modelSelectorId = instance.modelSelector.id;  // for backward compatibility
+
     return elProps;
   }
 
@@ -566,8 +572,6 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const inst = super.serialize(props, _iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     inst.modelSelector = props.modelSelector ?? { id: props.modelSelectorId };
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.modelSelectorId = props.modelSelectorId;
     return inst;
   }
 
@@ -763,6 +767,7 @@ export class ViewDefinition2d extends ViewDefinition {
    */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "baseModel", source: "Class" },
+    { propertyName: "baseModelId", source: "Class" },
     { propertyName: "origin", source: "Class" },
     { propertyName: "extents", source: "Class" },
     { propertyName: "rotationAngle", source: "Class" },
@@ -776,9 +781,11 @@ export class ViewDefinition2d extends ViewDefinition {
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
-    elProps.baseModel = instance.baseModel;
+
+    elProps.baseModel = { id: instance.baseModel.id, relClassName: instance.baseModel.relClassName.replace(":", ".") } as RelatedElementProps;
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    elProps.baseModelId = instance.baseModel.id;
+    elProps.baseModelId = instance.baseModel.id;  // for backward compatibility
 
     elProps.origin = [instance.origin.x, instance.origin.y];
     elProps.delta = [instance.extents.x, instance.extents.y];
@@ -795,8 +802,6 @@ export class ViewDefinition2d extends ViewDefinition {
     const inst = super.serialize(props, _iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     inst.baseModel = props.baseModel ?? { id: props.baseModelId };
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.baseModelId = props.baseModelId;
     inst.origin = props.origin;
     inst.extents = props.delta;
     inst.rotationAngle = props.angle;

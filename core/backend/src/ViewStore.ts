@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, Mar
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
+  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -1075,12 +1075,16 @@ export namespace ViewStore {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.verifyRowId(tableName.displayStyles, viewDef.displayStyle ? viewDef.displayStyle.id : viewDef.displayStyleId);
       const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
-      if (spatialViewDefinitionProps.modelSelector?.id) {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        this.verifyRowId(tableName.modelSelectors, spatialViewDefinitionProps.modelSelector ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const effectiveModelSelectorId = spatialViewDefinitionProps.modelSelector?.id ? spatialViewDefinitionProps.modelSelector.id : spatialViewDefinitionProps.modelSelectorId;
+      if (effectiveModelSelectorId) {
+        this.verifyRowId(tableName.modelSelectors, effectiveModelSelectorId);
       }
 
       this.toGuidRowMember(viewDef, "baseModelId");
+      const viewDef2d = (viewDef as ViewDefinition2dProps);
+      if (viewDef2d.baseModel)
+        this.toGuidRowMember(viewDef2d.baseModel, "id");
       this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
       const props = viewDef as Partial<ViewDefinitionProps>;
       delete props.id;
@@ -1321,6 +1325,7 @@ export namespace ViewStore {
 
     public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString> {
       const owner = args.owner;
+
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const categorySelectorId = (args.viewDefinition.categorySelector?.id ?? args.viewDefinition.categorySelectorId);
       if (ViewStoreRpc.isViewStoreId(categorySelectorId)) {
@@ -1329,7 +1334,10 @@ export namespace ViewStore {
         if (args.categorySelectorProps === undefined)
           ViewStoreError.throwError("not-found", { message: "Must supply categorySelector" });
         args.viewDefinition.categorySelector = { id: await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner }) };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        args.viewDefinition.categorySelectorId = args.viewDefinition.categorySelector.id; // for backward compatibility
       }
+
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const modelSelectorId = (spatialDef.modelSelector?.id ?? spatialDef.modelSelectorId);
@@ -1337,9 +1345,12 @@ export namespace ViewStore {
         this.verifyRowId(tableName.modelSelectors, modelSelectorId);
       } else if (args.modelSelectorProps) {
         spatialDef.modelSelector = { id: await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner }) };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        spatialDef.modelSelectorId = spatialDef.modelSelector.id; // for backward compatibility
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
         ViewStoreError.throwError("not-found", { message: "Must supply modelSelector for Spatial views" });
       }
+
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const displayStyleId = (spatialDef.displayStyle?.id ?? spatialDef.displayStyleId);
       if (ViewStoreRpc.isViewStoreId(displayStyleId)) {
@@ -1348,6 +1359,8 @@ export namespace ViewStore {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
           ViewStoreError.throwError("not-found", { message: "Must supply valid displayStyle" });
         spatialDef.displayStyle = { id: await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner }) };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        spatialDef.displayStyleId = spatialDef.displayStyle.id; // for backward compatibility
       }
       const viewId = this.addViewDefinition(args);
       if (args.tags)
