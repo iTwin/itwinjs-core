@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added ECSql nav prop corresponding `RelatedElementProps` members to the backend `ViewDefinition`, `SpatialViewDefinition`, and `ViewDefinition2d` classes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
