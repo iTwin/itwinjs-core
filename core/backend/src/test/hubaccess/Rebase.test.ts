@@ -255,7 +255,7 @@ for (const enableSemanticRebase of [false, true]) {
     it("save changes args", async () => {
       const b1 = await testIModel.openBriefcase();
       const b1Txn = startTestTxn(b1, "save changes args");
-      await testIModel.insertElement(b1Txn)
+      await testIModel.insertElement(b1Txn);
       b1Txn.saveChanges({
         source: "test",
         description: "test description",
@@ -283,7 +283,7 @@ for (const enableSemanticRebase of [false, true]) {
         chai.expect(lastTxn.grouped).to.be.false;
       }
 
-      await testIModel.insertElement(b1Txn)
+      await testIModel.insertElement(b1Txn);
       b1Txn.saveChanges({
         source: "test2",
         description: "test description 2",
@@ -311,7 +311,7 @@ for (const enableSemanticRebase of [false, true]) {
         chai.expect(lastTxn.grouped).to.be.false;
       }
 
-      await testIModel.insertElement(b1Txn)
+      await testIModel.insertElement(b1Txn);
       b1Txn.saveChanges("new element");
       lastTxn = b1.txns.getLastSavedTxnProps();
       chai.assert.isDefined(lastTxn);

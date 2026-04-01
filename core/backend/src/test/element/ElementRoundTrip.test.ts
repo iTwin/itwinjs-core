@@ -529,9 +529,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     await imodel.importSchemas([testSchemaPath]);
     imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, categoryName,
+      withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, categoryName,
         new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() })));
 
     imodel.close();

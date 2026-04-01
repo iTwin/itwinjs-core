@@ -3213,7 +3213,7 @@ describe("iModel", () => {
       memberPriority: 1,
     };
 
-    txn.insertRelationship(props)
+    txn.insertRelationship(props);
     expect(() => txn.insertRelationship(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
 
     txn.end("abandon");
