@@ -348,7 +348,7 @@ describe("CurveFactory", () => {
             ck.testNearNumber(r, radius0[i], Geometry.smallMetricDistance, "expect radius match");
         }
       }
-    }
+    };
     const testFilletedLineString = (lineStr0: LineString3d, lineStr1: LineString3d, isClosed: boolean) => {
       // single radius; no cusp
       for (const radius0 of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
