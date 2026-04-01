@@ -17,47 +17,6 @@ import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
 /**
- * Background:
- * SQLite always executes reads and writes within a transaction, and SQLite's
- * transaction rules are designed to provide a consistent view of the database while other connections access the same
- * file. A read transaction sees a stable view until that transaction ends, so commits from
- * other connections remain invisible until the next transaction starts.
- *
- * iModelDb builds its transaction abstraction on top of that behavior. Each iModelDb has an
- * always-available native-managed implicit transaction, mainly so database queries are consistent
- * even if the file is changed by another connection. However that implicit transaction is also the
- * surface that legacy mutating APIs write through, so it is
- * effectively an implicit write transaction for those operations. This means that any edits
- * performed through legacy APIs are part of one implicit unit of work until they are committed.
- *
- * That implicit model is convenient, but it can blur transaction boundaries: unrelated edits
- * may accidentally accumulate into one unit of work and then be committed or reversed (via undo)
- * together. Explicit transactions address this by making start/end boundaries deliberate so commit/abandon apply
- * to the intended scope of edits.
- *
- * Backwards compatibility is required while callers migrate, so the transition is staged. Enforcement levels
- * govern how the implicit transaction handles writes. The value comes from [[IModelHostOptions.implicitWriteEnforcement]]
- * during [[IModelHost.startup]], and can also be changed by assigning [[EditTxn.implicitWriteEnforcement]].
-
- * 1) `allow` keeps implicit writes working for existing callers;
- * 2) `log` reports implicit-write usage errors (while still allowing them) so teams can inventory and prioritize migration;
- * 3) `throw` disallows implicit writes once a code path has been migrated.
- *
- * The `log` level is intentionally noisy in applications that have not started migration, because each implicit write path emits
- * an error log. Prefer enabling `log` only after migration work has begun so that logs remain actionable.
- *
- * Migration is intended to be incremental. Existing APIs will continue to function while code is
- * updated to create explicit EditTxn scopes around related edits and to save or abandon those
- * scopes intentionally. New write paths should start explicit-only, and legacy paths should move
- * to explicit transactions as they are touched.
- *
- * End state: write operations must use explicit EditTxn, and the implicit transaction only allows
- * read-only operations.
- *
- * See: https://www.sqlite.org/lang_transaction.html and https://www.sqlite.org/isolation.html.
- */
-
-/**
  * Represents an explicit editing transaction for an iModel.
  *
  * An explicit EditTxn lets callers define a deliberate unit of work by choosing when editing
@@ -67,6 +26,7 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Sym
  * Explicit EditTxn instances must be active before mutating operations are performed, regardless of enforcement level.
  * In other words, explicit transaction behavior is independent of `implicitWriteEnforcement`.
  *
+ * @see [EditTxn transaction model and migration guidance]($docs/learning/backend/EditTxn.md)
  *
  * *During indirect changes (commit processing):* Use [[IModelDb.getIndirectChangesTxn]] to obtain the EditTxn
  * in callbacks like [[Relationship.onRootChanged]] and [[Relationship.onDeletedDependency]] that fire during indirect processing.
