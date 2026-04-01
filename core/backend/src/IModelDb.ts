@@ -1161,9 +1161,9 @@ export abstract class IModelDb extends IModel {
    * <p><em>Example:</em>
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
-  * ```
-  * @deprecated Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
-  */
+   * ```
+   * @deprecated Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this[_implicitTxn].updateProjectExtents(newExtents);
   }
@@ -2256,8 +2256,7 @@ export abstract class IModelDb extends IModel {
    * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
-   * @beta
-   * @deprecated Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @beta @deprecated Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
     this[_implicitTxn].saveSettingDictionary(name, dict);
@@ -2265,8 +2264,7 @@ export abstract class IModelDb extends IModel {
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
-   * @beta
-   * @deprecated Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @beta @deprecated Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteSettingDictionary(name: string) {
     this[_implicitTxn].deleteSettingDictionary(name);
@@ -2836,7 +2834,7 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-      * @throws [[IModelError]] if insertion fails.
+     * @throws [[ITwinError]] if insertion fails.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
@@ -2856,7 +2854,7 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-    * @throws [[IModelError]] if update fails.
+     * @throws [[ITwinError]] if update fails.
      * @deprecated Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
@@ -2881,7 +2879,6 @@ export namespace IModelDb {
      * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
-     * @beta
      * @deprecated Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
@@ -3154,8 +3151,8 @@ export namespace IModelDb {
       return this._viewStore;
     }
 
-    /** @beta
-     * @deprecated Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+    /**
+     * @beta @deprecated Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
       this._iModel[_implicitTxn].saveDefaultViewStore(arg);
@@ -4265,7 +4262,7 @@ export class SnapshotDb extends IModelDb {
 
 
     if (this._createClassViewsOnClose) { // check for flag set during create
-      if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()){
+      if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
       } else {
         this[_nativeDb].saveChanges();

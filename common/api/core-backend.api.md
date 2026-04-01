@@ -4086,7 +4086,7 @@ export namespace IModelDb {
         createElement<T extends Element_2>(elProps: ElementProps): T;
         // @deprecated
         deleteAspect(aspectInstanceIds: Id64Arg): void;
-        // @beta @deprecated
+        // @deprecated
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         // @deprecated
         deleteElement(ids: Id64Arg): void;

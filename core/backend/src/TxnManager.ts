@@ -13,6 +13,7 @@ import {
 import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
+import {Element} from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
@@ -872,7 +873,7 @@ export class TxnManager {
 
   private get _nativeDb() { return this._iModel[_nativeDb]; }
   private _getElementClass(elClassName: string): typeof Element {
-    return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
+    return this._iModel.getJsClass<typeof Element>(elClassName);
   }
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
@@ -890,10 +891,12 @@ export class TxnManager {
 
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
+    // as any necessary to access protected static method on Element and subclasses).
     (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
+    // as any necessary to access protected static method on Element and subclasses).
     (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
   }
   /** @internal */

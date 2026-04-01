@@ -113,9 +113,7 @@ export class EditTxn {
   }
 
   /** Start this EditTxn, making it the active transaction for the iModel.
-   * @throws EditTxnError if this EditTxn is already active.
-   * @throws EditTxnError if another EditTxn is already active.
-   * @throws EditTxnError if unsaved changes are present.
+   * @throws EditTxnError if this EditTxn is already active, another EditTxn is already active, or if unsaved changes are present.
    */
   public start(): void {
     if (this.isActive)
@@ -199,7 +197,7 @@ export class EditTxn {
    * @param elProps The properties of the new element.
    * @returns The newly inserted element's Id.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws Error if insertion fails.
+   * @throws [[ITwinError]] if insertion fails.
    */
   public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
     this.verifyWriteable();
@@ -220,7 +218,7 @@ export class EditTxn {
   /** Update an existing element in the iModel.
    * @param elProps The properties to update.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws Error if update fails.
+   * @throws [[ITwinError]] if update fails.
    */
   public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
     this.verifyWriteable();
@@ -249,7 +247,7 @@ export class EditTxn {
   /** Delete elements from the iModel.
    * @param ids The Ids of the elements to delete.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws Error if deletion fails.
+   * @throws [[ITwinError]] if deletion fails.
    */
   public deleteElement(ids: Id64Arg): void {
     this.verifyWriteable();
