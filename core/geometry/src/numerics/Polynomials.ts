@@ -1205,9 +1205,7 @@ export class TrigPolynomial {
     }
     return radians.length > 0;
   }
-  private static readonly _coefficientRelTol = 1.0e-12;
-  /** Squared relative tolerance for detecting a circle quadric (axx==ayy, axy==0). */
-  private static readonly _circleQuadricRelTolSq = 1.0e-10;
+  private static readonly _coefficientRelTolSquared = 1.0e-24;
   /**
    * Compute intersections of the unit circle `x^2 + y^2 = 1` with the general quadric (conic)
    * `axx x^2 + axy xy + ayy y^2 + ax x + ay y + a = 0`.
@@ -1226,33 +1224,31 @@ export class TrigPolynomial {
     PowerPolynomial.zero(coffs);
     let degree;
     // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients
-    if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
-      // check if the quadric is a circle, i.e., axx ≈≈ ayy and axy ≈≈ 0
-      const quadricMagSq = axx * axx + ayy * ayy + axy * axy;
-      const circleResidualSq = axy * axy + (axx - ayy) * (axx - ayy);
-      const isCircleQuadric = circleResidualSq < TrigPolynomial._circleQuadricRelTolSq * quadricMagSq;
-      if (isCircleQuadric) {
-        // Quadric is avgAxxAyy*(x^2+y^2) + ax*x + ay*y + a = 0 where avgAxxAyy = 0.5*(axx+ayy).
-        // On the unit circle, x^2+y^2=1, so this reduces to ax*x + ay*y + (a + avgAxxAyy) = 0
-        const avgAxxAyy = 0.5 * (axx + ayy);
-        PowerPolynomial.accumulate(coffs, this.C, ax);
-        PowerPolynomial.accumulate(coffs, this.S, ay);
-        PowerPolynomial.accumulate(coffs, this.W, a + avgAxxAyy);
-        degree = 2;
-      } else {
-        PowerPolynomial.accumulate(coffs, this.CW, ax);
-        PowerPolynomial.accumulate(coffs, this.SW, ay);
-        PowerPolynomial.accumulate(coffs, this.WW, a);
-        PowerPolynomial.accumulate(coffs, this.SS, ayy);
-        PowerPolynomial.accumulate(coffs, this.CC, axx);
-        PowerPolynomial.accumulate(coffs, this.SC, axy);
-        degree = 4;
-      }
-    } else { // terms axx, axy, ayy are small compared to ax, ay, a so ignore them
+    const degree1CoefficientSizeSquared = Geometry.hypotenuseSquaredXYZ(ax, ay, a);
+    const degree2CoefficientSizeSquared = Geometry.hypotenuseSquaredXYZ(axx, axy, ayy);
+    if (degree2CoefficientSizeSquared <= TrigPolynomial._coefficientRelTolSquared * degree1CoefficientSizeSquared) {
+      // terms axx, axy, ayy are small compared to ax, ay, a so ignore them
       PowerPolynomial.accumulate(coffs, this.C, ax);
       PowerPolynomial.accumulate(coffs, this.S, ay);
       PowerPolynomial.accumulate(coffs, this.W, a);
       degree = 2;
+    } else if (degree2CoefficientSizeSquared - 2 * axx * ayy <= 2 * TrigPolynomial._coefficientRelTolSquared * degree2CoefficientSizeSquared) {
+      const c = 0.5 * (axx + ayy);
+      // The lhs above is (axx - ayy)^2 + axy^2. When the inequality is satisfied, both terms are "zero" (quadric is a circle).
+      // With c as a stable substitute for axx and ayy, we have on the unit circle x^2 + y^2 = 1:
+      // 0 = c * (x^2 + y^2) + ax*x + ay*y + a = ax*x + ay*y + a + c
+      PowerPolynomial.accumulate(coffs, this.C, ax);
+      PowerPolynomial.accumulate(coffs, this.S, ay);
+      PowerPolynomial.accumulate(coffs, this.W, a + c);
+      degree = 2;
+    } else {
+      PowerPolynomial.accumulate(coffs, this.CW, ax);
+      PowerPolynomial.accumulate(coffs, this.SW, ay);
+      PowerPolynomial.accumulate(coffs, this.WW, a);
+      PowerPolynomial.accumulate(coffs, this.SS, ayy);
+      PowerPolynomial.accumulate(coffs, this.CC, axx);
+      PowerPolynomial.accumulate(coffs, this.SC, axy);
+      degree = 4;
     }
     const maxCoff = Math.max(Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a));
     const b = this.solveAngles(coffs, degree, maxCoff, radians);
