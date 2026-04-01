@@ -707,7 +707,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "1000 m²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "1000 m");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000000 mm");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000 m");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "1000 m");
     await testFormatting(QuantityType.Stationing, 1000.0, "1+000.00");
     await testFormatting(QuantityType.Stationing, 15918.01, "15+918.01");

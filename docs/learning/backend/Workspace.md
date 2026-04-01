@@ -1,8 +1,28 @@
 # Workspaces and Settings
 
-Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources. Settings dictionaries inside of [Workspace.settings]($backend) provide values for individual settings, some of which are configured to point to one or more [WorkspaceDb]($backend)s that provide resources for particular purposes. The anatomy of a `Workspace` is illustrated below:
+Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources. Settings inside of [Workspace.settings]($backend) provide values for individual [SettingName]($backend)s, some of which point to one or more [WorkspaceDb]($backend)s that provide binary resources for particular purposes. The anatomy of a `Workspace` is illustrated below:
 
-![Anatomy of a Workspace](./workspace-anatomy.jpg)
+```mermaid
+graph LR
+  subgraph Workspace
+    S["Settings<br/>(priority-ordered stack)"]
+    subgraph Settings Containers
+      SC1["SettingsDb<br/>iTwin scope"]
+      SC2["SettingsDb<br/>iModel scope"]
+    end
+    subgraph Workspace Containers
+      WC1["WorkspaceDb<br/>fonts, textures"]
+      WC2["WorkspaceDb<br/>templates"]
+    end
+  end
+
+  SC1 -->|"loads as<br/>SettingsDictionary"| S
+  SC2 -->|"loads as<br/>SettingsDictionary"| S
+  S -->|"settings point to"| WC1
+  S -->|"settings point to"| WC2
+```
+
+Settings are stored in [SettingsDb]($backend) containers (cloud-hosted, versioned, and discoverable by `containerType: "settings"`). Binary resources like fonts, textures, and images are stored in [WorkspaceDb]($backend) containers. At runtime, each `SettingsDb` becomes one [SettingsDictionary]($backend) in the [Settings]($backend) priority stack, and those settings tell the application where to find the `WorkspaceDb`s it needs.
 
 To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
 
@@ -133,13 +153,103 @@ The next time we open the iModel, the new settings dictionary will automatically
 
 The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.
 
+## SettingsDb
+
+So far, we have loaded [SettingsDictionary]($backend)s directly at run-time — building them in code and adding them to [Workspace.settings]($backend). This works for small-scale configuration and testing, but real-world deployments need a way to **store settings in the cloud**, version them over time, and discover them without opening an iModel. That is the role of [SettingsDb]($backend).
+
+A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values, with no binary resources. Its containers are tagged with `containerType: "settings"` in their cloud metadata, making them discoverable independently of any iModel. This is what distinguishes a `SettingsDb` from a [WorkspaceDb]($backend): a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings tell your application which [WorkspaceDb]($backend)s hold the binary resources it needs.
+
+### Reading settings
+
+A [SettingsDb]($backend) provides two read methods:
+
+- [SettingsDb.getSetting]($backend) — returns the value of a specific setting by name, or `undefined` if it does not exist.
+- [SettingsDb.getSettings]($backend) — returns a deep copy of all settings as a [SettingsContainer]($backend).
+
+Both methods auto-open and auto-close the underlying database if it is not already open. For batches of reads, call [SettingsDb.open]($backend) before the operations and [SettingsDb.close]($backend) afterwards to avoid repeated open/close overhead.
+
+### How SettingsDb fits the priority system
+
+When a `SettingsDb` is loaded into the runtime via [Workspace.getSettingsDb]($backend), its contents become **one** [SettingsDictionary]($backend) in the [Settings]($backend) priority stack. The data flow is:
+
+`SettingsDb` → JSON → `Settings.addJson()` → one `SettingsDictionary` in the priority stack
+
+Each `SettingsDb` occupies a single slot in the [priority system](#settings-priorities). Multiple `SettingsDb`s — for example, one scoped to an iTwin at [SettingsPriority.iTwin]($backend) and one scoped to an iModel at [SettingsPriority.iModel]($backend) — become separate dictionaries with separate priorities. The runtime resolves conflicts using the standard priority rules: the highest-priority dictionary that provides a value for a given setting name wins.
+
+### Discovering settings containers
+
+You can find all settings containers for a given iTwin by using [SettingsEditor.queryContainers]($backend) to query by iTwinId (and optionally iModelId):
+
+```ts
+[[include:SettingsDb.discoverContainers]]
+```
+
+This is useful when your application needs to enumerate available settings — for example, building an admin UI that lets users choose which settings profile to load — without hardcoding container IDs.
+
+If you want to open the matching containers for editing in a single call, use [SettingsEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container:
+
+```ts
+[[include:SettingsDb.findContainers]]
+```
+
+### Creating a SettingsDb and writing settings
+
+> Note: Creating and managing `SettingsDb` data is a task for administrators. End-users consume settings through the [Settings]($backend) runtime API. The following walkthrough shows the admin-side workflow.
+
+The example below creates a new cloud container, writes some initial settings, and publishes them:
+
+```ts
+[[include:SettingsDb.createLocal]]
+```
+
+The key steps are:
+
+1. **Create an editor** — call [SettingsEditor.construct]($backend). The caller is responsible for calling `close()` when finished.
+2. **Create a container** — [SettingsEditor.createNewCloudContainer]($backend) creates a container automatically tagged with `containerType: "settings"`.
+3. **Acquire the write lock** — [EditableSettingsCloudContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
+4. **Open an EditableSettingsDb** — [EditableSettingsCloudContainer.getEditableDb]($backend) returns an [EditableSettingsDb]($backend).
+5. **Write settings** — use [EditableSettingsDb.updateSettings]($backend) to replace all settings, or [EditableSettingsDb.updateSetting]($backend) to update a single setting entry.
+6. **Release the lock** — [EditableSettingsCloudContainer.releaseWriteLock]($backend) publishes your changes. Alternatively, [EditableSettingsCloudContainer.abandonChanges]($backend) discards them.
+
+> **Important**: Always release the write lock when you are done. Failing to release it will prevent other administrators from modifying the container until the lock expires.
+
+### Updating individual settings
+
+Often you need to change a single setting without touching the rest. [EditableSettingsDb.updateSetting]($backend) reads the existing settings, updates the specified entry, and writes the result back — other settings are preserved:
+
+```ts
+[[include:SettingsDb.updateSetting]]
+```
+
+To remove a setting entirely, use [EditableSettingsDb.removeSetting]($backend).
+
+To inspect all settings in a `SettingsDb`, use [SettingsDb.getSettings]($backend), which returns a deep copy:
+
+```ts
+[[include:SettingsDb.getSettings]]
+```
+
+### Versioning
+
+Like [WorkspaceDb]($backend)s, each `SettingsDb` uses [semantic versioning](https://semver.org/). Once a version is published to cloud storage it becomes immutable. To evolve settings, create a new version via [EditableSettingsCloudContainer.createNewSettingsDbVersion]($backend), make changes, and release the write lock. The versioning workflow is the same as described in [creating workspace resources](#creating-workspace-resources).
+
+### Putting it together: settings that point to resources
+
+In a typical deployment, the end-to-end flow looks like this:
+
+1. **Admin creates a settings container** for the iTwin and writes settings like `"landscapePro/flora/treeDbs"` that point to [WorkspaceDb]($backend)s holding binary resources.
+2. **Admin creates workspace containers** holding the versioned [WorkspaceDb]($backend)s (fonts, textures, templates, etc.).
+3. **At runtime**, the application discovers and loads the settings container via [Workspace.getSettingsDb]($backend), which adds a [SettingsDictionary]($backend) to the [Settings]($backend) priority stack.
+4. **The application reads settings** — for example, `settings.getSetting("landscapePro/flora/treeDbs")` — and uses them to load the appropriate `WorkspaceDb`s.
+
+This two-layer design keeps settings and resources in separate containers with independent access control, versioning, and write locks. The [workspace resources](#workspace-resources) section below shows how to create and access `WorkspaceDb`s, and the [accessing workspace resources](#accessing-workspace-resources) section shows how settings point to them.
+
 ## Workspace resources
 
 "Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
 
 - [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
 - Images that can be used as pattern maps for [Texture]($backend)s.
-- [SettingsDictionary]($backend)s defining reusable settings.
 
 It might be technically possible to store resources in [Setting]($backend)s, but doing so would present significant disadvantages:
 

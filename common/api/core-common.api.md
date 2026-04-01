@@ -2183,6 +2183,19 @@ export interface DbBlobResponse extends DbResponse {
     rawBlobSize: number;
 }
 
+// @public
+export interface DbCloudContainerInfo {
+    readonly alias?: string;
+    readonly baseUri: string;
+    readonly containerId: string;
+    readonly dbName?: string;
+    readonly description?: string;
+    readonly isPublic?: boolean;
+    readonly storageType: "azure" | "google";
+    readonly version?: string;
+    readonly writeable?: boolean;
+}
+
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
@@ -7764,6 +7777,7 @@ export class QueryBinder {
     bindNull(indexOrName: string | number): this;
     bindPoint2d(indexOrName: string | number, val: Point2d): this;
     bindPoint3d(indexOrName: string | number, val: Point3d): this;
+    bindRange3d(indexOrName: string | number, val: LowAndHighXYZ): this;
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;

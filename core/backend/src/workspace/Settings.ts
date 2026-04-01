@@ -156,6 +156,15 @@ export interface SettingsDictionary {
    * dictionaries. Those methods - unlike this one - also validate that `settingName` is of type `T` as defined by its [[SettingSchema]].
    */
   getSetting<T extends Setting>(settingName: SettingName): T | undefined;
+
+  /** Return a deep copy of all settings in this dictionary as a [[SettingsContainer]].
+   * This is useful for inspecting the full contents of the dictionary or for building a modified copy
+   * to pass to [[EditableSettingsDb.updateSettingsDictionary]].
+   * The returned container is cloned using [[Setting.clone]], so callers may freely mutate it without
+   * affecting this dictionary's internal state.
+   * @beta
+   */
+  toJSON(): SettingsContainer;
 }
 
 /** Uniquely identifies a [[SettingsDictionary]].

@@ -12,11 +12,11 @@ import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
+import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
 import { _implementationProhibited } from "../Symbols";
 
-const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
+export const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };
 
@@ -33,6 +33,10 @@ class SettingsDictionaryImpl implements SettingsDictionary {
   public getSetting<T extends Setting>(settingName: string): T | undefined {
     const value = this.settings[settingName] as T | undefined;
     return undefined !== value ? Setting.clone(value) : undefined;
+  }
+
+  public toJSON(): SettingsContainer {
+    return Setting.clone(this.settings);
   }
 }
 
