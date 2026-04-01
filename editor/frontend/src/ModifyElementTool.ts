@@ -105,7 +105,8 @@ export abstract class ModifyElementTool extends ElementSetTool {
 
   public override async processAgenda(ev: BeButtonEvent): Promise<void> {
     if (await this.applyAgendaOperation(ev))
-      return basicManipulationIpc.saveChanges(this.flyover);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      return this.saveChanges();
   }
 }
 
