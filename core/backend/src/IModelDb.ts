@@ -2898,13 +2898,16 @@ export namespace IModelDb {
      */
     public deleteElements(ids: Id64Array): Id64Set {
       const failedToDelete = this._iModel[_nativeDb].deleteElements(ids);
+      const failedToDeleteSet = failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
 
-      ids.filter((id) => Id64.isValidId64(id) && !failedToDelete.includes(id)).forEach((id) => {
-        this[_cache].delete({ id });
-        this[_instanceKeyCache].deleteById(id);
-      });
+      for (const id of ids) {
+        if (Id64.isValidId64(id) && !failedToDeleteSet.has(id)) {
+          this[_cache].delete({ id });
+          this[_instanceKeyCache].deleteById(id);
+        }
+      }
 
-      return failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
+      return failedToDeleteSet;
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
