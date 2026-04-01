@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, ECSqlReader, IModel, PhysicalElementProps, QueryBinder, QueryOptionsBuilder, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
-import { DefinitionModel, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
+import { DefinitionModel, ECSqlInsertResult, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { Range3d } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
@@ -190,6 +191,38 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
       await readerCallback(reader);
     });
+
+    it("should bind Range3d", async () => {
+      const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
+
+      using ecdb = ECDbTestHelper.createECDb(outDir, "bindrange3d.ecdb",
+        `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="Range3d" typeName="binary"/>
+        </ECEntityClass>
+       </ECSchema>`);
+
+      assert.isTrue(ecdb.isOpen);
+
+      ecdb.withCachedWriteStatement("INSERT INTO test.Foo([Range3d]) VALUES(?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindRange3d(1, testRange);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      });
+      ecdb.saveChanges();
+
+      const params = new QueryBinder();
+      params.bindRange3d(1, testRange);
+      const reader = ecdb.createQueryReader("SELECT ECInstanceId, [Range3d] FROM test.Foo WHERE Range3d=?", params);
+
+      const rows = await reader.toArray();
+      const rangeBlob: Uint8Array = rows[0][1];
+      const rangeFloatArray = new Float64Array(rangeBlob.buffer);
+      assert.equal(rangeFloatArray.length, 6);
+      const actualRange = new Range3d(...rangeFloatArray);
+      assert.isTrue(actualRange.isAlmostEqual(testRange));
+    });
+
   });
 
   describe("Works as iterable iterator", () => {
@@ -1456,4 +1489,5 @@ describe("createQueryReader vs withQueryReader ", () => {
     });
   });
 });
+
 
