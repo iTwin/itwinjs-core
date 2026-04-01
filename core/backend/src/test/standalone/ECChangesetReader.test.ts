@@ -12,6 +12,7 @@ import { HubMock } from "../../internal/HubMock";
 import { ECChangesetReader, ECNativeChangeUnifierCache, ECNativePartialChangeUnifier } from "../../ECChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { json } from "stream/consumers";
 
 describe("ECChangesetReader API", async () => {
   let iTwinId: GuidString;
@@ -115,12 +116,9 @@ describe("ECChangesetReader API", async () => {
     assert.deepEqual(inserted!.BBoxLow, { X: -25, Y: -25 });
     // eslint-disable-next-line @typescript-eslint/naming-convention
     assert.deepEqual(inserted!.BBoxHigh, { X: 15, Y: 15 });
-    assert.instanceOf(inserted!.GeometryStream, Uint8Array);
+    assert.deepEqual(inserted!.GeometryStream, "{\"bytes\":123}");
     assert.typeOf(inserted!.FederationGuid, "string");
     assert.typeOf(inserted!.LastMod, "string");
-    assert.isNull(inserted!.CodeValue);
-    assert.isNull(inserted!.UserLabel);
-    assert.isNull(inserted!.JsonProperties);
     assert.equal(inserted!.Category.Id, drawingCategoryId);
     assert.isNotEmpty(inserted!.Category.RelECClassId);
 
@@ -134,7 +132,7 @@ describe("ECChangesetReader API", async () => {
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.isNotNull(modelNew!.LastMod);
-    assert.isNull(modelOld!.LastMod);
+    assert.isUndefined(modelOld!.LastMod);
 
     rwIModel.close();
   });

@@ -54,6 +54,8 @@ export interface ECNativeChangeMeta {
    * {@link ECNativePartialChangeUnifier}.
    */
   nativeKey: string;
+  /** Reader mode that was active when this change row was captured. */
+  mode: IModelJsNative.ECChangesetReader.Mode;
 }
 
 /**
@@ -107,6 +109,10 @@ export interface ECChangesetReaderArgs {
   readonly db: AnyDb;
   /** When `true`, all operations are logically inverted (Insert↔Delete). */
   readonly invert?: true;
+  /** Row adaptor options controlling how EC property values are formatted. */
+  readonly valueOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+  /** Controls which properties are included in the change output. Defaults to `All_Properties`. */
+  readonly mode?: IModelJsNative.ECChangesetReader.Mode;
 }
 
 /**
@@ -161,7 +167,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
-  private readonly _valueOptions: ECChangeRowAdaptorOptions = { classIdsToClassNames: false };
+  private _valueOptions: IModelJsNative.ECSqlRowAdaptorOptions = {};
+  private _mode: IModelJsNative.ECChangesetReader.Mode = IModelJsNative.ECChangesetReader.Mode.All_Properties;
   private _changeIndex = 0;
   private _op?: ECNativeChangeOp;
   private _isECTable = false;
@@ -204,11 +211,15 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @param args.fileName Absolute path to the changeset file.
    * @param args.db Database at or after the changeset's ending state, used for schema resolution.
    * @param args.invert When `true`, invert all operations (Insert↔Delete).
+   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
    * @beta
    */
   public static openFile(args: { readonly fileName: string } & ECChangesetReaderArgs): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
-    reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false);
+    reader._valueOptions = args.valueOptions ?? {};
+    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._mode);
     return reader;
   }
 
@@ -216,13 +227,17 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Concatenate multiple changeset files and read them as a single logical stream.
    * @param args.changesetFiles Ordered list of changeset file paths.
    * @param args.db Database with schema at or ahead of the last changeset.
+   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
    * @beta
    */
   public static openGroup(args: { readonly changesetFiles: string[] } & ECChangesetReaderArgs): ECChangesetReader {
     if (args.changesetFiles.length === 0)
       throw new Error("changesetFiles must contain at least one file.");
     const reader = new ECChangesetReader(args.db);
-    reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false);
+    reader._valueOptions = args.valueOptions ?? {};
+    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._mode);
     return reader;
   }
 
@@ -230,26 +245,34 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Read pending (not yet pushed) local changes from an open IModelDb.
    * @param args.db Must be an `IModelDb` (not `ECDb`).
    * @param args.includeInMemoryChanges Also include in-memory (not yet saved to disk) changes.
+   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
    * @beta
    */
   public static openLocalChanges(
     args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: true },
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
-    reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
+    reader._valueOptions = args.valueOptions ?? {};
+    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._mode);
     return reader;
   }
 
   /**
    * Read the in-memory (not yet saved to disk) changes of an open IModelDb.
    * @param args.db Must be an `IModelDb`.
+   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
    * @beta
    */
   public static openInMemoryChanges(
     args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb },
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
-    reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false);
+    reader._valueOptions = args.valueOptions ?? {};
+    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._mode);
     return reader;
   }
 
@@ -257,13 +280,17 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Read a single saved transaction by its id.
    * @param args.db Must be an `IModelDb` (`ECDb` does not support transactions).
    * @param args.txnId The id of the saved transaction to read.
+   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
    * @beta
    */
   public static openTxn(
     args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String },
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
-    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false);
+    reader._valueOptions = args.valueOptions ?? {};
+    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._mode);
     return reader;
   }
 
@@ -299,7 +326,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       const tableName: string = this._nativeReader.getTableName();
 
       if (op === "Inserted" || op === "Updated") {
-        const rowValue = this._nativeReader.getValue(DbChangeStage.New, this._valueOptions) as ECChangesetRowValue;
+        const rowValue = this._nativeReader.getValue(DbChangeStage.New, this._valueOptions);
         if (rowValue.isECTable && rowValue.data !== undefined && rowValue.key !== undefined) {
           this._isECTable = true;
           this.inserted = {
@@ -310,6 +337,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "New",
               nativeKey: rowValue.key,
+              mode: this._mode,
             },
           };
         }
@@ -327,6 +355,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "Old",
               nativeKey: rowValue.key,
+              mode: this._mode,
             },
           };
         }
@@ -350,25 +379,6 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @beta
    */
   public get changeIndex(): number { return this._changeIndex; }
-
-  // ---------------------------------------------------------------------------
-  // Direct value access
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Call native `getValue` directly for the current change with custom formatting options.
-   *
-   * @param stage Which version of the value — `"Old"` (before change) or `"New"` (after change).
-   * @param args  Formatting options.
-   * @returns The raw {@link ECChangesetRowValue} for the requested stage.
-   * @beta
-   */
-  public getValue(stage: ECNativeChangeStage, args: ECChangeRowAdaptorOptions = {}): ECChangesetRowValue {
-    return this._nativeReader.getValue(
-      stage === "New" ? DbChangeStage.New : DbChangeStage.Old,
-      args,
-    ) as ECChangesetRowValue;
-  }
 
   // ---------------------------------------------------------------------------
   // Lifecycle
