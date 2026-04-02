@@ -208,11 +208,12 @@ describe("CloudSqlite", () => {
     container.disconnect({ detach: true });
   });
 
-  it("should LogLevel.Trace set LogMask to ALL", async () => {
+  it("LogLevel.Trace should set LogMask to ALL", async () => {
     const testContainer0 = testContainers[0];
+    const shouldLogToConsole = process.env.ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
 
     const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
-      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+      shouldLogToConsole && console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
     const logTrace = sinon.spy(logConsole("Trace"));
     const logInfo = sinon.spy(logConsole("Info"));
     Logger.initialize(undefined, undefined, logInfo, logTrace);
