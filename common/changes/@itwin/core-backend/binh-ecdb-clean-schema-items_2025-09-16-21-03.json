@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "added method to delete schema items",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
