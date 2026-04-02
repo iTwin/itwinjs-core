@@ -1798,5 +1798,5 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach0");
     expect(ck.getNumErrors()).toBe(0);
-  })
+  });
 });
