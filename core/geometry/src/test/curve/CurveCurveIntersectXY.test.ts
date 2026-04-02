@@ -1918,11 +1918,6 @@ describe("CurveCurveIntersectXY", () => {
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB, x0);
 
-    // visualize the transformation of the problem to the intersection of unit circle and homogeneous ellipse
-    const c0 = Arc3d.createUnitCircle();
-    const c1 = Arc3d.create(Point3d.create(-0.4183722792273876, 1.2483930446909888), Vector3d.create(0.31624653205499503, 0.015624693816741206), Vector3d.create(-0.015624693816741225, 0.31624653205499503));
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [c0, c1]);
-
     intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
     verifyIntersection(1, intersections, [Point3d.create(126.72486722380232, -88.33163476062522)]);
 
