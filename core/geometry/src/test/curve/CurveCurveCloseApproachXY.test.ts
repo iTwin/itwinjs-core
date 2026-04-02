@@ -251,7 +251,7 @@ function captureCloseApproaches(
 }
 
 function visualizeAndTestSpiralCloseApproaches(
-  ck: Checker, allGeometry: GeometryQuery[],
+  ck: Checker, allGeometry: GeometryQuery[], testIndex: number,
   curve0: AnyCurve, curve1: AnyCurve, maxDistance: number,
   numExpected: number, dx: number, dy: number,
 ) {
@@ -264,12 +264,12 @@ function visualizeAndTestSpiralCloseApproaches(
 
   const testSpiralIntersection = (intersections: CurveLocationDetailPair[], lift: boolean = false): void => {
     captureCloseApproaches(allGeometry, intersections, dx, dy, lift ? 20 : 0);
-    const curveName0 = curve0.constructor.name;
-    const curveName1 = curve1.constructor.name;
+    const curveName0 = curve0 instanceof TransitionSpiral3d ? curve0.spiralType : curve0.constructor.name;
+    const curveName1 = curve1 instanceof TransitionSpiral3d ? curve1.spiralType : curve1.constructor.name;
     ck.testExactNumber(
       numExpected,
       intersections.length,
-      `expect at least ${numExpected} close approach(es) between ${curveName1} and ${curveName0}`,
+      `test #${testIndex}: expect ${numExpected} close approach(es) between ${curveName0} and ${curveName1}`,
     );
   };
 
@@ -1734,12 +1734,13 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testCoordinate(integratedSpirals.length * curves.length, integratedData.size, "matching integrated arrays");
     ck.testCoordinate(directSpirals.length * curves.length, directData.size, "matching direct arrays");
 
+    let testIndex  = 0;
     const testCloseApproachSpiralCurve = (spirals: TransitionSpiral3d[], data: Dictionary<[number, number], number>) => {
       for (let i = 0; i < spirals.length; i++) {
         for (let j = 0; j < curves.length; j++) {
           const numExpected = data.get([i, j]);
           if (ck.testDefined(numExpected, "found data for spiral-curve pair"))
-            visualizeAndTestSpiralCloseApproaches(ck, allGeometry, spirals[i], curves[j], maxDistance, numExpected, dx, dy);
+            visualizeAndTestSpiralCloseApproaches(ck, allGeometry, testIndex++, spirals[i], curves[j], maxDistance, numExpected, dx, dy);
           dy += 200;
         }
         dy = 0;
@@ -1753,14 +1754,14 @@ describe("CurveCurveCloseApproachXY", () => {
     dx = 0;
     dy = 7000;
     for (const pair of [[curveChain0, curveChain1], [path0, path1], [curveChain0, path1], [curveChain1, path0]]) {
-      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, pair[0], pair[1], maxDistance, 13, dx, dy);
+      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, testIndex++, pair[0], pair[1], maxDistance, 13, dx, dy);
       dy += 200;
     }
 
     const testTangencyAtSpiralInterior = (spiral: TransitionSpiral3d) => {
       const ray = spiral.fractionToPointAndDerivative(0.5);
       const ls = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
-      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, spiral, ls, 1, 1, dx, dy);
+      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, testIndex++, spiral, ls, 1, 1, dx, dy);
       dx += 200;
     };
     for (const spiral of integratedSpirals)
