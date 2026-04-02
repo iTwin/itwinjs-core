@@ -9,7 +9,6 @@ import { SchemaContext } from "../../Context";
 import { Schema } from "../../Metadata/Schema";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaLocalization } from "../../Localization/SchemaLocalization";
-import { SchemaLocalizationJson } from "../../Localization/LocalizationTypes";
 import { LocalizationProvider } from "../../Localization/LocalizationProvider";
 
 describe("SchemaLocalization", () => {
