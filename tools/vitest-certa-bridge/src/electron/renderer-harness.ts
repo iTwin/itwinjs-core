@@ -565,6 +565,7 @@ function buildVitestShim(): string {
             if (vitestShim.vi._realSetInterval) globalThis.setInterval = vitestShim.vi._realSetInterval;
             if (vitestShim.vi._realClearInterval) globalThis.clearInterval = vitestShim.vi._realClearInterval;
             vitestShim.vi._timers = [];
+            vitestShim.vi._elapsed = 0;
             return vitestShim.vi;
           },
           setSystemTime: function(date) {
@@ -572,9 +573,11 @@ function buildVitestShim(): string {
           },
           advanceTimersByTime: function(ms) {
             vitestShim.vi._fakeNow += ms;
-            const timers = (vitestShim.vi._timers || []).filter(t => t.ms <= ms);
-            for (const t of timers) t.fn();
-            vitestShim.vi._timers = (vitestShim.vi._timers || []).filter(t => t.ms > ms);
+            vitestShim.vi._elapsed = (vitestShim.vi._elapsed || 0) + ms;
+            const elapsed = vitestShim.vi._elapsed;
+            const ready = (vitestShim.vi._timers || []).filter(t => t.ms <= elapsed);
+            for (const t of ready) t.fn();
+            vitestShim.vi._timers = (vitestShim.vi._timers || []).filter(t => t.ms > elapsed);
           },
           _realDate: null,
           _realSetTimeout: null,
@@ -582,6 +585,7 @@ function buildVitestShim(): string {
           _realSetInterval: null,
           _realClearInterval: null,
           _fakeNow: 0,
+          _elapsed: 0,
           _timers: [],
         },
       };
