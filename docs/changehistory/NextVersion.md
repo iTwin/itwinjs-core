@@ -72,3 +72,5 @@ txn.end("save", "Saved second batch and closed transaction");
 
 These levels are intended to support incremental adoption. Applications can start with `"allow"`, move to `"log"` to discover remaining legacy paths, and then switch to `"throw"` once those call sites have been migrated.
 
+For more guidance and additional examples, see [EditTxn transaction model and migration guidance](../learning/backend/EditTxn.md).
+
