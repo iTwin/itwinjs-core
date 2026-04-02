@@ -968,15 +968,17 @@ describe("GrowableArray", () => {
     arr = new GrowableXYArray(numPoints, undefined, data);
     ck.testExactNumber(capacity / 2, arr.length);
 
-    // number of points is passed as undefined but actual number of points is 2 which is less than default 8
+    // number of points is passed as undefined but actual number of points is less than default 8
     numPoints = 2;
     data = Float64Array.from([1, 2, 3, 4]);
     arr = new GrowableXYArray(undefined, undefined, data);
     ck.testExactNumber(numPoints, arr.length);
 
-    // number of points is passed as undefined but actual number of points is 10 which is more than default 8
+    // number of points is passed as undefined but actual number of points is more than default 8
+    numPoints = 10;
     data = Float64Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
     arr = new GrowableXYArray(undefined, undefined, data);
+    ck.testLE(arr.length, numPoints);
     ck.testExactNumber(defaultNumPoints, arr.length);
 
     expect(ck.getNumErrors()).toBe(0);
