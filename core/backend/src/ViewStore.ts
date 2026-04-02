@@ -1155,7 +1155,14 @@ export namespace ViewStore {
         ViewStoreError.throwError("not-found", { message: "View not found" });
 
       const props = blankElementProps(JSON.parse(row.json), row.className, viewId, row.name) as ViewDefinitionProps;
-      this.fromGuidRowMember(props, "baseModelId");
+      const props2d = (props as ViewDefinition2dProps);
+      if (props2d.baseModel) {
+        this.fromGuidRowMember(props2d.baseModel, "id");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        props2d.baseModelId = props2d.baseModel.id;  // keep deprecated field in sync
+      } else {
+        this.fromGuidRowMember(props, "baseModelId");
+      }
       this.fromGuidRowMember(props.jsonProperties?.viewDetails, "acs");
       return props;
     }

@@ -402,25 +402,25 @@ export namespace ViewStoreRpc {
 
     /**
      * The properties of a category selector for the new view.
-     * @note This value is only used, and should only be present if `viewDefinition.categorySelectorId` **not** a valid
-     * `IdString`. In that case, a new category selector will be created with these properties and its Id will be used.
-     * Otherwise, the categorySelectorId from the ViewDefinition is used. If it does not represent a valid category
+     * @note This value is only used, and should only be present if `viewDefinition.categorySelector.id` is **not** a valid `IdString`.
+     * In that case, a new category selector will be created with these properties and its Id will be used.
+     * Otherwise, the categorySelector from the ViewDefinition is used. If it does not represent a valid category
      * selector, an error is thrown.
      */
     readonly categorySelectorProps?: CategorySelectorProps;
 
     /** The properties of a model selector for the new view.
-     * @note This value is only used, and should only be present if `viewDefinition.modelSelectorId` **not** a valid
-     * `IdString`. In that case, a new model selector will be created with these properties and its Id will be used.
-     * Otherwise, the modelSelectorId from the ViewDefinition is used. If it does not represent a valid model selector,
+     * @note This value is only used, and should only be present if `viewDefinition.modelSelector.id` is **not** a valid `IdString`.
+     * In that case, a new model selector will be created with these properties and its Id will be used.
+     * Otherwise, the modelSelector from the ViewDefinition is used. If it does not represent a valid model selector,
      * an error is thrown.
      */
     readonly modelSelectorProps?: ModelSelectorProps;
 
     /** The properties of a display style for the new view.
-     * @note This value is only used, and should only be present if `viewDefinition.displayStyleId` **not** a valid
-     * `IdString`. In that case, a new display style will be created with these properties and its Id will be used.
-     * Otherwise, the displayStyleId from the ViewDefinition is used. If it does not represent a valid display style, an
+     * @note This value is only used, and should only be present if `viewDefinition.displayStyle.id` is **not** a valid `IdString`.
+     * In that case, a new display style will be created with these properties and its Id will be used.
+     * Otherwise, the displayStyle from the ViewDefinition is used. If it does not represent a valid display style, an
      * error is thrown.
      */
     readonly displayStyleProps?: DisplayStyleProps;
