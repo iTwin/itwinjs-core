@@ -1948,15 +1948,15 @@ export class SchemaContext {
 
 // @beta
 export class SchemaFormatsProvider implements FormatsProvider {
-    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
+    constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
-    get unitSystem(): UnitSystemKey;
-    set unitSystem(unitSystem: UnitSystemKey);
+    get unitSystem(): UnitSystemKey | undefined;
+    set unitSystem(unitSystem: UnitSystemKey | undefined);
 }
 
 // @internal

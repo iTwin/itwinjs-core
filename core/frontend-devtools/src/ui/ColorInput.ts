@@ -58,7 +58,7 @@ export function createColorInput(props: ColorInputProps): ColorInput {
       //
     }
   };
-  let colorLabel: HTMLLabelElement;
+  let colorLabel: HTMLLabelElement | undefined;
 
   if (undefined !== props.label) {
     colorLabel = document.createElement("label");
@@ -78,5 +78,5 @@ export function createColorInput(props: ColorInputProps): ColorInput {
   if (undefined !== props.parent)
     props.parent.appendChild(inputDiv);
 
-  return undefined !== colorLabel! ? { div: inputDiv, input: colorInput, label: colorLabel! } : { div: inputDiv, input: colorInput };
+  return undefined !== colorLabel ? { div: inputDiv, input: colorInput, label: colorLabel } : { div: inputDiv, input: colorInput };
 }

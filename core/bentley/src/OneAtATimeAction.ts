@@ -90,11 +90,15 @@ export class OneAtATimeAction<T> {
     try {
       return await promise;
     } finally {
-      // do all of this whether promise was fulfilled or rejected
-      this._active = this._pending; // see if there's a pending request waiting
-      this._pending = undefined; // clear pending
-      if (this._active)
-        this._active.start(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      // A replaced pending request can be abandoned before it ever becomes active.
+      // Only the currently active entry is allowed to promote/start the next pending request.
+      if (this._active === entry) {
+        // do all of this whether promise was fulfilled or rejected
+        this._active = this._pending; // see if there's a pending request waiting
+        this._pending = undefined; // clear pending
+        if (this._active)
+          this._active.start(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      }
     }
   }
 }

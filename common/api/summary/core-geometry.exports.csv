@@ -79,6 +79,7 @@ internal;class;Complex
 public;class;Cone
 public;class;ConsolidateAdjacentCurvePrimitivesOptions
 public;class;Constant
+alpha;class;ConstrainedCurve2d
 public;class;ConstructCurveBetweenCurves
 public;class;ConvexClipPlaneSet
 public;type;ConvexClipPlaneSetProps

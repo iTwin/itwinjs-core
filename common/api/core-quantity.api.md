@@ -539,7 +539,7 @@ export interface PotentialParseUnit {
 // @beta
 export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
-    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined;
+    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)

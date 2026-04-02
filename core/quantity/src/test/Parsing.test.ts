@@ -39,7 +39,7 @@ describe("Parsing tests:", () => {
     const inchesQty = meterQty.convertTo(inchUnit, conversion);
 
     expect(meterQty.magnitude).toEqual(1.0);
-    expect(inchesQty!.magnitude).toEqual(meterQty.magnitude * conversion.factor);
+    expect(inchesQty.magnitude).toEqual(meterQty.magnitude * conversion.factor);
   });
 
   it("Convert units", async () => {

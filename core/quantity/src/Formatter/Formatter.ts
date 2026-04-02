@@ -575,7 +575,7 @@ export class Formatter {
         }
         const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
         const azBaseConverted = azBaseQuantity.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
-        if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+        if (!azBaseConverted.isValid) {
           throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.persistenceUnit.name}.`);
         }
         azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
@@ -614,7 +614,7 @@ export class Formatter {
 
     const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
     const converted = revolution.convertTo(spec.persistenceUnit, spec.revolutionConversion);
-    if (converted === undefined || !converted.isValid) {
+    if (!converted.isValid) {
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.persistenceUnit.name}.`);
     }
 

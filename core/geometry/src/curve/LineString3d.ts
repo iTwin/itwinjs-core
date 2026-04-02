@@ -899,7 +899,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** Find the point on the linestring (including its segment interiors) that is closest to spacePoint. */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
     const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);

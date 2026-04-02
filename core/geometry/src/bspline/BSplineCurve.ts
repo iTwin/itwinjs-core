@@ -275,7 +275,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @returns details of the closest point.
    */
   public override closestPoint(
-    spacePoint: Point3d, _extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     // seed at start point; final point comes with final bezier perpendicular step
     const point = this.fractionToPoint(0);

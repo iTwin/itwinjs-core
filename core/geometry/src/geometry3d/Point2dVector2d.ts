@@ -168,7 +168,7 @@ export class XY implements XAndY {
       targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
   }
   /** Multiply the x, y parts by scale, and return the instance. */
-  public scaleInPlace(scale: number): this  {
+  public scaleInPlace(scale: number): this {
     this.x *= scale;
     this.y *= scale;
     return this;
@@ -200,6 +200,18 @@ export class Point2d extends XY implements BeJSONFunctions {
       return result;
     }
     return new Point2d(x, y);
+  }
+  /**
+   * Return a point at interpolated coordinates between two given points.
+   * @param xyA first point
+   * @param fraction interpolation fraction
+   * @param xyB second point
+   */
+  public static createInterpolated(xyA: XAndY, fraction: number, xyB: XAndY): Point2d {
+    return new Point2d(
+      Geometry.interpolate(xyA.x, fraction, xyB.x),
+      Geometry.interpolate(xyA.y, fraction, xyB.y),
+    );
   }
   /**
    * Set x and y from a JSON input such as `[1,2]` or `{x:1, y:2}`
