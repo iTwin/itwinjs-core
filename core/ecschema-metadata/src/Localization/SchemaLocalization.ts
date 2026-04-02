@@ -9,7 +9,7 @@ import { Property } from "../Metadata/Property";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Enumeration } from "../Metadata/Enumeration";
 import { ILocalizationProvider } from "./LocalizationProvider";
-import { SchemaLocalizationJson, LocalizedText } from "./LocalizationTypes";
+import { LocalizedText, SchemaLocalizationJson } from "./LocalizationTypes";
 
 /**
  * Manages schema localization to provide localized labels and descriptions
@@ -183,14 +183,16 @@ export class SchemaLocalization {
   public async getPropertyLabel(ecClass: ECClass, property: Property): Promise<string> {
     const localization = await this.getSchemaLocalizationJson(ecClass.schema.name);
 
-    if (localization?.classes?.[ecClass.name]?.properties?.[property.name]?.label) {
-      return localization.classes[ecClass.name].properties![property.name].label!;
+    const localizedLabel = localization?.classes?.[ecClass.name]?.properties?.[property.name]?.label;
+    if (localizedLabel) {
+      return localizedLabel;
     }
 
     // Try base locale if specific locale didn't have the property
     const baseLocalization = await this.getBaseLocalizationJson(ecClass.schema.name);
-    if (baseLocalization?.classes?.[ecClass.name]?.properties?.[property.name]?.label) {
-      return baseLocalization.classes[ecClass.name].properties![property.name].label!;
+    const baseLocalizedLabel = baseLocalization?.classes?.[ecClass.name]?.properties?.[property.name]?.label;
+    if (baseLocalizedLabel) {
+      return baseLocalizedLabel;
     }
 
     return property.label || property.name;
@@ -203,14 +205,16 @@ export class SchemaLocalization {
   public async getPropertyDescription(ecClass: ECClass, property: Property): Promise<string | undefined> {
     const localization = await this.getSchemaLocalizationJson(ecClass.schema.name);
 
-    if (localization?.classes?.[ecClass.name]?.properties?.[property.name]?.description) {
-      return localization.classes[ecClass.name].properties![property.name].description!;
+    const localizedDescription = localization?.classes?.[ecClass.name]?.properties?.[property.name]?.description;
+    if (localizedDescription) {
+      return localizedDescription;
     }
 
     // Try base locale if specific locale didn't have the property
     const baseLocalization = await this.getBaseLocalizationJson(ecClass.schema.name);
-    if (baseLocalization?.classes?.[ecClass.name]?.properties?.[property.name]?.description) {
-      return baseLocalization.classes[ecClass.name].properties![property.name].description!;
+    const baseLocalizedDescription = baseLocalization?.classes?.[ecClass.name]?.properties?.[property.name]?.description;
+    if (baseLocalizedDescription) {
+      return baseLocalizedDescription;
     }
 
     return property.description;
@@ -223,14 +227,16 @@ export class SchemaLocalization {
   public async getEnumeratorLabel(enumeration: Enumeration, enumeratorName: string): Promise<string> {
     const localization = await this.getSchemaLocalizationJson(enumeration.schema.name);
 
-    if (localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.label) {
-      return localization.enumerations[enumeration.name].enumerators![enumeratorName].label!;
+    const localizedLabel = localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.label;
+    if (localizedLabel) {
+      return localizedLabel;
     }
 
     // Try base locale if specific locale didn't have the enumerator
     const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema.name);
-    if (baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.label) {
-      return baseLocalization.enumerations[enumeration.name].enumerators![enumeratorName].label!;
+    const baseLocalizedLabel = baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.label;
+    if (baseLocalizedLabel) {
+      return baseLocalizedLabel;
     }
 
     // Find the enumerator in the enumeration
@@ -245,14 +251,16 @@ export class SchemaLocalization {
   public async getEnumeratorDescription(enumeration: Enumeration, enumeratorName: string): Promise<string | undefined> {
     const localization = await this.getSchemaLocalizationJson(enumeration.schema.name);
 
-    if (localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description) {
-      return localization.enumerations[enumeration.name].enumerators![enumeratorName].description!;
+    const localizedDescription = localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description;
+    if (localizedDescription) {
+      return localizedDescription;
     }
 
     // Try base locale if specific locale didn't have the enumerator
     const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema.name);
-    if (baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description) {
-      return baseLocalization.enumerations[enumeration.name].enumerators![enumeratorName].description!;
+    const baseLocalizedDescription = baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description;
+    if (baseLocalizedDescription) {
+      return baseLocalizedDescription;
     }
 
     // Find the enumerator in the enumeration

@@ -86,8 +86,8 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label when localization not found", async () => {
-      const provider = new LocalizationProvider(async () => undefined);
-      const localization = new SchemaLocalization(provider, "fr");
+      const localizationProvider = new LocalizationProvider(async () => undefined);
+      const localization = new SchemaLocalization(localizationProvider, "fr");
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       expect(buildingClass).toBeDefined();
@@ -260,8 +260,8 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original property label when localization not found", async () => {
-      const provider = new LocalizationProvider(async () => undefined);
-      const localization = new SchemaLocalization(provider, "fr");
+      const localizationProvider = new LocalizationProvider(async () => undefined);
+      const localization = new SchemaLocalization(localizationProvider, "fr");
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       const heightProp = await buildingClass!.getProperty("Height");
@@ -367,8 +367,8 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original enumerator label when localization not found", async () => {
-      const provider = new LocalizationProvider(async () => undefined);
-      const localization = new SchemaLocalization(provider, "fr");
+      const localizationProvider = new LocalizationProvider(async () => undefined);
+      const localization = new SchemaLocalization(localizationProvider, "fr");
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       const label = await localization.getEnumeratorLabel(buildingTypeEnum!, "Residential");
@@ -753,8 +753,8 @@ describe("SchemaLocalization", () => {
         }
       };
 
-      const provider = new LocalizationProvider(trackingLoader);
-      const localization = new SchemaLocalization(provider, "de");
+      const localizationProvider = new LocalizationProvider(trackingLoader);
+      const localization = new SchemaLocalization(localizationProvider, "de");
 
       await localization.getSchemaLabel(testBuildingSchema);
       await localization.getSchemaLabel(testProductSchema);
@@ -782,15 +782,15 @@ describe("SchemaLocalization", () => {
     });
 
     it("should throw error for invalid localization JSON structure", async () => {
-      const loader = async () => {
+      const invalidLoader = async () => {
         return {
           // Missing required fields: schemaName and locale
           label: "Invalid",
         } as any;
       };
 
-      const provider = new LocalizationProvider(loader);
-      const localization = new SchemaLocalization(provider, "de");
+      const localizationProvider = new LocalizationProvider(invalidLoader);
+      const localization = new SchemaLocalization(localizationProvider, "de");
 
       await expect(localization.getSchemaLabel(testBuildingSchema)).rejects.toThrow("Invalid localization JSON");
     });

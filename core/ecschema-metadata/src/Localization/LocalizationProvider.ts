@@ -29,7 +29,7 @@ export class LocalizationProvider implements ILocalizationProvider {
    * Constructs a LocalizationProvider.
    * @param _loader Function that loads JSON content given a schema name and locale
    */
-  constructor(private _loader: (schemaName: string, locale: string) => Promise<any | undefined>) {
+  constructor(private _loader: (schemaName: string, locale: string) => Promise<SchemaLocalizationJson | undefined>) {
   }
 
   /**
