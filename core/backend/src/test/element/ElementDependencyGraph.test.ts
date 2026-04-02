@@ -125,21 +125,21 @@ class TestHelper {
   }
 
   public setElementDependencyGraphCallbacks() {
-    this.removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
-      Logger.logTrace("EDGTest", `_onDeletedDependency ${this.fmtRel(evProps)}`);
-      this.dres.deletedDependency.push(evProps);
+    this.removals.push(TestElementDrivesElement.deletedDependency.addListener((arg) => {
+      Logger.logTrace("EDGTest", `_onDeletedDependency ${this.fmtRel(arg.props)}`);
+      this.dres.deletedDependency.push(arg.props);
     }));
-    this.removals.push(TestElementDrivesElement.rootChanged.addListener((evProps, _im) => {
-      Logger.logTrace("EDGTest", `_onRootChanged ${this.fmtRel(evProps)}`);
-      this.dres.rootChanged.push(evProps);
+    this.removals.push(TestElementDrivesElement.rootChanged.addListener((arg) => {
+      Logger.logTrace("EDGTest", `_onRootChanged ${this.fmtRel(arg.props)}`);
+      this.dres.rootChanged.push(arg.props);
     }));
-    this.removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((elId) => {
-      Logger.logTrace("EDGTest", `_onBeforeOutputsHandled ${this.fmtElem(elId)}`);
-      this.dres.beforeOutputs.push(elId);
+    this.removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((arg) => {
+      Logger.logTrace("EDGTest", `_onBeforeOutputsHandled ${this.fmtElem(arg.elId)}`);
+      this.dres.beforeOutputs.push(arg.elId);
     }));
-    this.removals.push(TestPhysicalObject.allInputsHandled.addListener((elId) => {
-      Logger.logTrace("EDGTest", `_onAllInputsHandled ${this.fmtElem(elId)}`);
-      this.dres.allInputsHandled.push(elId);
+    this.removals.push(TestPhysicalObject.allInputsHandled.addListener((arg) => {
+      Logger.logTrace("EDGTest", `_onAllInputsHandled ${this.fmtElem(arg.elId)}`);
+      this.dres.allInputsHandled.push(arg.elId);
     }));
   }
 

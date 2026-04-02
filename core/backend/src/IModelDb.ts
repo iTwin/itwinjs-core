@@ -470,6 +470,17 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public [_activeTxn]: EditTxn | undefined;
 
+  /** Returns the active [[EditTxn]] if one is current, otherwise the implicit transaction.
+   * Use this inside element and relationship callbacks that may be invoked either during an explicit transaction or
+   * during indirect change processing.
+   * @note This method is a temporary workaround until [[OnElementArg]] (and related callback arg types) are updated
+   * to carry the transaction directly in a future PR.
+   * @internal
+   */
+  public getIndirectTxn(): EditTxn {
+    return this[_activeTxn] ?? this[_implicitTxn];
+  }
+
   /** @alpha */
   public get codeService() { return this._codeService; }
 
@@ -510,14 +521,6 @@ export abstract class IModelDb extends IModel {
   /** determine whether the schema lock is currently held for this iModel. */
   public get holdsSchemaLock() {
     return this.locks.holdsExclusiveLock(IModel.repositoryModelId);
-  }
-
-  /** Get the transaction for indirect changes if the iModel is currently processing indirect changes.
-   * Used by callbacks (like relationship onRootChanged) that only execute during indirect change propagation.
-   * @beta
-   */
-  public getIndirectChangesTxn(): EditTxn | undefined {
-    return this[_nativeDb].getTxnMode() === "indirect" ? this[_activeTxn] : undefined;
   }
 
   /** Event called after a changeset is applied to this IModelDb. */

@@ -9,6 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited, _verifyChannel } from "./internal/Symbols";
 import { IModelDb } from "./IModelDb";
+import type { EditTxn } from "./EditTxn";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
@@ -66,7 +67,7 @@ export interface ChannelControl {
    * @throws if the element is already in a channel different than the shared channel, or if
    * there is already another channelRoot element for the specified channelKey
    */
-  makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
+  makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey, editTxn?: EditTxn }): void;
   /** Insert a new Subject element that is a Channel Root in this iModel.
    * @returns the ElementId of the new Subject element.
    * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
@@ -80,6 +81,9 @@ export interface ChannelControl {
     parentSubjectId?: Id64String;
     /** Optional description for new Subject. */
     description?: string;
+    /** EditTxn to use for the operation. */
+    editTxn?: EditTxn;
+
   }): Id64String;
   /**
    * Queries for the element Id acting as the ChannelRoot for a given channelKey, if any

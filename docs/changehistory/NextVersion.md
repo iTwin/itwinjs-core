@@ -16,7 +16,7 @@ This change is meant to replace the long-standing implicit write pattern in whic
 - New explicit-write APIs are available across backend editing surfaces, including elements, models, relationships, aspects, file properties, etc.
 - Existing implicit-write APIs remain available for now, and all are now marked `@deprecated` and point to `WithTxn` replacements.
 - [withEditTxn]($backend) provides a convenient scoped wrapper that starts an [EditTxn]($backend), passes it to a callback, saves on success, and abandons on failure.
-- [IModelDb.getIndirectChangesTxn]($backend) can be used inside indirect-change callbacks, such as relationship dependency propagation, to obtain the active [EditTxn]($backend) for that callback scope.
+- Indirect-change callbacks now receive the active [EditTxn]($backend) via callback args (`indirectEditTxn`), such as [OnDependencyArg]($backend) and [OnElementDependencyArg]($backend).
 
 #### Migration guidance
 
@@ -25,7 +25,7 @@ When updating existing code:
 1. Replace calls to legacy APIs that add, delete, or modify database content (for example `insert()`, `update()`, `delete()`, `saveChanges()`, and container-specific insert/update/delete helpers) with their `WithTxn` equivalents.
 2. Group related edits into a single [EditTxn]($backend) so they succeed or fail together.
 3. Prefer [withEditTxn]($backend) for new code unless manual `start()` / `end()` control is necessary.
-4. If code runs inside indirect dependency processing callbacks, use [IModelDb.getIndirectChangesTxn]($backend) for indirect changes.
+4. If code runs inside indirect dependency processing callbacks, use the callback argument's `indirectEditTxn` for indirect changes.
 
 Before:
 

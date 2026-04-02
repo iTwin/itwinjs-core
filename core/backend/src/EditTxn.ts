@@ -28,8 +28,8 @@ import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Sym
  *
  * @see [EditTxn transaction model and migration guidance]($docs/learning/backend/EditTxn.md)
  *
- * *During indirect changes (commit processing):* Use [[IModelDb.getIndirectChangesTxn]] to obtain the EditTxn
- * in callbacks like [[Relationship.onRootChanged]] and [[Relationship.onDeletedDependency]] that fire during indirect processing.
+ * *During indirect changes (commit processing):* Use callback args (`indirectEditTxn`) in callbacks like
+ * [[Relationship.onRootChangedArg]] and [[Relationship.onDeletedDependencyArg]] that fire during indirect processing.
  *
  * @beta
  */

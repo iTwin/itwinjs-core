@@ -897,9 +897,9 @@ describe("TxnManager", () => {
 
       // Setup dependency handler to update childElement
       let handlerCalled = false;
-      const dropListener = TestPhysicalObject.allInputsHandled.addListener((id) => {
+      const dropListener = TestPhysicalObject.allInputsHandled.addListener((arg) => {
         handlerCalled = true;
-        assert.equal(id, childId);
+        assert.equal(arg.elId, childId);
         const childEl = elements.getElement<TestPhysicalObject>(childId);
         assert.equal(childEl.intProperty, 10, "int property should be 10");
         childEl.intProperty += 10;

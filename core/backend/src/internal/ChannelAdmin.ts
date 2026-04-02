@@ -14,7 +14,7 @@ import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
 import { EditTxn, withEditTxn } from "../EditTxn";
-import { _activeTxn, _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
+import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
 import * as semver from "semver";
 
 class ChannelAdmin implements ChannelControl {
@@ -89,7 +89,7 @@ class ChannelAdmin implements ChannelControl {
     return this[_verifyChannel](modelId);
   }
 
-  public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }, txn?: EditTxn) {
+  public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey, editTxn?: EditTxn },) {
     const channelKey = this.getChannelKey(args.elementId);
     if (ChannelControl.sharedChannelName !== channelKey)
       ChannelControlError.throwError("may-not-nest", `Channel ${channelKey} may not nest`, channelKey);
@@ -105,37 +105,33 @@ class ChannelAdmin implements ChannelControl {
       },
       owner: args.channelKey,
     };
-    if (txn) {
-      txn.insertAspect(props);
+
+    if (args.editTxn) {
+      args.editTxn.insertAspect(props);
       return;
     }
 
-    const activeTxn = this._iModel[_activeTxn];
-    if (undefined !== activeTxn)
-      activeTxn.insertAspect(props);
-    else
-      withEditTxn(this._iModel, (editTxn) => editTxn.insertAspect(props));
+    withEditTxn(this._iModel, `Make channel root ${args.channelKey}`, (editTxn) => editTxn.insertAspect(props));
   }
 
-  public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
+  public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string, editTxn?: EditTxn }): Id64String {
     // Check if channelKey already exists before inserting Subject.
     // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
     // Prefer to check twice instead of deleting the Subject in the latter option.
     if (this.queryChannelRoot(args.channelKey) !== undefined)
       ChannelControlError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, args.channelKey);
 
-    const activeTxn = this._iModel[_activeTxn];
-    if (undefined !== activeTxn) {
-      const elementId = Subject.insertWithTxn(activeTxn, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
-      this.makeChannelRoot({ elementId, channelKey: args.channelKey }, activeTxn);
+    const insertWithTxn = (editTxn: EditTxn) => {
+      const elementId = Subject.insertWithTxn(editTxn, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
+      this.makeChannelRoot({ elementId, channelKey: args.channelKey, editTxn });
       return elementId;
+    };
+
+    if (undefined !== args.editTxn) {
+      return insertWithTxn(args.editTxn);
     }
 
-    return withEditTxn(this._iModel, (txn) => {
-      const elementId = Subject.insertWithTxn(txn, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
-      this.makeChannelRoot({ elementId, channelKey: args.channelKey }, txn);
-      return elementId;
-    });
+    return withEditTxn(this._iModel, `Insert channel subject ${args.subjectName}`, insertWithTxn);
   }
 
   public queryChannelRoot(channelKey: ChannelKey): Id64String | undefined {

@@ -12,7 +12,7 @@ import { EditTxn } from "./EditTxn";
 import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
-import { _activeTxn } from "./internal/Symbols";
+import { _activeTxn, _implicitTxn } from "./internal/Symbols";
 
 const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
@@ -182,9 +182,7 @@ export abstract class ElementTreeBottomUp {
     if (undefined !== this._txn)
       return this._txn;
 
-    const activeTxn = this._iModel[_activeTxn];
-    assert(undefined !== activeTxn);
-    return activeTxn;
+   return this._iModel[_activeTxn] ?? this._iModel[_implicitTxn];
   }
 
   constructor(protected _iModel: IModelDb, txn?: EditTxn) {
@@ -263,9 +261,7 @@ class SpecialElements {
     if (undefined !== this._txn)
       return this._txn;
 
-    const activeTxn = iModel[_activeTxn];
-    assert(undefined !== activeTxn);
-    return activeTxn;
+    return iModel[_activeTxn] ?? iModel[_implicitTxn];
   }
 
   public recordSpecialElement(iModel: IModelDb, elementId: Id64String): boolean {

@@ -29,9 +29,9 @@ import {
   PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
 import { _hubAccess } from "../internal/Symbols";
-import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
+import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, OnElementDependencyArg, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
-import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
+import { DrawingGraphicRepresentsElement, ElementDrivesElement, OnDependencyArg, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../internal/HubMock";
@@ -64,10 +64,10 @@ export interface TestRelationshipProps extends RelationshipProps {
 export class TestElementDrivesElement extends ElementDrivesElement {
   public static override get className(): string { return "TestElementDrivesElement"; }
   declare public property1: string;
-  public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
-  public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
-  public static override onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
-  public static override onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
+  public static rootChanged = new BeEvent<(arg: OnDependencyArg) => void>();
+  public static deletedDependency = new BeEvent<(arg: OnDependencyArg) => void>();
+  public static override onRootChangedArg(arg: OnDependencyArg): void { this.rootChanged.raiseEvent(arg); }
+  public static override onDeletedDependencyArg(arg: OnDependencyArg): void { this.deletedDependency.raiseEvent(arg); }
 }
 export interface TestPhysicalObjectProps extends PhysicalElementProps {
   intProperty: number;
@@ -75,10 +75,10 @@ export interface TestPhysicalObjectProps extends PhysicalElementProps {
 export class TestPhysicalObject extends PhysicalElement {
   public static override get className(): string { return "TestPhysicalObject"; }
   declare public intProperty: number;
-  public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
-  public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
-  public static override onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
-  public static override onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
+  public static beforeOutputsHandled = new BeEvent<(arg: OnElementDependencyArg) => void>();
+  public static allInputsHandled = new BeEvent<(arg: OnElementDependencyArg) => void>();
+  public static override onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void { this.beforeOutputsHandled.raiseEvent(arg); }
+  public static override onAllInputsHandledArg(arg: OnElementDependencyArg): void { this.allInputsHandled.raiseEvent(arg); }
 }
 
 /** the types of users available for tests */

@@ -1000,10 +1000,12 @@ export interface ChannelControl {
         channelKey: ChannelKey;
         parentSubjectId?: Id64String;
         description?: string;
+        editTxn?: EditTxn;
     }): Id64String;
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
+        editTxn?: EditTxn;
     }): void;
     queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
@@ -2680,10 +2682,14 @@ class Element_2 extends Entity {
         [key: string]: any;
     };
     readonly model: Id64String;
-    // @beta
+    // @beta @deprecated
     protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta
+    protected static onAllInputsHandledArg(arg: OnElementDependencyArg): void;
+    // @beta @deprecated
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
+    // @beta
+    protected static onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void;
     // @beta
     protected static onChildAdd(_arg: OnChildElementPropsArg): void;
     // @beta
@@ -2802,9 +2808,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static evaluateFields(args: EvaluateFieldsArgs): number;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
-    static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
+    static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
-    static onRootChanged(props: RelationshipProps, iModel: IModelDb): void;
+    static onRootChangedArg(arg: OnDependencyArg): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
@@ -3939,8 +3945,8 @@ export abstract class IModelDb extends IModel {
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
-    // @beta
-    getIndirectChangesTxn(): EditTxn | undefined;
+    // @internal
+    getIndirectTxn(): EditTxn;
     // @internal
     getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
@@ -5318,8 +5324,21 @@ export interface OnChildElementPropsArg extends OnChildElementArg {
 }
 
 // @beta
+export interface OnDependencyArg {
+    iModel: IModelDb;
+    indirectEditTxn: EditTxn;
+    props: RelationshipProps;
+}
+
+// @beta
 export interface OnElementArg {
     iModel: IModelDb;
+}
+
+// @beta
+export interface OnElementDependencyArg extends OnElementArg {
+    elId: Id64String;
+    indirectEditTxn: EditTxn;
 }
 
 // @beta
@@ -5762,8 +5781,14 @@ export class Relationship extends Entity {
     insert(): Id64String;
     // @beta
     insertWithTxn(txn: EditTxn): Id64String;
+    // @deprecated
     static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void;
+    // @beta
+    static onDeletedDependencyArg(arg: OnDependencyArg): void;
+    // @deprecated
     static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void;
+    // @beta
+    static onRootChangedArg(arg: OnDependencyArg): void;
     // (undocumented)
     readonly sourceId: Id64String;
     // (undocumented)

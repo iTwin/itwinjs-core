@@ -3231,11 +3231,11 @@ describe("iModel", () => {
     return elementProps;
   }
 
-  function insertElement(imodel: IModelDb, mId: Id64String, cId: Id64String, cName: string, propName: string, txn?: EditTxn): Id64String {
+  function insertElement(imodel: IModelDb, mId: Id64String, cId: Id64String, cName: string, propName: string, txn: EditTxn): Id64String {
     const elementProps = createElemProps(imodel, mId, cId, cName);
     const geomElement = imodel.elements.createElement(elementProps);
     (geomElement as any).name = propName; // Add a custom property to the element
-    const id = undefined !== txn ? txn.insertElement(geomElement.toJSON()) : withEditTxn(imodel, (scopedTxn) => scopedTxn.insertElement(geomElement.toJSON()));
+    const id = txn.insertElement(geomElement.toJSON());
     assert.isTrue(Id64.isValidId64(id), "insert failed");
     return id;
   }

@@ -5,11 +5,11 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SpatialCategory } from "../Category";
 import { ClassRegistry } from "../ClassRegistry";
-import { GeometricElement3d, PhysicalPartition } from "../Element";
+import { GeometricElement3d, OnElementDependencyArg, PhysicalPartition } from "../Element";
 import { IModelDb, StandaloneDb } from "../IModelDb";
 import { PhysicalModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
-import { ElementDrivesElement, ElementDrivesElementProps } from "../Relationship";
+import { ElementDrivesElement, ElementDrivesElementProps, OnDependencyArg } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { EditTxn } from "../EditTxn";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -257,10 +257,10 @@ class ElementDrivesElementEventMonitor {
   public readonly onBeforeOutputsHandled: string[] = [];
   public readonly onDeletedDependency: [string, string][] = [];
   constructor(public iModelDb: IModelDb) {
-    InputDrivesOutput.events.onDeletedDependency.addListener((props: RelationshipProps) => this.onDeletedDependency.push([this.iModelDb.elements.tryGetElement<NodeElement>(props.sourceId)?.userLabel as string, this.iModelDb.elements.tryGetElement<NodeElement>(props.targetId)?.userLabel as string]));
-    InputDrivesOutput.events.onRootChanged.addListener((props: RelationshipProps) => this.onRootChanged.push([this.iModelDb.elements.tryGetElement<NodeElement>(props.sourceId)?.userLabel as string, this.iModelDb.elements.tryGetElement<NodeElement>(props.targetId)?.userLabel as string]));
-    NodeElement.events.onAllInputsHandled.addListener((id: Id64String) => this.onAllInputsHandled.push(this.iModelDb.elements.tryGetElement<NodeElement>(id)?.userLabel as string));
-    NodeElement.events.onBeforeOutputsHandled.addListener((id: Id64String) => this.onBeforeOutputsHandled.push(this.iModelDb.elements.tryGetElement<NodeElement>(id)?.userLabel as string));
+    InputDrivesOutput.events.onDeletedDependency.addListener((arg: OnDependencyArg) => this.onDeletedDependency.push([this.iModelDb.elements.tryGetElement<NodeElement>(arg.props.sourceId)?.userLabel as string, this.iModelDb.elements.tryGetElement<NodeElement>(arg.props.targetId)?.userLabel as string]));
+    InputDrivesOutput.events.onRootChanged.addListener((arg: OnDependencyArg) => this.onRootChanged.push([this.iModelDb.elements.tryGetElement<NodeElement>(arg.props.sourceId)?.userLabel as string, this.iModelDb.elements.tryGetElement<NodeElement>(arg.props.targetId)?.userLabel as string]));
+    NodeElement.events.onAllInputsHandled.addListener((arg: OnElementDependencyArg) => this.onAllInputsHandled.push(this.iModelDb.elements.tryGetElement<NodeElement>(arg.elId)?.userLabel as string));
+    NodeElement.events.onBeforeOutputsHandled.addListener((arg: OnElementDependencyArg) => this.onBeforeOutputsHandled.push(this.iModelDb.elements.tryGetElement<NodeElement>(arg.elId)?.userLabel as string));
   }
   public clear() {
     this.onRootChanged.length = 0;
@@ -280,26 +280,26 @@ export interface NodeElementProps extends GeometricElement3dProps {
 
 export class InputDrivesOutput extends ElementDrivesElement {
   public static readonly events = {
-    onRootChanged: new BeEvent<(props: RelationshipProps, iModel: IModelDb) => void>(),
-    onDeletedDependency: new BeEvent<(props: RelationshipProps, iModel: IModelDb) => void>(),
+    onRootChanged: new BeEvent<(arg: OnDependencyArg) => void>(),
+    onDeletedDependency: new BeEvent<(arg: OnDependencyArg) => void>(),
   };
   public static override get className(): string { return "InputDrivesOutput"; }
   protected constructor(props: InputDrivesOutputProps, iModel: IModelDb) {
     super(props, iModel);
   }
-  public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
-    this.events.onRootChanged.raiseEvent(props, iModel);
+  public static override onRootChangedArg(arg: OnDependencyArg): void {
+    this.events.onRootChanged.raiseEvent(arg);
   }
-  public static override onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void {
-    this.events.onDeletedDependency.raiseEvent(props, iModel);
+  public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
+    this.events.onDeletedDependency.raiseEvent(arg);
   }
 }
 export class NodeElement extends GeometricElement3d {
   public op: string;
   public val: number;
   public static readonly events = {
-    onAllInputsHandled: new BeEvent<(id: Id64String, iModel: IModelDb) => void>(),
-    onBeforeOutputsHandled: new BeEvent<(id: Id64String, iModel: IModelDb) => void>(),
+    onAllInputsHandled: new BeEvent<(arg: OnElementDependencyArg) => void>(),
+    onBeforeOutputsHandled: new BeEvent<(arg: OnElementDependencyArg) => void>(),
   };
 
   public static override get className(): string { return "Node"; }
@@ -314,11 +314,11 @@ export class NodeElement extends GeometricElement3d {
     val.val = this.val;
     return val;
   }
-  protected static override onAllInputsHandled(id: Id64String, iModel: IModelDb): void {
-    this.events.onAllInputsHandled.raiseEvent(id, iModel);
+  protected static override onAllInputsHandledArg(arg: OnElementDependencyArg): void {
+    this.events.onAllInputsHandled.raiseEvent(arg);
   }
-  protected static override onBeforeOutputsHandled(id: Id64String, iModel: IModelDb): void {
-    this.events.onBeforeOutputsHandled.raiseEvent(id, iModel);
+  protected static override onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void {
+    this.events.onBeforeOutputsHandled.raiseEvent(arg);
   }
   public static generateGeometry(radius: number): GeometryStreamProps {
     const builder = new GeometryStreamBuilder();
@@ -934,7 +934,7 @@ describe("ElementDrivesElement Tests", () => {
     let onBeforeOutputsHandledCount = 0;
     InputDrivesOutput.events.onRootChanged.addListener(() => { onRootChangedCount++; });
     InputDrivesOutput.events.onDeletedDependency.addListener(() => { onDeletedDependencyCount++; });
-    NodeElement.events.onAllInputsHandled.addListener((_id: Id64String) => { onAllInputsHandledCount++; });
+    NodeElement.events.onAllInputsHandled.addListener(() => { onAllInputsHandledCount++; });
     NodeElement.events.onBeforeOutputsHandled.addListener(() => { onBeforeOutputsHandledCount++; });
 
     const stopWatch1 = new StopWatch("save changes", true);

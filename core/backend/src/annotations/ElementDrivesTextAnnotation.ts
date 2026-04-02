@@ -6,16 +6,16 @@
  * @module Elements
  */
 
-import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
-import { ElementDrivesElement } from "../Relationship";
-import { IModelDb } from "../IModelDb";
-import { Element } from "../Element";
-import type { EditTxn } from "../EditTxn";
-import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { Element } from "../Element";
+import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
+import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
+import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
+import type { EditTxn } from "../EditTxn";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -146,19 +146,13 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** @internal */
-  public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
-    const txn = iModel.getIndirectChangesTxn();
-    if (undefined !== txn) {
-      updateElementFields(props, txn, false);
-    }
+  public static override onRootChangedArg(arg: OnDependencyArg): void {
+    updateElementFields(arg.props, arg.indirectEditTxn, false);
   }
 
   /** @internal */
-  public static override onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void {
-    const txn = iModel.getIndirectChangesTxn();
-    if (undefined !== txn) {
-      updateElementFields(props, txn, true);
-    }
+  public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
+    updateElementFields(arg.props, arg.indirectEditTxn, true);
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.

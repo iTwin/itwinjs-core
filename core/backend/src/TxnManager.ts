@@ -13,11 +13,11 @@ import {
 import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
-import {Element} from "./Element";
+import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _activeTxn, _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -892,20 +892,32 @@ export class TxnManager {
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
     // as any necessary to access protected static method on Element and subclasses).
-    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel[_activeTxn];
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onBeforeOutputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
     // as any necessary to access protected static method on Element and subclasses).
-    (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel[_activeTxn];
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onAllInputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel[_activeTxn];
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onRootChangedArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel[_activeTxn];
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onDeletedDependencyArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }

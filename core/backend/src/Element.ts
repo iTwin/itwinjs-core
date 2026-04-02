@@ -93,6 +93,16 @@ export interface OnSubModelIdArg extends OnElementArg {
   subModelId: Id64String;
 }
 
+/** Argument for element dependency callbacks.
+ * @beta
+ */
+export interface OnElementDependencyArg extends OnElementArg {
+  /** The Id of the Element affected by this method. */
+  elId: Id64String;
+  /** The active transaction for indirect processing. */
+  indirectEditTxn: EditTxn;
+}
+
 /** The smallest individually identifiable building block for modeling the real world in an iModel.
  * Each element represents an [[Entity]] in the real world. Sets of Elements (contained in [[Model]]s) are used to model
  * other Elements that represent larger scale real world entities. Using this recursive modeling strategy,
@@ -398,6 +408,20 @@ export class Element extends Entity {
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
    */
+  protected static onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onBeforeOutputsHandled(arg.elId, arg.iModel);
+  }
+
+  /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
+   * This special callback is made when:
+   * * the element is part of an [[ElementDrivesElement]] graph, and
+   * * the element has no inputs, and
+   * * none of the element's outputs have been processed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   * @deprecated Use onBeforeOutputsHandledArg instead.
+   */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Called on an element in a graph after all of its inputs have been processed and before its outputs are processed.
@@ -409,6 +433,22 @@ export class Element extends Entity {
    * This method is not called if none of the element's inputs were changed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
+   */
+  protected static onAllInputsHandledArg(arg: OnElementDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onAllInputsHandled(arg.elId, arg.iModel);
+  }
+
+  /** Called on an element in a graph after all of its inputs have been processed and before its outputs are processed.
+   * This callback is made when:
+   * * the specified element is part of an [[ElementDrivesElement]] graph, and
+   * * there was a direct change to some element upstream in the dependency graph.
+   * * all upstream elements in the graph have been processed.
+   * * none of the downstream elements have been processed.
+   * This method is not called if none of the element's inputs were changed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   * @deprecated Use onAllInputsHandledArg instead.
    */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 

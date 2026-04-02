@@ -422,7 +422,9 @@ beta;interface;OnAspectPropsArg
 beta;interface;OnChildElementArg
 beta;interface;OnChildElementIdArg
 beta;interface;OnChildElementPropsArg
+beta;interface;OnDependencyArg
 beta;interface;OnElementArg
+beta;interface;OnElementDependencyArg
 beta;interface;OnElementIdArg
 beta;interface;OnElementInModelIdArg
 beta;interface;OnElementInModelPropsArg

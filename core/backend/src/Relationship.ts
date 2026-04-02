@@ -17,6 +17,18 @@ import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
+/** Argument for relationship dependency callbacks.
+ * @beta
+ */
+export interface OnDependencyArg {
+  /** The iModel for the relationship affected by this method. */
+  iModel: IModelDb;
+  /** The ElementDrivesElement relationship instance affected by this method. */
+  props: RelationshipProps;
+  /** The transaction for indirect processing. */
+  indirectEditTxn: EditTxn;
+}
+
 /** Base class for all link table ECRelationships
  * @public
  */
@@ -57,16 +69,39 @@ export class Relationship extends Entity {
    * Callback invoked by saveChanges on an ElementDrivesElement relationship when its input has changed or is the output of some upstream relationship whose input has changed.
    * This callback is invoked after the input element has been processed by upstream relationships.
    * A subclass of ElementDrivesElement can re-implement this static method to take some action. onRootChanged may modify the output element only.
+   * @beta
+   */
+  public static onRootChangedArg(arg: OnDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onRootChanged(arg.props, arg.iModel);
+  }
+
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when its input has changed or is the output of some upstream relationship whose input has changed.
+   * This callback is invoked after the input element has been processed by upstream relationships.
+   * A subclass of ElementDrivesElement can re-implement this static method to take some action. onRootChanged may modify the output element only.
    * @param _props The ElementDrivesElement relationship instance.
    * @param _iModel The iModel
+   * @deprecated Use onRootChangedArg instead.
    */
   public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /**
    * Callback invoked by saveChanges on an ElementDrivesElement relationship when the relationship instance has been deleted.
    * A subclass of ElementDrivesElement can re-implement this static method to take some action.
+   * @beta
+   */
+  public static onDeletedDependencyArg(arg: OnDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onDeletedDependency(arg.props, arg.iModel);
+  }
+
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when the relationship instance has been deleted.
+   * A subclass of ElementDrivesElement can re-implement this static method to take some action.
    * @param _props The deleted ElementDrivesElement relationship instance.
    * @param _iModel The iModel
+   * @deprecated Use onDeletedDependencyArg instead.
    */
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 

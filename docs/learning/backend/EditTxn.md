@@ -8,7 +8,7 @@ If you already know the existing write APIs and just need to keep shipping, do t
 2. Replace deprecated write calls with `WithTxn` equivalents.
 3. Use `txn.saveChanges(...)` only when you want an intermediate commit and keep writing in the same transaction scope.
 4. If you are using direct `EditTxn` (not [withEditTxn]($backend)), use `txn.end("save")` to finish, or `txn.end("abandon")` to discard pending edits.
-5. In dependency callbacks, use [IModelDb.getIndirectChangesTxn]($backend) instead of creating a new transaction.
+5. In dependency callbacks, use the callback argument's `indirectEditTxn` instead of creating a new transaction.
 
 ## Old API to new API mapping
 
@@ -85,7 +85,7 @@ Recommended follow-up:
 - Transaction is not active: start the transaction (`txn.start()`) before writing, or use [withEditTxn]($backend).
 - Another transaction is active: only one explicit transaction can be active per iModel at a time.
 - Unsaved changes exist before `start()`: in practice this usually means legacy implicit-write APIs have already produced pending changes on the iModel; save or abandon those changes before starting a new explicit transaction.
-- In indirect dependency callbacks, a new transaction is created instead of reusing the callback transaction: use [IModelDb.getIndirectChangesTxn]($backend).
+- In indirect dependency callbacks, a new transaction is created instead of reusing the callback transaction: use the callback argument's `indirectEditTxn`.
 
 ## implicitWriteEnforcement
 
@@ -99,7 +99,7 @@ Recommended follow-up:
 
 ## Indirect change callbacks
 
-During indirect dependency processing callbacks (for example relationship callbacks), use [IModelDb.getIndirectChangesTxn]($backend) to obtain the active transaction for that scope.
+During indirect dependency processing callbacks (for example relationship callbacks), use the callback argument's `indirectEditTxn` to access the active transaction for that scope.
 
 ## Examples
 
@@ -177,7 +177,8 @@ This pattern helps keep an editing session coherent by ensuring one active comma
 
 - [EditTxn]($backend)
 - [withEditTxn]($backend)
-- [IModelDb.getIndirectChangesTxn]($backend)
+- [OnDependencyArg]($backend)
+- [OnElementDependencyArg]($backend)
 - [IModelHostOptions.implicitWriteEnforcement]($backend)
 - [EditCommand]($editor-backend)
 
