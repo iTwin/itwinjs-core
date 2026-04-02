@@ -13,11 +13,11 @@ import {
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable } from "@itwin/core-bentley";
+import { Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("ViewState", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("ViewState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
@@ -567,7 +567,7 @@ describe("ViewState", () => {
   });
 });
 
-describe("ViewState2d", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("ViewState2d", () => {
   let imodel: IModelConnection;
 
   beforeAll(async () => {

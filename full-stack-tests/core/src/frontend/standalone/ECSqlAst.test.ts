@@ -57,10 +57,11 @@ import {
   WhereClauseExp,
 } from "@itwin/ecsql-common";
 import { IModelConnection } from "@itwin/core-frontend";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("ECSql Abstract Syntax Tree", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("ECSql Abstract Syntax Tree", () => {
   let conn: IModelConnection;
 
   async function toNormalizeECSql(ecsql: string) {

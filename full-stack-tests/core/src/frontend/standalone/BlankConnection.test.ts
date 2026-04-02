@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
-import { Guid, GuidString } from "@itwin/core-bentley";
+import { Guid, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
 import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
@@ -18,7 +18,7 @@ function createViewDiv() {
   return div;
 }
 
-describe("Blank Connection", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Blank Connection", () => {
   let blankConnection: BlankConnection;
   const viewDiv = createViewDiv();
   const iTwinId: GuidString = Guid.createValue();

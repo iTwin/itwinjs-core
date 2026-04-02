@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("IModelConnection.Categories", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("IModelConnection.Categories", () => {
   const c1 = "0x17";
   const s1 = "0x18";
   const c2 = "0x19"; // DrawingCategory -- the rest are SpatialCategory.
