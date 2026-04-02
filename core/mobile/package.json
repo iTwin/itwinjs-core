@@ -39,7 +39,7 @@
     "@itwin/core-frontend": "workspace:*"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.0",
     "superagent": "^9.0.1",
     "ws": "^7.5.10"
   },
