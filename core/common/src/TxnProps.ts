@@ -8,10 +8,6 @@
 
 import { Id64String } from "@itwin/core-bentley";
 
-/** @packageDocumentation
- * @module iModels
- */
-
 /**
  * @alpha
  * Transaction types
