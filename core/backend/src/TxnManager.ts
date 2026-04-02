@@ -17,7 +17,7 @@ import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _activeTxn, _nativeDb } from "./internal/Symbols";
+import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -893,7 +893,7 @@ export class TxnManager {
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
     // as any necessary to access protected static method on Element and subclasses).
     const iModel = this._iModel;
-    const indirectEditTxn = iModel[_activeTxn];
+    const indirectEditTxn = iModel.getIndirectTxn();
     assert(undefined !== indirectEditTxn);
     (this._getElementClass(elClassName) as any).onBeforeOutputsHandledArg({ elId, iModel, indirectEditTxn });
   }
@@ -901,21 +901,21 @@ export class TxnManager {
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
     // as any necessary to access protected static method on Element and subclasses).
     const iModel = this._iModel;
-    const indirectEditTxn = iModel[_activeTxn];
+    const indirectEditTxn = iModel.getIndirectTxn();
     assert(undefined !== indirectEditTxn);
     (this._getElementClass(elClassName) as any).onAllInputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
     const iModel = this._iModel;
-    const indirectEditTxn = iModel[_activeTxn];
+    const indirectEditTxn = iModel.getIndirectTxn();
     assert(undefined !== indirectEditTxn);
     this._getRelationshipClass(props.classFullName).onRootChangedArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
     const iModel = this._iModel;
-    const indirectEditTxn = iModel[_activeTxn];
+    const indirectEditTxn = iModel.getIndirectTxn();
     assert(undefined !== indirectEditTxn);
     this._getRelationshipClass(props.classFullName).onDeletedDependencyArg({ props, iModel, indirectEditTxn });
   }

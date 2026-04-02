@@ -995,17 +995,29 @@ export interface ChannelControl {
     [_verifyChannel]: (modelId: Id64String) => void;
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
+    // @deprecated
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: ChannelKey;
         parentSubjectId?: Id64String;
         description?: string;
-        editTxn?: EditTxn;
     }): Id64String;
+    insertChannelSubjectWithTxn(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+        txn: EditTxn;
+    }): Id64String;
+    // @deprecated
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
-        editTxn?: EditTxn;
+    }): void;
+    makeChannelRootWithTxn(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+        txn: EditTxn;
     }): void;
     queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;

@@ -852,10 +852,11 @@ describe("Schema Import Callbacks", () => {
       imodel.channels.addAllowedChannel(channelKey);
 
       // Create a channel
-      channelRootId = imodel.channels.insertChannelSubject({
+      channelRootId = withEditTxn(imodel, (txn) => imodel.channels.insertChannelSubjectWithTxn({
         subjectName: "Test Channel",
         channelKey,
-      });
+        txn,
+      }));
 
       assert.isUndefined(getChannelVersion(imodel), "Version should be undefined initially");
 
@@ -941,10 +942,11 @@ describe("Schema Import Callbacks", () => {
       briefcaseDb.channels.addAllowedChannel(channelKey);
 
       if (briefcaseDb.channels.queryChannelRoot(channelKey) === undefined) {
-        briefcaseDb.channels.insertChannelSubject({
+        withEditTxn(briefcaseDb, (txn) => briefcaseDb.channels.insertChannelSubjectWithTxn({
           subjectName: "Test Channel",
           channelKey,
-        });
+          txn,
+        }));
       }
 
       const model = briefcaseDb.models.getModel(IModel.dictionaryId);

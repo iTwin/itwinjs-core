@@ -342,7 +342,7 @@ describe("Functional Domain", () => {
 
     // create a channel for all elements in this test
     assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey1));
-    const subject1Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject", channelKey: testChannelKey1 });
+    const subject1Id = iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Test Functional Subject", channelKey: testChannelKey1, txn });
     assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey1), subject1Id);
 
     const partitionCode = FunctionalPartition.createCode(iModelDb, subject1Id, "Test Functional Model");
@@ -367,11 +367,11 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
     assert.equal(spy.partition.onSubModelInserted.getCall(0).args[0].subModelId, modelId, "Element.onSubModelInserted should have correct subModelId");
 
-    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw(`Channel ${testChannelKey1} root already exist`);
-    const subject2Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2 });
+    expect(() => iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1, txn })).to.throw(`Channel ${testChannelKey1} root already exist`);
+    const subject2Id = iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2, txn });
     iModelDb.channels.addAllowedChannel(testChannelKey2);
 
-    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Nested Subject", parentSubjectId: subject2Id, channelKey: "nested channel" })).to.throw("may not nest");
+    expect(() => iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Nested Subject", parentSubjectId: subject2Id, channelKey: "nested channel", txn })).to.throw("may not nest");
 
     partitionProps.code.value = "Test Func 2";
     partitionProps.parent = new SubjectOwnsPartitionElements(subject2Id);

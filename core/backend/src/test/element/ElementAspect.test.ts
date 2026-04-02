@@ -425,12 +425,13 @@ describe("ElementAspect", () => {
     // Enable the test channel
     iModelDb.channels.addAllowedChannel(testChannelKey);
 
-    // Create a channel subject using insertChannelSubject
-    const subjectId = iModelDb.channels.insertChannelSubject({
+    // Create a channel subject using insertChannelSubjectWithTxn
+    const subjectId = withEditTxn(iModelDb, (txn) => iModelDb.channels.insertChannelSubjectWithTxn({
       subjectName: "Test Channel Subject",
       channelKey: testChannelKey,
-    });
-    assert.isTrue(Id64.isValidId64(subjectId), "Subject ID should be valid");
+      txn,
+    }));
+    assert.isTrue(Id64.isValidId64(subjectId), "Subject Id should be valid");
 
     // Get the ChannelRootAspect
     const aspects = iModelDb.elements.getAspects(subjectId, "BisCore:ChannelRootAspect");
