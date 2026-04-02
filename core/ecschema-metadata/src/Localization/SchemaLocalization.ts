@@ -31,16 +31,10 @@ export class SchemaLocalization {
     this._locale = locale;
   }
 
-  /**
-   * Get the current locale.
-   */
   public get locale(): string {
     return this._locale;
   }
 
-  /**
-   * Set a new locale.
-   */
   public set locale(value: string) {
     if (this._locale !== value) {
       this._locale = value;
