@@ -928,8 +928,9 @@ export namespace IModelConnection {
 
       // Add the cached model ids and the invalid ids
       for (const modelId of modelIds) {
-        if (this._loadedExtents.has(modelId)) {
-          resolvedExtents.set(modelId, this._loadedExtents.get(modelId)!);
+        const cachedExtents = this._loadedExtents.get(modelId);
+        if (cachedExtents !== undefined) {
+          resolvedExtents.set(modelId, cachedExtents);
         } else if (!Id64.isValidId64(modelId)) {
           resolvedExtents.set(modelId, { id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
         } else {
