@@ -463,7 +463,7 @@ export enum ECSchemaStatus {
     UnableToLocateSchema = 35071
 }
 
-// @internal
+// @beta
 export interface ECSpecVersion {
     // (undocumented)
     readVersion: number;

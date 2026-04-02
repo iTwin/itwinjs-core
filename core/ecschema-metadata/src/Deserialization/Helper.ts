@@ -32,7 +32,7 @@ type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | Mu
 
 /**
  * Specifies the version specification for the schema
- * @internal
+ * @beta
  */
 export interface ECSpecVersion {
   readVersion: number;
