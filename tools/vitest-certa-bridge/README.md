@@ -1,19 +1,35 @@
 # @itwin/vitest-certa-bridge
 
-A Vitest plugin that replaces [`@itwin/certa`](../certa) for packages that run integration and end-to-end tests requiring a live Node.js backend alongside browser or Electron renderer code.
+A Vitest plugin for running integration and end-to-end tests that need a live Node.js backend alongside browser or Electron renderer code. Plugs natively into `vitest run` with zero webpack configuration.
 
 ---
 
 ## The problem it solves
 
-Many iTwin.js packages have tests that don't just test frontend logic in isolation — they need a real backend: opening iModels, making RPC calls, authenticating against OIDC, querying schemas. Historically these ran under `certa`, which:
+Full-stack applications — especially Electron apps — have tests that can't run in a browser alone. They need a real backend: opening databases, making IPC/RPC calls, authenticating against identity providers, loading native addons. The standard approaches are painful:
 
-- Bundled tests with webpack, launched Chromium or Electron via Playwright, and exposed a `_CertaSendToBackend()` global for cross-process callbacks
-- Required a separate webpack build step before tests could run
-- Ran all tests sequentially in a single process
-- Couldn't be integrated into standard Vitest tooling (coverage, reporters, IDE test runners)
+- **Webpack + custom runner**: Requires a separate build step, custom test harness, and doesn't integrate with Vitest tooling (coverage, reporters, IDE test runners)
+- **Manual IPC glue**: Each project reinvents browser ↔ Node.js communication for test callbacks
+- **Sequential execution**: Tests run one at a time in a single process, making CI slow
 
-`@itwin/vitest-certa-bridge` replaces all of this with a Vite plugin + Electron orchestrator that plugs natively into `vitest run`.
+`@itwin/vitest-certa-bridge` solves all three:
+
+| Problem | Solution |
+|---|---|
+| Backend callbacks from browser/renderer code | `executeBackendCallback(name, ...args)` — one API, works in both Chrome and Electron |
+| Electron testing at scale | Parallel sharded Electron processes — 4 shards run 378 tests in ~36s instead of ~15min |
+| Vitest integration | Standard `vitest run` — coverage, reporters, IDE runners, `--testNamePattern` all work |
+| App-specific renderer setup | Configurable hooks (`importRewritePatterns`, `rendererSetup`) — no forking required |
+
+---
+
+## Who should use this
+
+- **iTwin.js packages** migrating from `@itwin/certa` — drop-in replacement with identical callback signatures
+- **Electron apps** that need integration tests exercising real IPC, native addons, or app startup/shutdown lifecycles
+- **Any Vitest project** where browser tests need to call Node.js functions — database seeding, credential management, file system access
+
+The plugin is **framework-agnostic**. All iTwin-specific code (import rewrite patterns, TestUtility patches) lives in the consuming test file, not in the plugin.
 
 ---
 
@@ -24,9 +40,11 @@ Many iTwin.js packages have tests that don't just test frontend logic in isolati
 | Backend callbacks from browser code | `executeBackendCallback(name, ...args)` — works in both Chrome and Electron |
 | Chrome / Playwright browser mode | `certaBridge()` Vite plugin — HTTP middleware on the Vite dev server |
 | Electron renderer mode | `runElectronTests()` — spawns N parallel shards, each with its own Electron process + backend |
+| Configurable import rewriting | `importRewritePatterns` — rewrites `import()` → `require()` for packages that break under Chromium's ESM loader |
+| App-specific renderer setup | `rendererSetup` — inject JS code to monkey-patch modules before tests execute |
 | Node.js module stubbing | `nullLoader(patterns)` — replaces webpack `null-loader` |
 | ESM-first resolution | `preferEsm()` — resolves `.js` extensions to source `.ts` for workspace packages |
-| Drop-in backend compat | Registers `window._CertaSendToBackend` — existing packages using Certa's global work without changes |
+| Drop-in Certa compat | Registers `window._CertaSendToBackend` — existing code using Certa's global works without changes |
 
 ---
 
@@ -178,19 +196,29 @@ const invertGrep = process.env.VITEST_ELECTRON_INVERT !== "false";
 describe("Full-Stack Tests (Electron Renderer)", () => {
   it("should pass all Electron renderer tests", async () => {
     const results = await runElectronTests({
-      // Backend init module — loaded in each Electron main process
       backendInitModule: path.resolve(process.cwd(), "lib/backend/backend"),
-      // Vitest setup file — loaded in renderer before test files
       setupFile: path.resolve(process.cwd(), "lib/frontend/vitest.setup.js"),
-      // Compiled test files directory
       testDir: path.resolve(process.cwd(), "lib/frontend"),
-      // Optional: .env file for credentials
       envFile: path.resolve(process.cwd(), ".env"),
       grepPattern,
       invertGrep,
-      shardCount: 4,       // run 4 parallel Electron processes
+      shardCount: 4,
+
+      // App-specific: rewrite import() to require() for packages that break
+      // under Chromium's ESM loader in nodeIntegration mode
+      importRewritePatterns: ["@myorg/electron-backend/[^\"']+"],
+
+      // App-specific: monkey-patch loaded modules before tests execute
+      rendererSetup: `
+        const mod = Object.keys(require.cache).find(m => m.endsWith("MyTestUtil.js"));
+        if (mod) {
+          const original = require.cache[mod].exports.MyTestUtil;
+          original.startup = async () => { /* Electron-specific init */ };
+        }
+      `,
+
       env: {
-        IMODELJS_CORE_DIRNAME: path.resolve(process.cwd(), "../.."),
+        MY_APP_ROOT: path.resolve(process.cwd(), "../.."),
       },
     });
 
@@ -282,7 +310,24 @@ Automatically uses the correct transport:
 import { runElectronTests } from "@itwin/vitest-certa-bridge/electron";
 ```
 
-See the `ElectronTestRunnerOptions` interface for all options. Returns `ElectronTestResults` with `passed`, `failed`, `shardCount`, and `failedShards`.
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `backendInitModule` | `string` | *required* | Absolute path to the backend init module (loaded in each Electron main process). |
+| `setupFile` | `string` | *required* | Absolute path to the Vitest setup file (loaded in renderer before test files). |
+| `testDir` | `string` | *required* | Absolute path to the directory containing compiled test files. |
+| `testGlob` | `string` | `"**/*.test.js"` | Glob pattern for test files within `testDir`. |
+| `shardCount` | `number` | `4` | Number of parallel Electron processes. |
+| `grepPattern` | `string` | — | Regex pattern to filter test names. |
+| `invertGrep` | `boolean` | `false` | Invert the grep pattern (exclude matching tests). |
+| `envFile` | `string` | — | Absolute path to a `.env` file to load before spawning. |
+| `timeout` | `number` | `600000` | Per-shard timeout in milliseconds. |
+| `testTimeout` | `number` | `240000` | Per-test timeout in milliseconds. |
+| `hookTimeout` | `number` | `240000` | Per-hook (`beforeAll`/`afterAll`) timeout in milliseconds. |
+| `env` | `Record<string, string>` | — | Extra environment variables for each Electron process. |
+| `importRewritePatterns` | `string[]` | — | Regex patterns for `import()` → `require()` rewriting in the renderer. Each string is compiled into a `RegExp`. Use when packages break under Chromium's ESM loader in `nodeIntegration` mode. |
+| `rendererSetup` | `string` | — | Raw JavaScript injected after test files load but before suite execution. Runs in the renderer scope with access to `require`, `require.cache`, `window`, and all Node.js APIs. Use for monkey-patching loaded modules or configuring globals. |
+
+Returns `ElectronTestResults` with `passed`, `failed`, `skipped`, `shardCount`, `failedShards`, and per-shard `shardResults`.
 
 ### `nullLoader(patterns)` — Vite plugin
 
@@ -301,6 +346,8 @@ Adjusts Vite's resolver to prefer `.ts` source files over `.js` build output whe
 ---
 
 ## Migrating from `@itwin/certa`
+
+> This section is for iTwin.js packages migrating from the legacy `@itwin/certa` test runner. If you're starting fresh, skip to the setup examples above.
 
 | Certa concept | Bridge equivalent |
 |---|---|
