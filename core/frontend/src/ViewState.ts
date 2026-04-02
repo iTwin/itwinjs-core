@@ -532,6 +532,23 @@ export abstract class ViewState extends ElementState {
     yield * this.displayStyle.getTileTreeRefs();
   }
 
+  /** TODO */
+  public * getRealityModelTreeRefs(): Iterable<TileTreeReference> {
+    // Yield context reality models attached to the display style
+    for (const model of this.displayStyle.realityModels) {
+      if (!model.invisible)
+        yield model.treeRef;
+    }
+
+    // Yield tile tree refs for persisted reality models (e.g., ScalableMeshModel) in the model selector.
+    // Refs whose trees haven't loaded yet are excluded from getModelTreeRefs()
+    for (const ref of this.getModelTreeRefs()) {
+      const modelId = ref.treeOwner.tileTree?.modelId;
+      if (modelId !== undefined && this.iModel.models.getLoaded(modelId)?.asSpatialModel?.isRealityModel)
+        yield ref;
+    }
+  }
+
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
