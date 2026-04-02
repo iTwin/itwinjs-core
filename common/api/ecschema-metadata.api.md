@@ -2224,6 +2224,7 @@ export class SchemaLocalization {
     getSchemaItemDescription(item: SchemaItem): Promise<string | undefined>;
     getSchemaItemLabel(item: SchemaItem): Promise<string>;
     getSchemaLabel(schema: Schema): Promise<string>;
+    // (undocumented)
     get locale(): string;
     set locale(value: string);
     get provider(): ILocalizationProvider;
