@@ -65,12 +65,10 @@
           "description": "Ein Wohngebäude"
         },
         "Commercial": {
-          "label": "Gewerbegebäude",
           "description": "Ein Gewerbegebäude"
         },
         "Industrial": {
-          "label": "Industriegebäude",
-          "description": "Ein Industriegebäude"
+          "label": "Industriegebäude"
         }
       }
     }

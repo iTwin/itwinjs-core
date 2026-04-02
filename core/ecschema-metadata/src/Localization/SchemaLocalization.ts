@@ -239,6 +239,28 @@ export class SchemaLocalization {
   }
 
   /**
+   * Get localized description for an enumerator.
+   * Fallback: localized description (specific locale) → localized description (base locale) → original description
+   */
+  public async getEnumeratorDescription(enumeration: Enumeration, enumeratorName: string): Promise<string | undefined> {
+    const localization = await this.getSchemaLocalizationJson(enumeration.schema.name);
+
+    if (localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description) {
+      return localization.enumerations[enumeration.name].enumerators![enumeratorName].description!;
+    }
+
+    // Try base locale if specific locale didn't have the enumerator
+    const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema.name);
+    if (baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description) {
+      return baseLocalization.enumerations[enumeration.name].enumerators![enumeratorName].description!;
+    }
+
+    // Find the enumerator in the enumeration
+    const enumerator = enumeration.enumerators.find(e => e.name === enumeratorName);
+    return enumerator?.description;
+  }
+
+  /**
    * Find the localized text for a schema item.
    * @internal
    */

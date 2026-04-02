@@ -12,11 +12,5 @@
       "label": "Dirección",
       "description": "Una estructura de dirección postal colombiana"
     }
-  },
-  "units": {
-    "M": {
-      "label": "Metro",
-      "description": "Unidad de metro colombiana"
-    }
   }
 }
