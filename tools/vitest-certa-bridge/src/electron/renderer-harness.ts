@@ -156,11 +156,15 @@ function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hook
       return false;
     }
 
+    // Capture real timer functions before any test can replace them with vi.useFakeTimers().
+    var _realSetTimeout = setTimeout;
+    var _realClearTimeout = clearTimeout;
+
     // Wraps fn() with a timeout so individual hooks/tests cannot hang indefinitely.
     function withTimeout(fn, ms, label) {
       return new Promise((resolve, reject) => {
         let settled = false;
-        const timer = setTimeout(() => {
+        const timer = _realSetTimeout(() => {
           if (!settled) {
             settled = true;
             console.error("[TIMEOUT] " + label + " after " + ms + "ms");
@@ -168,8 +172,8 @@ function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hook
           }
         }, ms);
         Promise.resolve().then(() => fn()).then(
-          (val) => { if (!settled) { settled = true; clearTimeout(timer); resolve(val); } },
-          (err) => { if (!settled) { settled = true; clearTimeout(timer); reject(err); } }
+          (val) => { if (!settled) { settled = true; _realClearTimeout(timer); resolve(val); } },
+          (err) => { if (!settled) { settled = true; _realClearTimeout(timer); reject(err); } }
         );
       });
     }
@@ -207,7 +211,7 @@ function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hook
         for (const fn of suite.beforeAlls) {
           console.log("  [before all] " + suitePath);
           // Yield to event loop so timers (heartbeat, TIMEOUT) can fire even if fn() blocks
-          await new Promise(r => setTimeout(r, 0));
+          await new Promise(r => _realSetTimeout(r, 0));
           await withTimeout(fn, HOOK_TIMEOUT_MS, suitePath + " [before all]");
         }
         consecutiveTimeouts = 0;
@@ -398,7 +402,7 @@ function buildRunAllTests(setupFile: string, testFiles: string[]): string {
     }
 
     // Yield once to the event loop so module-level side effects complete
-    setTimeout(() => runAllTests().catch(err => {
+    _realSetTimeout(() => runAllTests().catch(err => {
       console.error("Test runner error:", err);
       ipcRenderer.send("electron-test-results", { passed: 0, failed: 1, errors: [err.message] });
     }), 0);
