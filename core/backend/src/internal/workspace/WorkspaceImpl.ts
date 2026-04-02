@@ -389,19 +389,22 @@ class WorkspaceImpl implements Workspace {
     if (!Array.isArray(props))
       props = [props];
 
+    const getSettingsResourceNames = (db: WorkspaceDb, dbProps: WorkspaceDbSettingsProps): WorkspaceResourceName[] => {
+      if (!isSettingsDb(db))
+        return [dbProps.resourceName ?? settingsResourceName];
+
+      const all = queryStringResourceNames(db);
+      // If resourceName is supplied, load it last so it has highest precedence at the same priority.
+      return dbProps.resourceName !== undefined
+        ? [...all.filter((name) => name !== dbProps.resourceName), dbProps.resourceName]
+        : all;
+    };
+
     for (const prop of props) {
       const db = await this.getWorkspaceDb(prop);
       db.open();
       try {
-        const resourceNames = isSettingsDb(db)
-          ? (() => {
-            const all = queryStringResourceNames(db);
-            // If resourceName is supplied, load it last so it has highest precedence at the same priority.
-            return prop.resourceName !== undefined
-              ? [...all.filter((name) => name !== prop.resourceName), prop.resourceName]
-              : all;
-          })()
-          : [prop.resourceName ?? settingsResourceName];
+        const resourceNames = getSettingsResourceNames(db, prop);
 
         for (const resourceName of resourceNames) {
           try {
