@@ -13,6 +13,7 @@ overrides:
   glob@>=11.0.0 <11.1.0: ^11.1.0
   axios@<1.0.0: ^1.13.5
   serialize-javascript: ^7.0.3
+  lodash@>=4.0.0 <=4.17.23: ^4.18.0
 
 pnpmfileChecksum: fm2bgttvmfglngapbjspr7zf2u
 
@@ -1224,8 +1225,8 @@ importers:
   ../../core/mobile:
     dependencies:
       lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
+        specifier: ^4.18.0
+        version: 4.18.0
       superagent:
         specifier: ^9.0.1
         version: 9.0.1
@@ -4200,8 +4201,8 @@ importers:
         specifier: ~2.0.3
         version: 2.0.3
       lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
+        specifier: ^4.18.0
+        version: 4.18.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -8640,11 +8641,12 @@ packages:
   lodash.values@4.3.0:
     resolution: {integrity: sha512-r0RwvdCv8id9TUblb/O7rYPwVy6lerCbcawrfdo9iC/1t1wsNMJknO79WNBgwkH0hIeJ08jmvvESbFpNb4jH0Q==}
 
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+  lodash@4.18.0:
+    resolution: {integrity: sha512-l1mfj2atMqndAHI3ls7XqPxEjV2J9ZkcNyHpoZA3r2T1LLwDB69jgkMWh71YKwhBbK0G2f4WSn05ahmQXVxupA==}
+    deprecated: Bad release. Please use lodash@4.17.21 instead.
 
-  lodash@4.17.23:
-    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
+  lodash@4.18.1:
+    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
   log-symbols@4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
@@ -10949,7 +10951,7 @@ snapshots:
   '@appium/logger@1.7.1':
     dependencies:
       console-control-strings: 1.1.0
-      lodash: 4.17.21
+      lodash: 4.18.1
       lru-cache: 10.4.3
       set-blocking: 2.0.0
 
@@ -11982,7 +11984,7 @@ snapshots:
       '@rushstack/terminal': 0.22.3(@types/node@20.17.0)
       '@rushstack/ts-command-line': 5.3.3(@types/node@20.17.0)
       diff: 8.0.4
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 10.2.4
       resolve: 1.22.11
       semver: 7.5.4
@@ -13296,7 +13298,7 @@ snapshots:
   asyncbox@3.0.0:
     dependencies:
       bluebird: 3.7.2
-      lodash: 4.17.23
+      lodash: 4.18.1
       source-map-support: 0.5.21
 
   asynckit@0.4.0: {}
@@ -13438,7 +13440,7 @@ snapshots:
 
   benchmark@2.1.4:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
       platform: 1.3.6
 
   big.js@5.2.2: {}
@@ -15789,9 +15791,9 @@ snapshots:
 
   lodash.values@4.3.0: {}
 
-  lodash@4.17.21: {}
+  lodash@4.18.0: {}
 
-  lodash@4.17.23: {}
+  lodash@4.18.1: {}
 
   log-symbols@4.1.0:
     dependencies:
@@ -16180,7 +16182,7 @@ snapshots:
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       json-stringify-safe: 5.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       propagate: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -16217,7 +16219,7 @@ snapshots:
       '@appium/logger': 1.7.1
       asyncbox: 3.0.0
       bluebird: 3.7.2
-      lodash: 4.17.23
+      lodash: 4.18.1
       rimraf: 5.0.10
       semver: 7.5.2
       source-map-support: 0.5.21
@@ -17049,7 +17051,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
       dottie: 2.0.7
       inflection: 1.13.4
-      lodash: 4.17.23
+      lodash: 4.18.1
       moment: 2.30.1
       moment-timezone: 0.5.48
       pg-connection-string: 2.12.0
@@ -17073,7 +17075,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
       dottie: 2.0.7
       inflection: 1.13.4
-      lodash: 4.17.23
+      lodash: 4.18.1
       moment: 2.30.1
       moment-timezone: 0.5.48
       pg-connection-string: 2.12.0
@@ -17210,7 +17212,7 @@ snapshots:
 
   sort-any@2.0.0:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   source-map-js@1.2.1: {}
 
@@ -17509,7 +17511,7 @@ snapshots:
   teen_process@2.3.3:
     dependencies:
       bluebird: 3.7.2
-      lodash: 4.17.23
+      lodash: 4.18.1
       shell-quote: 1.8.3
       source-map-support: 0.5.21
 
