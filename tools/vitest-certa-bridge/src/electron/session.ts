@@ -37,6 +37,12 @@ const grepPattern = process.env.ELECTRON_TEST_GREP;
 const sessionTimeout = Number(process.env.ELECTRON_SESSION_TIMEOUT || "600000");
 const testTimeout = process.env.ELECTRON_TEST_TIMEOUT ? Number(process.env.ELECTRON_TEST_TIMEOUT) : undefined;
 const hookTimeout = process.env.ELECTRON_HOOK_TIMEOUT ? Number(process.env.ELECTRON_HOOK_TIMEOUT) : undefined;
+const importRewritePatterns: string[] = process.env.ELECTRON_IMPORT_REWRITE_PATTERNS
+  ? JSON.parse(process.env.ELECTRON_IMPORT_REWRITE_PATTERNS)
+  : [];
+const rendererSetup: string | undefined = process.env.ELECTRON_RENDERER_SETUP
+  ? Buffer.from(process.env.ELECTRON_RENDERER_SETUP, "base64").toString("utf8")
+  : undefined;
 
 if (!backendInitModule || !setupFile || !testDir) {
   console.error("Missing required env vars: CERTA_BRIDGE_BACKEND_INIT, CERTA_BRIDGE_SETUP_FILE, CERTA_BRIDGE_TEST_DIR");
@@ -167,7 +173,7 @@ async function main() {
   console.log(`Found ${testFiles.length} test files to run in Electron renderer`);
 
   // Build the renderer HTML with the complete test harness
-  const rendererScript = buildRendererHarness({ bridgeToken, setupFile: setupFile!, testFiles, grepPattern, testTimeout, hookTimeout });
+  const rendererScript = buildRendererHarness({ bridgeToken, setupFile: setupFile!, testFiles, grepPattern, testTimeout, hookTimeout, importRewritePatterns, rendererSetup });
 
   const tempHtmlPath = path.join(testDir!, "..", "electron", `_test-runner-${shardId}.html`);
   const htmlDir = path.dirname(tempHtmlPath);

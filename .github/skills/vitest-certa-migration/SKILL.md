@@ -289,6 +289,74 @@ The exact script varies per package — check the existing `test:chrome` or `tes
 - All bridge callbacks (`getEnv`, `getToken`, etc.) resolve successfully
 - No `403` or `Server connection error` failures
 
+### 9. Evaluate test redundancy and skip unnecessary runs
+
+After migration, explicitly audit which tests need to run in which environment. The goal is to **avoid running the same test twice in both Chrome and Electron when one environment is sufficient**, and to **replace live backend dependencies with local mocks where possible**.
+
+#### Chrome vs Electron overlap
+
+Many test suites run in both Chrome (Playwright) and Electron. After migration, evaluate each suite:
+
+| Test category | Preferred environment | Rationale |
+|---|---|---|
+| DOM/rendering (WebGL, tiles, viewport) | **Electron only** — GPU path is real; Chrome headless uses SwiftShader anyway | Chrome headless and Electron SwiftShader produce equivalent pixel results. Running in both just doubles CI time. |
+| RPC/IPC/networking (BlankConnection, BriefcaseTxns) | **Chrome only** — exercises the HTTP/WebSocket path that web apps use | Electron IPC is a separate code path tested by `core/electron`. No need to also test HTTP bridging in Electron. |
+| Pure logic (geometry, schema, formatting) | **Node.js Vitest** (`pool: "forks"`) — no browser needed | Fastest possible execution. If the test doesn't touch DOM or browser APIs, don't pay the browser startup cost. |
+| Electron-specific APIs (ElectronApp, NativeApp, IpcApp) | **Electron only** — these APIs don't exist in Chrome | Self-evident. |
+
+**How to skip:** Use `describe.skipIf` or `describe.runIf` with `ProcessDetector`:
+
+```typescript
+import { ProcessDetector } from "@itwin/core-bentley";
+
+// Only run GPU rendering tests in Electron (Chrome headless uses same SwiftShader path)
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("GPU Rendering", () => { ... });
+
+// Only run in Chrome — Electron IPC has its own dedicated test suite
+describe.runIf(!ProcessDetector.isElectronAppFrontend)("HTTP Bridge", () => { ... });
+```
+
+When you skip a test from one environment, **document the justification** in the Sacrifices folder (`/Users/hoangnamle/Documents/Obsidian Vault/Vitest/Vitest Certa/Sacrifices`) so the team understands why coverage appears reduced.
+
+#### Replace live backend dependencies with Azurite / local mocks
+
+Integration tests that connect to remote iTwin Platform services (IMS auth, iModel Hub, Reality Data) are:
+- **Slow** — network roundtrips add 5-30s per test
+- **Flaky** — dependent on service availability, token expiry, rate limits
+- **Credential-bound** — require `IMJS_*` secrets that not all CI agents have
+
+**Strategy:** Use [Azurite](https://github.com/Azure/Azurite) and proper mocking to eliminate live backend dependencies wherever the test's purpose is to validate *client-side logic*, not the remote service itself.
+
+| Dependency | Local replacement | When to use |
+|---|---|---|
+| Azure Blob Storage (iModel downloads, changesets) | **Azurite** — already used in `full-stack-tests/core` via `globalSetup.ts` | Any test that reads/writes blobs. Azurite runs in-process, zero network latency. |
+| IMS / OIDC authentication | **Static test token** via `registerBackendCallback("getAccessToken", ...)` returning a pre-generated token, or mock the `AuthorizationClient` interface | Tests that just need *an* auth header, not actual IMS validation. |
+| iModel Hub REST APIs | **Mock HTTP server** (e.g., `msw` or a simple Express stub) returning canned JSON responses | Tests validating client-side response parsing, error handling, retry logic. |
+| Reality Data API | **Local fixture files** + mock fetch | Tests rendering reality meshes — the mesh data can be served from `public/` static assets. |
+
+**When NOT to mock:** Keep live backend connections for:
+- Smoke tests explicitly tagged `#integration` that validate end-to-end auth flows
+- Tests that verify wire-format compatibility (RPC serialization, changeset format)
+- Performance benchmarks that measure real network latency
+
+**Tagging convention:** Use grep-based tags to separate mocked vs live tests:
+
+```typescript
+describe("#integration Real Hub Connection", () => { ... });  // needs live backend
+describe("Changeset Parsing (mocked)", () => { ... });         // runs with Azurite/mocks
+```
+
+Then in CI:
+```bash
+# Fast CI (mocked only, default):
+rushx test
+
+# Integration CI (live backends, scheduled/manual):
+VITEST_ELECTRON_GREP="#integration" VITEST_ELECTRON_INVERT=false rushx test:integration
+```
+
+This keeps the default `rushx test` fast (< 2 min) while the full integration suite runs on a schedule or before release.
+
 ## Common Patterns
 
 ### Null-loader for Node.js-only modules

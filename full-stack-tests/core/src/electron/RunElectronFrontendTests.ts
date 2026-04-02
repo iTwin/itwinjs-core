@@ -35,6 +35,50 @@ const testTimeout = isIntegration ? 480_000 : undefined;
 // With 480s per-test and multiple rendering tests, 600s (default) isn't enough.
 const sessionTimeout = isIntegration ? 1_200_000 : undefined;
 
+// iTwin.js-specific renderer setup: patches TestUtility.startFrontend/shutdownFrontend
+// to use require() instead of dynamic import() for @itwin/core-electron. In the Electron
+// renderer, bare-specifier import() goes through Chromium's ESM loader which cannot resolve
+// Node.js paths. This patch runs after test files are loaded and require.cache is populated.
+const itwinRendererSetup = `
+const allModules = Object.keys(require.cache);
+const testUtilPath = allModules.find(m => m.endsWith("TestUtility.js") && m.includes("frontend"));
+if (testUtilPath) {
+  const TestUtility = require.cache[testUtilPath].exports.TestUtility;
+  if (TestUtility) {
+    if (TestUtility.startFrontend) {
+      TestUtility.startFrontend = async function(opts, mockRender, enableWebEdit) {
+        const iopts = { ...TestUtility.iModelAppOptions, ...opts };
+        if (mockRender) iopts.renderSys = TestUtility.systemFactory();
+        const processDetector = require("@itwin/core-bentley").ProcessDetector;
+        if (processDetector.isElectronAppFrontend) {
+          if (iopts.tileAdmin) iopts.tileAdmin.decodeImdlInWorker = false;
+          else iopts.tileAdmin = { decodeImdlInWorker: false };
+          const { ElectronApp } = require("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
+          return ElectronApp.startup({ iModelApp: iopts });
+        }
+        const { IModelApp, LocalhostIpcApp } = require("@itwin/core-frontend");
+        if (enableWebEdit) {
+          const socketUrl = new URL("ws://" + window.location.hostname + ":" + window.location.port + "/ipc");
+          return LocalhostIpcApp.startup({ iModelApp: iopts, localhostIpcApp: { socketUrl } });
+        }
+        return IModelApp.startup(iopts);
+      };
+    }
+    if (TestUtility.shutdownFrontend) {
+      TestUtility.shutdownFrontend = async function() {
+        TestUtility.systemFactory = () => TestUtility.createDefaultRenderSystem();
+        const processDetector = require("@itwin/core-bentley").ProcessDetector;
+        if (processDetector.isElectronAppFrontend) {
+          const { ElectronApp } = require("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
+          return ElectronApp.shutdown();
+        }
+        return require("@itwin/core-frontend").IModelApp.shutdown();
+      };
+    }
+  }
+}
+`;
+
 describe("Full-Stack Tests (Electron Renderer)", () => {
   it("should pass all Electron renderer tests (parallel shards)", async () => {
     const results = await runElectronTests({
@@ -47,6 +91,8 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
       invertGrep,
       testTimeout,
       timeout: sessionTimeout,
+      importRewritePatterns: ["@itwin/core-electron/[^\"']+"],
+      rendererSetup: itwinRendererSetup,
       env: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         IMODELJS_CORE_DIRNAME: path.resolve(process.cwd(), "../.."),

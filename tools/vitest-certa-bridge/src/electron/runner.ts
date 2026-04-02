@@ -233,6 +233,8 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     timeout,
     testTimeout,
     hookTimeout,
+    importRewritePatterns,
+    rendererSetup,
     env: extraEnv,
   } = options;
 
@@ -253,6 +255,14 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     baseEnv.ELECTRON_TEST_TIMEOUT = String(testTimeout); // eslint-disable-line @typescript-eslint/naming-convention
   if (hookTimeout !== undefined)
     baseEnv.ELECTRON_HOOK_TIMEOUT = String(hookTimeout); // eslint-disable-line @typescript-eslint/naming-convention
+
+  // Pass import rewrite patterns as JSON array for session to deserialize
+  if (importRewritePatterns?.length)
+    baseEnv.ELECTRON_IMPORT_REWRITE_PATTERNS = JSON.stringify(importRewritePatterns); // eslint-disable-line @typescript-eslint/naming-convention
+
+  // Pass renderer setup JS as a base64-encoded string to avoid shell quoting issues
+  if (rendererSetup)
+    baseEnv.ELECTRON_RENDERER_SETUP = Buffer.from(rendererSetup, "utf8").toString("base64"); // eslint-disable-line @typescript-eslint/naming-convention
 
   // Load .env into the base env so all shards inherit it
   if (envFile && fs.existsSync(envFile)) {

@@ -22,11 +22,11 @@ import type { RendererHarnessOptions } from "./types.js";
  * 6. Report results back to the main process via IPC
  */
 export function buildRendererHarness(options: RendererHarnessOptions): string {
-  const { bridgeToken, setupFile, testFiles, grepPattern, testTimeout, hookTimeout } = options;
+  const { bridgeToken, setupFile, testFiles, grepPattern, testTimeout, hookTimeout, importRewritePatterns, rendererSetup } = options;
   return [
     buildIpcBridge(bridgeToken),
     buildTestRunnerGlobals(grepPattern, testTimeout, hookTimeout),
-    buildRunAllTests(setupFile, testFiles),
+    buildRunAllTests(setupFile, testFiles, importRewritePatterns, rendererSetup),
   ].join("\n");
 }
 
@@ -289,27 +289,39 @@ function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hook
 }
 
 /** Vitest CJS shim + test file loading + execution trigger. */
-function buildRunAllTests(setupFile: string, testFiles: string[]): string {
+function buildRunAllTests(setupFile: string, testFiles: string[], importRewritePatterns?: string[], rendererSetup?: string): string {
+  // Build regex source strings for import() → require() rewriting.
+  // Each pattern is wrapped in: \bimport\(["'](PATTERN)["']\)
+  // We build the full regex source in TypeScript and JSON.stringify it so
+  // there is exactly one escaping boundary (JSON → JS string literal → RegExp).
+  const regexSources = (importRewritePatterns ?? []).map((pattern) =>
+    `\\bimport\\(["'](${pattern})["']\\)`
+  );
+  const regexSourcesJson = JSON.stringify(regexSources);
+
   return `
     async function runAllTests() {
-      // CJS compile-time transform: rewrite bare-specifier import() → require() for
-      // @itwin/core-electron. In Electron renderer (nodeIntegration:true), dynamic import()
-      // uses Chromium's ESM loader which: (1) cannot resolve Node.js bare specifiers, and
-      // (2) cannot parse CJS modules. Using require() via this hook fixes both issues for
-      // ALL test files loaded after this point (TestUtility, TileIO, NativeApp, etc.).
       const Module = require("module");
-      const origExtJs = Module._extensions['.js'];
-      Module._extensions['.js'] = function(mod, filename) {
-        const origCompile = mod._compile.bind(mod);
-        mod._compile = function(content, fn) {
-          const patched = content.replace(
-            /\\bimport\\(["'](@itwin\\/core-electron\\/[^"']+)["']\\)/g,
-            'Promise.resolve(require("$1"))'
-          );
-          return origCompile(patched, fn);
+
+      // CJS compile-time transform: rewrite bare-specifier import() → require().
+      // In Electron renderer (nodeIntegration:true), dynamic import() uses
+      // Chromium's ESM loader which cannot resolve Node.js bare specifiers
+      // or parse CJS modules.
+      var _importRewriteRegexes = ${regexSourcesJson}.map(function(s) { return new RegExp(s, "g"); });
+      if (_importRewriteRegexes.length > 0) {
+        var origExtJs = Module._extensions['.js'];
+        Module._extensions['.js'] = function(mod, filename) {
+          var origCompile = mod._compile.bind(mod);
+          mod._compile = function(content, fn) {
+            for (var i = 0; i < _importRewriteRegexes.length; i++) {
+              _importRewriteRegexes[i].lastIndex = 0;
+              content = content.replace(_importRewriteRegexes[i], 'Promise.resolve(require("$1"))');
+            }
+            return origCompile(content, fn);
+          };
+          return origExtJs(mod, filename);
         };
-        return origExtJs(mod, filename);
-      };
+      }
 
       // Hook Module._resolveFilename so require("vitest") returns our chai-based shim.
       // Vitest 3.x is ESM-only; CJS require("vitest") would throw without this.
@@ -343,56 +355,13 @@ function buildRunAllTests(setupFile: string, testFiles: string[]): string {
         }
       }
 
-      // Patch TestUtility.startFrontend/shutdownFrontend to use require() instead of
-      // dynamic import() for @itwin/core-electron. In the Electron renderer context,
-      // bare-specifier import() goes through Chromium's ESM loader which cannot resolve
-      // Node.js paths. require() (available via nodeIntegration: true) bypasses this.
+${rendererSetup ? `      // Consumer-provided renderer setup (runs after test files load, before execution)
       try {
-        const allModules = Object.keys(require.cache);
-        const testUtilPath = allModules.find(m => m.endsWith("TestUtility.js") && m.includes("frontend"));
-        if (testUtilPath) {
-          const TestUtility = require.cache[testUtilPath].exports.TestUtility;
-          if (TestUtility) {
-            if (TestUtility.startFrontend) {
-              TestUtility.startFrontend = async function(opts, mockRender, enableWebEdit) {
-                const iopts = { ...TestUtility.iModelAppOptions, ...opts };
-                if (mockRender) iopts.renderSys = TestUtility.systemFactory();
-                const processDetector = require("@itwin/core-bentley").ProcessDetector;
-                if (processDetector.isElectronAppFrontend) {
-                  if (iopts.tileAdmin) iopts.tileAdmin.decodeImdlInWorker = false;
-                  else iopts.tileAdmin = { decodeImdlInWorker: false };
-                  const { ElectronApp } = require("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
-                  return ElectronApp.startup({ iModelApp: iopts });
-                }
-                const { IModelApp, LocalhostIpcApp } = require("@itwin/core-frontend");
-                if (enableWebEdit) {
-                  const socketUrl = new URL("ws://" + window.location.hostname + ":" + window.location.port + "/ipc");
-                  return LocalhostIpcApp.startup({ iModelApp: iopts, localhostIpcApp: { socketUrl } });
-                }
-                return IModelApp.startup(iopts);
-              };
-            }
-            if (TestUtility.shutdownFrontend) {
-              TestUtility.shutdownFrontend = async function() {
-                TestUtility.systemFactory = () => TestUtility.createDefaultRenderSystem();
-                const processDetector = require("@itwin/core-bentley").ProcessDetector;
-                if (processDetector.isElectronAppFrontend) {
-                  const { ElectronApp } = require("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
-                  return ElectronApp.shutdown();
-                }
-                return require("@itwin/core-frontend").IModelApp.shutdown();
-              };
-            }
-          } else {
-            console.error("TestUtility class not found in module at", testUtilPath);
-          }
-        } else {
-          console.error("TestUtility.js not found in require cache — startFrontend patch skipped");
-        }
+${rendererSetup.split("\n").map((line) => `        ${line}`).join("\n")}
       } catch (err) {
-        console.error("TestUtility patch failed:", err && err.message);
+        console.error("rendererSetup failed:", err && err.message);
       }
-
+` : ""}
       // Run all registered suites
       for (const suite of suites) {
         await runSuite(suite, "", [], []);

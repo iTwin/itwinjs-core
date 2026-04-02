@@ -29,6 +29,41 @@ export interface ElectronTestRunnerOptions {
   hookTimeout?: number;
   /** Extra environment variables to pass to each Electron process. */
   env?: Record<string, string>;
+  /**
+   * Regex patterns for bare-specifier `import()` → `require()` rewriting.
+   * In Electron's renderer with `nodeIntegration: true`, dynamic `import()` uses
+   * Chromium's ESM loader which cannot resolve Node.js bare specifiers or parse CJS.
+   * This option rewrites matching `import("pkg/path")` to `Promise.resolve(require("pkg/path"))`
+   * via a `Module._extensions` compile hook applied to all loaded test files.
+   *
+   * Each string is compiled into a RegExp and used inside a `content.replace()` call
+   * where capture group `$1` is the full specifier.
+   *
+   * @example
+   * ```ts
+   * importRewritePatterns: ["@itwin/core-electron/[^\"']+"]
+   * ```
+   */
+  importRewritePatterns?: string[];
+  /**
+   * A string of JavaScript code injected into the renderer harness after all test
+   * files have been loaded (and `require.cache` is populated) but before suites
+   * are executed. Use this to monkey-patch loaded modules, configure globals, or
+   * perform any app-specific renderer setup.
+   *
+   * The code runs in the same scope as the harness and has access to `require`,
+   * `require.cache`, `window`, and all Node.js APIs available in the renderer.
+   *
+   * @example
+   * ```ts
+   * rendererSetup: `
+   *   // Patch a test utility for Electron-specific startup
+   *   const mod = Object.keys(require.cache).find(m => m.endsWith("MyUtil.js"));
+   *   if (mod) require.cache[mod].exports.MyUtil.init = () => { ... };
+   * `
+   * ```
+   */
+  rendererSetup?: string;
 }
 
 /** Aggregate results from all Electron shards. */
@@ -75,4 +110,17 @@ export interface RendererHarnessOptions {
   testTimeout?: number;
   /** Per-hook timeout in milliseconds (default: 240000). */
   hookTimeout?: number;
+  /**
+   * Regex patterns (as strings) for bare-specifier `import()` → `require()` rewriting.
+   * Each pattern must contain a capture group for the full module specifier.
+   * Example: `["@itwin/core-electron/[^\"']+"]` rewrites
+   * `import("@itwin/core-electron/lib/cjs/ElectronFrontend.js")` → `Promise.resolve(require(...))`.
+   * If empty or omitted, the Module._extensions compile hook is still installed but performs no rewrites.
+   */
+  importRewritePatterns?: string[];
+  /**
+   * Raw JavaScript code injected after test files are loaded but before suite execution.
+   * Runs in the renderer scope with access to `require`, `require.cache`, `window`, etc.
+   */
+  rendererSetup?: string;
 }
