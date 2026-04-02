@@ -66,6 +66,7 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       const { ElectronRendererAuthorization } = await import("@itwin/electron-authorization/Renderer");
       authorizationClient = new ElectronRendererAuthorization(
         { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
