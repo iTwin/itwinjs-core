@@ -179,7 +179,7 @@ const computePosition = `
 
   return pos;
 `;
-const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
+const lineCodeArgs = "g_windowDir, g_windowPos, 0.0, 0.0";
 
 const adjustContrast = `
   float bgi = u_bgIntensity;

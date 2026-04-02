@@ -157,6 +157,10 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
             const parsedVal3d = JSON.parse(binder.value);
             stmt.bindPoint3d(id, { x: parsedVal3d.X, y: parsedVal3d.Y, z: parsedVal3d.Z });
             break;
+          case "range3d":
+            const parsedRange3d = JSON.parse(binder.value);
+            stmt.bindRange3d(id, { low: { x: parsedRange3d.low.x, y: parsedRange3d.low.y, z: parsedRange3d.low.z }, high: { x: parsedRange3d.high.x, y: parsedRange3d.high.y, z: parsedRange3d.high.z } });
+            break;
           case "blob":
             const arrayValues: string[] = binder.value.slice(1, -1).split(",");
             const numbers = arrayValues.map((value: string) =>
@@ -292,6 +296,10 @@ function buildQueryBinder(test: ECDbTestProps): QueryBinder | undefined {
       case "point3d":
         const parsedVal3d = JSON.parse(binder.value);
         params.bindPoint3d(id, new Point3d(parsedVal3d.X, parsedVal3d.Y, parsedVal3d.Z));
+        break;
+      case "range3d":
+        const parsedRange3d = JSON.parse(binder.value);
+        params.bindRange3d(id, { low: { x: parsedRange3d.low.x, y: parsedRange3d.low.y, z: parsedRange3d.low.z }, high: { x: parsedRange3d.high.x, y: parsedRange3d.high.y, z: parsedRange3d.high.z } });
         break;
       case "blob":
         const arrayValues: string[] = binder.value.slice(1, -1).split(",");
