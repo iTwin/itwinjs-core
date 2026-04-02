@@ -556,6 +556,10 @@ function buildVitestShim(): string {
             globalThis.Date.UTC = RealDate.UTC;
             globalThis.setTimeout = function(fn, ms) { vitestShim.vi._timers.push({ fn, ms, type: "timeout" }); return vitestShim.vi._timers.length; };
             globalThis.setInterval = function(fn, ms) { vitestShim.vi._timers.push({ fn, ms, type: "interval" }); return vitestShim.vi._timers.length; };
+            globalThis.clearTimeout = globalThis.clearInterval = function(id) {
+              if (typeof id === "number" && id > 0 && id <= vitestShim.vi._timers.length)
+                vitestShim.vi._timers[id - 1] = null;
+            };
             return vitestShim.vi;
           },
           useRealTimers: function() {
@@ -575,9 +579,9 @@ function buildVitestShim(): string {
             vitestShim.vi._fakeNow += ms;
             vitestShim.vi._elapsed = (vitestShim.vi._elapsed || 0) + ms;
             const elapsed = vitestShim.vi._elapsed;
-            const ready = (vitestShim.vi._timers || []).filter(t => t.ms <= elapsed);
+            const ready = (vitestShim.vi._timers || []).filter(t => t && t.ms <= elapsed);
             for (const t of ready) t.fn();
-            vitestShim.vi._timers = (vitestShim.vi._timers || []).filter(t => t.ms > elapsed);
+            vitestShim.vi._timers = (vitestShim.vi._timers || []).filter(t => t && t.ms > elapsed);
           },
           _realDate: null,
           _realSetTimeout: null,
