@@ -48,5 +48,5 @@ jobs:
         with:
           check_name: "Test Results (${{ matrix.os }})"
           report_paths: "**/junit_results.xml"
-          include_passed: true
+          include_passed: false
           detailed_summary: true
