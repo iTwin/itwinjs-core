@@ -737,7 +737,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    */
   private refineSpiralResultsByNewton(seeds: CurveLocationDetailPair[], curveA: CurvePrimitive, spiralB: TransitionSpiral3d, reversed = false): void {
     const xyMatchingFunction = new CurveCurveCloseApproachXYRRtoRRD(curveA, spiralB);
-    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, undefined, this._newtonTolerance);
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, 50, this._newtonTolerance); // seen: 47
     for (const seed of seeds) {
       const detailA = reversed ? seed.detailB : seed.detailA;
       const detailB = reversed ? seed.detailA : seed.detailB;
