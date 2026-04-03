@@ -2250,112 +2250,6 @@ describe("ECChangesetReader â€” delete-partial", () => {
 
 });
 
-
-describe("ECChangesetReader API (bugs)", async () => {
-  let iTwinId: GuidString;
-
-  before(() => {
-    HubMock.startup("ECChangesetReaderBugsTest", KnownTestLocations.outputDir);
-    iTwinId = HubMock.iTwinId;
-  });
-
-  after(() => HubMock.shutdown());
-
-  it("openFile() reads the middle changeset of an insert → update → delete lifecycle", async () => {
-    const adminToken = "super manager token";
-    const iModelName = "bugTest";
-    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "BugTest", accessToken: adminToken });
-    assert.isNotEmpty(rwIModelId);
-    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
-    // --- Push 1: import schema + set up drawing model and two categories ---
-    const schema = `<?xml version="1.0" encoding="UTF-8"?>
-    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-        <ECEntityClass typeName="Test2dElement">
-            <BaseClass>bis:GraphicalElement2d</BaseClass>
-            <ECProperty propertyName="s" typeName="string"/>
-        </ECEntityClass>
-    </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
-    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-
-    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const codeProps = Code.createEmpty();
-    codeProps.value = "DrawingModel";
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
-
-    let categoryId1 = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "Category1");
-    if (undefined === categoryId1)
-      categoryId1 = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "Category1", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-
-    let categoryId2 = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "Category2");
-    if (undefined === categoryId2)
-      categoryId2 = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "Category2", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,0,255)").toJSON() }));
-
-    rwIModel.saveChanges("setup");
-    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
-
-    // --- Push 2 (insert): insert element in drawingModel with category1 ---
-    const geomArray: Arc3d[] = [
-      Arc3d.createXY(Point3d.create(0, 0), 5),
-      Arc3d.createXY(Point3d.create(5, 5), 2),
-      Arc3d.createXY(Point3d.create(-5, -5), 20),
-    ];
-    const geometryStream: GeometryStreamProps = [];
-    for (const geom of geomArray)
-      geometryStream.push(IModelJson.Writer.toIModelJson(geom));
-
-    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    const elementId: Id64String = rwIModel.elements.insertElement({
-      classFullName: "TestDomain:Test2dElement",
-      model: drawingModelId,
-      category: categoryId1,
-      code: Code.createEmpty(),
-      geom: geometryStream,
-      s: "initial",
-    } as any);
-    assert.isTrue(Id64.isValidId64(elementId));
-    rwIModel.saveChanges("insert element");
-    await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
-
-    // --- Push 3 (middle/update): update element — change category to category2 and update s ---
-    await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    const elemProps = rwIModel.elements.getElementProps(elementId);
-    rwIModel.elements.updateElement({
-      ...elemProps,
-      category: categoryId2,
-    } as any);
-    rwIModel.saveChanges("update element");
-    await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
-
-    // --- Push 4 (delete): delete the element ---
-    await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.deleteElement(elementId);
-    rwIModel.saveChanges("delete element");
-    await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
-
-    // --- Download all changesets and open the middle one (the update) ---
-    // changesets: [setup, insert, update, delete] — 4 total; Math.floor(4/2) = index 2 = update
-    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
-    const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
-    expect(changesets.length).to.equal(4);
-    const middleChangeset = changesets[Math.floor(changesets.length / 2)]; // index 2 = update
-
-    using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: middleChangeset.pathname });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-    while (reader.step())
-      pcu.appendFrom(reader);
-
-    const instances = Array.from(pcu.instances);
-
-    // console.log("Instances: ", JSON.stringify(instances, null, 2));
-    instances.filter((i) => i.ECInstanceId === elementId && i.$meta.stage === "New").forEach((i) => console.log(rwIModel.getClassNameFromId(i.ECClassId)));
-
-    rwIModel.close();
-  });
-});
-
 describe("ECChangesetReader — openFile + openGroup", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let rwIModel: any;
@@ -2786,6 +2680,192 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
         'GuidArrProp', 'JsonProperties', 'LastMod', 'Model.Id', 'Origin', 'Parent', 'Pt3dProp',
         'Rotation', 'TypeDefinition', 'UserLabel'].sort());
     }
+  });
+});
+
+describe("ECChangesetReader API (bugs)", async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rwIModel: any;
+  let rwIModelId: string;
+  let elementId: Id64String;
+  let drawingModelId: Id64String;
+  let categoryId1: Id64String;
+  let categoryId2: Id64String;
+
+  before(async () => {
+    HubMock.startup("ECChangesetReaderBugsTest", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "bugTest", description: "BugTest", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    // Push 1: import schema + set up drawing model and two categories
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="point2d"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+
+    categoryId1 = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "Category1")
+      ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "Category1", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    categoryId2 = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "Category2")
+      ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "Category2", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,0,255)").toJSON() }));
+
+    rwIModel.saveChanges("setup");
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+  });
+
+  after(() => {
+    rwIModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("openFile() reads the middle changeset of an insert → update → delete lifecycle", async () => {
+    const adminToken = "super manager token";
+
+    // Push 2 (insert): insert element with category1
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray)
+      geometryStream.push(IModelJson.Writer.toIModelJson(geom));
+
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    elementId = rwIModel.elements.insertElement({
+      classFullName: "TestDomain:Test2dElement",
+      model: drawingModelId,
+      category: categoryId1,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      s: { x: 1.5, y: 2.5 },
+    } as any);
+    assert.isTrue(Id64.isValidId64(elementId));
+    rwIModel.saveChanges("insert element");
+    await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
+
+    // Push 3 (update): change category to category2
+    await rwIModel.locks.acquireLocks({ exclusive: elementId });
+    rwIModel.elements.updateElement({
+      ...rwIModel.elements.getElementProps(elementId),
+      category: categoryId2,
+    } as any);
+    rwIModel.saveChanges("update element");
+    await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
+
+    // Push 4 (delete): delete the element
+    await rwIModel.locks.acquireLocks({ exclusive: elementId });
+    rwIModel.elements.deleteElement(elementId);
+    rwIModel.saveChanges("delete element");
+    await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
+    // changesets: [setup, insert, update, delete] — 4 total; index 2 = update changeset
+    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
+    const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    expect(changesets.length).to.equal(4);
+    const middleChangeset = changesets[Math.floor(changesets.length / 2)]; // index 2 = update
+
+    using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: middleChangeset.pathname, mode: IModelJsNative.ECChangesetReader.Mode.Instance_Key, rowOptions: { classIdsToClassNames: true } });
+    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    while (reader.step())
+      pcu.appendFrom(reader);
+
+    const instances = Array.from(pcu.instances);
+
+    const bisElementOld = instances.filter((i) => i.ECInstanceId === elementId && i.$meta.stage === "Old");
+    const bisElementNew = instances.filter((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+    expect(bisElementOld).to.exist;
+    expect(bisElementNew).to.exist;
+    expect(bisElementOld).to.have.lengthOf(2);
+    expect(bisElementNew).to.have.lengthOf(2);
+    // Why this is happening?
+    // We have deleted the instance from the db when the changeset is opened
+    // So we are unable to fetch the correct classId for the instance
+    // and it is defaulting to the base class of the deleted instance which is "BisCore.Element" and "BisCore.GeometricElement2d" instead of "TestDomain.Test2dElement"
+    // If the instance had not been deleted, we would have been able to fetch the correct classId for the instance and it would have been "TestDomain.Test2dElement"
+    // And we would have just two entries for the instance with classId "TestDomain.Test2dElement" , one wioth stage "New" and other with "old"
+    expect(bisElementNew.map((i => i.ECClassId)).sort()).to.deep.equal(["BisCore.GeometricElement2d", "BisCore.Element"].sort());
+    expect(bisElementOld.map((i => i.ECClassId)).sort()).to.deep.equal(["BisCore.GeometricElement2d", "BisCore.Element"].sort());
+  });
+
+  it("openTxn() reads the middle txn of an insert → update → update lifecycle", async () => {
+    const adminToken = "super manager token";
+
+    // Push 2 (insert): insert element with category1
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray)
+      geometryStream.push(IModelJson.Writer.toIModelJson(geom));
+
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    elementId = rwIModel.elements.insertElement({
+      classFullName: "TestDomain:Test2dElement",
+      model: drawingModelId,
+      category: categoryId1,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      s: { x: 1.5, y: 2.5 },
+    } as any);
+    assert.isTrue(Id64.isValidId64(elementId));
+    rwIModel.saveChanges("insert element");
+
+    await rwIModel.locks.acquireLocks({ exclusive: elementId });
+    rwIModel.elements.updateElement({
+      ...rwIModel.elements.getElementProps(elementId),
+      s: { x: 100.0, y: 2.5 },
+    } as any);
+    rwIModel.saveChanges("update element");
+    const txnId = rwIModel.txns.getLastSavedTxnProps()?.id;
+    assert.isTrue(Id64.isValidId64(txnId));
+
+    await rwIModel.locks.acquireLocks({ exclusive: elementId });
+    rwIModel.elements.updateElement({
+      ...rwIModel.elements.getElementProps(elementId),
+      s: { x: 100.0, y: 200.0 },
+    } as any);
+    rwIModel.saveChanges("update element");
+
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    while (reader.step())
+      pcu.appendFrom(reader);
+
+    const instances = Array.from(pcu.instances);
+
+    const elementOld = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "Old");
+    const elementNew = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+    expect(elementOld).to.exist;
+    expect(elementNew).to.exist;
+    // Here as we can see that we correctly captured old value of s.X which is 1.5 and new value of s.X which is 100.0
+    // But the Y value, though same is a bit different, it is 200
+    // Because in liveDB we have done another tyransaction after the one which we have opened
+    // In that transaction we have updated the Y value to 200, so when we are fetching the changes for the opened transaction,
+    // we are getting the latest value of Y which is 200 instead of 2.5
+    assert.deepEqual(elementOld!.s, { X: 1.5, Y: 200 });
+    assert.deepEqual(elementNew!.s, { X: 100, Y: 200 });
+    // But we can find the exact stuff which actually changed and which we fetched from the changeset and not the live DB
+    // using the changesetFetchedProps, we can find that only s.X was changed in the changeset and s.Y was not changed in the changeset.
+    expect(elementNew!.$meta.changesetFetchedProps).to.include("s.X");
+    expect(elementNew!.$meta.changesetFetchedProps).to.not.include("s.Y");
+    expect(elementOld!.$meta.changesetFetchedProps).to.include("s.X");
+    expect(elementOld!.$meta.changesetFetchedProps).to.not.include("s.Y");
   });
 });
 
