@@ -57,7 +57,7 @@ export interface ECNativeChangeMeta {
   /** Reader mode that was active when this change row was captured. */
   mode: IModelJsNative.ECChangesetReader.Mode;
   /** Set of EC property names fetched from the changeset for this row. */
-  changesetFetchedProps?: Set<string>;
+  changesetFetchedProps: Set<string>;
   /** Row adaptor options that were active when this change row was captured. */
   rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
 }
@@ -696,6 +696,7 @@ export class ECNativePartialChangeUnifier implements Disposable {
       // Accumulate per-table metadata lists.
       lhs.$meta.tables = [...lhs.$meta.tables, ...rhs.$meta.tables];
       lhs.$meta.changeIndexes = [...lhs.$meta.changeIndexes, ...rhs.$meta.changeIndexes];
+      lhs.$meta.changesetFetchedProps = new Set([...lhs.$meta.changesetFetchedProps, ...rhs.$meta.changesetFetchedProps]);
       this._cache.set(key, lhs);
     } else {
       this._cache.set(key, rhs);
