@@ -2,6 +2,18 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "5.8.0",
+      "tag": "@itwin/core-geometry_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Geometry logic for circles tangent to combinations of lines, circles, points"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.7.3",
       "tag": "@itwin/core-geometry_v5.7.3",
       "date": "Tue, 24 Mar 2026 14:29:17 GMT",

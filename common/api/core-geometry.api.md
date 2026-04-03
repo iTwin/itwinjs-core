@@ -1740,6 +1740,7 @@ export class CurveFactory {
     static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain, initialSection: AnyCurve, options?: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
+    static fromFilletedLineString(filletedLineString: CurveChain, options?: FilletedLineStringOptions): Array<[Point3d, number]> | undefined;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
 }
 
@@ -2167,6 +2168,13 @@ export interface FacetProjectedVolumeSums {
     negativeProjectedFacetAreaMoments?: MomentData;
     positiveProjectedFacetAreaMoments?: MomentData;
     volume: number;
+}
+
+// @public
+export interface FilletedLineStringOptions {
+    distanceTol?: number;
+    parallelOptions?: PerpParallelOptions;
+    relaxedValidation?: boolean;
 }
 
 // @public
