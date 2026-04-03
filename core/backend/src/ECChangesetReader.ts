@@ -55,7 +55,7 @@ export interface ECNativeChangeMeta {
    */
   nativeKey: string;
   /** Reader mode that was active when this change row was captured. */
-  mode: IModelJsNative.ECChangesetReader.Mode;
+  mode: string;
   /** Set of EC property names fetched from the changeset for this row. */
   changesetFetchedProps: Set<string>;
   /** Row adaptor options that were active when this change row was captured. */
@@ -207,7 +207,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /** Convert a {@link IModelJsNative.ECChangesetReader.Mode} enum value to its string name. */
-  private static modeToString(mode: IModelJsNative.ECChangesetReader.Mode): string {
+  private modeToString(mode: IModelJsNative.ECChangesetReader.Mode): string {
     switch (mode) {
       case IModelJsNative.ECChangesetReader.Mode.All_Properties: return "All_Properties";
       case IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties: return "Bis_Element_Properties";
@@ -352,7 +352,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "New",
               nativeKey: rowValue.key,
-              mode: this._mode,
+              mode: this.modeToString(this._mode),
               changesetFetchedProps,
               rowOptions: this._rowOptions,
             },
@@ -372,7 +372,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "Old",
               nativeKey: rowValue.key,
-              mode: this._mode,
+              mode: this.modeToString(this._mode),
               changesetFetchedProps,
               rowOptions: this._rowOptions,
             },
