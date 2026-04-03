@@ -527,21 +527,28 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Iterate all [[TileTreeReference]]s associated with this view.
+   * This is a superset of [[getRealityModelTreeRefs]], it includes non-reality models as well.
+   * @see [[getRealityModelTreeRefs]] for only reality model tile tree references.
+   */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
     yield * this.getModelTreeRefs();
     yield * this.displayStyle.getTileTreeRefs();
   }
 
-  /** TODO */
+  /** Iterate the [[TileTreeReference]]s for all reality models in this view, including both
+   * context reality models attached to the [[DisplayStyleState]] and persisted reality models.
+   *
+   * Context reality models that are marked invisible are excluded. Persisted reality models whose
+   * tile trees have not yet loaded are also excluded.
+   * @see [[DisplayStyleState.realityModels]] for context reality models only.
+   * @see [[getTileTreeRefs]] for all tile tree references in this view.
+   */
   public * getRealityModelTreeRefs(): Iterable<TileTreeReference> {
-    // Yield context reality models attached to the display style
-    for (const model of this.displayStyle.realityModels) {
-      if (!model.invisible)
-        yield model.treeRef;
-    }
+    // Yield visible context reality models from the display style.
+    yield * this.displayStyle.getTileTreeRefs();
 
     // Yield tile tree refs for persisted reality models (e.g., ScalableMeshModel) in the model selector.
-    // Refs whose trees haven't loaded yet are excluded from getModelTreeRefs()
     for (const ref of this.getModelTreeRefs()) {
       const modelId = ref.treeOwner.tileTree?.modelId;
       if (modelId !== undefined && this.iModel.models.getLoaded(modelId)?.asSpatialModel?.isRealityModel)
