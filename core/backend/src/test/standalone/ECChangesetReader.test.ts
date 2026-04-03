@@ -2703,7 +2703,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
   });
 });
 
-describe("ECChangesetReader API (bugs)", async () => {
+describe("ECChangesetReader: behaviour in case imodel is not in sync with changeset file being read", async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let rwIModel: any;
   let rwIModelId: string;
