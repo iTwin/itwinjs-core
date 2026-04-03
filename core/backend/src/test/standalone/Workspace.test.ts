@@ -10,7 +10,8 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
-import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
+import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
+import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
@@ -192,6 +193,64 @@ describe("WorkspaceFile", () => {
     fontsDb.close();
   });
 
+  it("settingsWorkspaceDbName discovers all string resources as dictionaries", async () => {
+    const containerProps = { containerId: "load-all-test", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all workspace" });
+    db.addString("dict-a", JSON.stringify({ "editor/renderWhitespace": "all" }));
+    db.addString("dict-b", JSON.stringify({ "editor/fontSize": 14 }));
+    db.close();
+
+
+    const settings = workspace.settings;
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.iTwin,
+      dbName: settingsWorkspaceDbName,
+    });
+    expect(settings.getSetting("editor/renderWhitespace")).equals("all");
+    expect(settings.getSetting("editor/fontSize")).equals(14);
+  });
+
+  it("settingsWorkspaceDbName loads resourceName last when set", async () => {
+    const containerProps = { containerId: "load-all-ignore-rsc", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all-priority" });
+    db.addString("first", JSON.stringify({ "editor/tabSize": 2, "editor/shared": "first" }));
+    db.addString("second", JSON.stringify({ "editor/wordWrap": "on", "editor/shared": "second" }));
+    db.close();
+
+    const settings = workspace.settings;
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.defaults,
+      dbName: settingsWorkspaceDbName,
+      resourceName: "second",
+    });
+    // All dictionaries are loaded, with resourceName loaded last.
+    expect(settings.getSetting("editor/tabSize")).equals(2);
+    expect(settings.getSetting("editor/wordWrap")).equals("on");
+    expect(settings.getSetting("editor/shared")).equals("second");
+  });
+
+  it("settingsWorkspaceDbName continues loading sibling dictionaries after a resource fails", async () => {
+    const containerProps = { containerId: "load-all-continue-on-error", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all-continue-on-error" });
+    db.addString("dict-valid", JSON.stringify({ "editor/continueAfterError": true }));
+    db.addString("dict-invalid", "not valid json");
+    db.close();
+
+    const problems: WorkspaceDbLoadError[] = [];
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.defaults,
+      dbName: settingsWorkspaceDbName,
+      // Force this valid resource to be evaluated last.
+      resourceName: "dict-valid",
+    }, problems);
+
+    expect(workspace.settings.getSetting("editor/continueAfterError")).to.equal(true);
+    expect(problems.length).to.equal(1);
+  });
+
 
 
   describe("workspace db version cache key", () => {
@@ -319,6 +378,7 @@ describe("WorkspaceFile", () => {
       expect(uploadDb.firstCall.args[1].dbName).to.equal("test-db:0.0.0");
     });
   });
+
 
   describe("getContainerAsync token resolution", () => {
     afterEach(() => sinon.restore());

@@ -42,15 +42,26 @@ describe("Cloud workspace containers", () => {
         textStyleDbs: {
           type: "array",
           description: "array of app1 text styles",
-          extends: "itwin/core/workspaces/workspaceDbList",
+          extends: "itwin/core/workspace/workspaceDbList",
           combineArray: true,
         },
         lineStyleDbs: {
           type: "array",
           description: "array of app1 line styles",
-          extends: "itwin/core/workspaces/workspaceDbList",
+          extends: "itwin/core/workspace/workspaceDbList",
           combineArray: true,
         },
+      },
+    });
+    IModelHost.settingsSchemas.addGroup({
+      description: "general settings for test app 1",
+      schemaPrefix: "app1",
+      settingDefs: {
+        max1: { type: "number", description: "max1 setting" },
+        max2: { type: "number", description: "max2 setting" },
+        max3: { type: "number", description: "max3 setting" },
+        topLevelValue: { type: "number", description: "top level value" },
+        nestedValue: { type: "number", description: "nested value" },
       },
     });
 
@@ -379,5 +390,104 @@ describe("Cloud workspace containers", () => {
     imodel2.close();
   });
 
+  it("can write and read settings to iTwin workspace", async () => {
+    const resourceName = "resources/itwin-style";
+    const resourceValue = "loaded from the iTwin workspace resource db";
+    const resourceWorkspaceName = "iTwin 1 resource workspace";
+
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const resourceContainer = await editor.createNewCloudContainer({
+        metadata: { label: "itwin1-resource-container", description: "resource workspace for iTwin1" },
+        scope: { iTwinId: iTwin1Id },
+        manifest: { workspaceName: resourceWorkspaceName },
+      });
+
+      resourceContainer.acquireWriteLock("itwin-resource-admin");
+      const resourceVersion = (await resourceContainer.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
+      const resourceDb = resourceContainer.getEditableDb(resourceVersion);
+      resourceDb.open();
+      resourceDb.updateString(resourceName, resourceValue);
+      resourceDb.close();
+      resourceContainer.releaseWriteLock();
+
+      const initialWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      expect(initialWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
+
+      await IModelHost.saveSettingDictionary(iTwin1Id, "app1/resources", {
+        "app1/styles/textStyleDbs": [{
+          ...resourceContainer.cloudProps!,
+          description: "iTwin1 resource db",
+          loadingHelp: "resource db for iTwin1 workspace test",
+          version: "^1",
+        }],
+      });
+
+      await IModelHost.saveSettingDictionary(iTwin1Id, "app1/config", {
+        "app1/max1": 17,
+      });
+      initialWorkspace.close();
+
+      const updatedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      expect(updatedWorkspace.settings.getNumber("app1/max1")).equal(17);
+      const updatedProps = updatedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs");
+      expect(updatedProps.length).equal(1);
+      expect(updatedProps[0].containerId).equal(resourceContainer.cloudProps!.containerId);
+      expect(updatedProps[0].version).equal("^1");
+
+      const resourceDbs = await updatedWorkspace.getWorkspaceDbs({ settingName: "app1/styles/textStyleDbs" });
+      expect(resourceDbs.length).equal(1);
+      expect(Workspace.getStringResource({ dbs: resourceDbs, name: resourceName })).equal(resourceValue);
+
+      updatedWorkspace.close();
+      await IModelHost.deleteSettingDictionary(iTwin1Id, "app1/resources");
+
+      const deletedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      expect(deletedWorkspace.settings.getNumber("app1/max1")).equal(17);
+      expect(deletedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
+      deletedWorkspace.close();
+    } finally {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
+
+  it("iTwin workspace resolves nested settings via settingsWorkspaces", async () => {
+    const testITwinId = Guid.createValue();
+
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+
+      const nestedContainer = await editor.createNewCloudContainer({
+        metadata: { label: "nested-workspace-container", description: "nested settings for nesting test" },
+        scope: { iTwinId: testITwinId },
+        manifest: { workspaceName: "nested settings ws" },
+      });
+
+      nestedContainer.acquireWriteLock("nest-admin");
+      const nestedVersion = (await nestedContainer.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
+      const nestedDb = nestedContainer.getEditableDb(nestedVersion);
+      nestedDb.open();
+      nestedDb.updateSettingsResource({ "app1/nestedValue": 42 } as SettingsContainer);
+      nestedDb.close();
+      nestedContainer.releaseWriteLock();
+
+      await IModelHost.saveSettingDictionary(testITwinId, "app1/nested-test", {
+        "app1/topLevelValue": 99,
+        [WorkspaceSettingNames.settingsWorkspaces]: [{
+          ...nestedContainer.cloudProps!,
+          version: "^1",
+          priority: SettingsPriority.iTwin,
+        }],
+      });
+
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      const workspace = await IModelHost.getITwinWorkspace(testITwinId);
+      expect(workspace.settings.getNumber("app1/topLevelValue")).equal(99);
+      expect(workspace.settings.getNumber("app1/nestedValue")).equal(42);
+    } finally {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
 });
 
