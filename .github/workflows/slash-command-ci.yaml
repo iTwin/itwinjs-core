@@ -1,0 +1,101 @@
+# Slash Command: /test
+#
+# Replaces ADO's `/azp run imodeljs.imodeljs` comment trigger for fork PRs.
+#
+# When an org member or collaborator comments `/test` on a PR, this workflow
+# checks out the PR code and runs the full CI build on GitHub-hosted runners.
+#
+# Security model:
+#   - Only users with write access can trigger (prevents abuse from random commenters)
+#   - Runs on GitHub-hosted runners only (no self-hosted runner exposure to fork code)
+#   - Workflow file runs from default branch (issue_comment always does this)
+#   - PR code is checked out and executed — same trust model as ADO's /azp run
+#
+# NOTE: issue_comment workflows only fire when present on the DEFAULT BRANCH.
+# This file must be merged to master before the /test command will work.
+
+name: "Slash Command: /test"
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger:
+    # Only run on PR comments (not issues) that start with /test
+    if: >-
+      github.event.issue.pull_request
+      && startsWith(github.event.comment.body, '/test')
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.pr.outputs.sha }}
+    permissions:
+      pull-requests: read
+      # Needed to add reaction to the comment
+      issues: write
+    steps:
+      - name: Check permissions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login,
+            });
+            if (!['admin', 'write'].includes(perm.permission)) {
+              core.setFailed(`User ${context.payload.comment.user.login} does not have write access`);
+              return;
+            }
+            // Acknowledge the command with a rocket reaction
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket',
+            });
+
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('sha', pr.head.sha);
+            core.info(`PR #${pr.number}: ${pr.head.sha} (${pr.head.ref})`);
+
+  build:
+    needs: trigger
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.trigger.outputs.sha }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/core-build
+        with:
+          node-version: "24.x"
+          rush-build-cache-credential: ${{ secrets.RUSH_BUILD_CACHE_SAS }}
+
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        with:
+          check_name: "Test Results (${{ matrix.os }})"
+          report_paths: "**/junit_results.xml"
+          include_passed: false
+          detailed_summary: true
+          commit: ${{ needs.trigger.outputs.sha }}
