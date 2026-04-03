@@ -1702,10 +1702,10 @@ describe("CurveCurveCloseApproachXY", () => {
       [2, 0, 7], [2, 1, 9], [2, 2, 7], [2, 3, 13], [2, 4, 1], [2, 5, 3], [2, 6, 3], [2, 7, 6], [2, 8, 0], [2, 9, 1], [2, 10, 3],
       [2, 11, 1], [2, 12, 2], [2, 13, 1], [2, 14, 2], [2, 15, 1], [2, 16, 2], [2, 17, 2], [2, 18, 2], [2, 19, 1], [2, 20, 2],
       [2, 21, 1], [2, 22, 2], [2, 23, 1], [2, 24, 2], [2, 25, 1], [2, 26, 2], [2, 27, 1], [2, 28, 2], [2, 29, 1], [2, 30, 2], [2, 31, 2], [2, 32, 3],
-      [3, 0, 8], [3, 1, 10], [3, 2, 8], [3, 3, 14], [3, 4, 1], [3, 5, 3], [3, 6, 3], [3, 7, 6], [3, 8, 0], [3, 9, 1], [3, 10, 3],
+      [3, 0, 8], [3, 1, 10], [3, 2, 8], [3, 3, 14], [3, 4, 1], [3, 5, 3], [3, 6, 4 /* double intersection */], [3, 7, 6], [3, 8, 0], [3, 9, 1], [3, 10, 3],
       [3, 11, 2], [3, 12, 2], [3, 13, 2], [3, 14, 2], [3, 15, 2], [3, 16, 2], [3, 17, 3], [3, 18, 2], [3, 19, 2], [3, 20, 2],
       [3, 21, 2], [3, 22, 2], [3, 23, 2], [3, 24, 2], [3, 25, 2], [3, 26, 2], [3, 27, 2], [3, 28, 2], [3, 29, 2], [3, 30, 2], [3, 31, 3], [3, 32, 3],
-      [4, 0, 7], [4, 1, 9], [4, 2, 7], [4, 3, 13], [4, 4, 1], [4, 5, 3], [4, 6, 3], [4, 7, 6], [4, 8, 0], [4, 9, 1], [4, 10, 3],
+      [4, 0, 7], [4, 1, 9], [4, 2, 7], [4, 3, 13], [4, 4, 1], [4, 5, 3], [4, 6, 4 /* double intersection */], [4, 7, 6], [4, 8, 0], [4, 9, 1], [4, 10, 3],
       [4, 11, 1], [4, 12, 2], [4, 13, 1], [4, 14, 2], [4, 15, 1], [4, 16, 2], [4, 17, 2], [4, 18, 2], [4, 19, 1], [4, 20, 2],
       [4, 21, 1], [4, 22, 2], [4, 23, 1], [4, 24, 2], [4, 25, 1], [4, 26, 2], [4, 27, 1], [4, 28, 2], [4, 29, 1], [4, 30, 2], [4, 31, 2], [4, 32, 3],
     ])
@@ -1723,7 +1723,7 @@ describe("CurveCurveCloseApproachXY", () => {
       [3, 0, 9], [3, 1, 11], [3, 2, 9], [3, 3, 14], [3, 4, 3], [3, 5, 1], [3, 6, 2], [3, 7, 3], [3, 8, 2], [3, 9, 1], [3, 10, 2],
       [3, 11, 1], [3, 12, 1], [3, 13, 1], [3, 14, 1], [3, 15, 1], [3, 16, 1], [3, 17, 2], [3, 18, 1], [3, 19, 1], [3, 20, 1],
       [3, 21, 1], [3, 22, 1], [3, 23, 1], [3, 24, 1], [3, 25, 1], [3, 26, 1], [3, 27, 1], [3, 28, 1], [3, 29, 1], [3, 30, 1], [3, 31, 1], [3, 32, 1],
-      [4, 0, 9], [4, 1, 11], [4, 2, 9], [4, 3, 13], [4, 4, 2], [4, 5, 2], [4, 6, 3], [4, 7, 3], [4, 8, 1], [4, 9, 1], [4, 10, 3],
+      [4, 0, 9], [4, 1, 11], [4, 2, 9], [4, 3, 13], [4, 4, 2], [4, 5, 2], [4, 6, 5 /* triple intersection */], [4, 7, 3], [4, 8, 1], [4, 9, 1], [4, 10, 3],
       [4, 11, 1], [4, 12, 1], [4, 13, 1], [4, 14, 1], [4, 15, 1], [4, 16, 1], [4, 17, 2], [4, 18, 1], [4, 19, 1], [4, 20, 1],
       [4, 21, 1], [4, 22, 1], [4, 23, 1], [4, 24, 1], [4, 25, 1], [4, 26, 1], [4, 27, 1], [4, 28, 1], [4, 29, 1], [4, 30, 1], [4, 31, 1], [4, 32, 1],
       [5, 0, 9], [5, 1, 11], [5, 2, 9], [5, 3, 14], [5, 4, 2], [5, 5, 2], [5, 6, 4], [5, 7, 4], [5, 8, 1], [5, 9, 1], [5, 10, 4],
@@ -1758,15 +1758,19 @@ describe("CurveCurveCloseApproachXY", () => {
       dy += 200;
     }
 
+    // make sure closest approach can find spiral tangency intersections
     const testTangencyAtSpiralInterior = (spiral: TransitionSpiral3d) => {
-      const ray = spiral.fractionToPointAndDerivative(0.5);
-      const ls = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
-      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, testIndex++, spiral, ls, 1, 1, dx, dy);
-      dx += 200;
+      const ray = spiral.fractionToPointAndDerivative(0.55); // stroked spiral has a vertex at 0.5, so move slightly off to make Newton work harder
+      const seg = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
+      const tangency = CurveCurve.closestApproachProjectedXYPair(spiral, seg);
+      if (ck.testDefined(tangency, `found closest points between the ${spiral.spiralType} spiral and the line`)) {
+        ck.testSmallRelative(tangency.detailA.a, `${spiral.spiralType} closest point is an intersection`);
+        // spiral math is not exact, so we expect more slop than usual
+        ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance,`${spiral.spiralType} closest point is at the tangency`);
+      }
     };
     for (const spiral of integratedSpirals)
       testTangencyAtSpiralInterior(spiral);
-    dx += 250;
     for (const spiral of directSpirals)
       testTangencyAtSpiralInterior(spiral);
 
