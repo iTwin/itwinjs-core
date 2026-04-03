@@ -135,20 +135,6 @@ export interface ECChangeRowAdaptorOptions {
 }
 
 // ---------------------------------------------------------------------------
-// Private: native bridge type
-// ---------------------------------------------------------------------------
-
-/** Shape returned by the native getValue() call. Not exported — internal bridge only. */
-interface ECChangesetRowValue {
-  /** `false` for internal SQLite tables; `data` and `key` are `undefined` in that case. */
-  isECTable: boolean;
-  /** EC property bag. `undefined` when `isECTable` is `false`. */
-  data?: any;
-  /** Native instance key (encodes ECInstanceId + root class). `undefined` when `isECTable` is `false`. */
-  key?: string;
-}
-
-// ---------------------------------------------------------------------------
 // ECChangesetReader
 // ---------------------------------------------------------------------------
 
