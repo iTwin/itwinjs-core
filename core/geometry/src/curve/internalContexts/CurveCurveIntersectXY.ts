@@ -1188,13 +1188,14 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
     const compare = CurveLocationDetailPair.comparePairsByFractions(fractionTol, this._coincidentGeometryContext.tolerance, true);
     const myResults = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
-    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): void => {
-      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
-      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, cpB.fractionToPoint(fB));
+    const pushToMyResults = (cpA: CurvePrimitive, fA: number, pA: Point3d, cpB: CurvePrimitive, fB: number, pB: Point3d): void => {
+      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, pA);
+      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, pB);
       detailA.setIntervalRole(CurveIntervalRole.isolated);
       detailB.setIntervalRole(CurveIntervalRole.isolated);
       myResults.insert(new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB));
     };
+    const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
     for (let i = index0; i < this._results.length; i++) {
       const pair = this._results[i];
       const detailA = reversed ? pair.detailB : pair.detailA;
@@ -1203,17 +1204,16 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const extendA0 = reversed ? this._extendB0 : this._extendA0;
       const extendA1 = reversed ? this._extendB1 : this._extendA1;
       newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
-      if (newtonSearcher.runIterations()) {
-        const fractionA = newtonSearcher.getU();
-        const fractionB = newtonSearcher.getV();
-        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false))
-          pushToMyResults(curveA, fractionA, spiralB, fractionB);
-      } else if (newtonSearcher.numIterations < 10) {
-        // Newton may have failed early due to vanishing (partial) derivative, so check for a root there
-        const fractionA = newtonSearcher.getU();
-        const fractionB = newtonSearcher.getV();
-        if (curveA.fractionToPoint(fractionA).isAlmostEqualXY(spiralB.fractionToPoint(fractionB), this._coincidentGeometryContext.tolerance))
-          pushToMyResults(curveA, fractionA, spiralB, fractionB);
+      let converged = newtonSearcher.runIterations();
+      const fractionA = newtonSearcher.getU();
+      const fractionB = newtonSearcher.getV();
+      if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false)) {
+        const pointA = curveA.fractionToPoint(fractionA, CurveCurveIntersectXY._workPointA0);
+        const pointB = spiralB.fractionToPoint(fractionB, CurveCurveIntersectXY._workPointB0);
+        if (!converged) // Newton may have found close points even if it didn't converge parametrically
+          converged = pointA.isAlmostEqualXY(pointB, strictTolerance); // we can afford to be choosy
+        if (converged)
+          pushToMyResults(curveA, fractionA, pointA, spiralB, fractionB, pointB);
       }
     }
     this._results.splice(index0, this._results.length - index0, ...myResults.extractArray());
