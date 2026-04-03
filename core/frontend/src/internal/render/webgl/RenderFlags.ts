@@ -7,12 +7,19 @@
  */
 /* eslint-disable no-restricted-syntax */
 
+// Polyfill WebGLRenderingContext for Node.js environments (e.g., backend tests) so that
+// the TextureUnit enum initializers below can resolve. GL.ts has the same guard, but
+// const-enum-to-enum migrations can cause this module to load before GL.ts in the CJS graph.
+if (typeof WebGLRenderingContext === "undefined") {
+  (globalThis as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });
+}
+
 /** Ordered list of render passes which produce a rendered frame.
  * [[RenderCommands]] organizes its [[DrawCommands]] into a list indexed by RenderPass.
  * @see [[Pass]] for the type from which the RenderPass for a [[Primitive]] is derived.
  * @internal
  */
-export enum RenderPass {
+export const enum RenderPass {
   None = 0xff,
   Background = 0,
   OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
@@ -74,7 +81,7 @@ export type SinglePass = Exclude<Pass, DoublePass>;
 /** Describes the type of geometry rendered by a ShaderProgram.
  * @internal
  */
-export enum GeometryType {
+export const enum GeometryType {
   IndexedTriangles,
   IndexedPoints,
   ArrayedPoints,
@@ -211,7 +218,7 @@ export enum TextureUnit {
  * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
  * @internal
  */
-export enum RenderOrder {
+export const enum RenderOrder {
   None = 0,
   Background = 1, // i.e., background map drawn without depth
   BlankingRegion = 2,
@@ -238,7 +245,7 @@ export function isPlanar(order: RenderOrder): boolean {
 /** Flags indicating operations to be performed by the post-process composite step.
  * @internal
  */
-export enum CompositeFlags {
+export const enum CompositeFlags {
   None = 0,
   Translucent = 1 << 0,
   Hilite = 1 << 1,
@@ -248,7 +255,7 @@ export enum CompositeFlags {
 /** Location in boolean array of SurfaceFlags above.
  * @internal
  */
-export enum SurfaceBitIndex {
+export const enum SurfaceBitIndex {
   HasTexture,
   ApplyLighting,
   HasNormals,
@@ -267,7 +274,7 @@ export enum SurfaceBitIndex {
 /** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs.
  * @internal
  */
-export enum SurfaceFlags {
+export const enum SurfaceFlags {
   None = 0,
   HasTexture = 1 << SurfaceBitIndex.HasTexture,
   ApplyLighting = 1 << SurfaceBitIndex.ApplyLighting,
@@ -296,7 +303,7 @@ export enum SurfaceFlags {
 /** 8-bit flags indicating emphasis effects applied to a feature.
  * @internal
  */
-export enum EmphasisFlags {
+export const enum EmphasisFlags {
   None = 0,
   Hilite = 1,
   Emphasized = 2,
@@ -305,4 +312,4 @@ export enum EmphasisFlags {
 }
 
 /** @internal */
-export enum IsTranslucent { No, Yes, Maybe }
+export const enum IsTranslucent { No, Yes, Maybe }
