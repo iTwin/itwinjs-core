@@ -43,9 +43,10 @@ jobs:
       # Test result publishing — ADO ci.yaml doesn't do this (fast-ci does),
       # but it's useful signal and validates the reporting pattern for Phase 3.
       - name: Publish test results
-        uses: dorny/test-reporter@v1
+        uses: mikepenz/action-junit-report@v5
         if: always()
         with:
-          name: "Test Results (${{ matrix.os }})"
-          path: "**/junit_results.xml"
-          reporter: java-junit
+          check_name: "Test Results (${{ matrix.os }})"
+          report_paths: "**/junit_results.xml"
+          include_passed: true
+          detailed_summary: true
