@@ -89,7 +89,7 @@ window._CertaSendToBackend = async function(name, args) {
       // Tests using LocalhostIpcApp connect to ws://<host>/ipc from the browser;
       // this proxy forwards that traffic to the backend running on a separate port.
       if (opts.backendPort) {
-        const target = `ws://localhost:${opts.backendPort}`;
+        const target = `ws://127.0.0.1:${opts.backendPort}`;
         server.config.server.proxy = {
           ...server.config.server.proxy,
           "/ipc": { target, ws: true },

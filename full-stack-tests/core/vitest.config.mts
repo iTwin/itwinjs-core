@@ -96,6 +96,7 @@ export default defineConfig({
   },
   server: {
     port: 3010,
+    host: "127.0.0.1",
     fs: {
       allow: [
         // Public asset dirs from certa.json chromeOptions.publicDirs
