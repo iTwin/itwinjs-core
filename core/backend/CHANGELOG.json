@@ -2,6 +2,41 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.8.0",
+      "tag": "@itwin/core-backend_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "For StandaloneDb make sure to delete txns"
+          },
+          {
+            "comment": "Remove unnecessary warning when calling `IModelDb.saveChanges` with no unsaved changes."
+          },
+          {
+            "comment": "QueryBinder should not fail on bind empty array"
+          },
+          {
+            "comment": "Fix WorkspaceDb/SettingsDb instance caching, cloud version defaulting, and `getSetting` prototype-chain guard."
+          },
+          {
+            "comment": "Added SettingsDb and SettingsEditor APIs for dedicated JSON settings storage, separate from WorkspaceDb."
+          },
+          {
+            "comment": "Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler"
+          },
+          {
+            "comment": "Added withQueryReader to ECDb and iModel and also created ECSqlSyncReader to query imodels in true row by row fashion"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix operator precedence bug in WorkspaceImpl.getContainerAsync that silently discarded explicit access tokens"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.7.3",
       "tag": "@itwin/core-backend_v5.7.3",
       "date": "Tue, 24 Mar 2026 14:29:17 GMT",

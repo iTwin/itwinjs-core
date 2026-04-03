@@ -10,7 +10,8 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
-import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
+import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
+import { Workspace, WorkspaceContainerProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
@@ -192,133 +193,190 @@ describe("WorkspaceFile", () => {
     fontsDb.close();
   });
 
+  it("settingsWorkspaceDbName discovers all string resources as dictionaries", async () => {
+    const containerProps = { containerId: "load-all-test", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all workspace" });
+    db.addString("dict-a", JSON.stringify({ "editor/renderWhitespace": "all" }));
+    db.addString("dict-b", JSON.stringify({ "editor/fontSize": 14 }));
+    db.close();
 
-
-describe("workspace db version cache key", () => {
-  afterEach(() => sinon.restore());
-
-  function getContainer(containerId: string, props?: Partial<WorkspaceContainerProps>) {
-    return editor.getContainer({ containerId, baseUri: "", storageType: "azure", accessToken: "", ...props });
-  }
-
-  function createFakeCloudContainer(containerId: string): CloudSqlite.CloudContainer {
-    return {
-      connect: () => { },
-      disconnect: () => { },
-      checkForChanges: () => { },
-      queryDatabase: () => undefined,
-      queryDatabases: () => [],
-      acquireWriteLock: () => { },
-      releaseWriteLock: () => { },
-      abandonChanges: () => { },
-      containerId,
-      baseUri: "https://example.invalid",
-      storageType: "azure",
-      isPublic: false,
-    } as unknown as CloudSqlite.CloudContainer;
-  }
-
-  function stubCloudLookup(containerId: string, resolveVersion: (props: WorkspaceDbProps) => string) {
-    sinon.stub(CloudSqlite, "createCloudContainer").returns(createFakeCloudContainer(containerId));
-    sinon.stub(CloudSqlite, "querySemverMatch").callsFake((props) => CloudSqlite.makeSemverName(props.dbName, resolveVersion(props)));
-    sinon.stub(CloudSqlite, "isSemverEditable").returns(true);
-  }
-
-  it("local getWorkspaceDb ignores version selectors for cache identity", async () => {
-    const container = getContainer("workspace-cache-local");
-    await container.createDb({ dbName: "test-db", manifest: { workspaceName: "workspace-cache-local" } });
-
-    const db1 = container.getWorkspaceDb({ dbName: "test-db" });
-    const db2 = container.getWorkspaceDb({ dbName: "test-db", version: "1.0.0", includePrerelease: true });
-    expect(db1).to.equal(db2);
+    const settings = workspace.settings;
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.iTwin,
+      dbName: settingsWorkspaceDbName,
+    });
+    expect(settings.getSetting("editor/renderWhitespace")).equals("all");
+    expect(settings.getSetting("editor/fontSize")).equals(14);
   });
 
-  it("local createDb with omitted dbName matches an explicit default-name lookup", async () => {
-    const container = getContainer("workspace-cache-local-default-name");
-    const db1 = await container.createDb({ manifest: { workspaceName: "workspace-cache-local-default-name" } });
+  it("settingsWorkspaceDbName loads resourceName last when set", async () => {
+    const containerProps = { containerId: "load-all-ignore-rsc", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all-priority" });
+    db.addString("first", JSON.stringify({ "editor/tabSize": 2, "editor/shared": "first" }));
+    db.addString("second", JSON.stringify({ "editor/wordWrap": "on", "editor/shared": "second" }));
+    db.close();
 
-    const db2 = container.getEditableDb({ dbName: "workspace-db" });
-    expect(db1).to.equal(db2);
+    const settings = workspace.settings;
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.defaults,
+      dbName: settingsWorkspaceDbName,
+      resourceName: "second",
+    });
+    // All dictionaries are loaded, with resourceName loaded last.
+    expect(settings.getSetting("editor/tabSize")).equals(2);
+    expect(settings.getSetting("editor/wordWrap")).equals("on");
+    expect(settings.getSetting("editor/shared")).equals("second");
   });
 
-  it("cloud getWorkspaceDb reuses the same instance for semver-equivalent selectors", () => {
-    const containerId = "workspace-cache-cloud-equivalent";
-    stubCloudLookup(containerId, (props) => props.version === "1" ? "1.0.0" : (props.version ?? "1.0.0"));
+  it("settingsWorkspaceDbName continues loading sibling dictionaries after a resource fails", async () => {
+    const containerProps = { containerId: "load-all-continue-on-error", baseUri: "", storageType: "azure" as const };
+    const db = await makeEditableDb({ ...containerProps, dbName: settingsWorkspaceDbName }, { workspaceName: "load-all-continue-on-error" });
+    db.addString("dict-valid", JSON.stringify({ "editor/continueAfterError": true }));
+    db.addString("dict-invalid", "not valid json");
+    db.close();
 
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    const db1 = container.getWorkspaceDb({ dbName: "test-db", version: "1" });
-    const db2 = container.getWorkspaceDb({ dbName: "test-db", version: "1.0.0" });
-    expect(db1).to.equal(db2);
+    const problems: WorkspaceDbLoadError[] = [];
+    await workspace.loadSettingsDictionary({
+      ...containerProps,
+      priority: SettingsPriority.defaults,
+      dbName: settingsWorkspaceDbName,
+      // Force this valid resource to be evaluated last.
+      resourceName: "dict-valid",
+    }, problems);
+
+    expect(workspace.settings.getSetting("editor/continueAfterError")).to.equal(true);
+    expect(problems.length).to.equal(1);
   });
 
-  it("cloud getWorkspaceDb returns different instances for different resolved versions", () => {
-    const containerId = "workspace-cache-cloud-different";
-    stubCloudLookup(containerId, (props) => props.version ?? "1.0.0");
 
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    const db1 = container.getWorkspaceDb({ dbName: "test-db", version: "1.0.0" });
-    const db2 = container.getWorkspaceDb({ dbName: "test-db", version: "2.0.0" });
-    expect(db1).to.not.equal(db2);
+
+  describe("workspace db version cache key", () => {
+    afterEach(() => sinon.restore());
+
+    function getContainer(containerId: string, props?: Partial<WorkspaceContainerProps>) {
+      return editor.getContainer({ containerId, baseUri: "", storageType: "azure", accessToken: "", ...props });
+    }
+
+    function createFakeCloudContainer(containerId: string): CloudSqlite.CloudContainer {
+      return {
+        connect: () => { },
+        disconnect: () => { },
+        checkForChanges: () => { },
+        queryDatabase: () => undefined,
+        queryDatabases: () => [],
+        acquireWriteLock: () => { },
+        releaseWriteLock: () => { },
+        abandonChanges: () => { },
+        containerId,
+        baseUri: "https://example.invalid",
+        storageType: "azure",
+        isPublic: false,
+      } as unknown as CloudSqlite.CloudContainer;
+    }
+
+    function stubCloudLookup(containerId: string, resolveVersion: (props: WorkspaceDbProps) => string) {
+      sinon.stub(CloudSqlite, "createCloudContainer").returns(createFakeCloudContainer(containerId));
+      sinon.stub(CloudSqlite, "querySemverMatch").callsFake((props) => CloudSqlite.makeSemverName(props.dbName, resolveVersion(props)));
+      sinon.stub(CloudSqlite, "isSemverEditable").returns(true);
+    }
+
+    it("local getWorkspaceDb ignores version selectors for cache identity", async () => {
+      const container = getContainer("workspace-cache-local");
+      await container.createDb({ dbName: "test-db", manifest: { workspaceName: "workspace-cache-local" } });
+
+      const db1 = container.getWorkspaceDb({ dbName: "test-db" });
+      const db2 = container.getWorkspaceDb({ dbName: "test-db", version: "1.0.0", includePrerelease: true });
+      expect(db1).to.equal(db2);
+    });
+
+    it("local createDb with omitted dbName matches an explicit default-name lookup", async () => {
+      const container = getContainer("workspace-cache-local-default-name");
+      const db1 = await container.createDb({ manifest: { workspaceName: "workspace-cache-local-default-name" } });
+
+      const db2 = container.getEditableDb({ dbName: "workspace-db" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("cloud getWorkspaceDb reuses the same instance for semver-equivalent selectors", () => {
+      const containerId = "workspace-cache-cloud-equivalent";
+      stubCloudLookup(containerId, (props) => props.version === "1" ? "1.0.0" : (props.version ?? "1.0.0"));
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      const db1 = container.getWorkspaceDb({ dbName: "test-db", version: "1" });
+      const db2 = container.getWorkspaceDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db1).to.equal(db2);
+    });
+
+    it("cloud getWorkspaceDb returns different instances for different resolved versions", () => {
+      const containerId = "workspace-cache-cloud-different";
+      stubCloudLookup(containerId, (props) => props.version ?? "1.0.0");
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      const db1 = container.getWorkspaceDb({ dbName: "test-db", version: "1.0.0" });
+      const db2 = container.getWorkspaceDb({ dbName: "test-db", version: "2.0.0" });
+      expect(db1).to.not.equal(db2);
+    });
+
+    it("cloud getWorkspaceDb respects includePrerelease only when it resolves differently", () => {
+      const containerId = "workspace-cache-cloud-prerelease";
+      stubCloudLookup(containerId, (props) => props.includePrerelease ? "1.1.0-beta.1" : "1.0.0");
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      const stable = container.getWorkspaceDb({ dbName: "test-db", version: "*" });
+      const prerelease = container.getWorkspaceDb({ dbName: "test-db", version: "*", includePrerelease: true });
+      expect(stable).to.not.equal(prerelease);
+    });
+
+    it("createDb with explicit version returns the cached editable db for that resolved version", async () => {
+      const containerId = "workspace-create-version";
+      stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
+      sinon.stub(CloudSqlite, "uploadDb").resolves();
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      const db = await container.createDb({ dbName: "test-db", version: "1.0.0", manifest: { workspaceName: "workspace-create-version" } });
+
+      const dbAgain = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
+      expect(db).to.equal(dbAgain);
+    });
+
+    it("createDb without an explicit version returns the cached editable db for version 0.0.0", async () => {
+      const containerId = "workspace-create-default-version";
+      stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
+      sinon.stub(CloudSqlite, "uploadDb").resolves();
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      const db = await container.createDb({ dbName: "test-db", manifest: { workspaceName: "workspace-create-default-version" } });
+
+      const dbAgain = container.getEditableDb({ dbName: "test-db", version: "0.0.0" });
+      expect(db).to.equal(dbAgain);
+    });
+
+    it("cloud createDb uploads using the requested version", async () => {
+      const containerId = "workspace-cloud-explicit-version";
+      stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
+      const uploadDb = sinon.stub(CloudSqlite, "uploadDb").resolves();
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      await container.createDb({ dbName: "test-db", version: "1.2.3", manifest: { workspaceName: "workspace-cloud-explicit-version" } });
+
+      expect(uploadDb.calledOnce).to.be.true;
+      expect(uploadDb.firstCall.args[1].dbName).to.equal("test-db:1.2.3");
+    });
+
+    it("cloud createDb defaults omitted version to 0.0.0", async () => {
+      const containerId = "workspace-cloud-default-version";
+      stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
+      const uploadDb = sinon.stub(CloudSqlite, "uploadDb").resolves();
+
+      const container = getContainer(containerId, { baseUri: "https://example.invalid" });
+      await container.createDb({ dbName: "test-db", manifest: { workspaceName: "workspace-cloud-default-version" } });
+
+      expect(uploadDb.calledOnce).to.be.true;
+      expect(uploadDb.firstCall.args[1].dbName).to.equal("test-db:0.0.0");
+    });
   });
-
-  it("cloud getWorkspaceDb respects includePrerelease only when it resolves differently", () => {
-    const containerId = "workspace-cache-cloud-prerelease";
-    stubCloudLookup(containerId, (props) => props.includePrerelease ? "1.1.0-beta.1" : "1.0.0");
-
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    const stable = container.getWorkspaceDb({ dbName: "test-db", version: "*" });
-    const prerelease = container.getWorkspaceDb({ dbName: "test-db", version: "*", includePrerelease: true });
-    expect(stable).to.not.equal(prerelease);
-  });
-
-  it("createDb with explicit version returns the cached editable db for that resolved version", async () => {
-    const containerId = "workspace-create-version";
-    stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
-    sinon.stub(CloudSqlite, "uploadDb").resolves();
-
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    const db = await container.createDb({ dbName: "test-db", version: "1.0.0", manifest: { workspaceName: "workspace-create-version" } });
-
-    const dbAgain = container.getEditableDb({ dbName: "test-db", version: "1.0.0" });
-    expect(db).to.equal(dbAgain);
-  });
-
-  it("createDb without an explicit version returns the cached editable db for version 0.0.0", async () => {
-    const containerId = "workspace-create-default-version";
-    stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
-    sinon.stub(CloudSqlite, "uploadDb").resolves();
-
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    const db = await container.createDb({ dbName: "test-db", manifest: { workspaceName: "workspace-create-default-version" } });
-
-    const dbAgain = container.getEditableDb({ dbName: "test-db", version: "0.0.0" });
-    expect(db).to.equal(dbAgain);
-  });
-
-  it("cloud createDb uploads using the requested version", async () => {
-    const containerId = "workspace-cloud-explicit-version";
-    stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
-    const uploadDb = sinon.stub(CloudSqlite, "uploadDb").resolves();
-
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    await container.createDb({ dbName: "test-db", version: "1.2.3", manifest: { workspaceName: "workspace-cloud-explicit-version" } });
-
-    expect(uploadDb.calledOnce).to.be.true;
-    expect(uploadDb.firstCall.args[1].dbName).to.equal("test-db:1.2.3");
-  });
-
-  it("cloud createDb defaults omitted version to 0.0.0", async () => {
-    const containerId = "workspace-cloud-default-version";
-    stubCloudLookup(containerId, (props) => props.version ?? "0.0.0");
-    const uploadDb = sinon.stub(CloudSqlite, "uploadDb").resolves();
-
-    const container = getContainer(containerId, { baseUri: "https://example.invalid" });
-    await container.createDb({ dbName: "test-db", manifest: { workspaceName: "workspace-cloud-default-version" } });
-
-    expect(uploadDb.calledOnce).to.be.true;
-    expect(uploadDb.firstCall.args[1].dbName).to.equal("test-db:0.0.0");
-  });
-});
 
   describe("getContainerAsync token resolution", () => {
     afterEach(() => sinon.restore());
@@ -387,16 +445,11 @@ describe("workspace db version cache key", () => {
     function createMockService(containers: BlobContainer.MetadataResponse[]): BlobContainer.ContainerService {
       return {
         create: async () => ({ containerId: testContainerId, baseUri: "https://mock.blob.core/", provider: "azure" as const }),
-        delete: async () => {},
+        delete: async () => { },
         queryScope: async () => ({ iTwinId: testITwinId }),
         queryMetadata: async () => ({ containerType: "workspace", label: "mock" }),
-        queryContainersMetadata: async (_userToken, args) => {
-          return containers.filter((c) =>
-            (args.containerType === undefined || c.containerType === args.containerType) &&
-            (args.iTwinId === testITwinId || args.iTwinId === undefined),
-          );
-        },
-        updateJson: async () => {},
+        queryContainersMetadata: async () => containers,
+        updateJson: async () => { },
         requestToken: async (_props) => ({
           token: "",
           scope: { iTwinId: testITwinId },
