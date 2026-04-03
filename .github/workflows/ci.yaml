@@ -1,0 +1,51 @@
+# iTwin.js Core CI Build (GitHub Actions)
+#
+# Ported from: common/config/azure-pipelines/ci.yaml
+#
+# This build validates iTwin.js core on GitHub-hosted runners across
+# Windows, Linux, and macOS. It runs on a daily schedule and can be
+# triggered manually via workflow_dispatch.
+#
+# For the main CI on self-hosted runners, see jobs/fast-ci.yaml (ADO, not yet ported).
+
+name: CI
+
+on:
+  schedule:
+    - cron: "0 5 * * *" # Daily 5:00 UTC
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/core-build
+        with:
+          node-version: "24.x"
+          rush-build-cache-credential: ${{ secrets.RUSH_BUILD_CACHE_SAS }}
+
+      # Test result publishing — ADO ci.yaml doesn't do this (fast-ci does),
+      # but it's useful signal and validates the reporting pattern for Phase 3.
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: "Test Results (${{ matrix.os }})"
+          path: "**/junit_results.xml"
+          reporter: java-junit

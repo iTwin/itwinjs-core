@@ -1,0 +1,114 @@
+# Composite action: Core Build
+# Ported from: common/config/azure-pipelines/templates/core-build.yaml
+#
+# Builds and tests all iTwin.js core packages on a single OS.
+# Mobile build steps are excluded (handled by ci-ios.yaml).
+
+name: "Core Build"
+description: "Build, lint, test, and generate docs for iTwin.js core packages"
+
+inputs:
+  node-version:
+    description: "Node.js version to use (e.g. '24.x')"
+    required: true
+  rush-build-cache-credential:
+    description: "Rush build cache SAS token. If empty, build cache is disabled."
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js ${{ inputs.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Git config
+      shell: bash
+      run: |
+        git config --local user.email imodeljs-admin@users.noreply.github.com
+        git config --local user.name imodeljs-admin
+
+    - name: Rush check
+      shell: bash
+      run: node common/scripts/install-run-rush.js check
+
+    # Replaces run_rush_change.py — maps GHA context to the expected branch args.
+    # On PR builds, determines the merge target; on schedule/dispatch, defaults to origin/master.
+    - name: Rush change verification
+      shell: bash
+      run: |
+        BRANCH_ARG=""
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          TARGET="${{ github.base_ref }}"
+          if [[ "$TARGET" == *"release"* ]]; then
+            BRANCH_ARG="-b origin/$TARGET"
+          fi
+        fi
+        node common/scripts/install-run-rush.js change -v $BRANCH_ARG
+
+    - name: Rush install
+      uses: nick-fields/retry@v3
+      with:
+        command: node common/scripts/install-run-rush.js install
+        max_attempts: 2
+        timeout_minutes: 10
+
+    - name: Rush audit
+      shell: bash
+      run: node common/scripts/install-run-rush.js audit
+      continue-on-error: true
+
+    # Replaces set-rush-write-cache-variables.js — sets RUSH_BUILD_CACHE_WRITE_ALLOWED
+    # directly via $GITHUB_ENV instead of ##vso[task.setvariable].
+    # Write cache is only enabled on Linux for non-PR events (matches ADO behavior).
+    - name: Set Rush build cache variables
+      shell: bash
+      run: |
+        WRITE_ALLOWED=0
+        if [ "$RUNNER_OS" = "Linux" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+          WRITE_ALLOWED=1
+        fi
+        echo "RUSH_BUILD_CACHE_WRITE_ALLOWED=$WRITE_ALLOWED" >> "$GITHUB_ENV"
+
+    - name: Rush build
+      shell: bash
+      run: node common/scripts/install-run-rush.js build -v -p max
+      env:
+        RUSH_BUILD_CACHE_CREDENTIAL: ${{ inputs.rush-build-cache-credential }}
+        RUSH_BUILD_CACHE_ENABLED: ${{ inputs.rush-build-cache-credential != '' && '1' || '0' }}
+        VITE_CI: "true"
+
+    - name: Rush lint
+      shell: bash
+      run: node common/scripts/install-run-rush.js lint
+
+    - name: Rush webpack:test
+      shell: bash
+      run: node common/scripts/install-run-rush.js webpack:test -v
+
+    # Linux requires a virtual framebuffer for display-dependent tests
+    - name: Rush cover (Linux)
+      if: runner.os == 'Linux'
+      uses: nick-fields/retry@v3
+      with:
+        command: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+        max_attempts: 2
+        timeout_minutes: 60
+      env:
+        NODE_ENV: development
+
+    - name: Rush cover (Windows/macOS)
+      if: runner.os != 'Linux'
+      uses: nick-fields/retry@v3
+      with:
+        command: node common/scripts/install-run-rush.js cover --verbose
+        max_attempts: 2
+        timeout_minutes: 60
+      env:
+        NODE_ENV: development
+
+    - name: Rush docs
+      shell: bash
+      run: node common/scripts/install-run-rush.js docs
