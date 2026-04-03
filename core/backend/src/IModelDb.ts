@@ -1501,7 +1501,7 @@ export abstract class IModelDb extends IModel {
    * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
-   * @note To turn on native logging, use [NativeLoggerCategory]($backend) category and [the console appender]($docs/learning/backend/Logging#consoleAppender).
+   * @note To turn on native logging, use NativeLoggerCategory and a console appender.
    * - For metadata differences between existing and imported schemas, turn on "ECDb" category.
    * - For import details, turn on "SchemaImport" category.
    * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
