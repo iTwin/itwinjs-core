@@ -218,7 +218,7 @@ export enum TextureUnit {
  * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
  * @internal
  */
-export const enum RenderOrder {
+export enum RenderOrder {
   None = 0,
   Background = 1, // i.e., background map drawn without depth
   BlankingRegion = 2,
