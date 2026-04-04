@@ -232,7 +232,7 @@ const handle = IModelApp.quantityFormatter.getFormatSpecHandle(
 label.textContent = handle.format(distanceInMeters);
 
 // Clean up on teardown
-handle.dispose();
+handle[Symbol.dispose]();
 ```
 
 ### Migration summary

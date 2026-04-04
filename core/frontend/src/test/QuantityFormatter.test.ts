@@ -887,7 +887,7 @@ describe("FormatSpecHandle", () => {
     expect(handle.parserSpec).toBeDefined();
     expect(handle.koqName).toBe("TestKoQ.LENGTH");
     expect(handle.persistenceUnit).toBe("Units.M");
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("format() returns formatted string", async () => {
@@ -899,7 +899,7 @@ describe("FormatSpecHandle", () => {
     const result = handle.format(1.5);
     expect(typeof result).toBe("string");
     expect(result).not.toBe("1.5"); // Should be formatted with units, not raw toString
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("format() returns value.toString() fallback when spec not loaded", async () => {
@@ -908,7 +908,7 @@ describe("FormatSpecHandle", () => {
 
     const handle = qf.getFormatSpecHandle("NonExistent.KOQ", "Units.M");
     expect(handle.format(42)).toBe("42");
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("dispose is idempotent", async () => {
@@ -918,8 +918,8 @@ describe("FormatSpecHandle", () => {
 
     const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
     expect(handle.formatterSpec).toBeDefined();
-    handle.dispose();
-    handle.dispose(); // Should not throw
+    handle[Symbol.dispose]();
+    handle[Symbol.dispose](); // Should not throw
     expect(handle.formatterSpec).toBeUndefined();
   });
 
@@ -942,7 +942,7 @@ describe("FormatSpecHandle", () => {
     const initialCount = qf.onFormattingReadyUnordered.numberOfListeners;
     for (let i = 0; i < 10; i++) {
       const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
-      handle.dispose();
+      handle[Symbol.dispose]();
     }
     expect(qf.onFormattingReadyUnordered.numberOfListeners).toBe(initialCount);
   });
@@ -961,7 +961,7 @@ describe("FormatSpecHandle", () => {
 
     expect(handle.formatterSpec).toBeDefined();
     expect(handle.parserSpec).toBeDefined();
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 });
 
@@ -1087,7 +1087,7 @@ describe("Multi-system KoQ registry", () => {
     const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M", "metric");
     expect(handle.system).toBe("metric");
     expect(handle.formatterSpec).toBeDefined();
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("FormatSpecHandle with no system uses active system", async () => {
@@ -1099,7 +1099,7 @@ describe("Multi-system KoQ registry", () => {
     const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
     expect(handle.system).toBeUndefined();
     expect(handle.formatterSpec).toBeDefined();
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 });
 

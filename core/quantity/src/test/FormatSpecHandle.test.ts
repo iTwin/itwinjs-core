@@ -36,7 +36,7 @@ describe("FormatSpecHandle", () => {
     expect(handle.koqName).toBe("TestKoQ");
     expect(handle.persistenceUnit).toBe("Units.M");
     expect(handle.system).toBeUndefined();
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("specs are undefined when entry is not available", () => {
@@ -45,7 +45,7 @@ describe("FormatSpecHandle", () => {
 
     expect(handle.formatterSpec).toBeUndefined();
     expect(handle.parserSpec).toBeUndefined();
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("format() returns formatted string when spec is available", () => {
@@ -55,7 +55,7 @@ describe("FormatSpecHandle", () => {
 
     expect(handle.format(42)).toBe("formatted:42");
     expect(provider.formatQuantity).toHaveBeenCalledWith(42, entry.formatterSpec);
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("format() returns toString fallback when spec is not available", () => {
@@ -63,7 +63,7 @@ describe("FormatSpecHandle", () => {
     const handle = new FormatSpecHandle({ provider, name: "Missing", persistenceUnitName: "Units.M" });
 
     expect(handle.format(42)).toBe("42");
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("refreshes specs when onFormattingReadyUnordered fires", () => {
@@ -77,7 +77,7 @@ describe("FormatSpecHandle", () => {
     provider.ready.emit();
 
     expect(handle.formatterSpec).toBe(entry.formatterSpec);
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
   it("passes system to getSpecsByNameAndUnit when pinned", () => {
@@ -91,15 +91,15 @@ describe("FormatSpecHandle", () => {
       persistenceUnitName: "Units.M",
       system: "imperial",
     } satisfies FormattingSpecArgs);
-    handle.dispose();
+    handle[Symbol.dispose]();
   });
 
-  it("dispose() clears specs and unsubscribes from events", () => {
+  it("[Symbol.dispose] clears specs and unsubscribes from events", () => {
     const entry = createMockEntry();
     const provider = createMockProvider(entry);
     const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M" });
 
-    handle.dispose();
+    handle[Symbol.dispose]();
     expect(handle.formatterSpec).toBeUndefined();
     expect(handle.parserSpec).toBeUndefined();
 
@@ -109,19 +109,10 @@ describe("FormatSpecHandle", () => {
     expect(provider.getSpecsByNameAndUnit).not.toHaveBeenCalled();
   });
 
-  it("dispose() is idempotent", () => {
+  it("[Symbol.dispose] is idempotent", () => {
     const provider = createMockProvider(undefined);
     const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M" });
-    handle.dispose();
-    handle.dispose(); // Should not throw
-  });
-
-  it("Symbol.dispose works", () => {
-    const entry = createMockEntry();
-    const provider = createMockProvider(entry);
-    const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M" });
-
     handle[Symbol.dispose]();
-    expect(handle.formatterSpec).toBeUndefined();
+    handle[Symbol.dispose](); // Should not throw
   });
 });

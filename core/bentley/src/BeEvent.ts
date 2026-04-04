@@ -27,7 +27,7 @@ interface EventContext {
  */
 export class BeEvent<T extends Listener> {
   private _listeners: EventContext[] = [];
-  private _insideRaiseEvent: boolean = false;
+  private _emitDepth: number = 0;
 
   /** The number of listeners currently subscribed to the event. */
   public get numberOfListeners() { return this._listeners.length; }
@@ -69,7 +69,7 @@ export class BeEvent<T extends Listener> {
     for (let i = 0; i < listeners.length; ++i) {
       const context = listeners[i];
       if (context.listener === listener && context.scope === scope) {
-        if (this._insideRaiseEvent) {
+        if (this._emitDepth > 0) {
           context.listener = undefined;
         } else {
           listeners.splice(i, 1);
@@ -86,7 +86,7 @@ export class BeEvent<T extends Listener> {
    * @see [[BeEvent.removeListener]], [[BeEvent.addListener]]
    */
   public raiseEvent(...args: Parameters<T>) {
-    this._insideRaiseEvent = true;
+    this._emitDepth++;
 
     const listeners = this._listeners;
     const length = listeners.length;
@@ -102,18 +102,22 @@ export class BeEvent<T extends Listener> {
         } catch (e) {
           UnexpectedErrors.handle(e);
         }
-        if (context.once) {
+        if (!context.listener) {
+          // listener was removed during its own callback
+          dropped = true;
+        } else if (context.once) {
           context.listener = undefined;
           dropped = true;
         }
       }
     }
 
-    // if we had dropped listeners, remove them now
-    if (dropped)
-      this._listeners = this._listeners.filter((ctx) => ctx.listener !== undefined);
+    this._emitDepth--;
 
-    this._insideRaiseEvent = false;
+    // Only sweep tombstoned entries when the outermost emit completes,
+    // so nested raiseEvent calls never mutate the array mid-iteration.
+    if (dropped && this._emitDepth === 0)
+      this._listeners = this._listeners.filter((ctx) => ctx.listener !== undefined);
   }
 
   /** Determine whether this BeEvent has a specified listener registered.

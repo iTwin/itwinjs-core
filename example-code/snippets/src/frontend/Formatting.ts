@@ -131,7 +131,7 @@ export function subscribeToFormattingReady(updateUI: (formatted: string) => void
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.FormatSpecHandle_Basic
-/** Create, use, and dispose a FormatSpecHandle */
+/** Create, use, and explicitly dispose a FormatSpecHandle */
 export function useFormatSpecHandle() {
   const handle = IModelApp.quantityFormatter.getFormatSpecHandle(
     "DefaultToolsUnits.LENGTH", // KindOfQuantity name
@@ -142,8 +142,8 @@ export function useFormatSpecHandle() {
   const formatted = handle.format(1.5);
   console.log(formatted);
 
-  // Dispose when done to unsubscribe from reload events
-  handle.dispose();
+  // Explicitly dispose when done to unsubscribe from reload events
+  handle[Symbol.dispose]();
 }
 // __PUBLISH_EXTRACT_END__
 

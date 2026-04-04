@@ -76,20 +76,16 @@ export class FormatSpecHandle implements Disposable {
     return this._provider.formatQuantity(value, this._formatterSpec);
   }
 
-  /** Unsubscribe from reload events. Idempotent and safe to call during a pending reload.
-   * Also accessible via `[Symbol.dispose]` for use with `using` declarations.
+  /** Unsubscribe from reload events and clear cached specs.
+   * Idempotent and safe to call during a pending reload.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._removeListener) {
       this._removeListener();
       this._removeListener = undefined;
     }
     this._formatterSpec = undefined;
     this._parserSpec = undefined;
-  }
-
-  public [Symbol.dispose](): void {
-    this.dispose();
   }
 
   private _refresh(): void {
