@@ -320,15 +320,19 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const promises = shards.map(async (files, index) => {
     let result = await runShard(files, index);
 
-    // Retry once if the shard crashed (non-zero exit) without producing any test results.
-    if (result.exitCode !== 0) {
-      const resultsPath = path.join(result.cacheDir, "test-results.json");
-      const hasTestResults = fs.existsSync(resultsPath);
-      if (!hasTestResults) {
-        console.warn(`shard-${index} crashed (exit ${result.exitCode}) with no test results — retrying once`);
-        cleanupCacheDir(result.cacheDir);
-        result = await runShard(files, index);
-      }
+    // Retry once if the shard produced no test results at all. This covers:
+    // - Crashed shards (non-zero exit, e.g. native exception or OOM)
+    // - Silent exits (exit 0 but 0 results, e.g. GPU process init failure on Linux CI)
+    // Real test failures always produce 1+ results and are never retried.
+    const resultsPath = path.join(result.cacheDir, "test-results.json");
+    const hasTestResults = fs.existsSync(resultsPath);
+    if (!hasTestResults) {
+      const reason = result.exitCode !== 0
+        ? `crashed (exit ${result.exitCode})`
+        : `exited cleanly but produced no test results`;
+      console.warn(`shard-${index} ${reason} — retrying once`);
+      cleanupCacheDir(result.cacheDir);
+      result = await runShard(files, index);
     }
 
     results.push(result);
