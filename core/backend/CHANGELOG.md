@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 24 Mar 2026 14:30:44 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Apr 2026 18:28:44 GMT and should not be manually modified.
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Patches
+
+- Fix operator precedence bug in WorkspaceImpl.getContainerAsync that silently discarded explicit access tokens
+
+### Updates
+
+- For StandaloneDb make sure to delete txns
+- Remove unnecessary warning when calling `IModelDb.saveChanges` with no unsaved changes.
+- QueryBinder should not fail on bind empty array
+- Fix WorkspaceDb/SettingsDb instance caching, cloud version defaulting, and `getSetting` prototype-chain guard.
+- Added SettingsDb and SettingsEditor APIs for dedicated JSON settings storage, separate from WorkspaceDb.
+- Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
+- Added withQueryReader to ECDb and iModel and also created ECSqlSyncReader to query imodels in true row by row fashion
 
 ## 5.7.3
 Tue, 24 Mar 2026 14:29:17 GMT
