@@ -5,119 +5,49 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
-    - [WithQueryReader API](#withqueryreader-api)
-    - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
-      - [Why SettingsDb?](#why-settingsdb)
+    - [iTwin settings workspace](#itwin-settings-workspace)
       - [New APIs](#new-apis)
       - [Usage examples](#usage-examples)
-      - [Container type convention](#container-type-convention)
-      - [Container separation and lock isolation](#container-separation-and-lock-isolation)
-  - [Display](#display)
-    - [Fixes](#fixes)
-  - [Electron 41 support](#electron-41-support)
+      - [Configuration requirements](#configuration-requirements)
 
 ## @itwin/core-backend
 
-### WithQueryReader API
+### iTwin settings workspace
 
-A new [withQueryReader]($docs/learning/backend/WithQueryReaderCodeExamples.md) method has been added to both [ECDb]($backend) and [IModelDb]($backend), providing true row-by-row behavior for ECSQL queries with synchronous execution. This API introduces a new [ECSqlSyncReader]($backend) through the [ECSqlRowExecutor]($backend) and supports configuration via [SynchronousQueryOptions]($backend).
+*Applications* can now store and load named settings dictionaries in an iTwin-scoped workspace, separate from iModel-level settings so the same values can be shared across iModels in that iTwin.
 
-**Key Features:**
+Under the hood, that workspace uses a [SettingsDb]($backend), which is a settings-formatted [WorkspaceDb]($backend) named `settings-db`. In that db, each string resource is one settings dictionary:
 
-- **True row-by-row streaming**: Unlike the existing async reader APIs, `withQueryReader` provides synchronous row-by-row access to query results
-- **Consistent API across databases**: The same interface is available on both `ECDb` and `IModelDb` instances
-- **Configurable behavior**: Support for various query options through `SynchronousQueryOptions`
+- Resource name: dictionary name
+- Resource value: JSON dictionary content
 
-**Usage Examples:**
+Developers still read and write settings dictionaries by name, while container management, versioning, and cloud sync follow the standard workspace model.
 
-```typescript
-// ECDb usage
-db.withQueryReader("SELECT ECInstanceId, UserLabel FROM bis.Element LIMIT 100", (reader) => {
-  while (reader.step()) {
-    const row = reader.current;
-    console.log(`ID: ${row.id}, Label: ${row.userLabel}`);
-  }
-});
-
-// IModelDb usage with options
-iModelDb.withQueryReader(
-  "SELECT ECInstanceId, CodeValue FROM bis.Element",
-  (reader) => {
-    while (reader.step()) {
-      const row = reader.current;
-      processElement(row);
-    }
-  }
-);
-```
-
-**Migration from deprecated APIs:**
-
-This API serves as the recommended replacement for synchronous query scenarios previously handled by the deprecated `ECSqlStatement` for read-only operations:
-
-```typescript
-// Before - using deprecated ECSqlStatement
-db.withPreparedStatement(query, (stmt) => {
-  while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-    const row = stmt.getRow();
-    processRow(row);
-  }
-});
-
-// Now - using withQueryReader
-db.withQueryReader(query, (reader) => {
-  while (reader.step()) {
-    const row = reader.current;
-    processRow(row);
-  }
-});
-```
-
-### Dedicated SettingsDb for workspace settings
-
-A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
-
-#### Why SettingsDb?
-
-Previously, settings and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
-
-- **Lookup**: Finding which containers hold settings required opening each one
-- **Granularity**: Settings updates required republishing entire containers with large binary resources
-- **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
 
 #### New APIs
 
-- [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
-- [EditableSettingsDb]($backend): Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
-- [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
-- [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
+- [EditableWorkspaceContainer.withEditableDb]($backend): Acquire a write lock, get or create an editable tip WorkspaceDb, run an operation, then close and release. Automatically creates a new prerelease version if the tip is already published.
+- [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace with all named settings dictionaries.
+- [IModelHost.saveSettingDictionary]($backend) and [IModelHost.deleteSettingDictionary]($backend): Save and remove named settings dictionaries in the iTwin's settings container.
+
+These methods read and write dictionaries in the underlying [SettingsDb]($backend). The dictionary name becomes the resource name, allowing multiple independent dictionaries to coexist in the same container. This mirrors the existing [IModelDb.saveSettingDictionary]($backend) / [IModelDb.deleteSettingDictionary]($backend) pattern.
 
 #### Usage examples
 
-##### Creating a local SettingsDb
+Save a settings dictionary to an iTwin:
 
-[[include:SettingsDb.createLocal]]
+[[include:WorkspaceExamples.SaveITwinSettings]]
 
-See [SettingsDb]($docs/learning/backend/Settings.md#settingsdb) for full documentation.
+Read it back:
 
-#### Container type convention
+[[include:WorkspaceExamples.GetITwinWorkspace]]
 
-SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
+Delete it:
 
-#### Container separation and lock isolation
+[[include:WorkspaceExamples.DeleteITwinSetting]]
 
-Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsCloudContainer]($backend) does not extend [WorkspaceContainer]($backend). This means:
+#### Configuration requirements
 
-- **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
-- **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
-- **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
+To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationClient]($backend) and [BlobContainer.service]($backend) so the backend can query and update the iTwin settings workspace container.
 
-## Display
-
-### Fixes
-
-- Fixed reality data geometry not being reprojected correctly when the reality data is in a different CRS than the iModel.
-
-## Electron 41 support
-
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 41](https://www.electronjs.org/blog/electron-41-0).
+See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.

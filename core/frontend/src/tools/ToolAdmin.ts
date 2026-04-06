@@ -1706,7 +1706,12 @@ export class ToolAdmin {
         await this.setPrimitiveTool(newTool);
       }
       // it is important to raise event after setPrimitiveTool is called
-      this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
+      const activeTool = newTool ?? this._idleTool;
+      // _idleTool is cleared during onShutDown(); skip the event if shutdown has already run
+      // to avoid emitting activeToolChanged with an undefined tool.
+      if (undefined === activeTool)
+        return;
+      this.onActiveToolChanged(activeTool, StartOrResume.Start);
     } finally {
       if (resolveStarting)
         resolveStarting();
