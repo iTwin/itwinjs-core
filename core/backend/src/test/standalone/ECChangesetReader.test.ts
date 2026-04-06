@@ -9,11 +9,13 @@ import { assert, expect } from "chai";
 import { DrawingCategory } from "../../Category";
 import { BriefcaseDb, ChannelControl } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
-import { ECChangesetReader, ECNativeChangeInstance, ECNativeChangeUnifierCache, ECNativePartialChangeUnifier } from "../../ECChangesetReader";
+import { ECChangesetReader } from "../../ECChangesetReader";
 import { IModelJsNative } from "../../core-backend";
 import * as path from "node:path";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ECNativeChangeUnifierCache, ECNativePartialChangeUnifier } from "../../ECNativePartialChangeUnifier";
+import { ECNativeChangeInstance } from "../../ECChangesetReaderTypes";
 
 // -------------------------------------------------------------------------------------------------
 // Drill-down suite: four local txns × three modes × rowOptions variants

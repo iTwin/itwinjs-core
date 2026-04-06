@@ -52,6 +52,7 @@ These packages provide the following functions to support backend operations:
 
 - Change Summary
   - [Change Summary Overview](../ChangeSummaries)
+  - [ECChangesetReader — low-level changeset reading API](./ECChangesetReader.md)
 
 For services and app backends:
 
