@@ -1069,9 +1069,8 @@ describe("TxnManager", () => {
 
 describe("RebaseManager", () => {
   it("dispose clears all event listeners", () => {
-    let testFileName: string;
     IModelTestUtils.registerTestBimSchema();
-    testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
     IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
     const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const rebaser = db.txns.rebaser;
