@@ -1107,9 +1107,8 @@ describe("RebaseManager", () => {
   });
 
   it("rebaser.dispose is called when iModel is closed", () => {
-    let testFileName: string;
     IModelTestUtils.registerTestBimSchema();
-    testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
     IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
 
     const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
@@ -1130,9 +1129,8 @@ describe("RebaseManager", () => {
   });
 
   it("RebaseHandler.dispose is called when RebaseManager is disposed", () => {
-    let testFileName: string;
     IModelTestUtils.registerTestBimSchema();
-    testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
     IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
 
     const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
