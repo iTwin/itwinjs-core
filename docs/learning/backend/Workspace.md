@@ -1,4 +1,4 @@
-# Workspace Resources
+# Workspace Resources (WorkspaceDb)
 
 A [Workspace]($backend) provides the binary resources an iTwin.js application needs at run-time — things like fonts, textures, geographic coordinate system definitions, and other named data assets. These resources are stored in versioned, cloud-hosted [WorkspaceDb]($backend) databases.
 
@@ -8,7 +8,7 @@ A [Workspace]($backend) provides the binary resources an iTwin.js application ne
 
 ## Choosing the right workspace
 
-At runtime, settings and resources are accessed through one of three workspace scopes. Which one you use depends on what you're configuring and who it applies to:
+At runtime, settings and resources are accessed through one of three workspace scopes. Which one you use depends on what you're configuring and who it applies to. Think in terms of *who should see this*: everyone in the app, everyone in one iTwin, or only one iModel.
 
 | Workspace | When to use | Access |
 |---|---|---|
@@ -47,7 +47,7 @@ graph TD
 
 Applications depend on **resources**: binary data files like fonts, textures, images, and templates. Common examples include:
 
-- [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
+- [GeographicCRS]($common) definitions used to specify an iModel's spatial coordinate system.
 - Images that can be used as pattern maps for [Texture]($backend)s.
 
 While you could technically store resources as [Setting]($backend) values, doing so would present significant disadvantages:

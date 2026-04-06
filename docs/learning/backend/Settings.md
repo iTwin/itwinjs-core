@@ -4,7 +4,7 @@
 
 > **New to this topic?** Start with the [Workspaces and Settings overview](./WorkspacesAndSettings.md) to understand how `Settings`, [SettingsDb]($backend), and [WorkspaceDb]($backend) relate before diving in here.
 
-## Settings
+## What is a setting?
 
 Be careful to avoid confusing **settings** with **user preferences**, which are configured by individual users. For example, an application might provide a check box to toggle "dark mode". Each individual user can make their own choice — it is a user preference, not a setting. But an administrator may define a setting that controls whether users can see that check box in the first place.
 
@@ -165,16 +165,24 @@ When that iTwin's settings are no longer needed, drop the dictionary:
 
 What about "landscapePro/ui/availableTools"? In the LandscapePro schema, the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that when multiple dictionaries provide a value for the setting, they are merged into a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
+### How settings are stored
+
+The sections below cover three progressively richer ways to work with settings:
+
+- **Session-only (in-memory):** [Settings.addDictionary]($backend) loads a dictionary for the current session. Good for testing, app defaults, and short-lived overrides.
+- **iTwin / iModel persisted:** [IModelHost.saveSettingDictionary]($backend) writes named dictionaries to cloud storage scoped to an iTwin or iModel. Changes persist across sessions and are shared with other users.
+- **SettingsDb (cloud-managed storage):** A [SettingsDb]($backend) stores individual settings as key-value pairs in a dedicated container with its own versioning and access control — see [SettingsDb](#settingsdb).
+
 ## iTwin settings
 
-Each iTwin has its own workspace with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as named [SettingsDictionary]($backend)s in a [WorkspaceDb]($backend) scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in the container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
+Each iTwin has its own workspace with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as named [SettingsDictionary]($backend)s in a [SettingsDb]($backend) (a settings-formatted [WorkspaceDb]($backend)) scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in the container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
 
 Before using iTwin settings, ensure two services are configured:
 
 - [IModelHost.authorizationClient]($backend) — so the backend can acquire user tokens.
 - [BlobContainer.service]($backend) — so settings containers can be discovered and opened.
 
-With those in place, load the iTwin workspace:
+With those in place, load the iTwin workspace scope:
 
 ```ts
 [[include:WorkspaceExamples.GetITwinWorkspace]]
@@ -190,7 +198,7 @@ To save a named settings dictionary for an iTwin, call [IModelHost.saveSettingDi
 [[include:WorkspaceExamples.SaveITwinSettings]]
 ```
 
-If no settings container exists for the specified iTwin yet, one is created automatically. The dictionary name becomes the resource name in the [WorkspaceDb]($backend). Multiple named dictionaries can coexist in the same container.
+If no settings container exists for the specified iTwin yet, one is created automatically. The dictionary name becomes the resource name in the [SettingsDb]($backend). Multiple named dictionaries can coexist in the same container.
 
 ### Deleting iTwin settings
 
@@ -220,7 +228,7 @@ Use iModel settings when a particular iModel needs configuration that differs fr
 
 ### Persisted vs session-only dictionaries
 
-There are two ways to supply settings dictionaries to an iModel's workspace:
+There are two ways to supply settings dictionaries to an iModel's workspace scope:
 
 | Method | Scope | Persistence |
 |--------|-------|-------------|
@@ -269,7 +277,7 @@ For example, suppose the iTwin setting `landscapePro/flora/preferredStyle` is `"
 [[include:WorkspaceExamples.OverrideITwinSettingAtIModelLevel]]
 ```
 
-Now when the application reads `landscapePro/flora/preferredStyle` from this iModel's workspace, it gets `"formal"`. All other iModels in the iTwin continue to use the iTwin-level value.
+Now when the application reads `landscapePro/flora/preferredStyle` from this iModel's workspace scope, it gets `"formal"`. All other iModels in the iTwin continue to use the iTwin-level value.
 
 ### Referencing iTwin settings from an iModel
 

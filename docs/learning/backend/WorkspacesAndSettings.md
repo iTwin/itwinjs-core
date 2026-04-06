@@ -117,6 +117,8 @@ In practice:
 - **iModel-specific overrides** are loaded at [SettingsPriority.iModel]($backend) (600) — iModel wins over iTwin.
 - **Application defaults** are loaded at [SettingsPriority.application]($backend) (200) — overrideable by any cloud-backed settings.
 
+> **Note:** The diagram above simplifies organization and iTwin into one level. The full priority stack includes a separate [SettingsPriority.organization]($backend) (300) level — see [Settings priorities](./Settings.md#settings-priorities) for details.
+
 `IModelHost.appWorkspace` holds dictionaries at `application` priority or lower. `IModelDb.workspace` holds higher-priority dictionaries and falls back to `appWorkspace` when a setting is not found.
 
 ## Container discovery
@@ -141,7 +143,8 @@ graph TD
 
 This is in contrast to [WorkspaceDb]($backend) containers, which use `containerType: "workspace"` and are discovered *indirectly* — by reading settings values that point to them.
 
-## Learn more
+## Recommended reading order
 
-- **[Settings](./Settings.md)** — how to define settings schemas, load dictionaries, read values, and create/manage [SettingsDb]($backend) containers in the cloud.
-- **[Workspace resources](./Workspace.md)** — how to create, version, and access binary resources stored in [WorkspaceDb]($backend) containers.
+1. **This overview** — understand the two systems and three workspace scopes.
+2. **[Settings](./Settings.md)** — how to define settings schemas, load dictionaries, read values, and create/manage [SettingsDb]($backend) containers in the cloud.
+3. **[Workspace resources](./Workspace.md)** — how to create, version, and access binary resources stored in [WorkspaceDb]($backend) containers.
