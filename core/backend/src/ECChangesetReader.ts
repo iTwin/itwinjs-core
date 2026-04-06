@@ -10,9 +10,9 @@ import { IModelError } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
-import { AnyDb } from "./core-backend";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECChangesetReaderArgs, ECNativeChangeInstance, ECNativeChangeOp, ECNativeChangeSource } from "./ECChangesetReaderTypes";
+import { AnyDb } from "./SqliteChangesetReader";
 
 
 // ---------------------------------------------------------------------------

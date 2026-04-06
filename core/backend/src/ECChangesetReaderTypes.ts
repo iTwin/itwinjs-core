@@ -6,7 +6,7 @@
  * @module ECDb
  */
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AnyDb } from "./core-backend";
+import { AnyDb } from "./SqliteChangesetReader";
 
 // ---------------------------------------------------------------------------
 // Type aliases

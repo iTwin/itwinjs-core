@@ -9,8 +9,8 @@ import { DbResult, Guid } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { SqliteStatement } from "./SqliteStatement";
-import { AnyDb } from "./core-backend";
 import { ECNativeChangeInstance, ECNativeChangeSource } from "./ECChangesetReaderTypes";
+import { AnyDb } from "./SqliteChangesetReader";
 
 // ---------------------------------------------------------------------------
 // ECNativeChangeUnifierCache — interface + factory
