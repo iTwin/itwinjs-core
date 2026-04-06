@@ -35,7 +35,6 @@ import { AnyDb } from "./SqliteChangesetReader";
  * @beta
  */
 export class ECChangesetReader implements Disposable, ECNativeChangeSource {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private _rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;

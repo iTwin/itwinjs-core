@@ -49,7 +49,7 @@ export interface ECNativeChangeMeta {
   nativeKey: string;
   /** Reader mode that was active when this change row was captured. */
   mode: string;
-  /** Set of EC property names fetched from the changeset for this row. */
+  /** Set of EC property names fetched from the changeset or transaction or change binary for this row. */
   changesetFetchedProps: Set<string>;
   /** Row adaptor options that were active when this change row was captured. */
   rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;

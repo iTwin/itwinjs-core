@@ -84,6 +84,9 @@ export * from "./workspace/Workspace";
 export * from "./workspace/WorkspaceEditor";
 export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
+export * from "./ECChangesetReader";
+export * from "./ECChangesetReaderTypes";
+export * from "./ECNativePartialChangeUnifier";
 
 export * from "./internal/cross-package";
 
