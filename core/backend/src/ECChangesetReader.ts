@@ -119,21 +119,6 @@ export interface ECChangesetReaderArgs {
   readonly mode?: IModelJsNative.ECChangesetReader.Mode;
 }
 
-/**
- * Options controlling how a changed EC row is formatted by {@link ECChangesetReader.getValue}.
- * @beta
- */
-export interface ECChangeRowAdaptorOptions {
-  /** Abbreviate blob values to a placeholder instead of returning raw bytes. */
-  abbreviateBlobs?: boolean;
-  /** Convert ECClassId integers to fully-qualified class names (e.g. `"BisCore:Element"`). */
-  classIdsToClassNames?: boolean;
-  /** Use JavaScript-style camelCase property names instead of EC access strings. */
-  useJsName?: boolean;
-  /** Skip class-name conversion for aliased class-id columns. */
-  doNotConvertClassIdsToClassNamesWhenAliased?: boolean;
-}
-
 // ---------------------------------------------------------------------------
 // ECChangesetReader
 // ---------------------------------------------------------------------------
