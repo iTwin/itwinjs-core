@@ -7,6 +7,16 @@ Every non-trivial iTwin.js application needs two things at run-time: **configura
 
 These two systems are deliberately separate. `SettingsDb` containers are discoverable without opening an iModel. `WorkspaceDb` containers are referenced *by* settings. This separation eliminates the circular dependency that would arise if settings had to be loaded from a `WorkspaceDb` just to discover which `WorkspaceDb` to open.
 
+At runtime, settings and resources are accessed through one of three workspace scopes:
+
+| Workspace | Scope | Access |
+|---|---|---|
+| [IModelHost.appWorkspace]($backend) | Application-wide defaults and configuration | Available immediately after [IModelHost.startup]($backend) |
+| [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings shared across all iModels in an iTwin | Requires an iTwinId; no iModel needed |
+| [IModelDb.workspace]($backend) | iModel-specific overrides, inherits from app and iTwin scopes | Available when an iModel is open |
+
+Each scope layers on top of the previous one through the [Settings priority stack](./Settings.md#settings-priorities). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
+
 ## The two database types
 
 ```mermaid
