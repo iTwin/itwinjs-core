@@ -520,6 +520,8 @@ preview;function;isPlacement3dProps
 public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
+beta;interface;ITwinSettingsError
+beta;namespace;ITwinSettingsError
 public;interface;JsonGeometryStream
 beta;type;LeaderAttachment
 beta;type;LeaderTextPointOptions
