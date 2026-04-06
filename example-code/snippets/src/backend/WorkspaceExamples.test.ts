@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
-    BlobContainer,
-  EditableSettingsCloudContainer, EditableSettingsDb, EditableWorkspaceContainer, EditableWorkspaceDb,
-  IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps, SettingsEditor,
+  BlobContainer,
+  EditableWorkspaceContainer, EditableWorkspaceDb,
+  IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps,
   SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
@@ -243,6 +243,45 @@ describe("Workspace Examples", () => {
 
       const iTwinId = Guid.createValue();
 
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveITwinSettings
+      IModelHost.settingsSchemas.addGroup({
+        schemaPrefix: "myApp",
+        description: "MyApp settings",
+        settingDefs: {
+          defaultView: { type: "string" },
+          maxDisplayedItems: { type: "integer" },
+        },
+      });
+
+      await IModelHost.saveSettingDictionary(iTwinId, "myApp/settings", {
+        "myApp/defaultView": "plan",
+        "myApp/maxDisplayedItems": 100,
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.GetITwinWorkspace
+      const iTwinWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
+      const defaultView = iTwinWorkspace.settings.getString("myApp/defaultView");
+      // __PUBLISH_EXTRACT_END__
+      expect(defaultView).to.equal("plan");
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.ReadITwinSettings
+      const workspace = await IModelHost.getITwinWorkspace(iTwinId);
+      const defaultViewFromRead = workspace.settings.getString("myApp/defaultView");
+      const maxItems = workspace.settings.getNumber("myApp/maxDisplayedItems");
+      // __PUBLISH_EXTRACT_END__
+      expect(defaultViewFromRead).to.equal("plan");
+      expect(maxItems).to.equal(100);
+      iTwinWorkspace.close();
+      workspace.close();
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.DeleteITwinSetting
+      await IModelHost.deleteSettingDictionary(iTwinId, "myApp/settings");
+      // __PUBLISH_EXTRACT_END__
+      const workspaceAfterDelete = await IModelHost.getITwinWorkspace(iTwinId);
+      expect(workspaceAfterDelete.settings.getString("myApp/defaultView")).to.be.undefined;
+      workspaceAfterDelete.close();
+
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreateWorkspaceDb
       const editor = WorkspaceEditor.construct();
 
@@ -379,6 +418,39 @@ describe("Workspace Examples", () => {
       expect(cornusDb.cloudProps!.version).to.equal("1.0.1");
       expect(abiesDb.cloudProps!.version).to.equal("1.0.0");
 
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveTreeDbsToITwin
+      assert(undefined !== cornusDb.cloudProps);
+      assert(undefined !== abiesDb.cloudProps);
+
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps },
+          { ...abiesDb.cloudProps },
+        ],
+      });
+
+      const workspaceForTreeDbs = await IModelHost.getITwinWorkspace(iTwinId);
+      const workspaceTreeDbs = await workspaceForTreeDbs.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
+      // __PUBLISH_EXTRACT_END__
+      expect(workspaceTreeDbs.length).to.equal(2);
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.UpdateTreeDbVersionAtITwin
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps, version: "1.1.1" },
+          { ...abiesDb.cloudProps },
+        ],
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // restore to current latest for any subsequent use
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps },
+          { ...abiesDb.cloudProps },
+        ],
+      });
+
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.getAvailableTrees
@@ -455,6 +527,44 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
 
       expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Pacific Silver Fir", "Balsam Fir"]);
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveITwinSettingsReferenceInIModel
+      const iTwinWorkspaceForModelRef = await IModelHost.getITwinWorkspace(iTwinId);
+      const settingsSourcesForModelRef = iTwinWorkspaceForModelRef.settingsSources;
+      assert(undefined !== settingsSourcesForModelRef);
+
+      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+        "landscapePro/itwinSettingsRef": settingsSourcesForModelRef,
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.OverrideITwinSettingAtIModelLevel
+      // The iTwin setting says "naturalistic", but this iModel is a formal garden.
+      iModel.saveSettingDictionary("landscapePro/iModelOverrides", {
+        "landscapePro/flora/preferredStyle": "formal",
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // Reload the iModel so workspace setting dictionaries saved to disk are re-resolved.
+      iModel.close();
+      iModel = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
+
+      // verify the iModel-level override wins
+      const style = iModel.workspace.settings.getString("landscapePro/flora/preferredStyle");
+      expect(style).to.equal("formal");
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.VersionAndPinITwinSettings
+      // Pin the iModel to the current version of the iTwin settings.
+      // The settingsSources already include the version of the settings WorkspaceDb;
+      // saving that version into the iModel locks it to that snapshot.
+      const pinnedSettingsSources = Array.isArray(settingsSourcesForModelRef)
+        ? settingsSourcesForModelRef
+        : [settingsSourcesForModelRef];
+
+      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+        "landscapePro/itwinSettingsRef": pinnedSettingsSources,
+      });
+      // __PUBLISH_EXTRACT_END__
     });
 
     it("Find and open a workspace container by iTwinId", async () => {
@@ -484,253 +594,6 @@ describe("Workspace Examples", () => {
       expect(workspaceDb).to.not.be.undefined;
       editor.close();
       // __PUBLISH_EXTRACT_END__
-    });
-  });
-
-  describe("SettingsDb examples", () => {
-    it("Create and read a SettingsDb", async () => {
-      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
-      const iTwinId = Guid.createValue();
-
-      // __PUBLISH_EXTRACT_START__ SettingsDb.createLocal
-      const editor = SettingsEditor.construct();
-
-      // Create a new cloud container to hold the SettingsDb.
-      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
-        metadata: { label: "Regional Park Design", description: "Project-level settings for the Regional Park landscape design" },
-        scope: { iTwinId },
-        manifest: {
-          settingsName: "AppSettings",
-          description: "Application configuration settings",
-          contactName: "Lief E. Greene",
-        },
-      });
-
-      // Acquire the write lock and open an editable SettingsDb.
-      container.acquireWriteLock("Lief E. Greene");
-      const editableDb: EditableSettingsDb = container.getEditableDb({ dbName: "settings-db" });
-      editableDb.open();
-
-      // Write settings directly.
-      const appSettings: SettingsContainer = {
-        "myApp/ui/theme": "dark",
-        "myApp/ui/fontSize": 14,
-        "myApp/ui/sidebar": true,
-      };
-      editableDb.updateSettings(appSettings);
-
-      // Read individual settings back.
-      const theme = editableDb.getSetting<string>("myApp/ui/theme"); // "dark"
-      const fontSize = editableDb.getSetting<number>("myApp/ui/fontSize"); // 14
-      const sidebar = editableDb.getSetting<boolean>("myApp/ui/sidebar"); // true
-
-      editableDb.close();
-      container.releaseWriteLock();
-      editor.close();
-      // __PUBLISH_EXTRACT_END__
-
-      expect(theme).to.equal("dark");
-      expect(fontSize).to.equal(14);
-      expect(sidebar).to.equal(true);
-    });
-
-    it("Read and write settings", async () => {
-      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
-      const iTwinId = Guid.createValue();
-
-      // __PUBLISH_EXTRACT_START__ SettingsDb.readAndWrite
-      const editor = SettingsEditor.construct();
-
-      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
-        metadata: { label: "Regional Park Design", description: "Project settings including display rules and tool configuration" },
-        scope: { iTwinId },
-        manifest: {
-          settingsName: "ProjectSettings",
-          description: "Settings database with display and tool configuration",
-          contactName: "Lief E. Greene",
-        },
-      });
-
-      container.acquireWriteLock("Lief E. Greene");
-      const editableDb: EditableSettingsDb = container.getEditableDb({ dbName: "settings-db" });
-      editableDb.open();
-
-      // Write all settings at once.
-      editableDb.updateSettings({
-        "myApp/display/units": "metric",
-        "myApp/display/precision": 3,
-        "myApp/display/showGrid": true,
-        "myApp/tools/defaultTool": "select",
-        "myApp/tools/snapMode": "keypoint",
-        "myApp/tools/tolerance": 0.01,
-      });
-
-      // Read individual settings by name.
-      const units = editableDb.getSetting<string>("myApp/display/units"); // "metric"
-      const defaultTool = editableDb.getSetting<string>("myApp/tools/defaultTool"); // "select"
-
-      // Get all settings as a SettingsContainer.
-      const allSettings: SettingsContainer = editableDb.getSettings();
-
-      editableDb.close();
-      container.releaseWriteLock();
-      editor.close();
-      // __PUBLISH_EXTRACT_END__
-
-      expect(units).to.equal("metric");
-      expect(defaultTool).to.equal("select");
-      expect(allSettings["myApp/display/precision"]).to.equal(3);
-      expect(allSettings["myApp/display/showGrid"]).to.equal(true);
-      expect(allSettings["myApp/tools/snapMode"]).to.equal("keypoint");
-      expect(allSettings["myApp/tools/tolerance"]).to.equal(0.01);
-    });
-
-    it("Discover settings containers", async () => {
-      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
-      const iTwinId = Guid.createValue();
-
-      // Create a settings container so there's something to discover.
-      const editor = SettingsEditor.construct();
-      const container = await editor.createNewCloudContainer({
-        metadata: { label: "Discoverable Settings", description: "Settings that can be found via query" },
-        scope: { iTwinId },
-        manifest: { settingsName: "DiscoverMe", description: "Discovery example", contactName: "Lief E. Greene" },
-      });
-      const containerId = container.cloudContainer!.containerId;
-      editor.close();
-      // __PUBLISH_EXTRACT_START__ SettingsDb.discoverContainers
-      // Query all settings containers for a given iTwin.
-      // SettingsEditor.queryContainers is a convenience wrapper around
-      // BlobContainer.service.queryContainersMetadata that automatically filters by containerType: "settings".
-      const settingsContainers = await SettingsEditor.queryContainers({ iTwinId });
-
-      // Each entry includes the containerId, label, description, and other metadata.
-      for (const entry of settingsContainers) {
-        const { containerId: id, label, description } = entry;
-        // Use the containerId to load the SettingsDb via Workspace.getSettingsDb.
-        expect(id).to.be.a("string");
-        expect(label).to.be.a("string");
-        expect(description).to.satisfy((d: unknown) => d === undefined || typeof d === "string");
-      }
-      // __PUBLISH_EXTRACT_END__
-
-      expect(settingsContainers.length).to.be.greaterThanOrEqual(1);
-      const found = settingsContainers.find((c) => c.containerId === containerId);
-      expect(found).to.not.be.undefined;
-      expect(found!.label).to.equal("Discoverable Settings");
-      expect(found!.containerType).to.equal("settings");
-    });
-
-    it("Find and open a settings container by iTwinId", async () => {
-      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
-      const iTwinId = Guid.createValue();
-
-      // Create a settings container so there's something to find.
-      const setupEditor = SettingsEditor.construct();
-      await setupEditor.createNewCloudContainer({
-        metadata: { label: "Findable Settings", description: "Settings found via findContainer" },
-        scope: { iTwinId },
-        manifest: { settingsName: "FindMe", description: "findContainer example" },
-      });
-      setupEditor.close();
-
-      // __PUBLISH_EXTRACT_START__ SettingsDb.findContainers
-      // Find and open settings containers for a given iTwin in a single call.
-      // This queries the BlobContainer service for settings containers matching the iTwinId,
-      // requests write access tokens, and opens each matching container.
-      const editor = SettingsEditor.construct();
-      const containers = await editor.findContainers({ iTwinId });
-
-      // Use the first container — it is ready for reading or editing its SettingsDbs.
-      const container = containers[0];
-      const settingsDb = container.getEditableDb();
-      expect(settingsDb).to.not.be.undefined;
-      editor.close();
-      // __PUBLISH_EXTRACT_END__
-    });
-
-    it("Inspect all settings with getSettings", async () => {
-      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
-      const iTwinId = Guid.createValue();
-
-      // __PUBLISH_EXTRACT_START__ SettingsDb.getSettings
-      const editor = SettingsEditor.construct();
-
-      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
-        metadata: { label: "Park Design", description: "Landscape settings" },
-        scope: { iTwinId },
-        manifest: { settingsName: "InspectSettings", contactName: "Lief E. Greene" },
-      });
-
-      container.acquireWriteLock("Lief E. Greene");
-      const editableDb: EditableSettingsDb = container.getEditableDb();
-      editableDb.open();
-
-      editableDb.updateSettings({
-        "myApp/display/units": "metric",
-        "myApp/display/precision": 3,
-        "myApp/display/showGrid": true,
-      });
-
-      // Use getSettings() to get a copy of all settings as a SettingsContainer.
-      const allSettings: SettingsContainer = editableDb.getSettings();
-      // allSettings is { "myApp/display/units": "metric", "myApp/display/precision": 3, "myApp/display/showGrid": true }
-
-      editableDb.close();
-      container.releaseWriteLock();
-      editor.close();
-      // __PUBLISH_EXTRACT_END__
-
-      expect(allSettings["myApp/display/units"]).to.equal("metric");
-      expect(allSettings["myApp/display/precision"]).to.equal(3);
-      expect(allSettings["myApp/display/showGrid"]).to.equal(true);
-    });
-
-    it("Update a single setting with updateSetting", async () => {
-      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
-      const iTwinId = Guid.createValue();
-
-      // __PUBLISH_EXTRACT_START__ SettingsDb.updateSetting
-      const editor = SettingsEditor.construct();
-
-      const container: EditableSettingsCloudContainer = await editor.createNewCloudContainer({
-        metadata: { label: "Park Design", description: "Landscape settings" },
-        scope: { iTwinId },
-        manifest: { settingsName: "PatchSettings", contactName: "Lief E. Greene" },
-      });
-
-      container.acquireWriteLock("Lief E. Greene");
-      const editableDb: EditableSettingsDb = container.getEditableDb();
-      editableDb.open();
-
-      // Write initial settings.
-      editableDb.updateSettings({
-        "myApp/ui/theme": "light",
-        "myApp/ui/fontSize": 14,
-        "myApp/ui/sidebar": true,
-      });
-
-      // Update just the theme — other settings are preserved.
-      editableDb.updateSetting({ settingName: "myApp/ui/theme", value: "dark" });
-
-      const theme = editableDb.getSetting<string>("myApp/ui/theme");     // "dark" (updated)
-      const fontSize = editableDb.getSetting<number>("myApp/ui/fontSize"); // 14 (preserved)
-      const sidebar = editableDb.getSetting<boolean>("myApp/ui/sidebar");  // true (preserved)
-
-      editableDb.close();
-      container.releaseWriteLock();
-      editor.close();
-      // __PUBLISH_EXTRACT_END__
-
-      expect(theme).to.equal("dark");
-      expect(fontSize).to.equal(14);
-      expect(sidebar).to.equal(true);
     });
   });
 });

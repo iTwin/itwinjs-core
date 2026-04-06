@@ -98,11 +98,8 @@ beta;interface;CreateChangeSummaryArgs
 alpha;interface;CreateFontFileFromRscBlobArgs
 beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
-beta;interface;CreateNewSettingsContainerArgs
-beta;interface;CreateNewSettingsDbVersionArgs
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
-beta;interface;CreateSettingsDbArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
 beta;interface;CustomHandledProperty
@@ -189,8 +186,6 @@ public;class;ECSqlValueIterator
 deprecated;class;ECSqlValueIterator
 public;class;ECSqlWriteStatement
 beta;interface;EditableCatalogDb
-beta;interface;EditableSettingsCloudContainer
-beta;interface;EditableSettingsDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
@@ -305,7 +300,6 @@ public;class;GeometryPart
 preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
-beta;interface;GetSettingsDbArgs
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
 public;class;Graphic3d
@@ -374,6 +368,7 @@ public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
 beta;function;isITextAnnotation
+internal;function;isSettingsDb
 beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
@@ -468,6 +463,7 @@ public;type;PullChangesArgs
 public;interface;PushChangesArgs
 beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
+internal;function;queryStringResourceNames
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
 alpha;interface;RebaseHandler
@@ -517,19 +513,18 @@ beta;type;SettingName
 beta;interface;Settings
 beta;interface;SettingSchema
 beta;interface;SettingsContainer
-beta;interface;SettingsDb
-beta;interface;SettingsDbManifest
-beta;interface;SettingsDbProps
-beta;interface;SettingsDbVersionResult
+internal;namespace;SettingsContainers
+internal;type;SettingsDb
+internal;type;SettingsDbName
 beta;interface;SettingsDictionary
 beta;interface;SettingsDictionaryProps
 beta;interface;SettingsDictionarySource
-beta;namespace;SettingsEditor
-beta;interface;SettingsEditor
+internal;namespace;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority
 internal;const;settingsResourceName
 beta;interface;SettingsSchemas
+internal;const;settingsWorkspaceDbName
 public;class;Sheet
 preview;class;Sheet
 public;class;SheetBorderTemplate
@@ -641,7 +636,6 @@ alpha;type;TxnMode
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
-beta;interface;UpdateSettingArgs
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
 preview;class;UrlLink
