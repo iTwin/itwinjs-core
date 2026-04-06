@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { DbChangeStage, DbOpcode, DbResult, Guid, Id64String } from "@itwin/core-bentley";
-import { Base64EncodedString } from "@itwin/core-common";
+import { DbChangeStage, DbOpcode, DbResult, Guid, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { Base64EncodedString, IModelError } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -161,7 +161,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   private _mode: IModelJsNative.ECChangesetReader.Mode = IModelJsNative.ECChangesetReader.Mode.All_Properties;
   private _changeIndex = 0;
   private _op?: ECNativeChangeOp;
-  private _isECTable = false;
+  private _isECTable?: boolean;
 
   /** The db used for EC schema resolution. */
   public readonly db: AnyDb;
@@ -171,18 +171,22 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Valid only after a successful call to {@link step}.
    * @beta
    */
-  public get isECTable(): boolean { return this._isECTable; }
+  public get isECTable(): boolean {
+    if (this._isECTable === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.isECTable is only valid after step() has positioned the reader on a current valid change.");
+    return this._isECTable;
+  }
 
   /**
    * Post-change (inserted or updated-new) EC instance, populated after each {@link step}.
-   * `undefined` when the current row is a Delete or a non-EC table row.
+   * `undefined` when the current row is a Delete or a non-EC table row or step() returned false.
    * @beta
    */
   public inserted?: ECNativeChangeInstance;
 
   /**
    * Pre-change (deleted or updated-old) EC instance, populated after each {@link step}.
-   * `undefined` when the current row is an Insert or a non-EC table row.
+   * `undefined` when the current row is an Insert or a non-EC table row or step() returned false.
    * @beta
    */
   public deleted?: ECNativeChangeInstance;
@@ -377,13 +381,22 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Valid only after a successful call to {@link step}.
    * @beta
    */
-  public get op(): ECNativeChangeOp { return this._op!; }
+  public get op(): ECNativeChangeOp {
+    if (this._op === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.op is only valid after step() has positioned the reader on a current valid change.");
+    return this._op;
+  }
 
   /**
-   * Zero-based index of the current change, incremented on each successful {@link step}.
+   * index of the current change, incremented on each successful {@link step}.
+   * Starts at 1 for the first change( when the step() call actually returned true).
    * @beta
    */
-  public get changeIndex(): number { return this._changeIndex; }
+  public get changeIndex(): number {
+    if (this._changeIndex === 0)
+      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.changeIndex is only valid after step() has positioned the reader on a current valid change.");
+    return this._changeIndex;
+  }
 
   // ---------------------------------------------------------------------------
   // Lifecycle
