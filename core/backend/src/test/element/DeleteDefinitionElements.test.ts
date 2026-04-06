@@ -121,7 +121,7 @@ describe("DeleteDefinitionElements", () => {
 
     // make sure deleteDefinitionElements skips Elements that are not DefinitionElements
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([physicalObjectId1, physicalObjectId2, physicalObjectId3, subjectId]);
-    assert.equal(usedDefinitionElementIds.size ?? 0, 0);
+    assert.equal(usedDefinitionElementIds.size, 0);
     assert.isDefined(iModelDb.elements.tryGetElement(physicalObjectId1));
     assert.isDefined(iModelDb.elements.tryGetElement(physicalObjectId2));
     assert.isDefined(iModelDb.elements.tryGetElement(physicalObjectId3));
@@ -129,7 +129,7 @@ describe("DeleteDefinitionElements", () => {
 
     // make sure deleteDefinitionElements skips invalid Ids
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([Id64.invalid, Id64.invalid]);
-    assert.equal(usedDefinitionElementIds.size ?? 0, 0);
+    assert.equal(usedDefinitionElementIds.size, 0);
 
     // delete/deleteDefinitionElements for a used GeometryPart should fail
     assert.throws(() => iModelDb.elements.deleteElement(geometryPartId));
