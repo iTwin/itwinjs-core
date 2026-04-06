@@ -244,6 +244,7 @@ async function init() {
   let shutdown: undefined | (() => Promise<void>);
 
   if (ProcessDetector.isElectronAppBackend) {
+    console.error("=== ELECTRON_CERTA_BACKEND_STARTED: Electron backend init module is executing ===");
     exposeBackendCallbacks();
     electronAuth = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
