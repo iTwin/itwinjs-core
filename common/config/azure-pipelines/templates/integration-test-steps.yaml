@@ -66,11 +66,21 @@ steps:
     condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+  # DIAGNOSTIC: Wrapping test:integration with exit code logging to prove Electron tests never execute.
+  # test:integration chains chrome && electron. If chrome crashes, && breaks and electron never starts.
+  # test:integration:electron has been replaced with a canary that exits 99 if it ever runs.
+  - script: |
+      echo "=== DIAGNOSTIC: Starting npm run test:integration (chains chrome && electron via &&) ==="
+      xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+      EXIT_CODE=$?
+      echo "=== DIAGNOSTIC: npm run test:integration exited with code: $EXIT_CODE ==="
+      echo "=== DIAGNOSTIC: If ELECTRON_DIAGNOSTIC_CANARY does NOT appear above, Electron tests never ran ==="
+      echo "=== DIAGNOSTIC: Expected behavior - Chrome passes, native crash breaks && chain, exit code ~134 ==="
+      exit $EXIT_CODE
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
+    displayName: "Run Core Full Stack Tests [DIAGNOSTIC]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display

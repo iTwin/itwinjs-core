@@ -23,7 +23,7 @@
     "test:electron:azurite": "certa -r electron --grep \"#integration|#performance\" --invert",
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
-    "test:integration:electron": "certa -r electron --grep \"#integration\"",
+    "test:integration:electron": "node -e \"console.error('ELECTRON_DIAGNOSTIC_CANARY: If you see this, Electron tests executed. Exiting with code 99.'); process.exit(99);\"",
     "test:performance": "npm run -s test:performance:chrome && npm run -s test:performance:electron",
     "test:performance:chrome": "run-p -r azurite:setup test:performance:chrome:azurite",
     "test:performance:electron": "run-p -r azurite:setup test:performance:electron:azurite",
