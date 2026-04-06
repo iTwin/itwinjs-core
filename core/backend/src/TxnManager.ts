@@ -447,9 +447,11 @@ export class RebaseManager {
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
   /** Disposes of this RebaseManager, clearing all event listeners.
+   * Also calls [[RebaseHandler.dispose]] on the registered custom handler, if any.
    * @alpha
    */
   public dispose(): void {
+    this._customHandler?.dispose?.();
     this.onPullMergeBegin.clear();
     this.onRebaseBegin.clear();
     this.onRebaseTxnBegin.clear();
@@ -1421,4 +1423,11 @@ export interface RebaseHandler {
    * @alpha
    */
   recompute(txn: TxnProps): Promise<void>;
+  /**
+   * Called when the owning [[RebaseManager]] is disposed (e.g. when the iModel is closed).
+   * Override this method to unsubscribe from events or release resources held by this handler.
+   *
+   * @alpha
+   */
+  dispose?(): void;
 }

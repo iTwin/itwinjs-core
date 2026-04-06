@@ -13,7 +13,7 @@ import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  IModelJsFs, PhysicalModel, RebaseHandler, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
@@ -1127,6 +1127,31 @@ describe("RebaseManager", () => {
     expect(rebaser.onRebaseBegin.numberOfListeners).to.equal(0);
     expect(rebaser.onRebaseEnd.numberOfListeners).to.equal(0);
 
+    IModelJsFs.removeSync(testFileName);
+  });
+
+  it("RebaseHandler.dispose is called when RebaseManager is disposed", () => {
+    let testFileName: string;
+    IModelTestUtils.registerTestBimSchema();
+    testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    let disposeCallCount = 0;
+    const handler: RebaseHandler = {
+      shouldReinstate: (_txn) => true,
+      recompute: async (_txn) => {},
+      dispose: () => { disposeCallCount++; },
+    };
+    rebaser.setCustomHandler(handler);
+
+    expect(disposeCallCount).to.equal(0);
+    rebaser.dispose();
+    expect(disposeCallCount).to.equal(1);
+
+    db.close();
     IModelJsFs.removeSync(testFileName);
   });
 });

@@ -5498,6 +5498,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 
 // @alpha
 export interface RebaseHandler {
+    dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
