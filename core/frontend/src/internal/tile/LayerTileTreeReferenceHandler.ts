@@ -81,7 +81,6 @@ export class LayerTileTreeReferenceHandler {
     // Map tiles handle refresh logic differently
     if(!this._mapTile){
       const removals = this._detachFromDisplayStyle;
-      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
           this.setBaseLayerSettings(imagery.backgroundBase);
@@ -89,15 +88,16 @@ export class LayerTileTreeReferenceHandler {
         }));
         removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
           if(compareMapLayer(previousViewState, vp.view)){
-            this.setBaseLayerSettings(mapImagery.backgroundBase);
-            this.setLayerSettings(mapImagery.backgroundLayers);
+            const currentImagery = vp.displayStyle.settings.mapImagery;
+            this.setBaseLayerSettings(currentImagery.backgroundBase);
+            this.setLayerSettings(currentImagery.backgroundLayers);
           }
         }));
         removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
-          const layers = viewport.displayStyle.settings.mapImagery.backgroundLayers;
-          if (layers.length > 0) {
-            this.setBaseLayerSettings(mapImagery.backgroundBase);
-            this.setLayerSettings(mapImagery.backgroundLayers);
+          const currentImagery = viewport.displayStyle.settings.mapImagery;
+          if (currentImagery.backgroundLayers.length > 0) {
+            this.setBaseLayerSettings(currentImagery.backgroundBase);
+            this.setLayerSettings(currentImagery.backgroundLayers);
             viewport.invalidateScene();
           }
         }));
