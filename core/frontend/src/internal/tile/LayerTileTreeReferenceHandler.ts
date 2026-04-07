@@ -102,7 +102,6 @@ export class LayerTileTreeReferenceHandler {
           }
         }));
       }
-      console.log(`Layer listeners: ${removals.length}`); // TODO: remove - temporary debug log for #9126
     }
 
     let hasLoadedTileTree = false;

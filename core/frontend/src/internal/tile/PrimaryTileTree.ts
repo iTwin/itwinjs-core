@@ -28,7 +28,7 @@ import { SceneContext } from "../../ViewContext";
 import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
   DisclosedTileTreeSet,
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RealityModelTileTree, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
@@ -687,6 +687,8 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
   public detachLayerListeners(): void {
     if (this._primaryRef)
       this._primaryRef.detachLayerListeners();
+    else if (this._modelRef instanceof RealityModelTileTree.Reference)
+      this._modelRef.detachLayerListeners();
     for (const ref of this._animatedRefs)
       ref.detachLayerListeners();
     if (this._sectionCutRef)

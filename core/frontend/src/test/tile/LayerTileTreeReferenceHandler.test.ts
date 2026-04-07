@@ -7,12 +7,9 @@ import { BeEvent } from "@itwin/core-bentley";
 import { MapImagerySettings } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
 import { LayerTileTreeReference, LayerTileTreeReferenceHandler } from "../../internal/tile/LayerTileTreeReferenceHandler";
-import { TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
+import { MapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { IModelConnection } from "../../IModelConnection";
-import { MapLayerTileTreeReference } from "../../tile/internal";
-import { Viewport } from "../../Viewport";
-import { ViewState } from "../../ViewState";
 
 /** Minimal mock event that tracks listener count */
 function createMockEvent<T extends (...args: any[]) => void>() {
@@ -111,6 +108,62 @@ describe("LayerTileTreeReferenceHandler", () => {
     const mapTileHandler = new LayerTileTreeReferenceHandler(mockRef, false, undefined, [], true);
     mapTileHandler.initializeLayers(mockContext);
 
+    expect(onMapImageryChanged.numberOfListeners).toBe(0);
+    expect(onChangeView.numberOfListeners).toBe(0);
+    expect(onViewedModelsChanged.numberOfListeners).toBe(0);
+  });
+
+  it("detachFromDisplayStyle is idempotent", () => {
+    const { handler, mockContext, onMapImageryChanged, onChangeView, onViewedModelsChanged } = createMockHandler();
+
+    handler.initializeLayers(mockContext);
+
+    // Calling detach multiple times should not throw or misbehave
+    handler.detachFromDisplayStyle();
+    handler.detachFromDisplayStyle();
+
+    expect(onMapImageryChanged.numberOfListeners).toBe(0);
+    expect(onChangeView.numberOfListeners).toBe(0);
+    expect(onViewedModelsChanged.numberOfListeners).toBe(0);
+  });
+
+  it("detachFromDisplayStyle without prior initializeLayers is a no-op", () => {
+    const { handler } = createMockHandler();
+
+    // Should not throw when no listeners have been registered
+    expect(() => handler.detachFromDisplayStyle()).not.toThrow();
+  });
+
+  it("multiple handlers on same events are independently managed", () => {
+    const { mockContext, onMapImageryChanged, onChangeView, onViewedModelsChanged } = createMockHandler();
+
+    const makeRef = (): LayerTileTreeReference => ({
+      iModel: {} as IModelConnection,
+      treeOwner: {
+        loadStatus: TileTreeLoadStatus.NotLoaded,
+        load: () => undefined,
+      } as unknown as TileTreeOwner,
+      shouldDrapeLayer: () => true,
+    });
+
+    const handler1 = new LayerTileTreeReferenceHandler(makeRef(), false, undefined, [], false);
+    const handler2 = new LayerTileTreeReferenceHandler(makeRef(), false, undefined, [], false);
+
+    handler1.initializeLayers(mockContext);
+    handler2.initializeLayers(mockContext);
+
+    // Both handlers registered their own listeners
+    expect(onMapImageryChanged.numberOfListeners).toBe(2);
+    expect(onChangeView.numberOfListeners).toBe(2);
+    expect(onViewedModelsChanged.numberOfListeners).toBe(2);
+
+    // Detaching one handler should only remove its listeners
+    handler1.detachFromDisplayStyle();
+    expect(onMapImageryChanged.numberOfListeners).toBe(1);
+    expect(onChangeView.numberOfListeners).toBe(1);
+    expect(onViewedModelsChanged.numberOfListeners).toBe(1);
+
+    handler2.detachFromDisplayStyle();
     expect(onMapImageryChanged.numberOfListeners).toBe(0);
     expect(onChangeView.numberOfListeners).toBe(0);
     expect(onViewedModelsChanged.numberOfListeners).toBe(0);
