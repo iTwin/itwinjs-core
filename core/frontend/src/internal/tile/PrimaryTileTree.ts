@@ -837,7 +837,9 @@ class SpatialRefs implements SpatialTileTreeReferences {
       }
 
       let modelRefs = prev.get(modelId);
-      if (!modelRefs) {
+      if (modelRefs) {
+        prev.delete(modelId);
+      } else {
         const model = this._view.iModel.models.getLoaded(modelId)?.asGeometricModel3d;
         if (model) {
           modelRefs = new SpatialModelRefs(model, this._view, excluded);
