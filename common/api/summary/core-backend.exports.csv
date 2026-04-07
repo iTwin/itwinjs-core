@@ -119,8 +119,14 @@ preview;class;DefinitionPartition
 public;class;DefinitionSet
 preview;class;DefinitionSet
 beta;function;deleteElementSubTrees
+beta;function;deleteElementSubTrees
+deprecated;function;deleteElementSubTrees
 beta;function;deleteElementTree
 beta;function;deleteElementTree
+deprecated;function;deleteElementTree
+beta;function;deleteElementTree
+beta;function;deleteElementTree
+deprecated;function;deleteElementTree
 beta;interface;DeleteElementTreeArgs
 beta;interface;DeserializeEntityArgs
 public;class;DetailCallout

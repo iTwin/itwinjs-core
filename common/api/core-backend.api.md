@@ -1925,20 +1925,33 @@ export abstract class DefinitionSet extends DefinitionElement {
 }
 
 // @beta
-export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter, txn?: EditTxn): void;
+export function deleteElementSubTrees(txn: EditTxn, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;
+
+// @beta @deprecated
+export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;
 
 // @beta
+export function deleteElementTree(txn: EditTxn, topElement: Id64String, maxPasses?: number): void;
+
+// @beta @deprecated
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
 
 // @beta
 export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta @deprecated
+export function deleteElementTree(args: {
+    iModel: IModelDb;
+    topElement: Id64String;
+    maxPasses?: number;
+}): void;
 
 // @beta
 export interface DeleteElementTreeArgs {
     iModel: IModelDb;
     maxPasses?: number;
     topElement: Id64String;
-    txn?: EditTxn;
+    txn: EditTxn;
 }
 
 // @beta
@@ -2872,7 +2885,9 @@ export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementT
 
 // @beta
 export class ElementSubTreeDeleter extends ElementTreeTopDown {
-    constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter, txn?: EditTxn);
+    constructor(txn: EditTxn, shouldPruneCb: ElementSubTreeDeleteFilter);
+    // @deprecated
+    constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter);
     deleteNormalElementSubTrees(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
     deleteSpecialElementSubTrees(): void;
     // (undocumented)
@@ -2883,9 +2898,9 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
 
 // @beta
 export abstract class ElementTreeBottomUp {
-    constructor(_iModel: IModelDb, txn?: EditTxn);
+    constructor(iModelOrTxn: IModelDb | EditTxn);
     // (undocumented)
-    protected _iModel: IModelDb;
+    protected readonly _iModel: IModelDb;
     protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope): void;
     protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean;
     protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
@@ -2899,7 +2914,9 @@ export abstract class ElementTreeBottomUp {
 
 // @beta
 export class ElementTreeDeleter extends ElementTreeBottomUp {
-    constructor(iModel: IModelDb, txn?: EditTxn);
+    constructor(txn: EditTxn);
+    // @deprecated
+    constructor(iModel: IModelDb);
     deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
     deleteSpecialElements(): void;
     // (undocumented)
