@@ -364,6 +364,16 @@ describe("BeEvent tests", () => {
       expect(calls).toContain("after");
     });
 
+    it("1000-listener scale", () => {
+      const event = new BeEvent<(x: number) => void>();
+      let count = 0;
+      for (let i = 0; i < 1000; i++)
+        event.addListener(() => count++);
+
+      event.raiseEvent(1);
+      expect(count).toBe(1000);
+    });
+
   });
 
   describe("BeEventList", () => {
