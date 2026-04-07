@@ -101,7 +101,7 @@ class ImplicitWriteTxn extends EditTxn {
     throw new Error("ImplicitWriteTxn cannot be ended");
   }
 
-  protected override verifyWriteable(): void {
+  public override verifyWriteable(): void {
     const enforcement = EditTxn.implicitWriteEnforcement;
     if (enforcement === "allow")
       return;

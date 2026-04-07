@@ -66,7 +66,7 @@ export class EditTxn {
     this.description = description;
   }
 
-  protected verifyWriteable(): void {
+  public verifyWriteable(): void {
     // Explicit transactions must always be active before writing.
     if (!this.isActive)
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);

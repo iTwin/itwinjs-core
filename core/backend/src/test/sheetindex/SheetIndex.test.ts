@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeScopeSpec, CodeSpec, RelatedElement, SheetProps } from "@itwin/core-common";
+import { BisCodeSpec, CodeScopeSpec, CodeSpec, EditTxnError, RelatedElement, SheetProps } from "@itwin/core-common";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 
 import { SnapshotDb } from "../../IModelDb";
@@ -338,6 +338,62 @@ describe("SheetIndex", () => {
 
         expect(ref?.sheet?.id).equals(sheetId);
       });
+    });
+
+    it("supports deprecated SheetReference.insert overload when implicit writes are allowed", () => {
+      const previousEnforcement = EditTxn.implicitWriteEnforcement;
+      EditTxn.implicitWriteEnforcement = "allow";
+
+      try {
+        withEditTxn(iModel, (txn) => {
+          const sheetId = insertSheet(txn, "legacy-sheet");
+          const subjectId = iModel.elements.getRootSubject().id;
+          const modelId = SheetIndexModel.insert(txn, subjectId, "LegacySheetRefModel");
+          const sheetIndex = SheetIndex.insert(txn, modelId, "LegacySheetIndex");
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          const sheetRefId = SheetReference.insert({
+            iModelDb: iModel,
+            sheetIndexModelId: modelId,
+            parentId: sheetIndex,
+            name: "LegacySheetRef",
+            priority: 1,
+            sheetId,
+          });
+
+          expect(Id64.isValidId64(sheetRefId)).to.be.true;
+          const ref = iModel.elements.tryGetElement<SheetReference>(sheetRefId);
+          expect(ref?.sheet?.id).to.equal(sheetId);
+        });
+      } finally {
+        EditTxn.implicitWriteEnforcement = previousEnforcement;
+      }
+    });
+
+    it("rejects deprecated SheetReference.insert overload when implicit writes are disallowed", () => {
+      const previousEnforcement = EditTxn.implicitWriteEnforcement;
+      EditTxn.implicitWriteEnforcement = "throw";
+
+      try {
+        withEditTxn(iModel, (txn) => {
+          const sheetId = insertSheet(txn, "legacy-throw-sheet");
+          const subjectId = iModel.elements.getRootSubject().id;
+          const modelId = SheetIndexModel.insert(txn, subjectId, "LegacyThrowSheetRefModel");
+          const sheetIndex = SheetIndex.insert(txn, modelId, "LegacyThrowSheetIndex");
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          expect(() => SheetReference.insert({
+            iModelDb: iModel,
+            sheetIndexModelId: modelId,
+            parentId: sheetIndex,
+            name: "LegacyThrowSheetRef",
+            priority: 1,
+            sheetId,
+          })).to.throw().that.satisfies((error: unknown) => EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+        });
+      } finally {
+        EditTxn.implicitWriteEnforcement = previousEnforcement;
+      }
     });
 
     it.skip("Should not insert with the same Sheet twice", () => {

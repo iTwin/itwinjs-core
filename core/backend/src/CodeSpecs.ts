@@ -172,6 +172,8 @@ export class CodeSpecs {
       const txn = txnOrCodeSpec;
       if (txn.iModel !== this._imodel)
         EditTxnError.throwError("wrong-imodel", "EditTxn does not belong to this iModel", txn.iModel.key);
+      // CodeSpec insertion writes directly to SQLite, so enforce txn writability explicitly.
+      txn.verifyWriteable();
       if (codeSpecOrNameOrProps instanceof CodeSpec) {
         const id = this.insertCodeSpec(codeSpecOrNameOrProps.name, codeSpecOrNameOrProps.properties);
         codeSpecOrNameOrProps.id = id;

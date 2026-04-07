@@ -9,10 +9,10 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
 import { DocumentPartition, Sheet } from "../../Element";
 import { DocumentListModel, SheetModel } from "../../Model";
-import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
+import { EditTxnError, GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   const documentListName = "SheetList";
@@ -199,6 +199,42 @@ describe("SheetInformationAspect", () => {
       it("throws if element is not a Sheet", () => {
         const info = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
         expect(() => setSheetInfo(IModel.rootSubjectId, info)).to.throw("SheetInformationAspect can only be applied to a Sheet element");
+      });
+
+      it("supports deprecated setSheetInformation overload when implicit writes are allowed", async () => {
+        const previousEnforcement = EditTxn.implicitWriteEnforcement;
+        EditTxn.implicitWriteEnforcement = "allow";
+
+        try {
+          const sheetId = await insertSheet(db);
+          const info = { designedBy: "legacy", checkedBy: "legacy-check", designedDate, drawnBy: "legacy-draw" };
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          SheetInformationAspect.setSheetInformation(info, sheetId, db);
+          expect(getSheetInfo(sheetId)).to.deep.equal(info);
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          SheetInformationAspect.setSheetInformation(undefined, sheetId, db);
+          expect(getSheetInfo(sheetId)).to.be.undefined;
+        } finally {
+          EditTxn.implicitWriteEnforcement = previousEnforcement;
+        }
+      });
+
+      it("rejects deprecated setSheetInformation overload when implicit writes are disallowed", async () => {
+        const previousEnforcement = EditTxn.implicitWriteEnforcement;
+        EditTxn.implicitWriteEnforcement = "throw";
+
+        try {
+          const sheetId = await insertSheet(db);
+          const info = { designedBy: "legacy", checkedBy: "legacy-check", designedDate, drawnBy: "legacy-draw" };
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          expect(() => SheetInformationAspect.setSheetInformation(info, sheetId, db)).to.throw().that.satisfies((error: unknown) =>
+            EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+        } finally {
+          EditTxn.implicitWriteEnforcement = previousEnforcement;
+        }
       });
 
       it("creates SheetOwnsSheetInformationAspect relationships", async () => {

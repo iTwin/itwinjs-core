@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec } from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, EditTxnError } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { StandaloneDb } from "../../IModelDb";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 
 describe("CodeSpec", () => {
   let imodel: StandaloneDb;
@@ -54,5 +54,53 @@ describe("CodeSpec", () => {
 
     codeSpec = imodel.codeSpecs.getById(codeSpecId);
     expect(codeSpec.name).to.be.equal("PumpTag");
+  });
+
+  it("supports deprecated insert overloads when implicit writes are allowed", () => {
+    const previousEnforcement = EditTxn.implicitWriteEnforcement;
+    EditTxn.implicitWriteEnforcement = "allow";
+
+    try {
+      const suffix = Guid.createValue().replace(/-/g, "");
+      const legacySpecName = `LegacyCodeSpec_${suffix}`;
+      const legacyTypeName = `LegacyTypeCodeSpec_${suffix}`;
+
+      const legacySpec = CodeSpec.create(imodel, legacySpecName, CodeScopeSpec.Type.Model);
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const legacySpecId = imodel.codeSpecs.insert(legacySpec);
+      expect(Id64.isValidId64(legacySpecId)).to.be.true;
+      expect(legacySpec.id).to.equal(legacySpecId);
+      expect(imodel.codeSpecs.getByName(legacySpecName).id).to.equal(legacySpecId);
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const legacyTypeSpecId = imodel.codeSpecs.insert(legacyTypeName, CodeScopeSpec.Type.ParentElement);
+      expect(Id64.isValidId64(legacyTypeSpecId)).to.be.true;
+      const legacyTypeSpec = imodel.codeSpecs.getById(legacyTypeSpecId);
+      expect(legacyTypeSpec.name).to.equal(legacyTypeName);
+      expect(legacyTypeSpec.scopeType).to.equal(CodeScopeSpec.Type.ParentElement);
+    } finally {
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
+    }
+  });
+
+  it("rejects deprecated insert overloads when implicit writes are disallowed", () => {
+    const previousEnforcement = EditTxn.implicitWriteEnforcement;
+    EditTxn.implicitWriteEnforcement = "throw";
+
+    try {
+      const suffix = Guid.createValue().replace(/-/g, "");
+      const legacySpec = CodeSpec.create(imodel, `LegacyThrowCodeSpec_${suffix}`, CodeScopeSpec.Type.Model);
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      expect(() => imodel.codeSpecs.insert(legacySpec)).to.throw().that.satisfies((error: unknown) =>
+        EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      expect(() => imodel.codeSpecs.insert(`LegacyThrowTypeCodeSpec_${suffix}`, CodeScopeSpec.Type.Model)).to.throw().that.satisfies((error: unknown) =>
+        EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+    } finally {
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
+    }
   });
 });
