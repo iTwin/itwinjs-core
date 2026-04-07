@@ -948,7 +948,6 @@ describe("GrowableArray", () => {
   });
   it("GrowableXYArrayWithData", () => {
     const ck = new Checker();
-    const defaultNumPoints = 8;
 
     // no point in data
     const capacity = 10;
