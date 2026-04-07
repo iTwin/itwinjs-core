@@ -11,7 +11,6 @@ import { DbCloudContainerInfo, LocalDirName, LocalFileName } from "@itwin/core-c
 import { CloudSqlite } from "../CloudSqlite";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings";
-import { GetSettingsDbArgs, SettingsDb } from "./SettingsDb";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { _implementationProhibited } from "../internal/Symbols";
@@ -87,7 +86,7 @@ export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
 /** Properties describing a [[WorkspaceDb]] and the [[WorkspaceContainer]] containing it.
  * @beta
  */
-export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {}
+export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo { }
 
 /** A function supplied as [[WorkspaceDbQueryResourcesArgs.callback]] to be invoked to process the requested resources.
  * @beta
@@ -164,8 +163,8 @@ export interface WorkspaceDbLoadErrors extends ITwinError {
   */
 export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
   /** The name of the resource holding the stringified JSON of the [[SettingsDictionary]].
-   * Defaults to `"settings"`, which matches the key used by
-   * [[EditableSettingsDb.updateSettings]] to write settings. You should generally omit this
+   * Defaults to `"settingsDictionary"`, which matches the key used by
+   * [[EditableWorkspaceDb.updateSettingsResource]] to write settings. You should generally omit this
    * field unless you need to load settings stored under a non-standard key.
    */
   resourceName?: string;
@@ -316,6 +315,11 @@ export interface Workspace {
   /** @internal */
   [_implementationProhibited]: unknown;
 
+  /** The settings db sources used to populate this workspace, if available.
+   * Useful for reloading the same workspace data later without querying container discovery services.
+   */
+  settingsSources?: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[];
+
   /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`.
    * @internal
    */
@@ -366,14 +370,6 @@ export interface Workspace {
   /** Get a single [[WorkspaceDb]].  */
   getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
 
-  /** Get a [[SettingsDb]] from a previously-loaded settings container in this workspace.
-   * @param args The arguments identifying which SettingsDb to retrieve.
-   * @returns The SettingsDb from the matching container.
-   * @throws if no container matching [[GetSettingsDbArgs.containerId]] has been loaded into this workspace, or if the container does not hold a SettingsDb.
-   * @note The container must already be loaded via [[getContainer]] or [[getContainerAsync]] before calling this method.
-   */
-  getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
-
   /**
    * Resolve the value of all [[Setting]]s from this workspace with the supplied `settingName` into an array of [[WorkspaceDbCloudProps]]
    * that can be used to query or load workspace resources. The settings must each be an array of type [[WorkspaceDbSettingsProps]].
@@ -406,7 +402,7 @@ export interface Workspace {
 }
 
 /**
- * Base interface for containers backed by [[CloudSqlite]] that hold versioned databases (e.g. [[WorkspaceDb]]s or [[SettingsDb]]s).
+ * Base interface for containers backed by [[CloudSqlite]] that hold versioned databases (e.g. [[WorkspaceDb]]s).
  * Provides the shared infrastructure for cloud access, local file caching, and semver-based database resolution.
  * @note Not every container is associated with a [[CloudSqlite.CloudContainer]] — containers may also be loaded from the local file system.
  * In this case, [[cloudContainer]] will be `undefined`.

@@ -1787,22 +1787,8 @@ export interface CreateNewIModelProps extends IModelNameArg {
 }
 
 // @beta
-export interface CreateNewSettingsContainerArgs {
-    dbName?: WorkspaceDbName;
-    manifest: SettingsDbManifest;
-    metadata: Omit<BlobContainer.Metadata, "containerType">;
-    scope: BlobContainer.Scope;
-}
-
-// @beta
-export interface CreateNewSettingsDbVersionArgs {
-    fromProps?: SettingsDbProps;
-    identifier?: string;
-    versionType: CloudSqlite.SemverIncrement;
-}
-
-// @beta
 export interface CreateNewWorkspaceContainerArgs {
+    containerType?: "workspace" | "settings";
     dbName?: WorkspaceDbName;
     manifest: WorkspaceDbManifest;
     metadata: Omit<BlobContainer.Metadata, "containerType">;
@@ -1814,13 +1800,6 @@ export interface CreateNewWorkspaceDbVersionArgs {
     fromProps?: WorkspaceDbProps;
     identifier?: string;
     versionType: CloudSqlite.SemverIncrement;
-}
-
-// @beta
-export interface CreateSettingsDbArgs {
-    dbName?: WorkspaceDbName;
-    manifest: SettingsDbManifest;
-    version?: WorkspaceDbVersion;
 }
 
 // @public
@@ -2511,26 +2490,6 @@ export interface EditableCatalogDb extends CatalogDb {
 }
 
 // @beta
-export interface EditableSettingsCloudContainer extends CloudSqliteContainer {
-    abandonChanges(): void;
-    acquireWriteLock(user: string): void;
-    readonly cloudProps: WorkspaceContainerProps | undefined;
-    createDb(args: CreateSettingsDbArgs): Promise<EditableSettingsDb>;
-    createNewSettingsDbVersion(args: CreateNewSettingsDbVersionArgs): Promise<SettingsDbVersionResult>;
-    getEditableDb(props?: SettingsDbProps): EditableSettingsDb;
-    releaseWriteLock(): void;
-}
-
-// @beta
-export interface EditableSettingsDb extends SettingsDb {
-    readonly container: EditableSettingsCloudContainer;
-    removeSetting(settingName: SettingName): void;
-    updateManifest(manifest: SettingsDbManifest): void;
-    updateSetting(args: UpdateSettingArgs): void;
-    updateSettings(settings: SettingsContainer): void;
-}
-
-// @beta
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
@@ -2546,6 +2505,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
     }>;
     getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;
     releaseWriteLock(): void;
+    withEditableDb(user: string, operation: (db: EditableWorkspaceDb) => void, props?: WorkspaceDbProps): Promise<void>;
 }
 
 // @beta
@@ -3597,14 +3557,6 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 }
 
 // @beta
-export interface GetSettingsDbArgs {
-    readonly containerId: WorkspaceContainerId;
-    readonly dbName?: WorkspaceDbName;
-    readonly priority: SettingsPriority;
-    readonly version?: string;
-}
-
-// @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
     accessToken: AccessToken;
 }
@@ -4140,9 +4092,15 @@ export class IModelHost {
     // (undocumented)
     static configuration?: Omit<IModelHostOptions, "hubAccess">;
     static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
+    // @beta
+    static deleteSettingDictionary(iTwinId: GuidString, name: string): Promise<void>;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
+    // @beta
+    static getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
+    // @beta
+    static getITwinWorkspace(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[]): Promise<OwnedWorkspace>;
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
@@ -4157,6 +4115,8 @@ export class IModelHost {
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
+    // @beta
+    static saveSettingDictionary(iTwinId: GuidString, name: string, settings: SettingsContainer): Promise<void>;
     // @internal (undocumented)
     static readonly session: Mutable<SessionProps>;
     static get sessionId(): GuidString;
@@ -4483,6 +4443,9 @@ export interface IpcHostOpts {
 
 // @beta
 export function isITextAnnotation(element: Element_2): element is ITextAnnotation & Element_2;
+
+// @internal
+export function isSettingsDb(db: WorkspaceDb): db is SettingsDb;
 
 // @beta
 export interface ITextAnnotation {
@@ -5481,6 +5444,9 @@ export interface QueryMappedFamiliesArgs {
     includeNonEmbedded?: boolean;
 }
 
+// @internal
+export function queryStringResourceNames(db: SettingsDb): WorkspaceDbName[];
+
 // @beta
 export interface QueryWorkspaceResourcesArgs {
     callback: QueryWorkspaceResourcesCallback;
@@ -5989,41 +5955,23 @@ export interface SettingsContainer {
     [name: SettingName]: Setting | undefined;
 }
 
-// @beta
-export interface SettingsDb {
-    // @internal (undocumented)
-    [_implementationProhibited]: unknown;
-    close(): void;
-    readonly container: CloudSqliteContainer;
-    readonly dbName: string;
-    getSetting<T extends Setting>(settingName: SettingName): T | undefined;
-    getSettings(): SettingsContainer;
-    readonly isOpen: boolean;
-    readonly manifest: SettingsDbManifest;
-    open(): void;
-    readonly priority: SettingsPriority;
-    readonly version: string;
+// @internal
+export namespace SettingsContainers {
+    export function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined>;
+    export function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps[] | undefined>;
+    export interface QueryArgs {
+        iTwinId: GuidString;
+        label?: string;
+    }
 }
 
-// @beta
-export interface SettingsDbManifest {
-    readonly contactName?: string;
-    readonly description?: string;
-    readonly lastEditedBy?: string;
-    readonly settingsName: string;
-}
+// @internal
+export type SettingsDb = WorkspaceDb & {
+    readonly dbName: SettingsDbName;
+};
 
-// @beta
-export interface SettingsDbProps {
-    readonly dbName?: WorkspaceDbName;
-    readonly version?: string;
-}
-
-// @beta
-export interface SettingsDbVersionResult {
-    newDb: WorkspaceDbNameAndVersion;
-    oldDb: WorkspaceDbNameAndVersion;
-}
+// @internal
+export type SettingsDbName = typeof settingsWorkspaceDbName;
 
 // @beta
 export interface SettingsDictionary {
@@ -6045,31 +5993,17 @@ export interface SettingsDictionarySource {
     readonly workspaceDb?: WorkspaceDb;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export namespace SettingsEditor {
-    export function construct(): SettingsEditor;
-    export function createEmptyDb(args: {
-        localFileName: LocalFileName;
-        manifest: SettingsDbManifest;
-    }): void;
-    export function queryContainers(args: QuerySettingsContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
-    export interface QuerySettingsContainersArgs {
-        iModelId?: GuidString;
-        iTwinId: GuidString;
-        label?: string;
-    }
-}
-
-// @beta
-export interface SettingsEditor {
-    // @internal (undocumented)
-    [_implementationProhibited]: unknown;
-    close(): void;
-    createNewCloudContainer(args: CreateNewSettingsContainerArgs): Promise<EditableSettingsCloudContainer>;
-    findContainers(args: SettingsEditor.QuerySettingsContainersArgs): Promise<EditableSettingsCloudContainer[]>;
-    getContainer(args: GetWorkspaceContainerArgs): EditableSettingsCloudContainer;
-    getContainerAsync(props: WorkspaceContainerProps): Promise<EditableSettingsCloudContainer>;
-    readonly workspace: Workspace;
+    const containerType = "settings";
+    export function constructForITwin(iTwinId: GuidString): Promise<{
+        editor: WorkspaceEditor;
+        container: EditableWorkspaceContainer;
+    }>;
+    export function getForITwin(iTwinId: GuidString): Promise<{
+        editor: WorkspaceEditor;
+        container: EditableWorkspaceContainer;
+    } | undefined>;
 }
 
 // @beta
@@ -6086,7 +6020,7 @@ export namespace SettingsPriority {
 }
 
 // @internal
-export const settingsResourceName = "settings";
+export const settingsResourceName = "settingsDictionary";
 
 // @beta
 export interface SettingsSchemas {
@@ -6102,6 +6036,9 @@ export interface SettingsSchemas {
     readonly typeDefs: ReadonlyMap<SettingName, SettingSchema>;
     validateSetting<T>(value: T, settingName: SettingName): T;
 }
+
+// @internal
+export const settingsWorkspaceDbName: WorkspaceDbName;
 
 // @public @preview
 export class Sheet extends Document_2 {
@@ -7257,12 +7194,6 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 // @beta
-export interface UpdateSettingArgs {
-    readonly settingName: SettingName;
-    readonly value: Setting;
-}
-
-// @beta
 export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
 
 // @public @preview
@@ -7926,7 +7857,6 @@ export interface Workspace {
     getCloudCache(): CloudSqlite.CloudCache;
     getContainer(props: GetWorkspaceContainerArgs): WorkspaceContainer;
     getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
-    getSettingsDb(args: GetSettingsDbArgs): SettingsDb;
     getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb>;
     getWorkspaceDbs(args: Workspace.DbListOrSettingName & {
         problems?: WorkspaceDbLoadError[];
@@ -7939,6 +7869,7 @@ export interface Workspace {
     settingName: SettingName,
     filter?: Workspace.DbListFilter): WorkspaceDbCloudProps[];
     readonly settings: Settings;
+    settingsSources?: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[];
 }
 
 // @beta (undocumented)
@@ -8081,6 +8012,7 @@ export namespace WorkspaceEditor {
     }): void;
     export function queryContainers(args: QueryWorkspaceContainersArgs): Promise<BlobContainer.MetadataResponse[]>;
     export interface QueryWorkspaceContainersArgs {
+        containerType?: "workspace" | "settings";
         iModelId?: GuidString;
         iTwinId: GuidString;
         label?: string;
