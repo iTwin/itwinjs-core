@@ -2632,7 +2632,7 @@ export class EditTxn {
     updateProjectExtents(newExtents: Range3dProps): void;
     updateRelationship(props: RelationshipProps): void;
     // (undocumented)
-    protected verifyWriteable(): void;
+    verifyWriteable(): void;
 }
 
 // @public @preview
