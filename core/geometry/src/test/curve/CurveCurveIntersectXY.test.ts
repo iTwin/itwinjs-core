@@ -1853,25 +1853,74 @@ describe("CurveCurveIntersectXY", () => {
   it("ArcArc", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const geometryA = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(-1, 2), Point3d.create(3, 4), Point3d.create(7, 2),
-    );
+    let x0 = 0;
+
+    const verifyIntersection = (
+      numExpected: number, returnedIntersections: CurveLocationDetailPair[], expectedIntersectionsXY: Point3d[]) => {
+      ck.testExactNumber(numExpected, returnedIntersections.length);
+      for (let i = 0; i < numExpected; i++) {
+        const pointA = returnedIntersections[i].detailA.point;
+        const pointB = returnedIntersections[i].detailB.point;
+        ck.testPoint3d(pointA, pointB);
+        ck.testPoint3d(pointA, expectedIntersectionsXY[i]);
+      }
+      GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, returnedIntersections, 0.05, x0);
+    };
+
+    let geometryA = Arc3d.create(Point3d.create(), Vector3d.create(3, 0), Vector3d.create(0, 2));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
-    const geometryB = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, 5), Point3d.create(3, 4), Point3d.create(1, 3),
-    );
+    let geometryB = Arc3d.create(Point3d.create(), Vector3d.create(2, 0), Vector3d.create(0, 3));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
-    // find intersections
-    const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
-    const numExpected = 1;
-    const expectedIntersectionXY = Point2d.create(3, 4);
-    ck.testExactNumber(numExpected, intersections.length);
-    const i1 = intersections[0].detailA.point;
-    const i2 = intersections[0].detailB.point;
-    ck.testPoint3dXY(i1, i2);
-    ck.testTightNumber(i1.x, expectedIntersectionXY.x);
-    ck.testTightNumber(i1.y, expectedIntersectionXY.y);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    let intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
+    verifyIntersection(
+      4,
+      intersections,
+      [
+        Point3d.create(1.66410059, -1.66410059),
+        Point3d.create(1.66410059, 1.66410059),
+        Point3d.create(-1.66410059, 1.66410059),
+        Point3d.create(-1.66410059, -1.66410059)
+      ]
+    );
+
+    x0 += 10;
+    geometryA = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(-1, 2), Point3d.create(3, 4), Point3d.create(7, 2),
+    ) as Arc3d;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0);
+    geometryB = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(1, 5), Point3d.create(3, 4), Point3d.create(1, 3),
+    ) as Arc3d;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB, x0);
+    intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
+    verifyIntersection(1, intersections, [Point3d.create(3, 4)]);
+
+    x0 += 15;
+    geometryA = Arc3d.create(Point3d.create(), Vector3d.create(3, 0), Vector3d.create(0, 2));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0);
+    geometryB = Arc3d.create(Point3d.create(0, 3), Vector3d.create(1, 0), Vector3d.create(0, 1));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB, x0);
+    intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
+    verifyIntersection(1, intersections, [Point3d.create(0, 2)]);
+
+    geometryA = Arc3d.create(
+      Point3d.create(125.0157342083538, -94.41248386028629),
+      Vector3d.create(-6.308780157985524, -0.3116959344506402),
+      Vector3d.create(-0.3116959344506406, 6.308780157985524),
+      AngleSweep.createStartEndDegrees(0, 122.93509358600545)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0);
+    geometryB = Arc3d.create(
+      Point3d.create(127.2660339055681, -86.40624165205061),
+      Vector3d.create(-2, 0),
+      Vector3d.create(0, 2),
+      AngleSweep.createStartEndDegrees(0, 360)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB, x0);
+
+    intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
+    verifyIntersection(1, intersections, [Point3d.create(126.72486722380232, -88.33163476062522)]);
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ArcArc");
     expect(ck.getNumErrors()).toBe(0);
   });
