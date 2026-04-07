@@ -9,8 +9,7 @@ import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { EntityClass, Format } from "@itwin/ecschema-metadata";
-import { ECSpecVersion } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, EntityClass, Format } from "@itwin/ecschema-metadata";
 
 describe("Schema XML Import Tests", () => {
   before(() => {
