@@ -41,6 +41,7 @@ interface ECNativeChangeMeta {
   mode: string;              // "All_Properties" | "Bis_Element_Properties" | "Instance_Key"
   changesetFetchedProps: Set<string>; // property names actually read from the changeset
   rowOptions?: object;       // the rowOptions passed when opening the reader
+  isIndirectChange: boolean; // true when the change was applied indirectly
 }
 ```
 
