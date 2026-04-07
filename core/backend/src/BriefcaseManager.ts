@@ -49,7 +49,7 @@ interface PatchInstanceKey {
  */
 interface ChangedInstanceForSemanticRebase {
   isIndirect: boolean;
-  instance: ChangedECInstance;
+  instance: ChangedECInstance; // eslint-disable-line @typescript-eslint/no-deprecated
 }
 
 /** The argument for patch instances during high level rebase application
@@ -921,16 +921,19 @@ export class BriefcaseManager {
     const reader = SqliteChangesetReader.openTxn({
       txnId, db, disableSchemaCheck: true
     });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const adaptor = new ChangesetECAdaptor(reader);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     using indirectUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     using directUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
     while (adaptor.step()) {
       if (adaptor.reader.isIndirect)
-        indirectUnifier.appendFrom(adaptor);
+        indirectUnifier.appendFrom(adaptor); // eslint-disable-line @typescript-eslint/no-deprecated
       else
-        directUnifier.appendFrom(adaptor);
+        directUnifier.appendFrom(adaptor); // eslint-disable-line @typescript-eslint/no-deprecated
     }
-    return [...Array.from(directUnifier.instances).map((instance) => ({ isIndirect: false, instance })), ...Array.from(indirectUnifier.instances).map((instance) => ({ isIndirect: true, instance }))];
+    return [...Array.from(directUnifier.instances).map((instance) => ({ isIndirect: false, instance })), ...Array.from(indirectUnifier.instances).map((instance) => ({ isIndirect: true, instance }))]; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /**

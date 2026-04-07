@@ -11,6 +11,8 @@ import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { _nativeDb } from "./internal/Symbols";
 
+/* eslint-disable @typescript-eslint/no-deprecated */ // This file is marked as deprecated and will be removed subsequently, so we can allow usage of deprecated APIs within it.
+
 interface IClassRef {
   classId: Id64String;
   classFullName: string;
@@ -352,7 +354,7 @@ class ECDbMap {
 /**
  * Record meta data for the change.
  * @beta
- * @deprecated
+ * @deprecated The ChangeMetaData interface is deprecated and will be removed in a future release.
  * */
 export interface ChangeMetaData {
   /** list of tables making up this EC change */
@@ -372,7 +374,7 @@ export interface ChangeMetaData {
 /**
  * Represent EC change derived from low level sqlite change
  * @beta
- * @deprecated
+ * @deprecated The ChangedECInstance interface is deprecated and will be removed in a future release.
  */
 export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -386,7 +388,7 @@ export interface ChangedECInstance {
 /**
  * Helper function to convert between JS DateTime & SQLite JulianDay values.
  * @beta
- * @deprecated
+ * @deprecated The DateTime namespace is deprecated and will be removed in a future release.
  * */
 namespace DateTime {
   /**
@@ -414,7 +416,7 @@ namespace DateTime {
 /**
  * Represents a cache for unifying EC changes.
  * @beta
- * @deprecated
+ * @deprecated The ECChangeUnifierCache interface is deprecated and will be removed in a future release.
  */
 export interface ECChangeUnifierCache extends Disposable {
   /**
@@ -445,7 +447,7 @@ export interface ECChangeUnifierCache extends Disposable {
 }
 /**
  * @beta
- * @deprecated
+ * @deprecated The ECChangeUnifierCache namespace is deprecated and will be removed in a future release.
 */
 export namespace ECChangeUnifierCache {
   /**
@@ -654,7 +656,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
  * Partial changes is per table and a single instance can
  * span multiple tables.
  * @beta
- * @deprecated
+ * @deprecated The PartialECChangeUnifier class is deprecated and will be removed in a future release.
  */
 export class PartialECChangeUnifier implements Disposable {
   private _readonly = false;
@@ -788,7 +790,7 @@ export class PartialECChangeUnifier implements Disposable {
    * in it is used to combine partial instances.
    * @param adaptor changeset adaptor is use to read the partial EC change.
    * @beta
-   * @deprecated
+   * @deprecated The appendFrom method is deprecated and will be removed in a future release.
    */
   public appendFrom(adaptor: ChangesetECAdaptor): void {
     if (adaptor.disableMetaData) {
@@ -812,7 +814,7 @@ export class PartialECChangeUnifier implements Disposable {
   /**
    * Returns complete EC change instances.
    * @beta
-   * @deprecated
+   * @deprecated The instances getter is deprecated and will be removed in a future release.
    */
   public get instances(): IterableIterator<ChangedECInstance> {
     return this._cache.all();
@@ -824,7 +826,7 @@ export class PartialECChangeUnifier implements Disposable {
  * it is per table while a single instance can span multiple table.
  * @note PrimitiveArray and StructArray are not supported types.
  * @beta
- * @deprecated
+ * @deprecated The ChangesetECAdaptor class is deprecated and will be removed in a future release.
  *
 */
 export class ChangesetECAdaptor implements Disposable {
