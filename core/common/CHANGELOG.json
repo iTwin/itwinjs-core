@@ -2,6 +2,33 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.8.0",
+      "tag": "@itwin/core-common_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks."
+          },
+          {
+            "comment": "Support for binding range3d"
+          },
+          {
+            "comment": "QueryBinder should not fail on bind empty array"
+          },
+          {
+            "comment": "Minor bump on `IModelReadRpcInterface.interfaceVersion`."
+          },
+          {
+            "comment": "Add common DbCloudContainerInfo interface for metadata display"
+          },
+          {
+            "comment": "Added ECSqlReaderBase api which will act as a base point for both the async and sync version of ECSqlReader"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.7.3",
       "tag": "@itwin/core-common_v5.7.3",
       "date": "Tue, 24 Mar 2026 14:29:17 GMT",

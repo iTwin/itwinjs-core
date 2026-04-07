@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { ITwinError } from "@itwin/core-bentley";
+import { GuidString, ITwinError } from "@itwin/core-bentley";
 
 /**
  * An error originating from the [SQLiteDb]($backend) API.
@@ -142,6 +142,39 @@ export namespace WorkspaceError {
 
   export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
     ITwinError.throwError<ITwinError>({ ...e, iTwinErrorId: { key, scope } });
+  }
+}
+
+/**
+ * Errors thrown by iTwin settings container APIs.
+ * @beta
+ */
+export interface ITwinSettingsError extends ITwinError {
+  /** The iTwin associated with this settings error, when available. */
+  readonly iTwinId?: GuidString;
+  /** The priority associated with this settings error, when available. */
+  readonly priority?: number;
+}
+
+/** @beta */
+export namespace ITwinSettingsError {
+  export const scope = "itwin-settings";
+  export type Key =
+    "failed-to-obtain-container-token" |
+    "multiple-itwin-settings-containers" |
+    "no-cloud-container" |
+    "blob-service-unavailable" |
+    "invalid-priority" |
+    "unknown-setting";
+
+  /** Determine whether an error object is an ITwinSettingsError. */
+  export function isError(error: unknown, key?: Key): error is ITwinSettingsError {
+    return ITwinError.isError<ITwinSettingsError>(error, scope, key);
+  }
+
+  /** Instantiate and throw an ITwinSettingsError. */
+  export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
+    ITwinError.throwError<ITwinSettingsError>({ ...e, iTwinErrorId: { scope, key } });
   }
 }
 

@@ -2,6 +2,44 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.8.0",
+      "tag": "@itwin/core-frontend_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH"
+          },
+          {
+            "comment": "Support geometry collection for reality meshes with glTF tiles"
+          },
+          {
+            "comment": "Fix reality data not being reprojected correctly when its CRS is different than iModel"
+          },
+          {
+            "comment": "New LockService interface and new BriefcaseConnection.locks property"
+          },
+          {
+            "comment": "Update measure tool to fallback to QuantityType"
+          },
+          {
+            "comment": "Fix crash when QuantityFormatter.setUnitsProvider is called after IModelApp shutdown — ToolAdmin no longer emits activeToolChanged with an undefined tool."
+          },
+          {
+            "comment": "Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3)."
+          },
+          {
+            "comment": "Add support for WMTS sparse tilesets"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Add support for the proposed BENTLEY_materials_line_style glTF extension, including line width and custom line-pattern rendering for glTF line primitives."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.7.3",
       "tag": "@itwin/core-frontend_v5.7.3",
       "date": "Tue, 24 Mar 2026 14:29:17 GMT",
