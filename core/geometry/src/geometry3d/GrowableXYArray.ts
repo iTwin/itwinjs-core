@@ -29,21 +29,28 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
   private _xyInUse: number;
   /** Capacity in xy tuples (not floats). */
   private _xyCapacity: number;
-  /** Multiplier used by ensureCapacity to expand requested reallocation size. */
+  /** Multiplier used by [[ensureCapacity]] to expand requested reallocation size. */
   private _growthFactor: number;
   /**
-   * Construct a new GrowablePoint2d array.
-   * @param numPoints initial capacity in xy tuples (default 8). If `data` is supplied, `numPoints` specifies the
-   * initial number of valid points in the supplied data, while capacity is determined by the data array length.
-   * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5).
-   * @param data (optional) pre-existing Float64Array to use as the initial data and backing memory. If supplied,
-   * numPoints should be supplied too for correct behavior. Otherwise, numPoints is set to 8.
+   * Construct a new growable array.
+   * @param numPoints initial capacity in xy tuples. Default value is 8.
+   * @param growthFactor used by [[ensureCapacity]] to expand requested reallocation size. Default value is 1.5.
+   * For no expansion, use 1.
+   * @param data optional array to serve as the point source. If `data` is supplied, `numPoints` is reinterpreted as
+   * the initial point count, defaulting to and bounded above by the array's point capacity. If a subsequent [[push]]
+   * would exceed the array's capacity, a new Float64Array of the same buffer type is allocated and filled.
    */
-  public constructor(numPoints: number = 8, growthFactor?: number, data?: Float64Array) {
+  public constructor(numPoints?: number, growthFactor?: number, data?: Float64Array) {
     super();
-    this._data = data || new Float64Array(numPoints * 2); // 2 values per point
-    this._xyCapacity = data ? data.length / 2 : numPoints;
-    this._xyInUse = data ? Math.min(numPoints, this._xyCapacity) : 0;
+    if (data) {
+      this._xyCapacity = data.length / 2;
+      this._xyInUse = Math.min(numPoints ?? Infinity, this._xyCapacity);
+      this._data = data;
+    } else {
+      this._xyCapacity = numPoints ?? 8;
+      this._xyInUse = 0;
+      this._data = new Float64Array(2 * this._xyCapacity); // 2 values per point
+    }
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
   /**
