@@ -53,6 +53,8 @@ export interface ECNativeChangeMeta {
   changesetFetchedProps: Set<string>;
   /** Row adaptor options that were active when this change row was captured. */
   rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+  /** `true` when the change was applied indirectly */
+  isIndirectChange: boolean;
 }
 
 /**
@@ -77,7 +79,7 @@ export interface ECNativeChangeSource {
   readonly op: ECNativeChangeOp;
   /**
    * `true` when the current row belongs to an EC-mapped table.
-   * `false` for internal SQLite tables (_LocalState, _ChangedInstanceIds, etc.).
+   * `false` for internal SQLite tables
    * When `false`, `inserted` and `deleted` are both `undefined`.
    */
   readonly isECTable: boolean;

@@ -42,6 +42,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   private _changeIndex = 0;
   private _op?: ECNativeChangeOp;
   private _isECTable?: boolean;
+  private _tableName?: string;
+  private _isIndirectChange?: boolean;
 
   /** The db used for EC schema resolution. */
   public readonly db: AnyDb;
@@ -55,6 +57,28 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     if (this._isECTable === undefined)
       throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.isECTable is only valid after step() has positioned the reader on a current valid change.");
     return this._isECTable;
+  }
+
+  /**
+   * Name of the SQLite table for the current change row.
+   * Valid only after a successful call to {@link step}.
+   * @beta
+   */
+  public get tableName(): string {
+    if (this._tableName === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.tableName is only valid after step() has positioned the reader on a current valid change.");
+    return this._tableName;
+  }
+
+  /**
+   * `true` when the current change was applied indirectly
+   * Valid only after a successful call to {@link step}.
+   * @beta
+   */
+  public get isIndirectChange(): boolean {
+    if (this._isIndirectChange === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.isIndirectChange is only valid after step() has positioned the reader on a current valid change.");
+    return this._isIndirectChange;
   }
 
   /**
@@ -184,11 +208,6 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Advance to the next change and populate {@link inserted} and/or {@link deleted}.
-   *
-   * After each call, check {@link isECTable}:
-   * - `true`  → the row is EC-mapped; `inserted`/`deleted` are populated per the opcode.
-   * - `false` → the row is an internal SQLite table; both `inserted` and `deleted` are `undefined`.
-   *
    * @returns `true` while positioned on a valid change; `false` when the stream is exhausted.
    * @beta
    */
@@ -196,7 +215,9 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     this.inserted = undefined;
     this.deleted = undefined;
     this._op = undefined;
-    this._isECTable = false;
+    this._isECTable = undefined;
+    this._tableName = undefined;
+    this._isIndirectChange = undefined;
 
     if (this._nativeReader.step()) {
       this._changeIndex++;
@@ -207,7 +228,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
           nativeOp === DbOpcode.Delete ? "Deleted" : "Updated";
       this._op = op;
 
-      const tableName: string = this._nativeReader.getTableName();
+      this._tableName = this._nativeReader.getTableName();
+      this._isIndirectChange = this._nativeReader.isIndirectChange();
       const changesetFetchedProps = new Set<string>(this._nativeReader.getChangesetFetchedPropertyNames());
 
       if (op === "Inserted" || op === "Updated") {
@@ -218,13 +240,14 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
             ...rowValue.data,
             $meta: {
               op,
-              tables: [tableName],
+              tables: [this._tableName],
               changeIndexes: [this._changeIndex],
               stage: "New",
               nativeKey: rowValue.key,
               mode: this.modeToString(this._mode),
               changesetFetchedProps,
               rowOptions: this._rowOptions,
+              isIndirectChange: this._isIndirectChange,
             },
           };
         }
@@ -238,13 +261,14 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
             ...rowValue.data,
             $meta: {
               op,
-              tables: [tableName],
+              tables: [this._tableName],
               changeIndexes: [this._changeIndex],
               stage: "Old",
               nativeKey: rowValue.key,
               mode: this.modeToString(this._mode),
               changesetFetchedProps,
               rowOptions: this._rowOptions,
+              isIndirectChange: this._isIndirectChange,
             },
           };
         }
@@ -267,17 +291,6 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     return this._op;
   }
 
-  /**
-   * index of the current change, incremented on each successful {@link step}.
-   * Starts at 1 for the first change( when the step() call actually returned true).
-   * @beta
-   */
-  public get changeIndex(): number {
-    if (this._changeIndex === 0)
-      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.changeIndex is only valid after step() has positioned the reader on a current valid change.");
-    return this._changeIndex;
-  }
-
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
@@ -289,7 +302,9 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   public close(): void {
     this._changeIndex = 0;
     this._op = undefined;
-    this._isECTable = false;
+    this._isECTable = undefined;
+    this._tableName = undefined;
+    this._isIndirectChange = undefined;
     this.inserted = undefined;
     this.deleted = undefined;
     this._nativeReader.close();
