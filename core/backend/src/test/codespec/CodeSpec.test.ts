@@ -27,7 +27,7 @@ describe("CodeSpec", () => {
 
   it("should insert with default properties and update them later", () => {
     let codeSpec = CodeSpec.create(imodel, "PumpTag", CodeScopeSpec.Type.Model);
-    const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insertWithTxn(txn, codeSpec));
+    const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insert(txn, codeSpec));
     expect(Id64.isValidId64(codeSpecId)).to.be.true;
     expect(codeSpecId).to.be.equal(codeSpec.id);
 

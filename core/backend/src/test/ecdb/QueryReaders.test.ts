@@ -1400,11 +1400,11 @@ describe("createQueryReader vs withQueryReader ", () => {
       rootSubject: { name: "empty " },
     });
 
-    const subjectId = withEditTxn(testIModelDb, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
+    const subjectId = withEditTxn(testIModelDb, (txn) => Subject.insert(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
 
     const [physicalModelId, definitionModelId] = withEditTxn(testIModelDb, (txn) => [
-      PhysicalModel.insertWithTxn(txn, subjectId, "Physical"),
-      DefinitionModel.insertWithTxn(txn, subjectId, "Definition"),
+      PhysicalModel.insert(txn, subjectId, "Physical"),
+      DefinitionModel.insert(txn, subjectId, "Definition"),
     ]);
 
     const spatialCategoryId = IModelTestUtils.insertSpatialCategory(

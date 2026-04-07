@@ -118,17 +118,13 @@ export class ModelSelector extends DefinitionElement {
    * @throws [[IModelError]] if unable to insert the element.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
+  /** @deprecated Use ModelSelector.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const modelSelector = this.create(txn.iModel, definitionModelId, name, models);
-    return modelSelector.insertWithTxn(txn);
-  }
-
-  /**
-   * Insert a ModelSelector to select which Models are displayed by a ViewDefinition.
-   * @deprecated Use ModelSelector.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, models);
+    return modelSelector.insert(txn);
   }
 }
 
@@ -227,17 +223,13 @@ export class CategorySelector extends DefinitionElement {
    * @throws [[IModelError]] if unable to insert the element.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
+  /** @deprecated Use CategorySelector.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const categorySelector = this.create(txn.iModel, definitionModelId, name, categories);
-    return categorySelector.insertWithTxn(txn);
-  }
-
-  /**
-   * Insert a CategorySelector to select which categories are displayed by a ViewDefinition.
-   * @deprecated Use CategorySelector.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, categories);
+    return categorySelector.insert(txn);
   }
 }
 
@@ -612,17 +604,13 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @throws [[IModelError]] if there is an insert problem.
    * @beta
    */
-  public static insertWithCameraWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
+  public static insertWithCamera(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
+  /** @deprecated Use SpatialViewDefinition.insertWithCamera(txn, ...) instead. */
+  public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
+  public static insertWithCamera(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const viewDefinition = this.createWithCamera(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
-    return viewDefinition.insertWithTxn(txn);
-  }
-
-  /**
-   * Insert an SpatialViewDefinition with the camera turned on.
-   * @deprecated Use SpatialViewDefinition.insertWithCameraWithTxn instead.
-   */
-  public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
-    return this.insertWithCameraWithTxn(iModelDb[_implicitTxn], definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
+    return viewDefinition.insert(txn);
   }
 }
 
@@ -683,17 +671,13 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @throws [[IModelError]] if there is an insert problem.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
+  /** @deprecated Use OrthographicViewDefinition.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const viewDefinition = this.create(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
-    return viewDefinition.insertWithTxn(txn);
-  }
-
-  /**
-   * Insert an OrthographicViewDefinition
-   * @deprecated Use OrthographicViewDefinition.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
+    return viewDefinition.insert(txn);
   }
 
   /** Set a new viewed range without changing the rotation or any other properties. */
@@ -846,16 +830,13 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @throws [[IModelError]] if there is an insert problem.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
+  /** @deprecated Use DrawingViewDefinition.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const viewDefinition = this.create(txn.iModel, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
-    return viewDefinition.insertWithTxn(txn);
-  }
-
-  /** Insert a DrawingViewDefinition
-   * @deprecated Use DrawingViewDefinition.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
+    return viewDefinition.insert(txn);
   }
 }
 
@@ -910,23 +891,14 @@ export class SheetViewDefinition extends ViewDefinition2d {
   /** Insert a SheetViewDefinition into an IModelDb
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String {
-    const view = this.create({ ...args, iModel: txn.iModel });
-    return view.insertWithTxn(txn);
-  }
-
-  /** Insert a SheetViewDefinition into an IModelDb
-   * @deprecated Use SheetViewDefinition.insertWithTxn instead.
-   */
-  public static insert(args: CreateSheetViewDefinitionArgs): Id64String {
-    return this.insertWithTxn(args.iModel[_implicitTxn], {
-      definitionModelId: args.definitionModelId,
-      name: args.name,
-      baseModelId: args.baseModelId,
-      categorySelectorId: args.categorySelectorId,
-      displayStyleId: args.displayStyleId,
-      range: args.range,
-    });
+  public static insert(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String;
+  /** @deprecated Use SheetViewDefinition.insert(txn, ...) instead. */
+  public static insert(args: CreateSheetViewDefinitionArgs): Id64String;
+  public static insert(txnOrArgs: EditTxn | CreateSheetViewDefinitionArgs, args?: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String {
+    const txn = txnOrArgs instanceof EditTxn ? txnOrArgs : txnOrArgs.iModel[_implicitTxn];
+    const createArgs = txnOrArgs instanceof EditTxn ? { ...(args as Omit<CreateSheetViewDefinitionArgs, "iModel">), iModel: txn.iModel } : txnOrArgs;
+    const view = this.create(createArgs);
+    return view.insert(txn);
   }
 
   /** Create a SheetViewDefinition from JSON props */

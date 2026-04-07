@@ -174,9 +174,9 @@ describe("ElementDependencyGraph", () => {
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    const physicalModelId = withEditTxn(imodel, (txn) => PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "EDGTestModel"));
-    const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insertWithTxn(txn, CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model)));
-    const spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
+    const physicalModelId = withEditTxn(imodel, (txn) => PhysicalModel.insert(txn, IModel.rootSubjectId, "EDGTestModel"));
+    const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insert(txn, CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model)));
+    const spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
     imodel[_nativeDb].deleteAllTxns();
     imodel.close();

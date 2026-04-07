@@ -154,8 +154,8 @@ export class RealityModelContextIModelCreator {
     }
 
     await withEditTxn(this.iModelDb, "create reality model context", async (txn) => {
-      this.definitionModelId = DefinitionModel.insertWithTxn(txn, IModelDb.rootSubjectId, "Definitions");
-      this.physicalModelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, "Empty Model");
+      this.definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definitions");
+      this.physicalModelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "Empty Model");
       this.insertSpatialView(txn, "Reality Model View", worldRange, realityModels, geoLocated);
       txn.updateProjectExtents(worldRange);
     });
@@ -163,10 +163,10 @@ export class RealityModelContextIModelCreator {
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
   protected insertSpatialView(txn: EditTxn, viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insertWithTxn(txn, this.definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = CategorySelector.insertWithTxn(txn, this.definitionModelId, viewName, []);
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, this.definitionModelId, viewName, [this.physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, this.definitionModelId, viewName, []);
     const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
-    const displayStyleId: Id64String = DisplayStyle3d.insertWithTxn(txn, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
-    return OrthographicViewDefinition.insertWithTxn(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(txn, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
+    return OrthographicViewDefinition.insert(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
   }
 }

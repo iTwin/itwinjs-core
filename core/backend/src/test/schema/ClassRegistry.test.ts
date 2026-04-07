@@ -553,7 +553,7 @@ describe("Class Registry - generated classes", () => {
       // relNavProp: { id: relWithNavPropId, relClassName: "TestGeneratedClasses:ModelToRelNavRel" },
     } as TestModelWithNavPropProps);
 
-    const modelWithNavPropId = withEditTxn(imodel, (txn) => modelWithNavProp.insertWithTxn(txn));
+    const modelWithNavPropId = withEditTxn(imodel, (txn) => modelWithNavProp.insert(txn));
 
     expect(
       [...modelWithNavProp.getReferenceIds()],
@@ -594,7 +594,7 @@ describe("Class Registry - generated classes", () => {
       },
     }, imodel);
 
-    const _relWithNavPropId = withEditTxn(imodel, (txn) => relWithNavProp.insertWithTxn(txn));
+    const _relWithNavPropId = withEditTxn(imodel, (txn) => relWithNavProp.insert(txn));
 
     expect(
       [...relWithNavProp.getReferenceIds()],

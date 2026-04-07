@@ -87,17 +87,14 @@ export class SheetIndex extends InformationReferenceElement {
    * @returns The Id of the newly inserted SheetIndex
    * @throws [[IModelError]] if there is a problem inserting the SheetIndex
    */
-  public static insertWithTxn(txn: EditTxn, modelId: Id64String, name: string): Id64String {
+  public static insert(txn: EditTxn, modelId: Id64String, name: string): Id64String;
+  /** @deprecated Use SheetIndex.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, modelId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const instance = this.create(txn.iModel, modelId, name);
-    instance.id = instance.insertWithTxn(txn);
+    instance.id = instance.insert(txn);
     return instance.id;
-  }
-
-  /** Insert a SheetIndex
-   * @deprecated Use SheetIndex.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], modelId, name);
   }
 }
 
@@ -167,22 +164,20 @@ export class SheetIndexFolder extends SheetIndexEntry {
    * @returns The Id of the newly inserted SheetIndexFolder element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insertWithTxn(txn: EditTxn, arg: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String {
-    const instance = this.create({ ...arg, iModelDb: txn.iModel });
-    instance.id = instance.insertWithTxn(txn);
+  public static insert(txn: EditTxn, arg: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String;
+  /** @deprecated Use SheetIndexFolder.insert(txn, ...) instead. */
+  public static insert(arg: SheetIndexEntryCreateArgs): Id64String;
+  public static insert(txnOrArg: EditTxn | SheetIndexEntryCreateArgs, arg?: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String {
+    const txn = txnOrArg instanceof EditTxn ? txnOrArg : txnOrArg.iModelDb[_implicitTxn];
+    const createArg = txnOrArg instanceof EditTxn ? arg! : {
+      sheetIndexModelId: txnOrArg.sheetIndexModelId,
+      parentId: txnOrArg.parentId,
+      name: txnOrArg.name,
+      priority: txnOrArg.priority,
+    };
+    const instance = this.create({ ...createArg, iModelDb: txn.iModel });
+    instance.id = instance.insert(txn);
     return instance.id;
-  }
-
-  /** Create a new SheetIndexFolder
-   * @deprecated Use SheetIndexFolder.insertWithTxn instead.
-   */
-  public static insert(arg: SheetIndexEntryCreateArgs): Id64String {
-    return this.insertWithTxn(arg.iModelDb[_implicitTxn], {
-      sheetIndexModelId: arg.sheetIndexModelId,
-      parentId: arg.parentId,
-      name: arg.name,
-      priority: arg.priority,
-    });
   }
 }
 
@@ -233,23 +228,21 @@ export class SheetIndexReference extends SheetIndexEntry {
    * @returns The Id of the newly inserted SheetIndexReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insertWithTxn(txn: EditTxn, arg: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String {
-    const instance = this.create({ ...arg, iModelDb: txn.iModel });
-    instance.id = instance.insertWithTxn(txn);
+  public static insert(txn: EditTxn, arg: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String;
+  /** @deprecated Use SheetIndexReference.insert(txn, ...) instead. */
+  public static insert(arg: SheetIndexReferenceCreateArgs): Id64String;
+  public static insert(txnOrArg: EditTxn | SheetIndexReferenceCreateArgs, arg?: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String {
+    const txn = txnOrArg instanceof EditTxn ? txnOrArg : txnOrArg.iModelDb[_implicitTxn];
+    const createArg = txnOrArg instanceof EditTxn ? arg! : {
+      sheetIndexModelId: txnOrArg.sheetIndexModelId,
+      parentId: txnOrArg.parentId,
+      name: txnOrArg.name,
+      priority: txnOrArg.priority,
+      sheetIndexId: txnOrArg.sheetIndexId,
+    };
+    const instance = this.create({ ...createArg, iModelDb: txn.iModel });
+    instance.id = instance.insert(txn);
     return instance.id;
-  }
-
-  /** Create a new SheetIndexReference
-   * @deprecated Use SheetIndexReference.insertWithTxn instead.
-   */
-  public static insert(arg: SheetIndexReferenceCreateArgs): Id64String {
-    return this.insertWithTxn(arg.iModelDb[_implicitTxn], {
-      sheetIndexModelId: arg.sheetIndexModelId,
-      parentId: arg.parentId,
-      name: arg.name,
-      priority: arg.priority,
-      sheetIndexId: arg.sheetIndexId,
-    });
   }
 
   /** @alpha */
@@ -307,23 +300,21 @@ export class SheetReference extends SheetIndexEntry {
    * @returns The Id of the newly inserted SheetReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insertWithTxn(txn: EditTxn, arg: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String {
-    const instance = this.create({ ...arg, iModelDb: txn.iModel });
-    instance.id = instance.insertWithTxn(txn);
+  public static insert(txn: EditTxn, arg: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String;
+  /** @deprecated Use SheetReference.insert(txn, ...) instead. */
+  public static insert(arg: SheetReferenceCreateArgs): Id64String;
+  public static insert(txnOrArg: EditTxn | SheetReferenceCreateArgs, arg?: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String {
+    const txn = txnOrArg instanceof EditTxn ? txnOrArg : txnOrArg.iModelDb[_implicitTxn];
+    const createArg = txnOrArg instanceof EditTxn ? arg! : {
+      sheetIndexModelId: txnOrArg.sheetIndexModelId,
+      parentId: txnOrArg.parentId,
+      name: txnOrArg.name,
+      priority: txnOrArg.priority,
+      sheetId: txnOrArg.sheetId,
+    };
+    const instance = this.create({ ...createArg, iModelDb: txn.iModel });
+    instance.id = instance.insert(txn);
     return instance.id;
-  }
-
-  /** Insert a new SheetReference
-   * @deprecated Use SheetReference.insertWithTxn instead.
-   */
-  public static insert(arg: SheetReferenceCreateArgs): Id64String {
-    return this.insertWithTxn(arg.iModelDb[_implicitTxn], {
-      sheetIndexModelId: arg.sheetIndexModelId,
-      parentId: arg.parentId,
-      name: arg.name,
-      priority: arg.priority,
-      sheetId: arg.sheetId,
-    });
   }
 
   /** @alpha */

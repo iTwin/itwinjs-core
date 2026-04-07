@@ -66,7 +66,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     iModel.clearCaches();
     iModel.performCheckpoint();
 
-    withEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(
+    withEditTxn(iModel, (txn) => SpatialCategory.insert(
       txn,
       IModelDb.dictionaryId,
       "spatial category",

@@ -302,7 +302,7 @@ describe("Field evaluation", () => {
 
     await withEditTxn(imodel, async (txn) => {
       model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true)[1];
-      category = SpatialCategory.insertWithTxn(txn, StandaloneDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
+      category = SpatialCategory.insert(txn, StandaloneDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
       await imodel.fonts.embedFontFile({
         file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
       });
@@ -631,20 +631,20 @@ describe("Field evaluation", () => {
         const anno = target.getAnnotation()!;
         anno.textBlock.appendRun(createField(source2, "2a"));
         target.setAnnotation(anno);
-        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.update(txn));
 
         expectNumRelationships(2, targetId);
 
         anno.textBlock.appendRun(createField(source2, "2b"));
         target.setAnnotation(anno);
-        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.update(txn));
 
         expectNumRelationships(2, targetId);
 
         const source3 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         anno.textBlock.appendRun(createField(source3, "3"));
         target.setAnnotation(anno);
-        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.update(txn));
 
         expectNumRelationships(3, targetId);
       });
@@ -670,7 +670,7 @@ describe("Field evaluation", () => {
         p1.children.shift();
 
         target.setAnnotation(anno);
-        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.update(txn));
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -679,7 +679,7 @@ describe("Field evaluation", () => {
         anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
-        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.update(txn));
 
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
@@ -691,7 +691,7 @@ describe("Field evaluation", () => {
           content: "not a field",
         }));
         target.setAnnotation(anno);
-        withEditTxn(imodel, (txn) => target.updateWithTxn(txn));
+        withEditTxn(imodel, (txn) => target.update(txn));
 
         expectNumRelationships(0, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
@@ -748,7 +748,7 @@ describe("Field evaluation", () => {
       expectText("100", targetId);
 
       withEditTxn(imodel, "delete source element fields", (txn) => {
-        source.updateWithTxn(txn);
+        source.update(txn);
         expectText("100", targetId);
         txn.saveChanges("update source element fields");
 
@@ -756,7 +756,7 @@ describe("Field evaluation", () => {
         expect(source.intProp).to.equal(50);
         expectText("50", targetId);
 
-        source.deleteWithTxn(txn);
+        source.delete(txn);
         expectText("50", targetId);
       });
       expectText(FieldRun.invalidContentIndicator, targetId);
@@ -809,7 +809,7 @@ describe("Field evaluation", () => {
 
       const sourceElem = imodel.elements.getElement<TestElement>(sourceB);
       sourceElem.intProp = 123;
-      withEditTxn(imodel, (txn) => sourceElem.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => sourceElem.update(txn));
 
       expectText("100123", targetId);
     });
@@ -823,7 +823,7 @@ describe("Field evaluation", () => {
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
-      withEditTxn(imodel, (txn) => source.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => source.update(txn));
       expectText("12.5", targetId);
     });
 
@@ -847,7 +847,7 @@ describe("Field evaluation", () => {
       expectText("abc", targetId);
 
       withEditTxn(imodel, "delete EC view fields", (txn) => {
-        source.updateWithTxn(txn);
+        source.update(txn);
         expectText("abc", targetId);
         txn.saveChanges("update EC view fields");
 
@@ -857,7 +857,7 @@ describe("Field evaluation", () => {
         expect(source.jsonProperties.stringProp).to.equal("zyx");
         expectText("zyx", targetId);
 
-        source.deleteWithTxn(txn);
+        source.delete(txn);
         expectText("zyx", targetId);
       });
       expectText(FieldRun.invalidContentIndicator, targetId);
@@ -880,7 +880,7 @@ describe("Field evaluation", () => {
             IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
           }
           const ids = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
-          dstCategory = SpatialCategory.insertWithTxn(txn, StandaloneDb.dictionaryId, `dstCat`, new SubCategoryAppearance());
+          dstCategory = SpatialCategory.insert(txn, StandaloneDb.dictionaryId, `dstCat`, new SubCategoryAppearance());
           return ids;
         });
         expect(modelAndElement[0]).to.equal(modelAndElement[1]);
@@ -1029,3 +1029,5 @@ describe("Field evaluation", () => {
     });
   });
 });
+
+

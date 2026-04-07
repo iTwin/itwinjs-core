@@ -23,7 +23,7 @@ export async function insertTextStyle(iModelKey: string, name: string, settingPr
   );
 
   await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId });
-  return withEditTxn(iModel, `Inserted text style '${name}'`, (txn) => annotationTextStyle.insertWithTxn(txn));
+  return withEditTxn(iModel, `Inserted text style '${name}'`, (txn) => annotationTextStyle.insert(txn));
 }
 
 /**
@@ -41,7 +41,7 @@ export async function updateTextStyle(iModelKey: string, name: string, newSettin
   textStyle.settings = settings;
 
   await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId, exclusive: textStyle.id });
-  withEditTxn(iModel, `Updated text style '${name}'`, (txn) => textStyle.updateWithTxn(txn));
+  withEditTxn(iModel, `Updated text style '${name}'`, (txn) => textStyle.update(txn));
 }
 
 /**
@@ -84,7 +84,7 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
   );
 
   await iModel.locks.acquireLocks({ shared: modelId });
-  return withEditTxn(iModel, "Inserted annotation", (txn) => annotation2d.insertWithTxn(txn));
+  return withEditTxn(iModel, "Inserted annotation", (txn) => annotation2d.insert(txn));
 }
 
 /**
@@ -116,7 +116,7 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
   }
 
   await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
-  withEditTxn(iModel, "Updated annotation", (txn) => text.updateWithTxn(txn));
+  withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 
 /**
@@ -131,7 +131,7 @@ export async function deleteText(iModelKey: string, elementId: Id64String): Prom
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
   await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
-  withEditTxn(iModel, "Deleted text annotation", (txn) => text.deleteWithTxn(txn));
+  withEditTxn(iModel, "Deleted text annotation", (txn) => text.delete(txn));
 }
 
 /**
@@ -148,6 +148,6 @@ export async function setScaleFactor(iModelKey: string, modelId: Id64String, sca
   if (element instanceof Drawing) {
     element.scaleFactor = scaleFactor;
     await iModel.locks.acquireLocks({ shared: [modelId], exclusive: [element.id] });
-    withEditTxn(iModel, `Updated scale factor for drawing ${element.id}`, (txn) => element.updateWithTxn(txn));
+    withEditTxn(iModel, `Updated scale factor for drawing ${element.id}`, (txn) => element.update(txn));
   }
 }

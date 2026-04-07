@@ -215,7 +215,7 @@ describe("TxnManager", () => {
 
       element = elements.getElement(elementId);
       element.intProperty = 200;
-      element.updateWithTxn(editTxn);
+      element.update(editTxn);
 
       editTxn.saveChanges(change2Msg);
 
@@ -231,7 +231,7 @@ describe("TxnManager", () => {
       assert.equal(element.intProperty, 100, "int property should be 100");
 
       // make sure abandon changes works.
-      element.deleteWithTxn(editTxn);
+      element.delete(editTxn);
       assert.throws(() => elements.getElement(elementId), IModelError);
       editTxn.abandonChanges();
       element = elements.getElement(elementId); // should be back now.
@@ -934,7 +934,7 @@ describe("TxnManager", () => {
     withEditTxn(imodel, "reverse-single-txn", (editTxn) => {
       imodel[_nativeDb].setGeometricModelTrackingEnabled(true);
 
-      const model = PhysicalModel.insertWithTxn(editTxn, IModel.rootSubjectId, Guid.createValue());
+      const model = PhysicalModel.insert(editTxn, IModel.rootSubjectId, Guid.createValue());
       expect(Id64.isValidId64(model)).to.be.true;
       const elem = editTxn.insertElement({ ...props, model });
       expect(Id64.isValidId64(elem)).to.be.true;
@@ -1115,3 +1115,6 @@ describe("TxnManager", () => {
     });
   });
 });
+
+
+

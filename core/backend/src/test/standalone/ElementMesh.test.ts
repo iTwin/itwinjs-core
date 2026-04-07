@@ -41,7 +41,7 @@ describe("generateElementMeshes", () => {
       });
 
       modelId = txn.insertModel(model.toJSON());
-      categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "cat", { color: ColorDef.blue.toJSON() });
+      categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "cat", { color: ColorDef.blue.toJSON() });
     });
   });
 

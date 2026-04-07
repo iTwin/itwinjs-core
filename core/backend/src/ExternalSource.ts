@@ -43,23 +43,21 @@ export class ExternalSource extends InformationReferenceElement {
     return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
   }
   /** Ensure the [[CodeSpec]] for ExternalSource elements exists, using an explicit transaction.
-   * @param txn The active editing transaction.
+   * @param txn The active EditTxn.
    */
-  public static ensureCodeSpecWithTxn(txn: EditTxn): Id64String {
+  public static ensureCodeSpec(txn: EditTxn): Id64String;
+  /** @deprecated Use ExternalSource.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+  public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
+    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
     try {
       const codeSpec = txn.iModel.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
     } catch {
-      return txn.iModel.codeSpecs.insertWithTxn(txn, BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
+      return txn.iModel.codeSpecs.insert(txn, BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
     }
   }
 
-  /** The [[CodeSpec]] for ExternalSource elements is not automatically created, so this method ensures that it exists.
-   * @deprecated Use ExternalSource.ensureCodeSpecWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
-   */
-  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
-    return this.ensureCodeSpecWithTxn(iModelDb[_implicitTxn]);
-  }
   /** Create a Code for an ExternalSource element given a name that is meant to be unique within the scope of the iModel.
    * @param iModelDb  The IModelDb
    * @param codeValue The ExternalSource name
@@ -115,23 +113,21 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
     return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
   }
   /** Ensure the [[CodeSpec]] for ExternalSourceAttachment elements exists, using an explicit transaction.
-   * @param txn The active editing transaction.
+   * @param txn The active EditTxn.
    */
-  public static ensureCodeSpecWithTxn(txn: EditTxn): Id64String {
+  public static ensureCodeSpec(txn: EditTxn): Id64String;
+  /** @deprecated Use ExternalSourceAttachment.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+  public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
+    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
     try {
       const codeSpec = txn.iModel.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
       return codeSpec.id;
     } catch {
-      return txn.iModel.codeSpecs.insertWithTxn(txn, BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
+      return txn.iModel.codeSpecs.insert(txn, BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
     }
   }
 
-  /** The [[CodeSpec]] for ExternalSourceAttachment elements is not automatically created, so this method ensures that it exists.
-   * @deprecated Use ExternalSourceAttachment.ensureCodeSpecWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
-   */
-  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
-    return this.ensureCodeSpecWithTxn(iModelDb[_implicitTxn]);
-  }
   /** Create a Code for an ExternalSourceAttachment element given a name that is meant to be unique within the scope of its parent [[ExternalSource]].
    * @param iModelDb  The IModelDb
    * @param scopeElementId The parent ExternalSource

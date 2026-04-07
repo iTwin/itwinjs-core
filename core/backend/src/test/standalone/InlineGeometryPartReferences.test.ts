@@ -170,13 +170,13 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       modelId = txn.insertModel(model.toJSON());
       expect(Id64.isValidId64(modelId)).to.be.true;
 
-      categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
+      categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
       expect(Id64.isValidId64(categoryId)).to.be.true;
       blueSubCategoryId = IModel.getDefaultSubCategoryId(categoryId);
-      redSubCategoryId = SubCategory.insertWithTxn(txn, categoryId, "red", { color: ColorDef.red.toJSON() });
+      redSubCategoryId = SubCategory.insert(txn, categoryId, "red", { color: ColorDef.red.toJSON() });
       expect(Id64.isValidId64(redSubCategoryId)).to.be.true;
 
-      materialId = RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, "mat", { paletteName: "pal" });
+      materialId = RenderMaterialElement.insert(txn, IModel.dictionaryId, "mat", { paletteName: "pal" });
       expect(Id64.isValidId64(materialId)).to.be.true;
     });
   });

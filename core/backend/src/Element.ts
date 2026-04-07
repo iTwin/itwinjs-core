@@ -568,7 +568,7 @@ export class Element extends Entity {
   }
 
   /**
-   * Insert this Element into the iModel.
+   * Insert this Element into the iModel using the supplied EditTxn.
    * @see [[IModelDb.Elements.insertElement]]
    * @note For convenience, the value of `this.id` is updated to reflect the resultant element's id.
    * However when `this.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
@@ -576,41 +576,43 @@ export class Element extends Entity {
    * if you intend to continue working with it. That will ensure its values reflect the persistent state.
    * @beta
    */
-  public insertWithTxn(txn: EditTxn) {
-    return this.id = txn.insertElement(this.toJSON());
-  }
-
-  /**
-   * Update this Element in the iModel using the supplied transaction.
-   * @beta
-   */
-  public updateWithTxn(txn: EditTxn): void {
-    txn.updateElement(this.toJSON());
-  }
-
-  /**
-   * Delete this Element from the iModel using the supplied transaction.
-   * @beta
-   */
-  public deleteWithTxn(txn: EditTxn): void {
-    txn.deleteElement(this.id);
-  }
-
+  public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Element into the iModel.
-   * @deprecated Use Element.insertWithTxn instead.
+   * @deprecated Use Element.insert(txn) instead.
    */
-  public insert() {
-    return this.id = this.insertWithTxn(this.iModel[_implicitTxn]);
+  public insert(): Id64String;
+  public insert(txn?: EditTxn): Id64String {
+    return this.id = (txn ?? this.iModel[_implicitTxn]).insertElement(this.toJSON());
   }
-  /** Update this Element in the iModel.
-   * @deprecated Use Element.updateWithTxn instead.
+
+  /**
+   * Update this Element in the iModel using the supplied EditTxn.
+   * @beta
    */
-  public update() { this.updateWithTxn(this.iModel[_implicitTxn]); }
-  /** Delete this Element from the iModel.
-   * @deprecated Use Element.deleteWithTxn instead.
+  public update(txn: EditTxn): void;
+  /**
+   * Update this Element in the iModel.
+   * @deprecated Use Element.update(txn) instead.
    */
-  public delete() { this.deleteWithTxn(this.iModel[_implicitTxn]); }
+  public update(): void;
+  public update(txn?: EditTxn): void {
+    (txn ?? this.iModel[_implicitTxn]).updateElement(this.toJSON());
+  }
+
+  /**
+   * Delete this Element from the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public delete(txn: EditTxn): void;
+  /**
+   * Delete this Element from the iModel.
+   * @deprecated Use Element.delete(txn) instead.
+   */
+  public delete(): void;
+  public delete(txn?: EditTxn): void {
+    (txn ?? this.iModel[_implicitTxn]).deleteElement(this.id);
+  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
@@ -1180,7 +1182,7 @@ export class Subject extends InformationReferenceElement {
   }
 
   /** Insert a Subject
-   * @param iModelDb Insert into this IModelDb
+  * @param txn The EditTxn to use
    * @param parentSubjectId The new Subject will be inserted as a child of this Subject
    * @param name The name (codeValue) of the Subject
    * @param description The optional description of the Subject
@@ -1188,16 +1190,15 @@ export class Subject extends InformationReferenceElement {
    * @throws [[IModelError]] if there is a problem inserting the Subject
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String {
-    const subject = this.create(txn.iModel, parentSubjectId, name, description);
-    return subject.insertWithTxn(txn);
-  }
-
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   /** Insert a Subject
-   * @deprecated Use Subject.insertWithTxn instead.
+   * @deprecated Use Subject.insert(txn, ...) instead.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name, description);
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const subject = this.create(txn.iModel, parentSubjectId, name, description);
+    return subject.insert(txn);
   }
 }
 
@@ -1281,7 +1282,11 @@ export class Drawing extends Document {
    * @throws Error if `scaleFactor` is less than or equal to zero.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+  public static insert(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+  /** @deprecated Use Drawing.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const drawingProps: DrawingProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
@@ -1304,12 +1309,6 @@ export class Drawing extends Document {
     return txn.insertModel(model.toJSON());
   }
 
-  /** Insert a Drawing element and a DrawingModel that breaks it down.
-   * @deprecated Use Drawing.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], documentListModelId, name, scaleFactor);
-  }
 }
 
 /** A document that represents a section drawing, that is, a graphical documentation derived from a planar
@@ -1555,9 +1554,13 @@ export class DefinitionContainer extends DefinitionSet {
    * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+  /** @deprecated Use DefinitionContainer.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const containerElement = this.create(txn.iModel, definitionModelId, code, isPrivate);
-    const containerElementId = containerElement.insertWithTxn(txn);
+    const containerElementId = containerElement.insert(txn);
     const containerSubModelProps: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: containerElementId },
@@ -1567,12 +1570,6 @@ export class DefinitionContainer extends DefinitionSet {
     return containerElementId;
   }
 
-  /** Insert a DefinitionContainer and its sub-model.
-   * @deprecated Use DefinitionContainer.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, code, isPrivate);
-  }
 }
 
 /** A non-exclusive set of DefinitionElements grouped using the DefinitionGroupGroupsDefinitions relationship.
@@ -1717,9 +1714,13 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    * @returns The Id of the newly inserted TemplateRecipe3d and the PhysicalModel that sub-models it.
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  /** @deprecated Use TemplateRecipe3d.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const element = this.create(txn.iModel, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = element.insertWithTxn(txn);
+    const modeledElementId: Id64String = element.insert(txn);
     const modelProps: GeometricModel3dProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1728,12 +1729,6 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
     return txn.insertModel(modelProps); // will be the same value as modeledElementId
   }
 
-  /** Insert a TemplateRecipe3d and a PhysicalModel (sub-model) that will contain the 3d template elements.
-   * @deprecated Use TemplateRecipe3d.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, isPrivate);
-  }
 }
 
 /** Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.
@@ -1795,9 +1790,13 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    * @returns The Id of the newly inserted TemplateRecipe2d and the PhysicalModel that sub-models it.
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe2d or its sub-model.
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  /** @deprecated Use TemplateRecipe2d.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const element = this.create(txn.iModel, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = element.insertWithTxn(txn);
+    const modeledElementId: Id64String = element.insert(txn);
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1806,12 +1805,6 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
     return txn.insertModel(modelProps); // will be the same value as modeledElementId
   }
 
-  /** Insert a TemplateRecipe2d and a DrawingModel (sub-model) that will contain the 2d template elements.
-   * @deprecated Use TemplateRecipe2d.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, isPrivate);
-  }
 }
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.

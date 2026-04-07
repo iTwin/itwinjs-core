@@ -72,7 +72,7 @@ export class GeoJsonImporter {
 
     let featureModelExtents: AxisAlignedBox3d;
     if (this._appendToExisting) {
-      this.physicalModelId = withEditTxn(this.iModelDb, (txn) => PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, modelName));
+      this.physicalModelId = withEditTxn(this.iModelDb, (txn) => PhysicalModel.insert(txn, IModelDb.rootSubjectId, modelName));
       const foundCategoryId = SpatialCategory.queryCategoryIdByName(this.iModelDb, IModel.dictionaryId, categoryName);
       this.featureCategoryId = (foundCategoryId !== undefined) ? foundCategoryId : this.addCategoryToExistingDb(categoryName);
       withEditTxn(this.iModelDb, (txn) => this.convertFeatureCollection(txn));
@@ -83,9 +83,9 @@ export class GeoJsonImporter {
       await withEditTxn(this.iModelDb, async (txn) => txn.updateProjectExtents(projectExtents));
     } else {
       withEditTxn(this.iModelDb, (txn) => {
-        this.definitionModelId = DefinitionModel.insertWithTxn(txn, IModelDb.rootSubjectId, "GeoJSON Definitions");
-        this.physicalModelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, modelName);
-        this.featureCategoryId = SpatialCategory.insertWithTxn(txn, this.definitionModelId, categoryName, { color: ColorDef.white.tbgr });
+        this.definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "GeoJSON Definitions");
+        this.physicalModelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, modelName);
+        this.featureCategoryId = SpatialCategory.insert(txn, this.definitionModelId, categoryName, { color: ColorDef.white.tbgr });
       });
       /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
        * if the bounding box was directly available.
@@ -112,7 +112,7 @@ export class GeoJsonImporter {
   }
   private addCategoryToExistingDb(categoryName: string) {
     return withEditTxn(this.iModelDb, (txn) => {
-      const categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, categoryName, { color: ColorDef.white.tbgr });
+      const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, categoryName, { color: ColorDef.white.tbgr });
       this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, ((view: ViewDefinition) => {
         const categorySelector = this.iModelDb.elements.getElement<CategorySelector>(view.categorySelectorId);
         categorySelector.categories.push(categoryId);
@@ -292,9 +292,9 @@ export class GeoJsonImporter {
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
   protected insertSpatialView(txn: EditTxn, viewName: string, range: AxisAlignedBox3d): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insertWithTxn(txn, this.definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = CategorySelector.insertWithTxn(txn, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = DisplayStyle3d.insertWithTxn(txn, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundMap: this._backgroundMap });
-    return OrthographicViewDefinition.insertWithTxn(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, this.definitionModelId, viewName, [this.physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, this.definitionModelId, viewName, [this.featureCategoryId]);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(txn, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundMap: this._backgroundMap });
+    return OrthographicViewDefinition.insert(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

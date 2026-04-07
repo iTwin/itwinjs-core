@@ -30,7 +30,7 @@ describe("iModelOptimization", () => {
     const [, newModelId] = withEditTxn(testImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "TestCategory");
     if (!spatialCategoryId) {
-      spatialCategoryId = withEditTxn(testImodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
+      spatialCategoryId = withEditTxn(testImodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     }
     const initialFileSize = IModelJsFs.lstatSync(testImodel.pathName)!.size;
 
@@ -165,7 +165,7 @@ describe("iModelOptimization", () => {
     const [, newModelId] = withEditTxn(briefcaseDb, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(briefcaseDb, IModel.dictionaryId, "TestCategory");
     if (!spatialCategoryId) {
-      spatialCategoryId = withEditTxn(briefcaseDb, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
+      spatialCategoryId = withEditTxn(briefcaseDb, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     }
 
     // Insert more elements to ensure statistics are meaningful

@@ -72,7 +72,7 @@ describe("RenderTimeline", () => {
     scriptProps.push(makeScriptProps()[0]);
     timeline.scriptProps = scriptProps;
 
-    withEditTxn(imodel, (txn) => timeline.updateWithTxn(txn));
+    withEditTxn(imodel, (txn) => timeline.update(txn));
     timeline = imodel.elements.getElement<RenderTimeline>(timelineId);
     expect(timeline.description).to.equal("My timeline");
     expect(timeline.scriptProps).to.deep.equal(scriptProps);
@@ -80,3 +80,5 @@ describe("RenderTimeline", () => {
     imodel.close();
   });
 });
+
+

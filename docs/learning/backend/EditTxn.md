@@ -5,7 +5,7 @@
 If you already know the existing write APIs and just need to keep shipping, do this first:
 
 1. Wrap each write workflow in [withEditTxn]($backend).
-2. Replace deprecated write calls with `WithTxn` equivalents.
+2. Replace deprecated write calls with txn-first overloads.
 3. Use `txn.saveChanges(...)` only when you want an intermediate commit and keep writing in the same transaction scope.
 4. If you are using direct `EditTxn` (not [withEditTxn]($backend)), use `txn.end("save")` to finish, or `txn.end("abandon")` to discard pending edits.
 5. In dependency callbacks, use the callback argument's `indirectEditTxn` instead of creating a new transaction.
@@ -14,13 +14,13 @@ If you already know the existing write APIs and just need to keep shipping, do t
 
 | Existing pattern | EditTxn pattern |
 | --- | --- |
-| `element.insert()` | `element.insertWithTxn(txn)` |
-| `element.update()` | `element.updateWithTxn(txn)` |
-| `element.delete()` | `element.deleteWithTxn(txn)` |
+| `element.insert()` | `element.insert(txn)` |
+| `element.update()` | `element.update(txn)` |
+| `element.delete()` | `element.delete(txn)` |
 | `iModel.saveChanges("desc")` | `txn.saveChanges("desc")` |
 | `iModel.abandonChanges()` | `txn.abandonChanges()` |
-| `Model.insert(...)` | `Model.insertWithTxn(txn, ...)` |
-| `Relationship.insert(...)` | `Relationship.insertWithTxn(txn, ...)` |
+| `Model.insert(...)` | `Model.insert(txn, ...)` |
+| `Relationship.insert(...)` | `Relationship.insert(txn, ...)` |
 
 When possible, start with [withEditTxn]($backend) and migrate call sites one workflow at a time.
 
@@ -50,7 +50,7 @@ Migration is incremental:
 
 - Legacy implicit-write APIs remain available during the transition and are deprecated in favor of explicit APIs.
 - New write paths should use explicit [EditTxn]($backend) APIs.
-- Existing code can migrate call sites gradually to `WithTxn` methods or [withEditTxn]($backend).
+- Existing code can migrate call sites gradually to txn-first overloads or [withEditTxn]($backend).
 
 The target end state is explicit write transactions for all writes, with the implicit transaction used only for read behavior.
 
@@ -61,7 +61,7 @@ If this change introduces too many deprecation lint errors at once, you can temp
 Prefer narrow suppression on individual lines and always add a TODO marker you can search for later.
 
 ```ts
-// TODO(EditTxn-migration): replace with insertWithTxn/withEditTxn
+// TODO(EditTxn-migration): replace with insert(txn)/withEditTxn
 // eslint-disable-next-line deprecation/deprecation
 element.insert();
 ```
@@ -107,9 +107,9 @@ During indirect dependency processing callbacks (for example relationship callba
 
 ```ts
 withEditTxn(iModel, "Create model contents", (txn) => {
-	const modelId = PhysicalModel.insertWithTxn(txn, parentSubjectId, "My Model");
+	const modelId = PhysicalModel.insert(txn, parentSubjectId, "My Model");
 	const element = MySpatialElement.create({ model: modelId, category, code }, iModel);
-	element.insertWithTxn(txn);
+	element.insert(txn);
 });
 ```
 
@@ -120,17 +120,17 @@ This is the preferred migration pattern for most existing write workflows.
 ```ts
 await withEditTxn(iModel, { description: "Import external source", source: "my-importer" }, async (txn) => {
 	// Create or find prerequisites in the same transaction scope.
-	const modelId = PhysicalModel.insertWithTxn(txn, parentSubjectId, "Imported Model");
+	const modelId = PhysicalModel.insert(txn, parentSubjectId, "Imported Model");
 
 	// Insert several related entities; all are part of one unit of work.
 	for (const row of importedRows) {
 		const element = MySpatialElement.create({ model: modelId, category, code: row.code }, iModel);
-		element.insertWithTxn(txn);
+		element.insert(txn);
 	}
 
 	// You can make additional writes after async work.
 	const metadataElement = MyImportMetadata.create({ model: modelId, summary: importedRows.length }, iModel);
-	metadataElement.insertWithTxn(txn);
+	metadataElement.insert(txn);
 });
 // If the callback succeeds, changes are saved.
 // If it throws, withEditTxn abandons the transaction and re-throws.
@@ -144,11 +144,11 @@ Assume `parentSubjectId`, `category`, and `importedRows` are already resolved by
 const txn = new EditTxn(iModel, "Create model contents");
 txn.start();
 
-const modelId = PhysicalModel.insertWithTxn(txn, parentSubjectId, "My Model");
+const modelId = PhysicalModel.insert(txn, parentSubjectId, "My Model");
 txn.saveChanges("Saved first batch"); // Commits current edits and keeps this EditTxn active.
 
 const element = MySpatialElement.create({ model: modelId, category, code }, iModel);
-element.insertWithTxn(txn);
+element.insert(txn);
 
 txn.end("save", "Saved second batch and closed transaction");
 ```

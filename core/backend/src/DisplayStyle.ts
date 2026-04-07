@@ -191,24 +191,25 @@ export class DisplayStyle2d extends DisplayStyle {
     };
     return new DisplayStyle2d(displayStyleProps, iModelDb);
   }
-  /** Insert a DisplayStyle2d for use by a ViewDefinition.
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a DisplayStyle2d for use by a ViewDefinition.
+  * @param txn The EditTxn to use
    * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
    * @param name The name of the DisplayStyle2d
    * @returns The Id of the newly inserted DisplayStyle2d element.
    * @throws [[IModelError]] if unable to insert the element.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String {
-    const displayStyle = this.create(txn.iModel, definitionModelId, name);
-    return displayStyle.insertWithTxn(txn);
-  }
-
-  /** Insert a DisplayStyle2d for use by a ViewDefinition.
-   * @deprecated Use DisplayStyle2d.insertWithTxn instead.
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String;
+  /**
+   * Insert a DisplayStyle2d for use by a ViewDefinition.
+   * @deprecated Use DisplayStyle2d.insert(txn, ...) instead.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name);
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const displayStyle = this.create(txn.iModel, definitionModelId, name);
+    return displayStyle.insert(txn);
   }
 }
 
@@ -344,23 +345,26 @@ export class DisplayStyle3d extends DisplayStyle {
   }
   /**
    * Insert a DisplayStyle3d for use by a ViewDefinition.
-   * @param iModelDb Insert into this iModel
+  * @param txn The EditTxn to use
    * @param definitionModelId Insert the new DisplayStyle3d into this [[DefinitionModel]]
    * @param name The name of the DisplayStyle3d
+   * @param options Creation options
    * @returns The Id of the newly inserted DisplayStyle3d element.
    * @throws [[IModelError]] if unable to insert the element.
-  * @beta
+   * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
-    const displayStyle = this.create(txn.iModel, definitionModelId, name, options);
-    return displayStyle.insertWithTxn(txn);
-  }
-
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
   /**
    * Insert a DisplayStyle3d for use by a ViewDefinition.
-   * @deprecated Use DisplayStyle3d.insertWithTxn instead.
+   * @deprecated Use DisplayStyle3d.insert(txn, ...) instead.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, name, options);
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const displayStyle = this.create(txn.iModel, definitionModelId, name, options);
+    return displayStyle.insert(txn);
   }
 }
+
+
+

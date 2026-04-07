@@ -281,7 +281,7 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
-        target.updateWithTxn(txn);
+        target.update(txn);
       }
     }
   } catch (err) {

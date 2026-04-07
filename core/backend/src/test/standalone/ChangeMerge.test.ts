@@ -110,7 +110,7 @@ describe("Change merge method", () => {
       true);
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    ctx.spatialCategoryId = SpatialCategory.insertWithTxn(
+    ctx.spatialCategoryId = SpatialCategory.insert(
       b1Txn,
       dictionary.id,
       newCategoryCode.value,

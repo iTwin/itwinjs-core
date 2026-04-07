@@ -33,7 +33,7 @@ async function setUpTest() {
   IModelJsFs.copySync(seedFile, iModelFile);
   const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(iModel);
-  withEditTxn(iModel, "robot world rpc setup", (txn) => PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "test"));
+  withEditTxn(iModel, "robot world rpc setup", (txn) => PhysicalModel.insert(txn, IModel.rootSubjectId, "test"));
   iModel.close();
 }
 

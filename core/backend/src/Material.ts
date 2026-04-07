@@ -207,7 +207,7 @@ export class RenderMaterialElement extends DefinitionElement {
 
   /**
    * Insert a new RenderMaterial into a model.
-   * @param iModelDb Insert into this iModel
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new Texture into this DefinitionModel
    * @param materialName The name/CodeValue of the RenderMaterial
    * @param params Parameters object which describes how to construct the RenderMaterial
@@ -215,17 +215,16 @@ export class RenderMaterialElement extends DefinitionElement {
    * @throws [[IModelError]] if unable to insert the element.
    * @beta
    */
-  public static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
-    const renderMaterial = this.create(txn.iModel, definitionModelId, materialName, params);
-    return renderMaterial.insertWithTxn(txn);
-  }
-
+  public static insert(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
   /**
    * Insert a new RenderMaterial into a model.
-   * @deprecated Use RenderMaterialElement.insertWithTxn instead.
+   * @deprecated Use RenderMaterialElement.insert(txn, ...) instead.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], definitionModelId, materialName, params);
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const renderMaterial = this.create(txn.iModel, definitionModelId, materialName, params);
+    return renderMaterial.insert(txn);
   }
 
   /** @beta */

@@ -158,7 +158,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
       const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+        spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
       withEditTxn(seedIModel, (txn) => {
         for (let i = 0; i < seedCount; ++i) {
@@ -213,7 +213,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+      spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
     const { totalTimeLink, totalTimeNav } = withEditTxn(perfimodel, (txn) => {
       let timeLink = 0.0, timeNav = 0.0;
@@ -317,7 +317,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
           // Need improvement. Currently assuming that they were added one after another so have next Id.
           const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
           const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
-          rel.deleteWithTxn(txn);
+          rel.delete(txn);
         } catch {
           assert.isTrue(false);
         }

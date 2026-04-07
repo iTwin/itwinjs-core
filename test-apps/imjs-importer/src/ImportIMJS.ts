@@ -90,8 +90,8 @@ export class ImportIMJS {
   public async importFilesFromDirectory(directoryPath: string): Promise<ModelIdGroup[]> {
     const stats = new ImportDirectoryStatus();
     withEditTxn(this.iModelDb, (txn) => {
-      this.definitionModelId = DefinitionModel.insertWithTxn(txn, IModelDb.rootSubjectId, "definition");
-      this.featureCategoryId = SpatialCategory.insertWithTxn(txn, this.definitionModelId, "testCategory", {});
+      this.definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "definition");
+      this.featureCategoryId = SpatialCategory.insert(txn, this.definitionModelId, "testCategory", {});
     });
     const modelGroups = [];
 
@@ -127,7 +127,7 @@ export class ImportIMJS {
           }
           if (range.maxAbs() < this._aroundTheWorld) {
             stats.numWithGeometry++;
-            const physicalModelId = withEditTxn(this.iModelDb, (txn) => PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, `model${fileName}`));
+            const physicalModelId = withEditTxn(this.iModelDb, (txn) => PhysicalModel.insert(txn, IModelDb.rootSubjectId, `model${fileName}`));
             const featureProps: PhysicalElementProps = {
               classFullName: PhysicalObject.classFullName,
               model: physicalModelId,
@@ -162,15 +162,15 @@ export class ImportIMJS {
   }
 
   protected insertSpatialView(txn: EditTxn, viewName: string, range: AxisAlignedBox3d, models: string[]): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insertWithTxn(txn, this.definitionModelId, viewName, models);
-    const categorySelectorId: Id64String = CategorySelector.insertWithTxn(txn, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = DisplayStyle3d.insertWithTxn(txn, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundColor: ColorDef.blue });
-    return OrthographicViewDefinition.insertWithTxn(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, this.definitionModelId, viewName, models);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, this.definitionModelId, viewName, [this.featureCategoryId]);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(txn, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundColor: ColorDef.blue });
+    return OrthographicViewDefinition.insert(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
   protected insertSpatialViewOneModel(txn: EditTxn, viewName: string, range: AxisAlignedBox3d, physicalModelId: string): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insertWithTxn(txn, this.definitionModelId, viewName, [physicalModelId]);
-    const categorySelectorId: Id64String = CategorySelector.insertWithTxn(txn, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = DisplayStyle3d.insertWithTxn(txn, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundColor: ColorDef.blue });
-    return OrthographicViewDefinition.insertWithTxn(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, this.definitionModelId, viewName, [physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, this.definitionModelId, viewName, [this.featureCategoryId]);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(txn, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundColor: ColorDef.blue });
+    return OrthographicViewDefinition.insert(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

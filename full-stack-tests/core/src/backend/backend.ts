@@ -166,7 +166,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
         await db.locks.acquireLocks({
           shared: subjectId,
         });
-        documentListModelId = DocumentListModel.insertWithTxn(txn, subjectId, documentListName);
+        documentListModelId = DocumentListModel.insert(txn, subjectId, documentListName);
       }
 
       return documentListModelId;
@@ -206,7 +206,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     }
 
     const sheetViewId = await withEditTxn(standaloneModel, "create sheet view with attachment", async (txn) => {
-      const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insertWithTxn(txn);
+      const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert(txn);
       const drawingDefinitionPartitionId = txn.insertElement({
         classFullName: DefinitionPartition.classFullName,
         model: IModel.repositoryModelId,
@@ -217,15 +217,15 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
         classFullName: DefinitionModel.classFullName,
         modeledElement: { id: drawingDefinitionPartitionId },
       });
-      const drawingCategoryId = DrawingCategory.insertWithTxn(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
+      const drawingCategoryId = DrawingCategory.insert(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
       const sheetModelId = await insertSheet(txn, "sheet-1");
 
-      const displayStyle2dId = DisplayStyle2d.insertWithTxn(txn, drawingDefinitionModelId, "DisplayStyle2d");
-      const drawingCategorySelectorId = CategorySelector.insertWithTxn(txn, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
+      const displayStyle2dId = DisplayStyle2d.insert(txn, drawingDefinitionModelId, "DisplayStyle2d");
+      const drawingCategorySelectorId = CategorySelector.insert(txn, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
       const drawingViewRange = new Range2d(0, 0, 500, 500);
       const docListModelId = await getOrCreateDocumentList(txn);
-      const drawingModelId = Drawing.insertWithTxn(txn, docListModelId, "Drawing");
-      const drawingViewId = DrawingViewDefinition.insertWithTxn(txn, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+      const drawingModelId = Drawing.insert(txn, docListModelId, "Drawing");
+      const drawingViewId = DrawingViewDefinition.insert(txn, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
 
       const newAttachmentProps: ViewAttachmentProps = {
         classFullName: "BisCore:ViewAttachment",
@@ -237,9 +237,9 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
         placement: { origin: { x: 100, y: 100 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } },
       };
 
-      standaloneModel.elements.createElement(newAttachmentProps).insertWithTxn(txn);
+      standaloneModel.elements.createElement(newAttachmentProps).insert(txn);
 
-      return SheetViewDefinition.insertWithTxn(txn, {
+      return SheetViewDefinition.insert(txn, {
         definitionModelId: drawingDefinitionModelId,
         name: "Sheet View",
         baseModelId: sheetModelId,

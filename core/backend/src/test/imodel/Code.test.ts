@@ -310,7 +310,7 @@ describe("Code Tests", () => {
 
       let newCode = new Code({ scope: "0x1", spec: "0x10", value: "UpdatedValue.dgn2" });
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement = imodel.elements.getElement(elementId);
       assert.equal(updatedElement.code.value, newCode.value);
@@ -319,7 +319,7 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "0x12", spec: "0x11", value: "UpdatedValue.dgn2" });
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement2 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement2.code.value, newCode.value);
@@ -358,7 +358,7 @@ describe("Code Tests", () => {
       assert.equal(element2.code.scope, elProps2.code.scope);
 
       element.code = element2.code;
-      withEditTxn(imodel, (txn) => { expect(() => element.updateWithTxn(txn)).to.throw("Error updating element").to.have.property("metadata"); });
+      withEditTxn(imodel, (txn) => { expect(() => element.update(txn)).to.throw("Error updating element").to.have.property("metadata"); });
     });
 
     it("should update an element code with edge case code values", () => {
@@ -379,7 +379,7 @@ describe("Code Tests", () => {
 
       let newCode = new Code({ scope: "0x1", spec: "0x10", value: "" }); // empty value
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement = imodel.elements.getElement(elementId);
       assert.equal(updatedElement.code.value, newCode.value);
@@ -388,12 +388,12 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "0x1", spec: "0x10", value: "validcodeagain" }); // reset the code
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       newCode = new Code({ scope: "0x1", spec: "0x11" }); // NULL value
       newCode.value = undefined as any;
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement2 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement2.code.value, "");
@@ -402,7 +402,7 @@ describe("Code Tests", () => {
 
       newCode = Code.createEmpty(); // Empty Code
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement3 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement3.code.value, newCode.value);
@@ -411,7 +411,7 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "0x1", spec: "0x11", value: "\xa0" }); // non-breaking space value
       element.code = newCode;
-      withEditTxn(imodel, (txn) => element.updateWithTxn(txn));
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement4 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement4.code.value, "");
@@ -437,7 +437,7 @@ describe("Code Tests", () => {
 
       let newCode = new Code({ scope: "", spec: "0x10", value: "newcode5" }); // empty scope
       element.code = newCode;
-      withEditTxn(imodel, (txn) => { expect(() => element.updateWithTxn(txn)).to.throw("Error updating element").to.have.property("metadata"); });
+      withEditTxn(imodel, (txn) => { expect(() => element.update(txn)).to.throw("Error updating element").to.have.property("metadata"); });
 
       const updatedElement = imodel.elements.getElement(elementId);
       assert.equal(updatedElement.code.value, elProps.code.value);
@@ -446,7 +446,7 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "not a real id", spec: "0x10", value: "newcode5" }); // bad id
       element.code = newCode;
-      withEditTxn(imodel, (txn) => { expect(() => element.updateWithTxn(txn)).to.throw("Error updating element").to.have.property("metadata"); });
+      withEditTxn(imodel, (txn) => { expect(() => element.update(txn)).to.throw("Error updating element").to.have.property("metadata"); });
 
       const updatedElement2 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement2.code.value, elProps.code.value);
@@ -455,3 +455,5 @@ describe("Code Tests", () => {
     });
   });
 });
+
+

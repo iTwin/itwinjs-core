@@ -274,31 +274,41 @@ export class Model extends Entity {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
-  /** Insert this Model in the iModel using the supplied transaction.
+  /**
+   * Insert this Model in the iModel using the supplied EditTxn.
    * @beta
    */
-  public insertWithTxn(txn: EditTxn) { return this.id = txn.insertModel(this.toJSON()); }
-  /** Update this Model in the iModel using the supplied transaction.
-   * @beta
+  public insert(txn: EditTxn): Id64String;
+  /**
+   * Insert this Model in the iModel.
+   * @deprecated Use Model.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
-  public updateWithTxn(txn: EditTxn) { txn.updateModel(this.toJSON()); }
-  /** Delete this Model from the iModel using the supplied transaction.
-   * @beta
-   */
-  public deleteWithTxn(txn: EditTxn) { txn.deleteModel(this.id); }
+  public insert(): Id64String;
+  public insert(txn?: EditTxn) { return this.id = (txn ?? this.iModel[_implicitTxn]).insertModel(this.toJSON()); }
 
-  /** Insert this Model in the iModel.
-   * @deprecated Use Model.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+  /**
+   * Update this Model in the iModel using the supplied EditTxn.
+   * @beta
    */
-  public insert() { return this.id = this.insertWithTxn(this.iModel[_implicitTxn]); }
-  /** Update this Model in the iModel.
-   * @deprecated Use Model.updateWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+  public update(txn: EditTxn): void;
+  /**
+   * Update this Model in the iModel.
+   * @deprecated Use Model.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
-  public update() { this.updateWithTxn(this.iModel[_implicitTxn]); }
-  /** Delete this Model from the iModel.
-   * @deprecated Use Model.deleteWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+  public update(): void;
+  public update(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).updateModel(this.toJSON()); }
+
+  /**
+   * Delete this Model from the iModel using the supplied EditTxn.
+   * @beta
    */
-  public delete() { this.deleteWithTxn(this.iModel[_implicitTxn]); }
+  public delete(txn: EditTxn): void;
+  /**
+   * Delete this Model from the iModel.
+   * @deprecated Use Model.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public delete(): void;
+  public delete(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).deleteModel(this.id); }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -459,7 +469,7 @@ export abstract class SpatialModel extends GeometricModel3d {
 export class PhysicalModel extends SpatialModel {
   public static override get className(): string { return "PhysicalModel"; }
   /** Insert a PhysicalPartition and a PhysicalModel that sub-models it using an explicit transaction.
-   * @param txn Transaction used to perform inserts.
+  * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
    * @param name The name of the PhysicalPartition that the new PhysicalModel will sub-model.
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
@@ -467,7 +477,11 @@ export class PhysicalModel extends SpatialModel {
    * @throws [[IModelError]] if there is an insert problem.
     * @beta
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  /** @deprecated Use PhysicalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const iModelDb = txn.iModel;
     const partitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
@@ -483,19 +497,6 @@ export class PhysicalModel extends SpatialModel {
     };
     return txn.insertModel(modelProps);
   }
-
-  /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
-   * @param iModelDb Insert into this iModel
-   * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
-   * @param name The name of the PhysicalPartition that the new PhysicalModel will sub-model.
-   * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
-   * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
-   * @throws [[IModelError]] if there is an insert problem.
-   * @deprecated Use PhysicalModel.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
-   */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name, isPlanProjection);
-  }
 }
 
 /** A container for persisting spatial location elements.
@@ -505,7 +506,7 @@ export class PhysicalModel extends SpatialModel {
 export class SpatialLocationModel extends SpatialModel {
   public static override get className(): string { return "SpatialLocationModel"; }
   /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it using an explicit transaction.
-   * @param txn Transaction used to perform inserts.
+   * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
    * @param name The name of the SpatialLocationPartition that the new SpatialLocationModel will sub-model.
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
@@ -513,7 +514,11 @@ export class SpatialLocationModel extends SpatialModel {
    * @throws [[IModelError]] if there is an insert problem.
     * @beta
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  /** @deprecated Use SpatialLocationModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const iModelDb = txn.iModel;
     const partitionProps: InformationPartitionElementProps = {
       classFullName: SpatialLocationPartition.classFullName,
@@ -528,13 +533,6 @@ export class SpatialLocationModel extends SpatialModel {
       isPlanProjection,
     };
     return txn.insertModel(modelProps);
-  }
-
-  /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
-   * @deprecated Use SpatialLocationModel.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
-   */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name, isPlanProjection);
   }
 }
 
@@ -590,13 +588,17 @@ export class SheetIndexModel extends InformationModel {
   public static override get className(): string { return "SheetIndexModel"; }
 
   /** Insert a [[SheetIndexPartition]] and a SheetIndexModel that sub-models it.
-   * @param txn The active editing transaction.
+  * @param txn The active EditTxn.
    * @param parentSubjectId The SheetIndexPartition will be inserted as a child of this Subject element.
    * @param name The name of the SheetIndexPartition that the new SheetIndexModel will sub-model.
    * @returns The Id of the newly inserted SheetIndexModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  /** @deprecated Use SheetIndexModel.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const partitionId = txn.insertElement({
       classFullName: SheetIndexPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -608,13 +610,6 @@ export class SheetIndexModel extends InformationModel {
       modeledElement: { id: partitionId },
     });
   }
-
-  /** Insert a [[SheetIndexPartition]] and a SheetIndexModel that sub-models it.
-   * @deprecated Use SheetIndexModel.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
-  }
 }
 
 /** A container for persisting Information Record Elements
@@ -625,14 +620,17 @@ export class InformationRecordModel extends InformationModel {
   public static override get className(): string { return "InformationRecordModel"; }
 
   /** Insert an InformationRecordPartition and an InformationRecordModel that sub-models it using an explicit transaction.
-   * @param txn Transaction used to perform inserts.
+  * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
    * @param name The name of the InformationRecordPartition that the new InformationRecordModel will sub-model.
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
     * @beta
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const partitionId = txn.insertElement({
       classFullName: InformationRecordPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -644,13 +642,6 @@ export class InformationRecordModel extends InformationModel {
       modeledElement: { id: partitionId },
     });
   }
-
-  /** Insert an InformationRecordPartition and an InformationRecordModel that sub-models it.
-   * @deprecated Use InformationRecordModel.insertWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
-   */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
-  }
 }
 
 /** A container for persisting definition elements.
@@ -661,14 +652,17 @@ export class DefinitionModel extends InformationModel {
   public static override get className(): string { return "DefinitionModel"; }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
-   * @param txn The active editing transaction.
+  * @param txn The active EditTxn.
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
    * @param name The name of the DefinitionPartition that the new DefinitionModel will sub-model.
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
     * @beta
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const partitionId = txn.insertElement({
       classFullName: DefinitionPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -679,13 +673,6 @@ export class DefinitionModel extends InformationModel {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
-  }
-
-  /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
-   * @deprecated Use DefinitionModel.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
   }
 }
 
@@ -704,14 +691,17 @@ export class DocumentListModel extends InformationModel {
   public static override get className(): string { return "DocumentListModel"; }
 
   /** Insert a [[DocumentPartition]] and a DocumentListModel that sub-models it.
-   * @param txn The active editing transaction.
+  * @param txn The active EditTxn.
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
    * @param name The name of the DocumentPartition that the new DocumentListModel will sub-model.
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
     * @beta
    */
-  public static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const partitionId = txn.insertElement({
       classFullName: DocumentPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -722,13 +712,6 @@ export class DocumentListModel extends InformationModel {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
-  }
-
-  /** Insert a [[DocumentPartition]] and a DocumentListModel that sub-models it.
-   * @deprecated Use DocumentListModel.insertWithTxn instead.
-   */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    return this.insertWithTxn(iModelDb[_implicitTxn], parentSubjectId, name);
   }
 }
 

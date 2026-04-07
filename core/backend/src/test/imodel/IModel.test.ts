@@ -413,7 +413,7 @@ describe("iModel", () => {
       patternMap: textureMapProps,
     };
 
-    const renderMaterialId = withEditTxn(imodel2, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, testMaterialName, renderMaterialParams));
+    const renderMaterialId = withEditTxn(imodel2, (txn) => RenderMaterialElement.insert(txn, IModel.dictionaryId, testMaterialName, renderMaterialParams));
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
     assert((renderMaterial instanceof RenderMaterialElement) === true, "did not retrieve an instance of RenderMaterial");
@@ -457,10 +457,10 @@ describe("iModel", () => {
     const txn = new EditTxn(imodel5, "apply material to new element");
     txn.start();
 
-    const texId = Texture.insertTextureWithTxn(txn, IModel.dictionaryId, testTextureName, testTextureFormat, samplePngTexture.base64, testTextureDescription);
+    const texId = Texture.insertTexture(txn, IModel.dictionaryId, testTextureName, testTextureFormat, samplePngTexture.base64, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const matId = RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, "test material name",
+    const matId = RenderMaterialElement.insert(txn, IModel.dictionaryId, "test material name",
       {
         paletteName: "TestPaletteName",
         patternMap: {
@@ -501,9 +501,9 @@ describe("iModel", () => {
       ]));
     }
 
-    const modelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, "test_render_material_model_name");
+    const modelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "test_render_material_model_name");
 
-    const categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white.toJSON() });
+    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white.toJSON() });
 
     /** generate a geometry stream containing the polyface */
     const gsBuilder = new GeometryStreamBuilder();
@@ -616,7 +616,7 @@ describe("iModel", () => {
     withEditTxn(imodel2, (txn) => {
       for (const test of testCases) {
         const expected = test[0] ?? {};
-        const styleId = DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, `TestStyle${suffix++}`, expected);
+        const styleId = DisplayStyle3d.insert(txn, IModel.dictionaryId, `TestStyle${suffix++}`, expected);
         const style = imodel2.elements.getElement<DisplayStyle3d>(styleId).toJSON();
         expect(style.jsonProperties.styles).not.to.be.undefined;
 
@@ -1041,14 +1041,14 @@ describe("iModel", () => {
   it("should handle parent and child deletion properly", () => {
     const txn = new EditTxn(imodel4, "handle parent and child deletion");
     txn.start();
-    const categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
+    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
     expect(() => txn.deleteElement(categoryId)).throws("error deleting element").to.have.property("metadata");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
-    const modelId = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "MyTestPhysicalModel");
+    const modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "MyTestPhysicalModel");
     const elementProps: GeometricElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
@@ -1393,29 +1393,29 @@ describe("iModel", () => {
     const txn = new EditTxn(testImodel, "create and insert CodeSpecs");
     txn.start();
     const codeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId = testImodel.codeSpecs.insertWithTxn(txn, codeSpec); // throws in case of error
+    const codeSpecId = testImodel.codeSpecs.insert(txn, codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    assert.throws(() => testImodel.codeSpecs.insertWithTxn(txn, codeSpecDup), "CodeSpec already exists");
+    assert.throws(() => testImodel.codeSpecs.insert(txn, codeSpecDup), "CodeSpec already exists");
 
     // We should be able to insert another CodeSpec with a different name.
     const codeSpec2 = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2Id = testImodel.codeSpecs.insertWithTxn(txn, codeSpec2); // throws in case of error
+    const codeSpec2Id = testImodel.codeSpecs.insert(txn, codeSpec2); // throws in case of error
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
 
     // make sure CodeScopeSpec.Type.Repository works
     const codeSpec3 = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec3Id = testImodel.codeSpecs.insertWithTxn(txn, codeSpec3); // throws in case of error
+    const codeSpec3Id = testImodel.codeSpecs.insert(txn, codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
     const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
-    const codeSpec4Id = testImodel.codeSpecs.insertWithTxn(txn, codeSpec4); // throws in case of error
+    const codeSpec4Id = testImodel.codeSpecs.insert(txn, codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
@@ -1444,7 +1444,7 @@ describe("iModel", () => {
     if (true) {
       const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
       const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      const codeSpecId = withEditTxn(iModelDb, (txn) => iModelDb.codeSpecs.insertWithTxn(txn, codeSpec));
+      const codeSpecId = withEditTxn(iModelDb, (txn) => iModelDb.codeSpecs.insert(txn, codeSpec));
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
@@ -1554,10 +1554,10 @@ describe("iModel", () => {
     const txn = new EditTxn(testImodel, "link table relationship instances");
     txn.start();
     // Create a new physical model
-    const newModelId = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "TestModel");
+    const newModelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestModel");
 
     // create a SpatialCategory
-    const spatialCategoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    const spatialCategoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
     // Create a couple of physical elements.
     const elementProps: GeometricElementProps = {
@@ -1624,16 +1624,16 @@ describe("iModel", () => {
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSets" }, createClassViews: true });
     const txn = new EditTxn(iModelDb, "definition sets");
     txn.start();
-    const definitionContainerId = DefinitionContainer.insertWithTxn(txn, IModel.dictionaryId, Code.createEmpty());
+    const definitionContainerId = DefinitionContainer.insert(txn, IModel.dictionaryId, Code.createEmpty());
     assert.exists(iModelDb.elements.getElement<DefinitionContainer>(definitionContainerId));
     assert.exists(iModelDb.models.getModel<DefinitionModel>(definitionContainerId));
-    const categoryId1 = SpatialCategory.insertWithTxn(txn, definitionContainerId, "Category1", new SubCategoryAppearance());
-    const categoryId2 = SpatialCategory.insertWithTxn(txn, definitionContainerId, "Category2", new SubCategoryAppearance());
-    const categoryId3 = SpatialCategory.insertWithTxn(txn, definitionContainerId, "Category3", new SubCategoryAppearance());
-    const definitionGroupId = DefinitionGroup.create(iModelDb, definitionContainerId, Code.createEmpty()).insertWithTxn(txn);
-    DefinitionGroupGroupsDefinitions.insertWithTxn(txn, definitionGroupId, categoryId1);
-    DefinitionGroupGroupsDefinitions.insertWithTxn(txn, definitionGroupId, categoryId2);
-    DefinitionGroupGroupsDefinitions.insertWithTxn(txn, definitionGroupId, categoryId3);
+    const categoryId1 = SpatialCategory.insert(txn, definitionContainerId, "Category1", new SubCategoryAppearance());
+    const categoryId2 = SpatialCategory.insert(txn, definitionContainerId, "Category2", new SubCategoryAppearance());
+    const categoryId3 = SpatialCategory.insert(txn, definitionContainerId, "Category3", new SubCategoryAppearance());
+    const definitionGroupId = DefinitionGroup.create(iModelDb, definitionContainerId, Code.createEmpty()).insert(txn);
+    DefinitionGroupGroupsDefinitions.insert(txn, definitionGroupId, categoryId1);
+    DefinitionGroupGroupsDefinitions.insert(txn, definitionGroupId, categoryId2);
+    DefinitionGroupGroupsDefinitions.insert(txn, definitionGroupId, categoryId3);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const numMembers = iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${DefinitionGroupGroupsDefinitions.classFullName}`, (statement: ECSqlStatement): number => {
       return statement.step() === DbResult.BE_SQLITE_ROW ? statement.getValue(0).getInteger() : 0;
@@ -1656,7 +1656,7 @@ describe("iModel", () => {
     // Find or create a SpatialCategory
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory")!;
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
+      spatialCategoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";
@@ -2857,10 +2857,10 @@ describe("iModel", () => {
     let element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
     assert.isTrue(Code.isEmpty(element.code));
-    const codeSpecId = imodel4.codeSpecs.insertWithTxn(txn, "TestCodeSpec", CodeScopeSpec.Type.Model);
+    const codeSpecId = imodel4.codeSpecs.insert(txn, "TestCodeSpec", CodeScopeSpec.Type.Model);
     const codeValue = `${element.className}-1`;
     element.code = new Code({ spec: codeSpecId, scope: IModel.repositoryModelId, value: codeValue });
-    element.updateWithTxn(txn);
+    element.update(txn);
     txn.end();
     element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
@@ -2888,7 +2888,7 @@ describe("iModel", () => {
 
     // update element with a defined userLabel
     element.userLabel = "UserLabel";
-    element.updateWithTxn(txn);
+    element.update(txn);
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel");
 
@@ -2915,7 +2915,7 @@ describe("iModel", () => {
 
     // remove userlabel by setting it to the blank string
     element.userLabel = "";
-    element.updateWithTxn(txn);
+    element.update(txn);
     txn.end();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.userLabel); // NOTE: userLabel is cleared when the empty string is specified
@@ -2940,7 +2940,7 @@ describe("iModel", () => {
     const federationGuid = Guid.createValue();
     element.federationGuid = federationGuid;
     element.isPrivate = true;
-    element.updateWithTxn(txn);
+    element.update(txn);
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.federationGuid, federationGuid);
     assert.isTrue(element.isPrivate);
@@ -2965,10 +2965,10 @@ describe("iModel", () => {
 
     // ensure that update doesn't change federationGuid from an element immediately after insert (toJSON should remove undefined value)
     const subject5 = Subject.create(imodel1, IModel.rootSubjectId, "Subject5");
-    const s5Id = subject5.insertWithTxn(txn);
+    const s5Id = subject5.insert(txn);
     const s5pre = imodel1.elements.getElement<Subject>(s5Id);
     subject5.description = "new descr";
-    subject5.updateWithTxn(txn);
+    subject5.update(txn);
     txn.end();
     const s5post = imodel1.elements.getElement<Subject>(s5Id);
     expect(s5pre.federationGuid).equal(s5post.federationGuid);
@@ -2993,10 +2993,10 @@ describe("iModel", () => {
     subject2.federationGuid = federationGuid2;
     subject3.federationGuid = "";
     subject4.federationGuid = Guid.empty;
-    const subjectId1 = subject1.insertWithTxn(txn);
-    const subjectId2 = subject2.insertWithTxn(txn);
-    const subjectId3 = subject3.insertWithTxn(txn);
-    const subjectId4 = subject4.insertWithTxn(txn);
+    const subjectId1 = subject1.insert(txn);
+    const subjectId2 = subject2.insert(txn);
+    const subjectId3 = subject3.insert(txn);
+    const subjectId4 = subject4.insert(txn);
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
@@ -3053,10 +3053,10 @@ describe("iModel", () => {
     subject2.userLabel = "";
     subject3.userLabel = "UserLabel3";
     subject4.userLabel = "UserLabel4";
-    subject1.updateWithTxn(txn);
-    subject2.updateWithTxn(txn);
-    subject3.updateWithTxn(txn);
-    subject4.updateWithTxn(txn);
+    subject1.update(txn);
+    subject2.update(txn);
+    subject3.update(txn);
+    subject4.update(txn);
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
@@ -3190,10 +3190,10 @@ describe("iModel", () => {
     const txn = new EditTxn(imodel, "insert duplicate relationship instance");
     txn.start();
     // Create a new physical model
-    const newModelId = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "TestModel");
+    const newModelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestModel");
 
     // create a SpatialCategory
-    const spatialCategoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    const spatialCategoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
     // Create a couple of physical elements.
     const elementProps: GeometricElementProps = {
@@ -3319,8 +3319,7 @@ describe("iModel", () => {
     setupTxn.start();
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(setupTxn, Code.createEmpty(), true);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory")
-      ?? SpatialCategory.insertWithTxn(
-        setupTxn,
+      ?? SpatialCategory.insert(setupTxn,
         IModel.dictionaryId,
         "MySpatialCategory",
         new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })
@@ -3424,8 +3423,8 @@ describe("iModel", () => {
     categoryB.userLabel = "B";
     const txn = new EditTxn(imodelDb, "change codeValues");
     txn.start();
-    categoryA.insertWithTxn(txn);
-    categoryB.insertWithTxn(txn);
+    categoryA.insert(txn);
+    categoryB.insert(txn);
     txn.saveChanges();
 
     categoryA = imodelDb.elements.getElement(
@@ -3435,11 +3434,11 @@ describe("iModel", () => {
       SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
     );
     categoryA.code.value = "temp";
-    categoryA.updateWithTxn(txn);
+    categoryA.update(txn);
     categoryB.code.value = "A";
-    categoryB.updateWithTxn(txn);
+    categoryB.update(txn);
     categoryA.code.value = "B";
-    categoryA.updateWithTxn(txn);
+    categoryA.update(txn);
     txn.end();
 
     categoryA = imodelDb.elements.getElement(
@@ -3501,7 +3500,7 @@ describe("iModel", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
       if (!spatialCategoryId) {
-        spatialCategoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
+        spatialCategoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
       }
 
       const relationships: RelationshipProps[] = [];
@@ -3642,3 +3641,7 @@ describe("IModelDb.requireMinimumSchemaVersion", () => {
     test(new ECVersion(bisVer.read + 1, bisVer.write + 1, bisVer.minor), true);
   });
 });
+
+
+
+

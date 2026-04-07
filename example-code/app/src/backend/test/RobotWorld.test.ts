@@ -36,7 +36,7 @@ describe("RobotWorld", () => {
     assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");
 
     withEditTxn(iModel, "robot world test", (txn) => {
-      const modelId: Id64String = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "RobotWorld");
+      const modelId: Id64String = PhysicalModel.insert(txn, IModel.rootSubjectId, "RobotWorld");
       const barrier1Props: GeometricElementProps & { length: number } = {
         model: modelId,
         code: Code.createEmpty(),

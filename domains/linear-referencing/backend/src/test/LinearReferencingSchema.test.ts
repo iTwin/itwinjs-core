@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "node:path";
 import {
-  ClassRegistry, type EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  ClassRegistry, EditTxn, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements, withEditTxn,
 } from "@itwin/core-backend";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -52,17 +52,23 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
     return LinearlyLocated.getFromToLocation(this.iModel, this.id);
   }
 
-  public updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {
-    withEditTxn(this.iModel, (txn) => this.updateFromToLocationWithTxn(txn, linearLocation, aspectId));
+  /** @deprecated Use updateFromToLocation(txn, ...) instead. */
+  public updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
+
+  public updateFromToLocation(txn: EditTxn, linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
+  public updateFromToLocation(txnOrLinearLocation: EditTxn | LinearlyReferencedFromToLocationProps, linearLocationOrAspectId?: LinearlyReferencedFromToLocationProps | Id64String, aspectId?: Id64String): void {
+    if (txnOrLinearLocation instanceof EditTxn) {
+      LinearlyLocated.updateFromToLocation(txnOrLinearLocation, this.id, linearLocationOrAspectId as LinearlyReferencedFromToLocationProps, aspectId);
+      return;
+    }
+    withEditTxn(this.iModel, (txn) =>
+      LinearlyLocated.updateFromToLocation(txn, this.id, txnOrLinearLocation, linearLocationOrAspectId as Id64String | undefined),
+    );
   }
 
-  public updateFromToLocationWithTxn(txn: EditTxn, linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void {
-    LinearlyLocated.updateFromToLocationWithTxn(txn, this.id, linearLocation, aspectId);
-  }
-
-  public static insertFromToWithTxn(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
+  public static insertFromTo(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, attributedElementId: Id64String): Id64String {
-    return LinearlyLocated.insertFromToWithTxn(txn, this.toProps(modelId, categoryId, attributedElementId), linearElementId, fromToPosition);
+    return LinearlyLocated.insertFromTo(txn, this.toProps(modelId, categoryId, attributedElementId), linearElementId, fromToPosition);
   }
 }
 
@@ -153,7 +159,7 @@ describe("LinearReferencing Domain", () => {
       toPosition: { distanceAlongFromStart: 70.0 },
     };
 
-    const linearlyLocatedAttributionId = withEditTxn(iModelDb, (txn) => TestLinearlyLocatedAttribution.insertFromToWithTxn(
+    const linearlyLocatedAttributionId = withEditTxn(iModelDb, (txn) => TestLinearlyLocatedAttribution.insertFromTo(
       txn, physicalModelId, spatialCategoryId, linearElementId, linearFromToPosition, linearFeatureElementId));
     assert.isTrue(Id64.isValidId64(linearlyLocatedAttributionId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearlyLocatedAttributionId));
@@ -175,7 +181,7 @@ describe("LinearReferencing Domain", () => {
     linearFromToPosition.fromPosition.distanceAlongFromStart = 10.0;
     linearFromToPosition.fromPosition.lateralOffsetFromILinearElement = 5.0;
     linearFromToPosition.fromPosition.verticalOffsetFromILinearElement = 15.0;
-    withEditTxn(iModelDb, (txn) => linearlyLocatedAttribution.updateFromToLocationWithTxn(txn, linearFromToPosition, linearLocationAspect!.id));
+    withEditTxn(iModelDb, (txn) => linearlyLocatedAttribution.updateFromToLocation(txn, linearFromToPosition, linearLocationAspect!.id));
 
     linearLocationAspect = linearlyLocatedAttribution.getFromToLocation();
     assert.equal(linearLocationAspect!.fromPosition.distanceAlongFromStart, 10.0);
@@ -197,7 +203,7 @@ describe("LinearReferencing Domain", () => {
     };
 
     const linearPhysicalElementId: Id64String = withEditTxn(iModelDb, (txn) =>
-      LinearlyLocated.insertFromToWithTxn(txn, testPhysicalLinearProps, linearElementId, linearFromToPosition));
+      LinearlyLocated.insertFromTo(txn, testPhysicalLinearProps, linearElementId, linearFromToPosition));
     assert.isTrue(Id64.isValidId64(linearPhysicalElementId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearPhysicalElementId));
 

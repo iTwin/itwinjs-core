@@ -137,26 +137,26 @@ describe("ElementTreeWalker", () => {
 
     withEditTxn(iModel, (txn) => {
       repositoryLinkId = IModelTestUtils.insertRepositoryLink(txn, "test link", "foo", "bar");
-      jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "Job").insertWithTxn(txn);
+      jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "Job").insert(txn);
 
-      childSubject = Subject.insertWithTxn(txn, jobSubjectId, "Child Subject");
+      childSubject = Subject.insert(txn, jobSubjectId, "Child Subject");
 
-      definitionModelId = DefinitionModel.insertWithTxn(txn, jobSubjectId, "Definition");
-      spatialCategoryId = SpatialCategory.insertWithTxn(txn, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-      drawingDefinitionModelId = DefinitionModel.insertWithTxn(txn, jobSubjectId, "DrawingDefinition");
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-      drawingSubCategory1Id = SubCategory.insertWithTxn(txn, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
-      drawingSubCategory2Id = SubCategory.insertWithTxn(txn, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
+      definitionModelId = DefinitionModel.insert(txn, jobSubjectId, "Definition");
+      spatialCategoryId = SpatialCategory.insert(txn, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+      drawingDefinitionModelId = DefinitionModel.insert(txn, jobSubjectId, "DrawingDefinition");
+      drawingCategoryId = DrawingCategory.insert(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
+      drawingSubCategory1Id = SubCategory.insert(txn, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
+      drawingSubCategory2Id = SubCategory.insert(txn, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
 
-      definitionContainerId = DefinitionContainer.insertWithTxn(txn, definitionModelId, Code.createEmpty());
-      nestedSpatialCategoryId = SpatialCategory.insertWithTxn(txn, definitionContainerId, "nested", {});
+      definitionContainerId = DefinitionContainer.insert(txn, definitionModelId, Code.createEmpty());
+      nestedSpatialCategoryId = SpatialCategory.insert(txn, definitionContainerId, "nested", {});
 
       xsGroup = txn.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
       xsElement = txn.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
 
-      documentListModelId = DocumentListModel.insertWithTxn(txn, jobSubjectId, "Document");
+      documentListModelId = DocumentListModel.insert(txn, jobSubjectId, "Document");
       assert.isTrue(Id64.isValidId64(documentListModelId));
-      drawingModelId = Drawing.insertWithTxn(txn, documentListModelId, "Drawing");
+      drawingModelId = Drawing.insert(txn, documentListModelId, "Drawing");
       const drawingGraphicProps1: GeometricElement2dProps = {
         classFullName: DrawingGraphic.classFullName,
         model: drawingModelId,
@@ -425,3 +425,6 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));
   });
 });
+
+
+

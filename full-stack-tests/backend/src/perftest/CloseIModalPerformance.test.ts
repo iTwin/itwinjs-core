@@ -110,7 +110,7 @@ describe("CloseIModalTest", () => {
       categoryName,
     );
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withEditTxn(rootImodel, (txn) => SpatialCategory.insertWithTxn(
+      spatialCategoryId = withEditTxn(rootImodel, (txn) => SpatialCategory.insert(
         txn,
         IModel.dictionaryId,
         categoryName,

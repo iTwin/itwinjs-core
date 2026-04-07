@@ -24,7 +24,7 @@ describe("DisplayStyle", () => {
       function roundTrip(sky: SkyBoxProps): void {
         const props = { environment: { sky } };
         const name = Guid.createValue();
-        const id = DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, name, props);
+        const id = DisplayStyle3d.insert(txn, IModel.dictionaryId, name, props);
         expect(id).not.to.equal("0");
 
         const style = localDb.elements.getElement<DisplayStyle3d>(id);
@@ -104,7 +104,7 @@ describe("DisplayStyle", () => {
           ],
         },
       };
-      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, Guid.createValue(), displayStyleJsonProps));
+      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insert(txn, IModel.dictionaryId, Guid.createValue(), displayStyleJsonProps));
 
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
@@ -119,7 +119,7 @@ describe("DisplayStyle", () => {
     it("remaps excludedElements when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
       const displayStyleJsonProps: DisplayStyleSettingsProps = { excludedElements: ["0x1", "0x2", "0x3", "0x4"] };
-      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, Guid.createValue(), displayStyleJsonProps));
+      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insert(txn, IModel.dictionaryId, Guid.createValue(), displayStyleJsonProps));
 
       cloneContext.remapElement("0x1", "0xa");
       cloneContext.remapElement("0x3", "0xc");
@@ -133,11 +133,11 @@ describe("DisplayStyle", () => {
 
     it("remaps subCategory overrides when cloning", async () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
-      const categoryId = withEditTxn(db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "testCat", {}));
-      const subCategoryId1 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC1", {}));
-      const subCategoryId2 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC2", {}));
-      const subCategoryId3 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC3", {}));
-      const subCategoryId4 = withEditTxn(db, (txn) => SubCategory.insertWithTxn(txn, categoryId, "subC4", {}));
+      const categoryId = withEditTxn(db, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "testCat", {}));
+      const subCategoryId1 = withEditTxn(db, (txn) => SubCategory.insert(txn, categoryId, "subC1", {}));
+      const subCategoryId2 = withEditTxn(db, (txn) => SubCategory.insert(txn, categoryId, "subC2", {}));
+      const subCategoryId3 = withEditTxn(db, (txn) => SubCategory.insert(txn, categoryId, "subC3", {}));
+      const subCategoryId4 = withEditTxn(db, (txn) => SubCategory.insert(txn, categoryId, "subC4", {}));
       const displayStyleJsonProps: DisplayStyleSettingsProps = {
         subCategoryOvr: [
           { subCategory: subCategoryId1, weight: 5 },
@@ -146,7 +146,7 @@ describe("DisplayStyle", () => {
           { subCategory: subCategoryId4, invisible: true },
         ]
       };
-      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insertWithTxn(txn, IModel.dictionaryId, Guid.createValue(), displayStyleJsonProps));
+      const displayStyleId = withEditTxn(db, (txn) => DisplayStyle3d.insert(txn, IModel.dictionaryId, Guid.createValue(), displayStyleJsonProps));
 
       cloneContext.remapElement(subCategoryId1, "0xa");
       cloneContext.remapElement(subCategoryId4, "0xd");

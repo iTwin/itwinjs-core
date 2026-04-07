@@ -335,7 +335,7 @@ export class RulesetEmbedder {
 
     if (!this._imodel.codeSpecs.hasName(PresentationRules.CodeSpec.Ruleset)) {
       // insert CodeSpec for ruleset elements
-      withEditTxn(this._imodel, (txn) => this._imodel.codeSpecs.insertWithTxn(txn, CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model)));
+      withEditTxn(this._imodel, (txn) => this._imodel.codeSpecs.insert(txn, CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model)));
     }
   }
 
@@ -345,7 +345,7 @@ export class RulesetEmbedder {
       /* c8 ignore next */
       await callbacks?.onBeforeInsert(element);
       try {
-        return this._imodel.elements.getElement(element.insertWithTxn(txn));
+        return this._imodel.elements.getElement(element.insert(txn));
       } finally {
         /* c8 ignore next */
         await callbacks?.onAfterInsert(element);
@@ -359,7 +359,7 @@ export class RulesetEmbedder {
       /* c8 ignore next */
       await callbacks?.onBeforeInsert(model);
       try {
-        model.id = model.insertWithTxn(txn);
+        model.id = model.insert(txn);
         return model;
       } finally {
         /* c8 ignore next */
@@ -373,7 +373,7 @@ export class RulesetEmbedder {
       /* c8 ignore next */
       await callbacks?.onBeforeUpdate(element);
       try {
-        element.updateWithTxn(txn);
+        element.update(txn);
       } finally {
         /* c8 ignore next */
         await callbacks?.onAfterUpdate(element);

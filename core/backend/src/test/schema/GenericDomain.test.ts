@@ -43,7 +43,7 @@ describe("Generic Domain", () => {
 
     withEditTxn(iModelDb, (txn) => {
       // Create and populate a DefinitionModel
-      const definitionModelId: Id64String = DefinitionModel.insertWithTxn(txn, IModel.rootSubjectId, "Test DefinitionModel");
+      const definitionModelId: Id64String = DefinitionModel.insert(txn, IModel.rootSubjectId, "Test DefinitionModel");
       assert.isTrue(Id64.isValidId64(definitionModelId));
 
       // Insert a SpatialCategory
@@ -87,7 +87,7 @@ describe("Generic Domain", () => {
       assert.isTrue(Id64.isValidId64(physicalTypeId));
 
       // Create and populate a PhysicalModel
-      const physicalModelId: Id64String = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "Test PhysicalModel");
+      const physicalModelId: Id64String = PhysicalModel.insert(txn, IModel.rootSubjectId, "Test PhysicalModel");
       assert.isTrue(Id64.isValidId64(physicalModelId));
 
       for (let i = 0; i < 3; i++) {
@@ -157,7 +157,7 @@ describe("Generic Domain", () => {
       assert.equal(5, count(iModelDb, Graphic3d.classFullName));
 
       // Create and populate a DocumentListModel
-      const documentListModelId: Id64String = DocumentListModel.insertWithTxn(txn, IModel.rootSubjectId, "Test DocumentListModel");
+      const documentListModelId: Id64String = DocumentListModel.insert(txn, IModel.rootSubjectId, "Test DocumentListModel");
       assert.isTrue(Id64.isValidId64(documentListModelId));
 
       for (let i = 0; i < 2; i++) {

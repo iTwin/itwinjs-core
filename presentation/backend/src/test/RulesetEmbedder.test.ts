@@ -34,22 +34,22 @@ describe("RulesetEmbedder", () => {
 
   // elements/models
   const rootSubjectMock = {
-    insertWithTxn: sandbox.stub().returns(rootSubjectId),
+    insert: sandbox.stub().returns(rootSubjectId),
     id: rootSubjectId,
     model: modelId,
   };
   const presentationRulesSubjectMock = {
-    insertWithTxn: sandbox.stub().returns(presentationRulesSubjectId),
+    insert: sandbox.stub().returns(presentationRulesSubjectId),
     id: presentationRulesSubjectId,
     model: modelId,
   };
   const definitionPartitionMock = {
-    insertWithTxn: sandbox.stub().returns(definitionPartitionId),
+    insert: sandbox.stub().returns(definitionPartitionId),
     id: definitionPartitionId,
     model: modelId,
   };
   const rulesetModelMock = {
-    insertWithTxn: sandbox.stub().returns(modelId),
+    insert: sandbox.stub().returns(modelId),
     id: modelId,
     model: modelId,
   };
@@ -76,10 +76,10 @@ describe("RulesetEmbedder", () => {
     imodelMock = stubIModel();
     imodel = imodelMock as unknown as IModelDb;
 
-    rootSubjectMock.insertWithTxn.returns(rootSubjectId);
-    presentationRulesSubjectMock.insertWithTxn.returns(presentationRulesSubjectId);
-    definitionPartitionMock.insertWithTxn.returns(definitionPartitionId);
-    rulesetModelMock.insertWithTxn.returns(modelId);
+    rootSubjectMock.insert.returns(rootSubjectId);
+    presentationRulesSubjectMock.insert.returns(presentationRulesSubjectId);
+    definitionPartitionMock.insert.returns(definitionPartitionId);
+    rulesetModelMock.insert.returns(modelId);
 
     rulesetCodeSpec.iModel = imodel;
     subjectCodeSpec.iModel = imodel;
@@ -107,7 +107,7 @@ describe("RulesetEmbedder", () => {
       codeSpecs: {
         getByName: sandbox.stub(),
         hasName: sandbox.stub().returns(false),
-        insertWithTxn: sandbox.stub().returns(""),
+        insert: sandbox.stub().returns(""),
       },
       elements: {
         createElement: sandbox.stub(),
@@ -138,7 +138,7 @@ describe("RulesetEmbedder", () => {
   }
 
   function setupMocksForHandlingPrerequisites() {
-    imodelMock.codeSpecs.insertWithTxn.returns("0x2025");
+    imodelMock.codeSpecs.insert.returns("0x2025");
   }
 
   function setupMocksForGettingRulesetModel() {
@@ -207,7 +207,7 @@ describe("RulesetEmbedder", () => {
   function setupMocksForInsertingNewRuleset(ruleset: Ruleset, rulesetElementId: string) {
     const definitionElementMock = {
       id: rulesetElementId,
-      insertWithTxn: sandbox.stub().returns(rulesetElementId),
+      insert: sandbox.stub().returns(rulesetElementId),
     };
     imodelMock.elements.createElement
       .withArgs({
@@ -233,8 +233,8 @@ describe("RulesetEmbedder", () => {
 
       await embedder.insertRuleset(ruleset);
 
-      expect(imodelMock.codeSpecs.insertWithTxn).to.be.calledOnce;
-      expect(rulesetModelMock.insertWithTxn).to.be.calledOnce;
+      expect(imodelMock.codeSpecs.insert).to.be.calledOnce;
+      expect(rulesetModelMock.insert).to.be.calledOnce;
       expect(imodelMock.importSchemas).to.be.calledOnce;
     });
 
@@ -246,7 +246,7 @@ describe("RulesetEmbedder", () => {
       imodelMock.containsClass.withArgs(RulesetElements.Ruleset.classFullName).returns(true);
       // mock that ruleset CodeSpec is not present
       imodelMock.codeSpecs.hasName.withArgs(PresentationRules.CodeSpec.Ruleset).returns(false);
-      imodelMock.codeSpecs.insertWithTxn.returns("0x2025");
+      imodelMock.codeSpecs.insert.returns("0x2025");
 
       setupMocksForCreatingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", []);
@@ -254,8 +254,8 @@ describe("RulesetEmbedder", () => {
 
       await embedder.insertRuleset(ruleset);
 
-      expect(imodelMock.codeSpecs.insertWithTxn).to.be.calledOnce;
-      expect(rulesetModelMock.insertWithTxn).to.be.calledOnce;
+      expect(imodelMock.codeSpecs.insert).to.be.calledOnce;
+      expect(rulesetModelMock.insert).to.be.calledOnce;
       expect(imodelMock.importSchemas).to.not.have.been.called;
     });
 
@@ -452,12 +452,12 @@ describe("RulesetEmbedder", () => {
         },
       ]);
 
-      const rulesetElementMock = { id: rulesetElementId, update: sandbox.stub(), updateWithTxn: sandbox.stub(), jsonProperties: {} };
+      const rulesetElementMock = { id: rulesetElementId, update: sandbox.stub(), jsonProperties: {} };
       imodelMock.elements.tryGetElement.withArgs(rulesetElementId).returns(rulesetElementMock);
 
       const insertId = await embedder.insertRuleset(ruleset, { skip: "never", replaceVersions: "exact", onEntityUpdate });
       expect(insertId).to.eq(rulesetElementId);
-      expect(rulesetElementMock.updateWithTxn).to.be.calledOnce;
+      expect(rulesetElementMock.update).to.be.calledOnce;
       expect(onEntityUpdate.onBeforeUpdate).to.have.been.calledOnce;
       expect(onEntityUpdate.onAfterUpdate).to.have.been.calledOnce;
     });

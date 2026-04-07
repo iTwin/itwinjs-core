@@ -35,7 +35,7 @@ async function getDrawingProductionListModel(db: BriefcaseDb, txn: EditTxn): Pro
     // Doesn't exist yet - create it.
     const rootSubjectId = db.elements.getRootSubject().id;
     await db.locks.acquireLocks({ shared: [rootSubjectId] });
-    documentListModelId = DocumentListModel.insertWithTxn(txn, rootSubjectId, documentListName);
+    documentListModelId = DocumentListModel.insert(txn, rootSubjectId, documentListName);
   } else {
     await db.locks.acquireLocks({ shared: [documentListModelId] });
   }
@@ -87,8 +87,8 @@ async function insertSectionDrawing(txn: EditTxn, db: BriefcaseDb, spatialViewId
 /** Insert the spatial view and its related model+category selectors and display style. */
 function insertSpatialView(txn: EditTxn, db: BriefcaseDb, args: Pick<CreateSectionDrawingViewArgs, "baseName" | "spatialView" | "models" | "categories" | "displayStyle">): Id64String {
   const dictionary = BriefcaseDb.dictionaryId;
-  const modelSelectorId = ModelSelector.insertWithTxn(txn, dictionary, args.baseName, args.models);
-  const categorySelectorId = CategorySelector.insertWithTxn(txn, dictionary, args.baseName, args.categories);
+  const modelSelectorId = ModelSelector.insert(txn, dictionary, args.baseName, args.models);
+  const categorySelectorId = CategorySelector.insert(txn, dictionary, args.baseName, args.categories);
 
   const styleProps: DisplayStyle3dProps = {
     ...args.displayStyle,

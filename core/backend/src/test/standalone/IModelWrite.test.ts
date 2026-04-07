@@ -43,7 +43,7 @@ export async function createNewModelAndCategory(txn: EditTxn, parent?: Id64Strin
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
   const spatialCategoryId = txn.insertElement(category.toJSON());
-  category.setDefaultAppearanceWithTxn(txn, new SubCategoryAppearance({ color: 0xff0000 }));
+  category.setDefaultAppearance(txn, new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
   return { modelId, spatialCategoryId };
@@ -463,7 +463,7 @@ describe("IModelWriteTest", () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwTxn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(rwTxn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(rwTxn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     const insertElements = (txn: EditTxn, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
       for (let m = 0; m < noOfElements; ++m) {
@@ -608,7 +608,7 @@ describe("IModelWriteTest", () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwTxn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(rwTxn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(rwTxn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     const insertElements = (txn: EditTxn, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
       for (let m = 0; m < noOfElements; ++m) {
@@ -930,8 +930,8 @@ describe("IModelWriteTest", () => {
   */
 
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
-    const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insertWithTxn(iModelTxn);
-    const definitionModelId = DefinitionModel.insertWithTxn(iModelTxn, jobSubjectId, "Definition");
+    const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insert(iModelTxn);
+    const definitionModelId = DefinitionModel.insert(iModelTxn, jobSubjectId, "Definition");
 
     iModelTxn.end();
     const locks = iModel.locks;
@@ -955,8 +955,8 @@ describe("IModelWriteTest", () => {
     iModel.locks.checkSharedLock(definitionModelId, "", "");
     iModel.locks.checkExclusiveLock(definitionModelId, "", "");
 
-    const spatialCategoryId = SpatialCategory.insertWithTxn(iModelTxn, definitionModelId, "SpatialCategory", new SubCategoryAppearance()); // throws if we get locking error
-    const drawingCategoryId = DrawingCategory.insertWithTxn(iModelTxn, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    const spatialCategoryId = SpatialCategory.insert(iModelTxn, definitionModelId, "SpatialCategory", new SubCategoryAppearance()); // throws if we get locking error
+    const drawingCategoryId = DrawingCategory.insert(iModelTxn, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
 
     assert.isTrue(iModel.elements.getElement(spatialCategoryId).model === definitionModelId);
     assert.isTrue(iModel.elements.getElement(drawingCategoryId).model === definitionModelId);
@@ -982,11 +982,11 @@ describe("IModelWriteTest", () => {
     iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
     iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
 
-    const childSubjectId = Subject.insertWithTxn(iModelTxn, jobSubjectId, "Child Subject");
+    const childSubjectId = Subject.insert(iModelTxn, jobSubjectId, "Child Subject");
 
-    const documentListModelId = DocumentListModel.insertWithTxn(iModelTxn, childSubjectId, "Document"); // creates DocumentList and DocumentListModel
+    const documentListModelId = DocumentListModel.insert(iModelTxn, childSubjectId, "Document"); // creates DocumentList and DocumentListModel
     assert.isTrue(Id64.isValidId64(documentListModelId));
-    const drawingModelId = Drawing.insertWithTxn(iModelTxn, documentListModelId, "Drawing"); // creates Drawing and DrawingModel
+    const drawingModelId = Drawing.insert(iModelTxn, documentListModelId, "Drawing"); // creates Drawing and DrawingModel
 
     assert.isTrue(iModel.elements.getElement(childSubjectId).parent?.id === jobSubjectId);
     assert.isTrue(iModel.elements.getElement(childSubjectId).model === IModel.repositoryModelId);
@@ -1059,3 +1059,6 @@ describe("IModelWriteTest", () => {
   });
 
 });
+
+
+

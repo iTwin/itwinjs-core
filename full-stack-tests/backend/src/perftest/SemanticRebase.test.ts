@@ -100,7 +100,7 @@ class TestIModel {
     const modelCode = IModelTestUtils.getUniqueModelCode(far, "DrawingModel");
     await far.locks.acquireLocks({ shared: IModel.dictionaryId });
     const [, drawingModelId] = withEditTxn(far, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode));
-    const drawingCategoryId = withEditTxn(far, (txn) => DrawingCategory.insertWithTxn(
+    const drawingCategoryId = withEditTxn(far, (txn) => DrawingCategory.insert(
       txn,
       IModel.dictionaryId,
       "DrawingCategory",

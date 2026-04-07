@@ -38,7 +38,7 @@ export class PerfTestDataMgr {
       this.modelId = withEditTxn(this.db, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === this.catId) {
-        this.catId = withEditTxn(this.db, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+        this.catId = withEditTxn(this.db, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
       }
       this.db[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     }

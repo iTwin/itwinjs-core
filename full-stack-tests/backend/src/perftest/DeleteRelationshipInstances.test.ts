@@ -46,7 +46,7 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
     // Create spatial category
     let categoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "TestCategory");
     if (undefined === categoryId) {
-      categoryId = withEditTxn(iModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
+      categoryId = withEditTxn(iModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
     }
 
     // Create relationships

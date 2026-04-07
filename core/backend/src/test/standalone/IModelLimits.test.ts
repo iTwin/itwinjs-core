@@ -74,7 +74,7 @@ describe("imodel limits", function (this: Suite) {
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     withEditTxn(b1, (txn) => {
-      ctx.spatialCategoryId = SpatialCategory.insertWithTxn(
+      ctx.spatialCategoryId = SpatialCategory.insert(
         txn,
         dictionary.id,
         newCategoryCode.value,

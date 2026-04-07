@@ -66,8 +66,8 @@ export class RobotWorld extends Schema {
 
   public static bootStrapDefinitions(iModelDb: IModelDb) {
     withEditTxn(iModelDb, "bootstrap robot world definitions", (txn) => {
-      SpatialCategory.insertWithTxn(txn, IModelDb.dictionaryId, _schemaNames.Class.Robot, new SubCategoryAppearance({ color: ColorByName.silver }));
-      SpatialCategory.insertWithTxn(txn, IModelDb.dictionaryId, _schemaNames.Class.Barrier, new SubCategoryAppearance({ color: ColorByName.brown }));
+      SpatialCategory.insert(txn, IModelDb.dictionaryId, _schemaNames.Class.Robot, new SubCategoryAppearance({ color: ColorByName.silver }));
+      SpatialCategory.insert(txn, IModelDb.dictionaryId, _schemaNames.Class.Barrier, new SubCategoryAppearance({ color: ColorByName.brown }));
     });
   }
 

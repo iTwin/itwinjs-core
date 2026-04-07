@@ -813,10 +813,10 @@ export class Category extends DefinitionElement {
     rank: Rank;
     // @beta
     static serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow;
+    // @beta
+    setDefaultAppearance(txn: EditTxn, props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
     // @deprecated
     setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
-    // @beta
-    setDefaultAppearanceWithTxn(txn: EditTxn, props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
     // (undocumented)
     toJSON(): CategoryProps;
 }
@@ -842,10 +842,10 @@ export class CategorySelector extends DefinitionElement {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     static deserialize(props: DeserializeEntityArgs): CategorySelectorProps;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
     // (undocumented)
     toJSON(): CategorySelectorProps;
 }
@@ -995,6 +995,13 @@ export interface ChannelControl {
     [_verifyChannel]: (modelId: Id64String) => void;
     addAllowedChannel(channelKey: ChannelKey): void;
     getChannelKey(elementId: Id64String): ChannelKey;
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: ChannelKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+        txn: EditTxn;
+    }): Id64String;
     // @deprecated
     insertChannelSubject(args: {
         subjectName: string;
@@ -1002,22 +1009,15 @@ export interface ChannelControl {
         parentSubjectId?: Id64String;
         description?: string;
     }): Id64String;
-    insertChannelSubjectWithTxn(args: {
-        subjectName: string;
+    makeChannelRoot(args: {
+        elementId: Id64String;
         channelKey: ChannelKey;
-        parentSubjectId?: Id64String;
-        description?: string;
         txn: EditTxn;
-    }): Id64String;
+    }): void;
     // @deprecated
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: ChannelKey;
-    }): void;
-    makeChannelRootWithTxn(args: {
-        elementId: Id64String;
-        channelKey: ChannelKey;
-        txn: EditTxn;
     }): void;
     queryChannelRoot(channelKey: ChannelKey): Id64String | undefined;
     removeAllowedChannel(channelKey: ChannelKey): void;
@@ -1670,14 +1670,14 @@ export class CodeSpecs {
     getByName(name: string): CodeSpec;
     hasId(codeSpecId: Id64String): boolean;
     hasName(name: string): boolean;
+    // @beta
+    insert(txn: EditTxn, codeSpec: CodeSpec): Id64String;
+    // @beta
+    insert(txn: EditTxn, name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
     // @deprecated
     insert(codeSpec: CodeSpec): Id64String;
     // @deprecated
     insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
-    // @beta
-    insertWithTxn(txn: EditTxn, codeSpec: CodeSpec): Id64String;
-    // @beta
-    insertWithTxn(txn: EditTxn, name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
     updateProperties(codeSpec: CodeSpec): void;
@@ -1867,10 +1867,10 @@ export class DefinitionContainer extends DefinitionSet {
     // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionContainer;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+    static insert(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
 }
 
 // @public @preview
@@ -1906,10 +1906,10 @@ export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
 export class DefinitionModel extends InformationModel {
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    // (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public @preview
@@ -2051,10 +2051,10 @@ export class DisplayStyle2d extends DisplayStyle {
     // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DisplayStyle2d;
+    // @beta
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String;
     // (undocumented)
     get settings(): DisplayStyleSettings;
 }
@@ -2067,10 +2067,10 @@ export class DisplayStyle3d extends DisplayStyle {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
+    // @beta
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): Promise<void>;
     // (undocumented)
@@ -2096,10 +2096,10 @@ export { Document_2 as Document }
 export class DocumentListModel extends InformationModel {
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    // (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public @preview
@@ -2154,10 +2154,10 @@ export class Drawing extends Document_2 {
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     protected static get drawingModelFullClassName(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+    static insert(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
     // @preview
     get scaleFactor(): number;
     set scaleFactor(factor: number);
@@ -2173,10 +2173,10 @@ export class DrawingCategory extends Category {
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DrawingCategory;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
+    // @beta
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
@@ -2212,10 +2212,10 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition;
     static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): DrawingViewDefinition;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
 }
 
 // @beta
@@ -2632,10 +2632,10 @@ class Element_2 extends Entity {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
     protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    delete(txn: EditTxn): void;
     // @deprecated
     delete(): void;
-    // @beta
-    deleteWithTxn(txn: EditTxn): void;
     // @beta
     static deserialize(props: DeserializeEntityArgs): ElementProps;
     federationGuid?: GuidString;
@@ -2646,10 +2646,10 @@ class Element_2 extends Entity {
     getMetaData(): Promise<EntityClass>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
-    // @deprecated
-    insert(): string;
     // @beta
-    insertWithTxn(txn: EditTxn): string;
+    insert(txn: EditTxn): Id64String;
+    // @deprecated
+    insert(): Id64String;
     readonly jsonProperties: {
         [key: string]: any;
     };
@@ -2719,10 +2719,10 @@ class Element_2 extends Entity {
     setUserProperties(nameSpace: string, value: any): void;
     // (undocumented)
     toJSON(): ElementProps;
+    // @beta
+    update(txn: EditTxn): void;
     // @deprecated
     update(): void;
-    // @beta
-    updateWithTxn(txn: EditTxn): void;
     userLabel?: string;
 }
 export { Element_2 as Element }
@@ -2786,7 +2786,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
-    static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void;
+    static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
 }
 
 // @public
@@ -2861,10 +2861,10 @@ export class ElementRefersToElements extends Relationship {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
-    // @deprecated
-    static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
     // @beta
-    static insertWithTxn<T extends ElementRefersToElements>(txn: EditTxn, sourceId: Id64String, targetId: Id64String): Id64String;
+    static insert(txn: EditTxn, sourceId: Id64String, targetId: Id64String): Id64String;
+    // @deprecated
+    static insert(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
 }
 
 // @beta
@@ -3235,9 +3235,9 @@ export class ExternalSource extends InformationReferenceElement {
     connectorName?: string;
     connectorVersion?: string;
     static createCode(iModelDb: IModelDb, codeValue: string): Code;
-    // @deprecated
+    static ensureCodeSpec(txn: EditTxn): Id64String;
+    // @deprecated (undocumented)
     static ensureCodeSpec(iModelDb: IModelDb): Id64String;
-    static ensureCodeSpecWithTxn(txn: EditTxn): Id64String;
     repository?: ExternalSourceIsInRepository;
     // (undocumented)
     toJSON(): ExternalSourceProps;
@@ -3282,9 +3282,9 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModelDb: IModelDb, scopeElementId: Id64String, codeValue: string): Code;
-    // @deprecated
+    static ensureCodeSpec(txn: EditTxn): Id64String;
+    // @deprecated (undocumented)
     static ensureCodeSpec(iModelDb: IModelDb): Id64String;
-    static ensureCodeSpecWithTxn(txn: EditTxn): Id64String;
     pitch?: number;
     role?: ExternalSourceAttachmentRole;
     roll?: number;
@@ -3421,10 +3421,10 @@ export class FunctionalModel extends RoleModel {
     constructor(props: ModelProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public
@@ -3474,10 +3474,10 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public
@@ -3788,10 +3788,10 @@ export class GroupModel extends GroupInformationModel {
     constructor(props: ModelProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public
@@ -4483,10 +4483,10 @@ export abstract class InformationRecordElement extends InformationContentElement
 export class InformationRecordModel extends InformationModel {
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    // (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public @preview
@@ -4840,30 +4840,30 @@ export namespace LineStyleDefinition {
     // (undocumented)
     export type Symbols = SymbolProps[];
     export class Utils {
-        // @deprecated (undocumented)
+        // @beta
+        static createCompoundComponent(txn: EditTxn, props: CompoundProps): StyleProps;
+        // @deprecated
         static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps;
         // @beta
-        static createCompoundComponentWithTxn(txn: EditTxn, props: CompoundProps): StyleProps;
-        // @deprecated (undocumented)
+        static createPointSymbolComponent(txn: EditTxn, props: PointSymbolProps): StyleProps | undefined;
+        // @deprecated
         static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined;
         // @beta
-        static createPointSymbolComponentWithTxn(txn: EditTxn, props: PointSymbolProps): StyleProps | undefined;
-        // @deprecated (undocumented)
+        static createRasterComponent(txn: EditTxn, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
+        // @deprecated
         static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
         // @beta
-        static createRasterComponentWithTxn(txn: EditTxn, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
-        // @deprecated (undocumented)
+        static createStrokePatternComponent(txn: EditTxn, props: StrokePatternProps): StyleProps;
+        // @deprecated
         static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
         // @beta
-        static createStrokePatternComponentWithTxn(txn: EditTxn, props: StrokePatternProps): StyleProps;
-        // @deprecated (undocumented)
+        static createStrokePointComponent(txn: EditTxn, props: StrokePointProps): StyleProps;
+        // @deprecated
         static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
         // @beta
-        static createStrokePointComponentWithTxn(txn: EditTxn, props: StrokePointProps): StyleProps;
-        // @deprecated (undocumented)
+        static createStyle(txn: EditTxn, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
+        // @deprecated
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
-        // @beta
-        static createStyleWithTxn(txn: EditTxn, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
         static getContinuousStyleName(width?: number): string;
         static getLinePixelsStyleName(linePixels: LinePixels): string | undefined;
         // @beta
@@ -5113,19 +5113,19 @@ export class Model extends Entity {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
     protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    delete(txn: EditTxn): void;
     // @deprecated
     delete(): void;
-    // @beta
-    deleteWithTxn(txn: EditTxn): void;
     // @beta
     static deserialize(props: DeserializeEntityArgs): ModelProps;
     // (undocumented)
     getJsonProperty(name: string): any;
     getUserProperties(namespace: string): any;
-    // @deprecated
-    insert(): string;
     // @beta
-    insertWithTxn(txn: EditTxn): string;
+    insert(txn: EditTxn): Id64String;
+    // @deprecated
+    insert(): Id64String;
     // (undocumented)
     isPrivate: boolean;
     // (undocumented)
@@ -5174,10 +5174,10 @@ export class Model extends Entity {
     setUserProperties(nameSpace: string, value: any): void;
     // (undocumented)
     toJSON(): ModelProps;
+    // @beta
+    update(txn: EditTxn): void;
     // @deprecated
     update(): void;
-    // @beta
-    updateWithTxn(txn: EditTxn): void;
 }
 
 // @public @preview
@@ -5193,10 +5193,10 @@ export class ModelSelector extends DefinitionElement {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     static deserialize(props: DeserializeEntityArgs): ModelSelectorProps;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
     models: Id64String[];
     // (undocumented)
     toJSON(): ModelSelectorProps;
@@ -5372,10 +5372,10 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     // (undocumented)
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): OrthographicViewDefinition;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
     setRange(range: Range3d): void;
 }
 
@@ -5440,10 +5440,10 @@ export abstract class PhysicalMaterial extends DefinitionElement {
 export class PhysicalModel extends SpatialModel {
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public
@@ -5748,17 +5748,17 @@ export class Relationship extends Entity {
     protected constructor(props: RelationshipProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    delete(txn: EditTxn): void;
     // @deprecated
     delete(): void;
-    // @beta
-    deleteWithTxn(txn: EditTxn): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
     getMetaData(): Promise<RelationshipClass>;
+    // @beta
+    insert(txn: EditTxn): Id64String;
     // @deprecated
     insert(): Id64String;
-    // @beta
-    insertWithTxn(txn: EditTxn): Id64String;
     // @deprecated
     static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void;
     // @beta
@@ -5773,10 +5773,10 @@ export class Relationship extends Entity {
     readonly targetId: Id64String;
     // (undocumented)
     toJSON(): RelationshipProps;
+    // @beta
+    update(txn: EditTxn): void;
     // @deprecated
     update(): void;
-    // @beta
-    updateWithTxn(txn: EditTxn): void;
 }
 
 export { RelationshipProps }
@@ -5811,10 +5811,10 @@ export class RenderMaterialElement extends DefinitionElement {
     description?: string;
     // @beta
     static deserialize(props: DeserializeEntityArgs): RenderMaterialProps;
+    // @beta
+    static insert(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @beta (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): Promise<void>;
     paletteName: string;
@@ -6309,9 +6309,9 @@ export class SheetIndex extends InformationReferenceElement {
     static get className(): string;
     static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex;
     static createCode(iModel: IModelDb, scopeSheetIndexModelId: CodeScopeProps, codeValue: string): Code;
-    // @deprecated
+    static insert(txn: EditTxn, modelId: Id64String, name: string): Id64String;
+    // @deprecated (undocumented)
     static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String;
-    static insertWithTxn(txn: EditTxn, modelId: Id64String, name: string): Id64String;
 }
 
 // @beta
@@ -6343,9 +6343,9 @@ export class SheetIndexFolder extends SheetIndexEntry {
     // (undocumented)
     static get className(): string;
     static create(arg: SheetIndexEntryCreateArgs): SheetIndexFolder;
-    // @deprecated
+    static insert(txn: EditTxn, arg: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String;
+    // @deprecated (undocumented)
     static insert(arg: SheetIndexEntryCreateArgs): Id64String;
-    static insertWithTxn(txn: EditTxn, arg: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String;
 }
 
 // @beta
@@ -6359,9 +6359,9 @@ export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
 export class SheetIndexModel extends InformationModel {
     // (undocumented)
     static get className(): string;
-    // @deprecated
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+    // @deprecated (undocumented)
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @beta
@@ -6387,9 +6387,9 @@ export class SheetIndexReference extends SheetIndexEntry {
     static create(arg: SheetIndexReferenceCreateArgs): SheetIndexReference;
     // (undocumented)
     protected static createReferenceRelationshipProps(id: Id64String): RelatedElementProps;
-    // @deprecated
+    static insert(txn: EditTxn, arg: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String;
+    // @deprecated (undocumented)
     static insert(arg: SheetIndexReferenceCreateArgs): Id64String;
-    static insertWithTxn(txn: EditTxn, arg: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String;
     sheetIndex?: SheetIndexReferenceRefersToSheetIndex;
     // (undocumented)
     toJSON(): SheetIndexReferenceProps;
@@ -6416,7 +6416,7 @@ export class SheetInformationAspect extends ElementUniqueAspect {
     protected static onInsert(arg: OnAspectPropsArg): void;
     // @deprecated
     static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
-    static setSheetInformationWithTxn(txn: EditTxn, information: SheetInformation | undefined, sheetId: Id64String): void;
+    static setSheetInformation(txn: EditTxn, information: SheetInformation | undefined, sheetId: Id64String): void;
     sheetInformation: SheetInformation;
     // (undocumented)
     toJSON(): SheetInformationAspectProps;
@@ -6445,9 +6445,9 @@ export class SheetReference extends SheetIndexEntry {
     static create(arg: SheetReferenceCreateArgs): SheetReference;
     // (undocumented)
     protected static createReferenceRelationshipProps(id: Id64String): RelatedElementProps;
-    // @deprecated
+    static insert(txn: EditTxn, arg: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String;
+    // @deprecated (undocumented)
     static insert(arg: SheetReferenceCreateArgs): Id64String;
-    static insertWithTxn(txn: EditTxn, arg: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String;
     sheet: SheetReferenceRefersToSheet | undefined;
     // (undocumented)
     toJSON(): SheetReferenceProps;
@@ -6487,10 +6487,10 @@ export class SheetViewDefinition extends ViewDefinition2d {
     static get className(): string;
     static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition;
     static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition;
-    // @deprecated
-    static insert(args: CreateSheetViewDefinitionArgs): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String;
+    static insert(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String;
+    // @deprecated (undocumented)
+    static insert(args: CreateSheetViewDefinitionArgs): Id64String;
 }
 
 // @beta
@@ -6539,10 +6539,10 @@ export class SpatialCategory extends Category {
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): SpatialCategory;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
+    // @beta
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
@@ -6578,10 +6578,10 @@ export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition
 export class SpatialLocationModel extends SpatialModel {
     // (undocumented)
     static get className(): string;
-    // @deprecated
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
     // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+    // @deprecated (undocumented)
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public @preview
@@ -6617,10 +6617,10 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @beta
     static deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps;
     static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
-    // @deprecated
-    static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     // @beta
-    static insertWithCameraWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
+    static insertWithCamera(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
+    // @deprecated (undocumented)
+    static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
     // @beta (undocumented)
@@ -6976,10 +6976,10 @@ export class SubCategory extends DefinitionElement {
     getCategoryId(): Id64String;
     getSubCategoryId(): Id64String;
     getSubCategoryName(): string;
+    // @beta
+    static insert(txn: EditTxn, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     get isDefaultSubCategory(): boolean;
     // @beta
     static serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow;
@@ -6996,10 +6996,10 @@ export class Subject extends InformationReferenceElement {
     static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     description?: string;
+    // @beta
+    static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
     // @deprecated
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
-    // @beta
-    static insertWithTxn(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
     // (undocumented)
     toJSON(): SubjectProps;
 }
@@ -7057,9 +7057,9 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe2d;
     static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
-    // @deprecated
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+    // @deprecated (undocumented)
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
 }
 
 // @beta
@@ -7069,9 +7069,9 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe3d;
     static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code;
-    // @deprecated
+    static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+    // @deprecated (undocumented)
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
-    static insertWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
 }
 
 // @internal
@@ -7266,10 +7266,10 @@ export class Texture extends DefinitionElement {
     description?: string;
     // (undocumented)
     format: ImageSourceFormat;
+    // @beta
+    static insertTexture(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // @deprecated
     static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
-    // @beta
-    static insertTextureWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // (undocumented)
     toJSON(): TextureProps;
 }

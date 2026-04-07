@@ -387,37 +387,37 @@ describe("ViewDefinition", () => {
       const editTxn = new ViewDefinitionEditTxn(iModel);
       editTxn.start();
       try {
-        const subjectId = Subject.insertWithTxn(
+        const subjectId = Subject.insert(
           editTxn,
           IModel.rootSubjectId,
           "Subject",
           "Subject Description"
         );
-        const definitionModelId = DefinitionModel.insertWithTxn(
+        const definitionModelId = DefinitionModel.insert(
           editTxn,
           subjectId,
           "Definition"
         );
-        const drawingCategoryId = DrawingCategory.insertWithTxn(
+        const drawingCategoryId = DrawingCategory.insert(
           editTxn,
           definitionModelId,
           "DrawingCategory",
           new SubCategoryAppearance()
         );
-        const drawingCategorySelectorId = CategorySelector.insertWithTxn(
+        const drawingCategorySelectorId = CategorySelector.insert(
           editTxn,
           definitionModelId,
           "DrawingCategories",
           [drawingCategoryId]
         );
-        const displayStyle2dId = DisplayStyle2d.insertWithTxn(
+        const displayStyle2dId = DisplayStyle2d.insert(
           editTxn,
           definitionModelId,
           "DisplayStyle2d"
         );
 
         assert.throws(() => {
-          DrawingViewDefinition.insertWithTxn(
+          DrawingViewDefinition.insert(
             editTxn,
             definitionModelId,
             "Drawing View",

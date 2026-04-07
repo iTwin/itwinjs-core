@@ -29,7 +29,7 @@ describe("Default supplemental rules", async () => {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             withEditTxn(db, (txn) => {
-              elementKey = insertPhysicalElementWithTxn(txn, db);
+              elementKey = insertPhysicalElementTxn(txn, db);
               txn.insertAspect({
                 classFullName: "BisCore:ExternalSourceAspect",
                 element: {
@@ -92,7 +92,7 @@ describe("Default supplemental rules", async () => {
             await db.importSchemaStrings([schema]);
 
             withEditTxn(db, (txn) => {
-              elementKey = insertPhysicalElementWithTxn(txn, db);
+              elementKey = insertPhysicalElementTxn(txn, db);
               const repositoryLinkId = txn.insertElement({
                 classFullName: "TestDomain:MyRepositoryLink",
                 model: IModel.repositoryModelId,
@@ -182,7 +182,7 @@ describe("Default supplemental rules", async () => {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             withEditTxn(db, (txn) => {
-              elementKey = insertPhysicalElementWithTxn(txn, db);
+              elementKey = insertPhysicalElementTxn(txn, db);
               txn.insertAspect({
                 classFullName: "BisCore:ExternalSourceAspect",
                 element: {
@@ -277,7 +277,7 @@ describe("Default supplemental rules", async () => {
                 classFullName: "BisCore:PhysicalModel",
                 modeledElement: { id: partitionId },
               });
-              elementKey = insertPhysicalElementWithTxn(txn, db, modelId);
+              elementKey = insertPhysicalElementTxn(txn, db, modelId);
             });
           });
           const rules: Ruleset = {
@@ -354,7 +354,7 @@ describe("Default supplemental rules", async () => {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             withEditTxn(db, (txn) => {
-              elementKey = insertPhysicalElementWithTxn(txn, db);
+              elementKey = insertPhysicalElementTxn(txn, db);
               const repositoryLinkId = txn.insertElement({
                 classFullName: "BisCore:RepositoryLink",
                 model: IModel.repositoryModelId,
@@ -463,7 +463,7 @@ describe("Default supplemental rules", async () => {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             withEditTxn(db, (txn) => {
-              elementKey = insertPhysicalElementWithTxn(txn, db);
+              elementKey = insertPhysicalElementTxn(txn, db);
               const repositoryLinkId = txn.insertElement({
                 classFullName: "BisCore:RepositoryLink",
                 model: IModel.repositoryModelId,
@@ -597,7 +597,7 @@ describe("Default supplemental rules", async () => {
   });
 });
 
-function insertPhysicalElementWithTxn(txn: EditTxn, db: IModelDb, modelId?: Id64String, categoryId?: Id64String): InstanceKey {
+function insertPhysicalElementTxn(txn: EditTxn, db: IModelDb, modelId?: Id64String, categoryId?: Id64String): InstanceKey {
   if (!modelId) {
     const partitionId = txn.insertElement({
       classFullName: "BisCore:PhysicalPartition",

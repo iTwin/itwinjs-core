@@ -44,7 +44,7 @@ describe("Example Code", () => {
 
   it("should check for an InUseLocksError", async () => {
     if (iModel.isBriefcase) {
-      const elementId = withEditTxn(iModel, (txn) => PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "newModelCode2"));
+      const elementId = withEditTxn(iModel, (txn) => PhysicalModel.insert(txn, IModel.rootSubjectId, "newModelCode2"));
       assert.isTrue(elementId !== undefined);
       // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
       try {
@@ -82,7 +82,7 @@ describe("Example Code", () => {
       const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
 
       // Make some local changes. In this example, we'll create a modeled element and a model.
-      const newModeledElementId = withEditTxn(iModel, (editTxn) => PhysicalModel.insertWithTxn(editTxn, IModel.rootSubjectId, "newModelCode"));
+      const newModeledElementId = withEditTxn(iModel, (editTxn) => PhysicalModel.insert(editTxn, IModel.rootSubjectId, "newModelCode"));
       assert.isTrue(newModeledElementId !== undefined);
 
       // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
@@ -105,13 +105,13 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_START__ CodeSpecs.insert
     // Create and insert a new CodeSpec with the name "CodeSpec1". In this example, we choose to make a model-scoped CodeSpec.
     const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId: Id64String = withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insertWithTxn(txn, codeSpec));
+    const codeSpecId: Id64String = withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insert(txn, codeSpec));
     assert.deepEqual(codeSpecId, codeSpec.id);
 
     // Should not be able to insert a duplicate.
     try {
       const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-      withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insertWithTxn(txn, codeSpecDup)); // throws in case of error
+      withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insert(txn, codeSpecDup)); // throws in case of error
       assert.fail();
     } catch {
       // We expect this to fail.
@@ -119,7 +119,7 @@ describe("Example Code", () => {
 
     // We should be able to insert another CodeSpec with a different name.
     const codeSpec2: CodeSpec = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2Id: Id64String = withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insertWithTxn(txn, codeSpec2));
+    const codeSpec2Id: Id64String = withEditTxn(testImodel, (txn) => testImodel.codeSpecs.insert(txn, codeSpec2));
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
@@ -197,7 +197,7 @@ describe("Example Code", () => {
         throw err;
       }
 
-      const elementId = withEditTxn(iModel, (txn) => Subject.insertWithTxn(txn, IModel.rootSubjectId, code.value));
+      const elementId = withEditTxn(iModel, (txn) => Subject.insert(txn, IModel.rootSubjectId, code.value));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.updateInternalCodeForExistinglement
@@ -211,7 +211,7 @@ describe("Example Code", () => {
         throw err;
       }
 
-      withEditTxn(iModel, (txn) => el.updateWithTxn(txn));
+      withEditTxn(iModel, (txn) => el.update(txn));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.addInternalCodeSpec
@@ -234,7 +234,7 @@ describe("Example Code", () => {
 
       await iModel.codeService?.internalCodes?.writeLocker.addCodeSpec(nameAndJson);
 
-      withEditTxn(iModel, (txn) => iModel.codeSpecs.insertWithTxn(txn, name, props));
+      withEditTxn(iModel, (txn) => iModel.codeSpecs.insert(txn, name, props));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.findCode

@@ -18,7 +18,7 @@ describe("SectionDrawing", () => {
   before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
-    documentListModelId = withEditTxn(imodel, (txn) => DocumentListModel.insertWithTxn(txn, SnapshotDb.rootSubjectId, "DocumentList"));
+    documentListModelId = withEditTxn(imodel, (txn) => DocumentListModel.insert(txn, SnapshotDb.rootSubjectId, "DocumentList"));
   });
 
   after(() => {
@@ -84,7 +84,7 @@ describe("SectionDrawing", () => {
   });
 
   it("should create a SectionDrawing and SectionDrawingModel on insert", () => {
-    const sectionDrawingId = withEditTxn(imodel, (txn) => SectionDrawing.insertWithTxn(txn, documentListModelId, "SectionDrawingInsert"));
+    const sectionDrawingId = withEditTxn(imodel, (txn) => SectionDrawing.insert(txn, documentListModelId, "SectionDrawingInsert"));
 
     expect(Id64.isValidId64(sectionDrawingId)).to.be.true;
 

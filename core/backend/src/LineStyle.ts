@@ -324,35 +324,34 @@ export namespace LineStyleDefinition {
 
   /** Helper methods for creating and querying line styles */
   export class Utils {
-    /** Create a file property for a new stroke pattern component. */
-    /** @deprecated Use createStrokePatternComponentWithTxn instead. */
-    public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps {
-      return this.createStrokePatternComponentWithTxn(iModel[_implicitTxn], props);
-    }
-
     /** Create a file property for a new stroke pattern component using an explicit EditTxn.
      * @beta
      */
-    public static createStrokePatternComponentWithTxn(txn: EditTxn, props: StrokePatternProps): StyleProps {
+    public static createStrokePatternComponent(txn: EditTxn, props: StrokePatternProps): StyleProps;
+    /** Create a file property for a new stroke pattern component.
+     * @deprecated Use createStrokePatternComponent(txn, ...) instead.
+     */
+    public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
+    public static createStrokePatternComponent(txnOrIModel: EditTxn | IModelDb, props: StrokePatternProps): StyleProps {
+      const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
       const fileProps: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle" };
       fileProps.id = txn.iModel.queryNextAvailableFileProperty(fileProps);
       txn.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.StrokePattern };
     }
 
-    /** Create a file property for a new point symbol component.
-     * If base and size parameters are not supplied, queries GeometryPart by id to set them.
-     */
-    /** @deprecated Use createPointSymbolComponentWithTxn instead. */
-    public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
-      return this.createPointSymbolComponentWithTxn(iModel[_implicitTxn], props);
-    }
-
     /** Create a file property for a new point symbol component using an explicit EditTxn.
      * If base and size parameters are not supplied, queries GeometryPart by id to set them.
       * @beta
      */
-    public static createPointSymbolComponentWithTxn(txn: EditTxn, props: PointSymbolProps): StyleProps | undefined {
+    public static createPointSymbolComponent(txn: EditTxn, props: PointSymbolProps): StyleProps | undefined;
+    /** Create a file property for a new point symbol component.
+     * If base and size parameters are not supplied, queries GeometryPart by id to set them.
+     * @deprecated Use createPointSymbolComponent(txn, ...) instead.
+     */
+    public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined;
+    public static createPointSymbolComponent(txnOrIModel: EditTxn | IModelDb, props: PointSymbolProps): StyleProps | undefined {
+      const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
       const iModel = txn.iModel;
       // if part extents weren't supplied, set them up now.
       if (!props.baseX && !props.baseY && !props.baseZ && !props.sizeX && !props.sizeY && !props.sizeZ) {
@@ -375,48 +374,48 @@ export namespace LineStyleDefinition {
       return { compId: fileProps.id, compType: ComponentType.PointSymbol };
     }
 
-    /** Create a file property for a new stroke point component. */
-    /** @deprecated Use createStrokePointComponentWithTxn instead. */
-    public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps {
-      return this.createStrokePointComponentWithTxn(iModel[_implicitTxn], props);
-    }
-
     /** Create a file property for a new stroke point component using an explicit EditTxn.
      * @beta
      */
-    public static createStrokePointComponentWithTxn(txn: EditTxn, props: StrokePointProps): StyleProps {
+    public static createStrokePointComponent(txn: EditTxn, props: StrokePointProps): StyleProps;
+    /** Create a file property for a new stroke point component.
+     * @deprecated Use createStrokePointComponent(txn, ...) instead.
+     */
+    public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
+    public static createStrokePointComponent(txnOrIModel: EditTxn | IModelDb, props: StrokePointProps): StyleProps {
+      const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
       const fileProps: FilePropertyProps = { name: "LinePointV1", namespace: "dgn_LStyle" };
       fileProps.id = txn.iModel.queryNextAvailableFileProperty(fileProps);
       txn.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.StrokePoint };
     }
 
-    /** Create a file property for a new compound component. */
-    /** @deprecated Use createCompoundComponentWithTxn instead. */
-    public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps {
-      return this.createCompoundComponentWithTxn(iModel[_implicitTxn], props);
-    }
-
     /** Create a file property for a new compound component using an explicit EditTxn.
      * @beta
      */
-    public static createCompoundComponentWithTxn(txn: EditTxn, props: CompoundProps): StyleProps {
+    public static createCompoundComponent(txn: EditTxn, props: CompoundProps): StyleProps;
+    /** Create a file property for a new compound component.
+     * @deprecated Use createCompoundComponent(txn, ...) instead.
+     */
+    public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps;
+    public static createCompoundComponent(txnOrIModel: EditTxn | IModelDb, props: CompoundProps): StyleProps {
+      const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
       const fileProps: FilePropertyProps = { name: "CompoundV1", namespace: "dgn_LStyle" };
       fileProps.id = txn.iModel.queryNextAvailableFileProperty(fileProps);
       txn.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.Compound };
     }
 
-    /** Create a file property for a new raster image component. */
-    /** @deprecated Use createRasterComponentWithTxn instead. */
-    public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
-      return this.createRasterComponentWithTxn(iModel[_implicitTxn], props, image);
-    }
-
     /** Create a file property for a new raster image component using an explicit EditTxn.
      * @beta
      */
-    public static createRasterComponentWithTxn(txn: EditTxn, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
+    public static createRasterComponent(txn: EditTxn, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
+    /** Create a file property for a new raster image component.
+     * @deprecated Use createRasterComponent(txn, ...) instead.
+     */
+    public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
+    public static createRasterComponent(txnOrIModel: EditTxn | IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
+      const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
       const iModel = txn.iModel;
       const rasterFileProps: FilePropertyProps = { name: "RasterImageV1", namespace: "dgn_LStyle" };
       rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
@@ -433,19 +432,18 @@ export namespace LineStyleDefinition {
       return imodel.elements.queryElementIdByCode(LineStyle.createCode(imodel, scopeModelId, name));
     }
 
-    /** Insert a new line style with the supplied name.
-     * @throws [[IModelError]] if unable to insert the line style definition element.
-     */
-    /** @deprecated Use createStyleWithTxn instead. */
-    public static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String {
-      return this.createStyleWithTxn(imodel[_implicitTxn], scopeModelId, name, props);
-    }
-
     /** Insert a new line style with the supplied name using an explicit EditTxn.
      * @throws [[IModelError]] if unable to insert the line style definition element.
      * @beta
      */
-    public static createStyleWithTxn(txn: EditTxn, scopeModelId: Id64String, name: string, props: StyleProps): Id64String {
+    public static createStyle(txn: EditTxn, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
+    /** Insert a new line style with the supplied name.
+     * @throws [[IModelError]] if unable to insert the line style definition element.
+     * @deprecated Use createStyle(txn, ...) instead.
+     */
+    public static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
+    public static createStyle(txnOrIModel: EditTxn | IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String {
+      const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
       const imodel = txn.iModel;
       if (undefined === props.flags)
         props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
@@ -474,8 +472,7 @@ export namespace LineStyleDefinition {
      *  - Defined using [[LineStyleDefinition.ComponentType.Internal]] with component id 0 [[LinePixels.Solid]] which has special behavior of being affected by width overrides.
      * - Width is specified in the style.
      *  - Defined using a single stroke component that is a long dash.
-     * @param txn Optional explicit transaction to use if the style must be created.
-     *
+     * @param txn Optional explicit EditTxn to use if the style must be created.
      * @throws [[IModelError]] if unable to insert the line style definition element.
      * @beta
      */
@@ -487,13 +484,13 @@ export namespace LineStyleDefinition {
         return lsId;
 
       if (width === undefined)
-        return this.createStyleWithTxn(writeTxn, scopeModelId, name, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
+        return this.createStyle(writeTxn, scopeModelId, name, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
 
-      const strokePatternData = this.createStrokePatternComponentWithTxn(writeTxn, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
+      const strokePatternData = this.createStrokePatternComponent(writeTxn, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
       if (undefined === strokePatternData)
         throw new IModelError(IModelStatus.BadArg, "Unable to insert stroke component");
 
-      return this.createStyleWithTxn(writeTxn, scopeModelId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
+      return this.createStyle(writeTxn, scopeModelId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
     }
 
     /** Get the name that can be use to query for an existing [[LinePixels]] line style.
@@ -510,7 +507,7 @@ export namespace LineStyleDefinition {
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
      * Most applications should instead use [[createStrokePatternComponent]] to define a style with physical dash and gap lengths.
      * Unlike other components, [[LineStyleDefinition.ComponentType.Internal]] uses the line code as the compId instead of a file property id.
-     * @param txn Optional explicit transaction to use if the style must be created.
+    * @param txn Optional explicit EditTxn to use if the style must be created.
      * @throws [[IModelError]] if supplied an invalid [[LinePixels]] value or if unable to insert the line style definition element.
       * @beta
      */
@@ -521,7 +518,7 @@ export namespace LineStyleDefinition {
 
       const name = `LinePixelsCodeNumber-${lineCode}`;
       const lsId = this.queryStyle(imodel, scopeModelId, name);
-      return (undefined === lsId ? this.createStyleWithTxn(txn ?? imodel[_implicitTxn], scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
+      return (undefined === lsId ? this.createStyle(txn ?? imodel[_implicitTxn], scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
     }
   }
 }

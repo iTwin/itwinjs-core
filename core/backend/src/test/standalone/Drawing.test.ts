@@ -18,7 +18,7 @@ describe("Drawing", () => {
   before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("Drawing", "Drawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "DrawingTest" } });
-    documentListModelId = withEditTxn(imodel, (txn) => DocumentListModel.insertWithTxn(txn, SnapshotDb.rootSubjectId, "DocumentList"));
+    documentListModelId = withEditTxn(imodel, (txn) => DocumentListModel.insert(txn, SnapshotDb.rootSubjectId, "DocumentList"));
   });
 
   after(() => {
@@ -119,7 +119,7 @@ describe("Drawing", () => {
 
   describe("insert", () => {
     function insertDrawing(scaleFactor: number | undefined): Drawing {
-      const drawingId = withEditTxn(imodel, (txn) => Drawing.insertWithTxn(txn, documentListModelId, Guid.createValue(), scaleFactor));
+      const drawingId = withEditTxn(imodel, (txn) => Drawing.insert(txn, documentListModelId, Guid.createValue(), scaleFactor));
       return imodel.elements.getElement<Drawing>(drawingId);
     }
 

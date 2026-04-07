@@ -15,7 +15,7 @@ import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
-import type { EditTxn } from "../EditTxn";
+import { EditTxn } from "../EditTxn";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -166,18 +166,22 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
    * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
-   * @deprecated Use ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn instead.
+   * @deprecated Use ElementDrivesTextAnnotation.updateFieldDependencies(txn, ...) instead.
    */
-  public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
-    this.updateFieldDependenciesWithTxn(iModel[_implicitTxn], annotationElementId);
-  }
+  public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
 
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
    * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
    */
-  public static updateFieldDependenciesWithTxn(txn: EditTxn, annotationElementId: Id64String): void {
-    this.updateFieldDependenciesImpl(txn, annotationElementId);
+  public static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
+  public static updateFieldDependencies(arg1: EditTxn | Id64String, arg2: Id64String | IModelDb): void {
+    if (arg1 instanceof EditTxn) {
+      this.updateFieldDependenciesImpl(arg1, arg2 as Id64String);
+      return;
+    }
+
+    this.updateFieldDependenciesImpl((arg2 as IModelDb)[_implicitTxn], arg1);
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).

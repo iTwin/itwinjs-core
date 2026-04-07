@@ -282,7 +282,7 @@ describe("ElementAspect", () => {
     let elementId!: Id64String;
     let aspectProps!: ExternalSourceAspectProps;
     const aspectJson = withEditTxn(iModelDb, (txn) => {
-      elementId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category", new SubCategoryAppearance());
+      elementId = SpatialCategory.insert(txn, IModel.dictionaryId, "Category", new SubCategoryAppearance());
       assert.isTrue(Id64.isValidId64(elementId));
 
       aspectProps = {
@@ -327,8 +327,8 @@ describe("ElementAspect", () => {
     const kind = "Letter";
     const kind2 = "Kind2";
     const { e1AspectProps, e2AspectProps } = withEditTxn(iModelDb, (txn) => {
-      e1 = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
-      e2 = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
+      e1 = SpatialCategory.insert(txn, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
+      e2 = SpatialCategory.insert(txn, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
       const scopeId2 = e1;
       const aspectProps: ExternalSourceAspectProps = {
         classFullName: ExternalSourceAspect.classFullName,
@@ -425,8 +425,8 @@ describe("ElementAspect", () => {
     // Enable the test channel
     iModelDb.channels.addAllowedChannel(testChannelKey);
 
-    // Create a channel subject using insertChannelSubjectWithTxn
-    const subjectId = withEditTxn(iModelDb, (txn) => iModelDb.channels.insertChannelSubjectWithTxn({
+    // Create a channel subject using insertChannelSubject with explicit txn
+    const subjectId = withEditTxn(iModelDb, (txn) => iModelDb.channels.insertChannelSubject({
       subjectName: "Test Channel Subject",
       channelKey: testChannelKey,
       txn,

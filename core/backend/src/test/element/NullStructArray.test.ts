@@ -64,7 +64,7 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
 
       const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
       if (undefined === spatialCategoryId)
-        SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, categoryName,
+        SpatialCategory.insert(txn, IModel.dictionaryId, categoryName,
           new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
     });
     imodel.close();

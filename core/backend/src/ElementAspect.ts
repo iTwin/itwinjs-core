@@ -218,11 +218,9 @@ export class SheetInformationAspect extends ElementUniqueAspect {
    * If `information` is `undefined`, any existing aspect will be deleted.
    * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
    * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
-   * @deprecated Use SheetInformationAspect.setSheetInformationWithTxn instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated Use SheetInformationAspect.setSheetInformation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
-  public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void {
-    this.setSheetInformationWithTxn(iModel[_implicitTxn], information, sheetId);
-  }
+  public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
 
   /** Sets the `information` for the [[Sheet]] element specified by `sheetId`, using an explicit EditTxn.
    * If `information` is `undefined`, any existing aspect will be deleted.
@@ -231,7 +229,22 @@ export class SheetInformationAspect extends ElementUniqueAspect {
    * @throws EditTxnError if the EditTxn is not active.
    * @beta
    */
-  public static setSheetInformationWithTxn(txn: EditTxn, information: SheetInformation | undefined, sheetId: Id64String): void {
+  public static setSheetInformation(txn: EditTxn, information: SheetInformation | undefined, sheetId: Id64String): void;
+  public static setSheetInformation(arg1: EditTxn | SheetInformation | undefined, arg2: SheetInformation | Id64String | undefined, arg3: Id64String | IModelDb): void {
+    let txn: EditTxn;
+    let information: SheetInformation | undefined;
+    let sheetId: Id64String;
+
+    if (arg1 instanceof EditTxn) {
+      txn = arg1;
+      information = arg2 as SheetInformation | undefined;
+      sheetId = arg3 as Id64String;
+    } else {
+      txn = (arg3 as IModelDb)[_implicitTxn];
+      information = arg1;
+      sheetId = arg2 as Id64String;
+    }
+
     txn.iModel.requireMinimumSchemaVersion("BisCore", minimumBisCoreVersion, "SheetInformationAspect");
 
     const aspect = this.findForSheet(sheetId, txn.iModel);

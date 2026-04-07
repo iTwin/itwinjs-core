@@ -75,7 +75,7 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     // Insert element with 100 properties
     const geomArray: Arc3d[] = [
@@ -226,7 +226,7 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     txn.saveChanges("user 1: create drawing partition");
     if (true || "push changes") {
@@ -666,7 +666,7 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     txn.saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
@@ -823,7 +823,7 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     txn.saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
@@ -1328,7 +1328,7 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     txn.saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
@@ -1505,7 +1505,7 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
 
     const geomArray: Arc3d[] = [

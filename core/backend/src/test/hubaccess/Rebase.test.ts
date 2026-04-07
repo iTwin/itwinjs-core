@@ -83,7 +83,7 @@ class TestIModel {
     this.drawingModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(b1Txn, codeProps, true)[1];
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insertWithTxn(b1Txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+      drawingCategoryId = DrawingCategory.insert(b1Txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
     this.drawingCategoryId = drawingCategoryId;
 
     b1Txn.saveChanges();

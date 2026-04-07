@@ -424,7 +424,7 @@ describe("ChangeSummary", () => {
     txn.start();
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
     txn.saveChanges("Added test model");
-    const categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     txn.saveChanges("Added test category");
     const elementId1: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
     const elementId2: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());

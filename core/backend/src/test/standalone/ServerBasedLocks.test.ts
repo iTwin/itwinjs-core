@@ -258,7 +258,7 @@ describe("Server-based locks", () => {
     function write(txn: EditTxn): void {
       const elem = bc.elements.getElement(elemId);
       elem.jsonProperties.testProp = Guid.createValue();
-      elem.updateWithTxn(txn);
+      elem.update(txn);
     }
 
     async function push(retainLocks?: true): Promise<void> {
@@ -331,3 +331,4 @@ describe("Server-based locks", () => {
     });
   });
 });
+

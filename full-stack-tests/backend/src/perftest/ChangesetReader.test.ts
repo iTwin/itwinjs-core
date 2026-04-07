@@ -59,7 +59,7 @@ describe("ChangesetReaderAPI", async () => {
     const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
 
@@ -145,7 +145,7 @@ describe("ChangesetReaderAPI", async () => {
     const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
 
@@ -233,7 +233,7 @@ describe("ChangesetReaderAPI", async () => {
     const [, drawingModelId] = withEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
 

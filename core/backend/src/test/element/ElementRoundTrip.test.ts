@@ -531,7 +531,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, categoryName,
+      withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, categoryName,
         new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() })));
 
     imodel.close();
@@ -933,8 +933,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
       const { objId } = withEditTxn(imodel, (txn) => {
-        const modelId = PhysicalModel.insertWithTxn(txn, IModelDb.rootSubjectId, "model");
-        const categoryId = SpatialCategory.insertWithTxn(txn, IModelDb.dictionaryId, "model", {});
+        const modelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "model");
+        const categoryId = SpatialCategory.insert(txn, IModelDb.dictionaryId, "model", {});
 
         return {
           objId: txn.insertElement({

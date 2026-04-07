@@ -181,7 +181,7 @@ describe("SquashSchemaAndDataChanges", () => {
     await db.locks.acquireLocks({ shared: IModel.dictionaryId });
     return withEditTxn(db, (txn) => {
       const [, newDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode);
-      const newDrawingCategoryId = DrawingCategory.insertWithTxn(
+      const newDrawingCategoryId = DrawingCategory.insert(
         txn,
         IModel.dictionaryId,
         "DrawingCategory",

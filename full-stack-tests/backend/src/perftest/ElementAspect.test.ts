@@ -24,7 +24,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb) {
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64String = withEditTxn(rwIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 })));
+  const spatialCategoryId: Id64String = withEditTxn(rwIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 })));
   return { modelId, spatialCategoryId };
 }
 

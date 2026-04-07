@@ -284,13 +284,13 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel.getIndirectTxn(), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel.getIndirectTxn(), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -471,13 +471,13 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel.getIndirectTxn(), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependenciesWithTxn(arg.iModel.getIndirectTxn(), arg.id);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {

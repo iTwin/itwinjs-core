@@ -337,12 +337,12 @@ describe("Functional Domain", () => {
     assert.equal(iModelDb.channels.queryChannelRoot(ChannelControl.sharedChannelName), IModel.rootSubjectId);
 
     const codeSpec = CodeSpec.create(iModelDb, "Test Functional Elements", CodeScopeSpec.Type.Model);
-    iModelDb.codeSpecs.insertWithTxn(txn, codeSpec);
+    iModelDb.codeSpecs.insert(txn, codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
     // create a channel for all elements in this test
     assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey1));
-    const subject1Id = iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Test Functional Subject", channelKey: testChannelKey1, txn });
+    const subject1Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject", channelKey: testChannelKey1, txn });
     assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey1), subject1Id);
 
     const partitionCode = FunctionalPartition.createCode(iModelDb, subject1Id, "Test Functional Model");
@@ -367,11 +367,11 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
     assert.equal(spy.partition.onSubModelInserted.getCall(0).args[0].subModelId, modelId, "Element.onSubModelInserted should have correct subModelId");
 
-    expect(() => iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1, txn })).to.throw(`Channel ${testChannelKey1} root already exist`);
-    const subject2Id = iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2, txn });
+    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1, txn })).to.throw(`Channel ${testChannelKey1} root already exist`);
+    const subject2Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2, txn });
     iModelDb.channels.addAllowedChannel(testChannelKey2);
 
-    expect(() => iModelDb.channels.insertChannelSubjectWithTxn({ subjectName: "Nested Subject", parentSubjectId: subject2Id, channelKey: "nested channel", txn })).to.throw("may not nest");
+    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Nested Subject", parentSubjectId: subject2Id, channelKey: "nested channel", txn })).to.throw("may not nest");
 
     partitionProps.code.value = "Test Func 2";
     partitionProps.parent = new SubjectOwnsPartitionElements(subject2Id);
@@ -385,12 +385,12 @@ describe("Functional Domain", () => {
     assert.equal(spy.partition.onSubModelInserted.getCall(1).args[0].subModelId, modelId2, "Element.onSubModelInserted should have correct subModelId");
 
     const model2 = iModelDb.models.getModel(modelId2);
-    testChannel(testChannelKey2, () => model2.updateWithTxn(txn), []);
+    testChannel(testChannelKey2, () => model2.update(txn), []);
     assert.equal(spy.model.onUpdated.getCall(0).args[0].id, modelId2);
     assert.equal(spy.model.onUpdate.callCount, 2);
     assert.equal(spy.model.onUpdated.callCount, 1);
 
-    testChannel(testChannelKey2, () => model2.deleteWithTxn(txn), [spy.model.onDelete, spy.partition.onSubModelDelete]);
+    testChannel(testChannelKey2, () => model2.delete(txn), [spy.model.onDelete, spy.partition.onSubModelDelete]);
     assert.isTrue(spy.model.onDelete.calledOnce);
     assert.isTrue(spy.model.onDeleted.calledOnce);
     assert.equal(spy.model.onDeleted.getCall(0).args[0].id, modelId2);
@@ -450,7 +450,7 @@ describe("Functional Domain", () => {
     expect(iModelDb.channels.getChannelKey(bd2)).equals(testChannelKey1);
 
     bd2el.userLabel = "nothing";
-    testChannel(testChannelKey1, () => bd2el.updateWithTxn(txn), [spy.breakdown.onUpdate, spy.breakdown.onUpdated]);
+    testChannel(testChannelKey1, () => bd2el.update(txn), [spy.breakdown.onUpdate, spy.breakdown.onUpdated]);
     bd2el = elements.getElement(bd2);
     assert.equal(bd2el.userLabel, updatedLabel, "label was modified in onUpdate");
     assert.equal(spy.breakdown.onUpdate.callCount, 1);
@@ -458,7 +458,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.breakdown.onUpdate.getCall(0).args[0].props.id, bd2);
     assert.equal(spy.breakdown.onUpdated.getCall(0).args[0].id, bd2);
 
-    testChannel(testChannelKey1, () => bd2el.deleteWithTxn(txn), [spy.breakdown.onDelete]);
+    testChannel(testChannelKey1, () => bd2el.delete(txn), [spy.breakdown.onDelete]);
     assert.equal(spy.breakdown.onDelete.callCount, 1);
     assert.equal(spy.breakdown.onDeleted.callCount, 1);
     const deleteArg = spy.breakdown.onDelete.getCall(0).args[0];
@@ -487,7 +487,7 @@ describe("Functional Domain", () => {
 
     // test model and element callbacks for updateElement
     const component1 = elements.getElement(componentId);
-    testChannel(testChannelKey1, () => component1.updateWithTxn(txn), [spy.model.onUpdateElement, spy.model.onUpdatedElement]);
+    testChannel(testChannelKey1, () => component1.update(txn), [spy.model.onUpdateElement, spy.model.onUpdatedElement]);
     assert.equal(spy.model.onUpdateElement.callCount, 1);
     assert.equal(spy.model.onUpdatedElement.callCount, 1);
     assert.equal(spy.model.onUpdatedElement.getCall(0).args[0].elementId, componentId);
@@ -505,14 +505,14 @@ describe("Functional Domain", () => {
     spy.model.onDeleteElement.resetHistory();
     spy.model.onDeletedElement.resetHistory();
     TestFuncModel.dontDelete = comp2; // block deletion through model
-    expect(() => el2.deleteWithTxn(txn)).to.throw("dont delete my element");
+    expect(() => el2.delete(txn)).to.throw("dont delete my element");
     TestFuncModel.dontDelete = ""; // allow deletion through model
     Breakdown.dontDeleteChild = comp2; // but block through parent
-    expect(() => el2.deleteWithTxn(txn)).to.throw("dont delete my child"); // nope
+    expect(() => el2.delete(txn)).to.throw("dont delete my child"); // nope
     assert.equal(spy.model.onDeleteElement.callCount, 2, "Model.onElementDelete gets called even though element is not really deleted");
     assert.equal(spy.model.onDeletedElement.callCount, 0, "make sure Model.onElementDeleted did not get called");
     Breakdown.dontDeleteChild = ""; // now fully allow delete
-    el2.deleteWithTxn(txn);
+    el2.delete(txn);
     assert.equal(spy.model.onDeleteElement.callCount, 3, "Model.onElementDelete should be called again");
     assert.equal(spy.model.onDeletedElement.callCount, 1);
     assert.equal(spy.model.onDeletedElement.getCall(0).args[0].elementId, comp2);
@@ -555,3 +555,7 @@ describe("Functional Domain", () => {
     iModelDb.close();
   });
 });
+
+
+
+

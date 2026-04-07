@@ -56,7 +56,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     format: "iModel",
     repositoryGuid: masterDb.iModelId,
     description: "master iModel repository",
-  }).insertWithTxn(txn));
+  }).insert(txn));
 
   const masterExternalSourceId = withEditTxn(branchDb, (txn) => branchDb.constructEntity<ExternalSource, ExternalSourceProps>({
     classFullName: ExternalSource.classFullName,
@@ -65,7 +65,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     repository: new ExternalSourceIsInRepository(masterLinkRepoId),
     connectorName: "iModel Transformer",
     connectorVersion: require("@itwin/imodel-transformer/package.json").version,
-  }).insertWithTxn(txn));
+  }).insert(txn));
 
   // initialize the branch provenance
   const branchInitializer = new IModelTransformer(masterDb, branchDb, {
@@ -149,8 +149,8 @@ async function arbitraryEdit(db: BriefcaseDb, myAccessToken: AccessToken, descri
   let physicalModelId = db.elements.queryElementIdByCode(physicalModelCode);
   if (physicalModelId === undefined || spatialCategoryId === undefined) {
     const ids = withEditTxn(db, (txn) => ({
-      spatialCategoryId: SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "SpatialCategory1", new SubCategoryAppearance()),
-      physicalModelId: PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "PhysicalModel1"),
+      spatialCategoryId: SpatialCategory.insert(txn, IModel.dictionaryId, "SpatialCategory1", new SubCategoryAppearance()),
+      physicalModelId: PhysicalModel.insert(txn, IModel.rootSubjectId, "PhysicalModel1"),
     }));
     spatialCategoryId = ids.spatialCategoryId;
     physicalModelId = ids.physicalModelId;

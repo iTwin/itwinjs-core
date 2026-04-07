@@ -72,7 +72,7 @@ describe("Discarding local txns test", async () => {
     drawingModelId = createdDrawingModelId;
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (!drawingCategoryId)
-      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
     await firstBriefcase.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
     await secondBriefcase.pullChanges();
 

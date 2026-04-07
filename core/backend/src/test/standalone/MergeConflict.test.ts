@@ -38,7 +38,7 @@ export async function createNewModelAndCategory(txn: EditTxn, parent?: Id64Strin
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
   const spatialCategoryId = txn.insertElement(category.toJSON());
-  category.setDefaultAppearanceWithTxn(txn, new SubCategoryAppearance({ color: 0xff0000 }));
+  category.setDefaultAppearance(txn, new SubCategoryAppearance({ color: 0xff0000 }));
 
   return { modelId, spatialCategoryId };
 }
@@ -101,7 +101,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
 
-    const spatialCategoryId = SpatialCategory.insertWithTxn(
+    const spatialCategoryId = SpatialCategory.insert(
       b1Txn,
       dictionary.id,
       newCategoryCode.value,
@@ -248,7 +248,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
 
-    const spatialCategoryId = SpatialCategory.insertWithTxn(
+    const spatialCategoryId = SpatialCategory.insert(
       b1Txn,
       dictionary.id,
       newCategoryCode.value,
@@ -397,7 +397,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
 
     await b1.locks.acquireLocks({ shared: dictionary.id });
-    const spatialCategoryId = SpatialCategory.insertWithTxn(
+    const spatialCategoryId = SpatialCategory.insert(
       b1Txn,
       dictionary.id,
       newCategoryCode.value,

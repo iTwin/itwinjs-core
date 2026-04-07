@@ -30,7 +30,7 @@ async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
     await iModel.locks.acquireLocks({
       shared: subjectId,
     });
-    documentListModelId = withEditTxn(iModel, (txn) => DocumentListModel.insertWithTxn(txn, subjectId, documentListName));
+    documentListModelId = withEditTxn(iModel, (txn) => DocumentListModel.insert(txn, subjectId, documentListName));
   }
 
   return documentListModelId;
@@ -88,7 +88,7 @@ describe("SheetInformationAspect", () => {
     describe("setSheetInformation", () => {
       it("throws", () => {
         expect(
-          () => withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformationWithTxn(txn, { designedBy: "me" }, sheetId))
+          () => withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformation(txn, { designedBy: "me" }, sheetId))
         ).to.throw("SheetInformationAspect requires BisCore v01.00.25 or newer");
       });
     });
@@ -113,7 +113,7 @@ describe("SheetInformationAspect", () => {
     }
 
     function setSheetInfo(elemId: string, info: SheetInformation | undefined): void {
-      withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformationWithTxn(txn, info, elemId));
+      withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformation(txn, info, elemId));
     }
 
     describe("getSheetInformation", () => {

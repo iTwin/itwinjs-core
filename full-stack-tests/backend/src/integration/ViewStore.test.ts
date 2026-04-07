@@ -45,7 +45,7 @@ function insertSpatialCategory(txn: EditTxn, modelId: Id64String, categoryName: 
     transp: 0,
     invisible: false,
   };
-  return SpatialCategory.insertWithTxn(txn, modelId, categoryName, appearance);
+  return SpatialCategory.insert(txn, modelId, categoryName, appearance);
 }
 
 function createRectangle(size: Point2d): GeometryStreamProps {
@@ -78,45 +78,45 @@ async function populateDb(sourceDb: IModelDb) {
   await withEditTxn(sourceDb, async (txn) => {
     txn.updateProjectExtents(projectExtents);
     // Insert CodeSpecs
-    const codeSpecId1 = sourceDb.codeSpecs.insertWithTxn(txn, "SourceCodeSpec", CodeScopeSpec.Type.Model);
-    const codeSpecId2 = sourceDb.codeSpecs.insertWithTxn(txn, "ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
-    const codeSpecId3 = sourceDb.codeSpecs.insertWithTxn(txn, "InformationRecords", CodeScopeSpec.Type.Model);
+    const codeSpecId1 = sourceDb.codeSpecs.insert(txn, "SourceCodeSpec", CodeScopeSpec.Type.Model);
+    const codeSpecId2 = sourceDb.codeSpecs.insert(txn, "ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
+    const codeSpecId3 = sourceDb.codeSpecs.insert(txn, "InformationRecords", CodeScopeSpec.Type.Model);
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
     assert.isTrue(Id64.isValidId64(codeSpecId3));
     // Insert RepositoryModel structure
-    const subjectId = Subject.insertWithTxn(txn, IModel.rootSubjectId, "Subject", "Subject Description");
+    const subjectId = Subject.insert(txn, IModel.rootSubjectId, "Subject", "Subject Description");
     assert.isTrue(Id64.isValidId64(subjectId));
-    const sourceOnlySubjectId = Subject.insertWithTxn(txn, IModel.rootSubjectId, "Only in Source");
+    const sourceOnlySubjectId = Subject.insert(txn, IModel.rootSubjectId, "Only in Source");
     assert.isTrue(Id64.isValidId64(sourceOnlySubjectId));
-    const definitionModelId = DefinitionModel.insertWithTxn(txn, subjectId, "Definition");
+    const definitionModelId = DefinitionModel.insert(txn, subjectId, "Definition");
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const informationModelId = InformationRecordModel.insertWithTxn(txn, subjectId, "Information");
+    const informationModelId = InformationRecordModel.insert(txn, subjectId, "Information");
     assert.isTrue(Id64.isValidId64(informationModelId));
-    const groupModelId = GroupModel.insertWithTxn(txn, subjectId, "Group");
+    const groupModelId = GroupModel.insert(txn, subjectId, "Group");
     assert.isTrue(Id64.isValidId64(groupModelId));
-    const physicalModelId = PhysicalModel.insertWithTxn(txn, subjectId, "Physical");
+    const physicalModelId = PhysicalModel.insert(txn, subjectId, "Physical");
     assert.isTrue(Id64.isValidId64(physicalModelId));
-    const spatialLocationModelId = SpatialLocationModel.insertWithTxn(txn, subjectId, "SpatialLocation", true);
+    const spatialLocationModelId = SpatialLocationModel.insert(txn, subjectId, "SpatialLocation", true);
     assert.isTrue(Id64.isValidId64(spatialLocationModelId));
-    const documentListModelId = DocumentListModel.insertWithTxn(txn, subjectId, "Document");
+    const documentListModelId = DocumentListModel.insert(txn, subjectId, "Document");
     assert.isTrue(Id64.isValidId64(documentListModelId));
-    const drawingId = Drawing.insertWithTxn(txn, documentListModelId, "Drawing");
+    const drawingId = Drawing.insert(txn, documentListModelId, "Drawing");
     assert.isTrue(Id64.isValidId64(drawingId));
     // Insert DefinitionElements
-    const modelSelectorId = ModelSelector.insertWithTxn(txn, definitionModelId, "SpatialModels", [physicalModelId, spatialLocationModelId]);
+    const modelSelectorId = ModelSelector.insert(txn, definitionModelId, "SpatialModels", [physicalModelId, spatialLocationModelId]);
     assert.isTrue(Id64.isValidId64(modelSelectorId));
     const spatialCategoryId = insertSpatialCategory(txn, definitionModelId, "SpatialCategory", ColorDef.green);
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const sourcePhysicalCategoryId = insertSpatialCategory(txn, definitionModelId, "SourcePhysicalCategory", ColorDef.blue);
     assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
-    const subCategoryId = SubCategory.insertWithTxn(txn, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
+    const subCategoryId = SubCategory.insert(txn, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
     assert.isTrue(Id64.isValidId64(subCategoryId));
-    const drawingCategoryId = DrawingCategory.insertWithTxn(txn, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    const drawingCategoryId = DrawingCategory.insert(txn, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
-    const spatialCategorySelectorId = CategorySelector.insertWithTxn(txn, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
+    const spatialCategorySelectorId = CategorySelector.insert(txn, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
-    const drawingCategorySelectorId = CategorySelector.insertWithTxn(txn, definitionModelId, "DrawingCategories", [drawingCategoryId]);
+    const drawingCategorySelectorId = CategorySelector.insert(txn, definitionModelId, "DrawingCategories", [drawingCategoryId]);
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
     const auxCoordSystemProps: AuxCoordSystem2dProps = {
       classFullName: AuxCoordSystem2d.classFullName,
@@ -125,7 +125,7 @@ async function populateDb(sourceDb: IModelDb) {
     };
     auxCoordSystemId = txn.insertElement(auxCoordSystemProps);
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
-    const renderMaterialId = RenderMaterialElement.insertWithTxn(txn, definitionModelId, "RenderMaterial", { paletteName: "PaletteName" });
+    const renderMaterialId = RenderMaterialElement.insert(txn, definitionModelId, "RenderMaterial", { paletteName: "PaletteName" });
     assert.isTrue(Id64.isValidId64(renderMaterialId));
     // Insert DrawingGraphics
     const drawingGraphicProps1: GeometricElement2dProps = {
@@ -151,7 +151,7 @@ async function populateDb(sourceDb: IModelDb) {
     const drawingGraphicId2 = txn.insertElement(drawingGraphicProps2);
     assert.isTrue(Id64.isValidId64(drawingGraphicId2));
     // Insert DisplayStyles
-    const displayStyle2dId = DisplayStyle2d.insertWithTxn(txn, definitionModelId, "DisplayStyle2d");
+    const displayStyle2dId = DisplayStyle2d.insert(txn, definitionModelId, "DisplayStyle2d");
     assert.isTrue(Id64.isValidId64(displayStyle2dId));
     const displayStyle3d: DisplayStyle3d = DisplayStyle3d.create(sourceDb, definitionModelId, "DisplayStyle3d");
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
@@ -166,13 +166,13 @@ async function populateDb(sourceDb: IModelDb) {
         },
       },
     });
-    const displayStyle3dId = displayStyle3d.insertWithTxn(txn);
+    const displayStyle3dId = displayStyle3d.insert(txn);
     assert.isTrue(Id64.isValidId64(displayStyle3dId));
     // Insert ViewDefinitions
-    const viewId = OrthographicViewDefinition.insertWithTxn(txn, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
+    const viewId = OrthographicViewDefinition.insert(txn, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
     assert.isTrue(Id64.isValidId64(viewId));
     const drawingViewRange = new Range2d(0, 0, 100, 100);
-    drawingViewId = DrawingViewDefinition.insertWithTxn(txn, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    drawingViewId = DrawingViewDefinition.insert(txn, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
     assert.isTrue(Id64.isValidId64(drawingViewId));
   });
 }
@@ -275,12 +275,12 @@ describe("ViewStore", function (this: Suite) {
 
     const categories = ["0x101", "0x22"];
     const cs1Row = await vs1locker.addCategorySelector({ selector: { ids: categories }, name: "default" });
-    const cs1Id = withEditTxn(iModel, (txn) => CategorySelector.insertWithTxn(txn, IModel.dictionaryId, "default", categories));
+    const cs1Id = withEditTxn(iModel, (txn) => CategorySelector.insert(txn, IModel.dictionaryId, "default", categories));
     expect(Id64.isValid(cs1Id)).true;
     expect(cs1Row).equals("@1");
 
     const models = ["0x11", "0x32"];
-    const ms1Id = withEditTxn(iModel, (txn) => ModelSelector.insertWithTxn(txn, IModel.dictionaryId, "default", models));
+    const ms1Id = withEditTxn(iModel, (txn) => ModelSelector.insert(txn, IModel.dictionaryId, "default", models));
     const ms1Row = await vs1locker.addModelSelector({ selector: { ids: models }, name: "default" });
     expect(Id64.isValid(ms1Id)).true;
     expect(ms1Row).equals("@1");

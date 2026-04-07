@@ -31,8 +31,8 @@ describe("Model geometry changes", () => {
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     withEditTxn(imodel, "set up", (txn) => {
-      modelId = PhysicalModel.insertWithTxn(txn, IModel.rootSubjectId, "TestModel");
-      categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+      modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestModel");
+      categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     });
     imodel[_nativeDb].deleteAllTxns();
     imodel.txns.onGeometryChanged.addListener((props) => lastChanges = props);

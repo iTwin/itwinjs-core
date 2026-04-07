@@ -52,12 +52,12 @@ describe("exportGraphics", () => {
       props.pattern_scale = patternScale;
     if (patternScaleMode)
       props.pattern_scalemode = patternScaleMode;
-    return withEditTxn(iModel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props }));
+    return withEditTxn(iModel, (txn) => RenderMaterialElement.insert(txn, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props }));
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
     const colors = colorDef.colors;
-    return withEditTxn(iModel, (txn) => RenderMaterialElement.insertWithTxn(txn, IModel.dictionaryId, name, {
+    return withEditTxn(iModel, (txn) => RenderMaterialElement.insert(txn, IModel.dictionaryId, name, {
       paletteName: "test-palette",
       color: [colors.r / 255, colors.g / 255, colors.b / 255],
       transmit: colors.t / 255,
@@ -227,7 +227,7 @@ describe("exportGraphics", () => {
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    return textureIdString = withEditTxn(iModel, (txn) => Texture.insertTextureWithTxn(txn, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData));
+    return textureIdString = withEditTxn(iModel, (txn) => Texture.insertTexture(txn, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData));
   }
 
   it("handles materials with textures", () => {
@@ -703,16 +703,16 @@ describe("exportGraphics", () => {
     const geomPartId = insertGeometryPart(partProps);
 
     const styleId = withEditTxn(iModel, (txn) => {
-      const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponentWithTxn(txn, { geomPartId }); // base and size will be set automatically...
+      const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(txn, { geomPartId }); // base and size will be set automatically...
       assert.isTrue(undefined !== pointSymbolData);
 
-      const strokePointData = LineStyleDefinition.Utils.createStrokePointComponentWithTxn(txn, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+      const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(txn, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
       assert.isTrue(undefined !== strokePointData);
 
-      const compoundData = LineStyleDefinition.Utils.createCompoundComponentWithTxn(txn, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+      const compoundData = LineStyleDefinition.Utils.createCompoundComponent(txn, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
       assert.isTrue(undefined !== compoundData);
 
-      return LineStyleDefinition.Utils.createStyleWithTxn(txn, IModel.dictionaryId, "TestArrowStyle", compoundData);
+      return LineStyleDefinition.Utils.createStyle(txn, IModel.dictionaryId, "TestArrowStyle", compoundData);
     });
     assert.isTrue(Id64.isValidId64(styleId));
 

@@ -149,7 +149,7 @@ describe("PerformanceElementsTests", () => {
         const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
         withEditTxn(seedIModel, (txn) => {
           for (let m = 0; m < size; ++m) {
@@ -184,7 +184,7 @@ describe("PerformanceElementsTests", () => {
           const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
           if (undefined === spatialCategoryId)
-            spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+            spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
           const totalTime = withEditTxn(perfimodel, (txn) => {
             let time = 0.0;
@@ -368,7 +368,7 @@ describe("PerformanceElementsTests2d", () => {
         const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = withEditTxn(seedIModel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+          drawingCategoryId = withEditTxn(seedIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
         withEditTxn(seedIModel, (txn) => {
           for (let m = 0; m < size; ++m) {
@@ -407,7 +407,7 @@ describe("PerformanceElementsTests2d", () => {
           const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
           let drawingCategoryId = DrawingCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MyDrawingCategory");
           if (undefined === drawingCategoryId)
-            drawingCategoryId = withEditTxn(perfimodel, (txn) => DrawingCategory.insertWithTxn(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+            drawingCategoryId = withEditTxn(perfimodel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
           const totalTime = withEditTxn(perfimodel, (txn) => {
             let time = 0.0;
@@ -626,7 +626,7 @@ describe("PerformanceElementGetMetadata", () => {
     const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, "TestCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
+      spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
 
     const propsTemplate = {
       model: newModelId,

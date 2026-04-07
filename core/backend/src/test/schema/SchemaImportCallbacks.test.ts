@@ -852,7 +852,7 @@ describe("Schema Import Callbacks", () => {
       imodel.channels.addAllowedChannel(channelKey);
 
       // Create a channel
-      channelRootId = withEditTxn(imodel, (txn) => imodel.channels.insertChannelSubjectWithTxn({
+      channelRootId = withEditTxn(imodel, (txn) => imodel.channels.insertChannelSubject({
         subjectName: "Test Channel",
         channelKey,
         txn,
@@ -942,7 +942,7 @@ describe("Schema Import Callbacks", () => {
       briefcaseDb.channels.addAllowedChannel(channelKey);
 
       if (briefcaseDb.channels.queryChannelRoot(channelKey) === undefined) {
-        withEditTxn(briefcaseDb, (txn) => briefcaseDb.channels.insertChannelSubjectWithTxn({
+        withEditTxn(briefcaseDb, (txn) => briefcaseDb.channels.insertChannelSubject({
           subjectName: "Test Channel",
           channelKey,
           txn,

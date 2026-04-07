@@ -74,7 +74,7 @@ describe("ProjectInformationRecord", () => {
         ...projectProps,
       });
 
-      const recordId = withEditTxn(db, (txn) => record.insertWithTxn(txn));
+      const recordId = withEditTxn(db, (txn) => record.insert(txn));
 
       record = db.elements.getElement<ProjectInformationRecord>(recordId);
       expect(record).instanceof(ProjectInformationRecord);
@@ -97,8 +97,10 @@ describe("ProjectInformationRecord", () => {
       });
 
       withEditTxn(db, (txn) => {
-        expect(() => record.insertWithTxn(txn)).to.throw("ProjectInformationRecord must be a child of a Subject");
+        expect(() => record.insert(txn)).to.throw("ProjectInformationRecord must be a child of a Subject");
       });
     });
   });
 });
+
+

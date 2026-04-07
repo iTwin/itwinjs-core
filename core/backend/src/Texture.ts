@@ -96,15 +96,14 @@ export class Texture extends DefinitionElement {
    * @see [[insertTexture]] to insert a new texture into the iModel.
    * @beta
    */
-  public static insertTextureWithTxn(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
-    const texture = this.createTexture(txn.iModel, definitionModelId, name, format, data, description);
-    return texture.insertWithTxn(txn);
-  }
-
+  public static insertTexture(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
   /** Insert a new texture into a [[DefinitionModel]].
-   * @deprecated Use Texture.insertTextureWithTxn instead.
+   * @deprecated Use Texture.insertTexture(txn, ...) instead.
    */
-  public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
-    return this.insertTextureWithTxn(iModelDb[_implicitTxn], definitionModelId, name, format, data, description);
+  public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
+  public static insertTexture(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const texture = this.createTexture(txn.iModel, definitionModelId, name, format, data, description);
+    return texture.insert(txn);
   }
 }

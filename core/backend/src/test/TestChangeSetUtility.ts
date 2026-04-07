@@ -35,7 +35,7 @@ export class TestChangeSetUtility {
 
   private async addTestCategory(): Promise<void> {
     withEditTxn(this._iModel, "Added test category", (txn) => {
-      this._categoryId = SpatialCategory.insertWithTxn(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      this._categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     });
   }
 
