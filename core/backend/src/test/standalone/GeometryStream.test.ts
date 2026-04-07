@@ -590,7 +590,7 @@ describe("GeometryStream", () => {
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
-    deleteElementTree({ iModel: imodel, txn: txnForCurrentTest(imodel), topElement: mySubject, maxPasses: 1 });
+    deleteElementTree(txnForCurrentTest(imodel), mySubject, 1);
     expect(imodel.elements.tryGetElement(mySubject)).not.undefined;
   });
 
@@ -601,7 +601,7 @@ describe("GeometryStream", () => {
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
-    deleteElementTree({ iModel: imodel, txn: txnForCurrentTest(imodel), topElement: mySubject, maxPasses: 2 });
+    deleteElementTree(txnForCurrentTest(imodel), mySubject, 2);
     expect(imodel.elements.tryGetElement(mySubject)).undefined;
   });
 

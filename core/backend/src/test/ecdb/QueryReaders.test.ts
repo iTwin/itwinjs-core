@@ -1451,14 +1451,13 @@ describe("createQueryReader vs withQueryReader ", () => {
     FROM ${PhysicalObject.classFullName}
     `;
     const reader = iModelDb.createQueryReader(sql, undefined, { usePrimaryConn: true });
-    const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
     await reader.step(); // step to initialize reader
     const firstId = reader.current[0];
-    withEditTxn(iModelDb, () => elementTreeDeleter.deleteNormalElements(firstId));
+    withEditTxn(iModelDb, (txn) => new TestElementCascadingDeleter(txn).deleteNormalElements(firstId));
     await reader.step(); // step to initialize reader
     const secondId = reader.current[0];
     // This is because ecsqlreader built using createQueryReader caches results and so when it tries to access the second element, it is already deleted from the database and it throws "Not Found" error.
-    expect(() => withEditTxn(iModelDb, () => elementTreeDeleter.deleteNormalElements(secondId))).to.throw();
+    expect(() => withEditTxn(iModelDb, (txn) => new TestElementCascadingDeleter(txn).deleteNormalElements(secondId))).to.throw();
   });
 
   it("Passing while using withQueryReader()", async () => {
@@ -1467,11 +1466,10 @@ describe("createQueryReader vs withQueryReader ", () => {
     FROM ${PhysicalObject.classFullName}
     `;
     iModelDb.withQueryReader(sql, (reader) => {
-      const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
       let cntSteps = 0;
       while (reader.step()) {
         const id = reader.current[0];
-        withEditTxn(iModelDb, () => elementTreeDeleter.deleteNormalElements(id));
+        withEditTxn(iModelDb, (txn) => new TestElementCascadingDeleter(txn).deleteNormalElements(id));
         cntSteps++;
       }
       assert.equal(cntSteps, 1);
