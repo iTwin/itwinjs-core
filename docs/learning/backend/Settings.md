@@ -301,7 +301,7 @@ If you need to pin the iModel to a specific version of the iTwin settings — so
 
 For production deployments, settings should be stored in the cloud — versionable, discoverable without opening an iModel, and manageable independently of any resource containers. That is the role of [SettingsDb]($backend).
 
-A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values. Its containers are tagged with `containerType: "settings"`, making them discoverable by iTwinId through [SettingsEditor.queryContainers]($backend) without needing an iModel open.
+A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values. Its containers are tagged with `containerType: "settings"`, making them discoverable by iTwinId through [WorkspaceEditor.queryContainers]($backend) without needing an iModel open.
 
 ```mermaid
 graph LR
@@ -319,24 +319,24 @@ This is what distinguishes a `SettingsDb` from a `WorkspaceDb`: a `SettingsDb` i
 
 A [SettingsDb]($backend) provides two read methods:
 
-- [SettingsDb.getSetting]($backend) — returns the value of a specific setting by name, or `undefined` if it does not exist.
-- [SettingsDb.getSettings]($backend) — returns a deep copy of all settings as a [SettingsContainer]($backend).
+- [WorkspaceDb.getString]($backend) — returns the value of a specific setting resource by name, or `undefined` if it does not exist.
+- [WorkspaceDb.getString]($backend) — returns the raw JSON of all settings as a string, which can be parsed into a [SettingsContainer]($backend).
 
-Both methods auto-open and auto-close the underlying database if it is not already open. For batches of reads, call [SettingsDb.open]($backend) before the operations and [SettingsDb.close]($backend) afterwards to avoid repeated open/close overhead.
+Both methods work on the underlying [WorkspaceDb]($backend). For batches of reads, load the `SettingsDb` once via [Workspace.loadSettingsDictionary]($backend) to avoid repeated open/close overhead.
 
 ### How SettingsDb fits the priority system
 
-When a `SettingsDb` is loaded into the runtime via [Workspace.getSettingsDb]($backend), its contents become **one** [SettingsDictionary]($backend) in the [Settings]($backend) priority stack. The data flow is:
+When a `SettingsDb` is loaded into the runtime via [Workspace.loadSettingsDictionary]($backend), its contents become **one** [SettingsDictionary]($backend) in the [Settings]($backend) priority stack. The data flow is:
 
 `SettingsDb` → JSON → `Settings.addJson()` → one `SettingsDictionary` in the priority stack
 
-Each `SettingsDb` occupies a single slot in the [priority system](#settings-priorities). The priority is **explicitly specified** by the caller via [GetSettingsDbArgs.priority]($backend) — it is not automatically derived from the container's scope. Multiple `SettingsDb`s loaded at different priorities become separate dictionaries; the runtime resolves conflicts using the standard priority rules.
+Each `SettingsDb` occupies a single slot in the [priority system](#settings-priorities). The priority is **explicitly specified** by the caller via [WorkspaceDbSettingsProps.priority]($backend) — it is not automatically derived from the container's scope. Multiple `SettingsDb`s loaded at different priorities become separate dictionaries; the runtime resolves conflicts using the standard priority rules.
 
-> Note: The container must already be loaded via [Workspace.getContainer]($backend) or [Workspace.getContainerAsync]($backend) before calling [Workspace.getSettingsDb]($backend).
+> Note: The container must already be loaded via [Workspace.getContainer]($backend) or [Workspace.getContainerAsync]($backend) before calling [Workspace.loadSettingsDictionary]($backend).
 
 ### Discovering settings containers
 
-You can find all settings containers for a given iTwin by using [SettingsEditor.queryContainers]($backend):
+You can find all settings containers for a given iTwin by using [WorkspaceEditor.queryContainers]($backend):
 
 ```ts
 [[include:SettingsDb.discoverContainers]]
@@ -344,7 +344,7 @@ You can find all settings containers for a given iTwin by using [SettingsEditor.
 
 This is useful when building an admin UI that lets users choose which settings profile to load, without hardcoding container IDs.
 
-To open matching containers for editing in a single call, use [SettingsEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container:
+To open matching containers for editing in a single call, use [WorkspaceEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container:
 
 ```ts
 [[include:SettingsDb.findContainers]]
@@ -362,12 +362,12 @@ The example below creates a new cloud container, writes some initial settings, a
 
 The key steps are:
 
-1. **Create an editor** — call [SettingsEditor.construct]($backend). The caller is responsible for calling `close()` when finished.
-2. **Create a container** — [SettingsEditor.createNewCloudContainer]($backend) creates a container automatically tagged with `containerType: "settings"`.
-3. **Acquire the write lock** — [EditableSettingsCloudContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
-4. **Open an EditableSettingsDb** — [EditableSettingsCloudContainer.getEditableDb]($backend) returns an [EditableSettingsDb]($backend).
-5. **Write settings** — use [EditableSettingsDb.updateSettings]($backend) to replace all settings, or [EditableSettingsDb.updateSetting]($backend) to update a single entry.
-6. **Release the lock** — [EditableSettingsCloudContainer.releaseWriteLock]($backend) publishes your changes. Alternatively, [EditableSettingsCloudContainer.abandonChanges]($backend) discards them.
+1. **Create an editor** — call [WorkspaceEditor.construct]($backend). The caller is responsible for calling `close()` when finished.
+2. **Create a container** — [WorkspaceEditor.createNewCloudContainer]($backend) creates a container automatically tagged with `containerType: "settings"`.
+3. **Acquire the write lock** — [EditableWorkspaceContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
+4. **Open an EditableWorkspaceDb** — [EditableWorkspaceContainer.getEditableDb]($backend) returns an [EditableWorkspaceDb]($backend).
+5. **Write settings** — use [EditableWorkspaceDb.updateSettingsResource]($backend) to replace all settings in the resource.
+6. **Release the lock** — [EditableWorkspaceContainer.releaseWriteLock]($backend) publishes your changes. Alternatively, [EditableWorkspaceContainer.abandonChanges]($backend) discards them.
 
 > **Important**: Always release the write lock when you are done. Failing to release it will prevent other administrators from modifying the container until the lock expires.
 
@@ -375,15 +375,15 @@ The key steps are:
 
 ### Updating individual settings
 
-Often you need to change a single setting without touching the rest. [EditableSettingsDb.updateSetting]($backend) reads the existing settings, updates the specified entry, and writes the result back — other settings are preserved:
+Often you need to change a single setting without touching the rest. [EditableWorkspaceDb.updateSettingsResource]($backend) reads the existing settings, updates the specified entry, and writes the result back — other settings are preserved:
 
 ```ts
 [[include:SettingsDb.updateSetting]]
 ```
 
-To remove a setting entirely, use [EditableSettingsDb.removeSetting]($backend).
+To remove a setting entirely, use [EditableWorkspaceDb.removeString]($backend).
 
-To inspect all settings in a `SettingsDb`, use [SettingsDb.getSettings]($backend):
+To inspect all settings in a `SettingsDb`, use [WorkspaceDb.getString]($backend):
 
 ```ts
 [[include:SettingsDb.getSettings]]
@@ -391,7 +391,7 @@ To inspect all settings in a `SettingsDb`, use [SettingsDb.getSettings]($backend
 
 ### Versioning
 
-Like [WorkspaceDb]($backend)s, each `SettingsDb` uses [semantic versioning](https://semver.org/). Once a version is published to cloud storage it becomes immutable. To evolve settings, create a new version via [EditableSettingsCloudContainer.createNewSettingsDbVersion]($backend), make changes, and release the write lock. The versioning workflow is the same as described in [creating workspace resources](./Workspace.md#creating-workspace-resources).
+Like [WorkspaceDb]($backend)s, each `SettingsDb` uses [semantic versioning](https://semver.org/). Once a version is published to cloud storage it becomes immutable. To evolve settings, create a new version via [EditableWorkspaceContainer.createNewWorkspaceDbVersion]($backend), make changes, and release the write lock. The versioning workflow is the same as described in [creating workspace resources](./Workspace.md#creating-workspace-resources).
 
 ### Putting it together: settings that point to resources
 
@@ -399,7 +399,7 @@ In a typical deployment, the end-to-end flow looks like this:
 
 1. **Admin creates a settings container** for the iTwin and writes settings like `"landscapePro/flora/treeDbs"` that point to [WorkspaceDb]($backend)s holding binary resources.
 2. **Admin creates workspace containers** holding the versioned [WorkspaceDb]($backend)s (fonts, textures, templates, etc.).
-3. **At runtime**, the application discovers the settings container via [SettingsEditor.queryContainers]($backend), loads it with [Workspace.getSettingsDb]($backend), which adds a [SettingsDictionary]($backend) to the [Settings]($backend) priority stack.
+3. **At runtime**, the application discovers the settings container via [WorkspaceEditor.queryContainers]($backend), loads it with [Workspace.loadSettingsDictionary]($backend), which adds a [SettingsDictionary]($backend) to the [Settings]($backend) priority stack.
 4. **The application reads settings** — for example, `settings.getObject("landscapePro/flora/treeDbs")` — and uses them to load the appropriate `WorkspaceDb`s.
 
 This two-layer design keeps settings and resources in separate containers with independent access control, versioning, and write locks. See [Workspace resources](./Workspace.md) for how to create and access `WorkspaceDb`s.
