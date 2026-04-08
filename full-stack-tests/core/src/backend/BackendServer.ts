@@ -49,10 +49,6 @@ function loadEnv(envFile: string) {
 export class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
-  public async ping(): Promise<{ commandId: string, version: string }> {
-    return { commandId: "full-stack-tests", version: "1.0.0" };
-  }
-
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
