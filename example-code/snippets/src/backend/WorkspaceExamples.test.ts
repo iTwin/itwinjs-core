@@ -9,7 +9,7 @@ import {
   BlobContainer,
   EditableWorkspaceContainer, EditableWorkspaceDb,
   IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps,
-  SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
+  SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -221,9 +221,9 @@ describe("Workspace Examples", () => {
 
       const range: HardinessRange = { minimum: 6, maximum: 8 };
       await iModel.acquireSchemaLock();
-      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/hardinessRange": range,
-      });
+      }));
       // __PUBLISH_EXTRACT_END__
       const iModelName = iModel.pathName;
       iModel.close();
@@ -533,16 +533,16 @@ describe("Workspace Examples", () => {
       const settingsSourcesForModelRef = iTwinWorkspaceForModelRef.settingsSources;
       assert(undefined !== settingsSourcesForModelRef);
 
-      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/itwinSettingsRef": settingsSourcesForModelRef,
-      });
+      }));
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.OverrideITwinSettingAtIModelLevel
       // The iTwin setting says "naturalistic", but this iModel is a formal garden.
-      iModel.saveSettingDictionary("landscapePro/iModelOverrides", {
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelOverrides", {
         "landscapePro/flora/preferredStyle": "formal",
-      });
+      }));
       // __PUBLISH_EXTRACT_END__
 
       // Reload the iModel so workspace setting dictionaries saved to disk are re-resolved.
@@ -561,9 +561,9 @@ describe("Workspace Examples", () => {
         ? settingsSourcesForModelRef
         : [settingsSourcesForModelRef];
 
-      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/itwinSettingsRef": pinnedSettingsSources,
-      });
+      }));
       // __PUBLISH_EXTRACT_END__
     });
 
