@@ -18,6 +18,8 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { EditTxn } from "../../EditTxn";
 
+/* eslint-disable @typescript-eslint/no-deprecated */ // This test file will be removed subsequently, so we can allow usage of deprecated APIs within it.
+
 function startTestTxn(iModel: BriefcaseDb | SnapshotDb, description = "changeset reader"): EditTxn {
   const txn = new EditTxn(iModel, description);
   txn.start();
