@@ -15,6 +15,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECNativeChangeUnifierCache, ECNativePartialChangeUnifier } from "../../ECNativePartialChangeUnifier";
 import { ECNativeChangeInstance } from "../../ECChangesetReaderTypes";
+import { EditTxn } from "../../EditTxn";
 
 /* eslint-disable @typescript-eslint/naming-convention */ // disabling it because the property names are not in camelcase, and we want to test them as-is
 // -------------------------------------------------------------------------------------------------
@@ -40,6 +41,18 @@ function readTxn(
   return instances;
 }
 
+function startTestTxn(iModel: BriefcaseDb, description = "changeset reader"): EditTxn {
+  const txn = new EditTxn(iModel, description);
+  txn.start();
+  return txn;
+}
+
+async function importSchemaStrings(txn: EditTxn, schemas: string[]): Promise<void> {
+  if (txn.isActive)
+    txn.saveChanges();
+  await txn.iModel.importSchemaStrings(schemas);
+}
+
 describe("ECChangesetReader insert-full", () => {
   let rwIModel: BriefcaseDb;
   let fullElementId: Id64String;
@@ -53,7 +66,7 @@ describe("ECChangesetReader insert-full", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertFull", description: "insertFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    const txn = startTestTxn(rwIModel, "ECChangesetReader insert-full setup");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -94,21 +107,21 @@ describe("ECChangesetReader insert-full", () => {
           <ECNavigationProperty propertyName="RelatedElem" relationshipName="Test2dUsesElement" direction="forward"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrillDownDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "DrillDownCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "DrillDownCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "DrillDownCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
 
-    // Txn 2: insert FULL element â€” every EC primitive type populated
+    // Txn 2: insert FULL element  every EC primitive type populated
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     const geom: GeometryStreamProps = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -116,7 +129,7 @@ describe("ECChangesetReader insert-full", () => {
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ].map((a) => IModelJson.Writer.toIModelJson(a));
 
-    fullElementId = rwIModel.elements.insertElement({
+    fullElementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
@@ -144,7 +157,7 @@ describe("ECChangesetReader insert-full", () => {
       ],
       RelatedElem: { id: drawingCategoryId, relClassName: "TestDomain:Test2dUsesElement" },
     } as any);
-    rwIModel.saveChanges("insert full element");
+    txn.saveChanges("insert full element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
 
@@ -884,7 +897,7 @@ describe("ECChangesetReader insert-partial", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertPartial", description: "insertPartial", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    const txn = startTestTxn(rwIModel, "ECChangesetReader insert-partial");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -925,29 +938,29 @@ describe("ECChangesetReader insert-partial", () => {
           <ECNavigationProperty propertyName="RelatedElem" relationshipName="Test2dUsesElement" direction="forward"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrillDownDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "DrillDownCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "DrillDownCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "DrillDownCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
 
-    // Txn 2: insert PARTIAL element â€” only mandatory props
-    partialElementId = rwIModel.elements.insertElement({
+    // Txn 2: insert PARTIAL element  only mandatory props
+    partialElementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
       code: Code.createEmpty(),
       // StrProp, IntProp, LongProp, DblProp, BoolProp, DtProp, BinProp intentionally absent
     } as any);
-    rwIModel.saveChanges("insert partial element");
+    txn.saveChanges("insert partial element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
 
@@ -1405,7 +1418,7 @@ describe("ECChangesetReader update-full", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "updateFull", description: "updateFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    const txn = startTestTxn(rwIModel, "ECChangesetReader update-full setup");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -1446,19 +1459,19 @@ describe("ECChangesetReader update-full", () => {
           <ECNavigationProperty propertyName="RelatedElem" relationshipName="Test2dUsesElement" direction="forward"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrillDownDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "DrillDownCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "DrillDownCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "DrillDownCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
 
     // Txn 2: insert FULL element (needed as update target)
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
@@ -1468,7 +1481,7 @@ describe("ECChangesetReader update-full", () => {
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ].map((a) => IModelJson.Writer.toIModelJson(a));
 
-    fullElementId = rwIModel.elements.insertElement({
+    fullElementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
@@ -1496,24 +1509,24 @@ describe("ECChangesetReader update-full", () => {
       ],
       RelatedElem: { id: drawingCategoryId, relClassName: "TestDomain:Test2dUsesElement" },
     } as any);
-    rwIModel.saveChanges("insert full element");
+    txn.saveChanges("insert full element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
 
     // Txn 3: insert PARTIAL element (needed as RelatedElem target in the update)
-    partialElementId = rwIModel.elements.insertElement({
+    partialElementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
       code: Code.createEmpty(),
       // StrProp, IntProp, LongProp, DblProp, BoolProp, DtProp, BinProp intentionally absent
     } as any);
-    rwIModel.saveChanges("insert partial element");
+    txn.saveChanges("insert partial element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
 
-    // Txn 4: update FULL element â€” this is the txn under test
+    // Txn 4: update FULL element  this is the txn under test
     // Txn 3: update FULL element — change several property types
     await rwIModel.locks.acquireLocks({ exclusive: fullElementId });
-    rwIModel.elements.updateElement({
+    txn.updateElement({
       ...rwIModel.elements.getElementProps(fullElementId),
       StrProp: "updated",
       IntProp: 99,
@@ -1538,7 +1551,7 @@ describe("ECChangesetReader update-full", () => {
       ],
       RelatedElem: { id: partialElementId, relClassName: "TestDomain:Test2dUsesElement" },
     });
-    rwIModel.saveChanges("update full element");
+    txn.saveChanges("update full element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
 
@@ -1896,7 +1909,7 @@ describe("ECChangesetReader update-full", () => {
     expect(elemNew).to.exist;
     assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elemNew!.ECClassId));
     assert.equal(elemNew!.StrProp, "updated");
-    // BinProp is a blob â€” should be abbreviated to { bytes: N }
+    // BinProp is a blob  should be abbreviated to { bytes: N }
     assert.include(String(elemNew!.BinProp), "bytes");
     assert.equal(elemNew!.$meta.op, "Updated");
     assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: true });
@@ -2047,7 +2060,7 @@ describe("ECChangesetReader delete-partial", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "deletePartial", description: "deletePartial", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    const txn = startTestTxn(rwIModel, "ECChangesetReader delete-partial");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -2088,35 +2101,35 @@ describe("ECChangesetReader delete-partial", () => {
           <ECNavigationProperty propertyName="RelatedElem" relationshipName="Test2dUsesElement" direction="forward"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrillDownDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "DrillDownCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "DrillDownCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "DrillDownCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
 
     // Txn 2: insert PARTIAL element
-    partialElementId = rwIModel.elements.insertElement({
+    partialElementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
       code: Code.createEmpty(),
       // StrProp, IntProp, LongProp, DblProp, BoolProp, DtProp, BinProp intentionally absent
     } as any);
-    rwIModel.saveChanges("insert partial element");
+    txn.saveChanges("insert partial element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
     // Wait so that LastMod on bis_Model gets a distinct timestamp before the delete txn
     await new Promise((resolve) => setTimeout(resolve, 2000));
     await rwIModel.locks.acquireLocks({ exclusive: partialElementId });
-    rwIModel.elements.deleteElement(partialElementId);
-    rwIModel.saveChanges("delete partial element");
+    txn.deleteElement(partialElementId);
+    txn.saveChanges("delete partial element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
 
@@ -2464,7 +2477,7 @@ describe("ECChangesetReader filters", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertFull", description: "insertFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    const txn = startTestTxn(rwIModel, "ECChangesetReader filters");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -2505,21 +2518,21 @@ describe("ECChangesetReader filters", () => {
           <ECNavigationProperty propertyName="RelatedElem" relationshipName="Test2dUsesElement" direction="forward"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrillDownDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "DrillDownCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "DrillDownCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "DrillDownCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
 
-    // Txn 2: insert FULL element â€” every EC primitive type populated
+    // Txn 2: insert FULL element  every EC primitive type populated
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     const geom: GeometryStreamProps = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -2527,7 +2540,7 @@ describe("ECChangesetReader filters", () => {
       Arc3d.createXY(Point3d.create(-5, -5), 20),
     ].map((a) => IModelJson.Writer.toIModelJson(a));
 
-    fullElementId = rwIModel.elements.insertElement({
+    fullElementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
@@ -2555,7 +2568,7 @@ describe("ECChangesetReader filters", () => {
       ],
       RelatedElem: { id: drawingCategoryId, relClassName: "TestDomain:Test2dUsesElement" },
     } as any);
-    rwIModel.saveChanges("insert full element");
+    txn.saveChanges("insert full element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
 
@@ -2753,6 +2766,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
   let rwIModelId: string;
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetOpenFileGroup", KnownTestLocations.outputDir);
@@ -2761,9 +2775,11 @@ describe("ECChangesetReader — openFile + openGroup", () => {
     rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "openFileGroup", description: "openFileGroup", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
 
+    txn = startTestTxn(rwIModel, "ECChangesetReader setup");
+
     // Push 1: import schema + drawing model setup
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
-  <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
       <ECEntityClass typeName="SimpleElement">
           <BaseClass>bis:GraphicalElement2d</BaseClass>
@@ -2775,19 +2791,19 @@ describe("ECChangesetReader — openFile + openGroup", () => {
           <ECArrayProperty propertyName="GuidArrProp" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "OpenFileDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "OpenFileCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "OpenFileCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "OpenFileCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,128,255)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
     await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
   });
 
@@ -2801,7 +2817,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     // --- Push 2: insert element — only Y and Z set on Pt3dProp, X omitted (defaults to 0) ---
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    const elementId: Id64String = rwIModel.elements.insertElement({
+    const elementId: Id64String = txn.insertElement({
       classFullName: "TestDomain:SimpleElement",
       model: drawingModelId,
       category: drawingCategoryId,
@@ -2813,7 +2829,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
         "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
       ],
     } as any);
-    rwIModel.saveChanges("insert element");
+    txn.saveChanges("insert element");
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
 
 
@@ -2863,7 +2879,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
 
     // --- Push 3: update element — change all custom props ---
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.updateElement({
+    txn.updateElement({
       ...rwIModel.elements.getElementProps(elementId),
       Pt3dProp: { x: 1.0, y: 9.9, z: 7.7 },
       BinProp: new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd]),
@@ -2871,7 +2887,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
         "ffffffff-0000-1111-2222-333344445555",
       ],
     });
-    rwIModel.saveChanges("update element");
+    txn.saveChanges("update element");
     await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
 
     // Download all changesets: [setup(0), insert(1), update(2)]
@@ -2978,6 +2994,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
   let rwIModelId: string;
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetOpenFileGroup", KnownTestLocations.outputDir);
@@ -2985,7 +3002,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     const iTwinId = HubMock.iTwinId;
     rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "openFileGroup", description: "openFileGroup", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    txn = startTestTxn(rwIModel, "ECChangesetReader setup");
     // Push 1: import schema + drawing model setup
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -3000,19 +3017,19 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
           <ECArrayProperty propertyName="GuidArrProp" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
       </ECEntityClass>
   </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "OpenFileDrawing";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "OpenFileCategory");
-    drawingCategoryId = foundCat ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "OpenFileCategory",
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "OpenFileCategory",
       new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,128,255)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
     await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
   });
 
@@ -3023,7 +3040,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
 
   it("opens local and in-memory changes", async () => {
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    const elementId: Id64String = rwIModel.elements.insertElement({
+    const elementId: Id64String = txn.insertElement({
       classFullName: "TestDomain:SimpleElement",
       model: drawingModelId,
       category: drawingCategoryId,
@@ -3035,7 +3052,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
         "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
       ],
     } as any);
-    rwIModel.saveChanges("insert element");
+    txn.saveChanges("insert element");
 
 
     // === openFile: insert changeset ===
@@ -3081,7 +3098,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
 
     // --- Push 3: update element — change all custom props ---
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.updateElement({
+    txn.updateElement({
       ...rwIModel.elements.getElementProps(elementId),
       Pt3dProp: { x: 1.0, y: 9.9, z: 7.7 },
       BinProp: new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd]),
@@ -3191,6 +3208,7 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
   let drawingModelId: Id64String;
   let categoryId1: Id64String;
   let categoryId2: Id64String;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetReaderBugsTest", KnownTestLocations.outputDir);
@@ -3199,7 +3217,7 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
     rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "bugTest", description: "BugTest", accessToken: adminToken });
     assert.isNotEmpty(rwIModelId);
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
+    txn = startTestTxn(rwIModel, "ECChangesetReaderBugsTest setup");
     // Push 1: import schema + set up drawing model and two categories
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -3209,21 +3227,21 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
             <ECProperty propertyName="s" typeName="point2d"/>
         </ECEntityClass>
     </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
+    await importSchemaStrings(txn, [schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
-    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
 
     categoryId1 = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "Category1")
-      ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "Category1", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      ?? DrawingCategory.insert(txn, IModel.dictionaryId, "Category1", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     categoryId2 = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "Category2")
-      ?? DrawingCategory.insert(rwIModel, IModel.dictionaryId, "Category2", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,0,255)").toJSON() }));
+      ?? DrawingCategory.insert(txn, IModel.dictionaryId, "Category2", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,0,255)").toJSON() }));
 
-    rwIModel.saveChanges("setup");
+    txn.saveChanges("setup");
     await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
   });
 
@@ -3234,7 +3252,6 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
 
   it("openFile() reads the middle changeset of an insert → update → delete lifecycle", async () => {
     const adminToken = "super manager token";
-
     // Push 2 (insert): insert element with category1
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -3246,7 +3263,7 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
       geometryStream.push(IModelJson.Writer.toIModelJson(geom));
 
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    elementId = rwIModel.elements.insertElement({
+    elementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: categoryId1,
@@ -3255,22 +3272,22 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
       s: { x: 1.5, y: 2.5 },
     } as any);
     assert.isTrue(Id64.isValidId64(elementId));
-    rwIModel.saveChanges("insert element");
+    txn.saveChanges("insert element");
     await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
 
     // Push 3 (update): change category to category2
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.updateElement({
+    txn.updateElement({
       ...rwIModel.elements.getElementProps(elementId),
       category: categoryId2,
     });
-    rwIModel.saveChanges("update element");
+    txn.saveChanges("update element");
     await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
 
     // Push 4 (delete): delete the element
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.deleteElement(elementId);
-    rwIModel.saveChanges("delete element");
+    txn.deleteElement(elementId);
+    txn.saveChanges("delete element");
     await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
     // changesets: [setup, insert, update, delete] — 4 total; index 2 = update changeset
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
@@ -3313,7 +3330,7 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
       geometryStream.push(IModelJson.Writer.toIModelJson(geom));
 
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-    elementId = rwIModel.elements.insertElement({
+    elementId = txn.insertElement({
       classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: categoryId1,
@@ -3322,23 +3339,23 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
       s: { x: 1.5, y: 2.5 },
     } as any);
     assert.isTrue(Id64.isValidId64(elementId));
-    rwIModel.saveChanges("insert element");
+    txn.saveChanges("insert element");
 
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.updateElement({
+    txn.updateElement({
       ...rwIModel.elements.getElementProps(elementId),
       s: { x: 100.0, y: 2.5 },
     });
-    rwIModel.saveChanges("update element");
+    txn.saveChanges("update element");
     const txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
     assert.isTrue(Id64.isValidId64(txnId));
 
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
-    rwIModel.elements.updateElement({
+    txn.updateElement({
       ...rwIModel.elements.getElementProps(elementId),
       s: { x: 100.0, y: 200.0 },
     });
-    rwIModel.saveChanges("update element");
+    txn.saveChanges("update element");
 
     using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
     using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());

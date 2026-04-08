@@ -14,6 +14,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 
 /* eslint-disable @typescript-eslint/no-deprecated */ // This test file will be removed subsequently, so we can allow usage of deprecated APIs within it.
+// This test file also contains tests outside of the ECChangesetAdaptor, so be cautious while removing it.
 
 describe("ChangesetReaderAPI", async () => {
   let iTwinId: GuidString;

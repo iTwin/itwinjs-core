@@ -11,6 +11,7 @@ import { ECDb } from "./ECDb";
 import { SqliteStatement } from "./SqliteStatement";
 import { ECNativeChangeInstance, ECNativeChangeSource } from "./ECChangesetReaderTypes";
 import { AnyDb } from "./SqliteChangesetReader";
+import { _nativeDb } from "./internal/Symbols";
 
 // ---------------------------------------------------------------------------
 // ECNativeChangeUnifierCache — interface + factory
@@ -122,11 +123,13 @@ class NativeSqliteBackedInstanceCache implements ECChangeCache {
   }
 
   private dropTempTable(): void {
-    this._db.saveChanges();
-    if (this._db instanceof ECDb)
+    if (this._db instanceof ECDb) {
+      this._db.saveChanges();
       this._db.clearStatementCache();
-    else
+    } else {
+      this._db[_nativeDb].saveChanges();
       this._db.clearCaches();
+    }
     this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt: SqliteStatement) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to drop temp cache table");
