@@ -2,10 +2,10 @@
 
 Every non-trivial iTwin.js application needs two things at run-time: **configuration** (which tools are available, what units to use, which data sources are active) and **resources** (binary assets like fonts, textures, and templates). iTwin.js provides two complementary systems to address these needs:
 
-- **[Settings]($backend)** — a priority-ordered stack of key-value configuration pairs. Configuration flows from cloud-hosted [SettingsDb]($backend) containers into the active [Settings]($backend) runtime, where values can be read by name.
+- **[Settings]($backend)** — a priority-ordered stack of key-value configuration pairs. Configuration flows from cloud-hosted settings containers into the active [Settings]($backend) runtime, where values can be read by name.
 - **[Workspace resources](./Workspace.md)** — versioned binary assets stored in [WorkspaceDb]($backend) containers. Settings tell the application *which* `WorkspaceDb`s to load; the application then retrieves resources from them.
 
-These two systems are deliberately separate. `SettingsDb` containers are discoverable without opening an iModel. `WorkspaceDb` containers are referenced *by* settings. This separation eliminates the circular dependency that would arise if settings had to be loaded from a `WorkspaceDb` just to discover which `WorkspaceDb` to open.
+These two systems are deliberately separate. Settings containers are discoverable without opening an iModel. `WorkspaceDb` containers are referenced *by* settings. This separation eliminates the circular dependency that would arise if settings had to be loaded from a `WorkspaceDb` just to discover which `WorkspaceDb` to open.
 
 At runtime, settings and resources are accessed through one of three workspace scopes:
 
@@ -13,11 +13,13 @@ At runtime, settings and resources are accessed through one of three workspace s
 |---|---|---|
 | [IModelHost.appWorkspace]($backend) | Application-wide defaults and configuration | Available immediately after [IModelHost.startup]($backend) |
 | [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings shared across all iModels in an iTwin | Requires an iTwinId; no iModel needed |
-| [IModelDb.workspace]($backend) | iModel-specific overrides, inherits from app and iTwin scopes | Available when an iModel is open |
+| [IModelDb.workspace]($backend) | iModel-specific overrides, inherits from the app scope (iTwin settings must be loaded explicitly) | Available when an iModel is open |
 
 Each scope layers on top of the previous one through the [Settings priority stack](./Settings.md#settings-priorities). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
 
-## The two database types
+## The two container types
+
+Both container types are built on [CloudSqlite]($backend) with [WorkspaceDb]($backend) as the underlying database, but they serve different roles and are discovered differently.
 
 ```mermaid
 graph LR
@@ -26,12 +28,12 @@ graph LR
         note["Versioned · Immutable once published<br/>Semver-based · Container-scoped"]
     end
 
-    subgraph SettingsContainer["SettingsDb container"]
-        SDB["<b>SettingsDb</b><br/>Key-value config<br/>JSON dictionaries<br/>Priority-based merge"]
+    subgraph SettingsContainer["Settings container"]
+        SDB["<b>Settings</b><br/>Key-value config<br/>JSON dictionaries<br/>Priority-based merge"]
     end
 
-    subgraph WorkspaceContainer["WorkspaceDb container"]
-        WDB["<b>WorkspaceDb</b><br/>Named resources<br/>Strings, blobs, files<br/>On-demand lookup"]
+    subgraph WorkspaceContainer["Workspace container"]
+        WDB["<b>Resources</b><br/>Named resources<br/>Strings, blobs, files<br/>On-demand lookup"]
     end
 
     CloudSqlite --- SettingsContainer
@@ -39,14 +41,14 @@ graph LR
     SDB -->|"settings point to"| WDB
 ```
 
-| | **SettingsDb** | **WorkspaceDb** |
+| | **Settings container** | **Workspace container** |
 |---|---|---|
 | **Purpose** | Application configuration | Data resources |
 | **Content** | JSON key-value dictionaries | Strings, blobs, embedded files |
 | **Container type** | `"settings"` | `"workspace"` |
-| **Discovery** | Via `SettingsEditor.queryContainers()` — no iModel needed | Referenced from settings values |
+| **Discovery** | Via [WorkspaceEditor.queryContainers]($backend) — no iModel needed | Referenced from settings values |
 | **Resolution order** | Loaded first | Loaded second, via settings pointers |
-| **Write API** | [SettingsEditor]($backend) | [WorkspaceEditor]($backend) |
+| **Write API** | [WorkspaceEditor]($backend) with `containerType: "settings"` | [WorkspaceEditor]($backend) |
 | **Versioning** | Semver — immutable once published | Semver — immutable once published |
 
 ## How settings and resources connect
@@ -56,24 +58,24 @@ The flow at runtime always starts from settings:
 ```mermaid
 sequenceDiagram
     participant App as Application
-    participant SE as SettingsEditor
+    participant WE as WorkspaceEditor
     participant W as Workspace
-    participant SDB as SettingsDb
+    participant SC as Settings container
     participant WDB as WorkspaceDb
 
-    Note over App,SE: Setup (admin, one-time)
-    SE->>SE: SettingsEditor.construct()
-    SE->>SDB: createNewCloudContainer() — containerType: "settings"
-    SE->>SDB: Write settings (e.g. "landscapePro/flora/treeDbs" → [containerId, version])
-    SE->>SDB: releaseWriteLock() — publishes, becomes immutable
+    Note over App,WE: Setup (admin, one-time)
+    WE->>WE: WorkspaceEditor.construct()
+    WE->>SC: createNewCloudContainer() — containerType: "settings"
+    WE->>SC: Write settings (e.g. "landscapePro/flora/treeDbs" → [containerId, version])
+    WE->>SC: releaseWriteLock() — publishes, becomes immutable
 
     Note over App,WDB: Runtime (every session)
-    App->>SE: SettingsEditor.queryContainers({ iTwinId })
-    SE-->>App: [{ containerId, label, ... }]
+    App->>WE: queryContainers({ iTwinId, containerType: "settings" })
+    WE-->>App: [{ containerId, label, ... }]
     App->>W: getContainer({ containerId })
-    App->>W: getSettingsDb({ containerId, priority: SettingsPriority.iTwin })
-    W->>SDB: Load all settings into priority stack
-    SDB-->>W: SettingsDictionary added at priority 400
+    App->>W: loadSettingsDictionary({ priority: SettingsPriority.iTwin })
+    W->>SC: Load all settings into priority stack
+    SC-->>W: SettingsDictionary added at priority 400
     App->>W: settings.getObject("landscapePro/flora/treeDbs")
     W-->>App: [{ containerId: "abc...", version: "1.1.0" }]
     App->>W: getWorkspaceDbs({ dbs: [...] })
@@ -82,9 +84,9 @@ sequenceDiagram
 ```
 
 Key points:
-- The `SettingsDb` is discovered **by iTwinId** using `SettingsEditor.queryContainers()` — no iModel is required at this stage.
-- The caller explicitly provides the [SettingsPriority]($backend) when loading a `SettingsDb`. There is no automatic mapping from container scope to priority.
-- Once the `SettingsDb` is loaded, its settings tell the application which `WorkspaceDb` containers to open.
+- The settings container is discovered **by iTwinId** using [WorkspaceEditor.queryContainers]($backend) with `containerType: "settings"` — no iModel is required at this stage.
+- The caller explicitly provides the [SettingsPriority]($backend) when loading settings. There is no automatic mapping from container scope to priority.
+- Once the settings are loaded, they tell the application which `WorkspaceDb` containers to open.
 
 ## Scope and priority
 
@@ -113,7 +115,7 @@ graph TD
 ```
 
 In practice:
-- **Organization-wide defaults** are stored in a `SettingsDb` and loaded at [SettingsPriority.iTwin]($backend) (400).
+- **Organization-wide defaults** are stored in a settings container and loaded at [SettingsPriority.iTwin]($backend) (400).
 - **iModel-specific overrides** are loaded at [SettingsPriority.iModel]($backend) (600) — iModel wins over iTwin.
 - **Application defaults** are loaded at [SettingsPriority.application]($backend) (200) — overrideable by any cloud-backed settings.
 
@@ -127,15 +129,15 @@ Settings containers are tagged with `containerType: "settings"` in their cloud m
 
 ```mermaid
 graph TD
-    Q["SettingsEditor.queryContainers()<br/>{ iTwinId }"]
+    Q["WorkspaceEditor.queryContainers()<br/>{ iTwinId, containerType: 'settings' }"]
 
     Q --> Filter["BlobContainer.service<br/>filters by containerType: 'settings'"]
 
-    Filter --> C1["SettingsDb container A<br/>(iTwin scope)"]
-    Filter --> C2["SettingsDb container B<br/>(iModel scope)"]
+    Filter --> C1["Settings container A<br/>(iTwin scope)"]
+    Filter --> C2["Settings container B<br/>(iModel scope)"]
 
-    C1 --> L1["getContainer() → getSettingsDb()<br/>priority: SettingsPriority.iTwin (400)"]
-    C2 --> L2["getContainer() → getSettingsDb()<br/>priority: SettingsPriority.iModel (600)"]
+    C1 --> L1["getContainer() → loadSettingsDictionary()<br/>priority: SettingsPriority.iTwin (400)"]
+    C2 --> L2["getContainer() → loadSettingsDictionary()<br/>priority: SettingsPriority.iModel (600)"]
 
     L1 --> Stack["Settings priority stack"]
     L2 --> Stack
@@ -146,5 +148,5 @@ This is in contrast to [WorkspaceDb]($backend) containers, which use `containerT
 ## Recommended reading order
 
 1. **This overview** — understand the two systems and three workspace scopes.
-2. **[Settings](./Settings.md)** — how to define settings schemas, load dictionaries, read values, and create/manage [SettingsDb]($backend) containers in the cloud.
+2. **[Settings](./Settings.md)** — how to define settings schemas, load dictionaries, read values, and create/manage settings containers in the cloud.
 3. **[Workspace resources](./Workspace.md)** — how to create, version, and access binary resources stored in [WorkspaceDb]($backend) containers.

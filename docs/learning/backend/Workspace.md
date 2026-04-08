@@ -2,9 +2,9 @@
 
 A [Workspace]($backend) provides the binary resources an iTwin.js application needs at run-time — things like fonts, textures, geographic coordinate system definitions, and other named data assets. These resources are stored in versioned, cloud-hosted [WorkspaceDb]($backend) databases.
 
-> **New to this topic?** Start with the [Workspaces and Settings overview](./WorkspacesAndSettings.md) to understand how `WorkspaceDb`, [SettingsDb]($backend), and the [Settings]($backend) priority stack relate before diving in here.
+> **New to this topic?** Start with the [Workspaces and Settings overview](./WorkspacesAndSettings.md) to understand how `WorkspaceDb`, settings containers, and the [Settings]($backend) priority stack relate before diving in here.
 
-[Settings](./Settings.md) tell the application *which* `WorkspaceDb`s to load; this file explains how those databases are structured, created, and accessed. For everything about settings — schemas, dictionaries, priorities, iTwin settings, iModel settings, and the cloud-hosted `SettingsDb` — see [Settings](./Settings.md).
+[Settings](./Settings.md) tell the application *which* `WorkspaceDb`s to load; this file explains how those databases are structured, created, and accessed. For everything about settings — schemas, dictionaries, priorities, iTwin settings, iModel settings, and cloud-hosted settings containers — see [Settings](./Settings.md).
 
 ## Choosing the right workspace
 

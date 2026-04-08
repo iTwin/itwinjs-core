@@ -588,6 +588,7 @@ describe("Workspace Examples", () => {
       // requests write access tokens, and opens each matching container.
       const settingsEditor = WorkspaceEditor.construct();
       const settingsContainers = await settingsEditor.findContainers({ iTwinId, containerType: "settings" });
+      expect(settingsContainers).to.not.be.undefined;
       // __PUBLISH_EXTRACT_END__
       settingsEditor.close();
 

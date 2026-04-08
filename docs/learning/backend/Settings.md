@@ -2,7 +2,7 @@
 
 [Settings]($backend) are how administrators configure an iTwin.js application for end-users. A setting is a named value — a `string`, `number`, `boolean`, object, or array — that controls application behavior at run-time.
 
-> **New to this topic?** Start with the [Workspaces and Settings overview](./WorkspacesAndSettings.md) to understand how `Settings`, [SettingsDb]($backend), and [WorkspaceDb]($backend) relate before diving in here.
+> **New to this topic?** Start with the [Workspaces and Settings overview](./WorkspacesAndSettings.md) to understand how [Settings]($backend), settings containers, and [WorkspaceDb]($backend) relate before diving in here.
 
 ## What is a setting?
 
@@ -121,12 +121,12 @@ graph TD
     subgraph AppWorkspace["IModelHost.appWorkspace"]
         D["defaults (100)<br/><i>files loaded at startup</i>"]
         A["application (200)<br/><i>supplied by the app at run-time</i>"]
-        O["organization / iTwin (400)<br/><i>SettingsDb loaded for the active iTwin</i>"]
+        O["organization / iTwin (400)<br/><i>settings loaded for the active iTwin</i>"]
     end
 
     subgraph IModelWorkspace["IModelDb.workspace"]
         B["branch (500)"]
-        M["iModel (600)<br/><i>SettingsDb loaded for the active iModel</i>"]
+        M["iModel (600)<br/><i>settings loaded for the active iModel</i>"]
     end
 
     D -->|"overridden by"| A
@@ -161,7 +161,7 @@ When that iTwin's settings are no longer needed, drop the dictionary:
 [[include:Settings.dropITwinDictionary]]
 ```
 
-> Note: The examples above use [Settings.addDictionary]($backend), which loads dictionaries into memory for the current session only. For cloud-backed iTwin and organization settings — where dictionaries are fetched from `SettingsDb` containers on demand — see [SettingsDb](#settingsdb) below.
+> Note: The examples above use [Settings.addDictionary]($backend), which loads dictionaries into memory for the current session only. For cloud-backed iTwin and organization settings — where dictionaries are fetched from settings containers on demand — see [Settings containers](#settings-containers) below.
 
 What about "landscapePro/ui/availableTools"? In the LandscapePro schema, the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that when multiple dictionaries provide a value for the setting, they are merged into a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
@@ -171,11 +171,11 @@ The sections below cover three progressively richer ways to work with settings:
 
 - **Session-only (in-memory):** [Settings.addDictionary]($backend) loads a dictionary for the current session. Good for testing, app defaults, and short-lived overrides.
 - **iTwin / iModel persisted:** [IModelHost.saveSettingDictionary]($backend) writes named dictionaries to cloud storage scoped to an iTwin or iModel. Changes persist across sessions and are shared with other users.
-- **SettingsDb (cloud-managed storage):** A [SettingsDb]($backend) stores individual settings as key-value pairs in a dedicated container with its own versioning and access control — see [SettingsDb](#settingsdb).
+- **Settings container (cloud-managed storage):** A settings container stores settings as key-value pairs in a dedicated cloud container with its own versioning and access control — see [Settings containers](#settings-containers).
 
 ## iTwin settings
 
-Each iTwin has its own workspace with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as named [SettingsDictionary]($backend)s in a [SettingsDb]($backend) (a settings-formatted [WorkspaceDb]($backend)) scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in the container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
+Each iTwin has its own workspace with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as named [SettingsDictionary]($backend)s in a settings container (a [WorkspaceDb]($backend) tagged with `containerType: "settings"`) scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in the container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
 
 Before using iTwin settings, ensure two services are configured:
 
@@ -198,7 +198,7 @@ To save a named settings dictionary for an iTwin, call [IModelHost.saveSettingDi
 [[include:WorkspaceExamples.SaveITwinSettings]]
 ```
 
-If no settings container exists for the specified iTwin yet, one is created automatically. The dictionary name becomes the resource name in the [SettingsDb]($backend). Multiple named dictionaries can coexist in the same container.
+If no settings container exists for the specified iTwin yet, one is created automatically. The dictionary name becomes the resource name in the container. Multiple named dictionaries can coexist in the same container.
 
 ### Deleting iTwin settings
 
@@ -220,9 +220,9 @@ iTwin settings are loaded with [SettingsPriority.iTwin]($backend) priority.
 
 ## iModel settings
 
-> **⚠️ Caution — prefer SettingsDb for new work.** Storing settings directly in an iModel (via [IModelDb.saveSettingDictionary]($backend)) ties configuration to a single iModel file. Settings cannot be discovered without opening the iModel, cannot be versioned independently, and require an exclusive write lock on the entire iModel to modify. For new projects, store settings in a cloud-hosted [SettingsDb](#settingsdb) instead — it is discoverable by iTwinId, versioned independently, and does not require an iModel to be open.
+> **Note:** Storing settings directly in an iModel (via [IModelDb.saveSettingDictionary]($backend)) ties configuration to a single iModel file. Settings cannot be discovered without opening the iModel and cannot be versioned independently. For new projects, consider storing shared settings in a cloud-hosted settings container instead — it is discoverable by iTwinId, versioned independently, and does not require an iModel to be open.
 
-Each [IModelDb]($backend) has its own [Workspace]($backend), accessible via [IModelDb.workspace]($backend). This workspace inherits all app-level and iTwin-level settings, and layers on settings stored inside the iModel itself. Because these iModel-level dictionaries are loaded at [SettingsPriority.iModel]($backend) — the highest built-in priority — they override any lower-priority setting with the same name.
+Each [IModelDb]($backend) has its own [Workspace]($backend), accessible via [IModelDb.workspace]($backend). This workspace inherits app-level settings (via [IModelHost.appWorkspace]($backend)) and layers on settings stored inside the iModel itself. iTwin-level settings are not loaded automatically — see [Referencing iTwin settings from an iModel](#referencing-itwin-settings-from-an-imodel) for how to include them. Because iModel-level dictionaries are loaded at [SettingsPriority.iModel]($backend) — the highest built-in priority — they override any lower-priority setting with the same name.
 
 Use iModel settings when a particular iModel needs configuration that differs from the rest of its iTwin, or when you want to persist metadata (like an iTwin settings container reference) inside the iModel so it is available in future sessions.
 
@@ -235,7 +235,7 @@ There are two ways to supply settings dictionaries to an iModel's workspace scop
 | [Settings.addDictionary]($backend) | Current session only | Values exist in memory only and are lost when the iModel is closed. |
 | [IModelDb.saveSettingDictionary]($backend) | All future sessions | Values are written to the iModel's `be_Props` table and automatically reloaded every time the iModel is opened. |
 
-Use `addDictionary` for transient overrides — for example, to inject ephemeral configuration while a particular tool is active. Use `saveSettingDictionary` only if you need settings to persist as part of an iModel's permanent record and cannot use a `SettingsDb` instead.
+Use `addDictionary` for transient overrides — for example, to inject ephemeral configuration while a particular tool is active. Use `saveSettingDictionary` only if you need settings to persist as part of an iModel's permanent record and cannot use a settings container instead.
 
 ### Saving iModel settings
 
@@ -297,40 +297,40 @@ If you need to pin the iModel to a specific version of the iTwin settings — so
 [[include:WorkspaceExamples.VersionAndPinITwinSettings]]
 ```
 
-## SettingsDb
+## Settings containers
 
-For production deployments, settings should be stored in the cloud — versionable, discoverable without opening an iModel, and manageable independently of any resource containers. That is the role of [SettingsDb]($backend).
+For production deployments, settings should be stored in the cloud — versionable, discoverable without opening an iModel, and manageable independently of any resource containers. That is the role of a **settings container**.
 
-A `SettingsDb` is a dedicated [CloudSqlite]($backend) database that stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values. Its containers are tagged with `containerType: "settings"`, making them discoverable by iTwinId through [WorkspaceEditor.queryContainers]($backend) without needing an iModel open.
+A settings container is a cloud-hosted [WorkspaceDb]($backend) whose container is tagged with `containerType: "settings"`. It stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values. Each iTwin has one settings container, discoverable by iTwinId through [WorkspaceEditor.queryContainers]($backend) without needing an iModel open.
 
 ```mermaid
 graph LR
-    SDB["SettingsDb<br/>(cloud container)"]
+    SDB["Settings container<br/>(cloud)"]
     Dict["SettingsDictionary<br/>(in-memory)"]
     Stack["Settings priority stack<br/>(IModelHost.appWorkspace<br/>or IModelDb.workspace)"]
 
-    SDB -->|"getSettings() → JSON"| Dict
+    SDB -->|"loadSettingsDictionary() → JSON"| Dict
     Dict -->|"Settings.addJson()\nat specified priority"| Stack
 ```
 
-This is what distinguishes a `SettingsDb` from a `WorkspaceDb`: a `SettingsDb` is where you **start**. You load settings from a `SettingsDb`, and those settings tell your application which `WorkspaceDb`s hold the binary resources it needs.
+This is what distinguishes a settings container from a workspace container: a settings container is where you **start**. You load settings from a settings container, and those settings tell your application which workspace containers hold the binary resources it needs.
 
 ### Reading settings
 
-A [SettingsDb]($backend) provides two read methods:
+A settings container's [WorkspaceDb]($backend) provides two read methods:
 
 - [WorkspaceDb.getString]($backend) — returns the value of a specific setting resource by name, or `undefined` if it does not exist.
 - [WorkspaceDb.getString]($backend) — returns the raw JSON of all settings as a string, which can be parsed into a [SettingsContainer]($backend).
 
-Both methods work on the underlying [WorkspaceDb]($backend). For batches of reads, load the `SettingsDb` once via [Workspace.loadSettingsDictionary]($backend) to avoid repeated open/close overhead.
+For batches of reads, load the settings container once via [Workspace.loadSettingsDictionary]($backend) to avoid repeated open/close overhead.
 
-### How SettingsDb fits the priority system
+### How settings containers fit the priority system
 
-When a `SettingsDb` is loaded into the runtime via [Workspace.loadSettingsDictionary]($backend), its contents become **one** [SettingsDictionary]($backend) in the [Settings]($backend) priority stack. The data flow is:
+When a settings container is loaded into the runtime via [Workspace.loadSettingsDictionary]($backend), its contents become **one** [SettingsDictionary]($backend) in the [Settings]($backend) priority stack. The data flow is:
 
-`SettingsDb` → JSON → `Settings.addJson()` → one `SettingsDictionary` in the priority stack
+Settings container → JSON → `Settings.addJson()` → one `SettingsDictionary` in the priority stack
 
-Each `SettingsDb` occupies a single slot in the [priority system](#settings-priorities). The priority is **explicitly specified** by the caller via [WorkspaceDbSettingsProps.priority]($backend) — it is not automatically derived from the container's scope. Multiple `SettingsDb`s loaded at different priorities become separate dictionaries; the runtime resolves conflicts using the standard priority rules.
+Each settings container occupies a single slot in the [priority system](#settings-priorities). The priority is **explicitly specified** by the caller via [WorkspaceDbSettingsProps.priority]($backend) — it is not automatically derived from the container's scope. Multiple settings containers loaded at different priorities become separate dictionaries; the runtime resolves conflicts using the standard priority rules.
 
 > Note: The container must already be loaded via [Workspace.getContainer]($backend) or [Workspace.getContainerAsync]($backend) before calling [Workspace.loadSettingsDictionary]($backend).
 
@@ -350,9 +350,9 @@ To open matching containers for editing in a single call, use [WorkspaceEditor.f
 [[include:SettingsDb.findContainers]]
 ```
 
-### Creating a SettingsDb and writing settings
+### Creating a settings container and writing settings
 
-> Note: Creating and managing `SettingsDb` data is a task for administrators. End-users consume settings through the [Settings]($backend) runtime API.
+> Note: Creating and managing settings containers is a task for administrators. End-users consume settings through the [Settings]($backend) runtime API.
 
 The example below creates a new cloud container, writes some initial settings, and publishes them:
 
@@ -383,7 +383,7 @@ Often you need to change a single setting without touching the rest. [EditableWo
 
 To remove a setting entirely, use [EditableWorkspaceDb.removeString]($backend).
 
-To inspect all settings in a `SettingsDb`, use [WorkspaceDb.getString]($backend):
+To inspect all settings in a container, use [WorkspaceDb.getString]($backend):
 
 ```ts
 [[include:SettingsDb.getSettings]]
@@ -391,7 +391,7 @@ To inspect all settings in a `SettingsDb`, use [WorkspaceDb.getString]($backend)
 
 ### Versioning
 
-Like [WorkspaceDb]($backend)s, each `SettingsDb` uses [semantic versioning](https://semver.org/). Once a version is published to cloud storage it becomes immutable. To evolve settings, create a new version via [EditableWorkspaceContainer.createNewWorkspaceDbVersion]($backend), make changes, and release the write lock. The versioning workflow is the same as described in [creating workspace resources](./Workspace.md#creating-workspace-resources).
+Like all [WorkspaceDb]($backend)s, each settings container uses [semantic versioning](https://semver.org/). Once a version is published to cloud storage it becomes immutable. To evolve settings, create a new version via [EditableWorkspaceContainer.createNewWorkspaceDbVersion]($backend), make changes, and release the write lock. The versioning workflow is the same as described in [creating workspace resources](./Workspace.md#creating-workspace-resources).
 
 ### Putting it together: settings that point to resources
 
