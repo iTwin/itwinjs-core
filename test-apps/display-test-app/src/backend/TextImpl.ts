@@ -1,4 +1,4 @@
-import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault } from "@itwin/core-backend";
+import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 
@@ -13,25 +13,17 @@ import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, Tex
 export async function insertTextStyle(iModelKey: string, name: string, settingProps: TextStyleSettingsProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const annotationTextStyle = AnnotationTextStyle.create(
-      iModel,
-      {
-        definitionModelId: IModelDb.dictionaryId,
-        name,
-        settings: settingProps,
-      }
-    );
+  const annotationTextStyle = AnnotationTextStyle.create(
+    iModel,
+    {
+      definitionModelId: IModelDb.dictionaryId,
+      name,
+      settings: settingProps,
+    }
+  );
 
-    await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId });
-    const textStyleId = annotationTextStyle.insert();
-
-    iModel.saveChanges(`Inserted text style '${name}'`);
-    return textStyleId;
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
-  }
+  await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId });
+  return withEditTxn(iModel, `Inserted text style '${name}'`, (txn) => annotationTextStyle.insert(txn));
 }
 
 /**
@@ -44,19 +36,12 @@ export async function insertTextStyle(iModelKey: string, name: string, settingPr
 export async function updateTextStyle(iModelKey: string, name: string, newSettingProps: TextStyleSettingsProps): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const textStyle = iModel.elements.getElement<AnnotationTextStyle>(AnnotationTextStyle.createCode(iModel, IModelDb.dictionaryId, name));
-    const settings = TextStyleSettings.fromJSON(newSettingProps);
-    textStyle.settings = settings;
+  const textStyle = iModel.elements.getElement<AnnotationTextStyle>(AnnotationTextStyle.createCode(iModel, IModelDb.dictionaryId, name));
+  const settings = TextStyleSettings.fromJSON(newSettingProps);
+  textStyle.settings = settings;
 
-    await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId, exclusive: textStyle.id });
-    textStyle.update();
-
-    iModel.saveChanges(`Updated text style '${name}'`);
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
-  }
+  await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId, exclusive: textStyle.id });
+  withEditTxn(iModel, `Updated text style '${name}'`, (txn) => textStyle.update(txn));
 }
 
 /**
@@ -68,17 +53,10 @@ export async function updateTextStyle(iModelKey: string, name: string, newSettin
 export async function deleteTextStyle(iModelKey: string, name: string): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const textStyle = iModel.elements.getElement<AnnotationTextStyle>(AnnotationTextStyle.createCode(iModel, IModelDb.dictionaryId, name));
+  const textStyle = iModel.elements.getElement<AnnotationTextStyle>(AnnotationTextStyle.createCode(iModel, IModelDb.dictionaryId, name));
 
-    await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId, exclusive: textStyle.id });
-    iModel.elements.deleteDefinitionElements([textStyle.id]);
-
-    iModel.saveChanges(`Deleted text style '${name}'`);
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
-  }
+  await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId, exclusive: textStyle.id });
+  withEditTxn(iModel, `Deleted text style '${name}'`, (txn) => txn.deleteDefinitionElements([textStyle.id]));
 }
 
 /**
@@ -94,27 +72,19 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
 export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const annotation2d = TextAnnotation2d.create(
-      iModel,
-      {
-        category: categoryId,
-        model: modelId,
-        placement,
-        defaultTextStyleId,
-        textAnnotationProps
-      }
-    );
+  const annotation2d = TextAnnotation2d.create(
+    iModel,
+    {
+      category: categoryId,
+      model: modelId,
+      placement,
+      defaultTextStyleId,
+      textAnnotationProps
+    }
+  );
 
-    await iModel.locks.acquireLocks({ shared: modelId });
-    const annotationId = annotation2d.insert();
-
-    iModel.saveChanges('Inserted annotation');
-    return annotationId;
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
-  }
+  await iModel.locks.acquireLocks({ shared: modelId });
+  return withEditTxn(iModel, "Inserted annotation", (txn) => annotation2d.insert(txn));
 }
 
 /**
@@ -130,29 +100,23 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
 export async function updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, defaultTextStyleId?: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
+  const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
-    if (categoryId)
-      text.category = categoryId;
+  if (categoryId)
+    text.category = categoryId;
 
-    if (placement)
-      text.placement = Placement2d.fromJSON(placement);
+  if (placement)
+    text.placement = Placement2d.fromJSON(placement);
 
-    if (textAnnotationProps)
-      text.setAnnotation(TextAnnotation.fromJSON(textAnnotationProps));
+  if (textAnnotationProps)
+    text.setAnnotation(TextAnnotation.fromJSON(textAnnotationProps));
 
-    if (defaultTextStyleId && Id64.isValid(defaultTextStyleId)) {
-      text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
-    }
-
-    await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
-    text.update();
-    iModel.saveChanges('Updated annotation');
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
+  if (defaultTextStyleId && Id64.isValid(defaultTextStyleId)) {
+    text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
   }
+
+  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+  withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 
 /**
@@ -164,17 +128,10 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 export async function deleteText(iModelKey: string, elementId: Id64String): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
+  const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
-    await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
-    text.delete();
-
-    iModel.saveChanges(`Deleted text annotation`);
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
-  }
+  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+  withEditTxn(iModel, "Deleted text annotation", (txn) => text.delete(txn));
 }
 
 /**
@@ -187,16 +144,10 @@ export async function deleteText(iModelKey: string, elementId: Id64String): Prom
 export async function setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
-  try {
-    const element = iModel.elements.getElement(modelId);
-    if (element instanceof Drawing) {
-      element.scaleFactor = scaleFactor;
-      await iModel.locks.acquireLocks({ shared: [modelId], exclusive: [element.id] });
-      element.update();
-      iModel.saveChanges(`Updated scale factor for drawing ${element.id}`);
-    }
-  } catch (e) {
-    iModel.abandonChanges();
-    throw e;
+  const element = iModel.elements.getElement(modelId);
+  if (element instanceof Drawing) {
+    element.scaleFactor = scaleFactor;
+    await iModel.locks.acquireLocks({ shared: [modelId], exclusive: [element.id] });
+    withEditTxn(iModel, `Updated scale factor for drawing ${element.id}`, (txn) => element.update(txn));
   }
 }

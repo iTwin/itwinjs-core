@@ -12,7 +12,8 @@ import {
 } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
+import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
@@ -147,7 +148,7 @@ class ChangedEntitiesProc {
 
   public static maxPerEvent = 1000;
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+  public static process(iModel: BriefcaseDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
       // The iModel is being closed. Do not prepare new sqlite statements.
       return;
@@ -157,7 +158,7 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
+  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
@@ -217,7 +218,7 @@ class ChangedEntitiesProc {
     return result;
   }
 
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private sendEvent(iModel: BriefcaseDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     if (this._currSize === 0)
       return;
 
@@ -253,7 +254,7 @@ class ChangedEntitiesProc {
     this._currSize = 0;
   }
 
-  private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private static processChanges(iModel: BriefcaseDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
@@ -303,7 +304,7 @@ interface IConflictHandler {
 export type TxnMode = "direct" | "indirect";
 
 /**
- * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]] or [[StandaloneDb]].
+ * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]].
  *
  * The `RebaseManager` coordinates the rebase of local transactions when pulling and merging changes from other sources,
  * such as remote repositories or other users. It provides mechanisms to handle transaction conflicts, register custom conflict
@@ -444,7 +445,7 @@ export class RebaseManager {
     IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnEnd", txnProps);
   }
 
-  public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  public constructor(private _iModel: BriefcaseDb) { }
 
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
@@ -703,7 +704,7 @@ export class RebaseManager {
       try {
 
         if (this._iModel.txns.hasUnsavedChanges) {
-          this._iModel.abandonChanges();
+          this._iModel[_nativeDb].abandonChanges();
         }
         await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       } finally {
@@ -843,7 +844,7 @@ export class RebaseManager {
   }
 }
 
-/** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
+/** Manages local changes to a [[BriefcaseDb]] via [Txns]($docs/learning/InteractiveEditing.md)
  * @public @preview
  */
 export class TxnManager {
@@ -860,7 +861,7 @@ export class TxnManager {
   public readonly rebaser: RebaseManager;
 
   /** @internal */
-  constructor(private _iModel: BriefcaseDb | StandaloneDb) {
+  constructor(private _iModel: BriefcaseDb) {
     this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
@@ -872,7 +873,7 @@ export class TxnManager {
 
   private get _nativeDb() { return this._iModel[_nativeDb]; }
   private _getElementClass(elClassName: string): typeof Element {
-    return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
+    return this._iModel.getJsClass<typeof Element>(elClassName);
   }
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
@@ -890,19 +891,33 @@ export class TxnManager {
 
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
+    // as any necessary to access protected static method on Element and subclasses).
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onBeforeOutputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
+    // as any necessary to access protected static method on Element and subclasses).
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onAllInputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onRootChangedArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onDeletedDependencyArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
@@ -1229,6 +1244,8 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
+    if (this._nativeDb.hasUnsavedChanges())
+      this._nativeDb.abandonChanges();
     return this._nativeDb.reverseTxns(numOperations);
   }
 

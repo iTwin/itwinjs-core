@@ -14,8 +14,10 @@ import {
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** An ExternalSource refers to an 'information container' found in a repository. In some cases, the container is the entire repository.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
@@ -40,15 +42,22 @@ export class ExternalSource extends InformationReferenceElement {
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
     return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
   }
-  /** The [[CodeSpec]] for ExternalSource elements is not automatically created, so this method ensures that it exists. */
-  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
+  /** Ensure the [[CodeSpec]] for ExternalSource elements exists, using an explicit transaction.
+   * @param txn The active EditTxn.
+   */
+  public static ensureCodeSpec(txn: EditTxn): Id64String;
+  /** @deprecated Use ExternalSource.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+  public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
+    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
     try {
-      const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
+      const codeSpec = txn.iModel.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
     } catch {
-      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
+      return txn.iModel.codeSpecs.insert(txn, BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
     }
   }
+
   /** Create a Code for an ExternalSource element given a name that is meant to be unique within the scope of the iModel.
    * @param iModelDb  The IModelDb
    * @param codeValue The ExternalSource name
@@ -103,15 +112,22 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type
     return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
   }
-  /** The [[CodeSpec]] for ExternalSourceAttachment elements is not automatically created, so this method ensures that it exists. */
-  public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
+  /** Ensure the [[CodeSpec]] for ExternalSourceAttachment elements exists, using an explicit transaction.
+   * @param txn The active EditTxn.
+   */
+  public static ensureCodeSpec(txn: EditTxn): Id64String;
+  /** @deprecated Use ExternalSourceAttachment.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
+  public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
+    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
     try {
-      const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
+      const codeSpec = txn.iModel.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
       return codeSpec.id;
     } catch {
-      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
+      return txn.iModel.codeSpecs.insert(txn, BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
     }
   }
+
   /** Create a Code for an ExternalSourceAttachment element given a name that is meant to be unique within the scope of its parent [[ExternalSource]].
    * @param iModelDb  The IModelDb
    * @param scopeElementId The parent ExternalSource
