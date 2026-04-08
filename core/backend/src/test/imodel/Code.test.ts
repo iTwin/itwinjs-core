@@ -5,6 +5,7 @@ import { Code, ElementProps } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Id64 } from "@itwin/core-bentley";
+import { withEditTxn } from "../../EditTxn";
 
 describe("Code Tests", () => {
   let imodel: SnapshotDb;
@@ -16,7 +17,6 @@ describe("Code Tests", () => {
     imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel.importSchemas([schemaPathname]);
-    imodel.saveChanges();
   });
 
   after(() => {
@@ -57,7 +57,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -89,7 +89,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -145,7 +145,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
     });
@@ -161,11 +161,11 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
+      expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps))).throws("invalid code scope").to.have.property("metadata");
       elProps.code.scope = "0x34322"; // valid id, but element doesn't exist
-      expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
+      expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps))).throws("invalid code scope").to.have.property("metadata");
       elProps.code.scope = undefined as any; // nothing
-      expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
+      expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps))).throws("invalid code scope").to.have.property("metadata");
     });
 
     it("should insert and trim an element with a code value with trailing spaces", () => {
@@ -179,7 +179,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -198,7 +198,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id2 = imodel.elements.insertElement(elProps2);
+      const id2 = withEditTxn(imodel, (txn) => txn.insertElement(elProps2));
       assert.exists(id2);
       assert.isTrue(Id64.isValidId64(id2));
 
@@ -220,7 +220,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -236,7 +236,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id2 = imodel.elements.insertElement(elProps2);
+      const id2 = withEditTxn(imodel, (txn) => txn.insertElement(elProps2));
       assert.exists(id2);
       assert.isTrue(Id64.isValidId64(id2));
 
@@ -255,12 +255,12 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+      expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps))).throws("Error inserting element").to.have.property("metadata");
       // TODO: Non-ID values currently do not throw an error. This should be caught in TS
       // elProps.code.spec = "not a spec in the model"; // not an id
-      // expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+      // expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps))).throws("Error inserting element").to.have.property("metadata");
       // elProps.code.spec = undefined as any; // nothing
-      // expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+      // expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps))).throws("Error inserting element").to.have.property("metadata");
     });
 
     it("should fail to insert an element with a duplicate valid code", () => {
@@ -274,7 +274,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      const id = imodel.elements.insertElement(elProps);
+      const id = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       assert.exists(id);
       assert.isTrue(Id64.isValidId64(id));
 
@@ -287,7 +287,7 @@ describe("Code Tests", () => {
         federationGuid: undefined,
       };
 
-      expect(() => imodel.elements.insertElement(elProps2)).throws("Error inserting element").to.have.property("metadata");
+      expect(() => withEditTxn(imodel, (txn) => txn.insertElement(elProps2))).throws("Error inserting element").to.have.property("metadata");
     });
   });
 
@@ -302,7 +302,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -310,7 +310,7 @@ describe("Code Tests", () => {
 
       let newCode = new Code({ scope: "0x1", spec: "0x10", value: "UpdatedValue.dgn2" });
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement = imodel.elements.getElement(elementId);
       assert.equal(updatedElement.code.value, newCode.value);
@@ -319,7 +319,7 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "0x12", spec: "0x11", value: "UpdatedValue.dgn2" });
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement2 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement2.code.value, newCode.value);
@@ -337,7 +337,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -351,14 +351,14 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId2 = imodel.elements.insertElement(elProps2);
+      const elementId2 = withEditTxn(imodel, (txn) => txn.insertElement(elProps2));
       const element2 = imodel.elements.getElement(elementId2);
       assert.equal(element2.code.value, elProps2.code.value);
       assert.equal(element2.code.spec, elProps2.code.spec);
       assert.equal(element2.code.scope, elProps2.code.scope);
 
       element.code = element2.code;
-      expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+      withEditTxn(imodel, (txn) => { expect(() => element.update(txn)).to.throw("Error updating element").to.have.property("metadata"); });
     });
 
     it("should update an element code with edge case code values", () => {
@@ -371,7 +371,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -379,7 +379,7 @@ describe("Code Tests", () => {
 
       let newCode = new Code({ scope: "0x1", spec: "0x10", value: "" }); // empty value
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement = imodel.elements.getElement(elementId);
       assert.equal(updatedElement.code.value, newCode.value);
@@ -388,12 +388,12 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "0x1", spec: "0x10", value: "validcodeagain" }); // reset the code
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       newCode = new Code({ scope: "0x1", spec: "0x11" }); // NULL value
       newCode.value = undefined as any;
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement2 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement2.code.value, "");
@@ -402,7 +402,7 @@ describe("Code Tests", () => {
 
       newCode = Code.createEmpty(); // Empty Code
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement3 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement3.code.value, newCode.value);
@@ -411,7 +411,7 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "0x1", spec: "0x11", value: "\xa0" }); // non-breaking space value
       element.code = newCode;
-      element.update();
+      withEditTxn(imodel, (txn) => element.update(txn));
 
       const updatedElement4 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement4.code.value, "");
@@ -429,7 +429,7 @@ describe("Code Tests", () => {
         userLabel: 'RF1.dgn',
         federationGuid: undefined,
       };
-      const elementId = imodel.elements.insertElement(elProps);
+      const elementId = withEditTxn(imodel, (txn) => txn.insertElement(elProps));
       const element = imodel.elements.getElement(elementId);
       assert.equal(element.code.value, elProps.code.value);
       assert.equal(element.code.spec, elProps.code.spec);
@@ -437,7 +437,7 @@ describe("Code Tests", () => {
 
       let newCode = new Code({ scope: "", spec: "0x10", value: "newcode5" }); // empty scope
       element.code = newCode;
-      expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+      withEditTxn(imodel, (txn) => { expect(() => element.update(txn)).to.throw("Error updating element").to.have.property("metadata"); });
 
       const updatedElement = imodel.elements.getElement(elementId);
       assert.equal(updatedElement.code.value, elProps.code.value);
@@ -446,7 +446,7 @@ describe("Code Tests", () => {
 
       newCode = new Code({ scope: "not a real id", spec: "0x10", value: "newcode5" }); // bad id
       element.code = newCode;
-      expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+      withEditTxn(imodel, (txn) => { expect(() => element.update(txn)).to.throw("Error updating element").to.have.property("metadata"); });
 
       const updatedElement2 = imodel.elements.getElement(elementId);
       assert.equal(updatedElement2.code.value, elProps.code.value);
@@ -455,3 +455,5 @@ describe("Code Tests", () => {
     });
   });
 });
+
+
