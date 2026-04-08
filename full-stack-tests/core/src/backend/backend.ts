@@ -41,7 +41,7 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  const iModelHost: IModelHostOptions = {};
+  const iModelHost: IModelHostOptions = { implicitWriteEnforcement: "throw" };
   const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   // Use shard-specific cache dir if provided (parallel Electron shards), otherwise fall back to default

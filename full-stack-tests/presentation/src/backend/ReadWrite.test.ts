@@ -76,7 +76,6 @@ describe("ReadWrite", () => {
       });
 
       await imodel.importSchemaStrings([schema]);
-      imodel.saveChanges();
 
       const nodes = await nodesRequest;
       expect(nodes.length).to.eq(85);
@@ -100,13 +99,11 @@ describe("ReadWrite", () => {
         elementClasses: ["Generic:PhysicalObject"],
       });
       await imodel.importSchemaStrings([schema(1)]);
-      imodel.saveChanges();
       const elementProperties = await elementPropertiesRequest;
       expect(elementProperties.total).to.eq(2);
 
       const itemsRequest = collect(elementProperties.iterator());
       await imodel.importSchemaStrings([schema(2)]);
-      imodel.saveChanges();
       const items = await itemsRequest;
       expect(items.flat()).to.have.lengthOf(2);
     });

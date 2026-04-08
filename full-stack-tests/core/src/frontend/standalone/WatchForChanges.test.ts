@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -11,7 +11,7 @@ import {
   BriefcaseConnection, GeometricModelState, IModelApp, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
-import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 class System extends MockRender.System {
@@ -61,9 +61,9 @@ for (const watchForChanges of [false, true]) {
       // Populate the iModel with some initial geometry.
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
       await addAllowedChannel(rwConn, "shared");
-      modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
+      modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
       const dictId = await rwConn.models.getDictionaryModel();
-      categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
+      categoryId = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
 
       projCenter = rwConn.projectExtents.center;
       projCenter.x = Math.round(projCenter.x);
@@ -73,7 +73,7 @@ for (const watchForChanges of [false, true]) {
       const point = projCenter.clone();
       elemId = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.green, points: [point, new Point3d(point.x, point.y + 2, point.z)] });
       expect(Id64.isValid(elemId)).to.be.true;
-      await rwConn.saveChanges();
+      await saveBriefcaseChanges(rwConn);
 
       // Open a second, read-only connection that will monitor for changes made via the read-write connection.
       roConn = watchForChanges ? (await BriefcaseConnection.openFile({
@@ -105,7 +105,7 @@ for (const watchForChanges of [false, true]) {
         }),
         // Time out to prevent the tests from hanging
         new Promise<void>((_resolve, reject) => {
-          setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120*1000); // 2 min
+          setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120 * 1000); // 2 min
         }),
       ]);
 
@@ -117,7 +117,7 @@ for (const watchForChanges of [false, true]) {
     async function moveElement(): Promise<void> {
       const transform = Transform.createTranslationXYZ(++xTranslation, 0, 0);
       await transformElements(rwConn, [elemId], transform);
-      await rwConn.saveChanges();
+      await saveBriefcaseChanges(rwConn);
     }
 
     async function getModel(iModel: BriefcaseConnection): Promise<GeometricModelState> {
@@ -171,7 +171,7 @@ for (const watchForChanges of [false, true]) {
       prevGuid = model.geometryGuid;
       prevTree = newTree;
       const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({ x: 2, y: 0, z: 0 })] });
-      await expectModelChanges(async () => rwConn.saveChanges());
+      await expectModelChanges(async () => saveBriefcaseChanges(rwConn));
 
       expect(model.geometryGuid).not.to.equal(prevGuid);
       newTree = (await ref.treeOwner.loadTree())!;
@@ -184,7 +184,7 @@ for (const watchForChanges of [false, true]) {
       prevTree = newTree;
       await expectModelChanges(async () => {
         await deleteElements(rwConn, [elemId]);
-        await rwConn.saveChanges();
+        await saveBriefcaseChanges(rwConn);
       });
 
       expect(model.geometryGuid).not.to.equal(prevGuid);
@@ -196,3 +196,8 @@ for (const watchForChanges of [false, true]) {
     });
   });
 }
+
+
+
+
+

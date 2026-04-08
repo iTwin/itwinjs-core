@@ -10,8 +10,9 @@
 import "./RpcImpl";
 
 import {
-  BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
+  BriefcaseDb, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, EditTxn, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
+  Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements,
+  withEditTxn,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
@@ -48,43 +49,8 @@ function loadEnv(envFile: string) {
 export class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
 
-  public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
-    const modeledElementProps: ElementProps = {
-      classFullName: PhysicalPartition.classFullName,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      model: IModel.repositoryModelId,
-      code: newModelCode,
-    };
-    const modeledElement = iModelDb.elements.createElement(modeledElementProps);
-    return iModelDb.elements.insertElement(modeledElement.toJSON());
-  }
-
-  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
-    const iModelDb = IModelDb.findByKey(key);
-    const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
-    const modeledElementRef = new RelatedElement({ id: eid });
-    const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
-    return iModelDb.models.insertModel(newModel.toJSON());
-  }
-
-  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
-    const iModelDb = IModelDb.findByKey(key);
-    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    const categoryId = category.insert();
-    category.setDefaultAppearance(appearance);
-    return categoryId;
-  }
-
-  public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
-    return IModelDb.findByKey(iModelKey).elements.insertElement(props);
-  }
-
-  public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
-    return IModelDb.findByKey(iModelKey).elements.updateElement(props);
-  }
-
-  public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
-    IModelDb.findByKey(iModelKey).elements.deleteDefinitionElements(ids);
+  public async ping(): Promise<{ commandId: string, version: string }> {
+    return { commandId: "full-stack-tests", version: "1.0.0" };
   }
 
   public async closeAndReopenDb(key: string): Promise<void> {
@@ -95,6 +61,7 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
   public async throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string) {
     ChannelControlError.throwError(errorKey, message, channelKey);
   }
+
   public async throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean) {
     throw new ConflictingLocksError(message, logFn ? () => metaData : metaData, conflictingLocks);
   }
@@ -102,12 +69,67 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
   public async restoreAuthClient() {
     IModelHost.authorizationClient = electronAuth;
   }
+
   public async useAzTestAuthClient() {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
   }
+
   public async setAzTestUser(user: "admin" | "readOnly" | "readWrite") {
     AzuriteTest.userToken = AzuriteTest.service.userToken[user];
   }
+
+  public static createAndInsertPartition(txn: EditTxn, newModelCode: CodeProps): Id64String {
+    const modeledElementProps: ElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      model: IModel.repositoryModelId,
+      code: newModelCode,
+    };
+    const modeledElement = txn.iModel.elements.createElement(modeledElementProps);
+    return txn.insertElement(modeledElement.toJSON());
+  }
+
+  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    return withEditTxn(iModelDb, "create physical model", (txn) => {
+      const eid = FullStackTestIpcHandler.createAndInsertPartition(txn, newModelCode);
+      const modeledElementRef = new RelatedElement({ id: eid });
+      const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+      return txn.insertModel(newModel.toJSON());
+    });
+  }
+
+  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    return withEditTxn(iModelDb, "create spatial category", (txn) => {
+      const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
+      const categoryId = txn.insertElement(category.toJSON());
+      const subCategory = iModelDb.elements.getElement<SubCategory>(IModelDb.getDefaultSubCategoryId(categoryId));
+      subCategory.appearance = new SubCategoryAppearance(appearance);
+      txn.updateElement(subCategory.toJSON());
+      return categoryId;
+    });
+  }
+
+  public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return withEditTxn(iModelDb, "insert element", (txn) => txn.insertElement(props));
+  }
+
+  public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return withEditTxn(iModelDb, "update element", (txn) => {
+      txn.updateElement(props);
+    });
+  }
+
+  public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
+    const iModelDb = IModelDb.findByKey(iModelKey);
+    return withEditTxn(iModelDb, "delete definition elements", (txn) => {
+      txn.deleteDefinitionElements(ids);
+    });
+  }
+
 
   public async insertSheetViewWithAttachment(filePath: string): Promise<Id64String> {
     if (fs.existsSync(filePath)) {
@@ -121,7 +143,8 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
     });
 
-    const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
+    const getOrCreateDocumentList = async (txn: EditTxn): Promise<Id64String> => {
+      const db = txn.iModel;
       const documentListName = "SheetList";
       let documentListModelId: string | undefined;
 
@@ -135,19 +158,20 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
         await db.locks.acquireLocks({
           shared: subjectId,
         });
-        documentListModelId = DocumentListModel.insert(db, subjectId, documentListName);
+        documentListModelId = DocumentListModel.insert(txn, subjectId, documentListName);
       }
 
       return documentListModelId;
     };
 
-    const insertSheet = async (db: IModelDb, sheetName: string): Promise<Id64String> => {
+    const insertSheet = async (txn: EditTxn, sheetName: string): Promise<Id64String> => {
+      const db = txn.iModel;
       const createSheetProps = {
         height: 42,
         width: 42,
         scale: 42,
       };
-      const id = await getOrCreateDocumentList(db);
+      const id = await getOrCreateDocumentList(txn);
 
       await db.locks.acquireLocks({ shared: id });
       const sheetElementProps: SheetProps = {
@@ -156,13 +180,13 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
         code: Sheet.createCode(db, id, sheetName),
         model: id,
       };
-      const sheetElementId = db.elements.insertElement(sheetElementProps);
+      const sheetElementId = txn.insertElement(sheetElementProps);
 
       const sheetModelProps: GeometricModel2dProps = {
         classFullName: SheetModel.classFullName,
         modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
       };
-      return db.models.insertModel(sheetModelProps);
+      return txn.insertModel(sheetModelProps);
     };
 
     function createJobSubjectElement(iModel: IModelDb, name: string): Subject {
@@ -171,42 +195,50 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
       return subj;
     }
 
-    const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
-    const drawingDefinitionModelId = DefinitionModel.insert(standaloneModel, jobSubjectId, "DrawingDefinition");
-    const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    const sheetModelId = await insertSheet(standaloneModel, "sheet-1");
+    const sheetViewId = await withEditTxn(standaloneModel, "create sheet view with attachment", async (txn) => {
+      const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert(txn);
+      const drawingDefinitionPartitionId = txn.insertElement({
+        classFullName: DefinitionPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(jobSubjectId),
+        code: DefinitionPartition.createCode(standaloneModel, jobSubjectId, "DrawingDefinition"),
+      });
+      const drawingDefinitionModelId = txn.insertModel({
+        classFullName: DefinitionModel.classFullName,
+        modeledElement: { id: drawingDefinitionPartitionId },
+      });
+      const drawingCategoryId = DrawingCategory.insert(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
+      const sheetModelId = await insertSheet(txn, "sheet-1");
 
-    const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
-    const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
-    const drawingViewRange = new Range2d(0, 0, 500, 500);
-    const docListModelId = await getOrCreateDocumentList(standaloneModel);
-    const drawingModelId = Drawing.insert(standaloneModel, docListModelId, "Drawing");
-    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+      const displayStyle2dId = DisplayStyle2d.insert(txn, drawingDefinitionModelId, "DisplayStyle2d");
+      const drawingCategorySelectorId = CategorySelector.insert(txn, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
+      const drawingViewRange = new Range2d(0, 0, 500, 500);
+      const docListModelId = await getOrCreateDocumentList(txn);
+      const drawingModelId = Drawing.insert(txn, docListModelId, "Drawing");
+      const drawingViewId = DrawingViewDefinition.insert(txn, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
 
-    const newAttachmentProps: ViewAttachmentProps = {
-      classFullName: 'BisCore:ViewAttachment',
-      model: sheetModelId,
-      code: Code.createEmpty(),
-      jsonProperties: { displayPriority: 0},
-      view: { id: drawingViewId, relClassName: 'BisCore.ViewIsAttached' },
-      category: drawingCategoryId,
-      placement: { origin: { x: 100, y: 100 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } },
-    };
+      const newAttachmentProps: ViewAttachmentProps = {
+        classFullName: "BisCore:ViewAttachment",
+        model: sheetModelId,
+        code: Code.createEmpty(),
+        jsonProperties: { displayPriority: 0 },
+        view: { id: drawingViewId, relClassName: "BisCore.ViewIsAttached" },
+        category: drawingCategoryId,
+        placement: { origin: { x: 100, y: 100 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } },
+      };
 
-    const newElement = standaloneModel.elements.createElement(newAttachmentProps);
-    standaloneModel.elements.insertElement(newElement.toJSON());
+      standaloneModel.elements.createElement(newAttachmentProps).insert(txn);
 
-    const sheetViewId = SheetViewDefinition.insert({
-      iModel: standaloneModel,
-      definitionModelId: drawingDefinitionModelId,
-      name: "Sheet View",
-      baseModelId: sheetModelId,
-      categorySelectorId: drawingCategorySelectorId,
-      displayStyleId: displayStyle2dId,
-      range: new Range2d(0, 0, 50, 50),
+      return SheetViewDefinition.insert(txn, {
+        definitionModelId: drawingDefinitionModelId,
+        name: "Sheet View",
+        baseModelId: sheetModelId,
+        categorySelectorId: drawingCategorySelectorId,
+        displayStyleId: displayStyle2dId,
+        range: new Range2d(0, 0, 50, 50),
+      });
     });
 
-    standaloneModel.saveChanges("insert sheet view definition with attachment");
     const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
     if (sheetViewProps.sheetAttachments?.length !== 1) {
       throw new Error("missing view attachments in view props");
@@ -235,7 +267,7 @@ async function startServer() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  const iModelHost: IModelHostOptions = {};
+  const iModelHost: IModelHostOptions = { implicitWriteEnforcement: "throw" };
   const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = path.join(__dirname, ".cache");
