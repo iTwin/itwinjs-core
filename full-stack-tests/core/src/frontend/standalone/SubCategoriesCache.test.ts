@@ -430,7 +430,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
 
       await saveBriefcaseChanges(bc);
       await pending;
-      expectChanges(changedElementIds);
+      await expectChanges(changedElementIds);
     }
 
     function getDefaultSubCategoryId(categoryId: string): string {
