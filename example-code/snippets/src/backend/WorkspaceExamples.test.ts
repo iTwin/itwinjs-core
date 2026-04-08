@@ -567,6 +567,84 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
     });
 
+    it("SettingsDb discover, find, create, update, and read", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.discoverContainers
+      // Query the BlobContainer service for settings containers associated with an iTwin.
+      const containerMetadata = await WorkspaceEditor.queryContainers({ iTwinId, containerType: "settings" });
+      // Each entry includes a containerId and label that can be displayed in an admin UI.
+      for (const entry of containerMetadata) {
+        console.log(`Container: ${entry.containerId}, label: ${entry.label}`);
+      }
+      // __PUBLISH_EXTRACT_END__
+      expect(containerMetadata).to.be.an("array");
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.findContainers
+      // Find and open settings containers for a given iTwin in a single call.
+      // This queries the BlobContainer service for settings containers matching the iTwinId,
+      // requests write access tokens, and opens each matching container.
+      const settingsEditor = WorkspaceEditor.construct();
+      const settingsContainers = await settingsEditor.findContainers({ iTwinId, containerType: "settings" });
+      // __PUBLISH_EXTRACT_END__
+      settingsEditor.close();
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.createLocal
+      // Create a new cloud container for settings, write initial values, and publish them.
+      const editor = WorkspaceEditor.construct();
+      const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
+        metadata: { label: "Project Settings", description: "Settings for this iTwin" },
+        scope: { iTwinId },
+        manifest: { workspaceName: "settings", description: "iTwin settings container" },
+      });
+
+      // Acquire the write lock — only one user can hold it at a time.
+      container.acquireWriteLock("admin");
+
+      // Open an editable WorkspaceDb inside the container.
+      const settingsDb = container.getEditableDb({});
+
+      // Write settings as a named resource.
+      const settings: SettingsContainer = {
+        "myApp/theme": "dark",
+        "myApp/maxItems": 50,
+      };
+      settingsDb.updateSettingsResource(settings);
+
+      // Release the lock to publish the changes.
+      container.releaseWriteLock();
+      editor.close();
+      // __PUBLISH_EXTRACT_END__
+
+      // Re-open for update and read tests
+      const editor2 = WorkspaceEditor.construct();
+      const containers2 = await editor2.findContainers({ iTwinId, containerType: "settings" });
+      const container2 = containers2[0];
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.updateSetting
+      // Update a single setting without affecting others.
+      // Acquire the write lock, read existing settings, change one entry, and publish.
+      await container2.withEditableDb("admin", (db) => {
+        const current = JSON.parse(db.getString("settingsDictionary") ?? "{}") as SettingsContainer;
+        current["myApp/maxItems"] = 100;
+        db.updateSettingsResource(current);
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ SettingsDb.getSettings
+      // Read all settings stored in a SettingsDb.
+      const readDb: WorkspaceDb = container2.getEditableDb({});
+      const raw = readDb.getString("settingsDictionary");
+      const allSettings = raw ? JSON.parse(raw) as SettingsContainer : {};
+      // __PUBLISH_EXTRACT_END__
+      expect(allSettings["myApp/maxItems"]).to.equal(100);
+      expect(allSettings["myApp/theme"]).to.equal("dark");
+
+      editor2.close();
+    });
+
     it("Find and open a workspace container by iTwinId", async () => {
       IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
