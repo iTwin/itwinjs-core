@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { initializeEditTools, coreFullStackTestIpc as ipc } from "../Editing";
+import { initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
@@ -405,6 +405,19 @@ describe("SubCategoriesCache", () => {
       expect(actual).to.deep.equal(changedElementIds);
     }
 
+    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+      const pending = new Promise<void>((resolve) => {
+        const remove = bc.txns.onElementsChanged.addListener(() => {
+          remove();
+          resolve();
+        });
+      });
+
+      await saveBriefcaseChanges(bc);
+      await pending;
+      expectChanges(changedElementIds);
+    }
+
     function getDefaultSubCategoryId(categoryId: string): string {
       const parts = Id64.getUint32Pair(categoryId);
       expect(parts.upper).to.equal(0);
@@ -433,9 +446,8 @@ describe("SubCategoriesCache", () => {
 
     it("invalidates cache for category when category is deleted", async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
-      await bc.saveChanges();
       const subcat = getDefaultSubCategoryId(cat);
-      expectChanges([cat, subcat]);
+      await saveAndExpectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(subcat, undefined);
 
@@ -446,17 +458,15 @@ describe("SubCategoriesCache", () => {
       expectAppearance(subcat, ColorDef.blue);
 
       await ipc.deleteDefinitionElements(bc.key, [cat]);
-      await bc.saveChanges();
-      expectChanges([cat, subcat]);
+      await saveAndExpectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(subcat, undefined);
     });
 
     it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
-      await bc.saveChanges();
       const s1 = getDefaultSubCategoryId(cat);
-      expectChanges([cat, s1]);
+      await saveAndExpectChanges([cat, s1]);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
@@ -469,8 +479,7 @@ describe("SubCategoriesCache", () => {
       s2Props.appearance = { color: ColorDef.red.toJSON() };
 
       const s2 = await ipc.insertElement(bc.key, s2Props);
-      await bc.saveChanges();
-      expectChanges([s2]);
+      await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, undefined);
       expectAppearance(s2, undefined);
@@ -484,8 +493,7 @@ describe("SubCategoriesCache", () => {
       s2Props.id = s2;
       s2Props.appearance = { color: ColorDef.green.toJSON() };
       await ipc.updateElement(bc.key, s2Props);
-      await bc.saveChanges();
-      expectChanges([s2]);
+      await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
       expectAppearance(s2, undefined);
@@ -497,8 +505,7 @@ describe("SubCategoriesCache", () => {
 
       // Delete a subcategory
       await ipc.deleteDefinitionElements(bc.key, [s2]);
-      await bc.saveChanges();
-      expectChanges([s2]);
+      await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
       expectAppearance(s2, undefined);
@@ -526,3 +533,6 @@ describe("SubCategoriesCache", () => {
     });
   });
 });
+
+
+

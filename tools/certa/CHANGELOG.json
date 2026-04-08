@@ -2,6 +2,18 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "5.8.0",
+      "tag": "@itwin/certa_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Electron 41"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.7.3",
       "tag": "@itwin/certa_v5.7.3",
       "date": "Tue, 24 Mar 2026 14:29:17 GMT",

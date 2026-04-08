@@ -59,12 +59,12 @@ function testSpineLoop(allGeometry: GeometryQuery[], loopPoints: any, x0: number
   context.triangulateForSpine();
   RegularizationContext.announceEdge = undefined;
 
-  const alwaysTrue = function (_node: HalfEdge):boolean {return true;}
+  const alwaysTrue = function (_node: HalfEdge): boolean { return true; };
   //const ignoreExterior =  (node: HalfEdge) => HalfEdge.testMateMaskExterior(node);
-  const ignoreExterior =  (node: HalfEdge) => !node.isMaskSet (HalfEdgeMask.EXTERIOR);
+  const ignoreExterior = (node: HalfEdge) => !node.isMaskSet(HalfEdgeMask.EXTERIOR);
   GeometryCoreTestIO.captureGeometry(allGeometry,
-      PolyfaceBuilder.graphToPolyface(context.graph, undefined, ignoreExterior, alwaysTrue),
-      x0, y0 += yStep, 0);
+    PolyfaceBuilder.graphToPolyface(context.graph, undefined, ignoreExterior, alwaysTrue),
+    x0, y0 += yStep, 0);
   context.consolidateTrianglesToQuads(true);
   GeometryCoreTestIO.captureGeometry(allGeometry,
     PolyfaceBuilder.graphToPolyface(context.graph, undefined, ignoreExterior, alwaysTrue),
@@ -150,55 +150,55 @@ describe("HalfEdgeGraphSpineContext", () => {
   });
   it("spineAsTransition", () => {
     // Test spine as transition between a boundary with long edges and one with short
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const ax = 20;
     const ay = 15;
 
     const outerRectangle = [
-      Point3d.create (0,0),
-      Point3d.create(ax,0),
-      Point3d.create (ax,ay),
-      Point3d.create (0,ay),
-      Point3d.create (0,0),
+      Point3d.create(0, 0),
+      Point3d.create(ax, 0),
+      Point3d.create(ax, ay),
+      Point3d.create(0, ay),
+      Point3d.create(0, 0),
     ];
     const c0 = 5;
     const c1 = 7;
     const c2 = 2;
-    const xMid = ax /2;
-    const xRight = (xMid + ax-c0) /2;
+    const xMid = ax / 2;
+    const xRight = (xMid + ax - c0) / 2;
     let x0 = 0;
-  for (const fraction of [0.2, 0.5, 0.75, 1.0]){
+    for (const fraction of [0.2, 0.5, 0.75, 1.0]) {
       const y0 = 0;
       const innerLoopA = [
-        Point3d.create (c2,c0),
-        Point3d.create (xMid, c1),
-        Point3d.create (xRight, c1),
-        Point3d.create (ax-c2, c0),
-        Point3d.create (ax-c2, ay-c0),
-        Point3d.create (xMid, ay-fraction * c1),
+        Point3d.create(c2, c0),
+        Point3d.create(xMid, c1),
+        Point3d.create(xRight, c1),
+        Point3d.create(ax - c2, c0),
+        Point3d.create(ax - c2, ay - c0),
+        Point3d.create(xMid, ay - fraction * c1),
       ];
       innerLoopA.push(innerLoopA[0].clone());
-      testSpineLoop (allGeometry, [outerRectangle, innerLoopA], x0, y0);
+      testSpineLoop(allGeometry, [outerRectangle, innerLoopA], x0, y0);
       x0 += 1.5 * ax;
-      }
+    }
     expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSpineContext", "spineAsTransition");
   });
 
   it("spineAsTransitionB", () => {
     // Test spine as transition between a boundary with long edges and one with short
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const ax = 20;
     const ay = 15;
 
     const outerRectangle = [
-      Point3d.create (0,0),
-      Point3d.create(ax,0),
-      Point3d.create (ax,ay),
-      Point3d.create (0,ay),
-      Point3d.create (0,0),
+      Point3d.create(0, 0),
+      Point3d.create(ax, 0),
+      Point3d.create(ax, ay),
+      Point3d.create(0, ay),
+      Point3d.create(0, 0),
     ];
 
     const c2 = 2;
@@ -208,19 +208,19 @@ describe("HalfEdgeGraphSpineContext", () => {
     const innerLoopA = [];
     let yy = 3.0;
     let dy = 0.9;
-    for (let xx = c2; xx < ax-c2;xx+= 1){
-      innerLoopA.push (Point3d.create (xx, yy));
+    for (let xx = c2; xx < ax - c2; xx += 1) {
+      innerLoopA.push(Point3d.create(xx, yy));
       yy += dy;
       dy = 0.8 * dy;
       if (dy < 0.4) {
         dy = 1.0;
         yy = 2.5;
-        }
       }
-    innerLoopA.push (Point3d.create (ax-c2, ay-c2));
-    innerLoopA.push (Point3d.create (c2, ay - c2));
+    }
+    innerLoopA.push(Point3d.create(ax - c2, ay - c2));
+    innerLoopA.push(Point3d.create(c2, ay - c2));
     innerLoopA.push(innerLoopA[0].clone());
-    testSpineLoop (allGeometry, [outerRectangle, innerLoopA], x0, y0);
+    testSpineLoop(allGeometry, [outerRectangle, innerLoopA], x0, y0);
 
     expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSpineContext", "spineAsTransitionB");
