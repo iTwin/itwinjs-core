@@ -23,6 +23,7 @@ import {
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -1284,7 +1285,12 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
-    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener((previousModel, _newModel) => {
+      displayStyleChanged();
+      // When a reality model is removed or replaced, detach its layer listeners to prevent leaks.
+      if (previousModel instanceof ContextRealityModelState)
+        previousModel.detachLayerListeners();
+    }));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
@@ -1399,6 +1405,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private detachFromDisplayStyle(): void {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
+
+    // Detach layer listeners from reality model tree refs to prevent leaks.
+    if (this._view) {
+      for (const model of this.displayStyle.settings.contextRealityModels.models) {
+        if (model instanceof ContextRealityModelState)
+          model.detachLayerListeners();
+      }
+    }
 
     if (this._mapTiledGraphicsProvider) {
       this._mapTiledGraphicsProvider.detachFromDisplayStyle();

@@ -609,6 +609,10 @@ export namespace RealityModelTileTree {
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public abstract get modelId(): Id64String;
 
+    public detachLayerListeners(): void {
+      this._layerRefHandler.detachFromDisplayStyle();
+    }
+
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
 
