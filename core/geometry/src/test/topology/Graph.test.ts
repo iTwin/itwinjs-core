@@ -118,12 +118,12 @@ export class GraphChecker {
     }
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();
-    const faceData = [];
+    GeometryCoreTestIO.consoleLog(`**FACE LOOPS: ${faces.length}`);
     for (const f of faces) {
-      faceData.push(f.collectAroundFace(formatNode));
+      const nodes = f.collectAroundFace(formatNode);
+      GeometryCoreTestIO.consoleLog(`[face loop with ${nodes.length} nodes]`);
+      GeometryCoreTestIO.consoleLog(nodes);
     }
-    GeometryCoreTestIO.consoleLog(`**FACE LOOPS ${faces.length}`);
-    GeometryCoreTestIO.consoleLog(faceData);
 
     const vData = [];
     for (const v of vertices) {
@@ -134,7 +134,7 @@ export class GraphChecker {
       } else
         vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
-    GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS ${vertices.length}`);
+    GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS: ${vertices.length}`);
     GeometryCoreTestIO.consoleLog(vData);
 
   }

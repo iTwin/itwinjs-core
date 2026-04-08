@@ -321,9 +321,13 @@ export class RegionOpsFaceToFaceSearch {
  * @internal
  */
 export enum RegionGroupOpType {
+  /** A face is "inside" the group if it is inside ANY member region (at least one). */
   Union = 0,
+  /** A face is "inside" the group if it is inside an ODD number of member regions (even-odd rule). */
   Parity = 1,
+  /** A face is "inside" the group if it is inside ALL member regions. */
   Intersection = 2,
+  /** Member geometry is inserted into the graph for connectivity only (bridge edges). */
   NonBounding = -1,
 }
 
