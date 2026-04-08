@@ -317,12 +317,9 @@ This is what distinguishes a settings container from a workspace container: a se
 
 ### Reading settings
 
-A settings container's [WorkspaceDb]($backend) provides two read methods:
+A settings container's [WorkspaceDb]($backend) stores each named dictionary as a string resource. Use [WorkspaceDb.getString]($backend) to read a single resource by name — it returns the raw JSON string, or `undefined` if the resource does not exist.
 
-- [WorkspaceDb.getString]($backend) — returns the value of a specific setting resource by name, or `undefined` if it does not exist.
-- [WorkspaceDb.getString]($backend) — returns the raw JSON of all settings as a string, which can be parsed into a [SettingsContainer]($backend).
-
-For batches of reads, load the settings container once via [Workspace.loadSettingsDictionary]($backend) to avoid repeated open/close overhead.
+For batches of reads, load the settings container once via [Workspace.loadSettingsDictionary]($backend), which iterates all string resources in the container and adds them to the [Settings]($backend) priority stack automatically.
 
 ### How settings containers fit the priority system
 
@@ -363,7 +360,7 @@ The example below creates a new cloud container, writes some initial settings, a
 The key steps are:
 
 1. **Create an editor** — call [WorkspaceEditor.construct]($backend). The caller is responsible for calling `close()` when finished.
-2. **Create a container** — [WorkspaceEditor.createNewCloudContainer]($backend) creates a container automatically tagged with `containerType: "settings"`.
+2. **Create a container** — [WorkspaceEditor.createNewCloudContainer]($backend) with `containerType: "settings"` (this must be specified explicitly; the default is `"workspace"`).
 3. **Acquire the write lock** — [EditableWorkspaceContainer.acquireWriteLock]($backend). Only one user can hold the lock at a time.
 4. **Open an EditableWorkspaceDb** — [EditableWorkspaceContainer.getEditableDb]($backend) returns an [EditableWorkspaceDb]($backend).
 5. **Write settings** — use [EditableWorkspaceDb.updateSettingsResource]($backend) to replace all settings in the resource.
@@ -371,7 +368,7 @@ The key steps are:
 
 > **Important**: Always release the write lock when you are done. Failing to release it will prevent other administrators from modifying the container until the lock expires.
 
-> Note: Settings containers have their own write lock independent of workspace containers. Editing settings does not block workspace resource editing, and vice versa.
+> Note: Because a settings container and a workspace container are separate cloud containers, their write locks are independent — editing settings does not block workspace resource editing, and vice versa.
 
 ### Updating individual settings
 
