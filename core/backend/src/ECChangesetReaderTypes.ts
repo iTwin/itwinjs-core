@@ -78,12 +78,6 @@ export interface ECNativeChangeSource {
   /** The SQLite opcode of the current change row. */
   readonly op: ECNativeChangeOp;
   /**
-   * `true` when the current row belongs to an EC-mapped table.
-   * `false` for internal SQLite tables
-   * When `false`, `inserted` and `deleted` are both `undefined`.
-   */
-  readonly isECTable: boolean;
-  /**
    * The newly-inserted or post-update EC instance.
    * `undefined` when the current row is a Delete, or when `isECTable` is `false`.
    */

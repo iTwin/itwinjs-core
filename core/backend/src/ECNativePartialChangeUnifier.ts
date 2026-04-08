@@ -238,10 +238,6 @@ export class ECNativePartialChangeUnifier implements Disposable {
    * @beta
    */
   public appendFrom(source: ECNativeChangeSource): void {
-    // Non-EC table rows: isECTable is false, inserted and deleted are both undefined — skip.
-    if (!source.isECTable)
-      return;
-
     if (source.op === "Updated") {
       if (source.inserted)
         this.combine(source.inserted);

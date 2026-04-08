@@ -205,6 +205,70 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   // ---------------------------------------------------------------------------
+  // Filtering
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Restrict iteration to changes from the named SQLite tables.
+   * That means both `inserted` and `deleted` will be undefined for changes from tables
+   * other than the ones passed in the filter.
+   * The rest of the metadata related data fields like `op`, `isIndirectChange`, etc. will still be populated for filtered-out rows.
+   * @param tableNames SQLite table names to include.
+   * @beta
+   */
+  public setTableNameFilters(tableNames: Set<string>): void {
+    this._nativeReader.setTableNameFilters(Array.from(tableNames));
+  }
+
+  /**
+   * Restrict iteration to changes with the given operation types.
+   * That means both `inserted` and `deleted` will be undefined for changes
+   * with op-codes other than the ones passed in the filter.
+   * The rest of the metadata related data fields like `isIndirectChange`, `tableName`, etc. will still be populated for filtered-out rows.
+   * @param ops Operations to include.
+   * @beta
+   */
+  public setOpCodeFilters(ops: Set<ECNativeChangeOp>): void {
+    this._nativeReader.setOpCodeFilters(Array.from(ops));
+  }
+
+  /**
+   * Restrict iteration to changes for the given EC class ids.
+   * That means both `inserted` and `deleted` fields will be undefined for changes related to
+   * classIds other than the ones passed in the filter.
+   * The rest of the metadata related data fields like `op`, `isIndirectChange`, `tableName`, etc. will still be populated for filtered-out rows.
+   * @param classIds ECClassId values (as hex Id64 strings) to include.
+   * @beta
+   */
+  public setClassIdFilters(classIds: Set<Id64String>): void {
+    this._nativeReader.setClassIdFilters(Array.from(classIds));
+  }
+
+  /**
+   * Remove the table-name filters
+   * @beta
+   */
+  public clearTableNameFilters(): void {
+    this._nativeReader.clearTableNameFilters();
+  }
+
+  /**
+   * Remove the op-code filters
+   * @beta
+   */
+  public clearOpCodeFilters(): void {
+    this._nativeReader.clearOpCodeFilters();
+  }
+
+  /**
+   * Remove the class-id filters
+   * @beta
+   */
+  public clearClassIdFilters(): void {
+    this._nativeReader.clearClassIdFilters();
+  }
+
+  // ---------------------------------------------------------------------------
   // Iteration
   // ---------------------------------------------------------------------------
 
@@ -223,21 +287,20 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
     if (this._nativeReader.step()) {
       this._changeIndex++;
-
-      const nativeOp = this._nativeReader.getOpcode();
+      const meta = this._nativeReader.getChangeMetadata();
+      const nativeOp = meta.opCode;
       const op: ECNativeChangeOp =
         nativeOp === DbOpcode.Insert ? "Inserted" :
           nativeOp === DbOpcode.Delete ? "Deleted" : "Updated";
       this._op = op;
 
-      this._tableName = this._nativeReader.getTableName();
-      this._isIndirectChange = this._nativeReader.isIndirectChange();
-      const changesetFetchedProps = this._nativeReader.getChangesetFetchedPropertyNames();
+      this._tableName = meta.tableName
+      this._isIndirectChange = meta.isIndirectChange;
+      this._isECTable = meta.isECTable;
 
       if (op === "Inserted" || op === "Updated") {
         const rowValue = this._nativeReader.getValue(DbChangeStage.New, this._rowOptions ?? {});
-        if (rowValue.isECTable && rowValue.data !== undefined && rowValue.key !== undefined) {
-          this._isECTable = true;
+        if (rowValue !== undefined) {
           this.inserted = {
             ...rowValue.data,
             $meta: {
@@ -247,7 +310,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               stage: "New",
               nativeKey: rowValue.key,
               mode: this.modeToString(this._mode),
-              changesetFetchedProps,
+              changesetFetchedProps: rowValue.changesetFetchedProps,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,
             },
@@ -257,8 +320,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
       if (op === "Deleted" || op === "Updated") {
         const rowValue = this._nativeReader.getValue(DbChangeStage.Old, this._rowOptions ?? {});
-        if (rowValue.isECTable && rowValue.data !== undefined && rowValue.key !== undefined) {
-          this._isECTable = true;
+        if (rowValue !== undefined) {
           this.deleted = {
             ...rowValue.data,
             $meta: {
@@ -268,7 +330,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               stage: "Old",
               nativeKey: rowValue.key,
               mode: this.modeToString(this._mode),
-              changesetFetchedProps,
+              changesetFetchedProps: rowValue.changesetFetchedProps,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,
             },
