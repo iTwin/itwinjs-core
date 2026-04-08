@@ -572,7 +572,7 @@ describe("Workspace Examples", () => {
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
       const iTwinId = Guid.createValue();
 
-      // __PUBLISH_EXTRACT_START__ SettingsDb.discoverContainers
+      // __PUBLISH_EXTRACT_START__ SettingsContainer.discoverContainers
       // Query the BlobContainer service for settings containers associated with an iTwin.
       const containerMetadata = await WorkspaceEditor.queryContainers({ iTwinId, containerType: "settings" });
       // Each entry includes a containerId and label that can be displayed in an admin UI.
@@ -582,7 +582,7 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
       expect(containerMetadata).to.be.an("array");
 
-      // __PUBLISH_EXTRACT_START__ SettingsDb.findContainers
+      // __PUBLISH_EXTRACT_START__ SettingsContainer.findContainers
       // Find and open settings containers for a given iTwin in a single call.
       // This queries the BlobContainer service for settings containers matching the iTwinId,
       // requests write access tokens, and opens each matching container.
@@ -592,7 +592,7 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
       settingsEditor.close();
 
-      // __PUBLISH_EXTRACT_START__ SettingsDb.createLocal
+      // __PUBLISH_EXTRACT_START__ SettingsContainer.createLocal
       // Create a new cloud container for settings, write initial values, and publish them.
       const editor = WorkspaceEditor.construct();
       const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
@@ -624,7 +624,7 @@ describe("Workspace Examples", () => {
       const containers2 = await editor2.findContainers({ iTwinId, containerType: "settings" });
       const container2 = containers2[0];
 
-      // __PUBLISH_EXTRACT_START__ SettingsDb.updateSetting
+      // __PUBLISH_EXTRACT_START__ SettingsContainer.updateSetting
       // Update a single setting without affecting others.
       // Acquire the write lock, read existing settings, change one entry, and publish.
       await container2.withEditableDb("admin", (db) => {
@@ -634,8 +634,8 @@ describe("Workspace Examples", () => {
       });
       // __PUBLISH_EXTRACT_END__
 
-      // __PUBLISH_EXTRACT_START__ SettingsDb.getSettings
-      // Read all settings stored in a SettingsDb.
+      // __PUBLISH_EXTRACT_START__ SettingsContainer.getSettings
+      // Read all settings stored in a settings container.
       const readDb: WorkspaceDb = container2.getEditableDb({});
       const raw = readDb.getString("settingsDictionary");
       const allSettings = raw ? JSON.parse(raw) as SettingsContainer : {};

@@ -339,7 +339,7 @@ Each settings container occupies a single slot in the [priority system](#setting
 You can find all settings containers for a given iTwin by using [WorkspaceEditor.queryContainers]($backend):
 
 ```ts
-[[include:SettingsDb.discoverContainers]]
+[[include:SettingsContainer.discoverContainers]]
 ```
 
 This is useful when building an admin UI that lets users choose which settings profile to load, without hardcoding container IDs.
@@ -347,7 +347,7 @@ This is useful when building an admin UI that lets users choose which settings p
 To open matching containers for editing in a single call, use [WorkspaceEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container:
 
 ```ts
-[[include:SettingsDb.findContainers]]
+[[include:SettingsContainer.findContainers]]
 ```
 
 ### Creating a settings container and writing settings
@@ -357,7 +357,7 @@ To open matching containers for editing in a single call, use [WorkspaceEditor.f
 The example below creates a new cloud container, writes some initial settings, and publishes them:
 
 ```ts
-[[include:SettingsDb.createLocal]]
+[[include:SettingsContainer.createLocal]]
 ```
 
 The key steps are:
@@ -378,7 +378,7 @@ The key steps are:
 Often you need to change a single setting without touching the rest. [EditableWorkspaceDb.updateSettingsResource]($backend) reads the existing settings, updates the specified entry, and writes the result back — other settings are preserved:
 
 ```ts
-[[include:SettingsDb.updateSetting]]
+[[include:SettingsContainer.updateSetting]]
 ```
 
 To remove a setting entirely, use [EditableWorkspaceDb.removeString]($backend).
@@ -386,7 +386,7 @@ To remove a setting entirely, use [EditableWorkspaceDb.removeString]($backend).
 To inspect all settings in a container, use [WorkspaceDb.getString]($backend):
 
 ```ts
-[[include:SettingsDb.getSettings]]
+[[include:SettingsContainer.getSettings]]
 ```
 
 ### Versioning
