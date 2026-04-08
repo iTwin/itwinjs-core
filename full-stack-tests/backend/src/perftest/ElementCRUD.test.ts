@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
@@ -115,7 +115,7 @@ function verifyProps(testElement: TestElementProps) {
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
@@ -146,20 +146,21 @@ describe("PerformanceElementsTests", () => {
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
-        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert worked");
-        }
+        withEditTxn(seedIModel, (txn) => {
+          for (let m = 0; m < size; ++m) {
+            const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
+          }
+        }); // auto-saves
 
         assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
-        seedIModel.saveChanges();
         seedIModel.close();
       }
     }
@@ -180,22 +181,24 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", `IModelPerformance_Insert_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
+          const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
           if (undefined === spatialCategoryId)
-            spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+            spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-          let totalTime = 0.0;
-          for (let m = 0; m < opCount; ++m) {
-            const elementProps = createElemProps(name, perfimodel, newModelId, spatialCategoryId);
-            const geomElement = perfimodel.elements.createElement(elementProps);
-            const startTime = new Date().getTime();
-            const id = perfimodel.elements.insertElement(geomElement.toJSON());
-            const endTime = new Date().getTime();
-            assert.isTrue(Id64.isValidId64(id), "insert worked");
-            const elapsedTime = (endTime - startTime) / 1000.0;
-            totalTime = totalTime + elapsedTime;
-          }
+          const totalTime = withEditTxn(perfimodel, (txn) => {
+            let time = 0.0;
+            for (let m = 0; m < opCount; ++m) {
+              const elementProps = createElemProps(name, perfimodel, newModelId, spatialCategoryId);
+              const geomElement = perfimodel.elements.createElement(elementProps);
+              const startTime = new Date().getTime();
+              const id = txn.insertElement(geomElement.toJSON());
+              const endTime = new Date().getTime();
+              assert.isTrue(Id64.isValidId64(id), "insert worked");
+              time += (endTime - startTime) / 1000.0;
+            }
+            return time;
+          });
 
           reporter.addEntry("PerformanceElementsTests", "ElementsInsert", "Execution time(s)", totalTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
@@ -218,17 +221,18 @@ describe("PerformanceElementsTests", () => {
           const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
           const elementIdIncrement = Math.floor(size / opCount);
 
-          const startTime = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            try {
-              const elId = minId + elementIdIncrement * i;
-              perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            } catch {
-              assert.isTrue(false);
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
+            const startTime = new Date().getTime();
+            for (let i = 0; i < opCount; ++i) {
+              try {
+                const elId = minId + elementIdIncrement * i;
+                txn.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+              } catch {
+                assert.isTrue(false);
+              }
             }
-          }
-          const endTime = new Date().getTime();
-          const elapsedTime = (endTime - startTime) / 1000.0;
+            return (new Date().getTime() - startTime) / 1000.0;
+          });
           reporter.addEntry("PerformanceElementsTests", "ElementsDelete", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
@@ -300,19 +304,21 @@ describe("PerformanceElementsTests", () => {
             const arcData = GeomJson.Writer.toIModelJson(geom);
             geometryStream.push(arcData);
           }
-          const startTime = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-            const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            (editElem as any).baseStr = "PerfElement - UpdatedValue";
-            editElem.setUserProperties("geom", geometryStream);
-            try {
-              perfimodel.elements.updateElement(editElem.toJSON());
-            } catch {
-              assert.fail("Element.update failed");
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
+            const startTime = new Date().getTime();
+            for (let i = 0; i < opCount; ++i) {
+              const elId = minId + elementIdIncrement * i;
+              const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+              (editElem as any).baseStr = "PerfElement - UpdatedValue";
+              editElem.setUserProperties("geom", geometryStream);
+              try {
+                txn.updateElement(editElem.toJSON());
+              } catch {
+                assert.fail("Element.update failed");
+              }
             }
-          }
-          const endTime = new Date().getTime();
+            return (new Date().getTime() - startTime) / 1000.0;
+          });
 
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
@@ -320,7 +326,6 @@ describe("PerformanceElementsTests", () => {
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
-          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           perfimodel.close();
         }
@@ -360,19 +365,20 @@ describe("PerformanceElementsTests2d", () => {
 
         const codeProps = Code.createEmpty();
         codeProps.value = "DrawingModel";
-        const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(seedIModel, codeProps, true);
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = DrawingCategory.insert(seedIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          drawingCategoryId = withEditTxn(seedIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert worked");
-        }
+        withEditTxn(seedIModel, (txn) => {
+          for (let m = 0; m < size; ++m) {
+            const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
+          }
+        }); // auto-saves
 
-        seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
         seedIModel.close();
       }
@@ -398,21 +404,24 @@ describe("PerformanceElementsTests2d", () => {
 
           const codeProps = Code.createEmpty();
           codeProps.value = "DrawingModel1";
-          const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(perfimodel, codeProps, true);
+          const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
           let drawingCategoryId = DrawingCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MyDrawingCategory");
           if (undefined === drawingCategoryId)
-            drawingCategoryId = DrawingCategory.insert(perfimodel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-          let totalTime = 0.0;
-          for (let m = 0; m < opCount; ++m) {
-            const elementProps = createElemProps(name, perfimodel, newModelId, drawingCategoryId);
-            const geomElement = perfimodel.elements.createElement(elementProps);
-            const startTime = new Date().getTime();
-            const id = perfimodel.elements.insertElement(geomElement.toJSON());
-            const endTime = new Date().getTime();
-            assert.isTrue(Id64.isValidId64(id), "insert worked");
-            const elapsedTime = (endTime - startTime) / 1000.0;
-            totalTime = totalTime + elapsedTime;
-          }
+            drawingCategoryId = withEditTxn(perfimodel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
+
+          const totalTime = withEditTxn(perfimodel, (txn) => {
+            let time = 0.0;
+            for (let m = 0; m < opCount; ++m) {
+              const elementProps = createElemProps(name, perfimodel, newModelId, drawingCategoryId);
+              const geomElement = perfimodel.elements.createElement(elementProps);
+              const startTime = new Date().getTime();
+              const id = txn.insertElement(geomElement.toJSON());
+              const endTime = new Date().getTime();
+              assert.isTrue(Id64.isValidId64(id), "insert worked");
+              time += (endTime - startTime) / 1000.0;
+            }
+            return time;
+          });
 
           reporter.addEntry("PerformanceElementsTests2d", "ElementsInsert2d", "Execution time(s)", totalTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
@@ -435,17 +444,18 @@ describe("PerformanceElementsTests2d", () => {
           const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
-          const startTime = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            try {
-              const elId = minId + elementIdIncrement * i;
-              perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            } catch {
-              assert.isTrue(false);
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
+            const startTime = new Date().getTime();
+            for (let i = 0; i < opCount; ++i) {
+              try {
+                const elId = minId + elementIdIncrement * i;
+                txn.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+              } catch {
+                assert.isTrue(false);
+              }
             }
-          }
-          const endTime = new Date().getTime();
-          const elapsedTime = (endTime - startTime) / 1000.0;
+            return (new Date().getTime() - startTime) / 1000.0;
+          });
           reporter.addEntry("PerformanceElementsTests2d", "ElementsDelete2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
@@ -516,19 +526,21 @@ describe("PerformanceElementsTests2d", () => {
             geometryStream.push(arcData);
           }
           // now lets update and record time
-          const startTime = new Date().getTime();
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-            const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            (editElem as any).baseStr = "PerfElement - UpdatedValue";
-            editElem.setUserProperties("geom", geometryStream);
-            try {
-              perfimodel.elements.updateElement(editElem.toJSON());
-            } catch {
-              assert.fail("Element.update failed");
+          const elapsedTime = withEditTxn(perfimodel, (txn) => {
+            const startTime = new Date().getTime();
+            for (let i = 0; i < opCount; ++i) {
+              const elId = minId + elementIdIncrement * i;
+              const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+              (editElem as any).baseStr = "PerfElement - UpdatedValue";
+              editElem.setUserProperties("geom", geometryStream);
+              try {
+                txn.updateElement(editElem.toJSON());
+              } catch {
+                assert.fail("Element.update failed");
+              }
             }
-          }
-          const endTime = new Date().getTime();
+            return (new Date().getTime() - startTime) / 1000.0;
+          });
 
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
@@ -536,7 +548,6 @@ describe("PerformanceElementsTests2d", () => {
             const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
-          const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests2d", "ElementsUpdate2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
           perfimodel.close();
         }
@@ -570,7 +581,6 @@ describe("PerformanceElementGetMetadata", () => {
     console.log(`Performance results are stored in ${csvPath}`);
     reporter.exportCSV(csvPath);
 
-    imodel.abandonChanges();
     imodel.close();
 
     await IModelHost.shutdown();
@@ -613,10 +623,10 @@ describe("PerformanceElementGetMetadata", () => {
       assert.fail(`Error importing schema for PerformanceElementGetMetadata: ${error.message}`);
     }
 
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, "TestCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+      spatialCategoryId = withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance()));
 
     const propsTemplate = {
       model: newModelId,
@@ -624,16 +634,18 @@ describe("PerformanceElementGetMetadata", () => {
       category: spatialCategoryId,
     };
 
-    for (const className of classNamesList) {
-      const element = imodel.elements.createElement({
+    withEditTxn(imodel, (txn) => {
+      for (const className of classNamesList) {
+        const element = imodel.elements.createElement({
           classFullName: `PerfTestElementMetaData:${className}`,
           userLabel: `PerfTestElementMetaData:${className}`,
           ...propsTemplate,
         } as ElementProps);
-      const id = imodel.elements.insertElement(element.toJSON());
-      assert.isTrue(Id64.isValidId64(id), "insert successful");
-      idSet.push(id);
-    }
+        const id = txn.insertElement(element.toJSON());
+        assert.isTrue(Id64.isValidId64(id), "insert successful");
+        idSet.push(id);
+      }
+    });
   }
 
   async function testGetMetadataPerformance(elementIds: string[], className: string, testRepeatCallsWithSingleElement: boolean = false) {

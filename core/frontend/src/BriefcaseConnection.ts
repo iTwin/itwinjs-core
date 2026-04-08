@@ -369,14 +369,17 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Commit pending changes to this briefcase.
    * @param description Optional description of the changes.
+   * @deprecated Use methods on EditCommand instead.
    */
   public async saveChanges(description?: string): Promise<void> {
-    await IpcApp.appFunctionIpc.saveChanges(this.key, description);
+    await IpcApp.appFunctionIpc.saveChanges(this.key, description); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
-  /** Abandon pending changes to this briefcase. */
+  /** Abandon pending changes to this briefcase.
+   * @deprecated Use methods on EditCommand instead.
+   */
   public async abandonChanges(): Promise<void> {
-    await IpcApp.appFunctionIpc.abandonChanges(this.key);
+    await IpcApp.appFunctionIpc.abandonChanges(this.key); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase

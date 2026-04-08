@@ -191,7 +191,7 @@ describe("CurveFactory", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
-    const points = [ // non-planar!
+    const points = [ // non-planar
       Point3d.create(2, 0, 0),
       Point3d.create(2, 5, 1),
       Point3d.create(4, 5, 1),
@@ -228,36 +228,28 @@ describe("CurveFactory", () => {
     for (const radius0 of [0, 0.2, 0.4, 0.6, 0.8, 1.2, 2, 4, 6]) {
       y0 = 0;
       for (const lineString of [lineString0, lineString1]) {
-        const filletOptions: CreateFilletsInLineStringOptions = { allowCusp: false, filletClosure: true };
-        const chainFT = CurveFactory.createFilletsInLineString(lineString, radius0, filletOptions)!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chainFT, x0, y0);
-        verifyFilletedPolygon(chainFT, filletOptions, radius0);
-        y0 += 8;
-        filletOptions.filletClosure = false;
-        const chainFF = CurveFactory.createFilletsInLineString(lineString, radius0, filletOptions)!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chainFF, x0, y0);
-        verifyFilletedPolygon(chainFF, filletOptions, radius0);
-        y0 += 20;
-        filletOptions.allowCusp = filletOptions.filletClosure = true;
-        const chainTT = CurveFactory.createFilletsInLineString(lineString, radius0, filletOptions)!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chainTT, x0, y0);
-        verifyFilletedPolygon(chainTT, filletOptions, radius0);
-        y0 += 8;
-        filletOptions.filletClosure = false;
-        const chainTF = CurveFactory.createFilletsInLineString(lineString, radius0, filletOptions)!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chainTF, x0, y0);
-        verifyFilletedPolygon(chainTF, filletOptions, radius0);
-        y0 += 20;
+        for (const allowCusp of [true, false]) {
+          for (const filletClosure of [true, false]) {
+            const filletOptions: CreateFilletsInLineStringOptions = { allowCusp, filletClosure };
+            const chain0 = CurveFactory.createFilletsInLineString(lineString, radius0, filletOptions)!;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+            verifyFilletedPolygon(chain0, filletOptions, radius0);
+            y0 += 8;
+          }
+          y0 += 8;
+        }
       }
       x0 += 20;
     }
 
     // array of radii
     const radii = [0, 2, 1, 0.8, 0.6, 0.4];
-    const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: true, filletClosure: true })!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0);
-    const chain3 = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: true, filletClosure: false })!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain3, x0, 8);
+    y0 = 0;
+    for (const filletClosure of [true, false]) {
+      const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: true, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, y0);
+      y0 += 8;
+    }
 
     // square
     x0 += 20;
@@ -282,28 +274,33 @@ describe("CurveFactory", () => {
 
     // open linestring
     x0 += 20;
+    y0 = 0;
     radius = 0.2;
-    const openLineString = LineString3d.create([0, 0, 0], [2, 5, 1], [4, 5, 1], [6, 2, 1]);
-    let chain = CurveFactory.createFilletsInLineString(openLineString, radius, { allowCusp: false, filletClosure: true })!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
-    ck.testPoint3d(chain.startPoint()!, chain.endPoint()!, "chain for an open linestring with true filletClosure must be closed");
+    for (const filletClosure of [true, false]) {
+      const openLineString = LineString3d.create([0, 0, 0], [2, 5, 1], [4, 5, 1], [6, 2, 1]);
+      const chain0 = CurveFactory.createFilletsInLineString(openLineString, radius, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+      if (filletClosure)
+        ck.testPoint3d(chain0.startPoint()!, chain0.endPoint()!, "chain for an open linestring with true filletClosure must be closed");
+      y0 += 8;
+    }
 
     // special case with 2 points
     x0 += 20;
+    y0 = 0;
     let specialLineString = LineString3d.create([0, 0], [5, 0]);
-    chain = CurveFactory.createFilletsInLineString(specialLineString, radius, { allowCusp: false, filletClosure: true })!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
-    for (const c of chain.children)
-      ck.testTrue(c instanceof LineSegment3d, "expect only line segments in the linestring chain with 2 points");
-    chain = CurveFactory.createFilletsInLineString(specialLineString, radius, { allowCusp: false, filletClosure: false })!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, 8);
-    for (const c of chain.children)
-      ck.testTrue(c instanceof LineSegment3d, "expect only line segments in the linestring chain with 2 points");
+    for (const filletClosure of [true, false]) {
+      const chain0 = CurveFactory.createFilletsInLineString(specialLineString, radius, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+      for (const c of chain0.children)
+        ck.testTrue(c instanceof LineSegment3d, "expect only line segments in the linestring chain with 2 points");
+      y0 += 8;
+    }
 
     // special case with 3 points
     x0 += 20;
     specialLineString = LineString3d.create([0, 0], [5, 0], [10, 5]);
-    chain = CurveFactory.createFilletsInLineString(specialLineString, radius, { allowCusp: false, filletClosure: true })!;
+    let chain = CurveFactory.createFilletsInLineString(specialLineString, radius, { allowCusp: false, filletClosure: true })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
     ck.testPoint3d(chain.startPoint()!, chain.endPoint()!, "chain for the open linestring with true filletClosure must be closed");
     let numArcChildren = 0;
@@ -325,6 +322,1161 @@ describe("CurveFactory", () => {
     ck.testTrue(chain.children[1] instanceof Arc3d, "expect child 1 to be arc");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygon");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("fromFilletedLineString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+
+    const verifyPointsAndRadii = (
+      pointsAndRadii0: Array<[Point3d, number]>, lineStr: LineSegment3d | LineString3d, radius0: number | number[],
+    ) => {
+      const len = lineStr.points.length;
+      ck.testNearNumber(
+        pointsAndRadii0.length, len, Geometry.smallMetricDistance,
+        "expect pointsAndRadii to match linestring point count",
+      );
+      for (let i = 0; i < pointsAndRadii0.length; i++) {
+        const [pt, r] = pointsAndRadii0[i];
+        ck.testPoint3d(pt, lineStr.points[i], "expect point match");
+        if (r !== 0) {
+          if (typeof radius0 === "number")
+            ck.testNearNumber(r, radius0, Geometry.smallMetricDistance, "expect radius match");
+          else
+            ck.testNearNumber(r, radius0[i], Geometry.smallMetricDistance, "expect radius match");
+        }
+      }
+    };
+    const testFilletedLineString = (lineStr0: LineString3d, lineStr1: LineString3d, isClosed: boolean) => {
+      // single radius; no cusp
+      for (const radius0 of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
+        y0 = 0;
+        for (const lineStr of [lineStr0, lineStr1]) {
+          for (const filletClosure of [true, false]) {
+            const filletOptions: CreateFilletsInLineStringOptions = { allowCusp: false, filletClosure };
+            const chain0 = CurveFactory.createFilletsInLineString(lineStr, radius0, filletOptions)!;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+            const pointsAndRadii0 = CurveFactory.fromFilletedLineString(chain0);
+            ck.testDefined(
+              pointsAndRadii0,
+              "expect to be able to extract points and radii from filleted linestring for single radius with no cusp"
+            );
+            const expectedLineStr = (filletClosure && !isClosed)
+              ? LineString3d.create([...lineStr.points, lineStr.pointAt(0)!])
+              : lineStr;
+            verifyPointsAndRadii(pointsAndRadii0!, expectedLineStr, radius0);
+            y0 += 8;
+          }
+          y0 += 8;
+        }
+        x0 += 10;
+      }
+    };
+    let points = [ // non-planar
+      Point3d.create(2, 0, 0),
+      Point3d.create(2, 5, 1),
+      Point3d.create(4, 5, 1),
+      Point3d.create(6, 2, 1),
+      Point3d.create(2, 0, 0),
+    ];
+    // open line string
+    let lineString0 = LineString3d.create(points.slice(0, -1));
+    points.reverse();
+    let lineString1 = LineString3d.create(points.slice(0, -1));
+    testFilletedLineString(lineString0, lineString1, false);
+    x0 += 5;
+    // closed line string
+    lineString0 = LineString3d.create(points);
+    points.reverse();
+    lineString1 = LineString3d.create(points);
+    testFilletedLineString(lineString0, lineString1, true);
+
+    // single radius with cusp
+    x0 += 5;
+    y0 = 0;
+    let radius = 2;
+    let chain = CurveFactory.createFilletsInLineString(lineString0, radius, { allowCusp: true, filletClosure: true })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    let pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for filleted linestring with cusp for single radius with cusp"
+    );
+    y0 += 10;
+    radius = 4;
+    chain = CurveFactory.createFilletsInLineString(lineString0, radius, { allowCusp: true, filletClosure: true })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for filleted linestring with cusp for single radius with cusp"
+    );
+    y0 += 10;
+
+    // closed chain; array of radii
+    x0 += 10;
+    y0 = 0;
+    let radii = [0, 0.2, 0.8, 0.4, 0.6, 0.2];
+    points = [ // non-planar
+      Point3d.create(2, 0, 0),
+      Point3d.create(2, 5, 1),
+      Point3d.create(4, 5, 1),
+      Point3d.create(6, 2, 1),
+      Point3d.create(6, 0, 0),
+      Point3d.create(4, -2, 1),
+      Point3d.create(2, 0, 0),
+    ];
+    lineString0 = LineString3d.create(points);
+    chain = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for closed chain with array of radii"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
+
+    // open chain; array of radii
+    y0 += 10;
+    radii = [0, 0.2, 0.8, 0.4, 0.6];
+    lineString0 = LineString3d.create(points.slice(0, -1));
+    chain = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for open chain with array of radii"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
+
+    // closed chain that starts with a line segment
+    x0 += 10;
+    y0 = 0;
+    radius = 0.6;
+    lineString0 = LineString3d.create(points);
+    chain = CurveFactory.createFilletsInLineString(lineString0, radius, { allowCusp: false, filletClosure: true })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    const closedChainStartsLineSegment = new Path();
+    for (let i = 1; i <= chain.children.length - 1; i++)
+      closedChainStartsLineSegment.tryAddChild(chain.children[i]);
+    closedChainStartsLineSegment.tryAddChild(chain.children[0]);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(closedChainStartsLineSegment);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for closed chain that starts with a line segment"
+    );
+    const reorderedLineString = LineString3d.create(points[1], points[2], points[3], points[4], points[5], points[0], points[1]);
+    verifyPointsAndRadii(pointsAndRadii!, reorderedLineString, radius);
+
+    // chain is a linestring
+    x0 += 10;
+    y0 = 0;
+    radius = 0;
+    lineString0 = LineString3d.create(points);
+    chain = Path.create(lineString0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for a chain that is a linestring"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radius);
+
+    // closed chain that includes linestring
+    y0 += 10;
+    radii = [0, 0.2, 0.8, 0.4, 0, 0];
+    lineString0 = LineString3d.create(points);
+    chain = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    const closedChainWithLineString = new Path();
+    for (let i = 0; i <= 5; i++)
+      closedChainWithLineString.tryAddChild(chain.children[i]);
+    let lineString = LineString3d.create(
+      chain.children[6].startPoint(),
+      chain.children[7].startPoint(),
+      chain.children[8].startPoint(),
+      chain.children[8].endPoint(),
+    );
+    closedChainWithLineString.tryAddChild(lineString);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(closedChainWithLineString);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for closed chain that includes linestring"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
+
+    // open chain that includes linestring
+    y0 += 10;
+    radii = [0, 0.2, 0.8, 0.4, 0];
+    lineString0 = LineString3d.create(points.slice(0, -1));
+    chain = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    const openChainWithLineString = new Path();
+    for (let i = 0; i <= 5; i++)
+      openChainWithLineString.tryAddChild(chain.children[i]);
+    lineString = LineString3d.create(
+      chain.children[6].startPoint(),
+      chain.children[7].startPoint(),
+      chain.children[7].endPoint(),
+    );
+    openChainWithLineString.tryAddChild(lineString);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(openChainWithLineString);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for open chain that includes linestring"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString0, radii);
+
+    // special case with 2 points
+    x0 += 10;
+    y0 = 0;
+    radius = 0;
+    let line: LineSegment3d | LineString3d = LineSegment3d.createXYXY(0, 0, 5, 0);
+    chain = Path.create(line);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for special case with 2 points"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, line, radius);
+    y0 += 10;
+    line = LineString3d.create([0, 0], [5, 0]);
+    chain = Path.create(line);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for special case with 2 points"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, line, radius);
+
+    // special case with 3 points
+    x0 += 10;
+    y0 = 0;
+    line = LineString3d.create([0, 0], [5, 0], [7, 5]);
+    for (const filletClosure of [true, false]) {
+      chain = CurveFactory.createFilletsInLineString(line, radius, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for special case with 3 points"
+      );
+      let expectedLine: LineSegment3d | LineString3d;
+      if (filletClosure)
+        expectedLine = LineString3d.create([0, 0], [5, 0], [7, 5], [0, 0]);
+      else
+        expectedLine = line;
+      verifyPointsAndRadii(pointsAndRadii!, expectedLine, radius);
+      y0 += 10;
+    }
+
+    // adjacent lines
+    x0 += 10;
+    y0 = 0;
+    // case 1
+    let line0: LineSegment3d | LineString3d = LineSegment3d.createXYXY(0, 0, 5, 0);
+    let line1: LineSegment3d | LineString3d = LineSegment3d.createXYXY(5, 0, 7, 0);
+    chain = Path.create(line0, line1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for adjacent lines case 1"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [5, 0], [7, 0]), radius);
+    // case 2
+    y0 += 10;
+    line0 = LineString3d.create([0, 0], [2, 0], [3, 0]);
+    line1 = LineString3d.create([3, 0], [5, 0], [7, 0]);
+    chain = Path.create(line0, line1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for adjacent lines case 2"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [2, 0], [3, 0], [5, 0], [7, 0]), radius);
+    // case 3
+    y0 += 10;
+    line0 = LineSegment3d.createXYXY(0, 0, 3, 0);
+    line1 = LineString3d.create([3, 0], [5, 0], [7, 0]);
+    chain = Path.create(line0, line1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for adjacent lines case 3"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([0, 0], [3, 0], [5, 0], [7, 0]), radius);
+
+    // chain with a bspline child
+    x0 += 10;
+    y0 = 0;
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    const knotArray = [0, 1 / 5, 2 / 5, 3 / 5, 4 / 5, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    chain = Path.create(bspline);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for filleted linestring with a bspline child"
+    );
+
+    // chain with anti-parallel adjacent children
+    x0 += 20;
+    y0 = 0;
+    // case 1
+    line = LineSegment3d.createXYXY(-5, 5, 0, 5);
+    let arc0 = Arc3d.createXY(Point3d.create(0, 0), 5, AngleSweep.createStartEndDegrees(90, 180));
+    chain = Path.create(line, arc0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for anti-parallel case 1"
+    );
+    // call with relaxed validation
+    let childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    let childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for anti-parallel case 1 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for anti-parallel case 1 with relaxed validation"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, LineString3d.create([-5, 5], [0, 5], [-5, 5], [-5, 0]), [0, 0, 5, 0]);
+    // case 2
+    y0 += 10;
+    let arc1 = Arc3d.createXY(Point3d.create(0, 10), 5, AngleSweep.createStartEndDegrees(180, 270));
+    chain = Path.create(arc1, arc0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for anti-parallel case 2"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for anti-parallel case 2 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for anti-parallel case 2 with relaxed validation"
+    );
+    verifyPointsAndRadii(
+      pointsAndRadii!,
+      LineString3d.create([-5, 10], [-5, 5], [0, 5], [-5, 5], [-5, 0]),
+      [0, 5, 0, 5, 0]
+    );
+
+    // special degenerate cases where a fillet takes up the entire edge
+    for (const filletClosure of [true, false]) {
+      // case 1
+      x0 += 10;
+      y0 = 0;
+      const s = 5;
+      const square = LineString3d.create([0, 0], [s, 0], [s, s], [0, s]);
+      radius = s / 2;
+      chain = CurveFactory.createFilletsInLineString(square, radius, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+      ck.testUndefined(
+        pointsAndRadii,
+        "expect fromFilletedLineString to return undefined for special degenerate case 1"
+      );
+      // call with relaxed validation
+      childCountBefore = chain.children.length;
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 1 with relaxed validation",
+      );
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for special degenerate case 1 with relaxed validation"
+      );
+      let expectedLineString0: LineString3d;
+      let expectedRadii0: number[] | number;
+      // joints between arcs are added to the output
+      if (filletClosure) {
+        expectedLineString0 = LineString3d.create([0, s / 2], [0, 0], [s / 2, 0], [s, 0], [s, s / 2], [s, s], [s / 2, s], [0, s], [0, s / 2]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0, s / 2, 0, s / 2, 0];
+      } else {
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      }
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
+      // insert 0-length segments between arcs to make the chain valid
+      y0 += 10;
+      let validChain = new Path();
+      for (let i = 0; i < chain.children.length; i += 1) {
+        validChain.tryAddChild(chain.children[i]);
+        if (filletClosure || i === 1)
+          validChain.tryAddChild(LineSegment3d.create(chain.children[i].endPoint(), chain.children[i].endPoint()));
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, validChain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(validChain);
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for " +
+        "special degenerate case 1 with zero length segments added to make chain valid"
+      );
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
+
+      // case 2
+      y0 += 10;
+      radius = s;
+      chain = CurveFactory.createFilletsInLineString(square, radius, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+      ck.testUndefined(
+        pointsAndRadii,
+        "expect fromFilletedLineString to return undefined for special degenerate case 2"
+      );
+      // call with relaxed validation
+      childCountBefore = chain.children.length;
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 2 with relaxed validation",
+      );
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for special degenerate case 2 with relaxed validation"
+      );
+      if (filletClosure)
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s], [0, s], [0, 0]);
+      else
+        expectedLineString0 = square;
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
+      // insert 0-length segments where arc tangent is not parallel to line segment tangent to make the chain valid
+      y0 += 10;
+      validChain = new Path();
+      for (let i = 0; i < chain.children.length; i += 1) {
+        const insertIndex = filletClosure ? 2 : 1;
+        if (i === insertIndex)
+          validChain.tryAddChild(LineSegment3d.create(chain.children[i].startPoint(), chain.children[i].startPoint()));
+        validChain.tryAddChild(chain.children[i]);
+        if (i === insertIndex && filletClosure)
+          validChain.tryAddChild(LineSegment3d.create(chain.children[i].endPoint(), chain.children[i].endPoint()));
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, validChain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(validChain);
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for " +
+        "special degenerate case 2 with zero length segments added to make chain valid"
+      );
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
+
+      // case 3
+      y0 += 10;
+      radii = [0, s, 0, s];
+      chain = CurveFactory.createFilletsInLineString(square, radii, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+      ck.testUndefined(
+        pointsAndRadii,
+        "expect fromFilletedLineString to return undefined for special degenerate case 3"
+      );
+      // call with relaxed validation
+      childCountBefore = chain.children.length;
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 3 with relaxed validation",
+      );
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for special degenerate case 3 with relaxed validation"
+      );
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
+      // insert 0-length segments where arc tangent is not parallel to line segment tangent to make the chain valid
+      y0 += 10;
+      validChain = new Path();
+      for (let i = 0; i < chain.children.length; i += 1) {
+        if (i === 0 && filletClosure)
+          validChain.tryAddChild(LineSegment3d.create(chain.children[i].startPoint(), chain.children[i].startPoint()));
+        validChain.tryAddChild(chain.children[i]);
+        if (i === 0)
+          validChain.tryAddChild(LineSegment3d.create(chain.children[i].endPoint(), chain.children[i].endPoint()));
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, validChain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(validChain);
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for " +
+        "special degenerate case 3 with zero length segments added to make chain valid"
+      );
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
+
+      // case 4
+      y0 += 10;
+      radii = [0, s / 2, 0, s / 2];
+      chain = CurveFactory.createFilletsInLineString(square, radii, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii for special degenerate case 4"
+      );
+      if (filletClosure)
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      else
+        expectedRadii0 = radii;
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
+      y0 += 10;
+      radii = [0, s / 2, s / 2, 0];
+
+      // case 5
+      chain = CurveFactory.createFilletsInLineString(square, radii, { allowCusp: false, filletClosure })!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+      ck.testUndefined(
+        pointsAndRadii,
+        "expect fromFilletedLineString to return undefined for special degenerate case 5"
+      );
+      // call with relaxed validation
+      childCountBefore = chain.children.length;
+      pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+      childCountAfter = chain.children.length;
+      ck.testExactNumber(
+        childCountBefore, childCountAfter,
+        "fromFilletedLineString must not mutate the input path for special degenerate case 5 with relaxed validation",
+      );
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for special degenerate case 5 with relaxed validation"
+      );
+      // joints between arcs are added to the output
+      if (filletClosure) {
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s], [0, 0]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0, 0];
+      } else {
+        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s / 2], [s, s], [0, s]);
+        expectedRadii0 = [0, s / 2, 0, s / 2, 0];
+      }
+
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
+      // insert 0-length segments between arcs to make the chain valid
+      y0 += 10;
+      validChain = new Path();
+      for (let i = 0; i < chain.children.length; i += 1) {
+        validChain.tryAddChild(chain.children[i]);
+        if (i === 1)
+          validChain.tryAddChild(LineSegment3d.create(chain.children[i].endPoint(), chain.children[i].endPoint()));
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, validChain, x0, y0);
+      pointsAndRadii = CurveFactory.fromFilletedLineString(validChain);
+      ck.testDefined(
+        pointsAndRadii,
+        "expect to be able to extract points and radii from filleted linestring for " +
+        "special degenerate case 5 with zero length segments added to make chain valid"
+      );
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
+    }
+
+    // extra special degenerate cases
+    x0 += 10;
+    y0 = 0;
+    // case 1
+    lineString = LineString3d.create([0, 0], [0, 5], [5, 5], [0, 8]);
+    radii = [0, 5, 0, 0];
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for extra special degenerate case 1"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 1 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 1 with relaxed validation"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
+
+    // case 2
+    y0 += 10;
+    lineString = LineString3d.create([0, 0], [0, 5], [5, 5], [8, 0]);
+    radii = [0, 5, 0, 0];
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for extra special degenerate case 2"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 2 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 2 with relaxed validation"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
+
+    // case 3
+    y0 += 10;
+    lineString = LineString3d.create([0, 0], [2, 2], [4, 2], [4, 0], [6, 0], [6, 2], [8, 3]);
+    radii = [0, 0, 2, 0, 2, 0, 0];
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for extra special degenerate case 3"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 3 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 3 with relaxed validation"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
+
+    // case 4
+    y0 += 10;
+    lineString = LineString3d.create([0, 0], [2, 2], [4, 2], [6, -2], [8, -2], [8, 2]);
+    radii = [0, 0, 2, 2, 2, 0];
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for extra special degenerate case 4"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 4 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 4 with relaxed validation"
+    );
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radii);
+
+    // case 5
+    y0 += 10;
+    lineString = LineString3d.create([0, -4], [4, 0], [4, -1], [6, -1], [6, 0], [10, -4]);
+    radii = [0, 0, 1, 1, 0, 0];
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for extra special degenerate case 5"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 5 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 5 with relaxed validation"
+    );
+    let expectedLineString = LineString3d.create([0, -4], [4, 0], [4, -1], [5, -1], [6, -1], [6, 0], [10, -4]);
+    let expectedRadii = [0, 0, 1, 0, 1, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // case 6
+    y0 += 10;
+    lineString = LineString3d.create([0, 0], [4, 0], [4, 2], [8, 2], [8, 0], [6, -2]);
+    radii = [0, 0, 2, 2, 0, 0];
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for extra special degenerate case 6"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for extra special degenerate case 6 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for extra special degenerate case 6 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create([0, 0], [4, 0], [4, 2], [6, 2], [8, 2], [8, 0], [6, -2]);
+    expectedRadii = [0, 0, 2, 0, 2, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // 180+ degree sweeps
+    x0 += 20;
+    y0 = 0;
+    // case 1: 180 degree sweep
+    chain = Path.create(Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(0, 180)));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 1"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 1 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 1 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create([3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0]);
+    expectedRadii = [0, 3, 0, 3, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // case 2: 270 degree sweep with anti-parallel line segments on either side
+    y0 += 10;
+    chain = Path.create(
+      LineSegment3d.createXYXY(3, 8, 3, 0),
+      Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(0, 270)),
+      LineSegment3d.createXYXY(0, -3, -8, -3)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 2"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 2 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 2 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create(
+      [3, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -3]
+    );
+    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // case 3: 270 degree sweep with non-parallel line segments on either side
+    y0 += 10;
+    chain = Path.create(
+      LineSegment3d.createXYXY(10, 8, 3, 0),
+      Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(0, 270)),
+      LineSegment3d.createXYXY(0, -3, -8, -10)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 3"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 3 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 3 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create(
+      [10, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -10]
+    );
+    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // case 4: 3 neighbor arcs; middle one with 270 degree sweep
+    y0 += 10;
+    chain = Path.create(
+      Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(0, 30)),
+      Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(30, 300)),
+      Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(300, 330))
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for 180+ degree sweeps case 4"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 180+ degree sweeps case 4 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 4 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create(
+      [3, 0], [3, 0.80384758], [2.59807621, 1.5], [-1.02324413, 7.77231083], [-2.89777748, 0.77645713],
+      [-4.77231083, -6.21939656], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
+    );
+    expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // case 5: 1 large arcs broken to 3 smaller arcs by the caller with zero-length segments in between
+    y0 += 10;
+    arc0 = Arc3d.createXY(Point3d.create(), 1, AngleSweep.createStartEndDegrees(0, 90));
+    const zeroLengthSegment0 = LineSegment3d.create(Point3d.create(0, 1), Point3d.create(0, 1));
+    arc1 = Arc3d.createXY(Point3d.create(), 1, AngleSweep.createStartEndDegrees(90, 180));
+    const zeroLengthSegment1 = LineSegment3d.create(Point3d.create(-1, 0), Point3d.create(-1, 0));
+    const arc2 = Arc3d.createXY(Point3d.create(), 1, AngleSweep.createStartEndDegrees(180, 270));
+    chain = Path.create(arc0, zeroLengthSegment0, arc1, zeroLengthSegment1, arc2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 5"
+    );
+    expectedLineString = LineString3d.create([1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]);
+    expectedRadii = [0, 1, 0, 1, 0, 1, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // case 6: full circle (360 degree sweep)
+    y0 += 10;
+    chain = Path.create(Arc3d.createXY(Point3d.create(0, 0), 3, AngleSweep.createStartEndDegrees(0, 360)));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
+    ck.testUndefined(
+      pointsAndRadii,
+      "expect fromFilletedLineString to return undefined for 360 degree sweeps case 6"
+    );
+    // call with relaxed validation
+    childCountBefore = chain.children.length;
+    pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path for 360 degree sweeps case 6 with relaxed validation",
+    );
+    ck.testDefined(
+      pointsAndRadii,
+      "expect to be able to extract points and radii from filleted linestring for 360 degree sweeps case 6 with relaxed validation"
+    );
+    expectedLineString = LineString3d.create(
+      [3, 0], [3, 5.19615242], [-1.5, 2.59807621], [-6, 0], [-1.5, -2.59807621], [3, -5.19615242], [3, 0]
+    );
+    expectedRadii = [0, 3, 0, 3, 0, 3, 0];
+    verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
+
+    // Loop input
+    x0 += 10;
+    y0 = 0;
+    radius = 0.5;
+    lineString = LineString3d.create(
+      Point3d.create(0, 0, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(4, 4, 0),
+      Point3d.create(0, 4, 0),
+      Point3d.create(0, 0, 0),
+    );
+    const path = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: true })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+    const loop = Loop.create(...path.children);
+
+    pointsAndRadii = CurveFactory.fromFilletedLineString(loop);
+    ck.testDefined(pointsAndRadii, "expect fromFilletedLineString to work on Loop");
+    verifyPointsAndRadii(pointsAndRadii!, lineString, radius);
+
+    // fromFilletedLineString should not mutate the input path
+    x0 += 10;
+    y0 = 0;
+    // case 1
+    let seg = LineSegment3d.create(Point3d.create(), Point3d.create(1, 0));
+    let arc = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(270, 360));
+    chain = Path.create(seg, arc);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    childCountBefore = chain.children.length;
+    CurveFactory.fromFilletedLineString(chain);
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path (case 1)",
+    );
+    // case 2
+    y0 += 10;
+    arc = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(270, 360));
+    seg = LineSegment3d.create(Point3d.create(2, 1), Point3d.create(2, 2));
+    chain = Path.create(arc, seg);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    childCountBefore = chain.children.length;
+    CurveFactory.fromFilletedLineString(chain);
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path (case 2)",
+    );
+    // case 3
+    y0 += 10;
+    arc0 = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(180, 270));
+    arc1 = Arc3d.createXY(Point3d.create(1, 1), 1, AngleSweep.createStartEndDegrees(270, 360));
+    chain = Path.create(arc0, arc1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
+    childCountBefore = chain.children.length;
+    CurveFactory.fromFilletedLineString(chain);
+    childCountAfter = chain.children.length;
+    ck.testExactNumber(
+      childCountBefore, childCountAfter,
+      "fromFilletedLineString must not mutate the input path (case 3)",
+    );
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "fromFilletedLineString");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("filletedLineStringRoundTrip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // data from ADO bug 1998982; this particular data survives a roundtrip because data
+    // has lots of near-duplicate points and also because we allow cusps in the path
+    let pointsAndRadii1: [Point3d, number][] = [
+      [Point3d.create(0, 0, 0), 0],
+      [Point3d.create(-2.6918023365851695e-10, -1.8883916652612243e-10, 0), 0],
+      [Point3d.create(9.141128167813974, -10.15376746232603, 0), 13.716000000000008],
+      [Point3d.create(19.33065738750156, -1.0525196278467774, 0), 0],
+      [Point3d.create(19.33065738726873, -1.0525196278467774, 0), 0],
+      [Point3d.create(24.07056010211818, 3.1811430249363184, 0), 0],
+      [Point3d.create(24.07056010209622, 3.181143025033985, 0), 0],
+      [Point3d.create(26.34379524301602, 5.211587803744564, 0), 3.048],
+      [Point3d.create(24.313350463751704, 7.484822943806648, 0), 0],
+      [Point3d.create(24.313350463169627, 7.484822944737971, 0), 0],
+      [Point3d.create(20.81286366446875, 11.403880324214697, 0), 0],
+      [Point3d.create(20.812863664481313, 11.403880324369268, 0), 0],
+      [Point3d.create(20.203730231220618, 12.085850865715315, 0), 0.914399999999997],
+      [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      [Point3d.create(16.111906983307563, 8.431050271727145, 0), 0],
+      [Point3d.create(6.974905477487482, 18.660608398728073, 0), 0],
+      [Point3d.create(10.384770585806109, 21.706261687912047, 0), 0],
+      [Point3d.create(10.384770585759457, 21.706261688185414, 0), 0],
+      [Point3d.create(11.066739784620795, 22.315393921982235, 0), 0.9143999999999965],
+      [Point3d.create(10.457608894095756, 22.997364320792258, 0), 0],
+      [Point3d.create(10.457608893862925, 22.997364320792258, 0), 0],
+      [Point3d.create(2.207813488901593, 32.23366532754153, 0), 0],
+      [Point3d.create(2.207813489073398, 32.23366532792781, 0), 0],
+      [Point3d.create(1.5986800559286676, 32.9156358705522, 0), 0.9144000000000077],
+      [Point3d.create(0.9167095134034753, 32.306502437219024, 0), 0],
+      [Point3d.create(0.9167095135198906, 32.306502437219024, 0), 0],
+      [Point3d.create(-2.4931613869266585, 29.260819028131664, 0), 0],
+      [Point3d.create(-18.939764092792757, 47.67402366083115, 0), 0],
+      [Point3d.create(-15.529911386198364, 50.719690824858844, 0), 0],
+      [Point3d.create(-15.529911386152255, 50.71969082511107, 0), 0],
+      [Point3d.create(-14.847940843086377, 51.32882425950362, 0), 0.9144000000000048],
+      [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      [Point3d.create(-16.06620771123562, 52.69276534020901, 0), 0],
+      [Point3d.create(-16.066207711451632, 52.6927653402095, 0), 0],
+      [Point3d.create(-16.6753411439156, 53.374735879099134, 0), 0.9143999999999919],
+      [Point3d.create(-17.357311684754677, 52.76560244895518, 0), 0],
+      [Point3d.create(-17.357311684987508, 52.76560244895518, 0), 0],
+      [Point3d.create(-20.767164392978884, 49.71993528865278, 0), 0],
+      [Point3d.create(-39.04116739775054, 70.17905154824257, 0), 0],
+      [Point3d.create(-35.631314691272564, 73.22471871599555, 0), 0],
+      [Point3d.create(-35.63131469130913, 73.22471871565855, 0), 0],
+      [Point3d.create(-34.94934415100758, 73.83385214827057, 0), 0.9143999999999939],
+      [Point3d.create(-35.55847758217715, 74.51582268998027, 0), 0],
+      [Point3d.create(-35.55847758229356, 74.51582268998027, 0), 0],
+      [Point3d.create(-36.1676110123517, 75.19779323041439, 0), 0],
+      [Point3d.create(-36.16761101222522, 75.1977932303301, 0), 0],
+      [Point3d.create(-36.776744446202905, 75.87976377483422, 0), 0.9144000000000252],
+      [Point3d.create(-37.4587149892468, 75.27063033916056, 0), 0],
+      [Point3d.create(-37.458714989130385, 75.27063033916056, 0), 0],
+      [Point3d.create(-40.86856769386213, 72.22496317513287, 0), 0],
+      [Point3d.create(-51.83296950510703, 84.5004329290241, 0), 0],
+      [Point3d.create(-47.803578049410135, 88.09946968220174, 0), 0],
+      [Point3d.create(-47.803578049449236, 88.09946968258132, 0), 0],
+      [Point3d.create(-47.30371955327791, 88.54594134440035, 0), 0.9144000000000031],
+      [Point3d.create(-47.57900350773707, 89.1570176128298, 0), 0],
+      [Point3d.create(-47.579003507853486, 89.1570176128298, 0), 0],
+      [Point3d.create(-47.82938843744341, 89.71282293926924, 0), 0],
+      [Point3d.create(-41.66404071659781, 91.76120727881789, 0), 0],
+      [Point3d.create(-40.16707298916299, 90.08516914770007, 0), 0],
+      [Point3d.create(-40.167072989162506, 90.08516914805963, 0), 0],
+      [Point3d.create(-38.338428725437595, 88.03792535281393, 0), 2.7432000000000256],
+      [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      [Point3d.create(-35.02016006386839, 91.00584154110402, 0), 0],
+      [Point3d.create(-35.020160063886514, 91.00584154080927, 0), 0],
+      [Point3d.create(-33.294162271050546, 92.5496034577201, 0), 3.0479999999999836],
+      [Point3d.create(-34.31871583103202, 94.62627368699759, 0), 0],
+      [Point3d.create(-34.31871583114844, 94.62627368699759, 0), 0],
+      [Point3d.create(-18.512114439276047, 105.7709195734933, 0), 0],
+      [Point3d.create(-16.58410938747693, 107.4953602347523, 0), 0],
+      [Point3d.create(-16.584109387602695, 107.49536023516826, 0), 0],
+    ];
+    let points1 = pointsAndRadii1.map(([point, _]) => point);
+    let radii1 = pointsAndRadii1.map(([_, radius]) => radius);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, points1);
+    ck.testExactNumber(points1.length, radii1.length, "expect points and radii arrays to be the same length");
+
+    let path1 = CurveFactory.createFilletsInLineString(points1, radii1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path1);
+    let pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1);
+    ck.testDefined(pointsAndRadii2, "expect to be able to extract points and radii from filleted linestring");
+
+    if (pointsAndRadii2) {
+      ck.testExactNumber(pointsAndRadii1.length, pointsAndRadii2.length, "expect same number of points and radii after round trip");
+      for (let i = 0; i < pointsAndRadii1.length; i++) {
+        const [p1, r1] = pointsAndRadii1[i];
+        const [p2, r2] = pointsAndRadii2[i];
+        ck.testPoint3d(p1, p2, `expect point ${i} to match after round trip`);
+        ck.testCoordinate(r1, r2, `expect radius ${i} to match after round trip`);
+      }
+    }
+
+    // clean data (removed near-duplicate points and unnecessary collinear points)
+    pointsAndRadii1 = [
+      [Point3d.create(0, 0, 0), 0],
+      [Point3d.create(-2.6918023365851695e-10, -1.8883916652612243e-10, 0), 0],
+      [Point3d.create(9.141128167813974, -10.15376746232603, 0), 13.716000000000008],
+      [Point3d.create(19.33065738750156, -1.0525196278467774, 0), 0],
+      [Point3d.create(19.33065738726873, -1.0525196278467774, 0), 0],
+      [Point3d.create(24.07056010211818, 3.1811430249363184, 0), 0],
+      [Point3d.create(24.07056010209622, 3.181143025033985, 0), 0],
+      [Point3d.create(26.34379524301602, 5.211587803744564, 0), 3.048],
+      [Point3d.create(24.313350463751704, 7.484822943806648, 0), 0],
+      [Point3d.create(24.313350463169627, 7.484822944737971, 0), 0],
+      [Point3d.create(20.81286366446875, 11.403880324214697, 0), 0],
+      [Point3d.create(20.812863664481313, 11.403880324369268, 0), 0],
+      [Point3d.create(20.203730231220618, 12.085850865715315, 0), 0.914399999999997],
+      [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      [Point3d.create(19.521759689436294, 11.476717432960868, 0), 0],
+      [Point3d.create(16.111906983307563, 8.431050271727145, 0), 0],
+      [Point3d.create(6.974905477487482, 18.660608398728073, 0), 0],
+      [Point3d.create(10.384770585806109, 21.706261687912047, 0), 0],
+      [Point3d.create(10.384770585759457, 21.706261688185414, 0), 0],
+      [Point3d.create(11.066739784620795, 22.315393921982235, 0), 0.9143999999999965],
+      [Point3d.create(10.457608894095756, 22.997364320792258, 0), 0],
+      [Point3d.create(10.457608893862925, 22.997364320792258, 0), 0],
+      [Point3d.create(2.207813488901593, 32.23366532754153, 0), 0],
+      [Point3d.create(2.207813489073398, 32.23366532792781, 0), 0],
+      [Point3d.create(1.5986800559286676, 32.9156358705522, 0), 0.9144000000000077],
+      [Point3d.create(0.9167095134034753, 32.306502437219024, 0), 0],
+      [Point3d.create(0.9167095135198906, 32.306502437219024, 0), 0],
+      [Point3d.create(-2.4931613869266585, 29.260819028131664, 0), 0],
+      [Point3d.create(-18.939764092792757, 47.67402366083115, 0), 0],
+      [Point3d.create(-15.529911386198364, 50.719690824858844, 0), 0],
+      [Point3d.create(-15.529911386152255, 50.71969082511107, 0), 0],
+      [Point3d.create(-14.847940843086377, 51.32882425950362, 0), 0.9144000000000048],
+      [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      [Point3d.create(-15.457074278499931, 52.01079480163753, 0), 0],
+      [Point3d.create(-16.06620771123562, 52.69276534020901, 0), 0],
+      [Point3d.create(-16.066207711451632, 52.6927653402095, 0), 0],
+      [Point3d.create(-16.6753411439156, 53.374735879099134, 0), 0.9143999999999919],
+      [Point3d.create(-17.357311684754677, 52.76560244895518, 0), 0],
+      [Point3d.create(-17.357311684987508, 52.76560244895518, 0), 0],
+      [Point3d.create(-20.767164392978884, 49.71993528865278, 0), 0],
+      [Point3d.create(-39.04116739775054, 70.17905154824257, 0), 0],
+      [Point3d.create(-35.631314691272564, 73.22471871599555, 0), 0],
+      [Point3d.create(-35.63131469130913, 73.22471871565855, 0), 0],
+      [Point3d.create(-34.94934415100758, 73.83385214827057, 0), 0.9143999999999939],
+      [Point3d.create(-35.55847758217715, 74.51582268998027, 0), 0],
+      [Point3d.create(-35.55847758229356, 74.51582268998027, 0), 0],
+      [Point3d.create(-36.1676110123517, 75.19779323041439, 0), 0],
+      [Point3d.create(-36.16761101222522, 75.1977932303301, 0), 0],
+      [Point3d.create(-36.776744446202905, 75.87976377483422, 0), 0.9144000000000252],
+      [Point3d.create(-37.4587149892468, 75.27063033916056, 0), 0],
+      [Point3d.create(-37.458714989130385, 75.27063033916056, 0), 0],
+      [Point3d.create(-40.86856769386213, 72.22496317513287, 0), 0],
+      [Point3d.create(-51.83296950510703, 84.5004329290241, 0), 0],
+      [Point3d.create(-47.803578049410135, 88.09946968220174, 0), 0],
+      [Point3d.create(-47.803578049449236, 88.09946968258132, 0), 0],
+      [Point3d.create(-47.30371955327791, 88.54594134440035, 0), 0.9144000000000031],
+      [Point3d.create(-47.57900350773707, 89.1570176128298, 0), 0],
+      [Point3d.create(-47.579003507853486, 89.1570176128298, 0), 0],
+      [Point3d.create(-47.82938843744341, 89.71282293926924, 0), 0],
+      [Point3d.create(-41.66404071659781, 91.76120727881789, 0), 0],
+      [Point3d.create(-40.16707298916299, 90.08516914770007, 0), 0],
+      [Point3d.create(-40.167072989162506, 90.08516914805963, 0), 0],
+      [Point3d.create(-38.338428725437595, 88.03792535281393, 0), 2.7432000000000256],
+      [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      [Point3d.create(-36.29239968955517, 89.86792868189514, 0), 0],
+      [Point3d.create(-35.02016006386839, 91.00584154110402, 0), 0],
+      [Point3d.create(-35.020160063886514, 91.00584154080927, 0), 0],
+      [Point3d.create(-33.294162271050546, 92.5496034577201, 0), 3.0479999999999836],
+      [Point3d.create(-34.31871583103202, 94.62627368699759, 0), 0],
+      [Point3d.create(-34.31871583114844, 94.62627368699759, 0), 0],
+      [Point3d.create(-18.512114439276047, 105.7709195734933, 0), 0],
+      [Point3d.create(-16.58410938747693, 107.4953602347523, 0), 0],
+      [Point3d.create(-16.584109387602695, 107.49536023516826, 0), 0],
+    ];
+    points1 = pointsAndRadii1.map(([point, _]) => point);
+    radii1 = pointsAndRadii1.map(([_, radius]) => radius);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, points1);
+    ck.testExactNumber(points1.length, radii1.length, "expect points and radii arrays to be the same length");
+
+    path1 = CurveFactory.createFilletsInLineString(points1, radii1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path1);
+    pointsAndRadii2 = CurveFactory.fromFilletedLineString(path1);
+    ck.testDefined(pointsAndRadii2, "expect to be able to extract points and radii from filleted linestring");
+
+    if (pointsAndRadii2) {
+      ck.testExactNumber(pointsAndRadii1.length, pointsAndRadii2.length, "expect same number of points and radii after round trip");
+      for (let i = 0; i < pointsAndRadii1.length; i++) {
+        const [p1, r1] = pointsAndRadii1[i];
+        const [p2, r2] = pointsAndRadii2[i];
+        ck.testPoint3d(p1, p2, `expect point ${i} to match after round trip`);
+        ck.testCoordinate(r1, r2, `expect radius ${i} to match after round trip`);
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "filletedLineStringRoundTrip");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

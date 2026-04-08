@@ -1,6 +1,24 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 24 Mar 2026 14:30:44 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Apr 2026 18:28:44 GMT and should not be manually modified.
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Minor changes
+
+- Add support for the proposed BENTLEY_materials_line_style glTF extension, including line width and custom line-pattern rendering for glTF line primitives.
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Support geometry collection for reality meshes with glTF tiles
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- New LockService interface and new BriefcaseConnection.locks property
+- Update measure tool to fallback to QuantityType
+- Fix crash when QuantityFormatter.setUnitsProvider is called after IModelApp shutdown — ToolAdmin no longer emits activeToolChanged with an undefined tool.
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+- Add support for WMTS sparse tilesets
 
 ## 5.7.3
 Tue, 24 Mar 2026 14:29:17 GMT

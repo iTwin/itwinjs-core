@@ -7,6 +7,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withEditTxn } from "../../EditTxn";
 
 // spell-checker: disable
 
@@ -37,9 +38,8 @@ describe("ExcludedElements", () => {
         },
       };
 
-      const styleId = imodel.elements.insertElement(props);
+      const styleId = withEditTxn(imodel, (txn) => txn.insertElement(props));
       expect(styleId).not.to.equal(Id64.invalid);
-      imodel.saveChanges();
 
       const rows: any[] = [];
       for await (const queryRow of imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
