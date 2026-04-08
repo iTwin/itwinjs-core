@@ -13,6 +13,8 @@ import { Reporter } from "@itwin/perf-tools";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 
+/* eslint-disable @typescript-eslint/no-deprecated */ // This test file will be removed subsequently, so we can allow usage of deprecated APIs within it.
+
 describe("ChangesetReaderAPI", async () => {
   let iTwinId: GuidString;
   const reporter = new Reporter();
