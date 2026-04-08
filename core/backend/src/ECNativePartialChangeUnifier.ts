@@ -234,8 +234,6 @@ export class ECNativePartialChangeUnifier implements Disposable {
   /**
    * Append partial changes from the current reader row and merge them into the cache.
    *
-   * Non-EC table rows (`source.isECTable === false`) are silently skipped.
-   *
    * @param source Any {@link ECNativeChangeSource} positioned on a valid row.
    * @beta
    */
@@ -283,7 +281,8 @@ export class ECNativePartialChangeUnifier implements Disposable {
       // Accumulate per-table metadata lists.
       lhs.$meta.tables = [...lhs.$meta.tables, ...rhs.$meta.tables];
       lhs.$meta.changeIndexes = [...lhs.$meta.changeIndexes, ...rhs.$meta.changeIndexes];
-      lhs.$meta.changesetFetchedProps = new Set([...lhs.$meta.changesetFetchedProps, ...rhs.$meta.changesetFetchedProps]);
+      // ECInstanceId will be part of changeset fetchedProps for every table, so we should not include multiple of those in the final list
+      lhs.$meta.changesetFetchedProps = [...new Set([...lhs.$meta.changesetFetchedProps, ...rhs.$meta.changesetFetchedProps])];
       this._cache.set(key, lhs);
     } else {
       this._cache.set(key, rhs);

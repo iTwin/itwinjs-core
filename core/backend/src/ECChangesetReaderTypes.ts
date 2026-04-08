@@ -50,7 +50,7 @@ export interface ECNativeChangeMeta {
   /** Reader mode that was active when this change row was captured. */
   mode: string;
   /** Set of EC property names fetched from the changeset or transaction or change binary for this row. */
-  changesetFetchedProps: Set<string>;
+  changesetFetchedProps: string[];
   /** Row adaptor options that were active when this change row was captured. */
   rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
   /** `true` when the change was applied indirectly */
@@ -106,8 +106,8 @@ export interface ECNativeChangeSource {
 export interface ECChangesetReaderArgs {
   /** The db used to resolve EC schema. Must be at or ahead of the changeset being read. */
   readonly db: AnyDb;
-  /** When `true`, all operations are logically inverted (Insert↔Delete). */
-  readonly invert?: true;
+  /** invert the changeset operations */
+  readonly invert?: boolean;
   /** Row adaptor options controlling how EC property values are formatted. */
   readonly rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
   /** Controls which properties are included in the change output. Defaults to `All_Properties`. */

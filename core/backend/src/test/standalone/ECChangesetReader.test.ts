@@ -28,9 +28,12 @@ function readTxn(
   txnId: string,
   mode?: IModelJsNative.ECChangesetReader.Mode,
   rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions,
+  invert?: boolean,
+  useInMemoryUnifierCache?: boolean,
 ): ECNativeChangeInstance[] {
-  using reader = ECChangesetReader.openTxn({ db, txnId, mode, rowOptions });
-  using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+  using reader = ECChangesetReader.openTxn({ db, txnId, mode, rowOptions, invert });
+  const inMemCache = useInMemoryUnifierCache ?? true;
+  using pcu = new ECNativePartialChangeUnifier(inMemCache ? ECNativeChangeUnifierCache.createInMemoryCache() : ECNativeChangeUnifierCache.createSqliteBackedCache(db));
   while (reader.step())
     pcu.appendFrom(reader);
   const instances = Array.from(pcu.instances);
@@ -169,7 +172,8 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(modelNew!.$meta.stage, "New");
     assert.deepEqual([...modelNew!.$meta.tables].sort(), ["bis_Model"].sort());
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
-    assert.equal(modelNew!.$meta.nativeKey, `${drawingModelId}-0xaf`);
+    assert.isString(modelNew!.$meta.nativeKey);
+    assert.equal(modelNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(modelNew!.$meta.mode, "All_Properties");
     assert.deepEqual([...modelNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
@@ -245,7 +249,122 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${fullElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
+    assert.equal(elem!.$meta.mode, "All_Properties");
+    assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), [
+      'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
+      'CodeSpec.Id', 'CodeValue', 'DblProp', 'DtProp', 'ECClassId', 'ECInstanceId',
+      'FederationGuid', 'GeometryStream', 'IntArrProp', 'IntProp', 'JsonProperties',
+      'LastMod', 'LongProp', 'Model.Id', 'Origin', 'Parent', 'Pt2dProp', 'Pt3dProp',
+      'RelatedElem', 'Rotation', 'StrArrProp', 'StrProp', 'StructArrProp', 'StructProp.Label',
+      'StructProp.Pt2d', 'StructProp.Pt3d', 'StructProp.X', 'StructProp.Y', 'StructProp.Z',
+      'TypeDefinition', 'UserLabel'
+    ].sort());
+    assert.deepEqual(elem!.$meta.rowOptions, {});
+    assert.equal(elem!.$meta.isIndirectChange, false);
+  });
+
+  it("txn1 insert-full | All_Properties | default rowOptions | invert", () => {
+    const instances = readTxn(rwIModel, txnId, undefined, undefined, true);
+    assert.equal(instances.length, 3);
+
+    // --- instances[0]: DrawingModel Updated New ---
+    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    expect(modelNew).to.exist;
+    assert.equal(modelNew!.ECInstanceId, drawingModelId);
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelNew!.ECClassId));
+    assert.isUndefined(modelNew!.LastMod);
+    assert.isUndefined(modelNew!.GeometryGuid);
+    // Object.keys
+    assert.deepEqual(Object.keys(modelNew!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changesetFetchedProps", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(modelNew!.$meta.op, "Updated");
+    assert.equal(modelNew!.$meta.stage, "New");
+    assert.deepEqual([...modelNew!.$meta.tables].sort(), ["bis_Model"].sort());
+    assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
+    assert.isString(modelNew!.$meta.nativeKey);
+    assert.equal(modelNew!.$meta.nativeKey.split(`-`).length, 2);
+    assert.equal(modelNew!.$meta.mode, "All_Properties");
+    assert.deepEqual([...modelNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelNew!.$meta.rowOptions, {});
+    assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+    // --- instances[1]: DrawingModel Updated Old ---
+    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(modelOld).to.exist;
+    assert.equal(modelOld!.ECInstanceId, drawingModelId);
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelOld!.ECClassId));
+    assert.isString(modelOld!.LastMod);
+    assert.isString(modelOld!.GeometryGuid);
+    // Object.keys
+    assert.deepEqual(Object.keys(modelOld!).sort(), ["ECInstanceId", "ECClassId", "$meta", "LastMod", "GeometryGuid"].sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changesetFetchedProps", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(modelOld!.$meta.op, "Updated");
+    assert.equal(modelOld!.$meta.stage, "Old");
+    assert.deepEqual([...modelOld!.$meta.tables].sort(), ["bis_Model"].sort());
+    assert.equal(modelOld!.$meta.mode, "All_Properties");
+    assert.deepEqual([...modelOld!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelOld!.$meta.rowOptions, {});
+    assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+    // --- instances[2]: Test2dElement Inserted New ---
+    const elem = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
+    expect(elem).to.exist;
+    assert.equal(elem!.ECInstanceId, fullElementId);
+    assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elem!.ECClassId));
+    assert.equal(elem!.Model.Id, drawingModelId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.Model.RelECClassId), "BisCore:ModelContainsElements");
+    assert.isString(elem!.LastMod);
+    assert.equal(elem!.CodeSpec.Id, "0x1");
+    assert.equal(rwIModel.getClassNameFromId(elem!.CodeSpec.RelECClassId), "BisCore:CodeSpecSpecifiesCode");
+
+    assert.equal(elem!.CodeScope.Id, "0x1");
+    assert.equal(rwIModel.getClassNameFromId(elem!.CodeScope.RelECClassId), "BisCore:ElementScopesCode");
+    assert.isString(elem!.FederationGuid);
+
+    assert.equal(elem!.Category.Id, drawingCategoryId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.Category.RelECClassId), "BisCore:GeometricElement2dIsInCategory");
+    assert.deepEqual(elem!.Origin, { X: 0, Y: 0 });
+    assert.equal(elem!.Rotation, 0);
+    assert.deepEqual(elem!.BBoxLow, { X: -25, Y: -25 });
+    assert.deepEqual(elem!.BBoxHigh, { X: 15, Y: 15 });
+    assert.include(String(elem!.GeometryStream), "\"bytes\"");
+    assert.include(String(elem!.BinProp), "\"bytes\"");
+    assert.equal(elem!.StrProp, "hello");
+    assert.equal(elem!.IntProp, 42);
+    assert.equal(elem!.LongProp, 9007199254740991);
+    assert.closeTo(elem!.DblProp as number, 3.14159265358979, 1e-10);
+    assert.equal(elem!.BoolProp, true);
+    assert.equal(elem!.DtProp, "2024-01-15T12:00:00.000");
+    assert.deepEqual(elem!.Pt2dProp, { X: 1.5, Y: 2.5 });
+    assert.deepEqual(elem!.Pt3dProp, { X: 3, Y: 4, Z: 5 });
+    assert.deepEqual(elem!.StructProp, { X: 1, Y: 2, Z: 3, Label: "origin", Pt2d: { X: 0.5, Y: 0.5 }, Pt3d: { X: 1, Y: 2, Z: 3 } });
+    assert.deepEqual(elem!.IntArrProp, [10, 20, 30]);
+    assert.deepEqual(elem!.StrArrProp, ["alpha", "beta", "gamma"]);
+    assert.deepEqual(elem!.StructArrProp, [
+      { X: 0, Y: 1, Z: 2, Label: "a", Pt2d: { X: 0, Y: 0 }, Pt3d: { X: 0, Y: 0, Z: 0 } },
+      { X: 3, Y: 4, Z: 5, Label: "b", Pt2d: { X: 1, Y: 1 }, Pt3d: { X: 1, Y: 1, Z: 1 } },
+    ]);
+    assert.equal(elem!.RelatedElem.Id, drawingCategoryId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.RelatedElem.RelECClassId), "TestDomain:Test2dUsesElement");
+    // Object.keys
+    assert.deepEqual(Object.keys(elem!).sort(), [
+      "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope", "FederationGuid", "$meta",
+      "Category", "Origin", "Rotation", "BBoxLow", "BBoxHigh", "GeometryStream",
+      "StrProp", "IntProp", "LongProp", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp", "RelatedElem", "BinProp"
+    ].sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changesetFetchedProps", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(elem!.$meta.op, "Deleted");
+    assert.equal(elem!.$meta.stage, "Old");
+    assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
+    assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "All_Properties");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), [
       'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
@@ -324,7 +443,8 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${fullElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "Bis_Element_Properties");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "ECClassId", "CodeScope.Id", "CodeSpec.Id",
       "CodeValue", "FederationGuid", "JsonProperties", "LastMod", "Model.Id", "Parent", "UserLabel"].sort());
@@ -347,7 +467,8 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(modelNew!.$meta.stage, "New");
     assert.deepEqual([...modelNew!.$meta.tables].sort(), ["bis_Model"].sort());
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
-    assert.equal(modelNew!.$meta.nativeKey, `${drawingModelId}-0xaf`);
+    assert.isString(modelNew!.$meta.nativeKey);
+    assert.equal(modelNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(modelNew!.$meta.mode, "Instance_Key");
     assert.deepEqual([...modelNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
@@ -382,7 +503,8 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${fullElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "Instance_Key");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "ECClassId"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, {});
@@ -911,7 +1033,105 @@ describe("ECChangesetReader insert-partial", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${partialElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
+    assert.equal(elem!.$meta.mode, "All_Properties");
+    assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), [
+      'ECInstanceId', 'ECClassId', 'Model.Id', 'LastMod', 'CodeSpec.Id',
+      'CodeScope.Id', 'CodeValue', 'UserLabel', 'Parent', 'FederationGuid',
+      'JsonProperties', 'Category.Id', 'Origin', 'Rotation', 'BBoxLow', 'BBoxHigh',
+      'GeometryStream', 'TypeDefinition', 'StrProp', 'IntProp', 'LongProp',
+      'DblProp', 'BoolProp', 'DtProp', 'BinProp', 'Pt2dProp', 'Pt3dProp',
+      'StructProp.X', 'StructProp.Y', 'StructProp.Z', 'StructProp.Label',
+      'StructProp.Pt2d', 'StructProp.Pt3d', 'IntArrProp', 'StrArrProp',
+      'StructArrProp', 'RelatedElem'
+    ].sort());
+    assert.deepEqual(elem!.$meta.rowOptions, {});
+    assert.isUndefined(elem!.BinProp);
+    assert.equal(elem!.$meta.isIndirectChange, false);
+
+  });
+
+  it("txn2 insert-partial | All_Properties | default rowOptions | invert", () => {
+    const instances = readTxn(rwIModel, txnId, undefined, undefined, true);
+    assert.equal(instances.length, 3);
+
+    // --- instances[0]: DrawingModel Updated New ---
+    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    expect(modelNew).to.exist;
+    assert.equal(modelNew!.ECInstanceId, drawingModelId);
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelNew!.ECClassId));
+    assert.isUndefined(modelNew!.LastMod);
+    assert.isUndefined(modelNew!.GeometryGuid);
+    assert.deepEqual(Object.keys(modelNew!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
+    assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changesetFetchedProps", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(modelNew!.$meta.op, "Updated");
+    assert.equal(modelNew!.$meta.stage, "New");
+    assert.equal(modelNew!.$meta.mode, "All_Properties");
+    assert.deepEqual([...modelNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelNew!.$meta.rowOptions, {});
+    assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+    // --- instances[1]: DrawingModel Updated Old ---
+    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(modelOld).to.exist;
+    assert.equal(modelOld!.ECInstanceId, drawingModelId);
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelOld!.ECClassId));
+    assert.isString(modelOld!.LastMod);
+    assert.isString(modelOld!.GeometryGuid);
+    // Model Old has LastMod and GeometryGuid when previous txn's model New values survive
+    assert.deepEqual(Object.keys(modelOld!).sort(), ["ECInstanceId", "ECClassId", "$meta", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changesetFetchedProps", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(modelOld!.$meta.op, "Updated");
+    assert.equal(modelOld!.$meta.stage, "Old");
+    assert.equal(modelOld!.$meta.mode, "All_Properties");
+    assert.deepEqual([...modelOld!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelOld!.$meta.rowOptions, {});
+    assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+    const elem = instances.find((i) => i.ECInstanceId === partialElementId && i.$meta.stage === "Old");
+    expect(elem).to.exist;
+    assert.equal(elem!.ECInstanceId, partialElementId);
+    assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elem!.ECClassId));
+    assert.equal(elem!.Model.Id, drawingModelId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.Model.RelECClassId), "BisCore:ModelContainsElements");
+    assert.isString(elem!.LastMod);
+    assert.equal(elem!.CodeSpec.Id, "0x1");
+    assert.equal(rwIModel.getClassNameFromId(elem!.CodeSpec.RelECClassId), "BisCore:CodeSpecSpecifiesCode");
+
+    assert.equal(elem!.CodeScope.Id, "0x1");
+    assert.equal(rwIModel.getClassNameFromId(elem!.CodeScope.RelECClassId), "BisCore:ElementScopesCode");
+    assert.isString(elem!.FederationGuid);
+    assert.equal(elem!.Category.Id, drawingCategoryId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.Category.RelECClassId), "BisCore:GeometricElement2dIsInCategory");
+    // No custom props on the partial element
+    assert.isUndefined(elem!.StrProp);
+    assert.isUndefined(elem!.IntProp);
+    assert.isUndefined(elem!.LongProp);
+    assert.isUndefined(elem!.DblProp);
+    assert.isUndefined(elem!.BoolProp);
+    assert.isUndefined(elem!.DtProp);
+    assert.isUndefined(elem!.Pt2dProp);
+    assert.isUndefined(elem!.Pt3dProp);
+    assert.isUndefined(elem!.StructProp);
+    assert.isUndefined(elem!.IntArrProp);
+    assert.isUndefined(elem!.StrArrProp);
+    assert.isUndefined(elem!.StructArrProp);
+    assert.isUndefined(elem!.RelatedElem);
+    assert.isUndefined(elem!.BinProp);
+    // Object.keys — partial insert: only BIS columns present (no 2d geometry columns either)
+    assert.deepEqual(Object.keys(elem!).sort(), [
+      "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope", "FederationGuid", "$meta",
+      "Category",
+    ].sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changesetFetchedProps", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(elem!.$meta.op, "Deleted");
+    assert.equal(elem!.$meta.stage, "Old");
+    assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
+    assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "All_Properties");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), [
       'ECInstanceId', 'ECClassId', 'Model.Id', 'LastMod', 'CodeSpec.Id',
@@ -981,7 +1201,8 @@ describe("ECChangesetReader insert-partial", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${partialElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "Bis_Element_Properties");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "ECClassId", "CodeScope.Id",
       "CodeSpec.Id", "CodeValue", "FederationGuid", "JsonProperties", "LastMod", "Model.Id", "Parent", "UserLabel"].sort());
@@ -1035,7 +1256,8 @@ describe("ECChangesetReader insert-partial", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${partialElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "Instance_Key");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "ECClassId"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, {});
@@ -1326,7 +1548,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | All_Properties | default rowOptions", () => {
-    const instances = readTxn(rwIModel, txnId);
+    const instances = readTxn(rwIModel, txnId, undefined, undefined, undefined, false);
     assert.equal(instances.length, 4);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -1395,7 +1617,8 @@ describe("ECChangesetReader update-full", () => {
     assert.equal(elemNew!.$meta.stage, "New");
     assert.deepEqual([...elemNew!.$meta.tables].sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
     assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elemNew!.$meta.nativeKey, `${fullElementId}-0x176`);
+    assert.isString(elemNew!.$meta.nativeKey);
+    assert.equal(elemNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elemNew!.$meta.mode, "All_Properties");
     assert.deepEqual([...elemNew!.$meta.changesetFetchedProps].sort(), [
       "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
@@ -1452,7 +1675,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | Bis_Element_Properties", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties, { classIdsToClassNames: true });
+    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties, { classIdsToClassNames: true }, undefined, false);
     assert.equal(instances.length, 4);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -1501,7 +1724,8 @@ describe("ECChangesetReader update-full", () => {
     assert.equal(elemNew!.$meta.stage, "New");
     assert.deepEqual([...elemNew!.$meta.tables].sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
     assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elemNew!.$meta.nativeKey, `${fullElementId}-0x176`);
+    assert.isString(elemNew!.$meta.nativeKey);
+    assert.equal(elemNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elemNew!.$meta.mode, "Bis_Element_Properties");
 
     assert.deepEqual([...elemNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod"].sort());
@@ -1528,7 +1752,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | Instance_Key", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Instance_Key);
+    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Instance_Key, undefined, undefined, false);
     assert.equal(instances.length, 4);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -1573,7 +1797,8 @@ describe("ECChangesetReader update-full", () => {
     assert.equal(elemNew!.$meta.stage, "New");
     assert.deepEqual([...elemNew!.$meta.tables].sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
     assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elemNew!.$meta.nativeKey, `${fullElementId}-0x176`);
+    assert.isString(elemNew!.$meta.nativeKey);
+    assert.equal(elemNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elemNew!.$meta.mode, "Instance_Key");
     assert.deepEqual([...elemNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(elemNew!.$meta.rowOptions, {});
@@ -1598,7 +1823,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | rowOptions: useJsName", () => {
-    const instances = readTxn(rwIModel, txnId, undefined, { useJsName: true });
+    const instances = readTxn(rwIModel, txnId, undefined, { useJsName: true }, undefined, false);
     assert.equal(instances.length, 4);
 
     const modelNew = instances.find((i) => i.id === drawingModelId && i.$meta.stage === "New");
@@ -1654,7 +1879,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | rowOptions: abbreviateBlobs", () => {
-    const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: true });
+    const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: true }, undefined, false);
     assert.equal(instances.length, 4);
 
     const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
@@ -1701,7 +1926,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | rowOptions: classIdsToClassNames + useJsName", () => {
-    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true });
+    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true }, undefined, false);
     assert.equal(instances.length, 4);
 
     const modelNew = instances.find((i) => i.id === drawingModelId && i.$meta.stage === "New");
@@ -1754,7 +1979,7 @@ describe("ECChangesetReader update-full", () => {
 
   it("txn3 update-full | rowOptions: classIdsToClassNames", () => {
 
-    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true });
+    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true }, undefined, false);
     assert.equal(instances.length, 4);
 
     const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
@@ -1967,7 +2192,8 @@ describe("ECChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.stage, "Old");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${partialElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "All_Properties");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ["BBoxHigh", "BBoxLow", "BinProp", "BoolProp",
       "Category.Id", "CodeScope.Id", "CodeSpec.Id", "CodeValue", "DblProp", "DtProp", "ECClassId", "ECInstanceId", "FederationGuid", "GeometryStream",
@@ -2032,7 +2258,8 @@ describe("ECChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.stage, "Old");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${partialElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "Bis_Element_Properties");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ["CodeScope.Id", "CodeSpec.Id", "CodeValue", "ECClassId", "ECInstanceId",
       "FederationGuid", "JsonProperties", "LastMod", "Model.Id", "Parent", "UserLabel"].sort());
@@ -2086,7 +2313,8 @@ describe("ECChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.stage, "Old");
     assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
-    assert.equal(elem!.$meta.nativeKey, `${partialElementId}-0x176`);
+    assert.isString(elem!.$meta.nativeKey);
+    assert.equal(elem!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(elem!.$meta.mode, "Instance_Key");
     assert.deepEqual([...elem!.$meta.changesetFetchedProps].sort(), ['ECClassId', 'ECInstanceId'].sort());
     assert.deepEqual(elem!.$meta.rowOptions, {});

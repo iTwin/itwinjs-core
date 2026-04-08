@@ -232,7 +232,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
       this._tableName = this._nativeReader.getTableName();
       this._isIndirectChange = this._nativeReader.isIndirectChange();
-      const changesetFetchedProps = new Set<string>(this._nativeReader.getChangesetFetchedPropertyNames());
+      const changesetFetchedProps = this._nativeReader.getChangesetFetchedPropertyNames();
 
       if (op === "Inserted" || op === "Updated") {
         const rowValue = this._nativeReader.getValue(DbChangeStage.New, this._rowOptions ?? {});
