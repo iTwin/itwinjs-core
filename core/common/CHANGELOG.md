@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 24 Mar 2026 14:30:44 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Apr 2026 18:28:44 GMT and should not be manually modified.
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Updates
+
+- Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks.
+- Support for binding range3d
+- QueryBinder should not fail on bind empty array
+- Minor bump on `IModelReadRpcInterface.interfaceVersion`.
+- Add common DbCloudContainerInfo interface for metadata display
+- Added ECSqlReaderBase api which will act as a base point for both the async and sync version of ECSqlReader
 
 ## 5.7.3
 Tue, 24 Mar 2026 14:29:17 GMT

@@ -9,7 +9,7 @@ import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
 import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
@@ -208,11 +208,12 @@ describe("CloudSqlite", () => {
     container.disconnect({ detach: true });
   });
 
-  it("should LogLevel.Trace set LogMask to ALL", async () => {
+  it("LogLevel.Trace should set LogMask to ALL", async () => {
     const testContainer0 = testContainers[0];
+    const shouldLogToConsole = process.env.ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
 
     const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
-      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+      shouldLogToConsole && console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
     const logTrace = sinon.spy(logConsole("Trace"));
     const logInfo = sinon.spy(logConsole("Info"));
     Logger.initialize(undefined, undefined, logInfo, logTrace);
@@ -223,7 +224,7 @@ describe("CloudSqlite", () => {
       await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
         await testContainer0.copyDatabase("testBim", fileName);
         const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
-        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        withEditTxn(db, (txn) => txn.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test"));
         db.close();
         await testContainer0.deleteDatabase(fileName);
       });
