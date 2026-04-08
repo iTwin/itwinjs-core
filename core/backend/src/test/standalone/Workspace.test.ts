@@ -11,7 +11,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
 import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
-import { Workspace, WorkspaceContainerProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
@@ -200,6 +200,7 @@ describe("WorkspaceFile", () => {
     db.addString("dict-b", JSON.stringify({ "editor/fontSize": 14 }));
     db.close();
 
+
     const settings = workspace.settings;
     await workspace.loadSettingsDictionary({
       ...containerProps,
@@ -378,12 +379,15 @@ describe("WorkspaceFile", () => {
     });
   });
 
+
   describe("getContainerAsync token resolution", () => {
     afterEach(() => sinon.restore());
 
     it("preserves an explicitly-provided accessToken", async () => {
       const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
-      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const getContainerStub = sinon.stub(workspace, "getContainer").callsFake((args) => {
+        return { fromProps: args } as WorkspaceContainer;
+      });
       const props: WorkspaceContainerProps = {
         containerId: "explicit-token-test",
         baseUri: "https://some-cloud-uri",
@@ -391,48 +395,48 @@ describe("WorkspaceFile", () => {
         accessToken: "my-explicit-token",
       };
 
-      try {
-        await workspace.getContainerAsync(props);
-      } catch {
-        // expected — no real cloud endpoint
-      }
+      const container = await workspace.getContainerAsync(props);
+
       expect(requestTokenStub.called).to.be.false;
-      expect(getContainerSpy.calledOnce).to.be.true;
-      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("my-explicit-token");
+      expect(getContainerStub.calledOnce).to.be.true;
+      expect(getContainerStub.firstCall.args[0].accessToken).to.equal("my-explicit-token");
+      expect(container.fromProps.accessToken).to.equal("my-explicit-token");
     });
 
     it("uses empty token for local containers with empty baseUri", async () => {
       const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
-      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const getContainerStub = sinon.stub(workspace, "getContainer").callsFake((args) => {
+        return { fromProps: args } as WorkspaceContainer;
+      });
       const props: WorkspaceContainerProps = {
         containerId: "local-token-test",
         baseUri: "",
         storageType: "azure",
       };
 
-      await workspace.getContainerAsync(props);
+      const container = await workspace.getContainerAsync(props);
       expect(requestTokenStub.called).to.be.false;
-      expect(getContainerSpy.calledOnce).to.be.true;
-      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("");
+      expect(getContainerStub.calledOnce).to.be.true;
+      expect(getContainerStub.firstCall.args[0].accessToken).to.equal("");
+      expect(container.fromProps.accessToken).to.equal("");
     });
 
     it("calls requestToken when no accessToken is provided for a cloud container", async () => {
       const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").resolves("resolved-token");
-      const getContainerSpy = sinon.spy(workspace, "getContainer");
+      const getContainerStub = sinon.stub(workspace, "getContainer").callsFake((args) => {
+        return { fromProps: args } as WorkspaceContainer;
+      });
       const props: WorkspaceContainerProps = {
         containerId: "cloud-no-token-test",
         baseUri: "https://some-cloud-uri",
         storageType: "azure",
       };
 
-      try {
-        await workspace.getContainerAsync(props);
-      } catch {
-        // expected — no real cloud endpoint
-      }
+      const container = await workspace.getContainerAsync(props);
       expect(requestTokenStub.calledOnce).to.be.true;
-      expect(getContainerSpy.calledOnce).to.be.true;
-      expect(getContainerSpy.firstCall.args[0].accessToken).to.equal("resolved-token");
+      expect(getContainerStub.calledOnce).to.be.true;
+      expect(getContainerStub.firstCall.args[0].accessToken).to.equal("resolved-token");
+      expect(container.fromProps.accessToken).to.equal("resolved-token");
     });
   });
 
@@ -448,7 +452,12 @@ describe("WorkspaceFile", () => {
         delete: async () => { },
         queryScope: async () => ({ iTwinId: testITwinId }),
         queryMetadata: async () => ({ containerType: "workspace", label: "mock" }),
-        queryContainersMetadata: async () => containers,
+        queryContainersMetadata: async (_userToken, args) => {
+          return containers.filter((c) =>
+            (args.containerType === undefined || c.containerType === args.containerType) &&
+            (args.iTwinId === testITwinId || args.iTwinId === undefined),
+          );
+        },
         updateJson: async () => { },
         requestToken: async (_props) => ({
           token: "",

@@ -119,8 +119,14 @@ preview;class;DefinitionPartition
 public;class;DefinitionSet
 preview;class;DefinitionSet
 beta;function;deleteElementSubTrees
+beta;function;deleteElementSubTrees
+deprecated;function;deleteElementSubTrees
 beta;function;deleteElementTree
 beta;function;deleteElementTree
+deprecated;function;deleteElementTree
+beta;function;deleteElementTree
+beta;function;deleteElementTree
+deprecated;function;deleteElementTree
 beta;interface;DeleteElementTreeArgs
 beta;interface;DeserializeEntityArgs
 public;class;DetailCallout
@@ -188,6 +194,7 @@ public;class;ECSqlWriteStatement
 beta;interface;EditableCatalogDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
+beta;class;EditTxn
 public;class;ElementAspect
 preview;class;ElementAspect
 beta;class;ElementDrivesElement
@@ -344,6 +351,7 @@ public;class;IModelJsFs
 public;class;IModelJsFsStats
 public;interface;IModelNameArg
 internal;class;IModelNative
+beta;type;ImplicitWriteEnforcement
 public;class;InformationContentElement
 preview;class;InformationContentElement
 public;class;InformationModel
@@ -415,7 +423,9 @@ beta;interface;OnAspectPropsArg
 beta;interface;OnChildElementArg
 beta;interface;OnChildElementIdArg
 beta;interface;OnChildElementPropsArg
+beta;interface;OnDependencyArg
 beta;interface;OnElementArg
+beta;interface;OnElementDependencyArg
 beta;interface;OnElementIdArg
 beta;interface;OnElementInModelIdArg
 beta;interface;OnElementInModelPropsArg
@@ -658,6 +668,10 @@ public;class;VolumeElement
 preview;class;VolumeElement
 public;class;WebMercatorModel
 preview;class;WebMercatorModel
+beta;function;withEditTxn
+beta;function;withEditTxn
+beta;function;withEditTxn
+beta;function;withEditTxn
 beta;interface;Workspace
 beta;namespace;Workspace
 beta;interface;WorkspaceContainer
