@@ -842,7 +842,7 @@ export class CategorySelector extends DefinitionElement {
     toJSON(): CategorySelectorProps;
 }
 
-// @beta
+// @beta @deprecated
 export interface ChangedECInstance {
     // (undocumented)
     $meta?: ChangeMetaData;
@@ -891,7 +891,7 @@ export interface ChangeInstanceKey {
     id: Id64String;
 }
 
-// @beta
+// @beta @deprecated
 export interface ChangeMetaData {
     changeIndexes: number[];
     classFullName?: string;
@@ -907,7 +907,7 @@ export interface ChangesetArg extends IModelIdArg {
     readonly changeset: ChangesetIndexOrId;
 }
 
-// @beta
+// @beta @deprecated
 export class ChangesetECAdaptor implements Disposable {
     [Symbol.dispose](): void;
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
@@ -2173,6 +2173,53 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @beta
+export interface ECChangeCache extends Disposable {
+    all(): IterableIterator<ECNativeChangeInstance>;
+    count(): number;
+    get(key: string): ECNativeChangeInstance | undefined;
+    set(key: string, value: ECNativeChangeInstance): void;
+}
+
+// @beta
+export class ECChangesetReader implements Disposable, ECNativeChangeSource {
+    [Symbol.dispose](): void;
+    close(): void;
+    readonly db: AnyDb;
+    deleted?: ECNativeChangeInstance;
+    inserted?: ECNativeChangeInstance;
+    get isECTable(): boolean;
+    get isIndirectChange(): boolean;
+    get op(): ECNativeChangeOp;
+    static openFile(args: {
+        readonly fileName: string;
+    } & ECChangesetReaderArgs): ECChangesetReader;
+    static openGroup(args: {
+        readonly changesetFiles: string[];
+    } & ECChangesetReaderArgs): ECChangesetReader;
+    static openInMemoryChanges(args: Omit<ECChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+    }): ECChangesetReader;
+    static openLocalChanges(args: Omit<ECChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        includeInMemoryChanges?: true;
+    }): ECChangesetReader;
+    static openTxn(args: Omit<ECChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        txnId: Id64String;
+    }): ECChangesetReader;
+    step(): boolean;
+    get tableName(): string;
+}
+
+// @beta
+export interface ECChangesetReaderArgs {
+    readonly db: AnyDb;
+    readonly invert?: true;
+    readonly mode?: IModelJsNative.ECChangesetReader.Mode;
+    readonly rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+}
+
+// @beta @deprecated
 export interface ECChangeUnifierCache extends Disposable {
     all(): IterableIterator<ChangedECInstance>;
     count(): number;
@@ -2180,7 +2227,7 @@ export interface ECChangeUnifierCache extends Disposable {
     set(key: string, value: ChangedECInstance): void;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export namespace ECChangeUnifierCache {
     export function createInMemoryCache(): ECChangeUnifierCache;
     export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
@@ -2255,6 +2302,54 @@ export interface ECEnumValue {
     schema: string;
     // (undocumented)
     value: number | string;
+}
+
+// @beta
+export interface ECNativeChangeInstance {
+    $meta: ECNativeChangeMeta;
+    [key: string]: any;
+}
+
+// @beta
+export interface ECNativeChangeMeta {
+    changeIndexes: number[];
+    changesetFetchedProps: Set<string>;
+    isIndirectChange: boolean;
+    mode: string;
+    nativeKey: string;
+    op: ECNativeChangeOp;
+    rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+    stage: ECNativeChangeStage;
+    tables: string[];
+}
+
+// @beta
+export type ECNativeChangeOp = "Inserted" | "Updated" | "Deleted";
+
+// @beta
+export interface ECNativeChangeSource {
+    readonly deleted?: ECNativeChangeInstance;
+    readonly inserted?: ECNativeChangeInstance;
+    readonly isECTable: boolean;
+    readonly op: ECNativeChangeOp;
+}
+
+// @beta
+export type ECNativeChangeStage = "Old" | "New";
+
+// @beta (undocumented)
+export namespace ECNativeChangeUnifierCache {
+    export function createInMemoryCache(): ECChangeCache;
+    export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeCache;
+}
+
+// @beta
+export class ECNativePartialChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_cache?: ECChangeCache);
+    appendFrom(source: ECNativeChangeSource): void;
+    get instanceCount(): number;
+    get instances(): IterableIterator<ECNativeChangeInstance>;
 }
 
 // @public @preview
@@ -5173,12 +5268,14 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 // @internal
 export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined;
 
-// @beta
+// @beta @deprecated
 export class PartialECChangeUnifier implements Disposable {
     [Symbol.dispose](): void;
     constructor(_db: AnyDb, _cache?: ECChangeUnifierCache);
+    // @deprecated
     appendFrom(adaptor: ChangesetECAdaptor): void;
     getInstanceCount(): number;
+    // @deprecated
     get instances(): IterableIterator<ChangedECInstance>;
 }
 

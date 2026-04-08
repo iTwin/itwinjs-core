@@ -27,8 +27,8 @@ import { AnyDb } from "./SqliteChangesetReader";
  * {@link ECNativePartialChangeUnifier} to merge partial (per-table) instances into
  * complete EC instances.
  *
- * When the current row is a non-EC internal SQLite table, {@link isECTable} is `false`
- * and both {@link inserted} and {@link deleted} remain `undefined`.
+ * When the current row is a non-EC internal SQLite table, `isECTable` is `false`
+ * and both `inserted` and `deleted` remain `undefined`.
  *
  * @note The native reader operates one SQLite table-row at a time. Multi-table EC
  * instances must be merged using {@link ECNativePartialChangeUnifier}.
@@ -50,7 +50,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * `true` when the current row belongs to an EC-mapped table.
-   * Valid only after a successful call to {@link step}.
+   * Valid only after a successful call to `step()`.
    * @beta
    */
   public get isECTable(): boolean {
@@ -61,7 +61,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Name of the SQLite table for the current change row.
-   * Valid only after a successful call to {@link step}.
+   * Valid only after a successful call to `step()`.
    * @beta
    */
   public get tableName(): string {
@@ -72,7 +72,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * `true` when the current change was applied indirectly
-   * Valid only after a successful call to {@link step}.
+   * Valid only after a successful call to step().
    * @beta
    */
   public get isIndirectChange(): boolean {
@@ -82,15 +82,15 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /**
-   * Post-change (inserted or updated-new) EC instance, populated after each {@link step}.
-   * `undefined` when the current row is a Delete or a non-EC table row or step() returned false.
+   * Post-change (inserted or updated-new) EC instance, populated after each `step()` call.
+   * `undefined` when the current row is a Delete or a non-EC table row or `step()` returned false.
    * @beta
    */
   public inserted?: ECNativeChangeInstance;
 
   /**
-   * Pre-change (deleted or updated-old) EC instance, populated after each {@link step}.
-   * `undefined` when the current row is an Insert or a non-EC table row or step() returned false.
+   * Pre-change (deleted or updated-old) EC instance, populated after each `step()` call.
+   * `undefined` when the current row is an Insert or a non-EC table row or `step()` returned false.
    * @beta
    */
   public deleted?: ECNativeChangeInstance;
@@ -100,7 +100,9 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     this.db = db;
   }
 
-  /** Convert a {@link IModelJsNative.ECChangesetReader.Mode} enum value to its string name. */
+  /** Convert a IModelJsNative.ECChangesetReader.Mode enum value to its string name.
+   * @internal
+   */
   private modeToString(mode: IModelJsNative.ECChangesetReader.Mode): string {
     switch (mode) {
       case IModelJsNative.ECChangesetReader.Mode.All_Properties: return "All_Properties";
@@ -207,7 +209,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   // ---------------------------------------------------------------------------
 
   /**
-   * Advance to the next change and populate {@link inserted} and/or {@link deleted}.
+   * Advance to the next change and populate `inserted` and/or `deleted`.
    * @returns `true` while positioned on a valid change; `false` when the stream is exhausted.
    * @beta
    */
@@ -282,7 +284,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * SQLite opcode of the current change.
-   * Valid only after a successful call to {@link step}.
+   * Valid only after a successful call to `step()`.
    * @beta
    */
   public get op(): ECNativeChangeOp {
@@ -311,7 +313,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /**
-   * Implements the `Disposable` contract — calls {@link close}.
+   * Implements the `Disposable` contract — calls `close()`.
    * @beta
    */
   public [Symbol.dispose](): void {

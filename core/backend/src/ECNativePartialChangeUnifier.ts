@@ -21,7 +21,7 @@ import { AnyDb } from "./SqliteChangesetReader";
  * partial EC change instances.
  * @beta
  */
-export interface ECNativeChangeUnifierCache extends Disposable {
+export interface ECChangeCache extends Disposable {
   /** Retrieve a cached instance by key, or `undefined` if absent. */
   get(key: string): ECNativeChangeInstance | undefined;
   /** Insert or replace a cached instance. */
@@ -37,10 +37,10 @@ export namespace ECNativeChangeUnifierCache {
   /**
    * Creates an in-memory cache backed by a `Map`.
    * Fast, but may exhaust memory for very large changesets.
-   * @returns An {@link ECNativeChangeUnifierCache} backed by an in-memory `Map`.
+   * @returns An {@link ECChangeCache} backed by an in-memory `Map`.
    * @beta
    */
-  export function createInMemoryCache(): ECNativeChangeUnifierCache {
+  export function createInMemoryCache(): ECChangeCache {
     return new NativeInMemoryInstanceCache();
   }
 
@@ -49,13 +49,13 @@ export namespace ECNativeChangeUnifierCache {
    * Slower than in-memory but handles large changesets without exhausting memory.
    * @param db Database that will host the temporary cache table.
    * @param bufferedReadInstanceSizeInBytes Read-batch size in bytes (default 10 MB).
-   * @returns An {@link ECNativeChangeUnifierCache} backed by a SQLite temp table.
+   * @returns An {@link ECChangeCache} backed by a SQLite temp table.
    * @beta
    */
   export function createSqliteBackedCache(
     db: AnyDb,
     bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10,
-  ): ECNativeChangeUnifierCache {
+  ): ECChangeCache {
     return new NativeSqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
   }
 }
@@ -64,7 +64,7 @@ export namespace ECNativeChangeUnifierCache {
 // Private: NativeInMemoryInstanceCache
 // ---------------------------------------------------------------------------
 
-class NativeInMemoryInstanceCache implements ECNativeChangeUnifierCache {
+class NativeInMemoryInstanceCache implements ECChangeCache {
   private readonly _cache = new Map<string, ECNativeChangeInstance>();
 
   public get(key: string): ECNativeChangeInstance | undefined {
@@ -101,7 +101,7 @@ class NativeInMemoryInstanceCache implements ECNativeChangeUnifierCache {
 // Private: NativeSqliteBackedInstanceCache
 // ---------------------------------------------------------------------------
 
-class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
+class NativeSqliteBackedInstanceCache implements ECChangeCache {
   private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10 MB
 
@@ -218,7 +218,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeUnifierCache {
  */
 export class ECNativePartialChangeUnifier implements Disposable {
   public constructor(
-    private readonly _cache: ECNativeChangeUnifierCache = new NativeInMemoryInstanceCache(),
+    private readonly _cache: ECChangeCache = new NativeInMemoryInstanceCache(),
   ) { }
 
   /** Releases the underlying cache. */
