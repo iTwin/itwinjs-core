@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { withEditTxn } from "../../EditTxn";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
   Placement3dProps, QueryRowFormat, SubCategoryAppearance,
@@ -75,24 +76,24 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
   if (expectedValue.p2d) {
     assert.equal(actualValue.p2d?.x, expectedValue.p2d.x, "'Point2d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p2d?.y, expectedValue.p2d.y, "'Point2d.y' type property did not roundtrip as expected");
-  } else if(expectedValue.p2d === null) {
+  } else if (expectedValue.p2d === null) {
     assert.equal(actualValue.p2d, expectedValue.p2d, "'Point2d' type property did not roundtrip as expected.");
   }
   if (expectedValue.p3d) {
     assert.equal(actualValue.p3d?.x, expectedValue.p3d.x, "'Point3d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.y, expectedValue.p3d.y, "'Point3d.y' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.z, expectedValue.p3d.z, "'Point3d.z' type property did not roundtrip as expected");
-  } else if(expectedValue.p3d === null) {
+  } else if (expectedValue.p3d === null) {
     assert.equal(actualValue.p3d, expectedValue.p3d, "'Point3d' type property did not roundtrip as expected.");
   }
   if (expectedValue.bin) {
     assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
-  } else if(expectedValue.bin === null) {
+  } else if (expectedValue.bin === null) {
     assert.equal(actualValue.bin, expectedValue.bin, "'binary' type property did not roundtrip as expected.");
   }
   if (expectedValue.g) {
     expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
-  } else if(expectedValue.g === null) {
+  } else if (expectedValue.g === null) {
     assert.equal(actualValue.g, expectedValue.g, "'geometry' type property did not roundtrip as expected.");
   }
 }
@@ -101,13 +102,13 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
   if (expectedValue.array_bin) {
     assert.equal(actualValue.array_bin!.length, expectedValue.array_bin.length, "'binary[].length' array length mismatch");
     expectedValue.array_bin.forEach((value, index) => {
-      if(value) {
+      if (value) {
         assert.isTrue(blobEqual(actualValue.array_bin![index], value), "'binary[]' type property did not roundtrip as expected");
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_bin![index], value, "'binary[]' type property did not roundtrip as expected");
       }
     });
-  } else if(expectedValue.array_bin === null) {
+  } else if (expectedValue.array_bin === null) {
     assert.equal(actualValue.array_bin, expectedValue.array_bin, "'binary[]' type property did not roundtrip as expected.");
   }
 
@@ -116,7 +117,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_i.forEach((value, index) => {
       assert.equal(actualValue.array_i![index], value, "'integer[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_i === null) {
+  } else if (expectedValue.array_i === null) {
     assert.equal(actualValue.array_i, expectedValue.array_i, "'integer[]' type property did not roundtrip as expected.");
   }
 
@@ -125,7 +126,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_l.forEach((value, index) => {
       assert.equal(actualValue.array_l![index], value, "'long[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_l === null) {
+  } else if (expectedValue.array_l === null) {
     assert.equal(actualValue.array_l, expectedValue.array_l, "'long[]' type property did not roundtrip as expected.");
   }
 
@@ -134,7 +135,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_d.forEach((value, index) => {
       assert.equal(actualValue.array_d![index], value, "'double[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_d === null) {
+  } else if (expectedValue.array_d === null) {
     assert.equal(actualValue.array_d, expectedValue.array_d, "'double[]' type property did not roundtrip as expected.");
   }
 
@@ -143,7 +144,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_b.forEach((value, index) => {
       assert.equal(actualValue.array_b![index], value, "'boolean[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_b === null) {
+  } else if (expectedValue.array_b === null) {
     assert.equal(actualValue.array_b, expectedValue.array_b, "'boolean[]' type property did not roundtrip as expected.");
   }
 
@@ -152,20 +153,20 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_dt.forEach((value, index) => {
       assert.equal(actualValue.array_dt![index], value, "'dateTime[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_dt === null) {
+  } else if (expectedValue.array_dt === null) {
     assert.equal(actualValue.array_dt, expectedValue.array_dt, "'dateTime[]' type property did not roundtrip as expected.");
   }
 
   if (expectedValue.array_g) {
     assert.equal(actualValue.array_g!.length, expectedValue.array_g.length, "'geometry[].length' array length mismatch");
     expectedValue.array_g.forEach((value, index) => {
-      if(value) {
+      if (value) {
         expect(actualValue.array_g![index], "'geometry[]' type property did not roundtrip as expected").to.deep.equal(value);
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_g![index], value, "'geometry[]' type property did not roundtrip as expected");
       }
     });
-  } else if(expectedValue.array_g === null) {
+  } else if (expectedValue.array_g === null) {
     assert.equal(actualValue.array_g, expectedValue.array_g, "'geometry[]' type property did not roundtrip as expected.");
   }
 
@@ -174,7 +175,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_s.forEach((value, index) => {
       assert.equal(actualValue.array_s![index], value, "'string[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_s === null) {
+  } else if (expectedValue.array_s === null) {
     assert.equal(actualValue.array_s, expectedValue.array_s, "'string[]' type property did not roundtrip as expected.");
   }
 
@@ -188,22 +189,22 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
         assert.equal(actualValue.array_p2d![index], value, "'point2d[]' type property did not roundtrip as expected.");
       }
     });
-  } else if(expectedValue.array_p2d === null) {
+  } else if (expectedValue.array_p2d === null) {
     assert.equal(actualValue.array_p2d, expectedValue.array_p2d, "'point2d[]' type property did not roundtrip as expected.");
   }
 
   if (expectedValue.array_p3d) {
     assert.equal(actualValue.array_p3d!.length, expectedValue.array_p3d.length, "'point3d[].length' array length mismatch");
     expectedValue.array_p3d.forEach((value, index) => {
-      if(value) {
+      if (value) {
         assert.equal(actualValue.array_p3d![index].x, value.x, "'point3d[].x' type property did not roundtrip as expected");
         assert.equal(actualValue.array_p3d![index].y, value.y, "'point3d[].y' type property did not roundtrip as expected");
         assert.equal(actualValue.array_p3d![index].z, value.z, "'point3d[].z' type property did not roundtrip as expected");
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_p3d![index], value, "'point3d[]' type property did not roundtrip as expected.");
       }
     });
-  } else if(expectedValue.array_p3d === null) {
+  } else if (expectedValue.array_p3d === null) {
     assert.equal(actualValue.array_p3d, expectedValue.array_p3d, "'point3d[]' type property did not roundtrip as expected.");
   }
 }
@@ -213,7 +214,7 @@ function verifyPrimitive(actualValue: IPrimitive, expectedValue: IPrimitive) {
   if (expectedValue.st) {
     verifyPrimitive(actualValue.st!, expectedValue.st);
     verifyPrimitiveArray(actualValue.st!, expectedValue.st);
-  } else if(expectedValue.st === null) {
+  } else if (expectedValue.st === null) {
     assert.equal(actualValue.st, expectedValue.st, "'ComplexStruct' type property did not roundtrip as expected.");
   }
 }
@@ -226,7 +227,7 @@ function verifyPrimitiveArray(actualValue: IPrimitiveArray, expectedValue: IPrim
       verifyPrimitiveBase(lhs, expectedValue.array_st![i]);
       verifyPrimitiveArrayBase(lhs, expectedValue.array_st![i]);
     });
-  } else if(expectedValue.array_st === null) {
+  } else if (expectedValue.array_st === null) {
     assert.equal(actualValue.array_st, expectedValue.array_st, "'ComplexStruct[]' type property did not roundtrip as expected.");
   }
 }
@@ -527,13 +528,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas([testSchemaPath]);
     imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+      withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, categoryName,
+        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() })));
 
-    imodel.saveChanges();
     imodel.close();
   });
 
@@ -541,7 +541,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // create element with auto handled properties
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
@@ -553,9 +553,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     const expectedSystemProperty = {
       id,
@@ -616,8 +615,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update element
-    imodel.elements.updateElement(actualValue);
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => txn.updateElement(actualValue));
 
     // verify updated values
     const updatedValue = imodel.elements.getElementProps<TestElement>(id);
@@ -658,7 +656,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.close();
   });
 
-  async function verifyElementAspect(elementAspectId: Id64String, elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]>{
+  async function verifyElementAspect(elementAspectId: Id64String, elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]> {
     // Verify updated values
     const updatedAspectValue: ElementAspectProps[] = iModel.elements.getAspects(elementId, expectedAspectFullName).map((x) => x.toJSON());
     assert.equal(updatedAspectValue.length, 1);
@@ -718,14 +716,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_apsect_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create an element to use with the ElementAspects
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const elId = imodel.elements.insertElement(geomElement.toJSON());
+    const elId = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(elId), "Element insertion succeeded");
 
     const expectedAspectValue = initElementAspectProps("TestElementAspect", imodel, elId, {
@@ -736,8 +734,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }) as TestElementAspect;
 
     // Insert an element aspect
-    const elementAspectId = imodel.elements.insertAspect(expectedAspectValue);
-    imodel.saveChanges();
+    const elementAspectId = withEditTxn(imodel, (txn) => {
+      return txn.insertAspect(expectedAspectValue);
+    });
 
     // Verify inserted element aspect properties
     const actualAspectValue = await verifyElementAspect(elementAspectId, expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
@@ -751,8 +750,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Update the element
-    imodel.elements.updateAspect(actualAspectValue[0]);
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => {
+      txn.updateAspect(actualAspectValue[0]);
+    });
 
     // Verify updated element aspect properties
     await verifyElementAspect(elementAspectId, actualAspectValue[0], elId, expectedAspectValue.classFullName, imodel);
@@ -771,17 +771,17 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_relationships_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // create elements to use
     const element1 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
     const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     const geomElement1 = imodel.elements.createElement(element1);
-    const elId1 = imodel.elements.insertElement(geomElement1.toJSON());
+    const elId1 = withEditTxn(imodel, (txn) => txn.insertElement(geomElement1.toJSON()));
     assert.isTrue(Id64.isValidId64(elId1), "insert of element 1 worked");
     const geomElement2 = imodel.elements.createElement(element2);
-    const elId2 = imodel.elements.insertElement(geomElement2.toJSON());
+    const elId2 = withEditTxn(imodel, (txn) => txn.insertElement(geomElement2.toJSON()));
     assert.isTrue(Id64.isValidId64(elId2), "insert of element 2 worked");
 
     // TODO: Skipping structs here, because of a bug that prevents querying from link tables that have an overflow table, by skipping the struct we reduce the amount of used columns
@@ -793,8 +793,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     const instance = expectedRelationshipValue; // imodel.relationships.createInstance(expectedRelationshipValue);
-    const relationshipId: Id64String = imodel.relationships.insertInstance(instance as any); // initElementRefersToElementsProps lies about return type.
-    imodel.saveChanges();
+    const relationshipId: Id64String = withEditTxn(imodel, (txn) => txn.insertRelationship(instance as any)); // initElementRefersToElementsProps lies about return type.
 
     // verify inserted properties
     const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
@@ -861,8 +860,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update
-    imodel.relationships.updateInstance(updatedExpectedValue.toJSON());
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => txn.updateRelationship(updatedExpectedValue.toJSON()));
 
     // verify updated values
     const updatedValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
@@ -934,21 +932,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     ) => {
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
-      const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
-      const categoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "model", {});
+      const { objId } = withEditTxn(imodel, (txn) => {
+        const modelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "model");
+        const categoryId = SpatialCategory.insert(txn, IModelDb.dictionaryId, "model", {});
 
-      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
-
-      const objId = imodel.elements.insertElement({
-        classFullName: PhysicalObject.classFullName,
-        code: Code.createEmpty(),
-        model: modelId,
-        placement,
-        category: categoryId,
-        ...extraProps,
+        return {
+          objId: txn.insertElement({
+            classFullName: PhysicalObject.classFullName,
+            code: Code.createEmpty(),
+            model: modelId,
+            placement,
+            category: categoryId,
+            ...extraProps,
+          }),
+        };
       });
 
-      imodel.saveChanges();
+      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
       expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
@@ -1035,7 +1035,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_properties_null_update.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create an element to be used
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
@@ -1047,9 +1047,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     // Verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
@@ -1083,8 +1082,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       });
 
       // Update the element
-      imodel.elements.updateElement(actualValue);
-      imodel.saveChanges();
+      withEditTxn(imodel, (txn) => txn.updateElement(actualValue));
 
       // Verify updated value properties
       const updatedValue = imodel.elements.getElementProps<TestElement>(id);

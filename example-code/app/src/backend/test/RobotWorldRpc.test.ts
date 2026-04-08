@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
-import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { IModelJsFs, PhysicalModel, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, EmptyLocalization, GeometricElement3dProps, IModel, IModelReadRpcInterface,
   RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
@@ -33,9 +33,7 @@ async function setUpTest() {
   IModelJsFs.copySync(seedFile, iModelFile);
   const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(iModel);
-  iModel.saveChanges();
-  PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
-  iModel.saveChanges();
+  withEditTxn(iModel, "robot world rpc setup", (txn) => PhysicalModel.insert(txn, IModel.rootSubjectId, "test"));
   iModel.close();
 }
 
@@ -82,7 +80,6 @@ if (ProcessDetector.isElectronAppFrontend) {
       const barrier1Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(0, 5, 0).toJSON(), Angle.createDegrees(0).toJSON(), 5);
       const barrier2Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(5, 0, 0).toJSON(), Angle.createDegrees(90).toJSON(), 5);
 
-      await iModel.saveChanges();
       const barrier1 = (await iModel.elements.getProps(barrier1Id))[0] as GeometricElement3dProps;
       /* const barrier2 = */
       await iModel.elements.getProps(barrier2Id);
@@ -103,7 +100,6 @@ if (ProcessDetector.isElectronAppFrontend) {
       //  +-- -- -- -- -- -- --
       if (true) {
         await roWrite.moveRobot(iToken, robot1Id, barrier1.placement!.origin);
-        await iModel.saveChanges();
         const r1 = (await iModel.elements.getProps(robot1Id))[0] as GeometricElement3dProps;
         assert.deepEqual(r1.placement!.origin, barrier1.placement!.origin);
         const barriersHit = await roRead.queryObstaclesHitByRobot(iToken, robot1Id);
