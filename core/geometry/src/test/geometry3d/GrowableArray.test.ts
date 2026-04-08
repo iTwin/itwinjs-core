@@ -946,7 +946,7 @@ describe("GrowableArray", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
-  it.only("GrowableArrayWithData", () => {
+  it("GrowableArrayWithData", () => {
     const ck = new Checker();
 
     // GrowableXYArray
