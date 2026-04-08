@@ -176,23 +176,10 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
  * @beta
  */
 export abstract class ElementTreeBottomUp {
-  private readonly _txn?: EditTxn;
-  protected readonly _iModel: IModelDb;
-
-  protected get txn(): EditTxn {
-    if (undefined !== this._txn)
-      return this._txn;
-
-    return this._iModel[_implicitTxn];
-  }
+  protected readonly txn: EditTxn;
 
   constructor(iModelOrTxn: IModelDb | EditTxn) {
-    if (iModelOrTxn instanceof EditTxn) {
-      this._txn = iModelOrTxn;
-      this._iModel = iModelOrTxn.iModel;
-    } else {
-      this._iModel = iModelOrTxn;
-    }
+    this.txn = iModelOrTxn instanceof EditTxn ? iModelOrTxn : iModelOrTxn[_implicitTxn];
   }
 
   /** Return true if the search should recurse into this model  */
@@ -212,7 +199,7 @@ export abstract class ElementTreeBottomUp {
 
   /** The main tree-walking function */
   protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
-    const subModel = this._iModel.models.tryGetModel<Model>(element);
+    const subModel = this.txn.iModel.models.tryGetModel<Model>(element);
     if (subModel !== undefined) {
       if (this.shouldExploreModel(subModel, scope))
         this._processSubModel(subModel, scope);
@@ -230,7 +217,7 @@ export abstract class ElementTreeBottomUp {
 
   /** process the children of the specified parent element */
   private _processChildren(parentElement: Id64String, parentScope: ElementTreeWalkerScope): void {
-    const children = this._iModel.elements.queryChildren(parentElement);
+    const children = this.txn.iModel.elements.queryChildren(parentElement);
     if (children.length === 0)
       return;
 
@@ -360,13 +347,13 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
       return; // we recorded definition models in visitElement when we encountered the DefinitionPartition elements.
 
     // visitElement has already deleted the elements in the model. So, now it's safe to delete the model itself.
-    logModel("delete", this._iModel, model.id, _scope);
+    logModel("delete", this.txn.iModel, model.id, _scope);
     this.txn.deleteModel(model.id);
   }
 
   protected override visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void {
-    if (!this._special.recordSpecialElement(this._iModel, elementId)) {
-      logElement("delete", this._iModel, elementId, _scope);
+    if (!this._special.recordSpecialElement(this.txn.iModel, elementId)) {
+      logElement("delete", this.txn.iModel, elementId, _scope);
       this.txn.deleteElement(elementId);
     }
   }
@@ -378,7 +365,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
    * @see deleteSpecialElements
    */
   public deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void {
-    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
+    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this.txn.iModel, topElement);
     this.processElementTree(topElement, topScope); //
   }
 
@@ -386,7 +373,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
    * function once after all element trees are processed by deleteNormalElements.
    */
   public deleteSpecialElements(): void {
-    this._special.deleteSpecialElements(this._iModel);
+    this._special.deleteSpecialElements(this.txn.iModel);
   }
 
 }

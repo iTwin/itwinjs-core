@@ -1370,7 +1370,7 @@ describe("createQueryReader vs withQueryReader ", () => {
     ) {
       const newScope = new ElementTreeWalkerScope(scope, element);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this._iModel.withPreparedStatement(
+      this.txn.iModel.withPreparedStatement(
         `
         SELECT ECInstanceId
         FROM bis.Element

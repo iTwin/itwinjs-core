@@ -38,7 +38,7 @@ class ElementTreeCollector extends ElementTreeBottomUp {
   }
 
   public collect(topElement: Id64String): void {
-    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this._iModel, topElement));
+    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this.txn.iModel, topElement));
   }
 }
 

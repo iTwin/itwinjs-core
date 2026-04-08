@@ -39,7 +39,7 @@ describe("CodeSpec", () => {
 
     codeSpec.scopeReq = CodeScopeSpec.ScopeRequirement.FederationGuid;
     codeSpec.scopeType = CodeScopeSpec.Type.Repository;
-    withEditTxn(imodel, () => imodel.codeSpecs.updateProperties(codeSpec));
+    withEditTxn(imodel, (txn) => imodel.codeSpecs.updateProperties(txn, codeSpec));
     const fname = imodel.pathName;
     imodel.close();
     imodel = StandaloneDb.openFile(fname);
@@ -84,6 +84,51 @@ describe("CodeSpec", () => {
     }
   });
 
+  it("supports deprecated updateProperties overload when implicit writes are allowed", () => {
+    const previousEnforcement = EditTxn.implicitWriteEnforcement;
+    EditTxn.implicitWriteEnforcement = "allow";
+
+    try {
+      const suffix = Guid.createValue().replace(/-/g, "");
+      const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insert(txn, `LegacyUpdateCodeSpec_${suffix}`, CodeScopeSpec.Type.Model));
+      const codeSpec = imodel.codeSpecs.getById(codeSpecId);
+      codeSpec.scopeReq = CodeScopeSpec.ScopeRequirement.FederationGuid;
+      codeSpec.scopeType = CodeScopeSpec.Type.Repository;
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      imodel.codeSpecs.updateProperties(codeSpec);
+
+      const updatedCodeSpec = imodel.codeSpecs.getById(codeSpecId);
+      expect(updatedCodeSpec.scopeReq).to.equal(CodeScopeSpec.ScopeRequirement.FederationGuid);
+      expect(updatedCodeSpec.scopeType).to.equal(CodeScopeSpec.Type.Repository);
+      expect(updatedCodeSpec.isExternal).to.be.true;
+    } finally {
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
+    }
+  });
+
+  it("supports txn-aware updateProperties overload when implicit writes are disallowed", () => {
+    const previousEnforcement = EditTxn.implicitWriteEnforcement;
+    EditTxn.implicitWriteEnforcement = "throw";
+
+    try {
+      const suffix = Guid.createValue().replace(/-/g, "");
+      const codeSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insert(txn, `ExplicitUpdateCodeSpec_${suffix}`, CodeScopeSpec.Type.Model));
+      const codeSpec = imodel.codeSpecs.getById(codeSpecId);
+      codeSpec.scopeReq = CodeScopeSpec.ScopeRequirement.FederationGuid;
+      codeSpec.scopeType = CodeScopeSpec.Type.Repository;
+
+      withEditTxn(imodel, (txn) => imodel.codeSpecs.updateProperties(txn, codeSpec));
+
+      const updatedCodeSpec = imodel.codeSpecs.getById(codeSpecId);
+      expect(updatedCodeSpec.scopeReq).to.equal(CodeScopeSpec.ScopeRequirement.FederationGuid);
+      expect(updatedCodeSpec.scopeType).to.equal(CodeScopeSpec.Type.Repository);
+      expect(updatedCodeSpec.isExternal).to.be.true;
+    } finally {
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
+    }
+  });
+
   it("rejects deprecated insert overloads when implicit writes are disallowed", () => {
     const previousEnforcement = EditTxn.implicitWriteEnforcement;
     EditTxn.implicitWriteEnforcement = "throw";
@@ -99,6 +144,16 @@ describe("CodeSpec", () => {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(() => imodel.codeSpecs.insert(`LegacyThrowTypeCodeSpec_${suffix}`, CodeScopeSpec.Type.Model)).to.throw().that.satisfies((error: unknown) =>
         EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+
+      const explicitSpecId = withEditTxn(imodel, (txn) => imodel.codeSpecs.insert(txn, `LegacyThrowUpdateCodeSpec_${suffix}`, CodeScopeSpec.Type.Model));
+      const explicitSpec = imodel.codeSpecs.getById(explicitSpecId);
+      explicitSpec.scopeReq = CodeScopeSpec.ScopeRequirement.FederationGuid;
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      expect(() => imodel.codeSpecs.updateProperties(explicitSpec)).to.throw().that.satisfies((error: unknown) =>
+        EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+
+      withEditTxn(imodel, (txn) => imodel.codeSpecs.updateProperties(txn, explicitSpec));
     } finally {
       EditTxn.implicitWriteEnforcement = previousEnforcement;
     }

@@ -203,13 +203,41 @@ export class CodeSpecs {
   }
 
   /** Update the Json properties of an existing CodeSpec.
-   * @param codeSpec The codeSpec holding Json properties values to update
+   * @param txn The active EditTxn.
+   * @param codeSpec The codeSpec holding Json properties values to update.
    * @throws if unable to update the codeSpec.
+   * @beta
    */
-  public updateProperties(codeSpec: CodeSpec): void {
+  public updateProperties(txn: EditTxn, codeSpec: CodeSpec): void;
+
+  /** Update the Json properties of an existing CodeSpec.
+   * @param codeSpec The codeSpec holding Json properties values to update.
+   * @throws if unable to update the codeSpec.
+   * @deprecated Use CodeSpecs.updateProperties(txn, codeSpec) instead.
+   */
+  public updateProperties(codeSpec: CodeSpec): void;
+  public updateProperties(txnOrCodeSpec: EditTxn | CodeSpec, codeSpec?: CodeSpec): void {
+    let effectiveTxn: EditTxn;
+    let effectiveCodeSpec: CodeSpec;
+
+    if (txnOrCodeSpec instanceof EditTxn) {
+      effectiveTxn = txnOrCodeSpec;
+      if (effectiveTxn.iModel !== this._imodel)
+        EditTxnError.throwError("wrong-imodel", "EditTxn does not belong to this iModel", effectiveTxn.iModel.key);
+
+      if (undefined === codeSpec)
+        throw new IModelError(IModelStatus.BadArg, "Invalid argument");
+
+      effectiveCodeSpec = codeSpec;
+    } else {
+      effectiveTxn = this._imodel[_implicitTxn];
+      effectiveCodeSpec = txnOrCodeSpec;
+    }
+
+    effectiveTxn.verifyWriteable();
     this._imodel.withSqliteStatement(`UPDATE ${CodeSpecs.tableName} SET JsonProperties=? WHERE Id=?`, (stmt) => {
-      stmt.bindString(1, JSON.stringify(codeSpec.properties));
-      stmt.bindId(2, codeSpec.id);
+      stmt.bindString(1, JSON.stringify(effectiveCodeSpec.properties));
+      stmt.bindId(2, effectiveCodeSpec.id);
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new IModelError(IModelStatus.BadArg, "error updating CodeSpec properties");
     });

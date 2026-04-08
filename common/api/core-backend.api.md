@@ -1680,6 +1680,9 @@ export class CodeSpecs {
     insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    // @beta
+    updateProperties(txn: EditTxn, codeSpec: CodeSpec): void;
+    // @deprecated
     updateProperties(codeSpec: CodeSpec): void;
 }
 
@@ -2899,15 +2902,13 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
 // @beta
 export abstract class ElementTreeBottomUp {
     constructor(iModelOrTxn: IModelDb | EditTxn);
-    // (undocumented)
-    protected readonly _iModel: IModelDb;
     protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope): void;
     protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean;
     protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
     protected shouldVisitElement(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean;
     protected shouldVisitModel(_model: Model, _scope: ElementTreeWalkerScope): boolean;
     // (undocumented)
-    protected get txn(): EditTxn;
+    protected readonly txn: EditTxn;
     protected abstract visitElement(elementId: Id64String, scope: ElementTreeWalkerScope): void;
     protected abstract visitModel(model: Model, scope: ElementTreeWalkerScope): void;
 }
