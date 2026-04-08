@@ -233,6 +233,65 @@ assert.deepEqual(elem.BinProp, new Uint8Array([1, 2, 3, 4]));
 
 ---
 
+## Filtering — restricting which changes are yielded
+
+After opening a reader (and before the first `step()` call) you can install one or more filters to narrow the change stream. Filters affect which instances are populated in `inserted` / `deleted` — **the reader still steps through every underlying row**, so `op`, `tableName`, `isECTable`, and `isIndirectChange` are always populated regardless of filters.
+
+Three independent filter axes are available and can be combined:
+
+| Priority | Method | Filters on |
+|---|---|---|
+| 1 | `setOpCodeFilters(ops)` | Change operation (`"Inserted"`, `"Updated"`, `"Deleted"`) |
+| 2 | `setTableNameFilters(tableNames)` | SQLite table name of the row |
+| 3 | `setClassIdFilters(classIds)` | EC class id of the instance |
+
+Filters are applied in the priority order above. If the op-code filter rejects a row, the table and class-id filters are not evaluated. If the table filter rejects a row, the class-id filter is not evaluated.
+
+Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling the corresponding `clear*` method.
+
+### Example — only yield inserts and updates for a specific table
+
+```ts
+using reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
+
+reader.setTableNameFilters(new Set(["bis_Element"]));
+reader.setOpCodeFilters(new Set(["Inserted", "Updated"]));
+
+while (reader.step()) {
+  if (reader.inserted) {
+    // Only bis_Element rows with op Inserted or Updated reach here.
+    console.log(reader.inserted.ECInstanceId, reader.inserted.$meta.op);
+  }
+  // reader.deleted is always undefined because "Deleted" was not included.
+}
+```
+
+### Example — only yield changes for a known set of EC class ids
+
+```ts
+const classIds = new Set([physicalElementClassId, drawingElementClassId]);
+
+using reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
+reader.setClassIdFilters(classIds);
+
+while (reader.step()) {
+  if (reader.inserted)
+    console.log("class match →", reader.inserted.ECClassId);
+}
+```
+
+### Clearing filters at runtime
+
+All three filters can be cleared individually without reopening the reader:
+
+```ts
+reader.clearTableNameFilters();
+reader.clearOpCodeFilters();
+reader.clearClassIdFilters();
+```
+
+---
+
 ## Cache strategies
 
 By default `ECNativePartialChangeUnifier` uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
