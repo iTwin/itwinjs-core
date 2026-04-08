@@ -7,6 +7,7 @@
  */
 
 import { assert } from "chai";
+import { TestUtils } from "../TestUtils";
 import {
   AssignmentExpr,
   BetweenExpr,
@@ -56,7 +57,7 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
+import { ECDb, ECDbOpenMode } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult } from "@itwin/core-bentley";
 
@@ -94,7 +95,7 @@ describe("ECSql Abstract Syntax Tree", () => {
   }
 
   before(async () => {
-    await IModelHost.startup();
+    await TestUtils.startBackend();
     ecdb = new ECDb();
     ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"), ECDbOpenMode.ReadWrite);
   });
