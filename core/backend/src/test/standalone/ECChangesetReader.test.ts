@@ -3674,3 +3674,205 @@ describe("ECChangesetReader: instance reused with a different class (class chang
   });
 });
 
+describe("ECChangesetReader: overflow table insert and update", () => {
+  let rwIModel: BriefcaseDb;
+  let elementId: Id64String;
+  let drawingModelId: Id64String;
+  let drawingCategoryId: Id64String;
+  let insertTxnId: string;
+  let updateTxnId: string;
+  let txn: EditTxn;
+
+  const nProps = 36;
+  const propName = (i: number) => `p${i}`;
+  const insertVal = (i: number) => `insert-${i}`;
+  const updateVal = (i: number) => `updated-${i}`;
+
+  before(async () => {
+    HubMock.startup("ECChangesetOverflowInsertUpdate", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "overflowInsertUpdate", description: "overflowInsertUpdate", accessToken: adminToken });
+    rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    txn = startTestTxn(rwIModel, "ECChangesetReader overflow insert/update");
+
+    // 36 string properties — enough to spill columns into bis_GeometricElement2d_Overflow
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="OverflowElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            ${Array.from({ length: nProps }, (_, i) => `<ECProperty propertyName="${propName(i)}" typeName="string"/>`).join("\n            ")}
+        </ECEntityClass>
+    </ECSchema>`;
+    await importSchemaStrings(txn, [schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "OverflowDrawing";
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
+    const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "OverflowCat");
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "OverflowCat",
+      new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,128,0)").toJSON() }));
+    txn.saveChanges("setup");
+
+    // Txn 2: insert element with every property populated
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    const geom: GeometryStreamProps = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+    ].map((a) => IModelJson.Writer.toIModelJson(a));
+    const insertProps = Object.fromEntries(Array.from({ length: nProps }, (_, i) => [propName(i), insertVal(i)]));
+    elementId = txn.insertElement({
+      classFullName: "TestDomain:OverflowElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom,
+      ...insertProps,
+    } as any);
+    txn.saveChanges("insert overflow element");
+    insertTxnId = rwIModel.txns.getLastSavedTxnProps()!.id;
+
+    // Txn 3: update only the overflow-table properties (p34, p35 — the last two)
+    await rwIModel.locks.acquireLocks({ exclusive: elementId });
+    txn.updateElement({
+      ...rwIModel.elements.getElementProps(elementId),
+      [propName(34)]: updateVal(34),
+      [propName(35)]: updateVal(35),
+    } as any);
+    txn.saveChanges("update overflow props");
+    updateTxnId = rwIModel.txns.getLastSavedTxnProps()!.id;
+  });
+
+  after(() => {
+    txn.end();
+    rwIModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("update txn | bis_GeometricElement2d_Overflow rows merged; overflow props correct in New and Old", () => {
+    // --- update txn ---
+    const updateInstances = readTxn(rwIModel, updateTxnId, undefined, { classIdsToClassNames: true });
+    assert.equal(updateInstances.length, 4);
+
+    // DrawingModel Updated New (indirect side-effect)
+    const updateModelNew = updateInstances.find((i) => i.ECClassId === "BisCore.DrawingModel" && i.$meta.stage === "New");
+    expect(updateModelNew).to.exist;
+    assert.equal(updateModelNew!.$meta.op, "Updated");
+    assert.isString(updateModelNew!.LastMod);
+    assert.deepEqual(Object.keys(updateModelNew!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "$meta"].sort());
+    assert.deepEqual([...updateModelNew!.$meta.tables], ["bis_Model"]);
+    assert.deepEqual([...updateModelNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod"].sort());
+    assert.deepEqual(updateModelNew!.$meta.rowOptions, { classIdsToClassNames: true });
+    assert.equal(updateModelNew!.$meta.isIndirectChange, true);
+
+    // DrawingModel Updated Old
+    const updateModelOld = updateInstances.find((i) => i.ECClassId === "BisCore.DrawingModel" && i.$meta.stage === "Old");
+    expect(updateModelOld).to.exist;
+    assert.equal(updateModelOld!.$meta.op, "Updated");
+    assert.isString(updateModelOld!.LastMod);
+    assert.deepEqual(Object.keys(updateModelOld!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "$meta"].sort());
+    assert.deepEqual([...updateModelOld!.$meta.tables], ["bis_Model"]);
+    assert.deepEqual([...updateModelOld!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod"].sort());
+    assert.equal(updateModelOld!.$meta.isIndirectChange, true);
+
+    // OverflowElement Updated New
+    const elemNew = updateInstances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+    expect(elemNew).to.exist;
+    assert.equal(elemNew!.ECClassId, "TestDomain.OverflowElement");
+    assert.equal(elemNew!.$meta.op, "Updated");
+    assert.equal(elemNew!.$meta.isIndirectChange, false);
+    assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true });
+    // Only bis_Element (LastMod) and bis_GeometricElement2d_Overflow (p34, p35) were touched
+    assert.deepEqual([...elemNew!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d_Overflow"].sort());
+    assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
+    // changesetFetchedProps: only the props that changed
+    assert.deepEqual([...elemNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "p34", "p35"].sort());
+    // New stage has updated values for the two overflow props
+    assert.equal(elemNew![propName(34)], updateVal(34));
+    assert.equal(elemNew![propName(35)], updateVal(35));
+    // Other props (p0–p33) are not present — not part of the delta
+    assert.isUndefined(elemNew![propName(0)]);
+    assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "p34", "p35", "$meta"].sort());
+
+    // OverflowElement Updated Old
+    const elemOld = updateInstances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "Old");
+    expect(elemOld).to.exist;
+    assert.equal(elemOld!.ECClassId, "TestDomain.OverflowElement");
+    assert.equal(elemOld!.$meta.op, "Updated");
+    assert.equal(elemOld!.$meta.isIndirectChange, false);
+    assert.deepEqual([...elemOld!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d_Overflow"].sort());
+    assert.deepEqual([...elemOld!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "p34", "p35"].sort());
+    // Old stage has the pre-update (insert) values for the two overflow props
+    assert.equal(elemOld![propName(34)], insertVal(34));
+    assert.equal(elemOld![propName(35)], insertVal(35));
+    assert.isUndefined(elemOld![propName(0)]);
+    assert.deepEqual(Object.keys(elemOld!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "p34", "p35", "$meta"].sort());
+
+    // --- insert txn ---
+    const insertInstances = readTxn(rwIModel, insertTxnId, undefined, { classIdsToClassNames: true });
+    assert.equal(insertInstances.length, 3);
+
+    // DrawingModel Updated New (indirect side-effect of inserting into the model)
+    const modelNew = insertInstances.find((i) => i.ECClassId === "BisCore.DrawingModel" && i.$meta.stage === "New");
+    expect(modelNew).to.exist;
+    assert.equal(modelNew!.$meta.op, "Updated");
+    assert.isString(modelNew!.LastMod);
+    assert.isString(modelNew!.GeometryGuid);
+    assert.deepEqual([...modelNew!.$meta.tables], ["bis_Model"]);
+    assert.deepEqual([...modelNew!.$meta.changesetFetchedProps].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
+    assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+    // DrawingModel Updated Old
+    const modelOld = insertInstances.find((i) => i.ECClassId === "BisCore.DrawingModel" && i.$meta.stage === "Old");
+    expect(modelOld).to.exist;
+    assert.equal(modelOld!.$meta.op, "Updated");
+    assert.deepEqual(Object.keys(modelOld!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
+    assert.deepEqual([...modelOld!.$meta.tables], ["bis_Model"]);
+    assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+    // OverflowElement Inserted New — key assertions
+    const insertElem = insertInstances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+    expect(insertElem).to.exist;
+    assert.equal(insertElem!.ECClassId, "TestDomain.OverflowElement");
+    assert.equal(insertElem!.$meta.op, "Inserted");
+    assert.equal(insertElem!.$meta.stage, "New");
+    assert.equal(insertElem!.$meta.isIndirectChange, false);
+    assert.deepEqual(insertElem!.$meta.rowOptions, { classIdsToClassNames: true });
+
+    // All three physical tables (including overflow) contributed to this insert
+    assert.deepEqual([...insertElem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d", "bis_GeometricElement2d_Overflow"].sort());
+    assert.deepEqual([...insertElem!.$meta.changeIndexes].sort(), [1, 2, 3].sort());
+
+    // changesetFetchedProps includes all 36 domain props
+    const fetchedProps = [...insertElem!.$meta.changesetFetchedProps];
+    for (let i = 0; i < nProps; i++) {
+      assert.include(fetchedProps, propName(i), `changesetFetchedProps should contain p${i}`);
+    }
+
+    // All 36 domain props carry the insert values
+    for (let i = 0; i < nProps; i++) {
+      assert.equal(insertElem![propName(i)], insertVal(i), `p${i} should be '${insertVal(i)}'`);
+    }
+
+    // Spot-check BIS properties
+    assert.equal(insertElem!.Model.Id, drawingModelId);
+    assert.equal(insertElem!.Model.RelECClassId, "BisCore.ModelContainsElements");
+    assert.equal(insertElem!.Category.Id, drawingCategoryId);
+    assert.equal(insertElem!.Category.RelECClassId, "BisCore.GeometricElement2dIsInCategory");
+    assert.equal(insertElem!.CodeSpec.Id, "0x1");
+    assert.equal(insertElem!.CodeSpec.RelECClassId, "BisCore.CodeSpecSpecifiesCode");
+    assert.equal(insertElem!.CodeScope.Id, "0x1");
+    assert.equal(insertElem!.CodeScope.RelECClassId, "BisCore.ElementScopesCode");
+    assert.isString(insertElem!.FederationGuid);
+    assert.isString(insertElem!.LastMod);
+    assert.deepEqual(insertElem!.Origin, { X: 0, Y: 0 });
+    assert.equal(insertElem!.Rotation, 0);
+    assert.deepEqual(insertElem!.BBoxLow, { X: -5, Y: -5 });
+    assert.deepEqual(insertElem!.BBoxHigh, { X: 5, Y: 5 });
+    assert.include(String(insertElem!.GeometryStream), "\"bytes\"");
+  });
+});
+
