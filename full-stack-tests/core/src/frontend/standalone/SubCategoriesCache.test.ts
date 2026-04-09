@@ -434,7 +434,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
     }
 
     async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
-      return doAndExpectChanges(() => saveBriefcaseChanges(bc), changedElementIds);
+      return doAndExpectChanges(async () => saveBriefcaseChanges(bc), changedElementIds);
     }
 
     function getDefaultSubCategoryId(categoryId: string): string {
@@ -522,7 +522,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectCachedSubCategories(cat, [s1]);
 
       // Undo
-      await doAndExpectChanges(() => bc.txns.reverseSingleTxn(), [s2]);
+      await doAndExpectChanges(async () => bc.txns.reverseSingleTxn(), [s2]);
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
@@ -530,7 +530,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(s1, ColorDef.blue);
 
       // Redo
-      await doAndExpectChanges(() => bc.txns.reinstateTxn(), [s2]);
+      await doAndExpectChanges(async () => bc.txns.reinstateTxn(), [s2]);
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
