@@ -473,6 +473,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
 
     it("invalidates cache for parent category when subcategory is added, deleted, or modified", { timeout: 120_000 }, async () => {
       const t0 = Date.now();
+      // eslint-disable-next-line no-console
       const log = (msg: string) => console.log(`[SubCat +${((Date.now() - t0) / 1000).toFixed(1)}s] ${msg}`);
 
       log("createAndInsertSpatialCategory...");
