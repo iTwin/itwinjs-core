@@ -17,10 +17,16 @@ publish: false
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Backend](#backend)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
+      - [What changed](#what-changed)
+      - [Migration guidance](#migration-guidance)
+      - [`implicitWriteEnforcement`](#implicitwriteenforcement)
     - [iTwin settings workspace](#itwin-settings-workspace)
+      - [New APIs](#new-apis-1)
+      - [Usage examples](#usage-examples-1)
+      - [Configuration requirements](#configuration-requirements)
   - [Quantity Formatting](#quantity-formatting)
     - [Quantity Formatter improvements](#quantity-formatter-improvements)
-      - [New APIs](#new-apis-1)
+      - [New APIs](#new-apis-2)
         - [`@itwin/core-quantity`](#itwincore-quantity)
         - [`@itwin/core-frontend`](#itwincore-frontend)
       - [Bug fixes](#bug-fixes)
@@ -31,6 +37,16 @@ publish: false
 ### BeUnorderedEvent
 
 **`BeUnorderedEvent<T>`** and **`BeUnorderedUiEvent<T>`** are new Set-backed event classes where listeners can safely add or remove themselves during event emission. Useful for patterns where many independent subscribers need to react to the same event without worrying about concurrent modification.
+
+**Closure-only unsubscription:** Unlike [BeEvent]($bentley), `BeUnorderedEvent` does not expose `has()` or `removeListener()`. The only way to unsubscribe is to call the closure returned by `addListener()` or `addOnce()`:
+
+```typescript
+const remove = myEvent.addListener((args) => { /* ... */ });
+// later:
+remove(); // O(1) removal
+```
+
+This is intentional — it avoids a class of bugs where `removeListener()` silently fails to match due to inline closures or binding mismatches (e.g. `event.addListener(() => this.onFoo())` followed by `event.removeListener(() => this.onFoo())` removes nothing because the two arrow functions are different objects). Capturing the returned closure is a reliable unsubscription pattern and enables O(1) removal via `Set.delete`.
 
 ## @itwin/core-backend
 
