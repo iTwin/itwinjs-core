@@ -1,9 +1,10 @@
 import { assert } from "chai";
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
+import { Code, CodeScopeSpec, IModel, IModelError, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { withEditTxn } from "../TestEditTxn";
 
 describe("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;
@@ -11,29 +12,34 @@ describe("deleteElements (native bulk delete API)", () => {
   let modelId: Id64String;
   let categoryId: Id64String;
   let codeSpecId: Id64String;
+  let txn: EditTxn;
 
-  before(() => {
+  before(async () => {
     IModelJsFs.recursiveMkDirSync(KnownTestLocations.outputDir);
     const seedFile = IModelTestUtils.prepareOutputFile("DeleteElements", "seed.bim");
     seedDb = SnapshotDb.createEmpty(seedFile, { rootSubject: { name: "DeleteElements" } });
-    modelId = PhysicalModel.insert(seedDb, IModel.rootSubjectId, "TestModel");
-    categoryId = SpatialCategory.insert(seedDb, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
-    codeSpecId = seedDb.codeSpecs.insert("TestScopeSpec", CodeScopeSpec.Type.RelatedElement);
-    assert.isNotEmpty(modelId, "Expected a valid PhysicalModel id");
-    assert.isNotEmpty(categoryId, "Expected a valid SpatialCategory id");
-    assert.isNotEmpty(codeSpecId, "Expected a valid CodeSpec id");
-    seedDb.saveChanges();
+
+    await withEditTxn(seedDb, "create elements", async (editTxn) => {
+      modelId = PhysicalModel.insert(editTxn, IModel.rootSubjectId, "TestModel");
+      categoryId = SpatialCategory.insert(editTxn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+      codeSpecId = seedDb.codeSpecs.insert(editTxn, "TestScopeSpec", CodeScopeSpec.Type.RelatedElement);
+      assert.isNotEmpty(modelId, "Expected a valid PhysicalModel id");
+      assert.isNotEmpty(categoryId, "Expected a valid SpatialCategory id");
+      assert.isNotEmpty(codeSpecId, "Expected a valid CodeSpec id");
+    });
   });
 
   beforeEach(() => {
     iModelDb = SnapshotDb.createFrom(seedDb, IModelTestUtils.prepareOutputFile("DeleteElements", "DeleteElements.bim"));
     assert.isTrue(iModelDb.isOpen);
+    txn = new EditTxn(iModelDb, "delete elements");
+    txn.start();
     iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
   });
 
   afterEach(() => {
+    txn.end("abandon");
     if (iModelDb.isOpen) {
-      iModelDb.abandonChanges();
       iModelDb.close();
     }
   });
@@ -53,8 +59,9 @@ describe("deleteElements (native bulk delete API)", () => {
       placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
       ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
     };
-    const id = iModelDb.elements.insertElement(props);
+    const id = txn.insertElement(props);
     assert.isNotEmpty(id, "insertElement must return a valid ID");
+    txn.saveChanges();
     return id;
   };
 
@@ -64,7 +71,7 @@ describe("deleteElements (native bulk delete API)", () => {
 
   // Run deleteElements, then verify each id in `deleted` is gone and each id in `retained` is still present.
   const executeTestCase = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array) => {
-    iModelDb.elements.deleteElements(idsToDelete);
+    txn.deleteElements(idsToDelete);
 
     for (const id of deleted)
       assertDeleted(id, `[${label}] ${id} should have been deleted`);
@@ -72,7 +79,7 @@ describe("deleteElements (native bulk delete API)", () => {
     for (const id of retained)
       assertExists(id, `[${label}] ${id} should have been retained`);
 
-    iModelDb.abandonChanges();
+    txn.abandonChanges();
   };
 
   /**
@@ -104,7 +111,6 @@ describe("deleteElements (native bulk delete API)", () => {
       childB2 = insertElement({ parentId: parentB });
       standalone = insertElement();
       childS1 = insertElement({ parentId: standalone });
-      iModelDb.saveChanges();
       all = [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3,
         parentB, childB1, childB2, standalone, childS1];
     });
@@ -140,26 +146,20 @@ describe("deleteElements (native bulk delete API)", () => {
     it("duplicate IDs should be handled", () => {
       const rootA = insertElement();
       const rootB = insertElement();
-      iModelDb.saveChanges();
 
       // rootA appears twice - should not throw and should be deleted exactly once.
-      iModelDb.elements.deleteElements([rootA, rootA, rootB]);
+      txn.deleteElements([rootA, rootA, rootB]);
       assertDeleted(rootA, "rootA should be deleted");
       assertDeleted(rootB, "rootB should be deleted");
-
-      iModelDb.abandonChanges();
     });
 
-    it("invalid IDs in the input are ignored", () => {
+    it("invalid IDs in the input throw an exception", () => {
       const rootA = insertElement();
-      iModelDb.saveChanges();
 
-      // Id64.invalid and a well-formed but non-existent ID should not cause a throw.
-      const nonExistent = "0x7fffffff";
-      iModelDb.elements.deleteElements([Id64.invalid, nonExistent, rootA]);
-      assertDeleted(rootA, "rootA should be deleted despite invalid peers");
+      assert.throws(() => txn.deleteElements([Id64.invalid, rootA]), IModelError);
+      assert.throws(() => txn.deleteElements(["not-an-id", rootA]), IModelError);
 
-      iModelDb.abandonChanges();
+      assertExists(rootA, "rootA should not have been deleted after a throw");
     });
 
     it("deleting a child removes its subtree but leaves the parent", () => {
@@ -224,18 +224,15 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA, codeValue: "rootB-code" });
-      iModelDb.saveChanges();
       executeTestCase("depth-1 child scopes unrelated root - delete child+root directly",
         [childA, rootB],
         [childA, rootB],
         [rootA]);
-      iModelDb.abandonChanges();
 
       executeTestCase("depth-1 child scopes unrelated root - delete child only",
         [childA],
         [],
         [rootA, childA, rootB]);
-      iModelDb.abandonChanges();
 
       executeTestCase("depth-1 child scopes unrelated root - delete root only",
         [rootB],
@@ -248,12 +245,10 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA = insertElement({ parentId: rootA });
       const grandchildA = insertElement({ parentId: childA });
       const rootB = insertElement({ codeScope: grandchildA, codeValue: "rootB-code" });
-      iModelDb.saveChanges();
       executeTestCase("depth-2 grandchild scopes unrelated root - delete both roots",
         [rootA, rootB],
         [rootA, childA, grandchildA, rootB],
         []);
-      iModelDb.abandonChanges();
 
       executeTestCase("depth-2 grandchild scopes unrelated root - delete grandchild+root directly",
         [grandchildA, rootB],
@@ -265,7 +260,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement();
       const childB = insertElement({ parentId: rootB, codeScope: rootA, codeValue: "childB-code" });
-      iModelDb.saveChanges();
       executeTestCase("root scopes depth-1 child in sibling tree",
         [rootA, rootB],
         [rootA, rootB, childB],
@@ -278,7 +272,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      iModelDb.saveChanges();
       executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC]);
       executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC]);
       executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
@@ -293,7 +286,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
       const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
-      iModelDb.saveChanges();
 
       // Only A and D in the delete set. B is external -> A ignored. D's scope (C) is not being deleted -> D is safe.
       executeTestCase("deep gap chain: A ignored, D deleted",
@@ -310,12 +302,10 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootA, codeValue: "rootC-code" });
-      iModelDb.saveChanges();
       executeTestCase("delete all three",
         [rootA, rootB, rootC],
         [rootA, rootB, rootC],
         []);
-      iModelDb.abandonChanges();
 
       executeTestCase("delete only B and C",
         [rootB, rootC],
@@ -326,7 +316,6 @@ describe("deleteElements (native bulk delete API)", () => {
     it("parent is also the code scope of its own child", () => {
       const rootP = insertElement();
       const childC = insertElement({ parentId: rootP, codeScope: rootP, codeValue: "childC-code" });
-      iModelDb.saveChanges();
       executeTestCase("parent is code scope of child - delete parent",
         [rootP],
         [rootP, childC],
@@ -340,28 +329,24 @@ describe("deleteElements (native bulk delete API)", () => {
       const parent = insertElement();
       const childA = insertElement({ parentId: parent });
       const childB = insertElement({ parentId: parent, codeScope: childA, codeValue: "childB-code" });
-      iModelDb.saveChanges();
 
       // Delete via parent cascade - sibling scope must not block deletion.
       executeTestCase("sibling scope - delete via parent",
         [parent],
         [parent, childA, childB],
         []);
-      iModelDb.abandonChanges();
 
       // Delete both siblings directly - intra-set scope, no external violation.
       executeTestCase("sibling scope - delete both directly",
         [childA, childB],
         [childA, childB],
         [parent]);
-      iModelDb.abandonChanges();
 
       // Delete only the scoped child - its scope (childA) is not being deleted, safe to delete.
       executeTestCase("sibling scope - delete only scoped child",
         [childB],
         [childB],
         [parent, childA]);
-      iModelDb.abandonChanges();
 
       // Delete only the scope element - childB is external -> childA ignored.
       executeTestCase("sibling scope - delete only scope element, ignored due to external childB",
@@ -376,7 +361,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
       const rootB = insertElement();
-      iModelDb.saveChanges();
       executeTestCase("external scopes root",
         [rootA, rootB],
         [rootB],
@@ -388,7 +372,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext-code" });
       const rootB = insertElement();
-      iModelDb.saveChanges();
       executeTestCase("external scopes depth-1 child - parent subtree ignored",
         [rootA, rootB],
         [rootB],
@@ -401,7 +384,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const grandchildA = insertElement({ parentId: childA });
       const external = insertElement({ codeScope: grandchildA, codeValue: "ext-code" });
       const rootB = insertElement();
-      iModelDb.saveChanges();
       executeTestCase("external scopes depth-2 grandchild - grandparent subtree ignored",
         [rootA, rootB],
         [rootB],
@@ -412,7 +394,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext-code" });
-      iModelDb.saveChanges();
       executeTestCase("external scopes requested child",
         [childA],
         [],
@@ -423,7 +404,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
-      iModelDb.saveChanges();
       executeTestCase("root ignored due to external; sibling still deleted",
         [rootA, rootB],
         [rootB],
@@ -436,7 +416,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const extX = insertElement({ codeScope: rootA, codeValue: "extX" });
       const extY = insertElement({ codeScope: rootB, codeValue: "extY" });
       const rootC = insertElement();
-      iModelDb.saveChanges();
       executeTestCase("two independent violations",
         [rootA, rootB, rootC],
         [rootC],
@@ -451,7 +430,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA2 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      iModelDb.saveChanges();
       executeTestCase("root scopes root - delete both roots",
         [rootA, rootB],
         [rootA, childA1, childA2, rootB, childB1],
@@ -463,7 +441,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      iModelDb.saveChanges();
       executeTestCase("depth-1 child scopes root - delete both via parents",
         [rootA, rootB],
         [rootA, childA1, rootB, childB1],
@@ -480,7 +457,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      iModelDb.saveChanges();
       // Only childA1 and rootB - rootA is NOT in the delete set.
       executeTestCase("depth-1 child scopes root - delete child + scoped root directly",
         [childA1, rootB],
@@ -495,7 +471,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      iModelDb.saveChanges();
       executeTestCase("delete child only - scoped root also removed",
         [childA1],
         [],
@@ -507,7 +482,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement();
       const childB1 = insertElement({ parentId: rootB, codeScope: rootA, codeValue: "childB1-code" });
-      iModelDb.saveChanges();
       executeTestCase("root scopes depth-1 child - delete both roots",
         [rootA, rootB],
         [rootA, childA1, rootB, childB1],
@@ -520,7 +494,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootB = insertElement();
       const childB1 = insertElement({ parentId: rootB, codeScope: childA1, codeValue: "childB1-code" });
       const childB2 = insertElement({ parentId: rootB });
-      iModelDb.saveChanges();
       executeTestCase("sibling-child scope - delete both children directly",
         [childA1, childB1],
         [childA1, childB1],
@@ -533,12 +506,10 @@ describe("deleteElements (native bulk delete API)", () => {
       const grandchildA = insertElement({ parentId: childA });
       const rootB = insertElement({ codeScope: grandchildA, codeValue: "rootB-code" });
       const childB = insertElement({ parentId: rootB });
-      iModelDb.saveChanges();
       executeTestCase("depth-2 grandchild scopes root - delete both roots",
         [rootA, rootB],
         [rootA, childA, grandchildA, rootB, childB],
         []);
-      iModelDb.abandonChanges();
 
       // Delete grandchild and scoped root directly (rootA and childA survive)
       executeTestCase("depth-2 grandchild scopes root - delete grandchild + root directly",
@@ -556,7 +527,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootB = insertElement();
       const childB = insertElement({ parentId: rootB });
       const external = insertElement({ codeScope: grandchildA, codeValue: "ext-code" });
-      iModelDb.saveChanges();
       executeTestCase("external scopes depth-2 grandchild, unrelated childB deleted",
         [grandchildA, rootA, childB],
         [childB],
@@ -572,7 +542,6 @@ describe("deleteElements (native bulk delete API)", () => {
       const childB1 = insertElement({ parentId: rootB });
       const childB2 = insertElement({ parentId: rootB });
       const gcB = insertElement({ parentId: childB1 });
-      iModelDb.saveChanges();
       executeTestCase("one tree ignored, other fully deleted",
         [rootA, rootB],
         [rootB, childB1, childB2, gcB],
@@ -585,7 +554,7 @@ describe("deleteElements (native bulk delete API)", () => {
 
     const insertSubModel = (): Id64String => {
       const name = `SubModelPartition-${++partitionCounter}`;
-      return PhysicalModel.insert(iModelDb, IModel.rootSubjectId, name);
+      return PhysicalModel.insert(txn, IModel.rootSubjectId, name);
     };
 
     const insertElementInModel = (subModelId: Id64String, opts: { parentId?: Id64String } = {}): Id64String => {
@@ -597,8 +566,9 @@ describe("deleteElements (native bulk delete API)", () => {
         placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
         ...(opts.parentId ? { parent: { id: opts.parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
       };
-      const id = iModelDb.elements.insertElement(props);
+      const id = txn.insertElement(props);
       assert.isNotEmpty(id, "insertElementInModel must return a valid ID");
+      txn.saveChanges();
       return id;
     };
 
@@ -615,15 +585,13 @@ describe("deleteElements (native bulk delete API)", () => {
       const elem1 = insertElementInModel(partitionId);
       const elem2 = insertElementInModel(partitionId);
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([partitionId]);
+      txn.deleteElements([partitionId]);
       assertDeleted(partitionId, "partition element should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(elem1, "elem1 inside sub-model should be deleted");
       assertDeleted(elem2, "elem2 inside sub-model should be deleted");
       assertExists(unrelated, "unrelated element should be retained");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -635,20 +603,18 @@ describe("deleteElements (native bulk delete API)", () => {
      *   unrelated
      */
     it("delete a parent whose child is a modeled element cascades into the sub-model", () => {
-      const subjectA = Subject.insert(iModelDb, IModel.rootSubjectId, `SubjectA-${++partitionCounter}`);
-      const childPartitionId = PhysicalModel.insert(iModelDb, subjectA, `ChildPartition-${partitionCounter}`);
+      const subjectA = Subject.insert(txn, IModel.rootSubjectId, `SubjectA-${++partitionCounter}`);
+      const childPartitionId = PhysicalModel.insert(txn, subjectA, `ChildPartition-${partitionCounter}`);
       const elem1 = insertElementInModel(childPartitionId);
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
       // Deleting subjectA cascades (parent-child) to childPartitionId, which then cascades (modeled-element) into elem1.
-      iModelDb.elements.deleteElements([subjectA]);
+      txn.deleteElements([subjectA]);
       assertDeleted(subjectA, "subject should be deleted");
       assertDeleted(childPartitionId, "child partition element should be deleted");
       assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
       assertDeleted(elem1, "elem1 inside child partition sub-model should be deleted");
       assertExists(unrelated, "unrelated element should be retained");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -668,9 +634,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const grandchildOfElem1 = insertElementInModel(partitionId, { parentId: childOfElem1 });
       const elem2 = insertElementInModel(partitionId);
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([partitionId]);
+      txn.deleteElements([partitionId]);
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(elem1, "elem1 should be deleted");
@@ -678,7 +643,6 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(grandchildOfElem1, "grandchild of elem1 should be deleted");
       assertDeleted(elem2, "elem2 should be deleted");
       assertExists(unrelated, "unrelated should be retained");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -696,18 +660,16 @@ describe("deleteElements (native bulk delete API)", () => {
       const otherElem = insertElementInModel(partitionId);
       const external = insertElement({ codeScope: scopingElem, codeValue: "ext-code" });
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
       // `external` is NOT in the delete set and uses scopingElem as its code scope -> the
       // entire partition subtree (including the sub-model) must be ignored from the delete set.
-      iModelDb.elements.deleteElements([partitionId, unrelated]);
+      txn.deleteElements([partitionId, unrelated]);
       assertExists(partitionId, "partition should be ignored (retained)");
       assertModelExists(partitionId, "sub-model should be retained");
       assertExists(scopingElem, "scopingElem should be retained");
       assertExists(otherElem, "otherElem should be retained");
       assertExists(external, "external should be retained");
       assertDeleted(unrelated, "unrelated should still be deleted");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -725,16 +687,15 @@ describe("deleteElements (native bulk delete API)", () => {
       const dependentElem = insertElementInModel(p2, {});
       // Manually assign the code scope after insertion is not possible through insertElementInModel,
       // so use a dedicated insert call.
-      const dependentId = iModelDb.elements.insertElement({
+      const dependentId = txn.insertElement({
         classFullName: "Generic:PhysicalObject",
         model: p2,
         category: categoryId,
         code: { spec: codeSpecId, scope: scopingElem, value: "dep-code" },
         placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
       } as PhysicalElementProps);
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([p1, p2]);
+      txn.deleteElements([p1, p2]);
       assertDeleted(p1, "p1 should be deleted");
       assertModelDeleted(p1, "sub-model of p1 should be deleted");
       assertDeleted(scopingElem, "scopingElem should be deleted");
@@ -742,7 +703,6 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(p2, "sub-model of p2 should be deleted");
       assertDeleted(dependentElem, "dependentElem should be deleted");
       assertDeleted(dependentId, "dependentId should be deleted");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -756,15 +716,14 @@ describe("deleteElements (native bulk delete API)", () => {
      *   unrelated
      */
     it("deep cascade: grandparent Subject -> child Subject -> partition -> sub-model elements", () => {
-      const grandparentSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, `GrandparentSubject-${++partitionCounter}`);
-      const childSubjectId = Subject.insert(iModelDb, grandparentSubjectId, `ChildSubject-${partitionCounter}`);
-      const grandchildPartitionId = PhysicalModel.insert(iModelDb, childSubjectId, `GrandchildPartition-${partitionCounter}`);
+      const grandparentSubjectId = Subject.insert(txn, IModel.rootSubjectId, `GrandparentSubject-${++partitionCounter}`);
+      const childSubjectId = Subject.insert(txn, grandparentSubjectId, `ChildSubject-${partitionCounter}`);
+      const grandchildPartitionId = PhysicalModel.insert(txn, childSubjectId, `GrandchildPartition-${partitionCounter}`);
       const innerElem1 = insertElementInModel(grandchildPartitionId);
       const innerElem2 = insertElementInModel(grandchildPartitionId);
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([grandparentSubjectId]);
+      txn.deleteElements([grandparentSubjectId]);
       assertDeleted(grandparentSubjectId, "grandparent subject should be deleted");
       assertDeleted(childSubjectId, "child subject should be deleted");
       assertDeleted(grandchildPartitionId, "grandchild partition should be deleted");
@@ -772,7 +731,6 @@ describe("deleteElements (native bulk delete API)", () => {
       assertDeleted(innerElem1, "innerElem1 should be deleted");
       assertDeleted(innerElem2, "innerElem2 should be deleted");
       assertExists(unrelated, "unrelated should be retained");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -784,13 +742,11 @@ describe("deleteElements (native bulk delete API)", () => {
     it("delete a modeled element whose sub-model is empty", () => {
       const partitionId = insertSubModel();
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([partitionId]);
+      txn.deleteElements([partitionId]);
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "empty sub-model should be deleted");
       assertExists(unrelated, "unrelated should be retained");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -805,21 +761,19 @@ describe("deleteElements (native bulk delete API)", () => {
      *   unrelated
      */
     it("deleting a regular element with a mix of ordinary and partition children cascades correctly", () => {
-      const subjectA = Subject.insert(iModelDb, IModel.rootSubjectId, `MixedChildSubject-${++partitionCounter}`);
-      const partitionChild = PhysicalModel.insert(iModelDb, subjectA, `MixedChildPartition-${partitionCounter}`);
+      const subjectA = Subject.insert(txn, IModel.rootSubjectId, `MixedChildSubject-${++partitionCounter}`);
+      const partitionChild = PhysicalModel.insert(txn, subjectA, `MixedChildPartition-${partitionCounter}`);
       const subElem1 = insertElementInModel(partitionChild);
       const subElem2 = insertElementInModel(partitionChild);
       const unrelated = insertElement();
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([subjectA]);
+      txn.deleteElements([subjectA]);
       assertDeleted(subjectA, "subjectA should be deleted");
       assertDeleted(partitionChild, "partition child should be deleted");
       assertModelDeleted(partitionChild, "sub-model of partition child should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
       assertExists(unrelated, "unrelated should be retained");
-      iModelDb.abandonChanges();
     });
 
     /**
@@ -833,38 +787,34 @@ describe("deleteElements (native bulk delete API)", () => {
      *               [M:partition] -> subElem1, subElem2
      */
     it("deleting a mid-tree regular element whose child is a partition cascades into the sub-model; grandparent survives", () => {
-      const subjectGP = Subject.insert(iModelDb, IModel.rootSubjectId, `MidTreeGP-${++partitionCounter}`);
-      const subjectP = Subject.insert(iModelDb, subjectGP, `MidTreeP-${partitionCounter}`);
-      const partitionId = PhysicalModel.insert(iModelDb, subjectP, `MidTreePartition-${partitionCounter}`);
+      const subjectGP = Subject.insert(txn, IModel.rootSubjectId, `MidTreeGP-${++partitionCounter}`);
+      const subjectP = Subject.insert(txn, subjectGP, `MidTreeP-${partitionCounter}`);
+      const partitionId = PhysicalModel.insert(txn, subjectP, `MidTreePartition-${partitionCounter}`);
       const subElem1 = insertElementInModel(partitionId);
       const subElem2 = insertElementInModel(partitionId);
-      iModelDb.saveChanges();
 
       // Only pass subjectP - grandparent must survive, everything below subjectP must go.
-      iModelDb.elements.deleteElements([subjectP]);
+      txn.deleteElements([subjectP]);
       assertExists(subjectGP, "grandparent should survive");
       assertDeleted(subjectP, "parent should be deleted");
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
-      iModelDb.abandonChanges();
     });
 
     it("deleting a partition element directly (not via its regular parent) cascades into the sub-model; parent survives", () => {
-      const subjectA = Subject.insert(iModelDb, IModel.rootSubjectId, `DirectPartSubject-${++partitionCounter}`);
-      const partitionId = PhysicalModel.insert(iModelDb, subjectA, `DirectPartPartition-${partitionCounter}`);
+      const subjectA = Subject.insert(txn, IModel.rootSubjectId, `DirectPartSubject-${++partitionCounter}`);
+      const partitionId = PhysicalModel.insert(txn, subjectA, `DirectPartPartition-${partitionCounter}`);
       const subElem1 = insertElementInModel(partitionId);
       const subElem2 = insertElementInModel(partitionId);
-      iModelDb.saveChanges();
 
-      iModelDb.elements.deleteElements([partitionId]);
+      txn.deleteElements([partitionId]);
       assertExists(subjectA, "subject (regular parent) should survive");
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
-      iModelDb.abandonChanges();
     });
   });
 });

@@ -5,8 +5,8 @@
 
 import { assert } from "chai";
 import { Id64Array } from "@itwin/core-bentley";
-import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
+import { Code, EditTxnError, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { ChannelControl, EditTxn, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
@@ -35,24 +35,26 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
     const db = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "DeleteElementsPerfTest" } });
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(db, Code.createEmpty(), true);
-    let categoryId = SpatialCategory.queryCategoryIdByName(db, IModel.dictionaryId, "TestCategory");
-    if (undefined === categoryId)
-      categoryId = SpatialCategory.insert(db, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
-
     const ids: Id64Array = [];
-    for (let i = 0; i < count; i++) {
-      const props: GeometricElementProps = {
-        classFullName: "Generic:PhysicalObject",
-        model: modelId,
-        category: categoryId,
-        code: Code.createEmpty(),
-      };
-      const id = db.elements.insertElement(props);
-      ids.push(id);
-    }
 
-    db.saveChanges();
+    withEditTxn(db, "create elements", (editTxn) => {
+      const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(editTxn, Code.createEmpty(), true);
+      let categoryId = SpatialCategory.queryCategoryIdByName(db, IModel.dictionaryId, "TestCategory");
+      if (undefined === categoryId)
+        categoryId = SpatialCategory.insert(editTxn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+
+      for (let i = 0; i < count; i++) {
+        const props: GeometricElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model: modelId,
+          category: categoryId,
+          code: Code.createEmpty(),
+        };
+
+        ids.push(editTxn.insertElement(props));
+      }
+    });
+
     return { db, ids };
   }
 
@@ -64,29 +66,29 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
     const db = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "DeleteDefinitionElementsPerfTest" } });
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(db, Code.createEmpty(), true);
-
     const usedCategoryIds: Id64Array = [];
     const unusedCategoryIds: Id64Array = [];
 
-    for (let i = 0; i < count; i++) {
-      const categoryId = SpatialCategory.insert(db, IModel.dictionaryId, `Category_${i}`, new SubCategoryAppearance());
-      if (i % 2 === 0) {
-        // Mark as "used" by inserting a PhysicalObject that references it.
-        const props: GeometricElementProps = {
-          classFullName: "Generic:PhysicalObject",
-          model: modelId,
-          category: categoryId,
-          code: Code.createEmpty(),
-        };
-        db.elements.insertElement(props);
-        usedCategoryIds.push(categoryId);
-      } else {
-        unusedCategoryIds.push(categoryId);
-      }
-    }
+    withEditTxn(db, "create definition elements", (editTxn) => {
+      const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(editTxn, Code.createEmpty(), true);
 
-    db.saveChanges();
+      for (let i = 0; i < count; i++) {
+        const categoryId = SpatialCategory.insert(editTxn, IModel.dictionaryId, `Category_${i}`, new SubCategoryAppearance());
+        if (i % 2 === 0) {
+          // Mark as "used" by inserting a PhysicalObject that references it.
+          const props: GeometricElementProps = {
+            classFullName: "Generic:PhysicalObject",
+            model: modelId,
+            category: categoryId,
+            code: Code.createEmpty(),
+          };
+          editTxn.insertElement(props);
+          usedCategoryIds.push(categoryId);
+        } else {
+          unusedCategoryIds.push(categoryId);
+        }
+      }
+    });
     return { db, usedCategoryIds, unusedCategoryIds };
   }
 
@@ -95,15 +97,19 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
       {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElement_loop_${count}.bim`);
         const { db, ids } = createIModelWithElements(fileName, count);
+        const txn = new EditTxn(db, "deleteElement perf test");
+        txn.start();
 
         const startTime = performance.now();
-        db.elements.deleteElement(ids);
+        txn.deleteElement(ids);
         const elapsed = performance.now() - startTime;
 
-        db.saveChanges();
+        txn.saveChanges();
         for (const id of ids) {
           assert.equal(db.elements.tryGetElement(id), undefined, "all elements should be deleted");
         }
+
+        txn.end();
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
@@ -113,15 +119,19 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
       {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_bulk_${count}.bim`);
         const { db, ids } = createIModelWithElements(fileName, count);
+        const txn = new EditTxn(db, "deleteElements perf test");
+        txn.start();
 
         const startTime = performance.now();
-        db.elements.deleteElements(ids);
+        txn.deleteElements(ids);
         const elapsed = performance.now() - startTime;
 
-        db.saveChanges();
+        txn.saveChanges();
         for (const id of ids) {
           assert.equal(db.elements.tryGetElement(id), undefined, "all elements should be deleted");
         }
+
+        txn.end();
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
@@ -136,12 +146,14 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteDefinitionElements_${count}.bim`);
         const { db, unusedCategoryIds, usedCategoryIds } = createIModelWithDefinitionElements(fileName, count);
         const allIds: Id64Array = [...unusedCategoryIds, ...usedCategoryIds];
+        const txn = new EditTxn(db, "deleteDefinitionElements perf test");
+        txn.start();
 
         const startTime = performance.now();
-        const failedToDelete = db.elements.deleteDefinitionElements(allIds);
+        const failedToDelete = txn.deleteDefinitionElements(allIds);
         const elapsed = performance.now() - startTime;
 
-        db.saveChanges();
+        txn.saveChanges();
 
         // Unused categories must have been deleted; used ones must remain.
         assert.equal(failedToDelete.size, usedCategoryIds.length, "only in-use categories should fail to delete");
@@ -150,6 +162,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         for (const id of usedCategoryIds)
           assert.isDefined(db.elements.tryGetElement(id), `used category ${id} should be retained`);
 
+        txn.end();
         db.close();
         IModelJsFs.unlinkSync(fileName);
 
@@ -160,12 +173,14 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_${count}.bim`);
         const { db, unusedCategoryIds, usedCategoryIds } = createIModelWithDefinitionElements(fileName, count);
         const allIds: Id64Array = [...unusedCategoryIds, ...usedCategoryIds];
+        const txn = new EditTxn(db, "deleteElements perf test");
+        txn.start();
 
         const startTime = performance.now();
-        const failedToDelete = db.elements.deleteElements(allIds);
+        const failedToDelete = txn.deleteElements(allIds);
         const elapsed = performance.now() - startTime;
 
-        db.saveChanges();
+        txn.saveChanges();
 
         assert.equal(failedToDelete.size, usedCategoryIds.length, "only in-use categories should fail to delete");
         for (const id of unusedCategoryIds)
@@ -173,6 +188,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         for (const id of usedCategoryIds)
           assert.isDefined(db.elements.tryGetElement(id), `used category ${id} should be retained`);
 
+        txn.end();
         db.close();
         IModelJsFs.unlinkSync(fileName);
 

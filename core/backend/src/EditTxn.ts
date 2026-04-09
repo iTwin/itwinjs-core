@@ -225,6 +225,17 @@ export class EditTxn {
     });
   }
 
+  /**
+     * Delete multiple elements from the model.
+     * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+     * @returns A set of ids for any elements that could not be deleted.
+     * @throws [[IModelError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
+     * @beta
+     */
+  public deleteElements(ids: Id64Array): Id64Set {
+    return this.iModel.elements.deleteElements(ids);
+  }
+
   /** Insert a new aspect into the iModel.
    * @param aspectProps The properties of the new aspect.
    * @returns The newly inserted aspect Id.

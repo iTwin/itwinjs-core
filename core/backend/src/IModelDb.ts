@@ -2876,16 +2876,27 @@ export namespace IModelDb {
 
     /**
      * Delete multiple elements from the model.
-     * @param ids The ids of the elements to delete. Any invalid ids will be ignored.
-     * @returns A set of valid ids for any elements that could not be deleted.
+     * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+     * @returns A set of ids for any elements that could not be deleted.
+     * @throws [[IModelError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
      * @beta
      */
     public deleteElements(ids: Id64Array): Id64Set {
+      const invalidIds: Id64Set = new Set<Id64String>();
+      for (const id of ids) {
+        if (!Id64.isValidId64(id))
+          invalidIds.add(id);
+      }
+
+      if (invalidIds.size > 0) {
+        throw new IModelError(IModelStatus.BadArg, `Invalid element ids: ${Array.from(invalidIds).join(", ")}`);
+      }
+
       const failedToDelete = this._iModel[_nativeDb].deleteElements(ids);
       const failedToDeleteSet = failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
 
       for (const id of ids) {
-        if (Id64.isValidId64(id) && !failedToDeleteSet.has(id)) {
+        if (!failedToDeleteSet.has(id)) {
           this[_cache].delete({ id });
           this[_instanceKeyCache].deleteById(id);
         }
