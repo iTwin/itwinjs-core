@@ -289,7 +289,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
    * with _both_ Txn 1 and Txn 2.
-   * @note If you do not want to abandon any locks, set {@link ReverseTxnArgs.retainLocks} to true.
+   * @note If you do not want to abandon any locks, set [ReverseTxnArgs.retainLocks]($common) to true.
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.

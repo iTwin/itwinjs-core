@@ -1291,7 +1291,7 @@ export class TxnManager {
    * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
    * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
    * with _both_ Txn 1 and Txn 2.
-   * @note If you do not want to abandon any locks, set {@link ReverseTxnArgs.retainLocks} to true.
+   * @note If you do not want to abandon any locks, set [ReverseTxnArgs.retainLocks]($common) to true.
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
@@ -1421,7 +1421,7 @@ export class TxnManager {
    * method to reinstate all reversed operations.
    * @beta
    * @note If there are any outstanding unsaved changes, they are canceled before the Txn is reinstated. Unless
-   * {@link ReinstateTxnArgs.retainLocks} is true, the locks associated with the unsaved changes are also abandoned.
+   * [ReinstateTxnArgs.retainLocks]($common) is true, the locks associated with the unsaved changes are also abandoned.
    * @param args Optional arguments to control the behavior of the reinstate operation, such as whether to retain
    * locks when abandoning unsaved changes.
    * @returns A Promise that resolves to success if a reversed transaction was reinstated, or rejects with an IModelError otherwise.

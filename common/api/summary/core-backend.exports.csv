@@ -479,7 +479,6 @@ beta;type;QueryWorkspaceResourcesCallback
 alpha;interface;RebaseHandler
 alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement
-beta;interface;ReinstateTxnArgs
 public;class;Relationship
 public;class;Relationships
 public;class;RenderMaterialElement
@@ -494,7 +493,6 @@ preview;class;RepositoryLink
 public;class;RepositoryModel
 preview;class;RepositoryModel
 public;interface;RequestNewBriefcaseArg
-beta;interface;ReverseTxnArgs
 public;type;RevertChangesArgs
 public;class;RoleElement
 preview;class;RoleElement

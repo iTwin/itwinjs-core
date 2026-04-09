@@ -5611,11 +5611,17 @@ export interface IpcAppFunctions {
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    reinstateTxnAsync: (key: string, args?: ReinstateTxnArgs) => Promise<void>;
+    // (undocumented)
     restartTxnSession: (key: string) => Promise<void>;
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    reverseAllTxnsAsync: (key: string, args?: ReverseTxnArgs) => Promise<void>;
+    // (undocumented)
     reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseTxnsAsync: (key: string, numOperations: number, args?: ReverseTxnArgs) => Promise<void>;
     // @deprecated (undocumented)
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
@@ -8042,6 +8048,11 @@ export class RealityModelDisplaySettings {
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
+// @beta
+export interface ReinstateTxnArgs {
+    readonly retainLocks?: boolean;
+}
+
 // @public @preview
 export class RelatedElement implements RelatedElementProps {
     constructor(props: RelatedElementProps);
@@ -8639,6 +8650,11 @@ export class ResponseLike implements Response {
     get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
     // (undocumented)
     get url(): string;
+}
+
+// @beta
+export interface ReverseTxnArgs {
+    readonly retainLocks?: boolean;
 }
 
 // @public

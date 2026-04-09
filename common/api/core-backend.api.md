@@ -221,6 +221,7 @@ import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
+import { ReinstateTxnArgs } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelatedElementProps } from '@itwin/core-common';
 import { RelationshipClass } from '@itwin/ecschema-metadata';
@@ -231,6 +232,7 @@ import { RenderSchedule } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
+import { ReverseTxnArgs } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
@@ -5777,11 +5779,6 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
     static get className(): string;
 }
 
-// @beta
-export interface ReinstateTxnArgs {
-    readonly retainLocks?: boolean;
-}
-
 // @public
 export class Relationship extends Entity {
     protected constructor(props: RelationshipProps, iModel: IModelDb);
@@ -5946,11 +5943,6 @@ export class RepositoryModel extends DefinitionModel {
 // @public
 export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
     onProgress?: ProgressFunction;
-}
-
-// @beta
-export interface ReverseTxnArgs {
-    readonly retainLocks?: boolean;
 }
 
 // @public
