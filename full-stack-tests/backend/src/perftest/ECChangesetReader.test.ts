@@ -65,7 +65,6 @@ describe("ECChangesetReaderAPI", async () => {
     const testCases = [
       { testCaseNum: 1, numElements: 1000 },
       { testCaseNum: 2, numElements: 10000 },
-      // { testCaseNum: 3, numElements: 100000 },
     ];
 
     const elementPropsTemplate = {
@@ -142,7 +141,6 @@ describe("ECChangesetReaderAPI", async () => {
     const testCases = [
       { testCaseNum: 1, numElements: 1000 },
       { testCaseNum: 2, numElements: 10000 },
-      // { testCaseNum: 3, numElements: 100000 },
     ];
 
     const elementPropsTemplate = {
