@@ -156,11 +156,16 @@ interface UnorderedEventContext {
  * Unlike [[BeEvent]], this class uses a `Set` internally to support safe concurrent modification
  * during emit. When a listener is removed during emit, it is marked for deferred removal instead
  * of mutating the set immediately.
+ *
+ * Listeners are managed exclusively through the disposal closure returned by [[addListener]] and
+ * [[addOnce]]. There is no `removeListener` or `has` method — callers must capture the returned
+ * closure to unsubscribe.
  * @beta
  */
 export class BeUnorderedEvent<T extends Listener> {
   private _listeners: Set<UnorderedEventContext> = new Set();
   private _emitDepth: number = 0;
+  private _hasTombstones: boolean = false;
 
   /** The number of listeners currently subscribed to the event.
    * @note During `raiseEvent()`, this may include listeners that have been removed or are one-shot
@@ -172,47 +177,34 @@ export class BeUnorderedEvent<T extends Listener> {
    * Registers a Listener to be executed whenever this event is raised.
    * @param listener The function to be executed when the event is raised.
    * @param scope An optional object scope to serve as the 'this' pointer when listener is invoked.
-   * @returns A function that will remove this event listener. Prefer this closure over
-   *   [[removeListener]] for O(1) removal.
+   * @returns A function that will remove this event listener in O(1).
    */
   public addListener(listener: T, scope?: any): () => void {
     const ctx: UnorderedEventContext = { listener, scope, once: false };
     this._listeners.add(ctx);
-    return () => this.removeListener(listener, scope);
+    return () => this._removeCtx(ctx);
   }
 
   /**
    * Registers a callback function to be executed *only once* when the event is raised.
    * @param listener The function to be executed once when the event is raised.
    * @param scope An optional object scope to serve as the `this` pointer in which the listener function will execute.
-   * @returns A function that will remove this event listener.
+   * @returns A function that will remove this event listener in O(1).
    */
   public addOnce(listener: T, scope?: any): () => void {
     const ctx: UnorderedEventContext = { listener, scope, once: true };
     this._listeners.add(ctx);
-    return () => this.removeListener(listener, scope);
+    return () => this._removeCtx(ctx);
   }
 
-  /**
-   * Un-register a previously registered listener.
-   * @note If the same listener+scope pair was registered more than once, only the first matching
-   * registration is removed. Call `removeListener` again to remove additional copies.
-   * @param listener The listener to be unregistered.
-   * @param scope The scope that was originally passed to addListener.
-   * @returns `true` if the listener was removed; `false` if the listener and scope are not registered with the event.
-   */
-  public removeListener(listener: T, scope?: any): boolean {
-    for (const ctx of this._listeners) {
-      if (ctx.listener === listener && ctx.scope === scope) {
-        if (this._emitDepth > 0) {
-          ctx.listener = undefined;
-        } else {
-          this._listeners.delete(ctx);
-        }
-        return true;
-      }
+  /** Remove a specific context entry, deferring during emit. */
+  private _removeCtx(ctx: UnorderedEventContext): void {
+    if (this._emitDepth > 0) {
+      ctx.listener = undefined; // tombstone for deferred cleanup
+      this._hasTombstones = true;
+    } else {
+      this._listeners.delete(ctx);
     }
-    return false;
   }
 
   /**
@@ -222,47 +214,31 @@ export class BeUnorderedEvent<T extends Listener> {
   public raiseEvent(...args: Parameters<T>) {
     this._emitDepth++;
 
-    let dropped = false;
     for (const ctx of this._listeners) {
       if (!ctx.listener) {
-        dropped = true;
-      } else {
-        try {
-          ctx.listener.apply(ctx.scope, args);
-        } catch (e) {
-          UnexpectedErrors.handle(e);
-        }
-        if (!ctx.listener) {
-          // listener was removed during its own callback
-          dropped = true;
-        } else if (ctx.once) {
-          ctx.listener = undefined;
-          dropped = true;
-        }
+        continue;
+      }
+      try {
+        ctx.listener.apply(ctx.scope, args);
+      } catch (e) {
+        UnexpectedErrors.handle(e);
+      }
+      if (ctx.listener && ctx.once) {
+        ctx.listener = undefined;
+        this._hasTombstones = true;
       }
     }
 
     this._emitDepth--;
 
     // Only clean up tombstoned entries when we're back at the outermost emit
-    if (dropped && this._emitDepth === 0) {
+    if (this._hasTombstones && this._emitDepth === 0) {
+      this._hasTombstones = false;
       for (const ctx of this._listeners) {
         if (ctx.listener === undefined)
           this._listeners.delete(ctx);
       }
     }
-  }
-
-  /** Determine whether this BeUnorderedEvent has a specified listener registered.
-   * @param listener The listener to check.
-   * @param scope Optional scope argument to match call to addListener.
-   */
-  public has(listener: T, scope?: any): boolean {
-    for (const ctx of this._listeners) {
-      if (ctx.listener === listener && ctx.scope === scope)
-        return true;
-    }
-    return false;
   }
 
   /** Clear all listeners from this BeUnorderedEvent.

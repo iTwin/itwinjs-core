@@ -43,16 +43,15 @@ describe("BeUnorderedEvent", () => {
     expect(calls).toContain("added-during-emit");
   });
 
-  it("concurrent modification during emit — remove listener", () => {
+  it("concurrent modification during emit — remove listener via closure", () => {
     const event = new BeUnorderedEvent<() => void>();
     const calls: string[] = [];
 
-    const listener2 = () => calls.push("second");
+    const removeListener2 = event.addListener(() => calls.push("second"));
     event.addListener(() => {
       calls.push("first");
-      event.removeListener(listener2);
+      removeListener2();
     });
-    event.addListener(listener2);
 
     event.raiseEvent();
     // First listener should always fire; second may or may not depending on iteration order.
@@ -60,28 +59,25 @@ describe("BeUnorderedEvent", () => {
     expect(calls).toContain("first");
 
     // After emit, listener2 should be gone
-    expect(event.has(listener2)).toBe(false);
+    expect(event.numberOfListeners).toBe(1);
   });
 
   it("listener removes itself during emit — others still fire", () => {
     const event = new BeUnorderedEvent<() => void>();
     const calls: string[] = [];
 
-    const selfRemover = () => {
+    let removeSelf: () => void;
+    removeSelf = event.addListener(() => {
       calls.push("self-remover");
-      event.removeListener(selfRemover);
-    };
-    const other = () => calls.push("other");
-
-    event.addListener(selfRemover);
-    event.addListener(other);
+      removeSelf();
+    });
+    event.addListener(() => calls.push("other"));
 
     event.raiseEvent();
     expect(calls).toContain("self-remover");
     expect(calls).toContain("other");
 
     // self-remover should be gone
-    expect(event.has(selfRemover)).toBe(false);
     expect(event.numberOfListeners).toBe(1);
   });
 
@@ -114,21 +110,24 @@ describe("BeUnorderedEvent", () => {
     let count = 0;
     const fn = () => count++;
 
-    event.addListener(fn);
-    event.addListener(fn);
+    const r1 = event.addListener(fn);
+    const r2 = event.addListener(fn);
 
     // Two separate context objects in the Set, so both fire
     event.raiseEvent();
     expect(count).toBe(2);
     expect(event.numberOfListeners).toBe(2);
 
-    // Removing once should leave one
-    event.removeListener(fn);
+    // Removing via first closure should leave one
+    r1();
     expect(event.numberOfListeners).toBe(1);
 
     count = 0;
     event.raiseEvent();
     expect(count).toBe(1);
+
+    r2();
+    expect(event.numberOfListeners).toBe(0);
   });
 
   it("addOnce — listener fires exactly once", () => {
@@ -143,25 +142,35 @@ describe("BeUnorderedEvent", () => {
     expect(event.numberOfListeners).toBe(0);
   });
 
-  it("has() — returns true for registered, false for unregistered", () => {
+  it("closure removes only its own registration", () => {
     const event = new BeUnorderedEvent<() => void>();
     const fn = () => {};
 
-    expect(event.has(fn)).toBe(false);
-    event.addListener(fn);
-    expect(event.has(fn)).toBe(true);
-    event.removeListener(fn);
-    expect(event.has(fn)).toBe(false);
+    const r1 = event.addListener(fn);
+    const r2 = event.addListener(fn);
+    expect(event.numberOfListeners).toBe(2);
+
+    r1();
+    expect(event.numberOfListeners).toBe(1);
+
+    r2();
+    expect(event.numberOfListeners).toBe(0);
   });
 
-  it("has() — respects scope", () => {
+  it("scope — listeners with different scopes are independent", () => {
     const event = new BeUnorderedEvent<() => void>();
     const fn = () => {};
     const scope = {};
 
-    event.addListener(fn, scope);
-    expect(event.has(fn)).toBe(false);
-    expect(event.has(fn, scope)).toBe(true);
+    const r1 = event.addListener(fn);
+    const r2 = event.addListener(fn, scope);
+    expect(event.numberOfListeners).toBe(2);
+
+    r1();
+    expect(event.numberOfListeners).toBe(1);
+
+    r2();
+    expect(event.numberOfListeners).toBe(0);
   });
 
   it("clear() — removes all listeners", () => {
