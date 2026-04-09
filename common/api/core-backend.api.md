@@ -2252,6 +2252,9 @@ export interface ECChangeCache extends Disposable {
 // @beta
 export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     [Symbol.dispose](): void;
+    clearClassIdFilters(): void;
+    clearOpCodeFilters(): void;
+    clearTableNameFilters(): void;
     close(): void;
     readonly db: AnyDb;
     deleted?: ECNativeChangeInstance;
@@ -2276,6 +2279,9 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
         db: IModelDb;
         txnId: Id64String;
     }): ECChangesetReader;
+    setClassIdFilters(classIds: Set<Id64String>): void;
+    setOpCodeFilters(ops: Set<ECNativeChangeOp>): void;
+    setTableNameFilters(tableNames: Set<string>): void;
     step(): boolean;
     get tableName(): string;
 }
@@ -2283,7 +2289,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 // @beta
 export interface ECChangesetReaderArgs {
     readonly db: AnyDb;
-    readonly invert?: true;
+    readonly invert?: boolean;
     readonly mode?: IModelJsNative.ECChangesetReader.Mode;
     readonly rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
 }
@@ -2382,7 +2388,7 @@ export interface ECNativeChangeInstance {
 // @beta
 export interface ECNativeChangeMeta {
     changeIndexes: number[];
-    changesetFetchedProps: Set<string>;
+    changesetFetchedProps: string[];
     isIndirectChange: boolean;
     mode: string;
     nativeKey: string;
@@ -2399,7 +2405,6 @@ export type ECNativeChangeOp = "Inserted" | "Updated" | "Deleted";
 export interface ECNativeChangeSource {
     readonly deleted?: ECNativeChangeInstance;
     readonly inserted?: ECNativeChangeInstance;
-    readonly isECTable: boolean;
     readonly op: ECNativeChangeOp;
 }
 
