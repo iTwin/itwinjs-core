@@ -20,6 +20,7 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { ReverseTxnArgs, ReinstateTxnArgs } from "@itwin/core-common";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -60,24 +61,6 @@ export interface QueryLocalChangesArgs {
   readonly includedClasses?: string[];
   /** If `true`, include changes that have not yet been saved. */
   readonly includeUnsavedChanges?: boolean;
-}
-
-/** Arguments to [[TxnManager]]'s async reverse and cancel methods.
- * @beta
- */
-export interface ReverseTxnArgs {
-  /** If `true`, locks acquired when the reversed Txns were originally created are retained. If `false` or not specified,
-   * these locks are abandoned. */
-  readonly retainLocks?: boolean;
-}
-
-/** Arguments to [[TxnManager]]'s async reinstate methods.
- * @beta
- */
-export interface ReinstateTxnArgs {
-  /** If `true`, locks acquired during the current, unsaved Txn are retained, even while the unsaved changes
-   * themselves are abandoned. If `false` or not specified, the locks are abandoned along with the changes. */
-  readonly retainLocks?: boolean;
 }
 
 /** Represents a change (insertion, deletion, or modification) to a single EC instance made in a local [[BriefcaseDb]].

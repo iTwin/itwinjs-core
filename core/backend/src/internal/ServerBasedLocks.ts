@@ -364,10 +364,13 @@ export class ServerBasedLocks implements LockControl {
         stmt.bindInteger(1, LockState.None);
         stmt.bindId(2, txnId);
 
-        for (const row of stmt) {
-          allTxnLocks.set(row.elementId.toString(), row.previousState);
-          if (row.origin !== LockOrigin.NewElement)
-            locksToRelease.set(row.elementId.toString(), row.previousState);
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const elementId = stmt.getValueId(0);
+          const origin = stmt.getValueInteger(1);
+          const previousState = stmt.getValueInteger(2);
+          allTxnLocks.set(elementId, previousState);
+          if (origin !== LockOrigin.NewElement)
+            locksToRelease.set(elementId, previousState);
         }
       });
 
@@ -434,11 +437,14 @@ export class ServerBasedLocks implements LockControl {
       (stmt) => {
         stmt.bindId(1, txnId);
 
-        for (const row of stmt) {
-          if (row.origin === LockOrigin.NewElement)
-            newElementLocks.set(row.elementId.toString(), row.state);
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const elementId = stmt.getValueId(0);
+          const state = stmt.getValueInteger(1);
+          const origin = stmt.getValueInteger(2);
+          if (origin === LockOrigin.NewElement)
+            newElementLocks.set(elementId, state);
           else
-            locksToAcquire.set(row.elementId.toString(), row.state);
+            locksToAcquire.set(elementId, state);
         }
       });
 

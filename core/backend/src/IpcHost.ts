@@ -12,7 +12,8 @@ import {
   BriefcaseConnectionProps,
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, ReverseTxnArgs, RemoveFunction, SnapshotOpenOptions,
+  StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
@@ -342,16 +343,61 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseTxns(numOperations);
+    const db = IModelDb.findByKey(key);
+    if (db.isBriefcaseDb()) {
+      return db.txns.reverseTxns(numOperations);
+    } else {
+      return db[_nativeDb].reverseTxns(numOperations);
+    }
   }
+
+  public async reverseTxnsAsync(key: string, numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    const db = IModelDb.findByKey(key);
+    if (!db.isBriefcaseDb()) {
+      throw new IModelError(IModelStatus.BadRequest, "reverseTxnsAsync is only supported for briefcase iModels");
+    }
+
+    return db.txns.reverseTxnsAsync(numOperations, args);
+  }
+
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseAll();
+    const db = IModelDb.findByKey(key);
+    if (db.isBriefcaseDb()) {
+      return db.txns.reverseAll();
+    } else {
+      return db[_nativeDb].reverseAll();
+    }
   }
+
+  public async reverseAllTxnsAsync(key: string, args?: ReverseTxnArgs): Promise<void> {
+    const db = IModelDb.findByKey(key);
+    if (!db.isBriefcaseDb()) {
+      throw new IModelError(IModelStatus.BadRequest, "reverseAllTxnsAsync is only supported for briefcase iModels");
+    }
+
+    return db.txns.reverseAllTxnsAsync(args);
+  }
+
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reinstateTxn();
+    const db = IModelDb.findByKey(key);
+    if (db.isBriefcaseDb()) {
+      return db.txns.reinstateTxn();
+    } else {
+      return db[_nativeDb].reinstateTxn();
+    }
   }
+
+  public async reinstateTxnAsync(key: string, args?: ReinstateTxnArgs): Promise<void> {
+    const db = IModelDb.findByKey(key);
+    if (!db.isBriefcaseDb()) {
+      throw new IModelError(IModelStatus.BadRequest, "reinstateTxnAsync is only supported for briefcase iModels");
+    }
+
+    return db.txns.reinstateTxnAsync(args);
+  }
+
   public async restartTxnSession(key: string): Promise<void> {
-    return IModelDb.findByKey(key)[_nativeDb].restartTxnSession();
+    return IModelDb.findByKey(key).restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
