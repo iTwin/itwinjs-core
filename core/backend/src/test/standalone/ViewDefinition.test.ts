@@ -292,9 +292,9 @@ describe("ViewDefinition", () => {
 
       const viewDefProps: SpatialViewDefinitionProps = {
         ...basicProps,
-        modelSelector: { id: ms1Row },
-        categorySelector: { id: cs1Row },
-        displayStyle: { id: ds1Row },
+        modelSelector: { id: ms1Row, relClassName: "BisCore:SpatialViewDefinitionUsesModelSelector" },
+        categorySelector: { id: cs1Row, relClassName: "BisCore:ViewDefinitionUsesCategorySelector" },
+        displayStyle: { id: ds1Row, relClassName: "BisCore:ViewDefinitionUsesDisplayStyle" },
 
         // Backward-Compatibility until these get deprecated
         modelSelectorId: ms1Row,
@@ -308,9 +308,10 @@ describe("ViewDefinition", () => {
       let viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
       expect(viewDefOut.code.value).equal("TestViewDefinition");
       expect(viewDefOut.classFullName).equal("BisCore:SpatialViewDefinition");
-      expect(viewDefOut.modelSelector?.id).equal(ms1Row);
-      expect(viewDefOut.categorySelector?.id).equal(cs1Row);
-      expect(viewDefOut.displayStyle?.id).equal(ds1Row);
+      expect(viewDefOut.modelSelector).deep.equal({ id: ms1Row, relClassName: "BisCore:SpatialViewDefinitionUsesModelSelector" });
+      expect(viewDefOut.categorySelector).deep.equal({ id: cs1Row, relClassName: "BisCore:ViewDefinitionUsesCategorySelector" });
+      expect(viewDefOut.displayStyle).deep.equal({ id: ds1Row, relClassName: "BisCore:ViewDefinitionUsesDisplayStyle" });
+
       // Verify deprecated *Id props are still populated for backward compatibility
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(viewDefOut.modelSelectorId).equal(ms1Row);
@@ -318,6 +319,7 @@ describe("ViewDefinition", () => {
       expect(viewDefOut.categorySelectorId).equal(cs1Row);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(viewDefOut.displayStyleId).equal(ds1Row);
+
       expect(viewDefOut.cameraOn).equal(false);
       expect(JSON.stringify(viewDefOut.origin)).equal(JSON.stringify(basicProps.origin));
       expect(JSON.stringify(viewDefOut.extents)).equal(JSON.stringify(basicProps.extents));
@@ -331,14 +333,15 @@ describe("ViewDefinition", () => {
       expect(JSON.stringify(viewDefOut.origin)).equal(JSON.stringify([1, 2, 3]));
       viewDefOut.displayStyle = { id: "@2" };
       await expect(vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut })).to.be.rejectedWith("invalid Id for displayStyles");
+
       // add a new display style and update the view to use it
-      viewDefOut.displayStyle = { id: await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles }) };
+      viewDefOut.displayStyle = { id: await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles }), relClassName: "BisCore:ViewDefinitionUsesDisplayStyle" };
       await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut });
       viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
       expect(viewDefOut.displayStyle?.id).equal("@2");
       const vinfo = await vs1.getViewInfo({ viewId: v1 });
       expect(vinfo?.displayStyleId).equal(viewDefOut.displayStyle?.id);
-      viewDefOut.displayStyle = { id: "@1" };
+      viewDefOut.displayStyle = { id: "@1", relClassName: "BisCore:ViewDefinitionUsesDisplayStyle" };
       await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut }); // change it back for sharing test below
 
       viewDefProps.code.value = "TestViewDefinition2";

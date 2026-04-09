@@ -1159,14 +1159,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
         // Try to reconstruct an element from the returned properties
         const reconstructed = imodel.constructEntity<SpatialViewDefinition>(parsed);
-        assert.equal(reconstructed.categorySelector.id, categorySelectorId, "categorySelector.id should match the inserted categorySelectorId");
-        assert.equal(reconstructed.displayStyle.id, displayStyleId, "displayStyle.id should match the inserted displayStyleId");
-        assert.equal(reconstructed.modelSelector.id, modelSelectorId, "modelSelector.id should match the inserted modelSelectorId");
+        assert.deepEqual(reconstructed.categorySelector, parsed.categorySelector);
+        assert.deepEqual(reconstructed.displayStyle, parsed.displayStyle);
+        assert.deepEqual(reconstructed.modelSelector, parsed.modelSelector);
 
         // Deprecated Id64String props should also be valid (Backward compatibility)
         assert.equal(reconstructed.categorySelectorId, categorySelectorId);
         assert.equal(reconstructed.displayStyleId, displayStyleId);
         assert.equal(reconstructed.modelSelectorId, modelSelectorId);
+
+        // Do a quick check of the setter to ensure RelClassName is preserved and only id gets overridden
+        reconstructed.categorySelectorId = "Id123";
+        reconstructed.modelSelectorId = "Id456";
+        reconstructed.displayStyleId = "Id789";
+
+        assert.deepEqual(reconstructed.categorySelector, { id: "Id123", relClassName: "BisCore.ViewDefinitionUsesCategorySelector" });
+        assert.deepEqual(reconstructed.modelSelector, { id: "Id456", relClassName: "BisCore.SpatialViewDefinitionUsesModelSelector" });
+        assert.deepEqual(reconstructed.displayStyle, { id: "Id789", relClassName: "BisCore.ViewDefinitionUsesDisplayStyle" });
       }
     });
 
@@ -1197,14 +1206,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
         // Try to reconstruct an element from the returned properties
         const reconstructed = imodel.constructEntity<OrthographicViewDefinition>(parsed);
-        assert.equal(reconstructed.categorySelector.id, categorySelectorId, "categorySelector.id should match the inserted categorySelectorId");
-        assert.equal(reconstructed.displayStyle.id, displayStyleId, "displayStyle.id should match the inserted displayStyleId");
-        assert.equal(reconstructed.modelSelector.id, modelSelectorId, "modelSelector.id should match the inserted modelSelectorId");
+        assert.deepEqual(reconstructed.categorySelector, parsed.categorySelector);
+        assert.deepEqual(reconstructed.displayStyle, parsed.displayStyle);
+        assert.deepEqual(reconstructed.modelSelector, parsed.modelSelector);
 
         // Deprecated Id64String props should also be valid (Backward compatibility)
         assert.equal(reconstructed.categorySelectorId, categorySelectorId);
         assert.equal(reconstructed.displayStyleId, displayStyleId);
         assert.equal(reconstructed.modelSelectorId, modelSelectorId);
+
+        // Do a quick check of the setter to ensure RelClassName is preserved and only id gets overridden
+        reconstructed.categorySelectorId = "Id123";
+        reconstructed.modelSelectorId = "Id456";
+        reconstructed.displayStyleId = "Id789";
+
+        assert.deepEqual(reconstructed.categorySelector, { id: "Id123", relClassName: "BisCore.ViewDefinitionUsesCategorySelector" });
+        assert.deepEqual(reconstructed.modelSelector, { id: "Id456", relClassName: "BisCore.SpatialViewDefinitionUsesModelSelector" });
+        assert.deepEqual(reconstructed.displayStyle, { id: "Id789", relClassName: "BisCore.ViewDefinitionUsesDisplayStyle" });
       }
     });
 
@@ -1240,14 +1258,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
         // Try to reconstruct an element from the returned properties
         const reconstructed = imodel.constructEntity<DrawingViewDefinition>(parsed);
-        assert.equal(reconstructed.categorySelector.id, categorySelectorId, "reconstructed.categorySelector.id should match the inserted categorySelectorId");
-        assert.equal(reconstructed.displayStyle.id, displayStyle2dId, "reconstructed.displayStyle.id should match the inserted displayStyleId");
-        assert.equal(reconstructed.baseModel.id, drawingModelId, "reconstructed.baseModel.id should match the inserted drawingModelId");
+        assert.deepEqual(reconstructed.categorySelector, parsed.categorySelector);
+        assert.deepEqual(reconstructed.displayStyle, parsed.displayStyle);
+        assert.deepEqual(reconstructed.baseModel, parsed.baseModel);
 
         // Deprecated Id64String props should also be valid (Backward compatibility)
         assert.equal(reconstructed.categorySelectorId, categorySelectorId);
         assert.equal(reconstructed.displayStyleId, displayStyle2dId);
         assert.equal(reconstructed.baseModelId, drawingModelId);
+
+        // Do a quick check of the setter to ensure RelClassName is preserved and only id gets overridden
+        reconstructed.categorySelectorId = "Id123";
+        reconstructed.baseModelId = "Id456";
+        reconstructed.displayStyleId = "Id789";
+
+        assert.deepEqual(reconstructed.categorySelector, { id: "Id123", relClassName: "BisCore.ViewDefinitionUsesCategorySelector" });
+        assert.deepEqual(reconstructed.baseModel, { id: "Id456", relClassName: "BisCore.BaseModelForView2d" });
+        assert.deepEqual(reconstructed.displayStyle, { id: "Id789", relClassName: "BisCore.ViewDefinitionUsesDisplayStyle" });
       }
     });
   });
