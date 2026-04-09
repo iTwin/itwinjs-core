@@ -58,3 +58,4 @@ common/api/summary/summary.exports.csv
 
 *.log
 *.error.log
+**/tsconfig.tsbuildinfo
