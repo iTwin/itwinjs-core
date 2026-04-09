@@ -123,6 +123,8 @@ interface ShardExecOptions {
   grepPattern?: string;
   timeout?: number;
   sampleRss?: boolean;
+  /** Extra command-line args passed to the Electron binary (e.g. `--disable-gpu` on crash retry). */
+  extraElectronArgs?: string[];
 }
 
 interface ShardExecResult {
@@ -160,7 +162,8 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
   };
 
   const start = Date.now();
-  const electronProcess = spawn(command, [getSessionEntryPath()], spawnOptions);
+  const electronArgs = [...(options.extraElectronArgs ?? []), getSessionEntryPath()];
+  const electronProcess = spawn(command, electronArgs, spawnOptions);
 
   const poller = options.sampleRss && electronProcess.pid
     ? new RssPoller(electronProcess.pid)
@@ -296,7 +299,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   // (native crashes produce no test-results.json, distinguishing them from test failures).
   const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
 
-  async function runShard(files: string[], index: number): Promise<typeof results[0]> {
+  async function runShard(files: string[], index: number, extraElectronArgs?: string[]): Promise<typeof results[0]> {
     const shardId = `shard-${index}`;
     const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `electron-test-cache-${shardId}-`));
     const manifestPath = path.join(cacheDir, "test-manifest.txt");
@@ -310,6 +313,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
         grepPattern: effectiveGrep,
         timeout,
         sampleRss: false,
+        extraElectronArgs,
       });
       return { shardIndex: index, fileCount: files.length, cacheDir, files, ...result };
     } catch {
@@ -324,15 +328,17 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     // - Crashed shards (non-zero exit, e.g. native exception or OOM)
     // - Silent exits (exit 0 but 0 results, e.g. GPU process init failure on Linux CI)
     // Real test failures always produce 1+ results and are never retried.
+    // On retry, disable GPU compositing to mitigate Windows GPU driver crashes
+    // (STATUS_STACK_BUFFER_OVERRUN / 0xC0000409).
     const resultsPath = path.join(result.cacheDir, "test-results.json");
     const hasTestResults = fs.existsSync(resultsPath);
     if (!hasTestResults) {
       const reason = result.exitCode !== 0
         ? `crashed (exit ${result.exitCode})`
         : `exited cleanly but produced no test results`;
-      console.warn(`shard-${index} ${reason} — retrying once`);
+      console.warn(`shard-${index} ${reason} — retrying once with --disable-gpu`);
       cleanupCacheDir(result.cacheDir);
-      result = await runShard(files, index);
+      result = await runShard(files, index, ["--disable-gpu"]);
     }
 
     results.push(result);
