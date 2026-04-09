@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { Id64Array } from "@itwin/core-bentley";
-import { Code, EditTxnError, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { ChannelControl, EditTxn, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
