@@ -472,8 +472,13 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
     });
 
     it("invalidates cache for parent category when subcategory is added, deleted, or modified", { timeout: 120_000 }, async () => {
+      const t0 = Date.now();
+      const log = (msg: string) => console.log(`[SubCat +${((Date.now() - t0) / 1000).toFixed(1)}s] ${msg}`);
+
+      log("createAndInsertSpatialCategory...");
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       const s1 = getDefaultSubCategoryId(cat);
+      log("saveAndExpectChanges #1 (create category)...");
       await saveAndExpectChanges([cat, s1]);
 
       await bc.subcategories.load(cat)?.promise;
@@ -481,12 +486,15 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(s1, ColorDef.blue);
 
       // Insert a new subcategory
+      log("loadProps...");
       const s2Props = await bc.elements.loadProps(s1) as SubCategoryProps;
       s2Props.id = s2Props.federationGuid = undefined;
       s2Props.code.value = "SubCat2";
       s2Props.appearance = { color: ColorDef.red.toJSON() };
 
+      log("insertElement...");
       const s2 = await ipc.insertElement(bc.key, s2Props);
+      log("saveAndExpectChanges #2 (insert subcat)...");
       await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, undefined);
@@ -498,9 +506,11 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(s2, ColorDef.red);
 
       // Change the appearance of a subcategory
+      log("updateElement...");
       s2Props.id = s2;
       s2Props.appearance = { color: ColorDef.green.toJSON() };
       await ipc.updateElement(bc.key, s2Props);
+      log("saveAndExpectChanges #3 (update subcat)...");
       await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
@@ -512,7 +522,9 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(s2, ColorDef.green);
 
       // Delete a subcategory
+      log("deleteDefinitionElements...");
       await ipc.deleteDefinitionElements(bc.key, [s2]);
+      log("saveAndExpectChanges #4 (delete subcat)...");
       await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
@@ -522,7 +534,9 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectCachedSubCategories(cat, [s1]);
 
       // Undo
+      log("undo (reverseSingleTxn)...");
       await doAndExpectChanges(async () => bc.txns.reverseSingleTxn(), [s2]);
+      log("undo done");
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
@@ -530,12 +544,15 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(s1, ColorDef.blue);
 
       // Redo
+      log("redo (reinstateTxn)...");
       await doAndExpectChanges(async () => bc.txns.reinstateTxn(), [s2]);
+      log("redo done");
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
       expectAppearance(s1, ColorDef.blue);
+      log("test complete");
     });
   });
 });
