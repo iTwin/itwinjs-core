@@ -644,6 +644,23 @@
       ]
     },
     {
+      "name": "[perftests] ECChangesetReader PerfTests (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:ecChangesetReaderPerformance"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] Delete Multiple Relationship Instances (Offline)",
       "presentation": {
         "group": "Perftests"
