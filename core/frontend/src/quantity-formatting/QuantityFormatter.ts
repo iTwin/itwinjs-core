@@ -392,6 +392,21 @@ export class FormatsProviderManager implements FormatsProvider {
  *
  * @public
  */
+
+/** Discriminated union describing what a queued reload should do.
+ * @internal
+ */
+type ReloadIntent =
+  | { scope: "full" }
+  | { scope: "formatsChanged"; args: FormatsChangedArgs }
+  | { scope: "activeSystem" };
+
+/** The QuantityFormatter class provides methods for formatting and parsing quantities. There are a set of standard quantity types
+ * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
+ * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
+ *
+ * @public
+ */
 export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider {
   private static readonly _allUnitSystems: readonly UnitSystemKey[] = ["metric", "imperial", "usCustomary", "usSurvey"];
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
@@ -478,7 +493,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   private _initializedPromise: Promise<void>;
   private _resolveInitialized!: () => void;
   private _reloadInFlight = false;
-  private _pendingReload: (() => Promise<void>) | undefined;
+  private _pendingReload: ReloadIntent | undefined;
   private _deferredSystemChangedEmit: FormattingUnitSystemChangedArgs | undefined;
 
   private _removeFormatsProviderListener?: () => void;
@@ -507,14 +522,19 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   }
 
   /** Enqueue an async reload. If no reload is in flight, runs immediately. If a reload is
-   * already in flight, stores `reloadFn` as pending (latest-wins: only the last queued reload
+   * already in flight, stores the intent as pending (latest-wins: only the last queued reload
    * is kept). `finalizeReload()` fires only when the queue is fully drained.
+   *
+   * Reload intents:
+   * - `"full"` — rebuild entire registry + re-register provider listener (onInitialized, setUnitsProvider)
+   * - `"formatsChanged"` — patch registry from provider + load maps (formatsChanged listener)
+   * - `"activeSystem"` — reload format/parsing maps for current unit system (setActiveUnitSystem, reinitializeFormatAndParsingsMaps)
    * @internal
    */
-  protected async enqueueReload(reloadFn: () => Promise<void>): Promise<void> {
+  protected async enqueueReload(intent: ReloadIntent): Promise<void> {
     if (this._reloadInFlight) {
       // A reload is already running — queue this one (latest-wins)
-      this._pendingReload = reloadFn;
+      this._pendingReload = intent;
       return;
     }
 
@@ -523,7 +543,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     this._deferredSystemChangedEmit = undefined; // Clear stale deferred from prior cycle
 
     try {
-      await reloadFn();
+      await this._executeReload(intent);
     } catch (err) {
       Logger.logError(`${FrontendLoggerCategory.Package}.QuantityFormatter`, BentleyError.getErrorMessage(err));
       this._reloadInFlight = false;
@@ -561,6 +581,32 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
 
     this._reloadInFlight = false;
+  }
+
+  /** Execute the reload work for a given intent. All reload logic is centralized here.
+   * @internal
+   */
+  private async _executeReload(intent: ReloadIntent): Promise<void> {
+    switch (intent.scope) {
+      case "full":
+        await this._reloadCore();
+        break;
+      case "formatsChanged": {
+        const { args } = intent;
+        await this._rebuildRegistryFromProvider(args);
+        if (args.impliedUnitSystem && args.impliedUnitSystem !== this._activeUnitSystem) {
+          this._activeUnitSystem = args.impliedUnitSystem;
+        }
+        await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
+        if (args.impliedUnitSystem) {
+          this._deferredSystemChangedEmit = { system: this._activeUnitSystem };
+        }
+        break;
+      }
+      case "activeSystem":
+        await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
+        break;
+    }
   }
 
   /** Called when the reload queue is fully drained after a successful reload.
@@ -746,7 +792,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * @internal
    */
   public async onInitialized() {
-    await this.enqueueReload(async () => this._reloadCore());
+    await this.enqueueReload({ scope: "full" });
   }
 
   /** Core reload logic — does all async I/O and cache rebuilding without events or state management.
@@ -774,20 +820,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     // Register formatsProvider listener that triggers a queued reload when formats change
     this._removeFormatsProviderListener = IModelApp.formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
-      void this.enqueueReload(async () => {
-        await this._rebuildRegistryFromProvider(args);
-        // Sync unit system if the format set implies one
-        if (args.impliedUnitSystem && args.impliedUnitSystem !== this._activeUnitSystem) {
-          this._activeUnitSystem = args.impliedUnitSystem;
-        }
-        await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
-        // Emit inside the reloadFn so it only fires after the winning reload actually runs.
-        // Emitting in a .then() on the outer enqueueReload promise is unsafe because queued
-        // (superseded) reloads resolve immediately, before their reloadFn executes.
-        if (args.impliedUnitSystem) {
-          this._deferredSystemChangedEmit = { system: this._activeUnitSystem };
-        }
-      });
+      void this.enqueueReload({ scope: "formatsChanged", args });
     });
 
     // initialize default format and parsing specs
@@ -872,8 +905,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     this._unitsProvider = unitsProvider;
 
     try {
-      // force all cached data to be reinitialized — calls _reloadCore directly to avoid double finalization
-      await this.enqueueReload(async () => this._reloadCore());
+      // force all cached data to be reinitialized
+      await this.enqueueReload({ scope: "full" });
     } catch (err) {
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
@@ -928,9 +961,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
 
     unitSystemKey && (this._activeUnitSystem = unitSystemKey);
-    await this.enqueueReload(async () => {
-      await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
-    });
+    await this.enqueueReload({ scope: "activeSystem" });
     fireUnitSystemChanged && this.onActiveFormattingUnitSystemChanged.emit({ system: this._activeUnitSystem });
     IModelApp.toolAdmin && startDefaultTool && await IModelApp.toolAdmin.startDefaultTool();
   }
@@ -947,9 +978,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       return;
 
     this._activeUnitSystem = systemType;
-    await this.enqueueReload(async () => {
-      await this.loadFormatAndParsingMapsForSystem(systemType);
-    });
+    await this.enqueueReload({ scope: "activeSystem" });
     // allow settings provider to store the change
     await this._unitFormattingSettingsProvider?.storeUnitSystemSetting({ system: systemType });
     // fire current event

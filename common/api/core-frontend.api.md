@@ -8097,7 +8097,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     // @beta
     createParserSpec(props: CreateFormattingSpecProps): Promise<ParserSpec>;
     // @internal
-    protected enqueueReload(reloadFn: () => Promise<void>): Promise<void>;
+    protected enqueueReload(intent: ReloadIntent): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
