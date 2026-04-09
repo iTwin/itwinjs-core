@@ -420,7 +420,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
     // runs the provided action (save/undo/redo), then waits for the event.
     // The Push notification always arrives before the IPC Response, so the
     // listener is guaranteed to fire before or during the await.
-    async function doAndExpectChanges(action: () => Promise<void>, changedElementIds: Id64String[]): Promise<void> {
+    async function doAndExpectChanges(action: () => Promise<unknown>, changedElementIds: Id64String[]): Promise<void> {
       const pending = new Promise<void>((resolve) => {
         const remove = bc.txns.onElementsChanged.addListener(() => {
           remove();
