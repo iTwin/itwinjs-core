@@ -34,7 +34,6 @@ export interface DownloadAndOpenArgs {
  * @internal
  */
 export class RpcBriefcaseUtility {
-
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;

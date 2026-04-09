@@ -8,7 +8,7 @@ import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itw
 import * as chai from "chai";
 import { Suite } from "mocha";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 
 /**
@@ -91,24 +91,21 @@ class TestIModel {
       accessToken: "far-user",
     });
     far.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    far.saveChanges();
 
     // Initialize with base schema
     await far.importSchemaStrings([TestIModel.schemas.v01x00x00]);
-    far.saveChanges("import base schema");
     await far.pushChanges({ description: "import base schema" });
 
     // Create model and category
     const modelCode = IModelTestUtils.getUniqueModelCode(far, "DrawingModel");
     await far.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(far, modelCode);
-    const drawingCategoryId = DrawingCategory.insert(
-      far,
+    const [, drawingModelId] = withEditTxn(far, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode));
+    const drawingCategoryId = withEditTxn(far, (txn) => DrawingCategory.insert(
+      txn,
       IModel.dictionaryId,
       "DrawingCategory",
       new SubCategoryAppearance()
-    );
-    far.saveChanges();
+    ));
     await far.pushChanges({ description: "create model and category" });
 
     // Open local briefcase
@@ -118,7 +115,6 @@ class TestIModel {
       accessToken: "local-user",
     });
     local.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    local.saveChanges();
 
     return new TestIModel(iModelId, drawingModelId, drawingCategoryId, far, local);
   }
@@ -136,7 +132,7 @@ class TestIModel {
       ...properties,
     };
     const element = briefcase.elements.createElement(elementProps);
-    return briefcase.elements.insertElement(element.toJSON());
+    return withEditTxn(briefcase, (txn) => txn.insertElement(element.toJSON()));
   }
 
   public shutdown(): void {
@@ -183,12 +179,10 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
       propA: "far_value_a",
       propD: "far_value_d",
     });
-    t.far.saveChanges("far creates element");
     await t.far.pushChanges({ description: "far creates element" });
 
     // Local imports schema change (v01.00.01 - adds PropC2)
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.local.saveChanges("local schema update");
 
     // Local creates 10k elements - measure time
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -197,13 +191,19 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
     console.log(`Inserting ${insertCount.toLocaleString()} elements locally...`);
 
     const insertStartTime = Date.now();
-    for (let i = 0; i < insertCount; i++) {
-      t.insertElement(t.local, "TestDomain:C", {
-        propA: `value_a_${i}`,
-        propC: `value_c_${i}`,
-      });
-    }
-    t.local.saveChanges("final batch insert");
+    withEditTxn(t.local, (txn) => {
+      for (let i = 0; i < insertCount; i++) {
+        const elementProps = {
+          classFullName: "TestDomain:C",
+          model: t!.drawingModelId,
+          category: t!.drawingCategoryId,
+          code: Code.createEmpty(),
+          propA: `value_a_${i}`,
+          propC: `value_c_${i}`,
+        };
+        txn.insertElement(t!.local.elements.createElement(elementProps as any).toJSON());
+      }
+    });
     const insertEndTime = Date.now();
     const insertDuration = (insertEndTime - insertStartTime) / 1000;
     // eslint-disable-next-line no-console
@@ -239,7 +239,6 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
     t = await TestIModel.initialize("PerfTestWithHighLevelMerge");
 
     await t.far.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.far.saveChanges("far schema update");
     await t.far.pushChanges({ description: "far schema update to v01.00.01" });
 
     // Far creates a data change (single element)
@@ -248,11 +247,9 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
       propA: "far_value_a",
       propD: "far_value_d",
     });
-    t.far.saveChanges("far creates element");
     await t.far.pushChanges({ description: "far creates element" });
 
     await t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2]);
-    t.local.saveChanges("local schema update");
 
     // Local creates 10k elements - measure time
     await t.local.locks.acquireLocks({ shared: t.drawingModelId });
@@ -261,13 +258,19 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
     console.log(`Inserting ${insertCount.toLocaleString()} elements locally...`);
 
     const insertStartTime = Date.now();
-    for (let i = 0; i < insertCount; i++) {
-      t.insertElement(t.local, "TestDomain:C", {
-        propA: `value_a_${i}`,
-        propC: `value_c_${i}`,
-      });
-    }
-    t.local.saveChanges("final batch insert");
+    withEditTxn(t.local, (txn) => {
+      for (let i = 0; i < insertCount; i++) {
+        const elementProps = {
+          classFullName: "TestDomain:C",
+          model: t!.drawingModelId,
+          category: t!.drawingCategoryId,
+          code: Code.createEmpty(),
+          propA: `value_a_${i}`,
+          propC: `value_c_${i}`,
+        };
+        txn.insertElement(t!.local.elements.createElement(elementProps as any).toJSON());
+      }
+    });
     const insertEndTime = Date.now();
     const insertDuration = (insertEndTime - insertStartTime) / 1000;
     // eslint-disable-next-line no-console

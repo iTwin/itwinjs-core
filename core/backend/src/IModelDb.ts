@@ -17,8 +17,8 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
+  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
@@ -55,6 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
+import { EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -68,7 +69,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -80,6 +81,43 @@ import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+/**
+ * Internal write surface used to preserve legacy implicit-transaction mutators while callers migrate to explicit [[EditTxn]] scopes.
+ *
+ * Unlike an explicit [[EditTxn]], this transaction is always available for writable iModels and cannot be manually started or ended.
+ * When implicit-write enforcement is enabled, attempts to write through this transaction are logged or rejected.
+ */
+class ImplicitWriteTxn extends EditTxn {
+  public constructor(iModel: IModelDb) {
+    super(iModel, "implicit");
+  }
+
+  public override start(): never {
+    throw new Error("ImplicitWriteTxn cannot be started");
+  }
+
+  public override end(_mode: "save" | "abandon" = "save", _args?: string | SaveChangesArgs): never {
+    throw new Error("ImplicitWriteTxn cannot be ended");
+  }
+
+  public override verifyWriteable(): void {
+    const enforcement = EditTxn.implicitWriteEnforcement;
+    if (enforcement === "allow")
+      return;
+
+    try {
+      EditTxnError.throwError("implicit-txn-write-disallowed", "Implicit transaction write is disallowed. Use an explicit EditTxn instead", this.iModel.key);
+    } catch (err) {
+      if (enforcement === "log") {
+        Logger.logError(loggerCategory, err);
+        return;
+      }
+
+      throw err;
+    }
+  }
+}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -421,6 +459,28 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected _codeService?: CodeService;
 
+  /**
+   * The always-available implicit transaction for this iModel.
+   *
+   * Legacy mutating APIs route through this transaction for backwards compatibility until they are fully migrated to explicit [[EditTxn]] usage.
+   * @internal
+   */
+  public readonly [_implicitTxn]: EditTxn;
+
+  /** @internal */
+  public [_activeTxn]: EditTxn | undefined;
+
+  /** Returns the active [[EditTxn]] if one is current, otherwise the implicit transaction.
+   * Use this inside element and relationship callbacks that may be invoked either during an explicit transaction or
+   * during indirect change processing.
+   * @note This method is a temporary workaround until [[OnElementArg]] (and related callback arg types) are updated
+   * to carry the transaction directly in a future PR.
+   * @internal
+   */
+  public getIndirectTxn(): EditTxn {
+    return this[_activeTxn] ?? this[_implicitTxn];
+  }
+
   /** @alpha */
   public get codeService() { return this._codeService; }
 
@@ -527,8 +587,9 @@ export abstract class IModelDb extends IModel {
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
-        this.saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+        this[_nativeDb].saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
+      this[_activeTxn] = undefined;
       this[_nativeDb].closeFile();
     };
 
@@ -537,11 +598,14 @@ export abstract class IModelDb extends IModel {
     this[_resetIModelDb]();
     IModelDb._openDbs.set(this._fileKey, this);
 
+    this[_implicitTxn] = new ImplicitWriteTxn(this);
+    this[_activeTxn] = undefined;
+
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
         IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
           try {
-            db.abandonChanges();
+            db[_nativeDb].abandonChanges();
             db.close();
           } catch { }
         });
@@ -572,8 +636,8 @@ export abstract class IModelDb extends IModel {
   }
   /**
    * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
-   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
-   * @param alias identifer that was used in the call to [[attachDb]]
+   * @note There are some reserved table names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param alias identifier that was used in the call to [[attachDb]]
    *
    * @example [[include:IModelDb_attachDb.code]]
    *
@@ -592,7 +656,15 @@ export abstract class IModelDb extends IModel {
     if (!this.isOpen)
       return; // don't continue if already closed
 
+    // Give the active txn a chance to save or abandon before beforeClose() cleanup runs.
+    // StandaloneDb.beforeClose() saves any unsaved changes, so onClose() must run first so
+    // subclasses that override onClose() to abandon changes can do so before that save.
+    if (!this.isReadonly)
+      (this[_activeTxn] ?? this[_implicitTxn]).onClose();
+
     this.beforeClose();
+    this[_activeTxn] = undefined;
+
     if (options?.optimize)
       this.optimize();
 
@@ -602,9 +674,23 @@ export abstract class IModelDb extends IModel {
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
-    if (!this.isReadonly)
-      this.saveChanges();
     this[_nativeDb].closeFile();
+  }
+
+  private saveSchemaChanges(args?: string): void {
+    if (!this[_nativeDb].hasUnsavedChanges())
+      return;
+
+    const saveArgs = typeof args === "string" ? { description: args } : args;
+    saveArgs === undefined ? this[_nativeDb].saveChanges() : this[_nativeDb].saveChanges(JSON.stringify(saveArgs));
+  }
+
+  private abandonSchemaChanges(): void {
+    if (!this[_nativeDb].hasUnsavedChanges())
+      return;
+
+    this.clearCaches({ instanceCachesOnly: true });
+    this[_nativeDb].abandonChanges();
   }
 
   /** Optimize this iModel by vacuuming, and analyzing.
@@ -1079,10 +1165,10 @@ export abstract class IModelDb extends IModel {
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
    * ```
+   * @deprecated Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.projectExtents = newExtents;
-    this.updateIModelProps();
+    this[_implicitTxn].updateProjectExtents(newExtents);
   }
 
   /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
@@ -1104,15 +1190,18 @@ export abstract class IModelDb extends IModel {
     };
   }
 
-  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.  */
+  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.
+   * @deprecated Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
   public updateEcefLocation(ecef: EcefLocation) {
-    this.setEcefLocation(ecef);
-    this.updateIModelProps();
+    this[_implicitTxn].updateEcefLocation(ecef);
   }
 
-  /** Update the IModelProps of this iModel in the database. */
+  /** Update the IModelProps of this iModel in the database.
+   * @deprecated Use EditTxn.updateIModelProps instead, within an explicit EditTxn scope (or via withEditTxn).
+   */
   public updateIModelProps(): void {
-    this[_nativeDb].updateIModelProps(this.toJSON());
+    this[_implicitTxn].updateIModelProps();
   }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
@@ -1121,6 +1210,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @deprecated Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(description?: string): void;
 
@@ -1131,42 +1221,19 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @deprecated Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(args: SaveChangesArgs): void;
 
-  /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @internal
-   * @param descriptionOrArgs Optionally provide description or [[SaveChangesArgs]] args for the changes.
-   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
-   * @note This will not push changes to the iModelHub.
-   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
-   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   */
   public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
-    if (this.openMode === OpenMode.Readonly)
-      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
-
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
-      }
-    }
-    const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
-    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
-    if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
-      throw new IModelError(stat, `Could not save changes due to propagation failure.`);
-
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, `Could not save changes (${args?.description})`);
+    this[_implicitTxn].saveChanges(descriptionOrArgs);
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
-   * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
+   * @deprecated Use EditTxn.abandonChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
   */
   public abandonChanges(): void {
-    // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
-    this.clearCaches({ instanceCachesOnly: true });
-    this[_nativeDb].abandonChanges();
+    this[_implicitTxn].abandonChanges();
   }
 
   /**
@@ -1179,7 +1246,7 @@ export abstract class IModelDb extends IModel {
    */
   public performCheckpoint() {
     if (!this.isReadonly) {
-      this.saveChanges();
+      this[_nativeDb].saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
       this[_nativeDb].performCheckpoint();
@@ -1223,7 +1290,7 @@ export abstract class IModelDb extends IModel {
    *
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
-   * @throws [IModelError]($common) if the database if the operation failed.
+   * @throws [[IModelError]] if the operation fails.
    * @alpha
    */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
@@ -1238,10 +1305,10 @@ export abstract class IModelDb extends IModel {
 
     try {
       this[_nativeDb].dropSchemas(schemaNames);
-      this.saveChanges(`dropped unused schemas`);
+      this.saveSchemaChanges("dropped unused schemas");
     } catch (error: any) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
-      this.abandonChanges();
+      this.abandonSchemaChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     } finally {
       await this.locks.releaseAllLocks();
@@ -1268,8 +1335,9 @@ export abstract class IModelDb extends IModel {
     };
 
     try {
-      if (callback?.preSchemaImportCallback) {
-        const callbackResult = await callback.preSchemaImportCallback(context);
+      const preSchemaImportCallback = callback?.preSchemaImportCallback;
+      if (preSchemaImportCallback) {
+        const callbackResult = await preSchemaImportCallback(context);
         callbackResources.transformStrategy = callbackResult.transformStrategy;
 
         if (callbackResult.transformStrategy === DataTransformationStrategy.Snapshot) {
@@ -1283,12 +1351,11 @@ export abstract class IModelDb extends IModel {
           callbackResources.cachedData = callbackResult.cachedData;
         }
 
-        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
-          this.saveChanges("Save changes from schema import pre callback");
-        }
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
+          this.saveSchemaChanges("Save changes from schema import pre callback");
       }
     } catch (callbackError: any) {
-      this.abandonChanges();
+      this.abandonSchemaChanges();
       this.cleanupSnapshot(callbackResources);
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
     }
@@ -1306,13 +1373,13 @@ export abstract class IModelDb extends IModel {
     }
 
     try {
-      if (callback?.postSchemaImportCallback)
-        await callback.postSchemaImportCallback(context);
-      if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
-        this.saveChanges("Save changes from schema import post callback");
-      }
+      const postSchemaImportCallback = callback?.postSchemaImportCallback;
+      if (postSchemaImportCallback)
+        await postSchemaImportCallback(context);
+      if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
+        this.saveSchemaChanges("Save changes from schema import post callback");
     } catch (callbackError: any) {
-      this.abandonChanges();
+      this.abandonSchemaChanges();
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
     } finally {
       // Always clean up snapshot, whether success or error
@@ -1326,7 +1393,6 @@ export abstract class IModelDb extends IModel {
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-
     // BriefcaseDb-specific validation checks
     if (this.isBriefcaseDb()) {
       if (this.txns.rebaser.isRebasing) {
@@ -1348,14 +1414,14 @@ export abstract class IModelDb extends IModel {
     }
 
     if (options?.channelUpgrade) {
+      const channelUpgrade = options.channelUpgrade;
       try {
-        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+        await this.channels.upgradeChannel(channelUpgrade, this, options.data);
         // If semantic rebase is enabled and channel upgrade made changes, save them
-        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
-          this.saveChanges();
-        }
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
+          this.saveSchemaChanges();
       } catch (error) {
-        this.abandonChanges();
+        this.abandonSchemaChanges();
         throw error;
       }
     }
@@ -1368,13 +1434,13 @@ export abstract class IModelDb extends IModel {
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
-        this.saveChanges();
+        this.saveSchemaChanges();
 
         try {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonChanges();
+            this.abandonSchemaChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
@@ -1428,13 +1494,16 @@ export abstract class IModelDb extends IModel {
       await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
   }
 
-  /** Import an ECSchema. On success, the schema definition is stored in the iModel.
+  /** Import ECSchema(s). On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
+   * @param schemaFileNames  Files containing serialized ECSchemas.
    * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * @note To turn on native logging, use NativeLoggerCategory and a console appender.
+   * - For metadata differences between existing and imported schemas, turn on "ECDb" category.
+   * - For import details, turn on "SchemaImport" category.
    * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
    * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
@@ -1618,7 +1687,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Allows locally registering a schema for this imodel, in constrast to [Schemas.registerSchema] which is a global operation
+   * Allows locally registering a schema for this imodel, in contrast to [Schemas.registerSchema] which is a global operation
    */
   public get schemaMap(): SchemaMap {
     if (this._schemaMap === undefined)
@@ -1955,27 +2024,19 @@ export abstract class IModelDb extends IModel {
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
+   * @deprecated Use EditTxn.saveFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
-      }
-    }
-    this[_nativeDb].saveFileProperty(prop, strValue, blobVal);
+    this[_implicitTxn].saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
+   * @deprecated Use EditTxn.deleteFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
-      }
-    }
-    this[_nativeDb].saveFileProperty(prop, undefined, undefined);
+    this[_implicitTxn].deleteFileProperty(prop);
   }
 
   /** Query for the next available major id for a "file property" from this iModel.
@@ -2198,29 +2259,18 @@ export abstract class IModelDb extends IModel {
    * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
-   * @beta
+   * @beta @deprecated Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
-    this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
-      stmt.bindString(1, IModelDb._settingPropNamespace);
-      stmt.bindString(2, name);
-      stmt.bindString(3, JSON.stringify(dict));
-      stmt.stepForWrite();
-    });
-    this.saveChanges("add settings");
+    this[_implicitTxn].saveSettingDictionary(name, dict);
   }
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
-   * @beta
+   * @beta @deprecated Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteSettingDictionary(name: string) {
-    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
-      stmt.bindString(1, IModelDb._settingPropNamespace);
-      stmt.bindString(2, name);
-      stmt.stepForWrite();
-    });
-    this.saveChanges("delete settings");
+    this[_implicitTxn].deleteSettingDictionary(name);
   }
 
   /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
@@ -2516,33 +2566,20 @@ export namespace IModelDb {
     /** Insert a new model.
      * @param props The data for the new model.
      * @returns The newly inserted model's Id.
-     * @throws [[IModelError]] if unable to insert the model.
+     * @throws [[IModelError]] if insertion fails.
+     * @deprecated Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertModel(props: ModelProps): Id64String {
-      try {
-        return props.id = this._iModel[_nativeDb].insertModel(props);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
-        error.cause = err;
-        throw error;
-      }
+      return this._iModel[_implicitTxn].insertModel(props);
     }
 
     /** Update an existing model.
      * @param props the properties of the model to change
-     * @throws [[IModelError]] if unable to update the model.
+     * @throws [[IModelError]] if update fails.
+     * @deprecated Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateModel(props: UpdateModelOptions): void {
-      try {
-        if (props.id)
-          this[_cache].delete(props.id);
-
-        this._iModel[_nativeDb].updateModel(props);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
-        error.cause = err;
-        throw error;
-      }
+      this._iModel[_implicitTxn].updateModel(props);
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
@@ -2550,32 +2587,21 @@ export namespace IModelDb {
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
-     * @throws IModelError if unable to update the geometry guid.
+     * @throws [[IModelError]] if the update fails.
+     * @deprecated Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
-      this._iModel.models[_cache].delete(modelId);
-      const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, `Error updating geometry guid for model ${modelId}`);
+      this._iModel[_implicitTxn].updateGeometryGuid(modelId);
     }
 
     /** Delete one or more existing models.
      * @param ids The Ids of the models to be deleted
-     * @throws [[IModelError]]
+     * @throws [[IModelError]] if deletion fails.
+     * @deprecated Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteModel(ids: Id64Arg): void {
-      Id64.toIdSet(ids).forEach((id) => {
-        try {
-          this[_cache].delete(id);
-          this[_instanceKeyCache].deleteById(id);
-          this._iModel[_nativeDb].deleteModel(id);
-        } catch (err: any) {
-          const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
-          error.cause = err;
-          throw error;
-        }
-      });
+      this._iModel[_implicitTxn].deleteModel(ids);
     }
 
     /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -2811,25 +2837,15 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws [[ITwinError]] if unable to insert the element.
+     * @throws [[ITwinError]] if insertion fails.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
+     * @deprecated Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-      try {
-        this[_cache].delete({
-          id: elProps.id,
-          federationGuid: elProps.federationGuid,
-          code: elProps.code,
-        });
-        return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
-      } catch (err: any) {
-        err.message = `Error inserting element [${err.message}]`;
-        err.metadata = { elProps };
-        throw err;
-      }
+      return this._iModel[_implicitTxn].insertElement(elProps, options);
     }
 
     /**
@@ -2841,131 +2857,35 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws [[ITwinError]] if unable to update the element.
+     * @throws [[ITwinError]] if update fails.
+     * @deprecated Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-      try {
-        if (elProps.id) {
-          this[_instanceKeyCache].deleteById(elProps.id);
-        } else {
-          this[_instanceKeyCache].delete({
-            federationGuid: elProps.federationGuid,
-            code: elProps.code,
-          });
-        }
-        this[_cache].delete({
-          id: elProps.id,
-          federationGuid: elProps.federationGuid,
-          code: elProps.code,
-        });
-        this._iModel[_nativeDb].updateElement(elProps);
-      } catch (err: any) {
-        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
-        err.metadata = { elProps };
-        throw err;
-      }
+      this._iModel[_implicitTxn].updateElement(elProps);
     }
 
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
+     * @deprecated Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteElement(ids: Id64Arg): void {
-      const iModel = this._iModel;
-      Id64.toIdSet(ids).forEach((id) => {
-        try {
-          this[_cache].delete({ id });
-          this[_instanceKeyCache].deleteById(id);
-          iModel[_nativeDb].deleteElement(id);
-        } catch (err: any) {
-          err.message = `Error deleting element [${err.message}], id: ${id}`;
-          err.metadata = { elementId: id };
-          throw err;
-        }
-      });
+      this._iModel[_implicitTxn].deleteElement(ids);
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
      * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
      * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
      * This method performs those expensive checks and then calls *delete* if not referenced.
-     * @param ids The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
+     * @param definitionElementIds The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
      * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
-     * @beta
+     * @deprecated Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-      const usageInfo = this._iModel[_nativeDb].queryDefinitionElementUsage(definitionElementIds);
-      if (!usageInfo) {
-        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
-      }
-
-      const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
-      const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-        if (ids) {
-          ids.forEach((id) => {
-            if (!used.has(id))
-              this._iModel.elements.deleteElement(id);
-          });
-        }
-      };
-
-      try {
-        this._iModel[_nativeDb].beginPurgeOperation();
-        deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
-        deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
-        deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
-        deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
-        deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
-        deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
-        deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
-        deleteIfUnused(usageInfo.textureIds, usedIdSet);
-        deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
-        deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
-        deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
-        if (usageInfo.otherDefinitionElementIds) {
-          this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
-        }
-      } finally {
-        this._iModel[_nativeDb].endPurgeOperation();
-      }
-
-      if (usageInfo.viewDefinitionIds) {
-        // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
-        let viewRelatedIds: Id64Array = [];
-        if (usageInfo.displayStyleIds)
-          viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
-
-        if (usageInfo.categorySelectorIds)
-          viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
-
-        if (usageInfo.modelSelectorIds)
-          viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
-
-        if (viewRelatedIds.length > 0) {
-          const viewRelatedUsageInfo = this._iModel[_nativeDb].queryDefinitionElementUsage(viewRelatedIds);
-          if (viewRelatedUsageInfo) {
-            const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
-            try {
-              this._iModel[_nativeDb].beginPurgeOperation();
-              deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
-              deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
-              deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
-            } finally {
-              this._iModel[_nativeDb].endPurgeOperation();
-            }
-
-            viewRelatedIds.forEach((id) => {
-              if (!usedViewRelatedIdSet.has(id))
-                usedIdSet.delete(id);
-            });
-          }
-        }
-      }
-
-      return usedIdSet;
+      return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
     }
 
     /** Query for the child elements of the specified element.
@@ -3169,46 +3089,28 @@ export namespace IModelDb {
      * @returns the id of the newly inserted aspect.
      * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
      *       use [EntityReference]($common) for that instead.
+     * @deprecated Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
-      try {
-        return this._iModel[_nativeDb].insertElementAspect(aspectProps);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
-        error.cause = err;
-        throw error;
-      }
+      return this._iModel[_implicitTxn].insertAspect(aspectProps);
     }
 
     /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
+     * @deprecated Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      try {
-        this._iModel[_nativeDb].updateElementAspect(aspectProps);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
-        error.cause = err;
-        throw error;
-      }
+      this._iModel[_implicitTxn].updateAspect(aspectProps);
     }
 
     /** Delete one or more ElementAspects from this iModel.
      * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
+     * @deprecated Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
-      const iModel = this._iModel;
-      Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
-        try {
-          iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
-        } catch (err: any) {
-          const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
-          error.cause = err;
-          throw error;
-        }
-      });
+      this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
     }
   }
 
@@ -3252,11 +3154,11 @@ export namespace IModelDb {
       return this._viewStore;
     }
 
-    /** @beta */
+    /**
+     * @beta @deprecated Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
-      const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
-      this._iModel.saveFileProperty(Views.viewStoreProperty, JSON.stringify(props));
-      this._iModel.saveChanges("update default ViewStore");
+      this._iModel[_implicitTxn].saveDefaultViewStore(arg);
     }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
@@ -3412,7 +3314,7 @@ export namespace IModelDb {
       blob32[0] = Id64.getLowerUint32(viewId);
       blob32[1] = Id64.getUpperUint32(viewId);
       const blob8 = new Uint8Array(blob32.buffer);
-      this._iModel.saveFileProperty(spec, undefined, blob8);
+      this._iModel[_implicitTxn].saveFileProperty(spec, undefined, blob8);
     }
   }
 
@@ -3672,7 +3574,7 @@ export class BriefcaseDb extends IModelDb {
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
           db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
-          db.saveChanges();
+          db[_nativeDb].saveChanges();
         });
         syncAccess.synchronizeWithCloud();
       });
@@ -4061,7 +3963,7 @@ export class BriefcaseDb extends IModelDb {
 
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
-      this.saveChanges("Revert changes");
+      this[_nativeDb].saveChanges("Revert changes");
       if (!arg.description) {
         arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
@@ -4082,7 +3984,7 @@ export class BriefcaseDb extends IModelDb {
         throw err;
       }
     } finally {
-      this.abandonChanges();
+      this[_nativeDb].abandonChanges();
     }
   }
 
@@ -4117,7 +4019,7 @@ export class BriefcaseDb extends IModelDb {
 
   public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
-      this.abandonChanges();
+      this[_nativeDb].abandonChanges();
     }
     super.close(options);
     this.onClosed.raiseEvent();
@@ -4361,11 +4263,12 @@ export class SnapshotDb extends IModelDb {
     if (this._restartDefaultTxnTimer)
       clearTimeout(this._restartDefaultTxnTimer);
 
+
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
       } else {
-        this.saveChanges();
+        this[_nativeDb].saveChanges();
       }
     }
   }
@@ -4397,15 +4300,17 @@ export class StandaloneDb extends BriefcaseDb {
 
   /**
    * @internal
-   * Called during close of the iModel. It will delete any pending txns, analyze and vacuum the iModel.
+   * Called during close of the StandaloneDb. It will delete any pending txns.
   */
   protected override beforeClose(): void {
     super.beforeClose();
-    if (!this.isReadonly && this.txns.hasLocalChanges) {
-      this.saveChanges();
-      this.txns.deleteAllTxns();
-      this.saveChanges();
-    }
+    if (this.isReadonly || !this.txns.hasLocalChanges)
+      return;
+
+    const nativeDb = this[_nativeDb];
+    nativeDb.saveChanges();
+    nativeDb.deleteAllTxns();
+    nativeDb.saveChanges();
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
@@ -4465,7 +4370,7 @@ export class StandaloneDb extends BriefcaseDb {
     if (BentleyStatus.SUCCESS !== result)
       throw new IModelError(result, "Error creating class views");
     else
-      this.saveChanges();
+      this[_nativeDb].saveChanges();
   }
 
   /** Open a standalone iModel file.

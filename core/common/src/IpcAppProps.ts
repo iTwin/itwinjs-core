@@ -168,9 +168,15 @@ export interface IpcAppFunctions {
   openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
-  /** see BriefcaseConnection.saveChanges */
+  /**
+   * @deprecated Use methods on EditCommand instead.
+   * see BriefcaseConnection.saveChanges
+   */
   saveChanges: (key: string, description?: string) => Promise<void>;
-  /** see BriefcaseConnection.abandonChanges */
+  /**
+   * @deprecated Use methods on EditCommand instead.
+   * see BriefcaseConnection.abandonChanges
+   */
   abandonChanges: (key: string) => Promise<void>;
   /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;

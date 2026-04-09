@@ -2986,6 +2986,30 @@ export interface EditingScopeNotifications {
     notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
 }
 
+// @beta
+export interface EditTxnError extends ITwinError {
+    readonly description?: string;
+    readonly iModelKey?: string;
+}
+
+// @beta (undocumented)
+export namespace EditTxnError {
+    const scope = "itwin-EditTxn";
+    export function isError(error: unknown, key?: Key): error is EditTxnError;
+    export type Key =
+    /** an attempt to start an EditTxn when one is already active */
+    "already-active" |
+    /** an attempt to modify an iModel through the implicit transaction when explicit transactions are enforced */
+    "implicit-txn-write-disallowed" |
+    /** an attempt to start an EditTxn when unsaved changes are already present */
+    "unsaved-changes" |
+    /** an attempt to perform an operation that requires an active EditTxn when none is active */
+    "not-active" |
+    /** an attempt to use an EditTxn with the wrong iModel */
+    "wrong-imodel";
+    export function throwError(key: Key, message: string, iModelKey?: string, description?: string): never;
+}
+
 // @public
 export type ElementAlignedBox2d = Range2d;
 
@@ -5563,6 +5587,7 @@ export const ipcAppChannels: {
 
 // @internal
 export interface IpcAppFunctions {
+    // @deprecated (undocumented)
     abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
@@ -5591,6 +5616,7 @@ export interface IpcAppFunctions {
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
     reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
+    // @deprecated (undocumented)
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
@@ -5759,6 +5785,22 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface ITwinSettingsError extends ITwinError {
+    readonly iTwinId?: GuidString;
+    readonly priority?: number;
+}
+
+// @beta (undocumented)
+export namespace ITwinSettingsError {
+    const // (undocumented)
+    scope = "itwin-settings";
+    export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
+    // (undocumented)
+    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
 
 // @public
 export interface JsonGeometryStream {
@@ -9386,7 +9428,7 @@ export interface RunLayoutResult {
 // @beta
 export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
-// @alpha
+// @beta
 export interface SaveChangesArgs {
     appData?: {
         [key: string]: any;

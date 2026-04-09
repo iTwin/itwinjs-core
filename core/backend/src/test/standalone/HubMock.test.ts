@@ -20,6 +20,7 @@ import { _hubAccess } from "../../internal/Symbols";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { ChannelControl } from "../../ChannelControl";
 import { PhysicalElement } from "../../Element";
+import { withEditTxn } from "../../EditTxn";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -404,7 +405,6 @@ describe("HubMock", () => {
       assert.isFalse(sourceDb.locks.isServerBased);
       await ExtensiveTestScenario.prepareDb(sourceDb);
       await ExtensiveTestScenario.populateDb(sourceDb);
-      sourceDb.saveChanges();
       sourceDb.close();
       return dbName;
     };
@@ -459,10 +459,11 @@ describe("HubMock", () => {
       const childId = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
 
       await bc1.locks.acquireLocks({ exclusive: childId });
-      const element = bc1.elements.getElement<PhysicalElement>(childId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc1.saveChanges();
+      withEditTxn(bc1, (txn) => {
+        const element = bc1.elements.getElement<PhysicalElement>(childId);
+        element.setUserProperties("foo", Guid.createValue());
+        txn.updateElement(element.toJSON());
+      });
 
       // bc2 should not be able to acquire an exclusive lock because bc1 still holds it.
       await expect(bc2.locks.acquireLocks({ exclusive: childId })).to.be.rejectedWith("exclusive lock is already held");
@@ -485,10 +486,11 @@ describe("HubMock", () => {
       const childId = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
 
       await bc1.locks.acquireLocks({ exclusive: parentId });
-      const element = bc1.elements.getElement<PhysicalElement>(childId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc1.saveChanges();
+      withEditTxn(bc1, (txn) => {
+        const element = bc1.elements.getElement<PhysicalElement>(childId);
+        element.setUserProperties("foo", Guid.createValue());
+        txn.updateElement(element.toJSON());
+      });
 
       // bc2 should not be able to acquire an exclusive lock on the child because bc1 holds a lock on the parent.
       await expect(bc2.locks.acquireLocks({ exclusive: childId })).to.be.rejectedWith("exclusive lock is already held");
@@ -512,10 +514,11 @@ describe("HubMock", () => {
       const modelId = bc1.elements.getElementProps(elementId).model;
 
       await bc1.locks.acquireLocks({ exclusive: modelId });
-      const element = bc1.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc1.saveChanges();
+      withEditTxn(bc1, (txn) => {
+        const element = bc1.elements.getElement<PhysicalElement>(elementId);
+        element.setUserProperties("foo", Guid.createValue());
+        txn.updateElement(element.toJSON());
+      });
 
       // bc2 should not be able to acquire an exclusive lock on the sub-model because bc1 holds a lock on the model.
       await expect(bc2.locks.acquireLocks({ exclusive: elementId })).to.be.rejectedWith("exclusive lock is already held");
@@ -539,10 +542,11 @@ describe("HubMock", () => {
       const child2Id = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
 
       await bc1.locks.acquireLocks({ exclusive: child1Id });
-      const element = bc1.elements.getElement<PhysicalElement>(child1Id);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc1.saveChanges();
+      withEditTxn(bc1, (txn) => {
+        const element = bc1.elements.getElement<PhysicalElement>(child1Id);
+        element.setUserProperties("foo", Guid.createValue());
+        txn.updateElement(element.toJSON());
+      });
 
       // Pushing bc1's changes will release the lock.
       await bc1.pushChanges({ accessToken: accessToken1, description: "test change" });
@@ -560,10 +564,11 @@ describe("HubMock", () => {
       const childId = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
 
       await bc1.locks.acquireLocks({ exclusive: childId });
-      const element = bc1.elements.getElement<PhysicalElement>(childId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc1.saveChanges();
+      withEditTxn(bc1, (txn) => {
+        const element = bc1.elements.getElement<PhysicalElement>(childId);
+        element.setUserProperties("foo", Guid.createValue());
+        txn.updateElement(element.toJSON());
+      });
 
       // bc2 should not be able to acquire an exclusive lock on the parent because bc1 holds a lock on the child.
       await expect(bc2.locks.acquireLocks({ exclusive: parentId })).to.be.rejectedWith("shared lock is held");
@@ -587,10 +592,11 @@ describe("HubMock", () => {
       const modelId = bc1.elements.getElementProps(elementId).model;
 
       await bc1.locks.acquireLocks({ exclusive: elementId });
-      const element = bc1.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc1.saveChanges();
+      withEditTxn(bc1, (txn) => {
+        const element = bc1.elements.getElement<PhysicalElement>(elementId);
+        element.setUserProperties("foo", Guid.createValue());
+        txn.updateElement(element.toJSON());
+      });
 
       // bc2 should not be able to acquire an exclusive lock on the model because bc1 holds a lock on the sub-model.
       await expect(bc2.locks.acquireLocks({ exclusive: modelId })).to.be.rejectedWith("shared lock is held");
