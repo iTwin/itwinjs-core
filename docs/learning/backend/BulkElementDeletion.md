@@ -79,7 +79,8 @@ No manual cleanup of these tables is required.
 
 `deleteElements` fires the standard lifecycle callbacks for every element in the final delete set (after constraint violators have been pruned):
 
-- `_OnDelete` / `_OnDeleted` — fired for every element that was originally in the input array.
+- `_OnDelete` — fired for every element that was originally in the input array.
+- `_OnDeleted` — fired for every element that will be deleted including child elements and sub-model elements.
 - `_OnChildDelete` / `_OnChildDeleted` — fired on the **parent** element when a child is deleted and that parent is **not** itself being deleted.
 - `_OnSubModelDelete` / `_OnSubModelDeleted` — fired on the modeled element when its sub-model is deleted.
 
