@@ -257,31 +257,9 @@ describe("ViewDefinition", () => {
           weight: 10,
           transp: 0.5,
         },
-      },
-    };
+        ];
 
-    await vs1.addModelSelector(ms4Props);
-    selectedModels = vs1.getModelSelectorSync({ name: ms4Props.name });
-    expect(selectedModels.models.length).equal(1);
-    expect(selectedModels.models[0]).equal(modelId);
-
-    const ds1 = iModel.elements.getElement<DisplayStyle3d>(displayStyleId);
-    ds1.settings.setPlanProjectionSettings("0x1", PlanProjectionSettings.fromJSON({ elevation: 1 }));
-    ds1.settings.setPlanProjectionSettings("0x2", PlanProjectionSettings.fromJSON({ elevation: 2 }));
-
-    const styles = (ds1.toJSON() as DisplayStyle3dProps).jsonProperties!.styles!;
-    styles.subCategoryOvr =
-      [{
-        subCategory: spatialCategoryId,
-        color: ColorByName.fuchsia,
-        invisible: true,
-        style: "0xaaa",
-        weight: 10,
-        transp: 0.5,
-      },
-      ];
-
-    styles.excludedElements = CompressedId64Set.sortAndCompress(["0x8", "0x12", "0x22"]);
+      styles.excludedElements = CompressedId64Set.sortAndCompress(["0x8", "0x12", "0x22"]);
       styles.scheduleScript = [{
         modelId: "0x21",
         realityModelUrl: "altavista.com",
@@ -315,13 +293,13 @@ describe("ViewDefinition", () => {
       const viewDefProps: SpatialViewDefinitionProps = {
         ...basicProps,
         modelSelector: { id: ms1Row },
-      	categorySelector: { id: cs1Row },
-      	displayStyle: { id: ds1Row },
+        categorySelector: { id: cs1Row },
+        displayStyle: { id: ds1Row },
 
-      	// Backward-Compatibility until these get deprecated
-      	modelSelectorId: ms1Row,
-      	categorySelectorId: cs1Row,
-      	displayStyleId: ds1Row,
+        // Backward-Compatibility until these get deprecated
+        modelSelectorId: ms1Row,
+        categorySelectorId: cs1Row,
+        displayStyleId: ds1Row,
       };
 
       viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
@@ -334,7 +312,7 @@ describe("ViewDefinition", () => {
       expect(viewDefOut.categorySelector?.id).equal(cs1Row);
       expect(viewDefOut.displayStyle?.id).equal(ds1Row);
       // Verify deprecated *Id props are still populated for backward compatibility
-	  // eslint-disable-next-line @typescript-eslint/no-deprecated
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(viewDefOut.modelSelectorId).equal(ms1Row);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(viewDefOut.categorySelectorId).equal(cs1Row);
