@@ -3527,3 +3527,150 @@ describe("ECChangesetReader: overflow table graceful recovery when ExclusiveRoot
   });
 });
 
+describe("ECChangesetReader: instance reused with a different class (class change in Updated row)", () => {
+  it("openFile() correctly identifies ECClassId change from T1 to T2 in a buggy changeset", async () => {
+    /**
+     * Same scenario as ChangesetReader.test.ts: "Instance update to a different class (bug)".
+     * Verifies ECChangesetReader behaviour when an instance ID is reused with a different class.
+     *
+     * Steps:
+     * 1. Import schema with two classes (T1 and T2) that inherit from GraphicalElement2d.
+     *    - T1 has property 'p' of type string
+     *    - T2 has property 'p' of type long
+     * 2. Insert a T1 element, push changeset #1.
+     * 3. Delete the T1 element, reset the ID sequence to force ID reuse, insert T2 with same ID, push changeset #2.
+     *
+     * ECChangesetReader should:
+     * - Report op=Updated for bis_Element and bis_GeometricElement2d rows.
+     * - inserted.ECClassId resolves to T2, deleted.ECClassId resolves to T1.
+     * - Property p: inserted carries the T2 integer value (1111), deleted carries the T1 string value ("wwww").
+     */
+    HubMock.startup("ECChangesetReaderClassChange", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+
+    const modelId = await HubMock.createNewIModel({ iTwinId, iModelName: "classChange", description: "ClassChange", accessToken: adminToken });
+    assert.isNotEmpty(modelId);
+
+    let b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: modelId, accessToken: adminToken });
+    let txn = startTestTxn(b1, "class change test");
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="T1">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="T2">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p" typeName="long"/>
+        </ECEntityClass>
+    </ECSchema>`;
+
+    await importSchemaStrings(txn, [schema]);
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    const geom: GeometryStreamProps = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ].map((a) => IModelJson.Writer.toIModelJson(a));
+
+    // Push 1: insert T1 element
+    await b1.locks.acquireLocks({ shared: drawingModelId });
+    const elId = txn.insertElement({
+      classFullName: "TestDomain:T1",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom,
+      p: "wwww",
+    } as any);
+    assert.isTrue(Id64.isValidId64(elId));
+    txn.saveChanges();
+    await b1.pushChanges({ description: "insert element" });
+
+    // Push 2: delete T1 element, reset ID sequence to force same ID, insert T2
+    await b1.locks.acquireLocks({ shared: drawingModelId, exclusive: elId });
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    txn.deleteElement(elId);
+    txn.saveChanges();
+
+    // Force ID sequence so the next insert reuses elId
+    const bid = BigInt(elId) - 1n;
+    b1[_nativeDb].saveLocalValue("bis_elementidsequence", bid.toString());
+    txn.saveChanges();
+    const fileName = b1[_nativeDb].getFilePath();
+    txn.end();
+    b1.close();
+
+    b1 = await BriefcaseDb.open({ fileName });
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    txn = startTestTxn(b1, "class change test reopened");
+
+    const elId2 = txn.insertElement({
+      classFullName: "TestDomain:T2",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom,
+      p: 1111,
+    } as any);
+    expect(elId2).to.equal(elId);
+    txn.saveChanges();
+    await b1.pushChanges({ description: "buggy changeset" });
+
+    const targetDir = path.join(KnownTestLocations.outputDir, modelId, "changesets");
+    const changesets = await HubMock.downloadChangesets({ iModelId: modelId, targetDir });
+    expect(changesets.length).to.equal(2);
+    expect(changesets[0].description).to.equal("insert element");
+    expect(changesets[1].description).to.equal("buggy changeset");
+
+    // ECChangesetReader reads ECClassId from the changeset data for each stage,
+    // so it correctly sees T2 for the new (inserted) side and T1 for the old (deleted) side.
+    let bisElementAsserted = false;
+    let bisGeomElement2dAsserted = false;
+
+    using reader = ECChangesetReader.openFile({ db: b1, fileName: changesets[1].pathname });
+    while (reader.step()) {
+      if (reader.tableName === "bis_Element" && reader.op === "Updated") {
+        bisElementAsserted = true;
+        expect(reader.inserted).to.exist;
+        expect(reader.deleted).to.exist;
+        // ECInstanceId: PK was not changed in the update — only available on the Old side
+        assert.equal(reader.deleted!.ECInstanceId, elId);
+        // ECClassId correctly reflects the class change
+        assert.equal(b1.getClassNameFromId(reader.inserted!.ECClassId), "TestDomain:T2");
+        assert.equal(b1.getClassNameFromId(reader.deleted!.ECClassId), "TestDomain:T1");
+      }
+      if (reader.tableName === "bis_GeometricElement2d" && reader.op === "Updated") {
+        bisGeomElement2dAsserted = true;
+        expect(reader.inserted).to.exist;
+        expect(reader.deleted).to.exist;
+        // ECClassId correctly reflects the class change
+        assert.equal(b1.getClassNameFromId(reader.inserted!.ECClassId), "TestDomain:T2");
+        assert.equal(b1.getClassNameFromId(reader.deleted!.ECClassId), "TestDomain:T1");
+        // Property 'p': T2 declares it as long (integer), T1 as string
+        assert.equal(reader.inserted!.p, 1111);
+        assert.equal(reader.deleted!.p, "wwww");
+      }
+    }
+
+    assert.isTrue(bisElementAsserted, "Expected an Updated row in bis_Element");
+    assert.isTrue(bisGeomElement2dAsserted, "Expected an Updated row in bis_GeometricElement2d");
+
+    txn.end();
+    b1.close();
+    HubMock.shutdown();
+  });
+});
+
