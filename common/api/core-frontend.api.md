@@ -2157,6 +2157,8 @@ export class ContextRealityModelState extends ContextRealityModel {
     // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     get classifiers(): SpatialClassifiersState;
+    // @internal (undocumented)
+    detachLayerListeners(): void;
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
@@ -5653,6 +5655,8 @@ export class LayerTileTreeReferenceHandler {
     protected _baseTransparent: boolean;
     // (undocumented)
     clearLayers(): void;
+    // (undocumented)
+    detachFromDisplayStyle(): void;
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
