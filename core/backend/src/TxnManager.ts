@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
@@ -21,7 +21,6 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ReverseTxnArgs, ReinstateTxnArgs } from "@itwin/core-common";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -1430,7 +1429,8 @@ export class TxnManager {
     // We must abandon any unsaved changes here because it will be too late
     // when reinstateTxn does it.
     if (this.hasUnsavedChanges) {
-      this._iModel.abandonChanges();
+      this._iModel.clearCaches({ instanceCachesOnly: true });
+      this._iModel[_nativeDb].abandonChanges();
     }
 
     if (!args?.retainLocks) {

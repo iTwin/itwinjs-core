@@ -10,7 +10,7 @@ import { BeEvent, IModelStatus } from "@itwin/core-bentley";
 import {
   ChangesetIdWithIndex,
   ChangesetIndexAndId, ChangesetProps, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, ipcAppChannels,
-  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, ReinstateTxnArgs, ReverseTxnArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
+  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, RootSubjectProps, TxnNotifications,
   TxnProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";

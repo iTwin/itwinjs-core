@@ -14,7 +14,7 @@ import { ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetPro
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { BriefcaseConnectionProps, EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
-import { TxnProps, ReinstateTxnArgs, ReverseTxnArgs } from "./TxnProps";
+import { ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "./TxnProps";
 
 /** Options for pulling changes into iModel.
  * @internal
