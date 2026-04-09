@@ -64,6 +64,8 @@ if (changedProps.has("Category.Id")) {
 }
 ```
 
+> **Note:** `changesetFetchedProps` always contains the **original EC property names** (e.g. `"LastMod"`, `"Model.Id"`, `"StructProp.X"`) regardless of how `rowOptions` are configured. Even with `useJsName: true`, `changesetFetchedProps.has("LastMod")` is correct — **not** `has("lastMod")`.
+
 ---
 
 ## Opening a reader
@@ -185,10 +187,10 @@ assert.equal(instance.$meta.mode, "Bis_Element_Properties");
 
 | Option | Effect |
 |---|---|
-| `abbreviateBlobs: true` | Binary properties returned as `{ bytes: N }` instead of raw `Uint8Array` |
-| `abbreviateBlobs: false` | Binary properties returned as full `Uint8Array` or `base64` strings in case of `GeometryStream` |
+| `abbreviateBlobs: true` (or omitted) | Binary properties summarized as `{ bytes: N }` — this is the default behavior |
+| `abbreviateBlobs: false` | Binary properties returned as full `Uint8Array` instead of the default `{ bytes: N }` summary |
 | `classIdsToClassNames: true` | `ECClassId` and `RelECClassId` values converted from hex strings to fully-qualified names (e.g. `"BisCore.DrawingModel"`) |
-| `useJsName: true` | All property keys returned in camelCase (`id`, `className`, `lastMod`, etc.) and navigation property sub-keys as `{ id, relClassName }` instead of `{ Id, RelECClassId }` |
+| `useJsName: true` | All property keys and struct sub-keys returned in camelCase (`id`, `className`, `lastMod`, `structProp.x`, etc.). Navigation property sub-keys use `{ id, relClassName }` instead of `{ Id, RelECClassId }`. `ECClassId` and nav-prop class identifiers are automatically resolved to class names. |
 
 The active `rowOptions` object is stored on every instance's `$meta.rowOptions` for inspection.
 
@@ -215,8 +217,10 @@ using reader = ECChangesetReader.openTxn({
 });
 // ...
 assert.equal(elem.id, elementId);           // ECInstanceId → id
-assert.equal(elem.className, "TestDomain.Test2dElement"); // ECClassId → className
+assert.equal(elem.className, "TestDomain.Test2dElement"); // ECClassId → className (resolved, not hex)
 assert.deepEqual(elem.category, { id: categoryId, relClassName: "BisCore.GeometricElement2dIsInCategory" });
+// Struct sub-keys are also lowercased:
+assert.deepEqual(elem.structProp, { x: 1, y: 2, z: 3, label: "origin", pt2d: { x: 0.5, y: 0.5 }, pt3d: { x: 1, y: 2, z: 3 } });
 ```
 
 ### Example — reading full binary blobs
@@ -318,6 +322,7 @@ import {
   HubMock,
   DrawingCategory,
   IModelTestUtils,
+  ChannelControl,
 } from "@itwin/core-backend";
 import { Code, IModel, SubCategoryAppearance, ColorDef } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
@@ -338,7 +343,7 @@ async function example(adminToken: string, iTwinId: string, outputDir: string) {
     </ECEntityClass>
   </ECSchema>`;
   await db.importSchemaStrings([schema]);
-  db.channels.addAllowedChannel(/* sharedChannelName */);
+  db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
   await db.locks.acquireLocks({ shared: IModel.dictionaryId });
   const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(db, Code.createEmpty(), true);

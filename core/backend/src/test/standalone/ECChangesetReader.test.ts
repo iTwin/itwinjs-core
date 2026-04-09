@@ -7,7 +7,7 @@ import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } fr
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import { DrawingCategory } from "../../Category";
-import { BriefcaseDb, ChannelControl, IModelJsNative, _nativeDb } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, ChannelControl, IModelJsNative } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { ECChangesetReader } from "../../ECChangesetReader";
 import * as path from "node:path";

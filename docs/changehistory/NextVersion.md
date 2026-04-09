@@ -5,6 +5,63 @@ publish: false
 
 ## Backend
 
+### `ECChangesetReader` — native EC-typed changeset reader
+
+The new [ECChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ECNativeChangeInstance]($backend) per SQLite table row.
+
+The companion [ECNativePartialChangeUnifier]($backend) merges the per-table partial rows back into complete EC instances that span all tables mapped to a single EC entity.
+
+#### Reader factory methods
+
+| Method | Description |
+| ------ | ----------- |
+| `ECChangesetReader.openFile` | Read a single pushed changeset file |
+| `ECChangesetReader.openGroup` | Read several changeset files as one logical stream |
+| `ECChangesetReader.openLocalChanges` | Read pending (not yet pushed) local changes |
+| `ECChangesetReader.openInMemoryChanges` | Read in-memory (not yet saved) changes |
+| `ECChangesetReader.openTxn` | Read a single saved transaction by id |
+
+#### Example — inspect inserted elements from a changeset file
+
+```ts
+import { ECChangesetReader, ECNativePartialChangeUnifier, ECNativeChangeUnifierCache } from "@itwin/core-backend";
+
+using reader = ECChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
+using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+
+while (reader.step()) {
+  pcu.appendFrom(reader);
+}
+
+for (const instance of pcu.instances) {
+  if (instance.$meta.op === "Inserted") {
+    console.log(instance.ECInstanceId, iModelDb.getClassNameFromId(instance.ECClassId));
+  }
+}
+```
+
+#### Example — filter to a specific table and inspect raw per-row values
+
+```ts
+using reader = ECChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
+
+reader.setOpCodeFilters(new Set(["Updated"]));
+
+while (reader.step()) {
+  if (reader.tableName !== "bis_Element")
+    continue;
+  const before = reader.deleted; // pre-change snapshot
+  const after  = reader.inserted; // post-change snapshot
+  if (before && after) {
+    console.log(`Element ${after.ECInstanceId}: model changed from ${before.Model?.Id} → ${after.Model?.Id}`);
+  }
+}
+```
+
+`reader.deleted` and `reader.inserted` carry an `$meta.changesetFetchedProps` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
+
+For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ECChangesetReader](../learning/backend/ECChangesetReader.md).
+
 ### Explicit editing transactions with `EditTxn`
 
 The backend now provides [EditTxn]($backend) as the preferred way to perform writes to an iModel. This introduces an explicit transaction boundary around a unit of work: start editing, make one or more changes through the transaction, and then either save or abandon that scope.

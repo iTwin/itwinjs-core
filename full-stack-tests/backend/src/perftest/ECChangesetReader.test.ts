@@ -10,7 +10,7 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLo
 import { GuidString, Id64, StopWatch } from "@itwin/core-bentley";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import * as path from "node:path";
 
 describe("ECChangesetReaderAPI", async () => {
