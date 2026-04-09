@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import { DrawingCategory } from "../../Category";
-import { BriefcaseDb, ChannelControl, IModelJsNative } from "../../core-backend";
+import { BriefcaseDb, ChannelControl, IModelJsNative, _nativeDb } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { ECChangesetReader } from "../../ECChangesetReader";
 import * as path from "node:path";
@@ -59,6 +59,7 @@ describe("ECChangesetReader insert-full", () => {
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
   let txnId: string;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetInsertFull", KnownTestLocations.outputDir);
@@ -66,7 +67,7 @@ describe("ECChangesetReader insert-full", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertFull", description: "insertFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const txn = startTestTxn(rwIModel, "ECChangesetReader insert-full setup");
+    txn = startTestTxn(rwIModel, "ECChangesetReader insert-full setup");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -162,6 +163,7 @@ describe("ECChangesetReader insert-full", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -890,6 +892,7 @@ describe("ECChangesetReader insert-partial", () => {
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
   let txnId: string;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetInsertPartial", KnownTestLocations.outputDir);
@@ -897,7 +900,7 @@ describe("ECChangesetReader insert-partial", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertPartial", description: "insertPartial", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const txn = startTestTxn(rwIModel, "ECChangesetReader insert-partial");
+    txn = startTestTxn(rwIModel, "ECChangesetReader insert-partial");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -965,6 +968,7 @@ describe("ECChangesetReader insert-partial", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -1411,6 +1415,7 @@ describe("ECChangesetReader update-full", () => {
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
   let txnId: string;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetUpdateFull", KnownTestLocations.outputDir);
@@ -1418,7 +1423,7 @@ describe("ECChangesetReader update-full", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "updateFull", description: "updateFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const txn = startTestTxn(rwIModel, "ECChangesetReader update-full setup");
+    txn = startTestTxn(rwIModel, "ECChangesetReader update-full setup");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -1556,6 +1561,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -2053,6 +2059,7 @@ describe("ECChangesetReader delete-partial", () => {
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
   let txnId: string;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetDeletePartial", KnownTestLocations.outputDir);
@@ -2060,7 +2067,7 @@ describe("ECChangesetReader delete-partial", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "deletePartial", description: "deletePartial", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const txn = startTestTxn(rwIModel, "ECChangesetReader delete-partial");
+    txn = startTestTxn(rwIModel, "ECChangesetReader delete-partial");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -2134,6 +2141,7 @@ describe("ECChangesetReader delete-partial", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -2470,6 +2478,7 @@ describe("ECChangesetReader filters", () => {
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
   let txnId: string;
+  let txn: EditTxn;
 
   before(async () => {
     HubMock.startup("ECChangesetInsertFull", KnownTestLocations.outputDir);
@@ -2477,7 +2486,7 @@ describe("ECChangesetReader filters", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertFull", description: "insertFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    const txn = startTestTxn(rwIModel, "ECChangesetReader filters");
+    txn = startTestTxn(rwIModel, "ECChangesetReader filters");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -2573,6 +2582,7 @@ describe("ECChangesetReader filters", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -2808,6 +2818,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -3034,6 +3045,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -3246,6 +3258,7 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
   });
 
   after(() => {
+    txn.end();
     rwIModel?.close();
     HubMock.shutdown();
   });
@@ -3381,6 +3394,136 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
     expect(elementNew!.$meta.changesetFetchedProps).to.not.include("s.Y");
     expect(elementOld!.$meta.changesetFetchedProps).to.include("s.X");
     expect(elementOld!.$meta.changesetFetchedProps).to.not.include("s.Y");
+  });
+});
+
+describe("ECChangesetReader: overflow table graceful recovery when ExclusiveRootClassId is NULL", () => {
+  let rwIModel: BriefcaseDb;
+  let rwIModelId: string;
+  let txn: EditTxn;
+  let updateChangesetPathname: string;
+  let id: string;
+
+  before(async () => {
+    HubMock.startup("ECChangesetOverflowNull", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const nProps = 36; // enough to spill into the overflow table
+
+    rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "overflowNull", description: "OverflowNull", accessToken: adminToken });
+    rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    txn = startTestTxn(rwIModel, "overflow null test");
+
+    // Import schema with class that spans the overflow table (36 properties)
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i}" typeName="string"/>`).join("\n")}
+        </ECEntityClass>
+    </ECSchema>`;
+    await importSchemaStrings(txn, [schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "OverflowNullCat");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "OverflowNullCat", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    const geom: GeometryStreamProps = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ].map((a) => IModelJson.Writer.toIModelJson(a));
+
+    const props = Array(nProps).fill(undefined).map((_, i) => ({ [`p${i}`]: `test_${i}` })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+    // Push 1: insert element
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    id = txn.insertElement({
+      classFullName: "TestDomain:Test2dElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom,
+      ...props,
+    } as any);
+    assert.isTrue(Id64.isValidId64(id));
+    txn.saveChanges();
+    await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
+
+    // Push 2: update element — this is the changeset we will read against the broken iModel
+    const updatedProps = Object.assign(
+      rwIModel.elements.getElementProps(id),
+      Array(nProps).fill(undefined).map((_, i) => ({ [`p${i}`]: `updated_${i}` })).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+    );
+    await rwIModel.locks.acquireLocks({ exclusive: id });
+    txn.updateElement(updatedProps);
+    txn.saveChanges();
+    await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
+
+    // Push 3: delete element (so the iModel is out of sync when we re-read push 2)
+    await rwIModel.locks.acquireLocks({ exclusive: id });
+    txn.deleteElement(id);
+    txn.saveChanges();
+    await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
+
+    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
+    const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    // changesets: [insert, update, delete] — index 1 = update changeset
+    updateChangesetPathname = changesets[1].pathname;
+  });
+
+  after(() => {
+    txn.end();
+    rwIModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("openFile() recovers gracefully when ExclusiveRootClassId is NULL for overflow table", () => {
+    /**
+     * Simulate the broken state: clear ExclusiveRootClassId so the reader cannot
+     * determine which derived class owns the overflow table rows.
+     * The reader should fall back gracefully rather than crashing, and still
+     * produce inserted/deleted instances for the overflow table rows.
+     */
+    expect(
+      rwIModel[_nativeDb].executeSql("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'"),
+    ).to.equal(DbResult.BE_SQLITE_OK);
+
+    let assertedOnOverflowTable = false;
+
+    using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: updateChangesetPathname });
+    while (reader.step()) {
+      if (reader.tableName !== "bis_GeometricElement2d_Overflow")
+        continue;
+
+      assert.equal(reader.op, "Updated");
+
+      // inserted (New stage)
+      expect(reader.inserted).to.exist;
+      assert.deepEqual(reader.inserted!.$meta.tables, ["bis_GeometricElement2d_Overflow"]);
+      assert.equal(reader.inserted!.$meta.op, "Updated");
+      assert.equal(reader.inserted!.$meta.stage, "New");
+      assert.equal(reader.inserted!.ECInstanceId, id);
+      assert.equal(rwIModel.getClassNameFromId(reader.inserted!.ECClassId), "BisCore:GeometricElement2d");
+
+      // deleted (Old stage)
+      expect(reader.deleted).to.exist;
+      assert.deepEqual(reader.deleted!.$meta.tables, ["bis_GeometricElement2d_Overflow"]);
+      assert.equal(reader.deleted!.$meta.op, "Updated");
+      assert.equal(reader.deleted!.$meta.stage, "Old");
+      assert.equal(reader.deleted!.ECInstanceId, id);
+      assert.equal(rwIModel.getClassNameFromId(reader.deleted!.ECClassId), "BisCore:GeometricElement2d");
+
+      assertedOnOverflowTable = true;
+    }
+
+    assert.isTrue(assertedOnOverflowTable, "Expected at least one row from the overflow table");
   });
 });
 
