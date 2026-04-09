@@ -121,6 +121,7 @@ export interface PerStatementHealthStats {
  */
 export interface ChangesetHealthStats {
   changesetId: string;
+  changesetIndex: number;
   uncompressedSizeBytes: number;
   sha1ValidationTimeMs: number;
   insertedRows: number;

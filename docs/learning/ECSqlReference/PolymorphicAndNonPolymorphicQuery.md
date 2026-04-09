@@ -7,10 +7,10 @@ Syntax: `[ALL|ONLY] <className>`
 ## Polymorphic query
 
 ```sql
-SELECT * FORM [BisCore].[GeometricElement3d] Limit 10
+SELECT * FROM [BisCore].[GeometricElement3d] Limit 10
 
 -- following is same as above and all GeometricElement3d and its derived classes will be returned.
-SELECT * FORM ALL [BisCore].[GeometricElement3d] Limit 10
+SELECT * FROM ALL [BisCore].[GeometricElement3d] Limit 10
 
 ```
 
@@ -19,7 +19,7 @@ SELECT * FORM ALL [BisCore].[GeometricElement3d] Limit 10
 Restrict result to exactly a single type of class.
 
 ```sql
-SELECT * FORM ONLY [BisCore].[GeometricElement3d] Limit 10
+SELECT * FROM ONLY [BisCore].[GeometricElement3d] Limit 10
 
 ```
 

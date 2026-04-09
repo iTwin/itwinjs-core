@@ -126,7 +126,7 @@ export class KindOfQuantityParser extends SchemaItemParser {
   private createOverrideFormatString(overrideFormatProps: OverrideFormatProps): string {
 
     let formatFullName = this.getQualifiedTypeName(overrideFormatProps.name);
-    if (overrideFormatProps.precision)
+    if (overrideFormatProps.precision !== undefined)
       formatFullName += `(${overrideFormatProps.precision.toString()})`;
 
     if (undefined === overrideFormatProps.unitAndLabels)

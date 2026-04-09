@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { KoqPropertyValueFormatter, LabelDefinition, PropertyValueFormat, TypeDescription } from "../../presentation-common.js";
 import { Content } from "../../presentation-common/content/Content.js";
-import { ContentFormatter, ContentPropertyValueFormatter } from "../../presentation-common/content/PropertyValueFormatter.js";
+import { ContentFormatterImpl, ContentPropertyValueFormatter, createContentFormatter } from "../../presentation-common/content/PropertyValueFormatter.js";
 import { DisplayValuesArray, DisplayValuesMap, NavigationPropertyValue, NestedContentValue } from "../../presentation-common/content/Value.js";
 import {
   createTestArrayPropertiesContentField,
@@ -20,11 +20,18 @@ import {
   createTestStructPropertiesContentField,
 } from "../_helpers/index.js";
 
-describe("ContentFormatter", () => {
-  let formatter: ContentFormatter;
+describe("createContentFormatter", () => {
+  it("creates ContentFormatterImpl", () => {
+    const formatter = createContentFormatter({ propertyValueFormatter: { format: async () => "formatted" } });
+    expect(formatter).to.be.instanceOf(ContentFormatterImpl);
+  });
+});
+
+describe("ContentFormatterImpl", () => {
+  let formatter: ContentFormatterImpl;
 
   beforeEach(() => {
-    formatter = new ContentFormatter({ formatPropertyValue: async () => "FormattedValue" });
+    formatter = new ContentFormatterImpl({ formatPropertyValue: async () => "FormattedValue" });
   });
 
   it("formats koq property item value", async () => {
@@ -154,6 +161,74 @@ describe("ContentFormatter", () => {
     const content = new Content(descriptor, [contentItem]);
     const formattedContent = await formatter.formatContent(content);
     expect(formattedContent.contentSet[0].displayValues[structPropField.name]).to.deep.eq({ prop1: "FormattedValue", prop2: "FormattedValue" });
+  });
+
+  it("formats structs values with undefined member", async () => {
+    const structPropField = createTestStructPropertiesContentField({
+      name: "structPropFieldName",
+      properties: [
+        {
+          property: createTestPropertyInfo({ name: "structProperty" }),
+        },
+      ],
+      memberFields: [
+        createTestPropertiesContentField({ name: "prop1", properties: [{ property: createTestPropertyInfo() }] }),
+        createTestPropertiesContentField({ name: "prop2", properties: [{ property: createTestPropertyInfo() }] }),
+      ],
+    });
+    const descriptor = createTestContentDescriptor({ fields: [structPropField] });
+    const contentItem = createTestContentItem({
+      displayValues: {},
+      values: {
+        [structPropField.name]: {
+          prop1: "123",
+        },
+      },
+    });
+    const content = new Content(descriptor, [contentItem]);
+    const formattedContent = await formatter.formatContent(content);
+    expect(formattedContent.contentSet[0].displayValues[structPropField.name]).to.deep.eq({ prop1: "FormattedValue" });
+  });
+
+  it("formats structs values with undefined array member", async () => {
+    const structPropField = createTestStructPropertiesContentField({
+      name: "structPropFieldName",
+      properties: [
+        {
+          property: createTestPropertyInfo({ name: "structProperty" }),
+        },
+      ],
+      memberFields: [
+        createTestArrayPropertiesContentField({
+          name: "prop1",
+          properties: [
+            {
+              property: createTestPropertyInfo({ name: "arrayProperty" }),
+            },
+          ],
+        }),
+        createTestArrayPropertiesContentField({
+          name: "prop2",
+          properties: [
+            {
+              property: createTestPropertyInfo({ name: "arrayProperty" }),
+            },
+          ],
+        }),
+      ],
+    });
+    const descriptor = createTestContentDescriptor({ fields: [structPropField] });
+    const contentItem = createTestContentItem({
+      displayValues: {},
+      values: {
+        [structPropField.name]: {
+          prop1: ["123", "456"],
+        },
+      },
+    });
+    const content = new Content(descriptor, [contentItem]);
+    const formattedContent = await formatter.formatContent(content);
+    expect(formattedContent.contentSet[0].displayValues[structPropField.name]).to.deep.eq({ prop1: ["FormattedValue", "FormattedValue"] });
   });
 
   it("formats nested content item value", async () => {

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, BriefcaseStatus, expectDefined } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import { IpcWebSocketBackend, RpcInterfaceDefinition } from "@itwin/core-common";
+import { InternetConnectivityStatus, IpcWebSocketBackend, OverriddenBy, RpcInterfaceDefinition } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
@@ -58,6 +58,12 @@ export abstract class MobileDevice {
       case "authAccessTokenChanged":
         MobileHost.onAuthAccessTokenChanged.raiseEvent(args[0], args[1]);
         break;
+      case "online":
+        NativeHost.overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
+        break;
+      case "offline":
+        NativeHost.overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
+        break;
     }
   }
 
@@ -97,7 +103,9 @@ export interface MobileHostOpts extends NativeHostOpts {
  */
 export class MobileHost {
   private static _device?: MobileDevice;
-  public static get device() { return this._device!; }
+  public static get device() {
+    return expectDefined(this._device, "Mobile device is not initialized.");
+  }
   /**
    * Raised when the mobile OS informs a mobile app that it is running low on memory.
    *

@@ -93,6 +93,13 @@ export enum BackendLoggerCategory {
   EventSink = "core-backend.EventSink",
 
   /** The logger category used by the following classes:
+   * - [[StashManager]]
+   * - [[StashError]]
+   * @internal
+   */
+  StashManager = "core-backend.StashManager",
+
+  /** The logger category used by the following classes:
    * - [[NativeHost]], [[NativeAppStorage]]
    * @internal
    */

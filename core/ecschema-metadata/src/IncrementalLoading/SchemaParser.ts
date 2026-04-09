@@ -19,6 +19,11 @@ type MutableSchemaProps = {
   -readonly [K in keyof SchemaProps]: SchemaProps[K]
 };
 
+interface NamedSchemaItemProps extends SchemaItemProps {
+  name: string;
+  schemaItemType: SchemaItemType;
+}
+
 /**
  * Parses SchemaProps JSON returned from an ECSql query and returns the correct SchemaProps JSON object.
  * This is necessary as a small amount information (ie. CustomAttributes, unqualified type names, etc.)
@@ -58,8 +63,8 @@ export class SchemaParser {
    * @param context The SchemaContext containing the Schema.
    * @returns The corrected SchemaItemProps.
    */
-  public static async parseSchemaItems(schemaItems: readonly SchemaItemProps[], schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaItemProps[] | undefined> {
-    const items: SchemaItemProps[] = [];
+  public static async parseSchemaItems(schemaItems: readonly SchemaItemProps[], schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<NamedSchemaItemProps[] | undefined> {
+    const items: NamedSchemaItemProps[] = [];
     for (const item of schemaItems) {
       const props = await this.parseItem(item, schemaName, schemaInfos);
       const cleaned = JSON.parse(JSON.stringify(props, clean));
@@ -72,36 +77,36 @@ export class SchemaParser {
     const items: { [name: string]: SchemaItemProps } = {};
     for (const itemProps of schemaItemProps) {
       const props = await this.parseItem(itemProps, schemaName, schemaInfos);
-      items[props.name!] = props;
+      items[props.name] = props;
       delete (props as any).name;
     }
 
     return Object.keys(items).length > 0 ? items : undefined;
   }
 
-  public static async parseItem(props: SchemaItemProps, schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaItemProps> {
+  public static async parseItem(props: SchemaItemProps, schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<NamedSchemaItemProps> {
     const schemaItem = "string" === typeof (props) ? JSON.parse(props) : props;
     const type = parseSchemaItemType(schemaItem.schemaItemType);
     switch (type) {
       case SchemaItemType.KindOfQuantity:
         const koqParser = new KindOfQuantityParser(schemaName, schemaInfos);
-        return koqParser.parse(schemaItem);
+        return await koqParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.EntityClass:
       case SchemaItemType.StructClass:
         const classParser = new ClassParser(schemaName, schemaInfos);
-        return classParser.parse(schemaItem);
+        return await classParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.RelationshipClass:
         const relationshipParser = new RelationshipClassParser(schemaName, schemaInfos);
-        return relationshipParser.parse(schemaItem);
+        return await relationshipParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.Mixin:
         const mixinParser = new MixinParser(schemaName, schemaInfos);
-        return mixinParser.parse(schemaItem);
+        return await mixinParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.CustomAttributeClass:
         const caParser = new CustomAttributeClassParser(schemaName, schemaInfos);
-        return caParser.parse(schemaItem);
+        return await caParser.parse(schemaItem) as NamedSchemaItemProps;
       default:
         const itemParser = new SchemaItemParser(schemaName, schemaInfos);
-        return itemParser.parse(schemaItem);
+        return await itemParser.parse(schemaItem) as NamedSchemaItemProps;
     }
   }
 }

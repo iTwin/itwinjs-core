@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
@@ -84,7 +84,6 @@ const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: Change
 };
 const importSchema = async (b: BriefcaseDb, s: TinySchema) => {
   await b.importSchemaStrings([tinySchemaToXml(s)]);
-  b.saveChanges();
 };
 const queryProfileVer = (db: BriefcaseDb) => {
   return db.withPreparedSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' and Name='SchemaVersion'", (stmt: SqliteStatement) => {
@@ -185,15 +184,13 @@ describe("Schema synchronization", function (this: Suite) {
         </ECEntityClass>
     </ECSchema>`;
     await b1.importSchemaStrings([schema1]);
-    b1.saveChanges();
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
-    await synchronizeSchemas(b2);
-    b2.saveChanges();
+    await withEditTxn(b2, async () => synchronizeSchemas(b2));
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -212,15 +209,13 @@ describe("Schema synchronization", function (this: Suite) {
         </ECEntityClass>
     </ECSchema>`;
     await b2.importSchemaStrings([schema2]);
-    b2.saveChanges();
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
-    await synchronizeSchemas(b1);
-    b1.saveChanges();
+    await withEditTxn(b1, async () => synchronizeSchemas(b1));
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -288,15 +283,13 @@ describe("Schema synchronization", function (this: Suite) {
         </ECEntityClass>
     </ECSchema>`;
     await b1.importSchemaStrings([schema1]);
-    b1.saveChanges();
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
-    await synchronizeSchemas(b2);
-    b2.saveChanges();
+    await withEditTxn(b2, async () => synchronizeSchemas(b2));
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -304,15 +297,13 @@ describe("Schema synchronization", function (this: Suite) {
 
     // import same schema from another briefcase
     await b2.importSchemaStrings([schema1]);
-    b2.saveChanges();
 
     // ensure b2 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
-    await synchronizeSchemas(b1);
-    b1.saveChanges();
+    await withEditTxn(b1, async () => synchronizeSchemas(b1));
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -499,10 +490,6 @@ describe("Schema synchronization", function (this: Suite) {
       changesType: 65,
       briefcaseId: 4,
     }, {
-      description: "b2 push",
-      changesType: 0,
-      briefcaseId: 3,
-    }, {
       description: "b1 push",
       changesType: 65,
       briefcaseId: 2,
@@ -511,7 +498,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3].forEach((b) => {
-      b.saveChanges();
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -659,7 +646,6 @@ describe("Schema synchronization", function (this: Suite) {
       }],
     }), "pull is required to obtain lock");
     assert.isUndefined(querySchemaSyncDataVer(b2), "should be undefined in B2");
-    b2.abandonChanges();
 
     // 7. B2 pull changes it will get to point where profile/schema was upgraded.
     //    * SchemaSync pull will also be executed to bring local briefcase schema in line with schema sync container.
@@ -852,18 +838,18 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "final push by b2",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "final push by b3",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     },
     ];
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3, b4].forEach((b) => {
-      b.saveChanges();
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -1003,7 +989,6 @@ describe("Schema synchronization", function (this: Suite) {
       }],
     }), "pull is required to obtain lock");
     assert.isUndefined(querySchemaSyncDataVer(b2), "should be undefined in B2");
-    b2.abandonChanges();
 
     // 7. B2 pull changes it will get to point where profile/schema was upgraded.
     //    * SchemaSync pull will also be executed to bring local briefcase schema in line with schema sync container.
@@ -1196,18 +1181,18 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "final push by b2",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "final push by b3",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     },
     ];
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3, b4].forEach((b) => {
-      b.saveChanges();
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -1387,15 +1372,11 @@ describe("Schema synchronization", function (this: Suite) {
       description: "schema with 10 props in test2:Pipe1",
       changesType: 65,
       briefcaseId: 3,
-    }, {
-      description: "schema with 30 props in test2:Pipe1",
-      changesType: 65,
-      briefcaseId: 4,
     }];
 
     assert.deepEqual(masterHistory, expectedHistory);
     [b1, b2, b3, b4].forEach((b) => {
-      b.saveChanges();
+      withEditTxn(b, () => { });
       b.close();
     });
     HubMock.shutdown();
@@ -1436,12 +1417,11 @@ describe("Schema synchronization", function (this: Suite) {
     await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(b1, codeProps, true);
+    const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-    b1.saveChanges();
     await b1.pushChanges({ description: "setup category", accessToken: adminToken });
 
     const createEl = async (args: { [key: string]: any }) => {
@@ -1466,17 +1446,19 @@ describe("Schema synchronization", function (this: Suite) {
         geom: geometryStream,
         ...args,
       };
-      return b1.elements.insertElement(e1);;
+      return withEditTxn(b1, (txn) => txn.insertElement(e1));
     };
     const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
       await b1.locks.acquireLocks({ exclusive: id });
-      const updatedElementProps = Object.assign(b1.elements.getElementProps(id), args);
-      b1.elements.updateElement(updatedElementProps);
+      withEditTxn(b1, (txn) => {
+        const updatedElementProps = Object.assign(b1.elements.getElementProps(id), args);
+        txn.updateElement(updatedElementProps);
+      });
     };
 
     const deleteEl = async (id: Id64String) => {
       await b1.locks.acquireLocks({ exclusive: id });
-      b1.elements.deleteElement(id);
+      withEditTxn(b1, (txn) => txn.deleteElement(id));
     };
     const getChanges = async () => {
       return HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir: path.join(KnownTestLocations.outputDir, rwIModelId, "changesets") });
@@ -1492,25 +1474,21 @@ describe("Schema synchronization", function (this: Suite) {
     // 2. Insert a element for the class
     const el1 = await createEl({ p1: "test1" });
     const el2 = await createEl({ p1: "test2" });
-    b1.saveChanges();
     await b1.pushChanges({ description: "insert 2 elements" });
 
     // 3. Update the element.
     await updateEl(el1, { p1: "test3" });
-    b1.saveChanges();
     await b1.pushChanges({ description: "update element 1" });
 
     // 4. Delete the element.
     await deleteEl(el2);
     const el3 = await createEl({ p1: "test4" });
-    b1.saveChanges();
     await b1.pushChanges({ description: "delete element 2" });
 
     // 5. import schema and insert element 4 & update element 3
     await addPropertyAndImportSchema(b1);
     const el4 = await createEl({ p1: "test5", p2: "test6" });
     await updateEl(el3, { p1: "test7", p2: "test8" });
-    b1.saveChanges();
     await b1.pushChanges({ description: "import schema, insert element 4 & update element 3" });
 
     assert.isDefined(findEl(el1));
@@ -1544,7 +1522,6 @@ describe("Schema synchronization", function (this: Suite) {
     await addPropertyAndImportSchema(b1);
     const el5 = await createEl({ p1: "test9", p2: "test10", p3: "test11" });
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
-    b1.saveChanges();
     await b1.pushChanges({ description: "import schema, insert element 5 & update element 1" });
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);

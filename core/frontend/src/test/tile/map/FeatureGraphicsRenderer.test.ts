@@ -3,19 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, DisplayStyle3dProps, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps, PointWithStatus } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import {
-  FeatureGraphicsRenderer,
-} from "../../../tile/internal";
-import { BlankConnection, IModelConnection } from "../../../IModelConnection";
-import { GeoServices, GeoServicesOptions } from "../../../GeoServices";
 import { Guid, Mutable } from "@itwin/core-bentley";
+import {
+  Cartographic, DisplayStyle3dProps, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps,
+  IModelCoordinatesRequestProps, PointWithStatus,
+} from "@itwin/core-common";
 import { Loop, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { BackgroundMapGeometry, DisplayStyle3dState, GraphicLineString, ScreenViewport, ViewState3d } from "../../../core-frontend";
-
-import * as moq from "typemoq";
+import { GeoServices, GeoServicesOptions } from "../../../GeoServices";
+import { IModelApp } from "../../../IModelApp";
+import { BlankConnection, IModelConnection } from "../../../IModelConnection";
+import { FeatureGraphicsRenderer } from "../../../tile/internal";
 
 export class TestConnection extends BlankConnection {
   public toIModelCoordsCount = 0;
@@ -81,26 +80,31 @@ const styleProps: DisplayStyle3dProps = {
 };
 
 export class ViewportMock {
-  public viewportMock = moq.Mock.ofType<ScreenViewport>();
-  public viewMock = moq.Mock.ofType<ViewState3d>();
+  public viewMock = {
+    iModel: {} as IModelConnection,
+  };
+  public viewportMock = {
+    iModel: {} as IModelConnection,
+    displayStyle: {} as DisplayStyle3dState,
+  };
 
   public imodel: IModelConnection = new TestConnection(createImodelProps(), {});
 
   public displayStyle = new DisplayStyle3dState(styleProps, this.imodel);
 
-  public get object() {
-    return this.viewportMock.object;
-  }
+  public get view() {return this.viewMock as unknown as ViewState3d;}
+  public get viewport() {return this.viewportMock as unknown as ScreenViewport;}
 
   public setup() {
-    this.viewMock.setup((view) => view.iModel).returns(() => this.imodel);
-    this.viewportMock.setup((viewport) => viewport.iModel).returns(() => this.viewMock.object.iModel);
-    this.viewportMock.setup((viewport) => viewport.displayStyle).returns(() => this.displayStyle);
+    this.viewMock.iModel = this.imodel;
+    this.viewportMock.iModel = this.viewMock.iModel;
+    this.viewportMock.displayStyle = this.displayStyle;
   }
 
   public reset() {
-    this.viewMock.reset();
-    this.viewportMock.reset();
+    this.viewMock.iModel = {} as IModelConnection;
+    this.viewportMock.iModel = {} as IModelConnection;
+    this.viewportMock.displayStyle = {} as DisplayStyle3dState;
   }
 }
 
@@ -140,7 +144,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render non-filled paths correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.viewport, crs: "webMercator"});
     const testLengths = [2,2];
     const testCoords = [
       -8368830.26, 4866490.12,
@@ -177,7 +181,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render filled paths correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.viewport, crs: "webMercator"});
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -216,7 +220,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render point correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.viewport, crs: "webMercator"});
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -249,7 +253,7 @@ describe("FeatureGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.viewport, crs: "webMercator"});
 
     const testLengths = [4,4];
     const testCoords = [
@@ -289,7 +293,7 @@ describe("FeatureGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.viewport, crs: "webMercator"});
 
     const testLengths = [4,4];
     const testCoords = [

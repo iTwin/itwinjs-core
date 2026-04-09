@@ -19,7 +19,7 @@ import { Geometry } from "../../Geometry";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
-import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
+import { Sample, SteppedIndexFunctionFactory } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";

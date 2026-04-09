@@ -8,21 +8,26 @@
  * @docs-group-description Core
  * Common types used for retrieving presentation data from iModels.
  */
-export { PresentationProps, MultiManagerPresentationProps, SingleManagerPresentationProps, Presentation } from "./presentation-backend/Presentation.js";
+export { PresentationProps, Presentation } from "./presentation-backend/Presentation.js";
+export {
+  ContentCacheConfig,
+  PresentationManagerCachingConfig,
+  MultiElementPropertiesResponse,
+  PresentationAssetsRootConfig,
+  PresentationManagerProps,
+  PresentationManager,
+} from "./presentation-backend/PresentationManager.js";
+/* eslint-disable @typescript-eslint/no-deprecated */
+export { MultiManagerPresentationProps, SingleManagerPresentationProps } from "./presentation-backend/Presentation.js";
 export {
   HierarchyCacheMode,
   HierarchyCacheConfig,
   MemoryHierarchyCacheConfig,
   DiskHierarchyCacheConfig,
   HybridCacheConfig,
-  ContentCacheConfig,
-  PresentationManagerCachingConfig,
   UnitSystemFormat,
-  MultiElementPropertiesResponse,
-  PresentationAssetsRootConfig,
-  PresentationManagerProps,
-  PresentationManager,
 } from "./presentation-backend/PresentationManager.js";
+/* eslint-enable @typescript-eslint/no-deprecated */
 export { RulesetManager } from "./presentation-backend/RulesetManager.js";
 export { RulesetVariablesManager } from "./presentation-backend/RulesetVariablesManager.js";
 export { RulesetInsertOptions, RulesetEmbedderProps, RulesetEmbedder } from "./presentation-backend/RulesetEmbedder.js";

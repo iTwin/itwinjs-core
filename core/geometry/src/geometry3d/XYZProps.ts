@@ -63,6 +63,21 @@ export type HasZ = Readonly<WriteableHasZ>;
  * @public
  */
 export type XAndY = Readonly<WritableXAndY>;
+
+/** @public */
+export namespace XAndY { // eslint-disable-line @typescript-eslint/no-redeclare
+  /**
+   * Return true if two XAndYs have equal x,y parts within a specified tolerance.
+   * @param a The first XAndY to compare
+   * @param b The second XAndY to compare
+   * @param tol tolerance for comparison. If undefined, [[Geometry.smallMetricDistance]] is used.
+   * @returns true if the difference in each coordinate of `a` and `b` is smaller than `tol`.
+   */
+  export function almostEqual(a: XAndY, b: XAndY, tol?: number): boolean {
+    return Geometry.isSameCoordinate(a.x, b.x, tol) && Geometry.isSameCoordinate(a.y, b.y, tol);
+  }
+}
+
 /**
  * Interface for type with readable `x`, `y`, `z` number members.
  * @public
@@ -75,7 +90,7 @@ export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
    * Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.
    * @param a The first XYAndZ to compare
    * @param b The second XYAndZ to compare
-   * @param The tolerance for comparison. If undefined, [[Geometry.smallMetricDistance]] is used.
+   * @param tol tolerance for comparison. If undefined, [[Geometry.smallMetricDistance]] is used.
    * @returns true if the difference in each coordinate of `a` and `b` is smaller than `tol`.
    */
   export function almostEqual(a: XYAndZ, b: XYAndZ, tol?: number): boolean {

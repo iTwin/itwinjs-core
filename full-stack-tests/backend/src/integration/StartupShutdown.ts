@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import * as fs from "fs";
@@ -27,13 +29,30 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
+function shouldLogToConsole(): boolean {
+  return process.env.ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
+}
+
+export function setupIntegrationLogging() {
+  if (shouldLogToConsole())
+    Logger.initializeToConsole();
+  else
+    Logger.initialize();
+
+  Logger.setLevelDefault(LogLevel.Error);
+}
+
 export async function startupForIntegration(cfg?: IModelHostOptions) {
   cfg = cfg ?? {};
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()),
+    api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` }
+  });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);
   mkdirsSync(cfg.cacheDir);
   emptyDirSync(cfg.cacheDir);
+  setupIntegrationLogging();
   return IModelHost.startup(cfg);
 }
 before(async () => {

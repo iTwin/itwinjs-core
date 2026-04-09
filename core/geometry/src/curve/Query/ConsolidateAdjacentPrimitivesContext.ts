@@ -68,9 +68,9 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           g.children[numAccept++] = LineString3d.createPoints(pointsDeduped);
         } else { // compress points
           const compressedPointsA = PolylineOps.compressShortEdges(points, this._options.duplicatePointTolerance);
-          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, this._options.colinearPointTolerance);
-          if (i0 === 0 && i1 === numOriginal) {
-            // points is the entire curve, and the curve is closed.   Maybe the first and last segments are colinear.
+          const compressedPointsB = PolylineOps.compressByChordError(compressedPointsA, this._options.colinearPointTolerance, true);
+          if (i0 === 0 && i1 === numOriginal && this._options.consolidateLoopSeam) {
+            // points is the entire curve: if the curve is physically closed and end segments are colinear, re/move the seam
             PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, this._options.duplicatePointTolerance, this._options.colinearPointTolerance);
           }
           if (compressedPointsB.length < 2) {

@@ -9,7 +9,7 @@ import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
 import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
@@ -208,11 +208,12 @@ describe("CloudSqlite", () => {
     container.disconnect({ detach: true });
   });
 
-  it("should LogLevel.Trace set LogMask to ALL", async () => {
+  it("LogLevel.Trace should set LogMask to ALL", async () => {
     const testContainer0 = testContainers[0];
+    const shouldLogToConsole = process.env.ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
 
     const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
-      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+      shouldLogToConsole && console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
     const logTrace = sinon.spy(logConsole("Trace"));
     const logInfo = sinon.spy(logConsole("Info"));
     Logger.initialize(undefined, undefined, logInfo, logTrace);
@@ -223,7 +224,7 @@ describe("CloudSqlite", () => {
       await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
         await testContainer0.copyDatabase("testBim", fileName);
         const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
-        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        withEditTxn(db, (txn) => txn.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test"));
         db.close();
         await testContainer0.deleteDatabase(fileName);
       });
@@ -288,15 +289,15 @@ describe("CloudSqlite", () => {
     checkOptionalReturnValues(stats, false);
     expect(cache.isDaemon).to.be.false;
     // daemonless is always 0 locked blocks.
-    expect(stats.lockedCacheslots).to.equal(0);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
     // we haven't opened any databases yet, so have 0 entries in the cache.
-    expect(stats.populatedCacheslots).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(0);
     // 10 gb in bytes, current cache size defined by this test suite.
     const tenGb = 10 * (1024 * 1024 * 1024);
     // 64 kb, current block size defined by this test suite.
     const blockSize = 64 * 1024;
     // totalCacheslots is the number of entries allowed in the cachefile.
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
 
     // memoryUsed is the amount of memory used by sqlite.
     expect(stats.memoryUsed).to.not.be.undefined;
@@ -304,7 +305,11 @@ describe("CloudSqlite", () => {
     // memoryHighwater is the high water amount for sqlite memory usage.
     expect(stats.memoryHighwater).to.not.be.undefined;
     assert(stats.memoryHighwater !== undefined);
-    expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
+    // memoryManifest is the amount of memory used for the manifests for each attached container.
+    expect(stats.memoryManifest).to.not.be.undefined;
+    assert(stats.memoryManifest !== undefined);
+    expect(parseInt(stats.memoryManifest, 16)).to.be.greaterThan(0);
 
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
@@ -318,16 +323,16 @@ describe("CloudSqlite", () => {
     expect(db!.localBlocks).to.equal(db!.totalBlocks);
     stats = container.queryBcvStats({ addClientInformation: true });
     checkOptionalReturnValues(stats, true);
-    expect(stats.lockedCacheslots).to.equal(0);
-    expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(db!.totalBlocks);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
     // memoryUsed is the amount of memory used by sqlite.
     expect(stats.memoryUsed).to.not.be.undefined;
     assert(stats.memoryUsed !== undefined);
     // memoryHighwater is the high water amount for sqlite memory usage.
     expect(stats.memoryHighwater).to.not.be.undefined;
     assert(stats.memoryHighwater !== undefined);
-    expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
     container.disconnect({ detach: true });
   });
 
@@ -385,6 +390,11 @@ describe("CloudSqlite", () => {
         expect(e.dbName).equals("test1");
       }
     }
+
+    const parsed = CloudSqlite.parseDbFileName("emptyVersionDb");
+    expect(parsed.version).equals("");
+    expect(CloudSqlite.validateDbVersion(parsed.version)).equals("0.0.0");
+    expect(CloudSqlite.makeSemverName(parsed.dbName, parsed.version)).equals("emptyVersionDb:0.0.0");
 
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {

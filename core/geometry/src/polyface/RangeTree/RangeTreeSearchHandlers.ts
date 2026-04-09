@@ -9,9 +9,11 @@
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonLocationDetail, PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
+import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
 import { LineString3dRangeTreeContext } from "./LineString3dRangeTreeContext";
 import { MinimumValueTester } from "./MinimumValueTester";
@@ -38,13 +40,13 @@ export class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSea
    * @param context captured
    * @param maxDist collect points at no more than this distance from spacePoint
    */
-  public constructor(spacePoint: Point3d, context: Point3dArrayRangeTreeContext, maxDist?: number) {
+  public constructor(spacePoint: XAndY | XYAndZ, context: Point3dArrayRangeTreeContext, maxDist?: number) {
     super();
     this.context = context;
     if (maxDist !== undefined && maxDist < 0)
       maxDist = undefined;
     this.searchState = MinimumValueTester.create<number>(maxDist);
-    this.spacePoint = spacePoint.clone();
+    this.spacePoint = Point3d.createFrom(spacePoint);
   }
   /** Return the current closest point */
   public getResult(): CurveLocationDetail | undefined {
@@ -75,7 +77,7 @@ export class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSea
    * @returns true if the spacePoint is within the range or close enough that a point in the range could be the closest.
    */
   public override isRangeActive(range: Range3d): boolean {
-    const dMin = range.distanceToPoint(this.spacePoint);
+    const dMin = this.context.xyOnly ? range.distanceToPointXY(this.spacePoint) : range.distanceToPoint(this.spacePoint);
     if (this.searchState.isNewMinValue(dMin)) {
       this.context.numRangeTestTrue++;
       return true;
@@ -85,7 +87,7 @@ export class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSea
   }
   /** Test a point indexed in the range tree as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    const d = this.spacePoint.distance(this.context.points[candidateIndex]);
+    const d = this.context.xyOnly ? this.spacePoint.distanceXY(this.context.points[candidateIndex]) : this.spacePoint.distance(this.context.points[candidateIndex]);
     this.context.numPointTest++;
     this.searchState.testAndSave(candidateIndex, d);
   }
@@ -104,6 +106,9 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
   /** Search state with current min distance point pair */
   public searchState: MinimumValueTester<CurveLocationDetailPair>;
 
+  /** True if and only if both contexts specify xy-only. */
+  private _xyOnly?: boolean;
+
   /**
    * Constructor
    * @param contextA captured
@@ -117,6 +122,7 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
     if (maxDist !== undefined && maxDist < 0)
       maxDist = undefined;
     this.searchState = MinimumValueTester.create<CurveLocationDetailPair>(maxDist);
+    this._xyOnly = contextA.xyOnly && contextB.xyOnly;
   }
   /** Return the current closest approach */
   public getResult(): CurveLocationDetailPair | undefined {
@@ -137,12 +143,15 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
     const d = this.searchState.minValue;
     return d === undefined ? Number.MAX_VALUE : d;
   }
+  /** Whether to ignore z-coordinates in distance computations. */
+  public override getXYOnly(): boolean { return this._xyOnly ?? false; }
+
   /** Compute and test the distance between two points, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
     this.contextA.numPointTest++;
     const pointA = this.contextA.points[indexA];
     const pointB = this.contextB.points[indexB];
-    const d = pointA.distance(pointB);
+    const d = this._xyOnly ? Geometry.distanceXYXY(pointA.x, pointA.y, pointB.x, pointB.y) : Geometry.distanceXYZXYZ(pointA.x, pointA.y, pointA.z, pointB.x, pointB.y, pointB.z);
     if (this.searchState.isNewMinOrTrigger(d)) {
       const cldPair = CurveLocationDetailPair.createCapture(
         CurveLocationDetail.createCurveFractionPoint(undefined, indexA, pointA),
@@ -212,8 +221,8 @@ export class SingleTreeSearchHandlerForClosestPointOnLineString3d extends Single
   private _workSegment?: LineSegment3d;
   /** Test a segment indexed in the range tree as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    const segment = this._workSegment = this.context.lineString.getIndexedSegment(candidateIndex, this._workSegment)!;
-    if (segment) {
+    if (0 <= candidateIndex && candidateIndex < this.context.lineString.numEdges()) {
+      const segment = this._workSegment = this.context.lineString.getUncheckedIndexedSegment(candidateIndex, this._workSegment);
       const cld = segment.closestPoint(this.spacePoint, false);
       LineString3d.convertLocalToGlobalDetail(cld, candidateIndex, this.context.lineString.numEdges(), this.context.lineString);
       this.context.numPointTest++;
@@ -275,16 +284,18 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
   private static _workSegmentB?: LineSegment3d;
   /** Compute and test the closest approach between two segments, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
-    this.contextA.numPointTest++;
-    const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
-      this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA)!;
-    const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
-      this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
-    const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
-    if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
-      LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
-      LineString3d.convertLocalToGlobalDetail(cldPair.detailB, indexB, this.contextB.lineString.numEdges(), this.contextB.lineString);
-      this.searchState.testAndSave(cldPair, cldPair.detailA.a);
+    if (0 <= indexA && indexA < this.contextA.lineString.numEdges() && 0 <= indexB && indexB < this.contextB.lineString.numEdges()) {
+      this.contextA.numPointTest++;
+      const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
+        this.contextA.lineString.getUncheckedIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA);
+      const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
+        this.contextB.lineString.getUncheckedIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB);
+      const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
+      if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
+        LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
+        LineString3d.convertLocalToGlobalDetail(cldPair.detailB, indexB, this.contextB.lineString.numEdges(), this.contextB.lineString);
+        this.searchState.testAndSave(cldPair, cldPair.detailA.a);
+      }
     }
   }
 }
@@ -306,18 +317,18 @@ export class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTree
 
   /**
    * Constructor
-   * @param spacePoint cloned
+   * @param spacePoint point to test
    * @param context captured
    * @param maxDist collect points at no more than this distance from spacePoint
    * @param searchFacetInterior true: search facet interior + boundary; false: just boundary
    */
-  public constructor(spacePoint: Point3d, context: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
+  public constructor(spacePoint: XYAndZ | XAndY, context: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
     super();
     this.context = context;
     if (maxDist !== undefined && maxDist < 0)
       maxDist = undefined;
     this.searchState = MinimumValueTester.create<FacetLocationDetail>(maxDist);
-    this.spacePoint = spacePoint.clone();
+    this.spacePoint = Point3d.createFrom(spacePoint);
     this.searchFacetInterior = searchFacetInterior;
   }
   /** Return the current closest point */

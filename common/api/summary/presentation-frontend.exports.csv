@@ -13,6 +13,7 @@ public;enum;FavoritePropertiesScope
 public;type;GetContentRequestOptions
 public;type;GetDistinctValuesRequestOptions
 public;type;GetNodesRequestOptions
+deprecated;type;GetNodesRequestOptions
 public;interface;HiliteSet
 deprecated;interface;HiliteSet
 public;class;HiliteSetProvider
@@ -22,6 +23,7 @@ deprecated;interface;HiliteSetProviderProps
 public;interface;IFavoritePropertiesStorage
 public;interface;IModelContentChangeEventArgs
 public;interface;IModelHierarchyChangeEventArgs
+deprecated;interface;IModelHierarchyChangeEventArgs
 public;interface;ISelectionProvider
 deprecated;interface;ISelectionProvider
 public;type;MultipleValuesRequestOptions

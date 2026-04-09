@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { WmsCapabilities } from "../../../internal/tile/map/WmsCapabilities";
+import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { fakeTextFetch } from "./MapLayerTestUtilities";
 
 const mapProxyDatasetNbLayers = 9;
@@ -88,5 +90,29 @@ describe("WmsCapabilities", () => {
     expect(fetchStub).toHaveBeenCalledTimes(1);
     const firstCall = fetchStub.mock.calls[0];
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMS&${params.toString()}`);
+  });
+
+  it("should handle invalid range with -Infinity values", async () => {
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_invalid_range_130.xml`);
+    const text = await response.text();
+    fakeTextFetch(text);
+
+    // Parse capabilities - this should succeed even with invalid range values
+    const capabilities = await WmsCapabilities.create("https://fake/url3");
+    expect(capabilities).toBeDefined();
+    if (capabilities === undefined)
+      return;
+
+    // The capabilities object contains the raw invalid range from the XML
+    expect(capabilities.cartoRange).toBeDefined();
+
+    // Create a WmsMapLayerImageryProvider with these capabilities
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "Test", url: "https://fake/url3" });
+    const provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+
+    // The provider's cartoRange getter validates the range and returns undefined
+    // because the underlying range contains -Infinity values
+    expect(provider.cartoRange).toBeUndefined();
   });
 });

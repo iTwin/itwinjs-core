@@ -364,8 +364,13 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
       copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
       copyrightMsg += "</ul>";
 
+      const iconSrc = document.createElement("img");
+      iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
+      iconSrc.style.padding = "10px 10px 5px 10px";
+
       cards.appendChild(IModelApp.makeLogoCard({
-        iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`,
+        iconSrc,
+        iconWidth: 98,
         heading: "Google Photorealistic 3D Tiles",
         notice: copyrightMsg
       }));

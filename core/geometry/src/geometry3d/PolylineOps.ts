@@ -6,8 +6,10 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveOps } from "../curve/CurveOps";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
@@ -40,11 +42,14 @@ export class PolylineOps {
    * Return a simplified subset of given points.
    * * Points are removed by the Douglas-Puecker algorithm, viz https://en.wikipedia.org/wiki/Ramer–Douglas–Peucker_algorithm
    * * This is a global search, with multiple passes over the data.
-   * @param source
-   * @param chordTolerance
+   * @param source input points.
+   * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning physically closed input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
-    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance);
+  public static compressByChordError(source: Point3d[], chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false): Point3d[] {
+    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance, keepSeam);
   }
   /**
    * Return a simplified subset of given points, omitting a point if very close to its predecessor.
@@ -236,14 +241,19 @@ export class PolylineOps {
   public static createBisectorPlanesForDistinctPoints(
     centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false,
   ): Plane3dByOriginAndUnitNormal[] | undefined {
-    const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
+    // compress edge vectors too small to normalize: ASSUME smallMetric > smallFraction
+    const packedPoints = PolylineOps.compressShortEdges(centerline, Geometry.smallMetricDistance);
     if (packedPoints.length < 2)
       return undefined;
     const bisectorPlanes: Plane3dByOriginAndUnitNormal[] = [];
     const point0 = packedPoints[0];
     const point1 = packedPoints[1];
-    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1)!;
-    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01)!;
+    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1);
+    assert(unit01 !== undefined, "expect normalization to succeed after edge compression");
+    if (!unit01)
+      return undefined; // trust but verify
+    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01);
+    assert(perpendicular0 !== undefined, "expect plane creation to succeed because unit01 is already normalized");
     const perpendicular1 = Plane3dByOriginAndUnitNormal.createXYPlane();
     // FIRST point gets simple perpendicular
     bisectorPlanes.push(perpendicular0.clone());
@@ -260,7 +270,9 @@ export class PolylineOps {
       }
     }
     // LAST point gets simple perpendicular inherited from last pass
-    bisectorPlanes.push(Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef())!);
+    const plane = Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef());
+    assert(plane !== undefined, "expect plane creation to succeed because perp0 is normalized or set from normalized perp1");
+    bisectorPlanes.push(plane);
     // reset end planes to their average plane, but leave them alone if the closure point is a cusp
     const lastIndex = bisectorPlanes.length - 1;
     if (lastIndex > 0 && wrapIfPhysicallyClosed) {
@@ -271,7 +283,9 @@ export class PolylineOps {
         const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(firstPlane.getOriginRef(), newBisectorNormal);
         if (undefined !== newBisectorPlane) {
           bisectorPlanes[0] = newBisectorPlane;
-          bisectorPlanes[lastIndex] = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal)!;
+          const newLastPlane = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal);
+          assert(newLastPlane !== undefined, "expect plane creation to succeed because newBisectorPlane is valid");
+          bisectorPlanes[lastIndex] = newLastPlane;
         }
       }
     }
@@ -355,5 +369,19 @@ export class PolylineOps {
       }
     }
     return foundMin ? result : undefined;
+  }
+  /**
+   * Checks if all points are colinear.
+   * * This test does not take point order into account.
+   * @param points array of points to check.
+   * @param distanceTol maximum allowable distance that geometry can deviate from colinearity.Default is [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to ignore z-coordinates in the colinearity test.
+   */
+  public static isColinear(
+    points: Point3d[], distanceTol: number = Geometry.smallMetricDistance, xyOnly: boolean = false,
+  ): boolean {
+    if (points.length < 3)
+      return true;
+    return undefined !== CurveOps.isColinear(points, { maxDeviation: distanceTol, xyColinear: xyOnly });
   }
 }

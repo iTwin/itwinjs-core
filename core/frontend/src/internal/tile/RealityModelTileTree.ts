@@ -534,6 +534,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     const thisParentId = parentId.length ? (`${parentId}_${childId}`) : childId;
     if (foundChild.transform) {
       const thisTransform = RealityModelTileUtils.transformFromJson(foundChild.transform);
+      // Accumulate tile's transform to apply it to this tile's children
       transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(thisTransform) : thisTransform;
     }
 
@@ -607,6 +608,10 @@ export namespace RealityModelTileTree {
 
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public abstract get modelId(): Id64String;
+
+    public detachLayerListeners(): void {
+      this._layerRefHandler.detachFromDisplayStyle();
+    }
 
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }

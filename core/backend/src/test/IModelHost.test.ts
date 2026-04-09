@@ -5,14 +5,16 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { RpcRegistry } from "@itwin/core-common";
+import { EditTxnError, RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
-import { SnapshotDb } from "../IModelDb";
+import { EditTxn } from "../EditTxn";
+import { IModelJsFs } from "../IModelJsFs";
+import { SnapshotDb, StandaloneDb } from "../IModelDb";
 import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
-import { ServerStorage } from "@itwin/object-storage-core";
+import { AzureServerStorage } from "@itwin/object-storage-azure";
+import type { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
@@ -46,6 +48,13 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
+    expect(EditTxn.implicitWriteEnforcement).to.equal("allow");
+  });
+
+  it("should allow configuring explicit transaction behavior", async () => {
+    await IModelHost.startup({ ...opts, implicitWriteEnforcement: "log" });
+    expect(EditTxn.implicitWriteEnforcement).to.equal("log");
+    expect(IModelHost.configuration?.implicitWriteEnforcement).to.equal("log");
   });
 
   it("should properly cleanup beforeExit event listeners on shutdown", async () => {
@@ -146,19 +155,28 @@ describe("IModelHost", () => {
       accessKey: "testAccessKey",
     };
 
-    const storageStub = sinon.createStubInstance(AzureServerStorage) as sinon.SinonStubbedInstance<AzureServerStorage> & AzureServerStorage; // I guess Sinon type definitions don't work well with overloads
-    const registerStub = sinon.stub(AzureServerStorageBindings.prototype, "register").callsFake((container) => {
-      container.bind(ServerStorage).toConstantValue(storageStub);
-    });
+    await IModelHost.startup(config);
+
+    assert.isDefined(IModelHost.tileStorage);
+    assert.isDefined(IModelHost.tileStorage!.storage);
+    assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
+    assert.equal((IModelHost.tileStorage?.storage as any)._config.baseUrl, `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`)
+  });
+
+  it("should set Azure cloud storage provider for tile cache with custom baseUrl", async () => {
+    const config: IModelHostOptions = {};
+    config.tileCacheAzureCredentials = {
+      account: "testAccount",
+      accessKey: "testAccessKey",
+      baseUrl: "https://custom.blob.core.windows.net",
+    };
 
     await IModelHost.startup(config);
 
     assert.isDefined(IModelHost.tileStorage);
-    assert.equal(IModelHost.tileStorage!.storage, storageStub);
-    assert.isTrue(registerStub.calledOnce);
-    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountName, config.tileCacheAzureCredentials.account);
-    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountKey, config.tileCacheAzureCredentials.accessKey);
-    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).baseUrl, `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`);
+    assert.isDefined(IModelHost.tileStorage!.storage);
+    assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
+    assert.equal((IModelHost.tileStorage?.storage as any)._config.baseUrl, config.tileCacheAzureCredentials.baseUrl)
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
@@ -219,5 +237,57 @@ describe("IModelHost", () => {
     referencePaths = [path.join(assetsDir, "exact-match")];
     sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true });
     expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
+  });
+
+  it("should log implicit transaction writes when configured to log", async () => {
+    await IModelHost.startup({ ...opts, implicitWriteEnforcement: "log" });
+    const logError = sinon.spy(Logger, "logError");
+    const fileName = IModelTestUtils.prepareOutputFile("IModelHost", "implicitWriteLog.bim");
+    const db = StandaloneDb.createEmpty(fileName, {
+      rootSubject: { name: "implicitWriteLog" },
+      enableTransactions: true,
+    });
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      db.saveFileProperty({ name: "log-mode", namespace: "IModelHostTest" }, "value");
+      expect(db.queryFilePropertyString({ name: "log-mode", namespace: "IModelHostTest" })).to.equal("value");
+      expect(logError.calledOnce).to.be.true;
+      expect(logError.firstCall.args[0]).to.equal("core-backend.IModelDb");
+      expect(EditTxnError.isError(logError.firstCall.args[1], "implicit-txn-write-disallowed")).to.be.true;
+    } finally {
+      if (db.isOpen)
+        db.close();
+
+      IModelJsFs.removeSync(fileName);
+    }
+  });
+
+  it("should reject implicit transaction writes when configured to enforce", async () => {
+    await IModelHost.startup({ ...opts, implicitWriteEnforcement: "throw" });
+    const fileName = IModelTestUtils.prepareOutputFile("IModelHost", "implicitWriteEnforce.bim");
+    const db = StandaloneDb.createEmpty(fileName, {
+      rootSubject: { name: "implicitWriteEnforce" },
+      enableTransactions: true,
+    });
+
+    try {
+      expect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        db.saveFileProperty({ name: "enforce-mode", namespace: "IModelHostTest" }, "value");
+      }).to.throw().that.satisfies((error: unknown) => EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+
+      const txn = new EditTxn(db, "explicit test");
+      txn.start();
+      txn.saveFileProperty({ name: "explicit", namespace: "IModelHostTest" }, "value");
+      txn.end();
+
+      expect(db.queryFilePropertyString({ name: "explicit", namespace: "IModelHostTest" })).to.equal("value");
+    } finally {
+      if (db.isOpen)
+        db.close();
+
+      IModelJsFs.removeSync(fileName);
+    }
   });
 });

@@ -145,7 +145,7 @@ export class XYParitySearchContext {
    * * Otherwise IN if left crossing count is odd.
    * @return 0 if ON, 1 if IN, -1 if OUT.
    */
-  public classifyCounts(): number | undefined {
+  public classifyCounts(): number {
     if (this.numHit > 0)
       return 0;
     const parity = this.numLeftCrossing & 0x01;

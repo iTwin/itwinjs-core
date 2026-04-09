@@ -6,6 +6,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { withEditTxn } from "../../EditTxn";
 import {
   Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
   IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
@@ -20,7 +21,7 @@ import {
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
 import {
-  ExportGraphicsFunction, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo,
+  ExportGraphicsFunction, ExportGraphicsMesh, ExportLinesInfo, ExportPartFunction, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo,
 } from "../../ExportGraphics";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -37,7 +38,11 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: geometryStream,
     };
-    return iModel.elements.insertElement(elementProps);
+    return withEditTxn(iModel, (txn) => txn.insertElement(elementProps));
+  }
+
+  function insertGeometryPart(partProps: GeometryPartProps): Id64String {
+    return withEditTxn(iModel, (txn) => txn.insertElement(partProps));
   }
 
   function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
@@ -47,16 +52,16 @@ describe("exportGraphics", () => {
       props.pattern_scale = patternScale;
     if (patternScaleMode)
       props.pattern_scalemode = patternScaleMode;
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props });
+    return withEditTxn(iModel, (txn) => RenderMaterialElement.insert(txn, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props }));
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
     const colors = colorDef.colors;
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, {
+    return withEditTxn(iModel, (txn) => RenderMaterialElement.insert(txn, IModel.dictionaryId, name, {
       paletteName: "test-palette",
       color: [colors.r / 255, colors.g / 255, colors.b / 255],
       transmit: colors.t / 255,
-    });
+    }));
   }
 
   before(() => {
@@ -222,7 +227,7 @@ describe("exportGraphics", () => {
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    return textureIdString = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
+    return textureIdString = withEditTxn(iModel, (txn) => Texture.insertTexture(txn, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData));
   }
 
   it("handles materials with textures", () => {
@@ -281,7 +286,7 @@ describe("exportGraphics", () => {
 
     /** return 2x2 array of uvParams: [vNegate][meters] given raw uv and the [1][1] entry */
     const mutateUV = (uvRaw: Float32Array, uvVNegatedMeters: Float32Array): Float32Array[][] => {
-      const uvArray: Float32Array[][] = [[],[]];
+      const uvArray: Float32Array[][] = [[], []];
       uvArray[1].push(Float32Array.from(uvRaw, negateV));
       uvArray[1].push(uvVNegatedMeters);
       for (let i = 0; i < 2; ++i)
@@ -289,7 +294,7 @@ describe("exportGraphics", () => {
       return uvArray;
     };
 
-    const materials: Id64String[][] = [["",""], ["",""]];
+    const materials: Id64String[][] = [["", ""], ["", ""]];
     const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
       const i = vNegate ? 1 : 0;
       const j = meters ? 1 : 0;
@@ -370,7 +375,7 @@ describe("exportGraphics", () => {
     const countPartIds = (partId: string) => partInstanceArray.reduce((sum, instance) => sum + (instance.partId === partId ? 1 : 0), 0);
 
     // exportGraphics populates partInstanceArray with any part instances found; onGraphics gets non-part meshes
-    assert.strictEqual(DbResult.BE_SQLITE_OK, myIModel.exportGraphics({elementIdArray, onGraphics, partInstanceArray}), "export with instancing successful");
+    assert.strictEqual(DbResult.BE_SQLITE_OK, myIModel.exportGraphics({ elementIdArray, onGraphics, partInstanceArray }), "export with instancing successful");
     assert.strictEqual(infos.length, 2); // TODO: infos looks like the part 0x4c transformed. Why isn't this geometry instanced and infos empty?
     assert.strictEqual(partInstanceArray.length, 144, "export with instancing returned expected # part instances");
     assert.strictEqual(142, countPartIds('0x4c'), "guardrail geometry has expected # post assembly instances");
@@ -453,6 +458,34 @@ describe("exportGraphics", () => {
 
     const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
     assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 2);
+    // Sorting since output order is arbitrary
+    assert.deepStrictEqual([infos[0].elementId, infos[1].elementId].sort(), [id0, id1].sort());
+  });
+
+  it("process multiple elements simultaneously using separate async calls", async () => {
+    const builder0 = new GeometryStreamBuilder();
+    builder0.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0)]));
+    const id0 = insertPhysicalElement(builder0.geometryStream);
+
+    const builder1 = new GeometryStreamBuilder();
+    builder1.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(-1, 0, 0), Point3d.create(-1, -1, 0), Point3d.create(0, -1, 0)]));
+    const id1 = insertPhysicalElement(builder1.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const onGraphics = (info: ExportGraphicsInfo) => infos.push(info);
+
+    const promises = [id0, id1].map(async id => iModel.exportGraphicsAsync({
+      elementIdArray: [id],
+      onGraphics,
+    }));
+
+    // onGraphics should not be called yet
+    assert.strictEqual(infos.length, 0);
+
+    await Promise.all(promises);
+
+    // once both promises are resolved, the results are available.
     assert.strictEqual(infos.length, 2);
     // Sorting since output order is arbitrary
     assert.deepStrictEqual([infos[0].elementId, infos[1].elementId].sort(), [id0, id1].sort());
@@ -667,18 +700,20 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const geomPartId = iModel.elements.insertElement(partProps);
+    const geomPartId = insertGeometryPart(partProps);
 
-    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(iModel, { geomPartId }); // base and size will be set automatically...
-    assert.isTrue(undefined !== pointSymbolData);
+    const styleId = withEditTxn(iModel, (txn) => {
+      const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(txn, { geomPartId }); // base and size will be set automatically...
+      assert.isTrue(undefined !== pointSymbolData);
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(iModel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
-    assert.isTrue(undefined !== strokePointData);
+      const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(txn, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+      assert.isTrue(undefined !== strokePointData);
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(iModel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
-    assert.isTrue(undefined !== compoundData);
+      const compoundData = LineStyleDefinition.Utils.createCompoundComponent(txn, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+      assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(iModel, IModel.dictionaryId, "TestArrowStyle", compoundData);
+      return LineStyleDefinition.Utils.createStyle(txn, IModel.dictionaryId, "TestArrowStyle", compoundData);
+    });
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
@@ -741,7 +776,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = iModel.elements.insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId, Point3d.create(7, 8, 9));
@@ -781,7 +816,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = iModel.elements.insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId, Point3d.create(7, 8, 9));
@@ -828,6 +863,87 @@ describe("exportGraphics", () => {
     assert.deepStrictEqual(Array.from(partInfos[0].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
     assert.deepStrictEqual(Array.from(partInfos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
     assert.deepStrictEqual(Array.from(partInfos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
+  });
+
+  it("exports multiple parts simultaneously with exportPartGraphicsAsync", async () => {
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0)]));
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+
+    // Add two parts
+    const partId1 = insertGeometryPart(partProps);
+    const partId2 = insertGeometryPart(partProps);
+
+    const partInstanceBuilder = new GeometryStreamBuilder();
+    partInstanceBuilder.appendGeometryPart3d(partId1, Point3d.create(7, 8, 9));
+    partInstanceBuilder.appendGeometryPart3d(partId2, Point3d.create(10, 11, 12));
+    const partInstanceId = insertPhysicalElement(partInstanceBuilder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const partInstanceArray: ExportPartInstanceInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [partInstanceId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      partInstanceArray,
+    };
+
+    await iModel.exportGraphicsAsync(exportGraphicsOptions);
+    assert.strictEqual(infos.length, 0);
+    assert.strictEqual(partInstanceArray.length, 2);
+
+    assert.isTrue(partInstanceArray[0].partId === partId1 || partInstanceArray[1].partId === partId1);
+    assert.isTrue(partInstanceArray[0].partId === partId2 || partInstanceArray[1].partId === partId2);
+    assert.isTrue(partInstanceArray[0].partId !== partInstanceArray[1].partId);
+    assert.strictEqual(partInstanceArray[0].partInstanceId, partInstanceId);
+    assert.strictEqual(partInstanceArray[1].partInstanceId, partInstanceId);
+    assert.isDefined(partInstanceArray[0].transform);
+    assert.deepStrictEqual(Array.from(partInstanceArray[0].transform!), [1, 0, 0, 7, 0, 1, 0, 8, 0, 0, 1, 9]);
+    assert.isDefined(partInstanceArray[1].transform);
+    assert.deepStrictEqual(Array.from(partInstanceArray[1].transform!), [1, 0, 0, 10, 0, 1, 0, 11, 0, 0, 1, 12]);
+
+    const partInfos: ExportPartInfo[] = [];
+    const onPartGraphics: ExportPartFunction = (partInfo) => partInfos.push(partInfo);
+
+    const promises = partInstanceArray.map(async partInstance => iModel.exportPartGraphicsAsync({
+      elementId: partInstance.partId,
+      displayProps: partInstance.displayProps,
+      onPartGraphics,
+    }));
+
+    // onPartGraphics should not be called yet
+    assert.strictEqual(partInfos.length, 0);
+
+    await Promise.all(promises);
+
+    // once both promises are resolved, the results are available.
+    assert.strictEqual(partInfos.length, 2);
+
+    // The ordering of these values is arbitrary, but should be consistent between runs.
+    // Baselines may need to be updated if native GeomLibs is refactored, but:
+    //   * Lengths of all fields should remain the same
+    //   * Actual point, normal and param values should remain the same
+    assert.strictEqual(partInfos[0].mesh.indices.length, 6);
+    assert.strictEqual(partInfos[0].mesh.points.length, 12);
+    assert.strictEqual(partInfos[0].mesh.normals.length, 12);
+    assert.strictEqual(partInfos[0].mesh.params.length, 8);
+    assert.strictEqual(partInfos[1].mesh.indices.length, 6);
+    assert.strictEqual(partInfos[1].mesh.points.length, 12);
+    assert.strictEqual(partInfos[1].mesh.normals.length, 12);
+    assert.strictEqual(partInfos[1].mesh.params.length, 8);
+
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.indices), [0, 1, 2, 1, 0, 3]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.indices), [0, 1, 2, 1, 0, 3]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[1].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
   });
 
   it("handles single geometryClass in GeometryStream", () => {
@@ -924,7 +1040,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = iModel.elements.insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId);
@@ -963,7 +1079,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = iModel.elements.insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     const partInstanceGeometryParams = new GeometryParams(seedCategory);
@@ -1010,7 +1126,7 @@ describe("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: partBuilder.geometryStream,
     };
-    const partId = iModel.elements.insertElement(partProps);
+    const partId = insertGeometryPart(partProps);
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId);

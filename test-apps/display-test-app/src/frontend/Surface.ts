@@ -20,6 +20,7 @@ import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { openDecorationGeometryExample } from "./DecorationGeometryExample";
 import { DtaConfiguration } from "../common/DtaConfiguration";
+import { openEmptyExample } from "./EmptyExample";
 
 // cspell:ignore textbox topdiv
 
@@ -160,6 +161,18 @@ export class Surface {
           extents: new Range3d(-1, -1, -1, 13, 2, 2),
         });
         void openDecorationGeometryExample(viewer);
+      },
+    }));
+
+    tb.addItem(createToolButton({
+      iconUnicode: "\ue9f4",
+      tooltip: "Cesium Renderer Example",
+      click: async () => {
+        const viewer = await this.openBlankConnection({
+          name: "Empty Example",
+          extents: new Range3d(-1, -1, -1, 13, 2, 2),
+        });
+        void openEmptyExample(viewer);
       },
     }));
 

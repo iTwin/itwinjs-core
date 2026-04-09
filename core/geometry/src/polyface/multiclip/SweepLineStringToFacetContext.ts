@@ -6,12 +6,12 @@
  * @module Polyface
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
@@ -181,12 +181,9 @@ export class ClipSweptLineStringContext {
       const newPoint = Point3d.createZero();
       const edgeData: EdgeClipData[] = [];
       xyz.getPoint3dAtUncheckedPointIndex(0, point);
-
-      let localToWorldMatrix = Matrix3d.createRigidHeadsUp(sweepVector);
-      if (localToWorldMatrix === undefined)
-        localToWorldMatrix = Matrix3d.createIdentity();
-      const localToWorld = Transform.createOriginAndMatrix(point, localToWorldMatrix);
-      const worldToLocal = localToWorld.inverse()!;
+      const localToWorld = Transform.createRigidFromOriginAndVector(point, sweepVector) ?? Transform.createIdentity();
+      const worldToLocal = localToWorld.inverse();
+      assert(worldToLocal !== undefined, "expect nonsingular rigid transform");
       const localRange = xyz.getRange(worldToLocal);
       for (let i = 1; i < xyz.length; i++) {
         xyz.getPoint3dAtUncheckedPointIndex(i, newPoint);

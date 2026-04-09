@@ -10,18 +10,19 @@ import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
-import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
-import { EntityClass } from "@itwin/ecschema-metadata";
+import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
+import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -90,6 +91,16 @@ export interface OnSubModelPropsArg extends OnElementArg {
 export interface OnSubModelIdArg extends OnElementArg {
   /** The modelId of the sub Model */
   subModelId: Id64String;
+}
+
+/** Argument for element dependency callbacks.
+ * @beta
+ */
+export interface OnElementDependencyArg extends OnElementArg {
+  /** The Id of the Element affected by this method. */
+  elId: Id64String;
+  /** The active transaction for indirect processing. */
+  indirectEditTxn: EditTxn;
 }
 
 /** The smallest individually identifiable building block for modeling the real world in an iModel.
@@ -387,7 +398,7 @@ export class Element extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
+  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): Promise<void> | void { }
 
   /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
    * This special callback is made when:
@@ -396,6 +407,20 @@ export class Element extends Entity {
    * * none of the element's outputs have been processed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
+   */
+  protected static onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onBeforeOutputsHandled(arg.elId, arg.iModel);
+  }
+
+  /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
+   * This special callback is made when:
+   * * the element is part of an [[ElementDrivesElement]] graph, and
+   * * the element has no inputs, and
+   * * none of the element's outputs have been processed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   * @deprecated Use onBeforeOutputsHandledArg instead.
    */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -408,6 +433,22 @@ export class Element extends Entity {
    * This method is not called if none of the element's inputs were changed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
+   */
+  protected static onAllInputsHandledArg(arg: OnElementDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onAllInputsHandled(arg.elId, arg.iModel);
+  }
+
+  /** Called on an element in a graph after all of its inputs have been processed and before its outputs are processed.
+   * This callback is made when:
+   * * the specified element is part of an [[ElementDrivesElement]] graph, and
+   * * there was a direct change to some element upstream in the dependency graph.
+   * * all upstream elements in the graph have been processed.
+   * * none of the downstream elements have been processed.
+   * This method is not called if none of the element's inputs were changed.
+   * @see [[ElementDrivesElement]] for more on element dependency graphs.
+   * @beta
+   * @deprecated Use onAllInputsHandledArg instead.
    */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -527,20 +568,51 @@ export class Element extends Entity {
   }
 
   /**
-   * Insert this Element into the iModel.
+   * Insert this Element into the iModel using the supplied EditTxn.
    * @see [[IModelDb.Elements.insertElement]]
    * @note For convenience, the value of `this.id` is updated to reflect the resultant element's id.
    * However when `this.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
    * the value of `this.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[IModelDb.Elements.getElement]])
    * if you intend to continue working with it. That will ensure its values reflect the persistent state.
+   * @beta
    */
-  public insert() {
-    return this.id = this.iModel.elements.insertElement(this.toJSON());
+  public insert(txn: EditTxn): Id64String;
+  /**
+   * Insert this Element into the iModel.
+   * @deprecated Use Element.insert(txn) instead.
+   */
+  public insert(): Id64String;
+  public insert(txn?: EditTxn): Id64String {
+    return this.id = (txn ?? this.iModel[_implicitTxn]).insertElement(this.toJSON());
   }
-  /** Update this Element in the iModel. */
-  public update() { this.iModel.elements.updateElement(this.toJSON()); }
-  /** Delete this Element from the iModel. */
-  public delete() { this.iModel.elements.deleteElement(this.id); }
+
+  /**
+   * Update this Element in the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public update(txn: EditTxn): void;
+  /**
+   * Update this Element in the iModel.
+   * @deprecated Use Element.update(txn) instead.
+   */
+  public update(): void;
+  public update(txn?: EditTxn): void {
+    (txn ?? this.iModel[_implicitTxn]).updateElement(this.toJSON());
+  }
+
+  /**
+   * Delete this Element from the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public delete(txn: EditTxn): void;
+  /**
+   * Delete this Element from the iModel.
+   * @deprecated Use Element.delete(txn) instead.
+   */
+  public delete(): void;
+  public delete(txn?: EditTxn): void {
+    (txn ?? this.iModel[_implicitTxn]).deleteElement(this.id);
+  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
@@ -1110,16 +1182,23 @@ export class Subject extends InformationReferenceElement {
   }
 
   /** Insert a Subject
-   * @param iModelDb Insert into this IModelDb
+  * @param txn The EditTxn to use
    * @param parentSubjectId The new Subject will be inserted as a child of this Subject
    * @param name The name (codeValue) of the Subject
    * @param description The optional description of the Subject
    * @returns The Id of the newly inserted Subject
    * @throws [[IModelError]] if there is a problem inserting the Subject
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
-    const subject = this.create(iModelDb, parentSubjectId, name, description);
-    return iModelDb.elements.insertElement(subject.toJSON());
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
+  /** Insert a Subject
+   * @deprecated Use Subject.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const subject = this.create(txn.iModel, parentSubjectId, name, description);
+    return subject.insert(txn);
   }
 }
 
@@ -1201,12 +1280,17 @@ export class Drawing extends Document {
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
    * @throws Error if `scaleFactor` is less than or equal to zero.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+  public static insert(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+  /** @deprecated Use Drawing.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
     const drawingProps: DrawingProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
-      code: this.createCode(iModelDb, documentListModelId, name),
+      code: this.createCode(txn.iModel, documentListModelId, name),
     };
 
     if (scaleFactor !== undefined) {
@@ -1217,13 +1301,14 @@ export class Drawing extends Document {
       drawingProps.scaleFactor = scaleFactor;
     }
 
-    const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
-    const model: DrawingModel = iModelDb.models.createModel({
+    const drawingId: Id64String = txn.insertElement(drawingProps);
+    const model: DrawingModel = txn.iModel.models.createModel({
       classFullName: this.drawingModelFullClassName,
       modeledElement: { id: drawingId },
     });
-    return iModelDb.models.insertModel(model.toJSON());
+    return txn.insertModel(model.toJSON());
   }
+
 }
 
 /** A document that represents a section drawing, that is, a graphical documentation derived from a planar
@@ -1467,18 +1552,24 @@ export class DefinitionContainer extends DefinitionSet {
    * @returns The Id of the newly inserted DefinitionContainer and its newly inserted sub-model (of type DefinitionModel).
    * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
    * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
-    const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
-    const containerElementId = iModelDb.elements.insertElement(containerElement.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+  /** @deprecated Use DefinitionContainer.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const containerElement = this.create(txn.iModel, definitionModelId, code, isPrivate);
+    const containerElementId = containerElement.insert(txn);
     const containerSubModelProps: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: containerElementId },
       isPrivate,
     };
-    iModelDb.models.insertModel(containerSubModelProps);
+    txn.insertModel(containerSubModelProps);
     return containerElementId;
   }
+
 }
 
 /** A non-exclusive set of DefinitionElements grouped using the DefinitionGroupGroupsDefinitions relationship.
@@ -1623,16 +1714,21 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    * @returns The Id of the newly inserted TemplateRecipe3d and the PhysicalModel that sub-models it.
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
-    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  /** @deprecated Use TemplateRecipe3d.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const element = this.create(txn.iModel, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = element.insert(txn);
     const modelProps: GeometricModel3dProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: modeledElementId },
       isTemplate: true,
     };
-    return iModelDb.models.insertModel(modelProps); // will be the same value as modeledElementId
+    return txn.insertModel(modelProps); // will be the same value as modeledElementId
   }
+
 }
 
 /** Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.
@@ -1694,16 +1790,21 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    * @returns The Id of the newly inserted TemplateRecipe2d and the PhysicalModel that sub-models it.
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe2d or its sub-model.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
-    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  /** @deprecated Use TemplateRecipe2d.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const element = this.create(txn.iModel, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = element.insert(txn);
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: modeledElementId },
       isTemplate: true,
     };
-    return iModelDb.models.insertModel(modelProps); // will be the same value as modeledElementId
+    return txn.insertModel(modelProps); // will be the same value as modeledElementId
   }
+
 }
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
@@ -2167,8 +2268,8 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): Promise<void> {
+    await super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
       targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
   }
@@ -2202,5 +2303,81 @@ export class RenderTimeline extends InformationRecordElement {
     }
 
     return scriptProps;
+  }
+}
+
+/** Arguments supplied to [[ProjectInformationRecord.create]].
+ * @beta
+ */
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+  /** The iModel in which to create the new element. */
+  iModel: IModelDb;
+  /** The new element's code. Defaults to an empty code. */
+  code?: Code;
+  /** The Id of the parent [[Subject]] whose project-level properties the ProjectInformationRecord element describes.
+   * The ProjectInformationRecord element will reside in the same [[Model]] as the parent Subject.
+   */
+  parentSubjectId: Id64String;
+}
+
+/** Captures project-level properties of the real-world entity represented by its parent [[Subject]].
+ * @beta
+ */
+export class ProjectInformationRecord extends InformationRecordElement {
+  public static override get className() { return "ProjectInformationRecord"; }
+
+  /** The properties of the project. */
+  public projectInformation: ProjectInformation;
+
+  private constructor(props: ProjectInformationRecordProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.projectInformation = {
+      projectNumber: props.projectNumber,
+      projectName: props.projectName,
+      location: props.location,
+    };
+  }
+
+  protected static override onInsert(arg: OnElementPropsArg) {
+    super.onInsert(arg);
+
+    const parentId = arg.props.parent?.id;
+    const subject = undefined !== parentId ? arg.iModel.elements.tryGetElement<Subject>(parentId) : undefined;
+    if (!(subject instanceof Subject)) {
+      throw new Error("ProjectInformationRecord must be a child of a Subject");
+    }
+  }
+
+  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   */
+  public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
+    args.iModel.requireMinimumSchemaVersion("BisCore", new ECVersion(1, 0, 25), "ProjectInformationRecord");
+
+    const parent = args.iModel.elements.getElement(args.parentSubjectId);
+
+    const props: ProjectInformationRecordProps = {
+      classFullName: this.classFullName,
+      model: parent.model,
+      code: args.code ?? Code.createEmpty(),
+      parent: new SubjectOwnsProjectInformationRecord(args.parentSubjectId),
+      projectName: args.projectName,
+      projectNumber: args.projectNumber,
+      location: args.location,
+    };
+
+    return new this(props, args.iModel);
+  }
+
+  public override toJSON(): ProjectInformationRecordProps {
+    const props = super.toJSON() as ProjectInformationRecordProps;
+    for (const key of ["projectNumber", "projectName", "location"] as const) {
+      const value = this.projectInformation[key];
+      if (undefined !== value) {
+        props[key] = value;
+      }
+    }
+
+    return props;
   }
 }

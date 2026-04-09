@@ -32,7 +32,7 @@ import { UnionRegion } from "./UnionRegion";
  * @internal
  */
 export class RegionMomentsXY extends NullGeometryHandler {
-  private _activeMomentData?: MomentData;
+  private _activeMomentData?: MomentData; // defined only within a region context (cf. handleLoop)
   private _point0 = Point3d.create();
   private _point1 = Point3d.create();
   /**
@@ -41,7 +41,9 @@ export class RegionMomentsXY extends NullGeometryHandler {
    * * The triangle with vertices: origin, arc start, arc end.
    */
   public override handleArc3d(arc: Arc3d): void {
-    const momentData = this._activeMomentData!;
+    const momentData = this._activeMomentData;
+    if (undefined === momentData)
+      return;
     const sweepRadians = arc.sweep.sweepRadians;
     const alphaRadians = sweepRadians * 0.5;
     let s = Math.sin(alphaRadians);
@@ -74,12 +76,16 @@ export class RegionMomentsXY extends NullGeometryHandler {
   }
   /** Accumulate integrals over the (triangular) areas from the origin to each line segment. */
   public override handleLineString3d(ls: LineString3d): void {
-    const momentData = this._activeMomentData!;
+    const momentData = this._activeMomentData;
+    if (undefined === momentData)
+      return;
     momentData.accumulateTriangleToLineStringMomentsXY(undefined, ls.packedPoints);
   }
   /** Accumulate integrals over the (triangular) area from the origin to this line segment. */
   public override handleLineSegment3d(segment: LineSegment3d): void {
-    const momentData = this._activeMomentData!;
+    const momentData = this._activeMomentData;
+    if (undefined === momentData)
+      return;
     segment.startPoint(this._point0);
     segment.endPoint(this._point1);
     momentData.accumulateTriangleMomentsXY(undefined, this._point0, this._point1);

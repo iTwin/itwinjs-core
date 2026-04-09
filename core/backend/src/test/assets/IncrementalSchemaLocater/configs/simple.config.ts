@@ -5,6 +5,8 @@ export default {
   "schemas": [
     {
       "name": "SimpleSchema",
+      "description": "A simple test schema",
+      "label": "Simple Schema",
       "references": [
         "BisCore",
         "CoreCustomAttributes",
@@ -27,7 +29,7 @@ export default {
             "schemaItemType": "Phenomenon",
             "label": "Test",
             "description": "Phenomenon Test",
-            "definition": "TEST"
+            "definition": "u:NUMBER"
           }
         },
         {
@@ -91,7 +93,7 @@ export default {
             "description": "Unit Test1",
             "phenomenon": "SimpleSchema.Phenomenon_Test",
             "unitSystem": "SimpleSchema.UnitSystem_Test",
-            "definition": "TEST1",
+            "definition": "u:ONE",
             "numerator": 10.0
           }
         },
@@ -101,9 +103,9 @@ export default {
             "schemaItemType": "Unit",
             "label": "Test2",
             "description": "Unit Test2",
-            "phenomenon": "Units.TEMPERATURE", 
+            "phenomenon": "Units.TEMPERATURE",
             "unitSystem": "Units.USCUSTOM",
-            "definition": "TEST2",
+            "definition": "u:ONE",
             "numerator": 5.0,
             "denominator": 3.0,
             "offset": 0.01325
@@ -136,7 +138,7 @@ export default {
             "label": "Test1",
             "description": "Constant Test1",
             "phenomenon": "SimpleSchema.Phenomenon_Test",
-            "definition": "TEST1",
+            "definition": "Unit_Test1",
             "numerator": 1.0e3
           }
         },
@@ -147,7 +149,7 @@ export default {
             "label": "Test2",
             "description": "Constant Test2",
             "phenomenon": "Units.ANGLE",
-            "definition": "TEST2",
+            "definition": "Unit_Test2",
             "numerator": 180.0,
             "denominator": 0.5
           }
@@ -460,8 +462,8 @@ export default {
             "relativeError": 0.0001,
             "persistenceUnit": "Units.MG",
             "presentationUnits": [
-              "Formats.DefaultRealU(2)[Units.MG]",
-              "Formats.DefaultRealU(2)[Units.G]"
+              "Formats.DefaultRealU[Units.MG]",
+              "Formats.DefaultRealU(1)[Units.G]"
             ]
           }
         },
@@ -808,6 +810,22 @@ export default {
                 }
               ]
             }
+          }
+        },
+        {
+          "item": "BisCore.Drawing",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "baseClass": "BisCore.Document",
+            "description": "A bis:Drawing is a bis:Document of a 2D drawing.",
+            "customAttributes": [
+              {
+                "className": "BisCore.ClassHasHandler"
+              }
+            ],
+            "mixins": [
+              "BisCore.ISubModeledElement"
+            ]
           }
         }
       ]

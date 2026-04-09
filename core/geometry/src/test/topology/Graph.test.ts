@@ -719,9 +719,9 @@ describe("VUGraph", () => {
     ck.testExactNumber(3, graph.countFaceLoops());
     ck.testExactNumber(4, graph.countVertexLoops());
     const walker = HalfEdgePositionDetail.createEdgeAtFraction(edgeA, 0.4);
-    ck.testTrue(walker.isEdge, "start on edge");
+    ck.testTrue(walker.isEdge(), "start on edge");
     markPosition(outputManager, walker);
-    const context = InsertAndRetriangulateContext.create(graph);
+    const context = InsertAndRetriangulateContext.create(graph)!;
     moveAndMark(ck, outputManager, context, walker, pointP, HalfEdgeTopo.Face);
     moveAndMark(ck, outputManager, context, walker, pointQ, HalfEdgeTopo.Face);
     moveAndMark(ck, outputManager, context, walker, pointA, HalfEdgeTopo.Vertex);
@@ -752,16 +752,16 @@ describe("VUGraph", () => {
 function markPosition(out: OutputManager, p: HalfEdgePositionDetail | undefined) {
   const markerSize = 0.04;
   if (p) {
-    if (p.isFace)
+    if (p.isFace())
       out.drawPlus(p.clonePoint(), markerSize);
-    else if (p.isEdge) {
-      const nodeA = p.node!;
+    else if (p.isEdge()) {
+      const nodeA = p.node;
       const edgeVector = nodeA.getVector3dAlongEdge();
       const perpVector = edgeVector.unitPerpendicularXY();
       const edgePoint = p.clonePoint();
       out.drawLines([edgePoint, edgePoint.plusXYZ(markerSize * perpVector.x, markerSize * perpVector.y)]);
-    } else if (p.isVertex) {
-      const nodeA = p.node!;
+    } else if (p.isVertex()) {
+      const nodeA = p.node;
       const xyz = p.clonePoint();
       const edgeVectorA = nodeA.getVector3dAlongEdge();
       const edgeVectorB = nodeA.facePredecessor.getVector3dAlongEdge();
@@ -785,7 +785,7 @@ function moveAndMark(
   out.drawLines([xyz0, position.clonePoint()]);
   markPosition(out, position);
   if (expectedTopo !== undefined) {
-    ck.testExactNumber(expectedTopo as number, position.getTopo());
+    ck.testExactNumber(expectedTopo as number, position.topo);
   } else {
     ck.testTrue(position.isExteriorTarget, "expect exterior target setting");
   }

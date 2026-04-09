@@ -554,12 +554,12 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
    * @throws Error if unable to drop the temporary table.
    */
   private dropTempTable(): void {
-    this._db.saveChanges();
-    if (this._db instanceof ECDb)
+    if (this._db instanceof ECDb) {
+      this._db.saveChanges();
       this._db.clearStatementCache();
-    else {
+    } else {
+      this._db[_nativeDb].saveChanges();
       this._db.clearCaches();
-      this._db[_nativeDb].clearECDbCache();
     }
     this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())

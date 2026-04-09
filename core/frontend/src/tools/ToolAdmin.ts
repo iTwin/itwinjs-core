@@ -790,6 +790,10 @@ export class ToolAdmin {
    * @internal
    */
   public static addEvent(ev: Event, vp?: ScreenViewport): void {
+    // Don't add events to queue if event loop hasn't been started to process them...
+    if (!IModelApp.isEventLoopStarted)
+      return;
+
     if (!ToolAdmin.tryReplace(ev, vp)) // see if this event replaces the last event in the queue
       this._toolEvents.push({ ev, vp }); // otherwise put it at the end of the queue.
 
@@ -1281,11 +1285,23 @@ export class ToolAdmin {
       snap.adjustedPoint.setFrom(point);
   }
 
+  /** Application sub-classes can override this method to intercept button events before they are sent to the active tool.
+   * An example use for this event would be to implement a shift + right-click or right-press menu.
+   * @return true if event was handled and should not propagate to the active tool.
+   */
+  protected onPreButtonEvent(_ev: BeButtonEvent): boolean {
+    return false;
+  }
+
   /** @internal */
   public async sendButtonEvent(ev: BeButtonEvent): Promise<any> {
     const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
       return;
+
+    if (this.onPreButtonEvent(ev))
+      return;
+
     if (IModelApp.accuSnap.onPreButtonEvent(ev))
       return;
 
@@ -1653,33 +1669,54 @@ export class ToolAdmin {
     this._primitiveTool = newTool;
   }
 
+  // serialize concurrent starts to avoid two tools installing simultaneously.
+  private _primitiveToolStarting?: Promise<void>;
+
   /** @internal */
   public async startPrimitiveTool(newTool?: PrimitiveTool) {
-    IModelApp.notifications.outputPrompt("");
-    await this.exitViewTool();
+    // If another start is in progress wait for it to finish before proceeding.
+    while (undefined !== this._primitiveToolStarting)
+      await this._primitiveToolStarting;
 
-    if (undefined !== this._primitiveTool)
-      await this.setPrimitiveTool(undefined);
+    let resolveStarting: (() => void) | undefined;
+    this._primitiveToolStarting = new Promise<void>((r) => { resolveStarting = r; });
 
-    // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
-    await this.exitInputCollector();
+    try {
+      IModelApp.notifications.outputPrompt("");
+      await this.exitViewTool();
 
-    IModelApp.viewManager.endDynamicsMode();
-    this.setIncompatibleViewportCursor(true); // Don't restore this
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+      if (undefined !== this._primitiveTool)
+        await this.setPrimitiveTool(undefined);
 
-    this.toolState.coordLockOvr = CoordinateLockOverrides.None;
-    this.toolState.locateCircleOn = false;
+      // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
+      await this.exitInputCollector();
 
-    IModelApp.accuDraw.onPrimitiveToolInstall();
-    IModelApp.accuSnap.onStartTool();
+      IModelApp.viewManager.endDynamicsMode();
+      this.setIncompatibleViewportCursor(true); // Don't restore this
+      IModelApp.viewManager.invalidateDecorationsAllViews();
 
-    if (undefined !== newTool) {
-      this.setCursor(IModelApp.viewManager.crossHairCursor);
-      await this.setPrimitiveTool(newTool);
+      this.toolState.coordLockOvr = CoordinateLockOverrides.None;
+      this.toolState.locateCircleOn = false;
+
+      IModelApp.accuDraw.onPrimitiveToolInstall();
+      IModelApp.accuSnap.onStartTool();
+
+      if (undefined !== newTool) {
+        this.setCursor(IModelApp.viewManager.crossHairCursor);
+        await this.setPrimitiveTool(newTool);
+      }
+      // it is important to raise event after setPrimitiveTool is called
+      const activeTool = newTool ?? this._idleTool;
+      // _idleTool is cleared during onShutDown(); skip the event if shutdown has already run
+      // to avoid emitting activeToolChanged with an undefined tool.
+      if (undefined === activeTool)
+        return;
+      this.onActiveToolChanged(activeTool, StartOrResume.Start);
+    } finally {
+      if (resolveStarting)
+        resolveStarting();
+      this._primitiveToolStarting = undefined;
     }
-    // it is important to raise event after setPrimitiveTool is called
-    this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.

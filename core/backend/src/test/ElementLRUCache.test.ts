@@ -373,6 +373,13 @@ describe('InstanceKeyLRUCache', () => {
     expect(retrievedResultByCode).to.equal(testResults[0]);
   });
 
+  it('should not store a bad id as result in the cache', () => {
+    const cache = new InstanceKeyLRUCache(3);
+    const badResult: IModelJsNative.ResolveInstanceKeyResult = { id: Id64.invalid, classFullName: "badName" };
+    expect(() => cache.set(testArgs1, badResult)).to.throw(Error, "Invalid InstanceKey result");
+    expect(cache.size).to.equal(0);
+  });
+
   it('should delete least used element', () => {
     const cache = new InstanceKeyLRUCache(3);
     cache.set(testArgs1, testResults[0]);
@@ -493,6 +500,22 @@ describe('InstanceKeyLRUCache', () => {
     expect(cache.size).to.equal(2);
     const retrievedResult2 = cache.get(testArgs1);
     expect(retrievedResult2).to.be.undefined;
+  });
+
+  it('should throw when trying to delete with all undefined keys', () => {
+    const cache = new InstanceKeyLRUCache(3);
+    cache.set(testArgs1, testResults[0]);
+    cache.set(testArgs2, testResults[1]);
+    cache.set(testArgs3, testResults[2]);
+    expect(cache.size).to.equal(3);
+
+    expect(() => cache.delete({
+      partialKey: undefined,
+      federationGuid: undefined,
+      code: undefined
+    })).to.throw(Error, "ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid");
+
+    expect(cache.size).to.equal(3);
   });
 
   it('should clear the cache', () => {

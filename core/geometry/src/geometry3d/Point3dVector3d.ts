@@ -336,13 +336,14 @@ export class XYZ implements XYAndZ {
     this.z += scale * other.z;
   }
   /** Multiply the x, y, z parts by scale. */
-  public scaleInPlace(scale: number) {
+  public scaleInPlace(scale: number): this {
     this.x *= scale;
     this.y *= scale;
     this.z *= scale;
+    return this;
   }
   /** Add to x, y, z parts */
-  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0) {
+  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0): void {
     this.x += dx;
     this.y += dy;
     this.z += dz;
@@ -1277,12 +1278,12 @@ export class Vector3d extends XYZ {
   }
   /**
    * Try to normalize (divide by magnitude), storing the result in place.
-   * @param smallestMagnitude smallest magnitude allowed as divisor.
+   * @param smallestMagnitude smallest magnitude allowed as divisor. Default is [[Geometry.smallFraction]].
    * @returns false if magnitude is too small.  In this case the vector is unchanged.
    */
   public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallFraction): boolean {
     const a = this.magnitude();
-    if (a < smallestMagnitude || a === 0.0)
+    if (a <= Math.abs(smallestMagnitude))
       return false;
     this.scaleInPlace(1.0 / a);
     return true;

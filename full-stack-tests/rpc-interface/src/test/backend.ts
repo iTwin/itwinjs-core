@@ -11,6 +11,7 @@ import { IModelHost } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { getRpcInterfaces, Settings } from "../common/Settings";
 import * as fs from "fs";
@@ -38,7 +39,7 @@ const settings = new Settings(process.env);
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup({ hubAccess });
 
