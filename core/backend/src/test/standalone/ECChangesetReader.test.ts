@@ -3070,7 +3070,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     // === openFile: insert changeset ===
     {
       using reader = ECChangesetReader.openLocalChanges({ db: rwIModel, rowOptions: { abbreviateBlobs: false } });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
       while (reader.step())
         pcu.appendFrom(reader);
       const instances = Array.from(pcu.instances);
@@ -3122,7 +3122,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     // === openFile: update changeset ===
     {
       using reader = ECChangesetReader.openInMemoryChanges({ db: rwIModel, rowOptions: { abbreviateBlobs: false } });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
       while (reader.step())
         pcu.appendFrom(reader);
       const instances = Array.from(pcu.instances);
@@ -3169,7 +3169,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     // elem Old only comes from the update changeset.
     {
       using reader = ECChangesetReader.openLocalChanges({ db: rwIModel, includeInMemoryChanges: true, rowOptions: { abbreviateBlobs: false } });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
       while (reader.step())
         pcu.appendFrom(reader);
       const instances = Array.from(pcu.instances);
