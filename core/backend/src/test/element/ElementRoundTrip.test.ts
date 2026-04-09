@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { withEditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
   Placement3dProps, QueryRowFormat, RelatedElementProps, SubCategoryAppearance,
@@ -1115,28 +1115,34 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }
 
     function setupSpatialViewDefinitions() {
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
       // Set up required definition elements
-      const definitionModelId = DefinitionModel.insert(imodel, IModelDb.rootSubjectId, "Definition");
-      const categoryId = SpatialCategory.insert(imodel, definitionModelId, "SpatialCat", new SubCategoryAppearance());
-      const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), false, IModelDb.rootSubjectId);
-      const modelSelectorId = ModelSelector.insert(imodel, definitionModelId, "ModelSelector", [physicalModelId]);
-      const displayStyleId = DisplayStyle3d.insert(imodel, definitionModelId, "DisplayStyle3d");
-      const categorySelectorId = CategorySelector.insert(imodel, definitionModelId, "CategorySelector", [categoryId]);
+      const definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definition");
+      const categoryId = SpatialCategory.insert(txn, definitionModelId, "SpatialCat", new SubCategoryAppearance());
+      const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), false, IModelDb.rootSubjectId);
+      const modelSelectorId = ModelSelector.insert(txn, definitionModelId, "ModelSelector", [physicalModelId]);
+      const displayStyleId = DisplayStyle3d.insert(txn, definitionModelId, "DisplayStyle3d");
+      const categorySelectorId = CategorySelector.insert(txn, definitionModelId, "CategorySelector", [categoryId]);
       const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
 
-      imodel.saveChanges();
+      txn.end("save");
       return { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange };
     }
 
     it("roundtrip categorySelector, displayStyle, and modelSelector properties from SpatialViewDefinition", async () => {
       const { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange } = setupSpatialViewDefinitions();
 
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
       const spatialView = SpatialViewDefinition.createWithCamera(
         imodel, definitionModelId, "Test Spatial View",
         modelSelectorId, categorySelectorId, displayStyleId, viewRange,
       );
-      const elementId = imodel.elements.insertElement(spatialView.toJSON());
-      imodel.saveChanges();
+      const elementId = txn.insertElement(spatialView.toJSON());
+      txn.end("save");
 
       for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${elementId} OPTIONS USE_JS_PROP_NAMES`)) {
         const parsed = parseFullInstanceColumn(row.toRow().$);
@@ -1167,11 +1173,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     it("roundtrip categorySelector, displayStyle, and modelSelector properties from OrthographicViewDefinition", async () => {
       const { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange } = setupSpatialViewDefinitions();
 
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
       const orthoViewId = OrthographicViewDefinition.insert(
-        imodel, definitionModelId, "Test Ortho View",
+        txn, definitionModelId, "Test Ortho View",
         modelSelectorId, categorySelectorId, displayStyleId, viewRange,
       );
-      imodel.saveChanges();
+      txn.end("save");
 
       for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${orthoViewId} OPTIONS USE_JS_PROP_NAMES`)) {
         const parsed = parseFullInstanceColumn(row.toRow().$);
@@ -1200,18 +1209,21 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     it("roundtrip categorySelector, displayStyle, and modelSelector properties from DrawingViewDefinition", async () => {
-      const definitionModelId = DefinitionModel.insert(imodel, IModelDb.rootSubjectId, "Definition");
-      const drawingCategoryId = DrawingCategory.insert(imodel, definitionModelId, "DrawingCat", new SubCategoryAppearance());
-      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(imodel, Code.createEmpty(), false, IModelDb.rootSubjectId);
-      const displayStyle2dId = DisplayStyle2d.insert(imodel, definitionModelId, "DisplayStyle2d");
-      const categorySelectorId = CategorySelector.insert(imodel, definitionModelId, "CategorySelector", [drawingCategoryId]);
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
+      const definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definition");
+      const drawingCategoryId = DrawingCategory.insert(txn, definitionModelId, "DrawingCat", new SubCategoryAppearance());
+      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), false, IModelDb.rootSubjectId);
+      const displayStyle2dId = DisplayStyle2d.insert(txn, definitionModelId, "DisplayStyle2d");
+      const categorySelectorId = CategorySelector.insert(txn, definitionModelId, "CategorySelector", [drawingCategoryId]);
       const viewRange = new Range2d(0, 0, 100, 100);
 
       const drawingViewId = DrawingViewDefinition.insert(
-        imodel, definitionModelId, "Test Drawing View",
+        txn, definitionModelId, "Test Drawing View",
         drawingModelId, categorySelectorId, displayStyle2dId, viewRange,
       );
-      imodel.saveChanges();
+      txn.end("save");
 
       for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${drawingViewId} OPTIONS USE_JS_PROP_NAMES`)) {
         const parsed = parseFullInstanceColumn(row.toRow().$);

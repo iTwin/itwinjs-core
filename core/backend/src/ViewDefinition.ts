@@ -245,11 +245,11 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** The Id of the [[CategorySelector]] for this ViewDefinition. */
   public get categorySelectorId(): Id64String { return this.categorySelector.id; }
-  public set categorySelectorId(id: Id64String) { this.categorySelector = { id }; }
+  public set categorySelectorId(id: Id64String) { this.categorySelector = { ...this.categorySelector, id }; }
 
   /** The Id of the [[DisplayStyle]] for this ViewDefinition. */
   public get displayStyleId(): Id64String { return this.displayStyle.id; }
-  public set displayStyleId(id: Id64String) { this.displayStyle = { id }; }
+  public set displayStyleId(id: Id64String) { this.displayStyle = { ...this.displayStyle, id }; }
 
   /** The [[CategorySelector]] referenced by this ViewDefinition. */
   public categorySelector: RelatedElementProps;
@@ -528,7 +528,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public get modelSelectorId(): Id64String { return this.modelSelector.id; }
-  public set modelSelectorId(id: Id64String) { this.modelSelector = { id }; }
+  public set modelSelectorId(id: Id64String) { this.modelSelector = { ...this.modelSelector, id }; }
 
   /** Navigation property identifying the [[ModelSelector]] element for this view. */
   public modelSelector: RelatedElementProps;
@@ -754,7 +754,7 @@ export class ViewDefinition2d extends ViewDefinition {
 
   /** The Id of the Model displayed by this view. */
   public get baseModelId(): Id64String { return this.baseModel.id; }
-  public set baseModelId(id: Id64String) { this.baseModel = { id }; }
+  public set baseModelId(id: Id64String) { this.baseModel = { ...this.baseModel, id }; }
 
   /** The base model navigation property for this view, aligned with the EC schema name. */
   public baseModel: RelatedElementProps;
