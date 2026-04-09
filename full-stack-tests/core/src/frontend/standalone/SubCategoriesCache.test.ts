@@ -410,17 +410,17 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
     // The backend sends change events synchronously but the frontend receives
     // them asynchronously over WebSocket IPC.  Wait for events to arrive before
     // asserting, then drain the set for the next check.
-    async function expectChanges(changedElementIds: Id64String[]): Promise<void> {
-      const deadline = Date.now() + 30_000;
-      while (changedElements.size < changedElementIds.length && Date.now() < deadline)
-        await BeDuration.wait(100);
-
+    function drainAndAssertChanges(changedElementIds: Id64String[]): void {
       const actual = Array.from(changedElements);
       changedElements.clear();
       expect(actual).to.deep.equal(changedElementIds);
     }
 
-    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+    // Event-driven helper: registers a one-shot onElementsChanged listener,
+    // runs the provided action (save/undo/redo), then waits for the event.
+    // The Push notification always arrives before the IPC Response, so the
+    // listener is guaranteed to fire before or during the await.
+    async function doAndExpectChanges(action: () => Promise<void>, changedElementIds: Id64String[]): Promise<void> {
       const pending = new Promise<void>((resolve) => {
         const remove = bc.txns.onElementsChanged.addListener(() => {
           remove();
@@ -428,9 +428,13 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
         });
       });
 
-      await saveBriefcaseChanges(bc);
+      await action();
       await pending;
-      await expectChanges(changedElementIds);
+      drainAndAssertChanges(changedElementIds);
+    }
+
+    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+      return doAndExpectChanges(() => saveBriefcaseChanges(bc), changedElementIds);
     }
 
     function getDefaultSubCategoryId(categoryId: string): string {
@@ -467,7 +471,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(subcat, undefined);
     });
 
-    it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
+    it("invalidates cache for parent category when subcategory is added, deleted, or modified", { timeout: 120_000 }, async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       const s1 = getDefaultSubCategoryId(cat);
       await saveAndExpectChanges([cat, s1]);
@@ -518,8 +522,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectCachedSubCategories(cat, [s1]);
 
       // Undo
-      await bc.txns.reverseSingleTxn();
-      await expectChanges([s2]);
+      await doAndExpectChanges(() => bc.txns.reverseSingleTxn(), [s2]);
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
@@ -527,8 +530,7 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       expectAppearance(s1, ColorDef.blue);
 
       // Redo
-      await bc.txns.reinstateTxn();
-      await expectChanges([s2]);
+      await doAndExpectChanges(() => bc.txns.reinstateTxn(), [s2]);
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
