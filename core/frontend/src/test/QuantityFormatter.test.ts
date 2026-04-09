@@ -1210,3 +1210,181 @@ describe("onBeforeFormattingReady collector", () => {
     expect(completionOrder).toContain("provider2");
   });
 });
+
+describe("Deferred unit-system-changed emit (race condition validation)", () => {
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("emits onActiveFormattingUnitSystemChanged only after isReady is true (deferred path)", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    expect(qf.isReady).toBe(true);
+
+    let readyDuringEmit: boolean | undefined;
+    qf.onActiveFormattingUnitSystemChanged.addListener(() => {
+      readyDuringEmit = qf.isReady;
+    });
+
+    // Exercise the actual deferred emit path: formatsChanged with impliedUnitSystem
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+    await new Promise<void>((resolve) => { qf.onFormattingReady.addListener(resolve); });
+
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: "all", impliedUnitSystem: "metric" });
+    await new Promise<void>((resolve) => { qf.onFormattingReady.addListener(resolve); });
+
+    expect(readyDuringEmit).toBe(true);
+  });
+
+  it("only the winning reload's impliedUnitSystem fires the changed event (latest-wins)", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    expect(qf.isReady).toBe(true);
+    // Start at imperial
+    expect(qf.activeUnitSystem).toBe("imperial");
+
+    const systemChanges: string[] = [];
+    qf.onActiveFormattingUnitSystemChanged.addListener((args) => {
+      systemChanges.push(args.system);
+    });
+
+    // Fire two formatsChanged events rapidly — the first should be superseded by the second.
+    // We trigger this via the formatsProvider's onFormatsChanged event with impliedUnitSystem.
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for the initial "all" reload to settle
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+    systemChanges.length = 0; // clear any emissions from the provider swap
+
+    // Now fire two rapid events with different implied systems
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: "all", impliedUnitSystem: "usCustomary" });
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: "all", impliedUnitSystem: "metric" });
+
+    // Wait for the reload queue to drain
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // The first reload (usCustomary) should be superseded by the second (metric).
+    // Only the winning reload's system should be emitted, and it should be "metric".
+    expect(qf.activeUnitSystem).toBe("metric");
+    // The deferred emit should fire exactly once for the winning reload
+    expect(systemChanges).toEqual(["metric"]);
+  });
+
+  it("does not emit onActiveFormattingUnitSystemChanged when impliedUnitSystem is undefined", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    const spy = vi.fn();
+    qf.onActiveFormattingUnitSystemChanged.addListener(spy);
+
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for the initial "all" reload to settle
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+    spy.mockClear();
+
+    // Fire a formatsChanged event WITHOUT impliedUnitSystem
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: ["some-format"] });
+
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // No unit system change should have been emitted
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe("_rebuildRegistryFromProvider", () => {
+  const simpleDecimalFormat = {
+    type: "Decimal" as const,
+    precision: 4,
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
+  };
+
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("rebuilds registry when formatsProvider raises formatsChanged with 'all'", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    // Add a custom entry to the registry
+    await qf.addFormattingSpecsToRegistry({
+      name: "TestKoQ.CUSTOM",
+      persistenceUnitName: "Units.M",
+      formatProps: simpleDecimalFormat,
+      system: "metric",
+    });
+    const entryBefore = qf.getSpecsByNameAndUnit({ name: "TestKoQ.CUSTOM", persistenceUnitName: "Units.M", system: "metric" });
+    expect(entryBefore).toBeDefined();
+
+    // Trigger a formatsChanged "all" event — the provider returns undefined for our custom name,
+    // so the entry should be removed from the registry
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for reload to finish
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // Our custom KoQ is not in QuantityTypeFormatsProvider, so _rebuildRegistryFromProvider
+    // should have removed it (anySystemHadFormat === false → delete from registry)
+    const entryAfter = qf.getSpecsByNameAndUnit({ name: "TestKoQ.CUSTOM", persistenceUnitName: "Units.M", system: "metric" });
+    expect(entryAfter).toBeUndefined();
+  });
+
+  it("rebuilds only named formats when formatsChanged is a string array", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    // The default initialization creates entries for DefaultToolsUnits.LENGTH, etc.
+    const lengthBefore = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
+    expect(lengthBefore).toBeDefined();
+
+    const angleBefore = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
+    expect(angleBefore).toBeDefined();
+
+    // Create a provider and trigger a formatsChanged with only "DefaultToolsUnits.LENGTH"
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for "all" reload
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // Now fire a targeted change event for just LENGTH
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: ["DefaultToolsUnits.LENGTH"] });
+
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // Both should still exist (the provider returns formats for both)
+    const lengthAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
+    const angleAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
+    expect(lengthAfter).toBeDefined();
+    expect(angleAfter).toBeDefined();
+  });
+});

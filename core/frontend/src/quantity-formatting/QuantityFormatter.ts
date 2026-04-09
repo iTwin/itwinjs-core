@@ -479,6 +479,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   private _resolveInitialized!: () => void;
   private _reloadInFlight = false;
   private _pendingReload: (() => Promise<void>) | undefined;
+  private _deferredSystemChangedEmit: FormattingUnitSystemChangedArgs | undefined;
 
   private _removeFormatsProviderListener?: () => void;
   /**
@@ -519,6 +520,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     this._reloadInFlight = true;
     this._isReady = false;
+    this._deferredSystemChangedEmit = undefined; // Clear stale deferred from prior cycle
 
     try {
       await reloadFn();
@@ -577,6 +579,14 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     this._resolveInitialized();
     this.onFormattingReady.emit();
     this.onFormattingReadyUnordered.emit();
+
+    // Phase 3: Emit deferred unit-system-changed if the winning reload set one.
+    // This fires after isReady === true so listeners can safely use the formatter.
+    if (this._deferredSystemChangedEmit) {
+      const args = this._deferredSystemChangedEmit;
+      this._deferredSystemChangedEmit = undefined;
+      this.onActiveFormattingUnitSystemChanged.emit(args);
+    }
   }
 
   private getOverrideFormatPropsByQuantityType(quantityTypeKey: QuantityTypeKey, unitSystem?: UnitSystemKey): FormatProps | undefined {
@@ -771,10 +781,11 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
           this._activeUnitSystem = args.impliedUnitSystem;
         }
         await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
-      }).then(() => {
-        // Emit after reload completes so listeners see isReady === true, consistent with other paths
+        // Emit inside the reloadFn so it only fires after the winning reload actually runs.
+        // Emitting in a .then() on the outer enqueueReload promise is unsafe because queued
+        // (superseded) reloads resolve immediately, before their reloadFn executes.
         if (args.impliedUnitSystem) {
-          this.onActiveFormattingUnitSystemChanged.emit({ system: this._activeUnitSystem });
+          this._deferredSystemChangedEmit = { system: this._activeUnitSystem };
         }
       });
     });
