@@ -237,6 +237,38 @@ assert.deepEqual(elem.BinProp, new Uint8Array([1, 2, 3, 4]));
 
 ---
 
+## `changesetFetchedProps` always uses original EC property names
+
+`$meta.changesetFetchedProps` always contains the **original EC property names** regardless of any `rowOptions` in effect. The `useJsName` row option renames the keys on the returned instance object to use JS names, but it does **not** affect the names stored in `changesetFetchedProps`.
+
+This means you must always check `changesetFetchedProps` using the schema-level EC property name, not the JS name:
+
+```ts
+using reader = ECChangesetReader.openFile({
+  db: iModelDb,
+  fileName: changeset.pathname,
+  rowOptions: { useJsName: true }, // instance keys are camelCase
+});
+using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+while (reader.step()) pcu.appendFrom(reader);
+
+for (const instance of pcu.instances) {
+  // Instance property keys are camelCase due to useJsName:
+  console.log(instance.lastMod);        // JS name — correct
+  console.log(instance.category?.id);  // JS name — correct
+
+  // changesetFetchedProps always uses original EC names, NOT JS names:
+  instance.$meta.changesetFetchedProps.has("LastMod");       // ✅ correct
+  instance.$meta.changesetFetchedProps.has("lastMod");       // ❌ never true
+  instance.$meta.changesetFetchedProps.has("Category.Id");   // ✅ correct
+  instance.$meta.changesetFetchedProps.has("category.id");   // ❌ never true
+}
+```
+
+In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changesetFetchedProps`.
+
+---
+
 ## Filtering — restricting which changes are yielded
 
 After opening a reader (and before the first `step()` call) you can install one or more filters to narrow the change stream. Filters affect which instances are populated in `inserted` / `deleted` — **the reader still steps through every underlying row**, so `op`, `tableName`, `isECTable`, and `isIndirectChange` are always populated regardless of filters.

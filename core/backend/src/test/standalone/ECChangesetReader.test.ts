@@ -3740,7 +3740,7 @@ describe("ECChangesetReader: overflow table insert and update", () => {
       ...rwIModel.elements.getElementProps(elementId),
       [propName(34)]: updateVal(34),
       [propName(35)]: updateVal(35),
-    } as any);
+    });
     txn.saveChanges("update overflow props");
     updateTxnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
