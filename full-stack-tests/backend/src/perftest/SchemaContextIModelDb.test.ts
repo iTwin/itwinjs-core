@@ -53,8 +53,7 @@ describe("PerformanceSchemaContextIModelDb", () => {
         customSchemaNames.push(schemaName);
       });
       try {
-        await imodel.importSchemas(schemaFileNames);
-        imodel.saveChanges("imported schemas");
+        await imodel.importSchemas(schemaFileNames); // auto-saves
       } catch (error) {
         assert.fail(`Failed to import schemas from directory ${perfSchemaDir}: ${(error as Error).message}`);
       }
@@ -68,7 +67,6 @@ describe("PerformanceSchemaContextIModelDb", () => {
     console.log(`Results are stored in ${csvPath}`);
     csvWriter.exportCSV(csvPath);
 
-    imodel.abandonChanges();
     imodel.close();
 
     await IModelHost.shutdown();

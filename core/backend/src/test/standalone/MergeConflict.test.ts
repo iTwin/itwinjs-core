@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, Id64String } from "@itwin/core-bentley";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   ElementAspectProps,
   IModel,
@@ -27,16 +28,17 @@ import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal
 chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 
-export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
+export async function createNewModelAndCategory(txn: EditTxn, parent?: Id64String) {
+  const rwIModel = txn.iModel as BriefcaseDb;
   // Create a new physical model.
-  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
+  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(txn, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
-  category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
+  const spatialCategoryId = txn.insertElement(category.toJSON());
+  category.setDefaultAppearance(txn, new SubCategoryAppearance({ color: 0xff0000 }));
 
   return { modelId, spatialCategoryId };
 }
@@ -85,10 +87,14 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+    const b1Txn = new EditTxn(b1, "merge conflict");
+    b1Txn.start();
+    const b2Txn = new EditTxn(b2, "merge conflict");
+    b2Txn.start();
 
     // create and insert a new model with code1
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-      b1,
+      b1Txn,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
       true);
 
@@ -96,16 +102,16 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
 
     const spatialCategoryId = SpatialCategory.insert(
-      dictionary.iModel,
+      b1Txn,
       dictionary.id,
       newCategoryCode.value,
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
 
     // insert element and aspect
-    const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
+    const el1 = b1Txn.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
     await b1.pullChanges();
-    const aspectId1 = b1.elements.insertAspect({
+    const aspectId1 = b1Txn.insertAspect({
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
         relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -114,14 +120,14 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
       kind: "",
       identifier: "test identifier",
     } as ElementAspectProps);
-    b1.saveChanges();
+    b1Txn.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: `inserted element with aspect ${el1}` });
 
     // b1 same as b2 and now both will modify same aspect
     await b2.pullChanges();
 
     // b1  will change identifier from "test identifier" to "test identifier (modified by b1)"
-    b1.elements.updateAspect({
+    b1Txn.updateAspect({
       id: aspectId1,
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
@@ -131,11 +137,11 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
       kind: "",
       identifier: "test identifier (modified by b1)",
     } as ElementAspectProps);
-    b1.saveChanges();
+    b1Txn.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` });
 
     // b2 will change identifier from "test identifier" to "test identifier (modified by b2)"
-    b2.elements.updateAspect({
+    b2Txn.updateAspect({
       id: aspectId1,
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
@@ -145,7 +151,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
       kind: "",
       identifier: "test identifier (modified by b2)",
     } as ElementAspectProps);
-    b2.saveChanges();
+    b2Txn.saveChanges();
 
     const conflicts: {
       cause: SqliteConflictCause,
@@ -228,10 +234,14 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+    const b1Txn = new EditTxn(b1, "merge conflict");
+    b1Txn.start();
+    const b2Txn = new EditTxn(b2, "merge conflict");
+    b2Txn.start();
 
     // create and insert a new model with code1
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-      b1,
+      b1Txn,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
       true);
 
@@ -239,19 +249,19 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
 
     const spatialCategoryId = SpatialCategory.insert(
-      dictionary.iModel,
+      b1Txn,
       dictionary.id,
       newCategoryCode.value,
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
 
     // insert element and aspect
-    const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
-    b1.saveChanges();
+    const el1 = b1Txn.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
+    b1Txn.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: `inserted element with aspect ${el1}` });
 
     await b2.pullChanges();
-    const aspectId1 = b2.elements.insertAspect({
+    const aspectId1 = b2Txn.insertAspect({
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
         relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -260,10 +270,10 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
       kind: "",
       identifier: "test identifier",
     } as ElementAspectProps);
-    b2.saveChanges();
+    b2Txn.saveChanges();
 
-    b1.elements.deleteElement(el1);
-    b1.saveChanges();
+    b1Txn.deleteElement(el1);
+    b1Txn.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
 
     const conflicts: {
@@ -322,15 +332,17 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
         if (arg.cause === "NotFound" && arg.tableName === "bis_Element") {
           // if element does not exist any more let delete the aspects as well.
           const elId = arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String;
-          b2.elements.getAspects(elId).forEach((aspect) => {
-            b2.elements.deleteAspect(aspect.id);
+          withEditTxn(b2, (txn) => {
+            b2.elements.getAspects(elId).forEach((aspect) => {
+              txn.deleteAspect(aspect.id);
+            });
           });
         }
         return undefined;
       }
     });
 
-    b2.saveChanges();
+    b2Txn.saveChanges();
     conflicts.length = 0;
 
     await b2.pushChanges({ accessToken: accessToken1, description: `nothing is pushed as the only change we made is reverted` });
@@ -367,13 +379,17 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId });
+    const b1Txn = new EditTxn(b1, "merge conflict");
+    b1Txn.start();
+    const b2Txn = new EditTxn(b2, "merge conflict");
+    b2Txn.start();
 
     await b1.locks.acquireLocks({ shared: IModel.repositoryModelId });
     await b2.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
     // create and insert a new model with code1
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
-      b1,
+      b1Txn,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
       true);
 
@@ -382,19 +398,19 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
 
     await b1.locks.acquireLocks({ shared: dictionary.id });
     const spatialCategoryId = SpatialCategory.insert(
-      dictionary.iModel,
+      b1Txn,
       dictionary.id,
       newCategoryCode.value,
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
-    const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
-    b1.saveChanges();
+    const el1 = b1Txn.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
+    b1Txn.saveChanges();
     await b1.pushChanges({ accessToken: accessToken1, description: `inserted element ${el1}` });
 
     await b2.pullChanges();
     let aspectId: Id64String;
     const insertAspectIntoB2 = () => {
-      aspectId = b2.elements.insertAspect({
+      aspectId = b2Txn.insertAspect({
         classFullName: "BisCore:ExternalSourceAspect",
         element: {
           relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -416,13 +432,13 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     await expect(b1.locks.acquireLocks({ exclusive: el1 })).to.be.rejectedWith("exclusive lock is already held");
 
     /* push changes on b2 to release lock on el1 */
-    b2.saveChanges();
+    b2Txn.saveChanges();
     await b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` });
 
     await b1.pullChanges();
 
     const updateAspectIntoB1 = () => {
-      b1.elements.updateAspect({
+      b1Txn.updateAspect({
         id: aspectId,
         classFullName: "BisCore:ExternalSourceAspect",
         element: {
@@ -442,8 +458,8 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     updateAspectIntoB1();
 
     /* delete the element */
-    b1.elements.deleteElement(el1);
-    b1.saveChanges();
+    b1Txn.deleteElement(el1);
+    b1Txn.saveChanges();
 
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
 
