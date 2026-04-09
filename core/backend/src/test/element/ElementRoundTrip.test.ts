@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { withEditTxn } from "../../EditTxn";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
   Placement3dProps, QueryRowFormat, RelatedElementProps, SubCategoryAppearance,
@@ -527,13 +528,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas([testSchemaPath]);
     imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+      withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, categoryName,
+        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() })));
 
-    imodel.saveChanges();
     imodel.close();
   });
 
@@ -541,7 +541,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // create element with auto handled properties
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
@@ -553,9 +553,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     const expectedSystemProperty = {
       id,
@@ -616,8 +615,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update element
-    imodel.elements.updateElement(actualValue);
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => txn.updateElement(actualValue));
 
     // verify updated values
     const updatedValue = imodel.elements.getElementProps<TestElement>(id);
@@ -718,14 +716,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_apsect_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create an element to use with the ElementAspects
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const elId = imodel.elements.insertElement(geomElement.toJSON());
+    const elId = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(elId), "Element insertion succeeded");
 
     const expectedAspectValue = initElementAspectProps("TestElementAspect", imodel, elId, {
@@ -736,8 +734,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }) as TestElementAspect;
 
     // Insert an element aspect
-    const elementAspectId = imodel.elements.insertAspect(expectedAspectValue);
-    imodel.saveChanges();
+    const elementAspectId = withEditTxn(imodel, (txn) => {
+      return txn.insertAspect(expectedAspectValue);
+    });
 
     // Verify inserted element aspect properties
     const actualAspectValue = await verifyElementAspect(elementAspectId, expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
@@ -751,8 +750,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Update the element
-    imodel.elements.updateAspect(actualAspectValue[0]);
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => {
+      txn.updateAspect(actualAspectValue[0]);
+    });
 
     // Verify updated element aspect properties
     await verifyElementAspect(elementAspectId, actualAspectValue[0], elId, expectedAspectValue.classFullName, imodel);
@@ -771,17 +771,17 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_relationships_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // create elements to use
     const element1 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
     const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     const geomElement1 = imodel.elements.createElement(element1);
-    const elId1 = imodel.elements.insertElement(geomElement1.toJSON());
+    const elId1 = withEditTxn(imodel, (txn) => txn.insertElement(geomElement1.toJSON()));
     assert.isTrue(Id64.isValidId64(elId1), "insert of element 1 worked");
     const geomElement2 = imodel.elements.createElement(element2);
-    const elId2 = imodel.elements.insertElement(geomElement2.toJSON());
+    const elId2 = withEditTxn(imodel, (txn) => txn.insertElement(geomElement2.toJSON()));
     assert.isTrue(Id64.isValidId64(elId2), "insert of element 2 worked");
 
     // TODO: Skipping structs here, because of a bug that prevents querying from link tables that have an overflow table, by skipping the struct we reduce the amount of used columns
@@ -793,8 +793,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     const instance = expectedRelationshipValue; // imodel.relationships.createInstance(expectedRelationshipValue);
-    const relationshipId: Id64String = imodel.relationships.insertInstance(instance as any); // initElementRefersToElementsProps lies about return type.
-    imodel.saveChanges();
+    const relationshipId: Id64String = withEditTxn(imodel, (txn) => txn.insertRelationship(instance as any)); // initElementRefersToElementsProps lies about return type.
 
     // verify inserted properties
     const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
@@ -861,8 +860,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update
-    imodel.relationships.updateInstance(updatedExpectedValue.toJSON());
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => txn.updateRelationship(updatedExpectedValue.toJSON()));
 
     // verify updated values
     const updatedValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
@@ -934,21 +932,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     ) => {
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
-      const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
-      const categoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "model", {});
+      const { objId } = withEditTxn(imodel, (txn) => {
+        const modelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "model");
+        const categoryId = SpatialCategory.insert(txn, IModelDb.dictionaryId, "model", {});
 
-      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
-
-      const objId = imodel.elements.insertElement({
-        classFullName: PhysicalObject.classFullName,
-        code: Code.createEmpty(),
-        model: modelId,
-        placement,
-        category: categoryId,
-        ...extraProps,
+        return {
+          objId: txn.insertElement({
+            classFullName: PhysicalObject.classFullName,
+            code: Code.createEmpty(),
+            model: modelId,
+            placement,
+            category: categoryId,
+            ...extraProps,
+          }),
+        };
       });
 
-      imodel.saveChanges();
+      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
       expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
@@ -1035,7 +1035,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_properties_null_update.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create an element to be used
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
@@ -1047,9 +1047,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     // Verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
@@ -1083,8 +1082,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       });
 
       // Update the element
-      imodel.elements.updateElement(actualValue);
-      imodel.saveChanges();
+      withEditTxn(imodel, (txn) => txn.updateElement(actualValue));
 
       // Verify updated value properties
       const updatedValue = imodel.elements.getElementProps<TestElement>(id);
