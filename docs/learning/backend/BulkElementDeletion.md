@@ -53,7 +53,7 @@ An element is a _constraint violator_ and will **not** be deleted (neither will 
 
 | Constraint | Blocked element |
 |---|---|
-| Another element uses this element as its **CodeScope** | The code-scope element (and its' subtree as well as all its ancestors up to the highest element present in the delete set) |
+| Another element uses this element as its **CodeScope** | The code-scope element (and its subtree as well as all its ancestors up to the highest element present in the delete set) |
 | A `GeometricElement3d` or `GeometricElement2d` outside the set uses this element as its **Category** | The category element (and its subtree root) |
 | A `DefinitionElement` outside the set has a tracked **usage** reference to this element (e.g. a geometry part in a geometry stream) | The definition element (and its subtree root) |
 
