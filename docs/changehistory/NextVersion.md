@@ -58,7 +58,7 @@ while (reader.step()) {
 }
 ```
 
-`reader.deleted` and `reader.inserted` carry an `$meta.changesetFetchedProps` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
+`reader.deleted` and `reader.inserted` carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
 
 For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ECChangesetReader](../learning/backend/ECChangesetReader.md).
 

@@ -43,14 +43,20 @@ export interface ECNativeChangeMeta {
   changeIndexes: number[];
   /**
    * Native instance key computed by the native layer.
-   * Encodes ECInstanceId and root class; used as the merge key in
-   * {@link ECNativePartialChangeUnifier}.
+   * Encodes ECInstanceId and class Id.
    */
   nativeKey: string;
   /** Reader mode that was active when this change row was captured. */
   mode: string;
-  /** Set of EC property names fetched from the changeset or transaction or change binary for this row. */
-  changesetFetchedProps: string[];
+  /** EC property names fetched from the current row of changeset or transaction or any other change stream.
+   For compound data properties like point2d, point3d or navigation properties,
+  the full name of the property is returned in case all the components of the property are fetched from the change.
+  If all of the components are not fetched from the changes(meaning they did not change),
+  then the individual component names which changed are returned smartly by using `.` as a separator (e.g. "MyPoint.X", "MyPoint.Y" for a point3d property "MyPoint" if only X and Y changed).
+  For struct properties the property names are always returned in the "StructProp.MemberName" format.
+  So if only X changed for a point2d property named "Myp2d" inide a struct "CustomStruct", the returned property name will be "CustomStruct.Myp2d.X".
+  Similaly if both X and Y changed for the same point2d property, the returned property name will be "CustomStruct.Myp2d". **/
+  changeFetchedPropNames: string[];
   /** Row adaptor options that were active when this change row was captured. */
   rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
   /** `true` when the change was applied indirectly */

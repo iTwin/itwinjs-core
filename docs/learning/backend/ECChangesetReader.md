@@ -39,7 +39,7 @@ interface ECNativeChangeMeta {
   changeIndexes: number[];   // stream positions of those rows
   nativeKey: string;         // ECInstanceId-ECClassId key used for merging
   mode: string;              // "All_Properties" | "Bis_Element_Properties" | "Instance_Key"
-  changesetFetchedProps: Set<string>; // property names actually read from the changeset
+  changeFetchedPropNames: string[]; // property names actually read from the change binary
   rowOptions?: object;       // the rowOptions passed when opening the reader
   isIndirectChange: boolean; // true when the change was applied indirectly
 }
@@ -51,20 +51,33 @@ interface ECNativeChangeMeta {
 - A **delete** produces only an `"Old"` instance.
 - An **update** produces both a `"New"` and an `"Old"` instance.
 
-### `changesetFetchedProps` — what actually changed
+### `changeFetchedPropNames` — what actually changed
 
-Each `ECNativeChangeInstance` carries a `changesetFetchedProps` set listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
+Each `ECNativeChangeInstance` carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
 
 ```ts
-// Only trust props present in changesetFetchedProps to reflect the changeset delta.
+// Only trust props present in changeFetchedPropNames to reflect the changeset delta.
 // Other props on the instance may reflect the current live-iModel state.
-const changedProps = instance.$meta.changesetFetchedProps;
-if (changedProps.has("Category.Id")) {
+const changedProps = instance.$meta.changeFetchedPropNames;
+if (changedProps.includes("Category.Id")) {
   console.log("Category changed →", instance.Category);
 }
 ```
 
-> **Note:** `changesetFetchedProps` always contains the **original EC property names** (e.g. `"LastMod"`, `"Model.Id"`, `"StructProp.X"`) regardless of how `rowOptions` are configured. Even with `useJsName: true`, `changesetFetchedProps.has("LastMod")` is correct — **not** `has("lastMod")`.
+#### Naming rules
+
+The names in `changeFetchedPropNames` follow these rules based on the property kind:
+
+| Property kind | Rule | Example |
+|---|---|---|
+| **Simple property** | EC property name as declared in the schema | `"LastMod"` |
+| **Compound property** (`Point2d`, `Point3d`, navigation) — **all components changed** | Full property name | `"Origin"` |
+| **Compound property** — **only some components changed** | Each changed component listed individually, using `.` as separator | `"Origin.X"`, `"Origin.Y"` (when only X and Y changed for a `Point3d` named `"Origin"`) |
+| **Struct property member** | Always in `"StructProp.MemberName"` format | `"CustomStruct.Label"` |
+| **Compound member inside a struct** — **all components changed** | `"StructProp.MemberName"` | `"CustomStruct.Myp2d"` |
+| **Compound member inside a struct** — **only some components changed** | `"StructProp.MemberName.Component"` | `"CustomStruct.Myp2d.X"` (when only X changed for a `Point2d` property `"Myp2d"` inside struct `"CustomStruct"`) |
+
+> **Note:** `changeFetchedPropNames` always contains the **original EC property names** (e.g. `"LastMod"`, `"Model.Id"`, `"StructProp.X"`) regardless of how `rowOptions` are configured. Even with `useJsName: true`, `changeFetchedPropNames.includes("LastMod")` is correct — **not** `includes("lastMod")`.
 
 ---
 
@@ -237,11 +250,11 @@ assert.deepEqual(elem.BinProp, new Uint8Array([1, 2, 3, 4]));
 
 ---
 
-## `changesetFetchedProps` always uses original EC property names
+## `changeFetchedPropNames` always uses original EC property names
 
-`$meta.changesetFetchedProps` always contains the **original EC property names** regardless of any `rowOptions` in effect. The `useJsName` row option renames the keys on the returned instance object to use JS names, but it does **not** affect the names stored in `changesetFetchedProps`.
+`$meta.changeFetchedPropNames` always contains the **original EC property names** regardless of any `rowOptions` in effect. The `useJsName` row option renames the keys on the returned instance object to use JS names, but it does **not** affect the names stored in `changeFetchedPropNames`.
 
-This means you must always check `changesetFetchedProps` using the schema-level EC property name, not the JS name:
+This means you must always check `changeFetchedPropNames` using the schema-level EC property name, not the JS name:
 
 ```ts
 using reader = ECChangesetReader.openFile({
@@ -257,15 +270,15 @@ for (const instance of pcu.instances) {
   console.log(instance.lastMod);        // JS name — correct
   console.log(instance.category?.id);  // JS name — correct
 
-  // changesetFetchedProps always uses original EC names, NOT JS names:
-  instance.$meta.changesetFetchedProps.has("LastMod");       // ✅ correct
-  instance.$meta.changesetFetchedProps.has("lastMod");       // ❌ never true
-  instance.$meta.changesetFetchedProps.has("Category.Id");   // ✅ correct
-  instance.$meta.changesetFetchedProps.has("category.id");   // ❌ never true
+  // changeFetchedPropNames always uses original EC names, NOT JS names:
+  instance.$meta.changeFetchedPropNames.has("LastMod");       // ✅ correct
+  instance.$meta.changeFetchedPropNames.has("lastMod");       // ❌ never true
+  instance.$meta.changeFetchedPropNames.has("Category.Id");   // ✅ correct
+  instance.$meta.changeFetchedPropNames.has("category.id");   // ❌ never true
 }
 ```
 
-In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changesetFetchedProps`.
+In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changeFetchedPropNames`.
 
 ---
 
@@ -427,7 +440,7 @@ async function example(adminToken: string, iTwinId: string, outputDir: string) {
     // elem.$meta.op === "Inserted"
     // elem.Payload instanceof Uint8Array  → [1, 2, 3]
     // elem.Tags → ["alpha", "beta"]
-    // elem.$meta.changesetFetchedProps.has("Tags") → true
+    // elem.$meta.changeFetchedPropNames.has("Tags") → true
     console.log("insert op:", elem?.$meta.op);
     console.log("insert Tags:", elem?.Tags);
   }
@@ -447,7 +460,7 @@ async function example(adminToken: string, iTwinId: string, outputDir: string) {
     const elemOld = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "Old");
     // elemNew.Tags → ["alpha", "beta", "gamma"]
     // elemOld.Tags → ["alpha", "beta"]
-    // elemNew.$meta.changesetFetchedProps.has("Tags") → true
+    // elemNew.$meta.changeFetchedPropNames.has("Tags") → true
     console.log("update new Tags:", elemNew?.Tags);
     console.log("update old Tags:", elemOld?.Tags);
   }
@@ -529,12 +542,12 @@ assert.deepEqual(elementNew.s, { X: 100,  Y: 200 });  // Y is polluted from T3
 
 `s.Y` reads `200` in both Old and New because the live iModel already has `200` and the T2 changeset only recorded the delta for `s.X`.
 
-**Workaround:** Use `changesetFetchedProps` to identify which properties were sourced directly from the changeset and are therefore trustworthy:
+**Workaround:** Use `changeFetchedPropNames` to identify which properties were sourced directly from the changeset and are therefore trustworthy:
 
 ```ts
 // Only s.X was actually changed in T2:
-expect(elementNew.$meta.changesetFetchedProps).to.include("s.X");
-expect(elementNew.$meta.changesetFetchedProps).not.to.include("s.Y");
+expect(elementNew.$meta.changeFetchedPropNames).to.include("s.X");
+expect(elementNew.$meta.changeFetchedPropNames).not.to.include("s.Y");
 
 // So only trust s.X for the before/after comparison:
 const oldX = elementOld.s.X; // 1.5 — correct
@@ -549,4 +562,4 @@ This scenario is not tied to the type of change being opened by the `ECChangeset
 | Scenario | Risk | Mitigation |
 |---|---|---|
 | Reading a changeset after entity is deleted | `ECClassId` resolves to the per-table base class; rows are not merged into the leaf domain class | Read changesets before the entity is deleted from the live iModel |
-| Reading a historical transaction after new transactions have been saved | Property values not recorded in that txn's changeset reflect the current live state, not the historical state | Filter trustworthy properties using `$meta.changesetFetchedProps` |
+| Reading a historical transaction after new transactions have been saved | Property values not recorded in that txn's changeset reflect the current live state, not the historical state | Filter trustworthy properties using `$meta.changeFetchedPropNames` |

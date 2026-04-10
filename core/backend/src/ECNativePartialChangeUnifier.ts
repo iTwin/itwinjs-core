@@ -281,7 +281,7 @@ export class ECNativePartialChangeUnifier implements Disposable {
       lhs.$meta.tables = [...lhs.$meta.tables, ...rhs.$meta.tables];
       lhs.$meta.changeIndexes = [...lhs.$meta.changeIndexes, ...rhs.$meta.changeIndexes];
       // ECInstanceId will be part of changeset fetchedProps for every table, so we should not include multiple of those in the final list
-      lhs.$meta.changesetFetchedProps = [...new Set([...lhs.$meta.changesetFetchedProps, ...rhs.$meta.changesetFetchedProps])];
+      lhs.$meta.changeFetchedPropNames = [...new Set([...lhs.$meta.changeFetchedPropNames, ...rhs.$meta.changeFetchedPropNames])];
       this._cache.set(key, lhs);
     } else {
       this._cache.set(key, rhs);

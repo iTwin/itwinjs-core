@@ -19,7 +19,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { EditTxn } from "../../EditTxn";
 
 /* eslint-disable @typescript-eslint/no-deprecated */ // This test file will be removed subsequently, so we can allow usage of deprecated APIs within it.
-// This test file also contains tests outside of the ECChangesetAdaptor, so be cautious while removing it.
+// This test file also contains tests outside of the ECChangesetAdaptor, so be cautious while removing it, remove just the tests which are related to ChangesetECAdaptor.
 
 function startTestTxn(iModel: BriefcaseDb | SnapshotDb, description = "changeset reader"): EditTxn {
   const txn = new EditTxn(iModel, description);
