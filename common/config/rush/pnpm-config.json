@@ -3,7 +3,11 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
+    "ignoreMissing": [
+      "@babel/core",
+      "@types/node",
+      "@typescript-eslint/parser"
+    ]
   },
   "globalOverrides": {
     "cross-spawn": "^7.0.5", // https://github.com/advisories/GHSA-3xgq-45jj-v275 npm-run-all>cross-spawn
@@ -20,7 +24,9 @@
     "axios": "^1.13.5", // https://github.com/advisories/GHSA-43fc-jf86-j433
     "serialize-javascript": "^7.0.3", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq mocha>serialize-javascript (related to CVE-2020-7660)
     "sequelize": ">=6.37.8", // https://github.com/advisories/GHSA-6457-6jrx-69cr azurite>sequelize
-    "underscore": ">=1.13.8" // https://github.com/advisories/GHSA-qpx9-hpmf-5gmw json-schema-faker>jsonpath>underscore
+    "underscore": ">=1.13.8", // https://github.com/advisories/GHSA-qpx9-hpmf-5gmw json-schema-faker>jsonpath>underscore
+    "path-to-regexp@<0.1.13": ">=0.1.13", // https://github.com/advisories/GHSA-37ch-88jc-xwx2 express>path-to-regexp
+    "lodash": ">=4.18.0" // https://github.com/advisories/GHSA-r5fr-rjxr-66jc lodash _.template code injection
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
