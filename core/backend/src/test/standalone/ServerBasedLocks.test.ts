@@ -386,11 +386,12 @@ describe("Server-based locks", () => {
       const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
       const txnId = bc.txns.getCurrentTxnId();
 
-      await locks.acquireLocks({ exclusive: childId });
-      const element = bc.elements.getElement<PhysicalElement>(childId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        await locks.acquireLocks({ exclusive: childId });
+        const element = bc.elements.getElement<PhysicalElement>(childId);
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       expect(locks.holdsExclusiveLock(childId)).to.be.true;
       expect(locks.getLockCount(LockState.Exclusive)).to.equal(1);
@@ -417,19 +418,21 @@ describe("Server-based locks", () => {
       const txn1 = bc.txns.getCurrentTxnId();
       await locks.acquireLocks({ exclusive: elementId1 });
 
-      const element = bc.elements.getElement<PhysicalElement>(elementId1);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        const element = bc.elements.getElement<PhysicalElement>(elementId1);
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       const txn2 = bc.txns.getCurrentTxnId();
       expect(txn2).not.to.equal(txn1);
 
-      await locks.acquireLocks({ exclusive: elementId2 });
-      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-      element2.setUserProperties("bar", Guid.createValue());
-      element2.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        await locks.acquireLocks({ exclusive: elementId2 });
+        const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+        element2.setUserProperties("bar", Guid.createValue());
+        element2.update(txn);
+      });
 
       expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -468,10 +471,11 @@ describe("Server-based locks", () => {
       expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
 
       // We must actually edit something in order to start a new Txn.
-      const element = bc.elements.getElement<PhysicalElement>(elementId1);
-      element.setUserProperties("foo", { test: true });
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        const element = bc.elements.getElement<PhysicalElement>(elementId1);
+        element.setUserProperties("foo", { test: true });
+        element.update(txn);
+      });
 
       const secondTxnId = bc.txns.getCurrentTxnId();
       expect(firstTxnId).not.to.equal(secondTxnId);
@@ -502,10 +506,11 @@ describe("Server-based locks", () => {
       // create a new changeset.
       await locks.acquireLocks({ exclusive: elementId1 });
 
-      const element = bc.elements.getElement<PhysicalElement>(elementId1);
-      element.setUserProperties("foo", { test: true });
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        const element = bc.elements.getElement<PhysicalElement>(elementId1);
+        element.setUserProperties("foo", { test: true });
+        element.update(txn);
+      });
 
       await bc.pushChanges({ accessToken: "token", description: "changes" });
 
@@ -514,10 +519,11 @@ describe("Server-based locks", () => {
       // In that same briefcase, lock and edit a different element, but then reverse
       // the change and release the lock.
       await bc.locks.acquireLocks({ exclusive: elementId2 });
-      const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-      element2.setUserProperties("bar", { test: true });
-      element2.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
+        element2.setUserProperties("bar", { test: true });
+        element2.update(txn);
+      });
 
       bc.txns.reverseTxns(1);
       expect(await locks.abandonLocksForReversedTxn(secondTxnId)).to.be.true;
@@ -543,11 +549,14 @@ describe("Server-based locks", () => {
         code: Code.createEmpty(),
       };
 
-      await locks.acquireLocks({ shared: [modelId, parentId] });
-      const newElementId = bc.elements.insertElement(physicalProps);
-      expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
       const txnId = bc.txns.getCurrentTxnId();
-      bc.saveChanges();
+
+      await locks.acquireLocks({ shared: [modelId, parentId] });
+      const newElementId = await withEditTxn(bc, async txn => {
+        return txn.insertElement(physicalProps);
+      });
+
+      expect(locks.holdsExclusiveLock(newElementId)).to.be.true;
 
       const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
 
@@ -565,18 +574,21 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId1 });
 
       const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-      element1.setUserProperties("foo", Guid.createValue());
-      element1.update();
-      bc.saveChanges();
+
+      await withEditTxn(bc, async txn => {
+        element1.setUserProperties("foo", Guid.createValue());
+        element1.update(txn);
+      });
 
       const txn2 = bc.txns.getCurrentTxnId();
       expect(txn2).not.to.equal(txn1);
 
       await locks.acquireLocks({ exclusive: elementId2 });
       const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-      element2.setUserProperties("bar", Guid.createValue());
-      element2.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element2.setUserProperties("bar", Guid.createValue());
+        element2.update(txn);
+      });
 
       expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -597,9 +609,10 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId });
 
       const element = bc.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       // The txn has not been reversed, so abandonLocksForReversedTxn should throw.
       await expect(locks.abandonLocksForReversedTxn(txnId)).to.eventually.be.rejectedWith("has not been reversed");
@@ -613,14 +626,16 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId });
 
       const element = bc.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
 
-      // The current txn has unsaved changes, so abandonLocksForReversedTxn should throw.
-      const txnId = bc.txns.getCurrentTxnId();
-      await expect(locks.abandonLocksForReversedTxn(txnId)).to.eventually.be.rejectedWith("unsaved changes");
+        // The current txn has unsaved changes, so abandonLocksForReversedTxn should throw.
+        const txnId = bc.txns.getCurrentTxnId();
+        await expect(locks.abandonLocksForReversedTxn(txnId)).to.eventually.be.rejectedWith("unsaved changes");
 
-      expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+        expect(locks.holdsExclusiveLock(elementId)).to.be.true;
+      });
     });
 
     it("throws if asked to abandon locks for a nonexistent txn", async () => {
@@ -629,9 +644,10 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId });
 
       const element = bc.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       bc.txns.reverseSingleTxn();
 
@@ -649,9 +665,10 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId });
 
       const element = bc.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       bc.txns.reverseSingleTxn();
       expect(await locks.abandonLocksForReversedTxn(txnId)).to.be.true;
@@ -695,9 +712,10 @@ describe("Server-based locks", () => {
 
       // We must actually edit something in order to start a new Txn.
       const element = bc.elements.getElement<PhysicalElement>(childId);
-      element.setUserProperties("foo", { test: true });
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", { test: true });
+        element.update(txn);
+      });
 
       bc.txns.reverseTxns(1);
       await locks.abandonLocksForReversedTxn(txnId);
@@ -719,18 +737,20 @@ describe("Server-based locks", () => {
 
       // We must actually edit something in order to start a new Txn.
       const element = bc.elements.getElement<PhysicalElement>(elementId1);
-      element.setUserProperties("foo", { test: true });
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", { test: true });
+        element.update(txn);
+      });
 
       const secondTxnId = bc.txns.getCurrentTxnId();
       expect(firstTxnId).not.to.equal(secondTxnId);
 
       await locks.acquireLocks({ exclusive: elementId2 }); // upgrade lock from shared to exclusive
       const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-      element2.setUserProperties("bar", { test: true });
-      element2.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element2.setUserProperties("bar", { test: true });
+        element2.update(txn);
+      });
 
       expect(locks.holdsSharedLock(elementId2)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -763,9 +783,10 @@ describe("Server-based locks", () => {
       };
 
       await locks.acquireLocks({ shared: [modelId, parentId] });
-      const newElementId = bc.elements.insertElement(physicalProps);
       const txnId = bc.txns.getCurrentTxnId();
-      bc.saveChanges();
+      const newElementId = await withEditTxn(bc, async txn => {
+        return txn.insertElement(physicalProps);
+      });
 
       bc.txns.reverseTxns(1);
       expect(await locks.abandonLocksForReversedTxn(txnId)).to.be.true;
@@ -783,18 +804,20 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId1 });
 
       const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-      element1.setUserProperties("foo", Guid.createValue());
-      element1.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element1.setUserProperties("foo", Guid.createValue());
+        element1.update(txn);
+      });
 
       const txn2 = bc.txns.getCurrentTxnId();
       expect(txn2).not.to.equal(txn1);
 
       await locks.acquireLocks({ exclusive: elementId2 });
       const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-      element2.setUserProperties("bar", Guid.createValue());
-      element2.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element2.setUserProperties("bar", Guid.createValue());
+        element2.update(txn);
+      });
 
       expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
       expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -821,9 +844,10 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId1 });
 
       const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-      element1.setUserProperties("foo", Guid.createValue());
-      element1.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element1.setUserProperties("foo", Guid.createValue());
+        element1.update(txn);
+      });
 
       bc.txns.reverseTxns(1);
       expect(await locks.abandonLocksForReversedTxn(txn1)).to.be.true;
@@ -833,9 +857,10 @@ describe("Server-based locks", () => {
       expect(txn1).to.equal(txn2);
       await locks.acquireLocks({ exclusive: elementId2 });
       const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-      element2.setUserProperties("bar", Guid.createValue());
-      element2.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element2.setUserProperties("bar", Guid.createValue());
+        element2.update(txn);
+      });
 
       // Attempting to reinstate the txn should not acquire any locks.
       expect(await locks.acquireLocksForReinstatingTxn(txn1)).to.be.false;
@@ -853,9 +878,10 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: elementId });
 
       const element = bc.elements.getElement<PhysicalElement>(elementId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       // Reverse and abandon the lock so it's released on the server.
       bc.txns.reverseSingleTxn();
@@ -880,9 +906,10 @@ describe("Server-based locks", () => {
       await locks.acquireLocks({ exclusive: childId });
 
       const element = bc.elements.getElement<PhysicalElement>(childId);
-      element.setUserProperties("foo", Guid.createValue());
-      element.update();
-      bc.saveChanges();
+      await withEditTxn(bc, async txn => {
+        element.setUserProperties("foo", Guid.createValue());
+        element.update(txn);
+      });
 
       // Reverse the txn but do NOT abandon locks.
       bc.txns.reverseSingleTxn();
@@ -921,9 +948,10 @@ describe("Server-based locks", () => {
 
         const element = bc.elements.getElement<PhysicalElement>(elementId);
         const originalProps = element.getUserProperties("foo");
-        element.setUserProperties("foo", Guid.createValue());
-        element.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element.setUserProperties("foo", Guid.createValue());
+          element.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId)).to.be.true;
 
@@ -944,15 +972,17 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -972,15 +1002,17 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -1005,9 +1037,10 @@ describe("Server-based locks", () => {
 
         const element = bc.elements.getElement<PhysicalElement>(elementId);
         const originalProps = element.getUserProperties("foo");
-        element.setUserProperties("foo", Guid.createValue());
-        element.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element.setUserProperties("foo", Guid.createValue());
+          element.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId)).to.be.true;
 
@@ -1030,15 +1063,17 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -1062,17 +1097,19 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         const txnAfterFirst = bc.txns.getCurrentTxnId();
 
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -1095,17 +1132,19 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         const txnAfterFirst = bc.txns.getCurrentTxnId();
 
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
         expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
@@ -1128,9 +1167,10 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         // Use the regular cancelTo which does not abandon locks.
         bc.txns.cancelTo(txnId);
@@ -1150,9 +1190,10 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId });
         const element = bc.elements.getElement<PhysicalElement>(elementId);
-        element.setUserProperties("foo", Guid.createValue());
-        element.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element.setUserProperties("foo", Guid.createValue());
+          element.update(txn);
+        });
 
         await bc.txns.cancelToTxnAsync(txnBefore);
         expect(locks.holdsExclusiveLock(elementId)).to.be.false;
@@ -1168,9 +1209,10 @@ describe("Server-based locks", () => {
 
         await locks.acquireLocks({ exclusive: elementId });
         const element = bc.elements.getElement<PhysicalElement>(elementId);
-        element.setUserProperties("foo", Guid.createValue());
-        element.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element.setUserProperties("foo", Guid.createValue());
+          element.update(txn);
+        });
 
         const error = new IModelError(IModelStatus.BadRequest, "Lock abandonment failed");
         sinonStub(locks, "abandonLocksForReversedTxn").rejects(error);
@@ -1200,9 +1242,10 @@ describe("Server-based locks", () => {
         const element = bc.elements.getElement<PhysicalElement>(elementId);
         const originalProps = element.getUserProperties("foo");
         const newValue = Guid.createValue();
-        element.setUserProperties("foo", newValue);
-        element.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element.setUserProperties("foo", newValue);
+          element.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId)).to.be.true;
 
@@ -1229,16 +1272,18 @@ describe("Server-based locks", () => {
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
         const newValue1 = Guid.createValue();
-        element1.setUserProperties("foo", newValue1);
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", newValue1);
+          element1.update(txn);
+        });
 
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
         const newValue2 = Guid.createValue();
-        element2.setUserProperties("bar", newValue2);
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", newValue2);
+          element2.update(txn);
+        });
 
         await bc.txns.reverseTxnsAsync(2);
         expect(locks.holdsExclusiveLock(elementId1)).to.be.false;
@@ -1267,9 +1312,10 @@ describe("Server-based locks", () => {
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
         const originalProps1 = element1.getUserProperties("foo");
         const newValue1 = Guid.createValue();
-        element1.setUserProperties("foo", newValue1);
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", newValue1);
+          element1.update(txn);
+        });
 
         expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
 
@@ -1284,29 +1330,32 @@ describe("Server-based locks", () => {
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
         const originalProps2 = element2.getUserProperties("bar");
         const newValue2 = Guid.createValue();
-        element2.setUserProperties("bar", newValue2);
-        element2.update();
 
-        // Verify the unsaved change is present and lock is held.
-        expect(bc.txns.hasUnsavedChanges).to.be.true;
-        expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
-        expect(bc.elements.getElement<PhysicalElement>(elementId2).getUserProperties("bar")).to.equal(newValue2);
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", newValue2);
+          element2.update(txn);
 
-        // Reinstate the first txn. This should:
-        // 1. Abandon the unsaved change to element2
-        // 2. Abandon the lock on element2
-        // 3. Reinstate the change to element1
-        // 4. Reacquire the lock on element1
-        await bc.txns.reinstateTxnAsync();
+          // Verify the unsaved change is present and lock is held.
+          expect(bc.txns.hasUnsavedChanges).to.be.true;
+          expect(locks.holdsExclusiveLock(elementId2)).to.be.true;
+          expect(bc.elements.getElement<PhysicalElement>(elementId2).getUserProperties("bar")).to.equal(newValue2);
 
-        // Verify the unsaved change was abandoned.
-        expect(bc.txns.hasUnsavedChanges).to.be.false;
-        expect(bc.elements.getElement<PhysicalElement>(elementId2).getUserProperties("bar")).to.deep.equal(originalProps2);
-        expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+          // Reinstate the first txn. This should:
+          // 1. Abandon the unsaved change to element2
+          // 2. Abandon the lock on element2
+          // 3. Reinstate the change to element1
+          // 4. Reacquire the lock on element1
+          await bc.txns.reinstateTxnAsync();
 
-        // Verify the first change was reinstated and its lock reacquired.
-        expect(bc.elements.getElement<PhysicalElement>(elementId1).getUserProperties("foo")).to.equal(newValue1);
-        expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+          // Verify the unsaved change was abandoned.
+          expect(bc.txns.hasUnsavedChanges).to.be.false;
+          expect(bc.elements.getElement<PhysicalElement>(elementId2).getUserProperties("bar")).to.deep.equal(originalProps2);
+          expect(locks.holdsExclusiveLock(elementId2)).to.be.false;
+
+          // Verify the first change was reinstated and its lock reacquired.
+          expect(bc.elements.getElement<PhysicalElement>(elementId1).getUserProperties("foo")).to.equal(newValue1);
+          expect(locks.holdsExclusiveLock(elementId1)).to.be.true;
+        });
       });
 
       describe("throws and leaves locks acquired if reinstateTxn fails", async () => {
@@ -1319,9 +1368,10 @@ describe("Server-based locks", () => {
           await locks.acquireLocks({ exclusive: elementId });
           const element = bc.elements.getElement<PhysicalElement>(elementId);
           fooValue = Guid.createValue();
-          element.setUserProperties("foo", fooValue);
-          element.update();
-          bc.saveChanges();
+          await withEditTxn(bc, async txn => {
+            element.setUserProperties("foo", fooValue);
+            element.update(txn);
+          });
 
           await bc.txns.reverseTxnsAsync(1);
           expect(locks.holdsExclusiveLock(elementId)).to.be.false;
@@ -1354,9 +1404,10 @@ describe("Server-based locks", () => {
         const element = bc.elements.getElement<PhysicalElement>(elementId);
         const originalProps = element.getUserProperties("foo");
         const newValue = Guid.createValue();
-        element.setUserProperties("foo", newValue);
-        element.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element.setUserProperties("foo", newValue);
+          element.update(txn);
+        });
 
         await bc.txns.reverseTxnsAsync(1);
         expect(locks.holdsExclusiveLock(elementId)).to.be.false;
@@ -1381,9 +1432,10 @@ describe("Server-based locks", () => {
         // 1. Make a change to element 1 and save it.
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
-        element1.setUserProperties("foo", Guid.createValue());
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", Guid.createValue());
+          element1.update(txn);
+        });
 
         const txn1Id = bc.txns.getCurrentTxnId();
 
@@ -1395,9 +1447,10 @@ describe("Server-based locks", () => {
         // 3. Make a change to element 2 and save it. This truncates the redo stack.
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+        });
 
         // The redo stack should now be truncated.
         expect(bc.txns.isRedoPossible).to.be.false;
@@ -1414,9 +1467,10 @@ describe("Server-based locks", () => {
         await locks.acquireLocks({ exclusive: elementId1 });
         const element1 = bc.elements.getElement<PhysicalElement>(elementId1);
         const newValue1 = Guid.createValue();
-        element1.setUserProperties("foo", newValue1);
-        element1.update();
-        bc.saveChanges();
+        await withEditTxn(bc, async txn => {
+          element1.setUserProperties("foo", newValue1);
+          element1.update(txn);
+        });
 
         // 2. Reverse the txn and abandon locks.
         await bc.txns.reverseTxnsAsync(1);
@@ -1426,9 +1480,11 @@ describe("Server-based locks", () => {
         // 3. Make a change to element 2 and abandon it.
         await locks.acquireLocks({ exclusive: elementId2 });
         const element2 = bc.elements.getElement<PhysicalElement>(elementId2);
-        element2.setUserProperties("bar", Guid.createValue());
-        element2.update();
-        bc.abandonChanges();
+        await withEditTxn(bc, async txn => {
+          element2.setUserProperties("bar", Guid.createValue());
+          element2.update(txn);
+          txn.abandonChanges();
+        });
 
         expect(bc.txns.isRedoPossible).to.be.true;
 
