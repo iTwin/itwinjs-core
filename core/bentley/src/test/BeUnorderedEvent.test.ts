@@ -66,8 +66,7 @@ describe("BeUnorderedEvent", () => {
     const event = new BeUnorderedEvent<() => void>();
     const calls: string[] = [];
 
-    let removeSelf: () => void;
-    removeSelf = event.addListener(() => {
+    const removeSelf = event.addListener(() => {
       calls.push("self-remover");
       removeSelf();
     });

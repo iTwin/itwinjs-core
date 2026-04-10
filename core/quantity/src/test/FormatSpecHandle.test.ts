@@ -25,6 +25,7 @@ function createMockEntry(): FormattingSpecEntry {
   };
 }
 
+/* eslint-disable @typescript-eslint/unbound-method */
 describe("FormatSpecHandle", () => {
   it("populates specs on construction when entry is available", () => {
     const entry = createMockEntry();
