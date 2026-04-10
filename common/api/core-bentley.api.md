@@ -133,10 +133,8 @@ export class BeUnorderedEvent<T extends Listener> {
     addListener(listener: T, scope?: any): () => void;
     addOnce(listener: T, scope?: any): () => void;
     clear(): void;
-    has(listener: T, scope?: any): boolean;
     get numberOfListeners(): number;
     raiseEvent(...args: Parameters<T>): void;
-    removeListener(listener: T, scope?: any): boolean;
 }
 
 // @beta

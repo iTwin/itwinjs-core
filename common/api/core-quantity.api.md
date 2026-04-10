@@ -317,11 +317,9 @@ export interface FormatsChangedArgs {
 
 // @beta
 export class FormatSpecHandle implements Disposable {
-    // (undocumented)
     [Symbol.dispose](): void;
     // @internal
     constructor(args: FormatSpecHandleArgs);
-    dispose(): void;
     format(value: number): string;
     get formatterSpec(): FormatterSpec | undefined;
     get koqName(): string;
