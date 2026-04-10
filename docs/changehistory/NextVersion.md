@@ -126,10 +126,6 @@ Previously, settings and binary resources (fonts, textures, templates) were stor
 
 #### Usage examples
 
-##### Creating a local SettingsDb
-
-[[include:SettingsDb.createLocal]]
-
 See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
 
 #### Container type convention
