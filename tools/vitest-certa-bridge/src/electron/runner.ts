@@ -295,7 +295,14 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const totalFiles = shards.reduce((n, s) => n + s.length, 0);
   console.log(`Running ${totalFiles} test files across ${shards.length} Electron shards`);
 
-  // Run all shards in parallel, with one automatic retry for crashed shards
+  // On CI, always disable GPU compositing for the initial run. CI machines use
+  // software rendering (SwiftShader on Linux, WARP on Windows) — there is no real
+  // GPU. Skipping the GPU process avoids transient `CreateCommandBuffer` failures
+  // when multiple Electron shards race for GPU resources on the same agent.
+  const isCI = !!(process.env.CI || process.env.TF_BUILD || process.env.AGENT_ID);
+  const defaultElectronArgs = isCI ? ["--disable-gpu"] : undefined;
+
+  // Run all shards in parallel, with automatic retries for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
   const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
 
@@ -322,27 +329,23 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   }
 
   const promises = shards.map(async (files, index) => {
-    let result = await runShard(files, index);
+    let result = await runShard(files, index, defaultElectronArgs);
 
     // Retry up to twice if the shard produced no test results at all. This covers:
     // - Crashed shards (non-zero exit, e.g. native exception or OOM)
-    // - Silent exits (exit 0 but 0 results, e.g. GPU process init failure on Linux CI)
-    // - Transient Electron startup failures on Windows CI (exit 0, no results even after first retry)
+    // - Silent exits (exit 0 but 0 results, e.g. GPU process init failure)
+    // - Transient Electron startup failures (exit 0, no results even after first retry)
     // Real test failures always produce 1+ results and are never retried.
-    const retryArgs: (string[] | undefined)[] = [
-      ["--disable-gpu"],  // 1st retry: disable GPU compositing (mitigates Windows GPU driver crashes / 0xC0000409)
-      ["--disable-gpu"],  // 2nd retry: same flags, covers transient Electron startup failures
-    ];
-    for (const extraArgs of retryArgs) {
+    for (let retry = 0; retry < 2; retry++) {
       const resultsPath = path.join(result.cacheDir, "test-results.json");
       if (fs.existsSync(resultsPath))
         break;
       const reason = result.exitCode !== 0
         ? `crashed (exit ${result.exitCode})`
         : `exited cleanly but produced no test results`;
-      console.warn(`shard-${index} ${reason} — retrying with --disable-gpu`);
+      console.warn(`shard-${index} ${reason} — retrying (attempt ${retry + 2}) with --disable-gpu`);
       cleanupCacheDir(result.cacheDir);
-      result = await runShard(files, index, extraArgs);
+      result = await runShard(files, index, ["--disable-gpu"]);
     }
 
     results.push(result);
