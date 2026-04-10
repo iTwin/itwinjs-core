@@ -81,6 +81,46 @@ The names in `changeFetchedPropNames` follow these rules based on the property k
 
 ---
 
+## Disposal — always close the reader and unifier
+
+`ECChangesetReader` and `ECNativePartialChangeUnifier` both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
+
+The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
+
+```ts
+{
+  using reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
+  using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+
+  while (reader.step())
+    pcu.appendFrom(reader);
+
+  for (const instance of pcu.instances)
+    console.log(instance.$meta.op, instance.ECInstanceId);
+  // reader and pcu are disposed here automatically
+}
+```
+
+If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly in a `finally` block:
+
+```ts
+const reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
+const pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+try {
+  while (reader.step())
+    pcu.appendFrom(reader);
+  for (const instance of pcu.instances)
+    console.log(instance.$meta.op, instance.ECInstanceId);
+} finally {
+  reader[Symbol.dispose]();
+  pcu[Symbol.dispose]();
+}
+```
+
+> **Important:** The same rule applies to `ECNativeChangeUnifierCache` instances created via `ECNativeChangeUnifierCache.createSqliteBackedCache()` — they wrap a SQLite connection and must also be disposed.
+
+---
+
 ## Opening a reader
 
 ### `openFile` — read a single pushed changeset file
