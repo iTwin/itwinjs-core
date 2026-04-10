@@ -1690,6 +1690,8 @@ describe("CurveCurveCloseApproachXY", () => {
 
     // each spiral-curve close approach test has its own expected # close approaches. One size does not fit all.
     const maxDistance = 23;
+    // in integratedData and directData triples, the first two numbers are indices and the third number is
+    // the expected number of close approaches between the curve at those indices.
     const integratedData = new Dictionary<[number, number], number>(compareSimpleArrays);
     const directData = new Dictionary<[number, number], number>(compareSimpleArrays);
     for (const triple of [
@@ -1734,7 +1736,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testCoordinate(integratedSpirals.length * curves.length, integratedData.size, "matching integrated arrays");
     ck.testCoordinate(directSpirals.length * curves.length, directData.size, "matching direct arrays");
 
-    let testIndex  = 0;
+    let testIndex = 0;
     const testCloseApproachSpiralCurve = (spirals: TransitionSpiral3d[], data: Dictionary<[number, number], number>) => {
       for (let i = 0; i < spirals.length; i++) {
         for (let j = 0; j < curves.length; j++) {
@@ -1766,7 +1768,7 @@ describe("CurveCurveCloseApproachXY", () => {
       if (ck.testDefined(tangency, `found closest points between the ${spiral.spiralType} spiral and the line`)) {
         ck.testSmallRelative(tangency.detailA.a, `${spiral.spiralType} closest point is an intersection`);
         // spiral math is not exact, so we expect more slop than usual
-        ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance,`${spiral.spiralType} closest point is at the tangency`);
+        ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `${spiral.spiralType} closest point is at the tangency`);
       }
     };
     for (const spiral of integratedSpirals)
@@ -1777,16 +1779,17 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("SpiralCloseApproach0", () => { // test against known minima
+  it("SpiralKnownCloseApproach", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     let x0 = 0;
     const seg = LineSegment3d.create(Point3d.create(20, -40), Point3d.create(130, 30));
     const spiral0 = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 50), AngleSweep.createStartEndDegrees(0, 120), Segment1d.create(0, 1), Transform.createIdentity(), "clothoid");
     if (ck.testDefined(spiral0, "created spiral")) {
       const transforms = [Transform.createIdentity(), Transform.createTranslationXYZ(0, -9)];
       const numMinima = [1, 2];
-      const minDist = [4.8129491110127436, 0];
+      const minDist = [4.8129491110127436, 0]; // test against known minima
       const maxDist = [5, 2];
       const numTests = Math.min(transforms.length, numMinima.length, minDist.length, maxDist.length);
       for (let i = 0; i < numTests; ++i) {
@@ -1800,7 +1803,8 @@ describe("CurveCurveCloseApproachXY", () => {
         x0 += 1.1 * spiral.curveLength();
       }
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach0");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralKnownCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

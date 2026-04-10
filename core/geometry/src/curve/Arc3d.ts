@@ -755,7 +755,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public override startPoint(result?: Point3d): Point3d {
     return this.fractionToPoint(0.0, result);
   }
-    /**
+  /**
    * Whether the start and end points are defined and within tolerance.
    * * Does not check for degeneracy.
    * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])

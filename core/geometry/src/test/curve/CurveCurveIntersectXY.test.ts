@@ -2502,7 +2502,7 @@ describe("CurveCurveIntersectXY", () => {
   }
 
   it("SpiralIntersection", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
