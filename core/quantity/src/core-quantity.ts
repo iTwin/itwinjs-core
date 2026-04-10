@@ -26,3 +26,7 @@ export * from "./QuantityLoggerCategory";
  * @docs-group-description Quantity
  * Classes, Interfaces, and definitions used to format and parse quantity values.
  */
+/**
+ * @docs-group-description Logging
+ * Logger categories used by this package.
+ */

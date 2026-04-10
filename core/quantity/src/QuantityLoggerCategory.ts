@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Logging
+ */
+
 /** Logger categories used by the `@itwin/core-quantity` package.
  * @see [Logger]($bentley)
  * @beta
