@@ -120,9 +120,9 @@ Previously, settings and binary resources (fonts, textures, templates) were stor
 #### New APIs
 
 - [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
-- [EditableSettingsDb]($backend): Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
+- `EditableSettingsDb`: Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
 - [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
-- [Workspace.getSettingsDb]($backend): Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
+- `Workspace.getSettingsDb`: Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
 
 #### Usage examples
 
@@ -134,7 +134,7 @@ SettingsDb containers use `containerType: "settings"` in their cloud metadata, e
 
 #### Container separation and lock isolation
 
-Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but [EditableSettingsCloudContainer]($backend) does not extend [WorkspaceContainer]($backend). This means:
+Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but `EditableSettingsCloudContainer` does not extend [WorkspaceContainer]($backend). This means:
 
 - **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
@@ -265,13 +265,13 @@ See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full 
 
 ##### `@itwin/core-frontend`
 
-- **[QuantityFormatter.onBeforeFormattingReady]($frontend)** — Pre-ready event that fires before [onFormattingReady]($frontend). Providers use it to register async work (e.g., loading domain formats) via the [FormattingReadyCollector]($quantity) passed to listeners. The formatter awaits all pending work (with a 10-second timeout) before emitting `onFormattingReady`.
+- **[QuantityFormatter.onBeforeFormattingReady]($frontend)** — Pre-ready event that fires before [QuantityFormatter.onFormattingReady]($frontend). Providers use it to register async work (e.g., loading domain formats) via the [FormattingReadyCollector]($quantity) passed to listeners. The formatter awaits all pending work (with a 10-second timeout) before emitting `onFormattingReady`.
 - **[FormattingReadyCollector]($quantity)** — Collector class passed to `onBeforeFormattingReady` listeners. Call `addPendingWork(promise)` to register async work that must complete before the formatter is considered ready.
 - **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes and all `onBeforeFormattingReady` work has settled. Subscribe to this event to know when formatting specs are available.
 - **[QuantityFormatter.onFormattingReadyUnordered]($frontend)** — Unordered variant using `BeUnorderedUiEvent` (Set-backed) for safe concurrent modification.
 - **[QuantityFormatter.isReady]($frontend)** — Synchronous check for whether the formatter is ready.
 - **[QuantityFormatter.whenInitialized]($frontend)** — One-shot promise that resolves after the first successful initialization.
-- **[FormatSpecHandle]($frontend)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`. Now accepts an optional `system` parameter to pin the handle to a specific unit system.
+- **[FormatSpecHandle]($quantity)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`. Now accepts an optional `system` parameter to pin the handle to a specific unit system.
 - **[QuantityFormatter.getFormatSpecHandle]($frontend)** — Factory for `FormatSpecHandle` instances. Now accepts an optional `system` parameter.
 - **[QuantityFormatter.getSpecsByNameAndUnit]($frontend)** — Now accepts a single [FormattingSpecArgs]($quantity) object with `name`, `persistenceUnitName`, and an optional `system` to retrieve specs for a specific unit system instead of only the active system.
 - **[QuantityFormatter.addFormattingSpecsToRegistry]($frontend)** — Now accepts an optional `system` parameter to register specs for a specific unit system.
