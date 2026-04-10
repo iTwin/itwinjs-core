@@ -69,6 +69,7 @@ internal;interface;BcvStats
 internal;interface;BcvStatsFilterOptions
 internal;interface;LockAndOpenArgs
 internal;function;transferDb
+beta;interface;CloudSqliteContainer
 alpha;interface;CodeService
 alpha;namespace;CodeService
 internal;interface;BisCodeSpecIndexProps
@@ -178,6 +179,7 @@ beta;interface;ECSqlRow
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 deprecated;class;ECSqlStatement
+beta;class;ECSqlSyncReader
 public;class;ECSqlValue
 deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
@@ -366,6 +368,7 @@ public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
 beta;function;isITextAnnotation
+internal;function;isSettingsDb
 beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
@@ -460,6 +463,7 @@ public;type;PullChangesArgs
 public;interface;PushChangesArgs
 beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
+internal;function;queryStringResourceNames
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
 alpha;interface;RebaseHandler
@@ -509,12 +513,18 @@ beta;type;SettingName
 beta;interface;Settings
 beta;interface;SettingSchema
 beta;interface;SettingsContainer
+internal;namespace;SettingsContainers
+internal;type;SettingsDb
+internal;type;SettingsDbName
 beta;interface;SettingsDictionary
 beta;interface;SettingsDictionaryProps
 beta;interface;SettingsDictionarySource
+internal;namespace;SettingsEditor
 beta;type;SettingsPriority
 beta;namespace;SettingsPriority
+internal;const;settingsResourceName
 beta;interface;SettingsSchemas
+internal;const;settingsWorkspaceDbName
 public;class;Sheet
 preview;class;Sheet
 public;class;SheetBorderTemplate
@@ -587,6 +597,7 @@ public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources
 beta;class;SynchronizationConfigSpecifiesRootSources
+beta;type;SynchronousQueryOptions
 beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
 internal;class;TemplateViewDefinition2d
@@ -653,7 +664,7 @@ beta;interface;WorkspaceContainer
 beta;type;WorkspaceContainerId
 beta;interface;WorkspaceContainerProps
 beta;interface;WorkspaceDb
-beta;type;WorkspaceDbCloudProps
+beta;interface;WorkspaceDbCloudProps
 beta;type;WorkspaceDbFullName
 beta;interface;WorkspaceDbLoadError
 beta;interface;WorkspaceDbLoadErrors

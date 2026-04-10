@@ -852,6 +852,12 @@ export interface BRepThickenProps {
 }
 
 // @public
+export interface BriefcaseConnectionProps extends IModelConnectionProps {
+    // @beta
+    readonly briefcaseId?: number;
+}
+
+// @public
 export interface BriefcaseDownloader {
     readonly briefcaseId: BriefcaseId;
     readonly downloadPromise: Promise<void>;
@@ -2177,6 +2183,19 @@ export interface DbBlobResponse extends DbResponse {
     rawBlobSize: number;
 }
 
+// @public
+export interface DbCloudContainerInfo {
+    readonly alias?: string;
+    readonly baseUri: string;
+    readonly containerId: string;
+    readonly dbName?: string;
+    readonly description?: string;
+    readonly isPublic?: boolean;
+    readonly storageType: "azure" | "google";
+    readonly version?: string;
+    readonly writeable?: boolean;
+}
+
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
@@ -2299,17 +2318,11 @@ export enum DbResponseStatus {
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
-    // (undocumented)
     cpuTime: number;
-    // (undocumented)
     memLimit: number;
-    // (undocumented)
     memUsed: number;
-    // (undocumented)
     prepareTime: number;
-    // (undocumented)
     timeLimit: number;
-    // (undocumented)
     totalTime: number;
 }
 
@@ -2828,30 +2841,47 @@ export interface ECSchemaReferenceProps {
 }
 
 // @public
-export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterator<QueryRowProxy> {
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    get current(): QueryRowProxy;
-    get done(): boolean;
-    // @internal (undocumented)
-    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // @internal (undocumented)
     getRowInternal(): any[];
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     reset(options?: QueryOptions): void;
+    // @deprecated
     resetBindings(): void;
     // @internal (undocumented)
     protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
-    // (undocumented)
+    // @deprecated (undocumented)
     setParams(param: QueryBinder): void;
     get stats(): QueryStats;
     step(): Promise<boolean>;
     toArray(): Promise<any[]>;
+}
+
+// @public
+export abstract class ECSqlReaderBase {
+    // @internal
+    protected constructor(rowFormat?: QueryRowFormat);
+    get current(): QueryRowProxy;
+    get done(): boolean;
+    // @internal (undocumented)
+    protected _done: boolean;
+    // @internal
+    protected formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
+    // @internal
+    protected abstract getRowInternal(): any[];
+    // @internal (undocumented)
+    protected _props: PropertyMetaDataMap;
+    // @internal
+    protected static replaceBase64WithUint8Array(row: any): void;
+    // @internal (undocumented)
+    protected _rowFormat: QueryRowFormat;
 }
 
 // @public
@@ -5546,7 +5576,7 @@ export interface IpcAppFunctions {
     isRedoPossible: (key: string) => Promise<boolean>;
     isUndoPossible: (key: string) => Promise<boolean>;
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
-    openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+    openBriefcase: (args: OpenBriefcaseProps) => Promise<BriefcaseConnectionProps>;
     openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
@@ -5729,6 +5759,22 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface ITwinSettingsError extends ITwinError {
+    readonly iTwinId?: GuidString;
+    readonly priority?: number;
+}
+
+// @beta (undocumented)
+export namespace ITwinSettingsError {
+    const // (undocumented)
+    scope = "itwin-settings";
+    export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
+    // (undocumented)
+    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
 
 // @public
 export interface JsonGeometryStream {
@@ -7747,6 +7793,7 @@ export class QueryBinder {
     bindNull(indexOrName: string | number): this;
     bindPoint2d(indexOrName: string | number, val: Point2d): this;
     bindPoint3d(indexOrName: string | number, val: Point3d): this;
+    bindRange3d(indexOrName: string | number, val: LowAndHighXYZ): this;
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;

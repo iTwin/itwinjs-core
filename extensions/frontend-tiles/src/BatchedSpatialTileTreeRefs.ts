@@ -284,7 +284,7 @@ async function fetchTilesetSpec(iModel: IModelConnection, computeBaseUrl: Comput
     const json = await response.json();
     return BatchedTilesetSpec.create(baseUrl, json);
   } catch (err) {
-    Logger.logException(loggerCategory, err);
+    Logger.logError(loggerCategory, err);
     return null;
   }
 }

@@ -1,74 +1,53 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 - [NextVersion](#nextversion)
-  - [Semantic rebase (beta)](#semantic-rebase-beta)
-  - [Electron 40 support](#electron-40-support)
-  - [Display](#display)
-    - [Batch category display changes](#batch-category-display-changes)
-  - [Quantity Formatting](#quantity-formatting)
-    - [Updated default engineering lengths in QuantityFormatter](#updated-default-engineering-lengths-in-quantityformatter)
-    - [Fix `Quantity.convertTo()` return type to reflect actual behavior](#fix-quantityconvertto-return-type-to-reflect-actual-behavior)
-  - [Presentation](#presentation)
-    - [Reducing the number of properties that are loaded with content](#reducing-the-number-of-properties-that-are-loaded-with-content)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [iTwin settings workspace](#itwin-settings-workspace)
+      - [New APIs](#new-apis)
+      - [Usage examples](#usage-examples)
+      - [Configuration requirements](#configuration-requirements)
 
-## Semantic rebase (beta)
+## @itwin/core-backend
 
-A new `useSemanticRebase` option has been added to [IModelHostConfiguration]($backend). When enabled, `pullChanges` can intelligently merge local and incoming changes that involve schema modifications — a scenario where traditional binary changeset merging produces incorrect results.
+### iTwin settings workspace
 
-Instead of requiring an exclusive lock for schema changes, semantic rebase captures local changes as high-level representations (schema XML and instance patches), applies incoming changesets, then re-applies local changes against the updated schema. This allows schema changes to use shared locks, reducing lock contention.
+*Applications* can now store and load named settings dictionaries in an iTwin-scoped workspace, separate from iModel-level settings so the same values can be shared across iModels in that iTwin.
 
-**Limitations:**
+Under the hood, that workspace uses a [SettingsDb]($backend), which is a settings-formatted [WorkspaceDb]($backend) named `settings-db`. In that db, each string resource is one settings dictionary:
 
-- Incompatible schema changes on both sides may cause the rebase to be rejected. To minimize risk, push schema changes promptly and separately from data changes.
-- Cannot be used alongside Schema Sync.
-- Profile upgrades still require exclusive locks.
+- Resource name: dictionary name
+- Resource value: JSON dictionary content
 
-## Electron 40 support
+Developers still read and write settings dictionaries by name, while container management, versioning, and cloud sync follow the standard workspace model.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 40](https://www.electronjs.org/blog/electron-40-0).
 
-Note: with Electron 40, Chromium no longer uses [SwiftShader](https://github.com/google/swiftshader) as an automatic fallback for WebGL. This may cause issues when Electron is run in an environment without a supported GPU. For more information: [Using Chromium with SwiftShader](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md#automatic-swiftshader-webgl-fallback-is-deprecated).
+#### New APIs
 
-## Display
+- [EditableWorkspaceContainer.withEditableDb]($backend): Acquire a write lock, get or create an editable tip WorkspaceDb, run an operation, then close and release. Automatically creates a new prerelease version if the tip is already published.
+- [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace with all named settings dictionaries.
+- [IModelHost.saveSettingDictionary]($backend) and [IModelHost.deleteSettingDictionary]($backend): Save and remove named settings dictionaries in the iTwin's settings container.
 
-### Batch category display changes
+These methods read and write dictionaries in the underlying [SettingsDb]($backend). The dictionary name becomes the resource name, allowing multiple independent dictionaries to coexist in the same container. This mirrors the existing [IModelDb.saveSettingDictionary]($backend) / [IModelDb.deleteSettingDictionary]($backend) pattern.
 
-[Viewport.changeCategoryDisplay]($frontend) now accepts an optional `batchNotify` parameter. When set to `true`, a single notification event is raised after all categories have been added or removed, rather than one event per category. This significantly improves performance when changing the visibility of a large number of categories at once.
+#### Usage examples
 
-```typescript
-// Before: each category triggers a separate event, causing poor performance for large sets
-viewport.changeCategoryDisplay(categoryIds, true);
+Save a settings dictionary to an iTwin:
 
-// After: a single batch event is raised after all categories are updated
-viewport.changeCategoryDisplay(categoryIds, true, undefined, true);
-```
+[[include:WorkspaceExamples.SaveITwinSettings]]
 
-The default behavior (`batchNotify = false`) is unchanged, preserving backward compatibility.
+Read it back:
 
-Additionally, [ObservableSet]($bentley) now provides `addAll` and `deleteAll` methods for batch mutations, along with corresponding `onBatchAdded` and `onBatchDeleted` events. [CategorySelectorState]($frontend) exposes these via `addCategoriesBatched` and `dropCategoriesBatched`.
+[[include:WorkspaceExamples.GetITwinWorkspace]]
 
-## Quantity Formatting
+Delete it:
 
-### Updated default engineering lengths in QuantityFormatter
+[[include:WorkspaceExamples.DeleteITwinSetting]]
 
-For applications and tools using [QuantityFormatter]($frontend) and [QuantityType]($frontend) APIs, the default engineering length formatting, retrieved via `QuantityType.LengthEngineering` has been updated. Metric engineering lengths now use millimeters with 3 decimal places; imperial engineering lengths use feet with 2 decimal places.
+#### Configuration requirements
 
-### Fix `Quantity.convertTo()` return type to reflect actual behavior
+To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationClient]($backend) and [BlobContainer.service]($backend) so the backend can query and update the iTwin settings workspace container.
 
-The `Quantity.convertTo()` method has always returned a valid `Quantity` object since its initial implementation. However, its TypeScript signature incorrectly indicated it could return `undefined` with the type `Quantity | undefined`. This has been corrected to return `Quantity`.
-
-Quantity code that was defensively checking for `undefined` or using non-null assertions (`!`) can now be simplified. TypeScript will no longer warn about possible undefined values when calling this method.
-
-## Presentation
-
-### Reducing the number of properties that are loaded with content
-
-The `Descriptor` class, which describes the content to be loaded, now has a `fieldsSelector` property that allows specifying which fields should be included or excluded in the content. This is useful for cases when only a subset of fields is needed, which can reduce the amount of data that needs to be loaded and processed.
-
-Similarly, the backend's `PresentationManager.getElementProperties` method now accepts an optional `fieldsSelector` parameter, which allows clients to specify which properties should be included or excluded in the response.
-
-Reducing the number of fields that are loaded with content can improve performance, especially for large datasets, by minimizing the amount of data that needs to be transferred and processed.
+See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
