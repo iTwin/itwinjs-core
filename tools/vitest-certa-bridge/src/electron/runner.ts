@@ -324,21 +324,25 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const promises = shards.map(async (files, index) => {
     let result = await runShard(files, index);
 
-    // Retry once if the shard produced no test results at all. This covers:
+    // Retry up to twice if the shard produced no test results at all. This covers:
     // - Crashed shards (non-zero exit, e.g. native exception or OOM)
     // - Silent exits (exit 0 but 0 results, e.g. GPU process init failure on Linux CI)
+    // - Transient Electron startup failures on Windows CI (exit 0, no results even after first retry)
     // Real test failures always produce 1+ results and are never retried.
-    // On retry, disable GPU compositing to mitigate Windows GPU driver crashes
-    // (STATUS_STACK_BUFFER_OVERRUN / 0xC0000409).
-    const resultsPath = path.join(result.cacheDir, "test-results.json");
-    const hasTestResults = fs.existsSync(resultsPath);
-    if (!hasTestResults) {
+    const retryArgs: (string[] | undefined)[] = [
+      ["--disable-gpu"],  // 1st retry: disable GPU compositing (mitigates Windows GPU driver crashes / 0xC0000409)
+      ["--disable-gpu"],  // 2nd retry: same flags, covers transient Electron startup failures
+    ];
+    for (const extraArgs of retryArgs) {
+      const resultsPath = path.join(result.cacheDir, "test-results.json");
+      if (fs.existsSync(resultsPath))
+        break;
       const reason = result.exitCode !== 0
         ? `crashed (exit ${result.exitCode})`
         : `exited cleanly but produced no test results`;
-      console.warn(`shard-${index} ${reason} — retrying once with --disable-gpu`);
+      console.warn(`shard-${index} ${reason} — retrying with --disable-gpu`);
       cleanupCacheDir(result.cacheDir);
-      result = await runShard(files, index, ["--disable-gpu"]);
+      result = await runShard(files, index, extraArgs);
     }
 
     results.push(result);
