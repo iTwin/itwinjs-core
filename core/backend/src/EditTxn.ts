@@ -72,6 +72,13 @@ export class EditTxn {
       EditTxnError.throwError("not-active", "EditTxn is not active", this.iModel.key);
   }
 
+  private recordEvent(type: string, props: object): void {
+    // TODO: Should we only record events for BriefcaseDbs?
+    if (this.iModel.isBriefcaseDb() && this.iModel.txns.isIndirectChanges)
+      return;
+    this.iModel.editEvents.recordEvent(type, props);
+  }
+
   /** Start this EditTxn, making it the active transaction for the iModel.
    * @throws EditTxnError if this EditTxn is already active, another EditTxn is already active, or if unsaved changes are present.
    */
@@ -167,7 +174,9 @@ export class EditTxn {
         federationGuid: elProps.federationGuid,
         code: elProps.code,
       });
-      return elProps.id = this.iModel[_nativeDb].insertElement(elProps, options);
+      const id = elProps.id = this.iModel[_nativeDb].insertElement(elProps, options);
+      this.recordEvent("insertElement", elProps);
+      return id;
     } catch (err: any) {
       err.message = `Error inserting element [${err.message}]`;
       err.metadata = { elProps };
@@ -197,6 +206,7 @@ export class EditTxn {
         code: elProps.code,
       });
       this.iModel[_nativeDb].updateElement(elProps);
+      this.recordEvent("updateElement", elProps);
     } catch (err: any) {
       err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
       err.metadata = { elProps };
@@ -217,6 +227,7 @@ export class EditTxn {
         this.iModel.elements[_cache].delete({ id });
         this.iModel.elements[_instanceKeyCache].deleteById(id);
         iModel[_nativeDb].deleteElement(id);
+        this.recordEvent("deleteElement", { id });
       } catch (err: any) {
         err.message = `Error deleting element [${err.message}], id: ${id}`;
         err.metadata = { elementId: id };
@@ -234,7 +245,9 @@ export class EditTxn {
   public insertAspect(aspectProps: ElementAspectProps): Id64String {
     this.verifyWriteable();
     try {
-      return this.iModel[_nativeDb].insertElementAspect(aspectProps);
+      const id = this.iModel[_nativeDb].insertElementAspect(aspectProps);
+      this.recordEvent("insertAspect", { ...aspectProps, id });
+      return id;
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
       error.cause = err;
@@ -251,6 +264,7 @@ export class EditTxn {
     this.verifyWriteable();
     try {
       this.iModel[_nativeDb].updateElementAspect(aspectProps);
+      this.recordEvent("updateAspect", aspectProps);
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
       error.cause = err;
@@ -268,6 +282,7 @@ export class EditTxn {
     Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
       try {
         this.iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
+        this.recordEvent("deleteAspect", { id: aspectInstanceId });
       } catch (err: any) {
         const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
         error.cause = err;
@@ -360,7 +375,9 @@ export class EditTxn {
   public insertModel(props: ModelProps): Id64String {
     this.verifyWriteable();
     try {
-      return props.id = this.iModel[_nativeDb].insertModel(props);
+      const id = props.id = this.iModel[_nativeDb].insertModel(props);
+      this.recordEvent("insertModel", props);
+      return id;
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       error.cause = err;
@@ -380,6 +397,7 @@ export class EditTxn {
         this.iModel.models[_cache].delete(props.id);
 
       this.iModel[_nativeDb].updateModel(props);
+      this.recordEvent("updateModel", props);
     } catch (err: any) {
       const error = new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
       error.cause = err;
@@ -398,6 +416,8 @@ export class EditTxn {
     const error = this.iModel[_nativeDb].updateModelGeometryGuid(modelId);
     if (error !== IModelStatus.Success)
       throw new IModelError(error, `Error updating geometry guid for model ${modelId}`);
+
+    this.recordEvent("updateGeometryGuid", { modelId });
   }
 
   /** Delete models from the iModel.
@@ -412,6 +432,7 @@ export class EditTxn {
         this.iModel.models[_cache].delete(id);
         this.iModel.models[_instanceKeyCache].deleteById(id);
         this.iModel[_nativeDb].deleteModel(id);
+        this.recordEvent("deleteModel", { id });
       } catch (err: any) {
         const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
         error.cause = err;
@@ -431,7 +452,9 @@ export class EditTxn {
     if (!this.iModel[_nativeDb].isLinkTableRelationship(props.classFullName.replace(".", ":")))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${props.classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
 
-    return props.id = this.iModel[_nativeDb].insertLinkTableRelationship(props);
+    const id = props.id = this.iModel[_nativeDb].insertLinkTableRelationship(props);
+    this.recordEvent("insertRelationship", props);
+    return id;
   }
 
   /** Update an existing relationship in the iModel.
@@ -441,6 +464,7 @@ export class EditTxn {
   public updateRelationship(props: RelationshipProps): void {
     this.verifyWriteable();
     this.iModel[_nativeDb].updateLinkTableRelationship(props);
+    this.recordEvent("updateRelationship", props);
   }
 
   /** Delete a relationship from the iModel.
@@ -450,6 +474,7 @@ export class EditTxn {
   public deleteRelationship(props: RelationshipProps): void {
     this.verifyWriteable();
     this.iModel[_nativeDb].deleteLinkTableRelationship(props);
+    this.recordEvent("deleteRelationship", props);
   }
 
   /** Delete multiple relationships from the iModel.
@@ -459,6 +484,8 @@ export class EditTxn {
   public deleteRelationships(props: ReadonlyArray<RelationshipProps>): void {
     this.verifyWriteable();
     this.iModel[_nativeDb].deleteLinkTableRelationships(props);
+    for (const p of props)
+      this.recordEvent("deleteRelationship", p);
   }
 
 
@@ -477,6 +504,8 @@ export class EditTxn {
       }
     }
     imodel[_nativeDb].saveFileProperty(prop, strValue, blobVal);
+    // TODO: blobVal is binary and is not included in the event. It will need to be.
+    this.recordEvent("saveFileProperty", { prop, strValue });
   }
 
   /** Delete a file property from the iModel.
@@ -517,7 +546,9 @@ export class EditTxn {
    */
   public updateIModelProps(): void {
     this.verifyWriteable();
-    this.iModel[_nativeDb].updateIModelProps(this.iModel.toJSON());
+    const iModelProps = this.iModel.toJSON();
+    this.iModel[_nativeDb].updateIModelProps(iModelProps);
+    this.recordEvent("updateIModelProps", iModelProps);
   }
 
   private static readonly _settingPropNamespace = "settings";
@@ -537,6 +568,7 @@ export class EditTxn {
       stmt.bindString(3, JSON.stringify(dict));
       stmt.stepForWrite();
     });
+    this.recordEvent("saveSettingDictionary", { name, dict });
     this.saveChanges("add settings");
   }
 
@@ -552,6 +584,7 @@ export class EditTxn {
       stmt.bindString(2, name);
       stmt.stepForWrite();
     });
+    this.recordEvent("deleteSettingDictionary", { name });
     this.saveChanges("delete settings");
   }
 

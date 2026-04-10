@@ -56,6 +56,7 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
 import { EditTxn } from "./EditTxn";
+import { EditEvents } from "./EditEvents";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -456,6 +457,8 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected _locks?: LockControl = createNoOpLockControl();
 
+  private _editEvents?: EditEvents;
+
   /** @internal */
   protected _codeService?: CodeService;
 
@@ -486,6 +489,15 @@ export abstract class IModelDb extends IModel {
 
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /**
+   * The [[EditEvents]] sidecar database that records every direct modification made through an [[EditTxn]].
+   * The database is created lazily on first access and closed automatically when the iModel is closed.
+   * @beta
+   */
+  public get editEvents(): EditEvents {
+    return this._editEvents ??= new EditEvents(this);
+  }
 
   /** Provides methods for interacting with [font-related information]($docs/learning/backend/Fonts.md) stored in this iModel.
    * @beta
@@ -674,6 +686,8 @@ export abstract class IModelDb extends IModel {
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
+    this._editEvents?.close();
+    this._editEvents = undefined;
     this[_nativeDb].closeFile();
   }
 
