@@ -255,6 +255,8 @@ internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
 internal;interface;EditingScopeNotifications
+beta;interface;EditTxnError
+beta;namespace;EditTxnError
 public;type;ElementAlignedBox2d
 public;type;ElementAlignedBox3d
 public;interface;ElementAspectProps
@@ -849,7 +851,7 @@ beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
 beta;type;RunProps
-alpha;interface;SaveChangesArgs
+beta;interface;SaveChangesArgs
 public;enum;SchemaState
 public;interface;SectionDrawingLocationProps
 preview;interface;SectionDrawingLocationProps

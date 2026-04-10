@@ -10,6 +10,7 @@ import { IModelTestUtils } from "../../IModelTestUtils";
 import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { KnownTestLocations } from "../../KnownTestLocations";
+import { withEditTxn } from "../../../EditTxn";
 
 
 interface IPrimitiveBase {
@@ -177,40 +178,40 @@ export class ECSqlDatasets {
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "AllPropertiesTest" } });
     const testSchemaPath = path.join(KnownTestLocations.assetsDir, "ECSqlTests", "AllProperties.ecschema.xml");
     await iModel.importSchemas([testSchemaPath]);
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "MySpatialCategory");
-    if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+    await withEditTxn(iModel, async (txn) => {
+      const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true);
+      let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "MySpatialCategory");
+      if (undefined === spatialCategoryId)
+        spatialCategoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    let index = 0;
-    const elementIds: Id64String[] = [];
-    for (index = 0; index < 10; ++index) {
-      const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, index);
-      const testElement = iModel.elements.createElement(elementProps);
-      const elementId = iModel.elements.insertElement(testElement.toJSON());
-      assert.isTrue(Id64.isValidId64(elementId), "element insert failed");
+      let index = 0;
+      const elementIds: Id64String[] = [];
+      for (index = 0; index < 10; ++index) {
+        const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, index);
+        const testElement = iModel.elements.createElement(elementProps);
+        const elementId = txn.insertElement(testElement.toJSON());
+        assert.isTrue(Id64.isValidId64(elementId), "element insert failed");
 
-      if (index % 2 === 0) {
-        const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, elementId, undefined));
-        assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
+        if (index % 2 === 0) {
+          const aspectId = txn.insertAspect(createElemAspect("TestElementAspect", iModel, elementId, undefined));
+          assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
+        }
+        elementIds.push(elementId);
       }
-      elementIds.push(elementId);
-    }
 
-    // Add two instances of feature class instance with a navigation property
-    const poppedId1 = elementIds.pop();
-    if (poppedId1 === undefined)
-      assert.fail("Expected at least 1 element id");
-    const elementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId1));
-    assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(elementWithNavProp.toJSON())), "element with nav props insert failed");
+      // Add two instances of feature class instance with a navigation property
+      const poppedId1 = elementIds.pop();
+      if (poppedId1 === undefined)
+        assert.fail("Expected at least 1 element id");
+      const elementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId1));
+      assert.isTrue(Id64.isValidId64(txn.insertElement(elementWithNavProp.toJSON())), "element with nav props insert failed");
 
-    const poppedId2 = elementIds.pop();
-    if (poppedId2 === undefined)
-      assert.fail("Expected another element id");
-    const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId2));
-    assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(anotherElementWithNavProp.toJSON())), "element with nav props insert failed");
-
-    iModel.saveChanges();
+      const poppedId2 = elementIds.pop();
+      if (poppedId2 === undefined)
+        assert.fail("Expected another element id");
+      const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId2));
+      assert.isTrue(Id64.isValidId64(txn.insertElement(anotherElementWithNavProp.toJSON())), "element with nav props insert failed");
+    });
     iModel.close();
   }
 }

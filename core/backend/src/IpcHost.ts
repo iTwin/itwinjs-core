@@ -18,7 +18,7 @@ import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
@@ -273,10 +273,10 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     IModelDb.findByKey(key).close();
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
-    IModelDb.findByKey(key).saveChanges(description);
+    IModelDb.findByKey(key)[_implicitTxn].saveChanges(description);
   }
   public async abandonChanges(key: string): Promise<void> {
-    IModelDb.findByKey(key).abandonChanges();
+    IModelDb.findByKey(key)[_implicitTxn].abandonChanges();
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();

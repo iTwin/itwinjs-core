@@ -11,9 +11,11 @@ import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** Defines the appearance for graphics in Geometric elements
  * @public @preview
@@ -123,17 +125,26 @@ export class SubCategory extends DefinitionElement {
     return new SubCategory(subCategoryProps, iModelDb);
   }
 
-  /** Insert a new SubCategory
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a new SubCategory
+   * @param txn The EditTxn to use
    * @param parentCategoryId Insert the new SubCategory as a child of this Category
    * @param name The name of the SubCategory
    * @param appearance The appearance settings to use for this SubCategory
    * @returns The Id of the newly inserted SubCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
-    const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
-    return iModelDb.elements.insertElement(subCategory.toJSON());
+  public static insert(txn: EditTxn, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  /**
+   * Insert a new SubCategory
+   * @deprecated Use SubCategory.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const subCategory = this.create(txn.iModel, parentCategoryId, name, appearance);
+    return subCategory.insert(txn);
   }
 }
 
@@ -197,14 +208,34 @@ export class Category extends DefinitionElement {
   /** Get the Id of the default SubCategory for this Category. */
   public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
 
-  /** Set the appearance of the default SubCategory for this Category */
-  public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void {
-    if (props instanceof SubCategoryAppearance)
-      props = props.toJSON();
+  /**
+   * Set the appearance of the default SubCategory for this Category
+   * @beta
+   */
+  public setDefaultAppearance(txn: EditTxn, props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
+  /**
+   * Set the appearance of the default SubCategory for this Category
+   * @deprecated Use Category.setDefaultAppearance(txn, ...) instead.
+   */
+  public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
+  public setDefaultAppearance(txnOrProps: EditTxn | SubCategoryAppearance.Props | SubCategoryAppearance, props?: SubCategoryAppearance.Props | SubCategoryAppearance): void {
+    let txn: EditTxn;
+    let appearance: SubCategoryAppearance.Props | SubCategoryAppearance;
+    if (txnOrProps instanceof EditTxn) {
+      txn = txnOrProps;
+      if (props === undefined)
+        throw new Error("Invalid argument");
+      appearance = props;
+    } else {
+      txn = this.iModel[_implicitTxn];
+      appearance = txnOrProps;
+    }
+    if (appearance instanceof SubCategoryAppearance)
+      appearance = appearance.toJSON();
 
     const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
-    subCat.appearance = new SubCategoryAppearance(props);
-    this.iModel.elements.updateElement(subCat.toJSON());
+    subCat.appearance = new SubCategoryAppearance(appearance);
+    subCat.update(txn);
   }
 }
 
@@ -253,19 +284,27 @@ export class DrawingCategory extends Category {
     return new DrawingCategory(categoryProps, iModelDb);
   }
 
-  /** Insert a new DrawingCategory
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a new DrawingCategory
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new DrawingCategory into this [[DefinitionModel]]
    * @param name The name of the DrawingCategory
    * @param defaultAppearance The appearance settings to use for the default SubCategory of this DrawingCategory
    * @returns The Id of the newly inserted DrawingCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
-    const category = this.create(iModelDb, definitionModelId, name);
-    const elements = iModelDb.elements;
-    category.id = elements.insertElement(category.toJSON());
-    category.setDefaultAppearance(defaultAppearance);
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  /**
+   * Insert a new DrawingCategory
+   * @deprecated Use DrawingCategory.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const category = this.create(txn.iModel, definitionModelId, name);
+    category.id = category.insert(txn);
+    category.setDefaultAppearance(txn, defaultAppearance);
     return category.id;
   }
 }
@@ -314,18 +353,27 @@ export class SpatialCategory extends Category {
     return new SpatialCategory(categoryProps, iModelDb);
   }
 
-  /** Insert a new SpatialCategory
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a new SpatialCategory
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new SpatialCategory into this DefinitionModel
    * @param name The name of the SpatialCategory
    * @param defaultAppearance The appearance settings to use for the default SubCategory of this SpatialCategory
    * @returns The Id of the newly inserted SpatialCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
-    const category = this.create(iModelDb, definitionModelId, name);
-    category.id = iModelDb.elements.insertElement(category.toJSON());
-    category.setDefaultAppearance(defaultAppearance);
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  /**
+   * Insert a new SpatialCategory
+   * @deprecated Use SpatialCategory.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const category = this.create(txn.iModel, definitionModelId, name);
+    category.id = category.insert(txn);
+    category.setDefaultAppearance(txn, defaultAppearance);
     return category.id;
   }
 }

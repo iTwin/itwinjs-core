@@ -19,6 +19,8 @@ import { IModelDb } from "../IModelDb";
 import { PhysicalMaterial } from "../Material";
 import { GraphicalModel3d, GroupInformationModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
+import { EditTxn } from "../EditTxn";
+import { _implicitTxn } from "../internal/Symbols";
 
 /** A graphical detailing symbol that is placed on a [[Drawing]] or [[Sheet]].
  * @public
@@ -108,28 +110,34 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
   public constructor(props: GeometricModel3dProps, iModel: IModelDb) {
     super(props, iModel);
   }
-  /** Insert a BisCore:GraphicalPartition3d and a Generic:GraphicalModel3d that sub-models it.
-   * @param iModelDb Insert into this iModel
+  /** Insert a BisCore:GraphicalPartition3d and a Generic:GraphicalModel3d that sub-models it using an explicit transaction.
+   * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The GraphicalPartition3d will be inserted as a child of this Subject element.
    * @param name The name of the GraphicalPartition3d that the new Generic:GraphicalModel3d will sub-model.
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted GraphicalPartition3d and GraphicalModel3d (same value).
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  /** @deprecated Use GenericGraphicalModel3d.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const iModelDb = txn.iModel;
     const partitionProps: InformationPartitionElementProps = {
       classFullName: GraphicalPartition3d.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: GraphicalPartition3d.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = txn.insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
       isPlanProjection,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return txn.insertModel(modelProps);
   }
 }
 
@@ -174,22 +182,26 @@ export class GroupModel extends GroupInformationModel {
   public constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
   }
-  /** Insert a GroupInformationPartition and a GroupModel that breaks it down.
-   * @param iModelDb Insert into this iModel
+  /** Insert a GroupInformationPartition and a GroupModel that breaks it down using an explicit transaction.
+   * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The GroupInformationPartition will be inserted as a child of this Subject element.
    * @param name The name of the GroupInformationPartition that the new GroupModel will break down.
    * @returns The Id of the newly inserted GroupModel.
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  /** @deprecated Use GroupModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const partitionId = txn.insertElement({
       classFullName: GroupInformationPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: GroupInformationPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+      code: GroupInformationPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
