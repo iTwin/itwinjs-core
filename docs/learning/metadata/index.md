@@ -14,7 +14,7 @@ The API is split into these packages:
 
 ## Obtaining metadata from an imodel
 
-An [IModelDb]($backend) owns a [SchemaContext]($ecschema-metadata) which can be used to access all the meta information stored inside of the imodel. For a faster alternative optimized for runtime lookups, see [RuntimeSchemaContext](./RuntimeSchemaContext.md).
+An [IModelDb]($backend) owns a [SchemaContext]($ecschema-metadata) which can be used to access all the meta information stored inside of the imodel. For a lighter read-only alternative, see [RuntimeSchemaContext](./RuntimeSchemaContext.md).
 
 *Example:*
 
@@ -72,5 +72,3 @@ For generic information about custom attributes see [ECCustomAttributes](../../b
 When accessing the custom attributes like in the example above, the information is provided as JSON.
 
 Accessing the information as shown above only yields information from local custom attributes (directly set on the object). To include inherited ones you can use the methods like [ECClass.getCustomAttributes]($ecschema-metadata) or [Property.getCustomAttributes]($ecschema-metadata). Most of the time we're only interested in local custom attributes, and traversing base objects takes additional time.
-
-

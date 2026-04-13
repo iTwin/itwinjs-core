@@ -6,13 +6,13 @@ It lives in `@itwin/ecschema-metadata` and is the recommended way to access sche
 
 For the binary transport format specification, see [RuntimeSchemaBinaryFormat.md](./RuntimeSchemaBinaryFormat.md).
 
-## Why not ecschema-metadata?
+## Why not SchemaContext?
 
-[ecschema-metadata](./index.md) (`@itwin/ecschema-metadata`) is the full-fidelity schema toolkit. It models every detail of the EC specification - units, formats, constants, phenomena, custom attribute instances, schema references, editing, and round-trip serialization to XML/JSON. It is indispensable for schema authoring, validation, and tooling that needs the complete EC object graph.
+SchemaContext is from the full-fidelity schema toolkit. It models every detail of the EC specification - units, formats, constants, phenomena, custom attribute instances, schema references, editing, and round-trip serialization to XML/JSON. It is indispensable for schema authoring, validation, and tooling that needs the complete EC object graph.
 
 That completeness has a cost at runtime:
 
-|                       | ecschema-metadata                                         | RuntimeSchemaContext                                                    |
+|                       | SchemaContext                                         | RuntimeSchemaContext                                                    |
 | --------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
 | **Loading**           | One async RPC per schema (84 schemas = 84 round-trips)    | Single binary blob, one RPC call                                        |
 | **Memory**            | full object graph with cross-references                   | flat arrays, string dedup, property dedup, consumes  90-95% less memory |
@@ -23,7 +23,7 @@ That completeness has a cost at runtime:
 
 **Use RuntimeSchemaContext when** you need fast, synchronous lookups at runtime - property grids, IS-A checks, class navigation, presentation logic.
 
-**Use ecschema-metadata when** you need to author schemas, validate against rules, serialize to XML, or access units/formats/phenomena.
+**Use SchemaContext when** you need to author schemas, validate against rules, serialize to XML, or access units/formats/phenomena.
 
 ## How does it relate to ECDbMeta ECSQL queries?
 
@@ -138,7 +138,9 @@ Calling `getProperties()` allocates a new `RuntimeProperty` wrapper for each pro
 
 ## Excluded schemas and data completeness
 
-`RuntimeSchemaContext` intentionally excludes infrastructure schemas that are not useful at runtime: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is defined in the C++ writer's `IsExcludedSchema()` function in `RuntimeSchemaWriter.cpp`.
+`RuntimeSchemaContext` intentionally excludes a select list of schemas: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is defined in the C++ writer's `IsExcludedSchema()` function in `RuntimeSchemaWriter.cpp`.
+
+The rationale for Units/Formats being: We are in the process of decoupling those from schemas. In a yet to be shipped API they will be loaded separately, so this API will already only expose identifiers which will be used to perform the lookup.
 
 Because these schemas are excluded wholesale, cross-references that point into them become unresolvable. The loader handles this as follows:
 
