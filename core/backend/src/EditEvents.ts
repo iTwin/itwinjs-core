@@ -80,25 +80,23 @@ export class EditEvents {
   }
 
   /**
-   * Replays all recorded events into the given [[EditTxn]].
+   * Replays all recorded events into the given [[EditTxn]] using the high-level editing methods.
    *
-   * Events are applied in the order they were recorded. For each insert, if the target iModel
-   * assigns a different ID than the original, the mapping is tracked and all subsequent events
-   * referencing the original ID are automatically redirected to the new one.
-   *
-   * Remapped ID fields include: `id`, `model.id`, `parent.id`, `code.scope` (elements),
-   * `on.id` (aspects), `modeledElement.id` (models), and `sourceId`/`targetId` (relationships).
+   * Events are applied in the order they were recorded:
+   * - **Elements** use `insertElement` with `forceUseId` to preserve original IDs, plus
+   *   `updateElement` and `deleteElement` for the full handler pipeline.
+   * - **Models** use `insertModel` / `updateModel` / `deleteModel`. Model IDs are always
+   *   equal to the modeled element's ID, so no remapping is needed.
+   * - **Aspects** and **relationships** use `insertAspect` / `insertRelationship` etc.
+   *   Because their IDs cannot be forced on insert, a remap table tracks
+   *   original → new IDs and is applied to subsequent update/delete events.
    *
    * @param txn The active [[EditTxn]] into which events are replayed.
    * @beta
    */
   public replay(txn: EditTxn): void {
-    const idMap = new Map<Id64String, Id64String>();
-    const remap = (id: Id64String): Id64String => idMap.get(id) ?? id;
-    const remapRelated = <T extends { id: Id64String }>(r: T): T => {
-      const newId = remap(r.id);
-      return newId === r.id ? r : { ...r, id: newId };
-    };
+    const aspectIdMap = new Map<Id64String, Id64String>();
+    const relationshipIdMap = new Map<Id64String, Id64String>();
 
     this._db.withPreparedSqliteStatement("SELECT type, props FROM events ORDER BY id", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -107,69 +105,62 @@ export class EditEvents {
         const p: any = JSON.parse(stmt.getValueString(1));
 
         switch (type) {
-          case "insertElement": {
-            const originalId: Id64String = p.id;
-            const newId = txn.insertElement({
-              ...p,
-              id: undefined,
-              model: remapRelated(p.model),
-              ...(p.parent && { parent: remapRelated(p.parent) }),
-              ...(p.code && { code: { ...p.code, scope: remap(p.code.scope) } }),
-            });
-            idMap.set(originalId, newId);
+          case "insertElement":
+            txn.insertElement(p, { forceUseId: true });
             break;
-          }
           case "updateElement":
-            txn.updateElement({
-              ...p,
-              id: remap(p.id),
-              ...(p.model && { model: remapRelated(p.model) }),
-              ...(p.parent && { parent: remapRelated(p.parent) }),
-              ...(p.code && { code: { ...p.code, scope: remap(p.code.scope) } }),
-            });
+            txn.updateElement(p);
             break;
           case "deleteElement":
-            txn.deleteElement(remap(p.id));
+            txn.deleteElement(p.id);
             break;
+
+          case "insertModel":
+            txn.insertModel(p);
+            break;
+          case "updateModel":
+            txn.updateModel(p);
+            break;
+          case "updateGeometryGuid":
+            txn.updateGeometryGuid(p.modelId);
+            break;
+          case "deleteModel":
+            txn.deleteModel(p.id);
+            break;
+
           case "insertAspect": {
             const originalId: Id64String = p.id;
-            const newId = txn.insertAspect({ ...p, id: undefined, on: remapRelated(p.on) });
-            idMap.set(originalId, newId);
+            delete p.id; // let the target assign a new ID
+            const newId = txn.insertAspect(p);
+            if (newId !== originalId)
+              aspectIdMap.set(originalId, newId);
             break;
           }
           case "updateAspect":
-            txn.updateAspect({ ...p, id: remap(p.id), on: remapRelated(p.on) });
+            p.id = aspectIdMap.get(p.id) ?? p.id;
+            txn.updateAspect(p);
             break;
           case "deleteAspect":
-            txn.deleteAspect(remap(p.id));
+            txn.deleteAspect(aspectIdMap.get(p.id) ?? p.id);
             break;
-          case "insertModel": {
-            const originalId: Id64String = p.id;
-            const newId = txn.insertModel({ ...p, id: undefined, modeledElement: remapRelated(p.modeledElement) });
-            idMap.set(originalId, newId);
-            break;
-          }
-          case "updateModel":
-            txn.updateModel({ ...p, id: remap(p.id), ...(p.modeledElement && { modeledElement: remapRelated(p.modeledElement) }) });
-            break;
-          case "updateGeometryGuid":
-            txn.updateGeometryGuid(remap(p.modelId));
-            break;
-          case "deleteModel":
-            txn.deleteModel(remap(p.id));
-            break;
+
           case "insertRelationship": {
             const originalId: Id64String = p.id;
-            const newId = txn.insertRelationship({ ...p, id: undefined, sourceId: remap(p.sourceId), targetId: remap(p.targetId) });
-            idMap.set(originalId, newId);
+            delete p.id; // let the target assign a new ID
+            const newId = txn.insertRelationship(p);
+            if (newId !== originalId)
+              relationshipIdMap.set(originalId, newId);
             break;
           }
           case "updateRelationship":
-            txn.updateRelationship({ ...p, id: remap(p.id), sourceId: remap(p.sourceId), targetId: remap(p.targetId) });
+            p.id = relationshipIdMap.get(p.id) ?? p.id;
+            txn.updateRelationship(p);
             break;
           case "deleteRelationship":
-            txn.deleteRelationship({ ...p, id: remap(p.id), sourceId: remap(p.sourceId), targetId: remap(p.targetId) });
+            p.id = relationshipIdMap.get(p.id) ?? p.id;
+            txn.deleteRelationship(p);
             break;
+
           case "saveFileProperty":
             txn.saveFileProperty(p.prop, p.strValue);
             break;

@@ -175,6 +175,8 @@ export class EditTxn {
         code: elProps.code,
       });
       const id = elProps.id = this.iModel[_nativeDb].insertElement(elProps, options);
+      if (!elProps.federationGuid)
+        elProps.federationGuid = this.iModel.elements.getFederationGuidFromId(id);
       this.recordEvent("insertElement", elProps);
       return id;
     } catch (err: any) {
