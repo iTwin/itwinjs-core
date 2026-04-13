@@ -183,7 +183,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * * Local fractions in the pair are interpolated into the global fraction ranges.
    * * Points are recomputed from the parent curves at the global fractions.
    * * The pair is recorded only if the XY distance is within `_maxDistanceSquared`.
-   * @param pair details with local fractions; modified in place with global fractions, curves, and points
+   * @param pair local details (curve unspecified); modified in place with global fractions, curves, and points
    * @param cpA parent curve A
    * @param fractionA0 global fraction corresponding to local fraction 0 on curve A
    * @param fractionA1 global fraction corresponding to local fraction 1 on curve A
