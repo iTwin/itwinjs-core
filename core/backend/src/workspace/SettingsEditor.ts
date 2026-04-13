@@ -54,12 +54,22 @@ export namespace SettingsEditor {
  * @internal
  */
 export namespace SettingsContainers {
+  /** Arguments for [[SettingsContainers.queryContainers]]. */
+  export interface QueryArgs {
+    /** The iTwinId whose settings containers should be queried. */
+    iTwinId: GuidString;
+    /** Optional label filter. */
+    label?: string;
+    /** Whether to include settings containers from parent iTwins. Defaults to `false`. */
+    includeParentITwins?: boolean;
+  }
+
   /**
    * Query the [[BlobContainer]] service for all settings containers associated with a given iTwin.
    * Automatically filters by `containerType: "settings"`.
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
-  async function queryContainers(args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> {
+  async function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]> {
     if (undefined === BlobContainer.service)
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
