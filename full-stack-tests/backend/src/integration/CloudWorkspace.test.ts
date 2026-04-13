@@ -445,6 +445,19 @@ describe("Cloud workspace containers", () => {
       const deletedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
       expect(deletedWorkspace.settings.getNumber("app1/max1")).equal(17);
       expect(deletedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
+
+      // Verify organization-priority (parent iTwin) settings provide fallback for iTwin-priority settings.
+      await IModelHost.saveSettingDictionary(iTwin2Id, "org/defaults", { "app1/max1": 42, "app1/max2": 99 });
+      const orgWorkspace = await IModelHost.getITwinWorkspace(iTwin2Id);
+      assert(orgWorkspace.settingsSources !== undefined && deletedWorkspace.settingsSources !== undefined);
+      const orgSources = [orgWorkspace.settingsSources].flat().map((s) => ({ ...s, priority: SettingsPriority.organization }));
+      const childSources = [deletedWorkspace.settingsSources].flat();
+      const combinedWorkspace = await IModelHost.getITwinWorkspace([...orgSources, ...childSources]);
+      expect(combinedWorkspace.settings.getNumber("app1/max1")).equal(17); // iTwin-priority overrides org
+      expect(combinedWorkspace.settings.getNumber("app1/max2")).equal(99); // org-priority fallback
+      combinedWorkspace.close();
+      orgWorkspace.close();
+
       deletedWorkspace.close();
     } finally {
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;

@@ -54,20 +54,12 @@ export namespace SettingsEditor {
  * @internal
  */
 export namespace SettingsContainers {
-  /** Arguments for [[SettingsContainers.queryContainers]]. */
-  export interface QueryArgs {
-    /** The iTwinId whose settings containers should be queried. */
-    iTwinId: GuidString;
-    /** Optional label filter. */
-    label?: string;
-  }
-
   /**
    * Query the [[BlobContainer]] service for all settings containers associated with a given iTwin.
    * Automatically filters by `containerType: "settings"`.
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    */
-  async function queryContainers(args: QueryArgs): Promise<BlobContainer.MetadataResponse[]> {
+  async function queryContainers(args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> {
     if (undefined === BlobContainer.service)
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
@@ -102,24 +94,44 @@ export namespace SettingsContainers {
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
     const userToken = await IModelHost.getAccessToken();
-    const containers = await queryContainers({ iTwinId });
+    const containers = await queryContainers({ iTwinId, includeParentITwins: true });
     if (!containers || containers.length === 0) return undefined;
-    if (containers.length > 1) {
-      ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
-        message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
-        iTwinId,
+
+    const byITwin = new Map<string, BlobContainer.MetadataResponse[]>();
+    for (const container of containers) {
+      const ownerITwinId = container.iTwinId;
+      const group = byITwin.get(ownerITwinId);
+      if (group)
+        group.push(container);
+      else
+        byITwin.set(ownerITwinId, [container]);
+    }
+    for (const [ownerITwinId, group] of byITwin) {
+      if (group.length > 1) {
+        ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
+          message: `Multiple iTwin settings containers were found for '${ownerITwinId}', so a container cannot be automatically selected.`,
+          iTwinId: ownerITwinId,
+        });
+      }
+    }
+
+    const results: WorkspaceDbSettingsProps[] = [];
+    for (const [ownerITwinId, group] of byITwin) {
+      const [container] = group;
+      const priority = ownerITwinId === iTwinId ? SettingsPriority.iTwin : SettingsPriority.organization;
+      const tokenProps = await BlobContainer.service.requestToken({ containerId: container.containerId, accessLevel: "read", userToken });
+      results.push({
+        baseUri: tokenProps.baseUri,
+        containerId: container.containerId,
+        storageType: tokenProps.provider,
+        accessToken: tokenProps.token,
+        priority,
+        dbName: settingsWorkspaceDbName,
+        includePrerelease: true,
       });
     }
 
-    const tokenProps = await BlobContainer.service.requestToken({ containerId: containers[0].containerId, accessLevel: "read", userToken });
-    return [{
-      baseUri: tokenProps.baseUri,
-      containerId: containers[0].containerId,
-      storageType: tokenProps.provider,
-      accessToken: tokenProps.token,
-      priority: SettingsPriority.iTwin,
-      dbName: settingsWorkspaceDbName,
-      includePrerelease: true,
-    }];
+    results.sort((a, b) => a.priority - b.priority);
+    return results;
   }
 }

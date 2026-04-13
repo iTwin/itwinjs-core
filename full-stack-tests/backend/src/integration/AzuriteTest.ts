@@ -196,7 +196,7 @@ export namespace AzuriteTest {
           && m?.itwinid === iTwinId
           && (iModelId === undefined || m?.imodelid === iModelId)
           && (label === undefined || m?.label === label))
-          results.push({ containerId: name, containerType: m?.containertype, label: m?.label, description: m?.description, json: m?.json ? JSON.parse(m.json) : undefined });
+          results.push({ containerId: name, containerType: m?.containertype, label: m?.label, description: m?.description, json: m?.json ? JSON.parse(m.json) : undefined, iTwinId: m?.itwinid ?? args.iTwinId });
       }
       return results;
     },
