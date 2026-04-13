@@ -80,7 +80,7 @@ describe("ITwin Workspace", () => {
       queryScope: async () => ({ iTwinId: childITwinId }),
       queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
       queryContainersMetadata: async () => [
-        ...childContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: childITwinId, parentITwinId: parentITwinId })),
+        ...childContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: childITwinId, parentITwinId })),
         ...parentContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: parentITwinId })),
       ],
       updateJson: async () => { },
