@@ -23,4 +23,11 @@ module.exports = [
       "@typescript-eslint/no-non-null-assertion": "off"
     }
   },
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "@typescript-eslint/await-thenable": "warn",
+      "@typescript-eslint/no-deprecated": "warn",
+    }
+  },
 ]
