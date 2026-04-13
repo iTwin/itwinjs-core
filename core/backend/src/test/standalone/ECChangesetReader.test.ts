@@ -793,6 +793,116 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
 
+  it("txn1 | rowOptions: abbreviateBlobs: false", () => {
+    const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: false });
+    assert.equal(instances.length, 3);
+
+    // --- instances[0]: DrawingModel Updated New ---
+    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    expect(modelNew).to.exist;
+    assert.equal(modelNew!.ECInstanceId, drawingModelId);
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelNew!.ECClassId)); // still raw hex
+    assert.isString(modelNew!.LastMod);
+    assert.isString(modelNew!.GeometryGuid);
+    assert.deepEqual(Object.keys(modelNew!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "GeometryGuid", "$meta"].sort());
+    assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(modelNew!.$meta.op, "Updated");
+    assert.equal(modelNew!.$meta.stage, "New");
+    assert.equal(modelNew!.$meta.mode, "All_Properties");
+    assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelNew!.$meta.rowOptions, { abbreviateBlobs: false });
+    assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+    // --- instances[1]: DrawingModel Updated Old ---
+    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(modelOld).to.exist;
+    assert.equal(modelOld!.ECInstanceId, drawingModelId);
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelOld!.ECClassId));
+    assert.deepEqual(Object.keys(modelOld!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
+    assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(modelOld!.$meta.op, "Updated");
+    assert.equal(modelOld!.$meta.stage, "Old");
+    assert.equal(modelOld!.$meta.mode, "All_Properties");
+    assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelOld!.$meta.rowOptions, { abbreviateBlobs: false });
+    assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+    // --- instances[2]: Test2dElement Inserted New ---
+    const elem = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
+    expect(elem).to.exist;
+    assert.equal(elem!.ECInstanceId, fullElementId);
+    assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elem!.ECClassId)); // still raw hex (no classIdsToClassNames)
+    assert.equal(elem!.Model.Id, drawingModelId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.Model.RelECClassId), "BisCore:ModelContainsElements");
+    assert.isString(elem!.LastMod);
+    assert.equal(elem!.CodeSpec.Id, "0x1");
+    assert.equal(rwIModel.getClassNameFromId(elem!.CodeSpec.RelECClassId), "BisCore:CodeSpecSpecifiesCode");
+
+    assert.equal(elem!.CodeScope.Id, "0x1");
+    assert.equal(rwIModel.getClassNameFromId(elem!.CodeScope.RelECClassId), "BisCore:ElementScopesCode");
+    assert.isString(elem!.FederationGuid);
+    assert.equal(elem!.Category.Id, drawingCategoryId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.Category.RelECClassId), "BisCore:GeometricElement2dIsInCategory");
+    assert.deepEqual(elem!.Origin, { X: 0, Y: 0 });
+    assert.equal(elem!.Rotation, 0);
+    assert.deepEqual(elem!.BBoxLow, { X: -25, Y: -25 });
+    assert.deepEqual(elem!.BBoxHigh, { X: 15, Y: 15 });
+    // GeometryStream is a blob — abbreviated to {"bytes": N}
+    assert.deepEqual(elem!.GeometryStream, new Uint8Array([
+      1, 0, 0, 0, 8, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+      7, 0, 0, 0, 112, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0,
+      16, 0, 88, 0, 8, 0, 32, 0, 56, 0, 0, 0, 80, 0, 7, 0,
+      16, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 0, 0,
+      24, 45, 68, 84, 251, 33, 25, 64, 7, 0, 0, 0, 112, 0, 0, 0,
+      24, 0, 0, 0, 0, 0, 0, 0, 16, 0, 88, 0, 8, 0, 32, 0,
+      56, 0, 0, 0, 80, 0, 7, 0, 16, 0, 0, 0, 0, 0, 0, 1,
+      0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 20, 64,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64,
+      0, 0, 0, 0, 0, 0, 0, 0, 24, 45, 68, 84, 251, 33, 25, 64,
+      7, 0, 0, 0, 112, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0,
+      16, 0, 88, 0, 8, 0, 32, 0, 56, 0, 0, 0, 80, 0, 7, 0,
+      16, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 20, 192,
+      0, 0, 0, 0, 0, 0, 20, 192, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 52, 64, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 52, 64, 0, 0, 0, 0, 0, 0, 0, 0,
+      24, 45, 68, 84, 251, 33, 25, 64
+    ]));
+    assert.deepEqual(elem!.BinProp, new Uint8Array([1, 2, 3, 4]));
+    assert.equal(elem!.StrProp, "hello");
+    assert.equal(elem!.IntProp, 42);
+    assert.equal(elem!.LongProp, 9007199254740991);
+    assert.closeTo(elem!.DblProp as number, 3.14159265358979, 1e-10);
+    assert.equal(elem!.BoolProp, true);
+    assert.equal(elem!.DtProp, "2024-01-15T12:00:00.000");
+    assert.deepEqual(elem!.Pt2dProp, { X: 1.5, Y: 2.5 });
+    assert.deepEqual(elem!.Pt3dProp, { X: 3, Y: 4, Z: 5 });
+    assert.deepEqual(elem!.StructProp, { X: 1, Y: 2, Z: 3, Label: "origin", Pt2d: { X: 0.5, Y: 0.5 }, Pt3d: { X: 1, Y: 2, Z: 3 } });
+    assert.deepEqual(elem!.IntArrProp, [10, 20, 30]);
+    assert.deepEqual(elem!.StrArrProp, ["alpha", "beta", "gamma"]);
+    assert.equal(elem!.StructArrProp.length, 2);
+    assert.equal(elem!.RelatedElem.Id, drawingCategoryId);
+    assert.equal(rwIModel.getClassNameFromId(elem!.RelatedElem.RelECClassId), "TestDomain:Test2dUsesElement");
+    assert.deepEqual(Object.keys(elem!).sort(), [
+      "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope", "FederationGuid", "$meta",
+      "Category", "Origin", "Rotation", "BBoxLow", "BBoxHigh", "GeometryStream",
+      "StrProp", "IntProp", "LongProp", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp", "RelatedElem", "BinProp"
+    ].sort());
+    assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "nativeKey", "mode", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
+    assert.equal(elem!.$meta.op, "Inserted");
+    assert.equal(elem!.$meta.stage, "New");
+    assert.equal(elem!.$meta.mode, "All_Properties");
+    assert.deepEqual(elem!.$meta.rowOptions, { abbreviateBlobs: false });
+    assert.equal(elem!.$meta.isIndirectChange, false);
+  });
+
   it("txn1 | rowOptions: classIdsToClassNames + useJsName", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true });
     assert.equal(instances.length, 3);
