@@ -1264,6 +1264,7 @@ describe("RegionOps", () => {
   it("constructAllXYRegionLoops3", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    let dy = 0;
 
     const path1 = Path.create(LineString3d.create([
       Point3d.create(900, 550),
@@ -1272,7 +1273,8 @@ describe("RegionOps", () => {
       Point3d.create(985, 550),
       Point3d.create(900, 550),
     ]));
-    const line = LineString3d.create(Point3d.create(940, 570), Point3d.create(940, 420));
+    const line1 = LineString3d.create(Point3d.create(940, 570), Point3d.create(940, 420));
+    const line2 = LineString3d.create(Point3d.create(910, 570), Point3d.create(910, 420));
     const path2 = Path.create(LineString3d.create([
       Point3d.create(920, 530),
       Point3d.create(920, 450),
@@ -1280,8 +1282,9 @@ describe("RegionOps", () => {
       Point3d.create(960, 530),
       Point3d.create(920, 530),
     ]));
-    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, line, path2], [8, 8, 4, 4]);
-    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, path2], [11, 4], 0, 200);
+    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, line1, path2], [8, 8, 4, 4]);
+    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, line2, path2], [4, 11, 4], 0, dy += 200);
+    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, path2], [11, 4], 0, dy += 200);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops3");
     expect(ck.getNumErrors()).toBe(0);
