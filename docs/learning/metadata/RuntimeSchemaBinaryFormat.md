@@ -136,7 +136,7 @@ Each KoQ record:
 | uint32  | descriptionSid       | Description (SRef)                |
 | uint32  | persistenceUnitSid   | Persistence unit string (SRef)    |
 | float64 | relativeError        | Relative error                    |
-| uint32  | presentationUnitsSid | Presentation units string (SRef)  |
+| uint32  | presentationFormatsSid | Presentation formats string (SRef) |
 | uint32  | ecInstanceId         | ec_KindOfQuantity.Id              |
 
 Record size: **36 bytes** fixed.

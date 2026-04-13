@@ -206,7 +206,7 @@ export interface KoqData {
   readonly labelSid: number;
   readonly descriptionSid: number;
   readonly persistenceUnitSid: number;
-  readonly presentationUnitsSid: number;
+  readonly presentationFormatsSid: number;
   readonly relativeError: number;
 }
 

@@ -328,6 +328,8 @@ export abstract class RuntimeProperty {
   }
   public get kind(): PropertyKind { return this._def.kind; }
   public get isReadOnly(): boolean { return this._def.isReadOnly; }
+  /** Reflects the `HiddenProperty` custom attribute from `CoreCustomAttributes`.
+   * Properties marked hidden are typically excluded from UI display but remain accessible programmatically. */
   public get isHidden(): boolean { return this._def.isHidden; }
   /** Display priority. Higher values should be displayed more prominently. 0 means default. */
   public get priority(): number { return this._ref.priority; }
@@ -632,9 +634,10 @@ export class RuntimeKoQ {
     const sid = this._data.persistenceUnitSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
+  // EC XML serializes this as "presentationUnits"; we use "presentationFormats" to align with KindOfQuantity.presentationFormats in ecschema-metadata.
   /** Presentation format strings, semicolon-separated. Empty string if none. */
-  public get presentationUnits(): string {
-    const sid = this._data.presentationUnitsSid;
+  public get presentationFormats(): string {
+    const sid = this._data.presentationFormatsSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
 }

@@ -331,7 +331,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       labelSid: builder.internString(kLabel),
       descriptionSid: builder.internString(kDesc),
       persistenceUnitSid: builder.internString(kPersUnit),
-      presentationUnitsSid: builder.internString(kPresUnits),
+      presentationFormatsSid: builder.internString(kPresUnits),
       relativeError: kRelError,
     });
     koqRowIdToIdx.set(kEcInstanceId, kIdx);
