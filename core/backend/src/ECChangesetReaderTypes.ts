@@ -39,7 +39,7 @@ export interface ECNativeChangeMeta {
   op: ECNativeChangeOp;
   /** Whether this is the pre-change (`"Old"`) or post-change (`"New"`) snapshot. */
   stage: ECNativeChangeStage;
-  /** Change-stream index positions (one per table contribution). */
+  /** Change-stream index positions. */
   changeIndexes: number[];
   /**
    * Native instance key computed by the native layer.
