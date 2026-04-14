@@ -821,6 +821,32 @@ describe("Reload queue and onFormattingReady", () => {
     expect(callOrder).toEqual(["formattingReady", "systemChanged"]);
   });
 
+  it("onActiveFormattingUnitSystemChanged deferred when reload already in-flight", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    const callOrder: string[] = [];
+    qf.onActiveFormattingUnitSystemChanged.addListener(() => { callOrder.push("systemChanged"); });
+    qf.onFormattingReady.addListener(() => { callOrder.push("formattingReady"); });
+
+    // Start a full reload (in-flight) without awaiting
+    const fullReload = qf.setUnitsProvider(qf.unitsProvider);
+    // While the full reload is running, request a unit system change — scheduleReload returns
+    // immediately because _reloadInFlight is true, so the emit must be deferred.
+    const systemChange = qf.setActiveUnitSystem("metric");
+
+    await fullReload;
+    await systemChange;
+
+    // systemChanged must still come after formattingReady, even though setActiveUnitSystem
+    // returned before the reload that processes it actually ran.
+    const readyIndices = callOrder.reduce<number[]>((acc, v, i) => { if (v === "formattingReady") acc.push(i); return acc; }, []);
+    const changedIndices = callOrder.reduce<number[]>((acc, v, i) => { if (v === "systemChanged") acc.push(i); return acc; }, []);
+    expect(changedIndices.length).toBe(1);
+    expect(readyIndices.length).toBeGreaterThanOrEqual(1);
+    // The system-changed event must fire after the last formattingReady
+    expect(changedIndices[0]).toBeGreaterThan(readyIndices[readyIndices.length - 1]);
+  });
+
   describe("Composite-keyed spec registry", () => {
     const simpleDecimalFormat = {
       type: "Decimal" as const,
@@ -939,15 +965,15 @@ describe("FormatSpecHandle", () => {
     await qf.onInitialized();
     await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
 
-    const initialCount = qf.onFormattingReadyUnordered.numberOfListeners;
+    const initialCount = qf.onFormattingReady.numberOfListeners;
     for (let i = 0; i < 10; i++) {
       const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
       handle[Symbol.dispose]();
     }
-    expect(qf.onFormattingReadyUnordered.numberOfListeners).toBe(initialCount);
+    expect(qf.onFormattingReady.numberOfListeners).toBe(initialCount);
   });
 
-  it("refreshes specs when onFormattingReadyUnordered fires", async () => {
+  it("refreshes specs when onFormattingReady fires", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
 
@@ -957,7 +983,7 @@ describe("FormatSpecHandle", () => {
 
     // Populate registry then trigger the event
     await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
-    qf.onFormattingReadyUnordered.emit();
+    qf.onFormattingReady.emit();
 
     expect(handle.formatterSpec).toBeDefined();
     expect(handle.parserSpec).toBeDefined();

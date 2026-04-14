@@ -44,7 +44,7 @@ export class FormatSpecHandle implements Disposable {
     this._koqName = args.name;
     this._persistenceUnit = args.persistenceUnitName;
     this._system = args.system;
-    this._removeListener = args.provider.onFormattingReadyUnordered.addListener(() => {
+    this._removeListener = args.provider.onFormattingReady.addListener(() => {
       this._refresh();
     });
     this._refresh();

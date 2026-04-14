@@ -12,7 +12,7 @@ function createMockProvider(entry?: FormattingSpecEntry): FormattingSpecProvider
   const ready = new BeUnorderedUiEvent<void>();
   return {
     ready,
-    onFormattingReadyUnordered: ready,
+    onFormattingReady: ready,
     getSpecsByNameAndUnit: vi.fn().mockReturnValue(entry),
     formatQuantity: vi.fn().mockImplementation((value: number, _spec: FormatterSpec) => `formatted:${value}`),
   };
@@ -67,7 +67,7 @@ describe("FormatSpecHandle", () => {
     handle[Symbol.dispose]();
   });
 
-  it("refreshes specs when onFormattingReadyUnordered fires", () => {
+  it("refreshes specs when onFormattingReady fires", () => {
     const provider = createMockProvider(undefined);
     const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M" });
     expect(handle.formatterSpec).toBeUndefined();

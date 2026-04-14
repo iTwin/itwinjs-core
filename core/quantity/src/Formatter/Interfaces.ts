@@ -270,6 +270,6 @@ export interface FormattingSpecProvider {
   /** Event raised after the provider has finished reloading its caches.
    * Uses Set-backed event for safe concurrent add/remove during emit.
    */
-  readonly onFormattingReadyUnordered: BeUnorderedUiEvent<void>;
+  readonly onFormattingReady: BeUnorderedUiEvent<void>;
 }
 

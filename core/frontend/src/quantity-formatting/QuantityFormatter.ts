@@ -453,29 +453,22 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * This is the terminal "ready" signal — it fires once the QuantityFormatter has fully rebuilt its caches and is
    * ready to format/parse values. Subscribe to this event to know when formatting specs are available.
    *
-   * For ordered subscriptions, use this event. For unordered subscriptions that are safe for concurrent
-   * modification (e.g., `FormatSpecHandle`), use [[onFormattingReadyUnordered]].
+   * Uses `BeUnorderedUiEvent` (Set-backed) so listeners can safely add/remove themselves during emit —
+   * this is critical for `FormatSpecHandle` instances that subscribe/dispose at volume.
    * @beta
    */
-  public readonly onFormattingReady = new BeUiEvent<void>();
+  public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
 
   /** Event for formatting providers to register async work before the formatter signals ready.
    * Fires synchronously after each reload completes. Providers should call
    * `collector.addPendingWork(promise)` to register work. The formatter awaits all
-   * registered work (with a 10-second timeout) before emitting [[onFormattingReady]].
+   * registered work (with a 20-second default timeout) before emitting [[onFormattingReady]].
    *
    * Use this for **providers** that need async loading. Use [[onFormattingReady]] for
    * **consumers** that read specs.
    * @beta
    */
   public readonly onBeforeFormattingReady = new BeEvent<(collector: FormattingReadyCollector) => void>();
-
-  /** Unordered variant of [[onFormattingReady]]. Uses `BeUnorderedUiEvent` (Set-backed) for safe concurrent
-   * modification during emit — listeners can add/remove themselves while the event is being raised.
-   * Intended for `FormatSpecHandle` instances that need to auto-refresh on reload.
-   * @beta
-   */
-  public readonly onFormattingReadyUnordered = new BeUnorderedUiEvent<void>();
 
   /** Whether the QuantityFormatter has completed at least one successful reload and is ready to format/parse.
    * @beta
@@ -484,6 +477,10 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
   /** A promise that resolves after the first successful initialization. This is one-shot — it resolves once
    * and stays resolved forever. For subsequent reloads, subscribe to [[onFormattingReady]].
+   *
+   * This promise never rejects. If the first initialization attempt fails, it stays pending until a
+   * subsequent reload succeeds (e.g., triggered by `setUnitsProvider` or a format change). There is no
+   * finite retry limit, so rejection would prematurely close the door on recovery.
    * @beta
    */
   public get whenInitialized(): Promise<void> { return this._initializedPromise; }
@@ -631,7 +628,6 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     this._hasEverBeenReady = true;
     this._resolveInitialized();
     this.onFormattingReady.emit();
-    this.onFormattingReadyUnordered.emit();
 
     // Phase 3: Emit deferred unit-system-changed if the winning reload set one.
     // This fires after isReady === true so listeners can safely use the formatter.

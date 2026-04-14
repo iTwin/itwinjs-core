@@ -8145,9 +8145,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     // @beta
     readonly onBeforeFormattingReady: BeEvent<(collector: FormattingReadyCollector) => void>;
     // @beta
-    readonly onFormattingReady: BeUiEvent<void>;
-    // @beta
-    readonly onFormattingReadyUnordered: BeUnorderedUiEvent<void>;
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;

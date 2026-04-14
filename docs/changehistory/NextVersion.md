@@ -265,10 +265,9 @@ See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full 
 
 ##### `@itwin/core-frontend`
 
-- **[QuantityFormatter.onBeforeFormattingReady]($frontend)** — Pre-ready event that fires before [QuantityFormatter.onFormattingReady]($frontend). Providers use it to register async work (e.g., loading domain formats) via the [FormattingReadyCollector]($quantity) passed to listeners. The formatter awaits all pending work (with a 10-second timeout) before emitting `onFormattingReady`.
+- **[QuantityFormatter.onBeforeFormattingReady]($frontend)** — Pre-ready event that fires before [QuantityFormatter.onFormattingReady]($frontend). Providers use it to register async work (e.g., loading domain formats) via the [FormattingReadyCollector]($quantity) passed to listeners. The formatter awaits all pending work (with a 20-second default timeout) before emitting `onFormattingReady`.
 - **[FormattingReadyCollector]($quantity)** — Collector class passed to `onBeforeFormattingReady` listeners. Call `addPendingWork(promise)` to register async work that must complete before the formatter is considered ready.
-- **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes and all `onBeforeFormattingReady` work has settled. Subscribe to this event to know when formatting specs are available.
-- **[QuantityFormatter.onFormattingReadyUnordered]($frontend)** — Unordered variant using `BeUnorderedUiEvent` (Set-backed) for safe concurrent modification.
+- **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes and all `onBeforeFormattingReady` work has settled. Uses `BeUnorderedUiEvent` (Set-backed) for safe concurrent modification and O(1) unsubscription.
 - **[QuantityFormatter.isReady]($frontend)** — Synchronous check for whether the formatter is ready.
 - **[QuantityFormatter.whenInitialized]($frontend)** — One-shot promise that resolves after the first successful initialization.
 - **[FormatSpecHandle]($quantity)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`. Now accepts an optional `system` parameter to pin the handle to a specific unit system.
@@ -285,6 +284,6 @@ See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full 
 
 - **Three-level spec registry** — `_formatSpecsRegistry` is now keyed by KoQ name, persistence unit, and unit system (`[koqName][persistenceUnit][unitSystem]`). The same KoQ with different persistence units or different unit systems can coexist. This is a **protected member type change** — subclasses accessing this field directly will need to update.
 - **`getSpecsByName()` return type changed** — Now returns `Map<string, FormattingSpecEntry> | undefined` instead of `FormattingSpecEntry | undefined`.
-- **Two-phase ready flow** — Formatting readiness now follows a two-phase pattern: `onBeforeFormattingReady` fires first (providers register async work via the collector), and the formatter awaits all pending work with a 10-second timeout before emitting `onFormattingReady`. Rejections are logged as warnings but do not prevent the formatter from becoming ready.
+- **Two-phase ready flow** — Formatting readiness now follows a two-phase pattern: `onBeforeFormattingReady` fires first (providers register async work via the collector), and the formatter awaits all pending work with a 20-second default timeout before emitting `onFormattingReady`. Rejections are logged as warnings but do not prevent the formatter from becoming ready.
 
 For detailed usage documentation and code examples, see [QuantityFormatter Lifecycle & Integration](../quantity-formatting/usage/QuantityFormatterAdvanced.md).

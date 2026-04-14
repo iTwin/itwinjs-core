@@ -54,7 +54,7 @@ The [QuantityFormatter]($frontend) loads formatting and parsing specs asynchrono
 
 </details>
 
-> **Ordered vs Unordered:** [QuantityFormatter.onFormattingReady]($frontend) fires listeners in insertion order. [QuantityFormatter.onFormattingReadyUnordered]($frontend) uses a Set-backed [BeUnorderedEvent]($bentley) where listeners can safely add/remove themselves during emission — used internally by [FormatSpecHandle]($quantity).
+> **Set-backed event:** [QuantityFormatter.onFormattingReady]($frontend) uses [BeUnorderedUiEvent]($bentley) — a Set-backed event where listeners can safely add or remove themselves during emission and unsubscribe in O(1) via the closure returned by `addListener()`.
 
 ## Spec Provider Integration
 
@@ -135,7 +135,7 @@ The spec registry supports storing and retrieving specs for multiple unit system
 
 Key behaviors:
 - **Fallback formatting** — `format(value)` returns `value.toString()` if specs aren't loaded yet, so your tool always produces output
-- **Auto-refresh** — The handle subscribes to [QuantityFormatter.onFormattingReadyUnordered]($frontend) and updates its internal specs on every reload
+- **Auto-refresh** — The handle subscribes to [QuantityFormatter.onFormattingReady]($frontend) and updates its internal specs on every reload
 - **Disposable** — Call `dispose()` or use a `using` declaration to unsubscribe from events and avoid leaks
 
 ### Basic Usage

@@ -405,7 +405,7 @@ export interface FormattingSpecEntry {
 export interface FormattingSpecProvider {
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
     getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
-    readonly onFormattingReadyUnordered: BeUnorderedUiEvent<void>;
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
 }
 
 // @beta (undocumented)
