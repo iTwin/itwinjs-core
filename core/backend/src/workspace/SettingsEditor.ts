@@ -140,6 +140,7 @@ export namespace SettingsContainers {
         includePrerelease: true,
       });
     }
+
     return results;
   }
 }
