@@ -121,6 +121,8 @@ In the iTwin-scoped workflow, administrators persist this setting through [IMode
 [[include:WorkspaceExamples.SaveTreeDbsToITwin]]
 ```
 
+> Note: `IModelHost.saveSettingDictionary` writes the setting to a cloud-hosted settings container associated with the iTwin. Because [IModelDb.workspace]($backend) does **not** automatically inherit iTwin-level settings, the application must bridge them — for example, by opening the iTwin workspace via [IModelHost.getITwinWorkspace]($backend) and copying its dictionaries into `iModel.workspace` with [Settings.addDictionary]($backend), or by saving a reference to the iTwin settings in the iModel (see [Referencing iTwin settings from an iModel](./Settings.md#referencing-itwin-settings-from-an-imodel)).
+
 With that setting in place, let's write a function that queries the resolved tree databases and returns every tree that can survive in a specified USDA hardiness zone:
 
 ```ts

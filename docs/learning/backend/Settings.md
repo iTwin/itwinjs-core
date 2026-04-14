@@ -161,7 +161,7 @@ When that iTwin's settings are no longer needed, drop the dictionary:
 [[include:Settings.dropITwinDictionary]]
 ```
 
-> Note: The examples above use [Settings.addDictionary]($backend), which loads dictionaries into memory for the current session only. For cloud-backed iTwin and organization settings — where dictionaries are fetched from settings containers on demand — see [Settings containers](#settings-containers) below.
+> Note: The examples above use [Settings.addDictionary]($backend), which loads dictionaries into memory for the current session only — they are **not** persisted to any container or iModel. For cloud-backed iTwin and organization settings — where dictionaries are fetched from settings containers on demand — see [Settings containers](#settings-containers) below.
 
 What about "landscapePro/ui/availableTools"? In the LandscapePro schema, the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that when multiple dictionaries provide a value for the setting, they are merged into a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
 
@@ -222,7 +222,7 @@ iTwin settings are loaded with [SettingsPriority.iTwin]($backend) priority.
 
 ## iModel settings
 
-> **Note:** Storing settings directly in an iModel (via [IModelDb.saveSettingDictionary]($backend)) ties configuration to a single iModel file. Settings cannot be discovered without opening the iModel and cannot be versioned independently. For new projects, consider storing shared settings in a cloud-hosted settings container instead — it is discoverable by iTwinId, versioned independently, and does not require an iModel to be open.
+> **Note:** Storing settings directly in an iModel (via [EditTxn.saveSettingDictionary]($backend)) ties configuration to a single iModel file. Settings cannot be discovered without opening the iModel and cannot be versioned independently. For new projects, consider storing shared settings in a cloud-hosted settings container instead — it is discoverable by iTwinId, versioned independently, and does not require an iModel to be open.
 
 Each [IModelDb]($backend) has its own [Workspace]($backend), accessible via [IModelDb.workspace]($backend). This workspace inherits app-level settings (via [IModelHost.appWorkspace]($backend)) and layers on settings stored inside the iModel itself. iTwin-level settings are not loaded automatically — see [Referencing iTwin settings from an iModel](#referencing-itwin-settings-from-an-imodel) for how to include them. Because iModel-level dictionaries are loaded at [SettingsPriority.iModel]($backend) — the highest built-in priority — they override any lower-priority setting with the same name.
 
@@ -235,13 +235,13 @@ There are two ways to supply settings dictionaries to an iModel's workspace scop
 | Method | Scope | Persistence |
 |--------|-------|-------------|
 | [Settings.addDictionary]($backend) | Current session only | Values exist in memory only and are lost when the iModel is closed. |
-| [IModelDb.saveSettingDictionary]($backend) | All future sessions | Values are written to the iModel's `be_Props` table and automatically reloaded every time the iModel is opened. |
+| [EditTxn.saveSettingDictionary]($backend) (via `withEditTxn`) | All future sessions | Values are written to the iModel's `be_Props` table and automatically reloaded every time the iModel is opened. |
 
 Use `addDictionary` for transient overrides — for example, to inject ephemeral configuration while a particular tool is active. Use `saveSettingDictionary` only if you need settings to persist as part of an iModel's permanent record and cannot use a settings container instead.
 
 ### Saving iModel settings
 
-To save settings into an iModel, call [IModelDb.saveSettingDictionary]($backend) with a dictionary name and a [SettingsContainer]($backend) of key-value pairs:
+To save settings into an iModel, call [EditTxn.saveSettingDictionary]($backend) (via `withEditTxn`) with a dictionary name and a [SettingsContainer]($backend) of key-value pairs:
 
 ```ts
 [[include:WorkspaceExamples.saveSettingDictionary]]
@@ -249,14 +249,14 @@ To save settings into an iModel, call [IModelDb.saveSettingDictionary]($backend)
 
 The dictionary name (e.g. `"landscapePro/iModelSettings"`) identifies the dictionary within the iModel. If a dictionary with that name already exists, it is replaced; otherwise a new one is created. You can save multiple dictionaries under different names.
 
-Note that modifying iModel settings requires an exclusive write lock on the entire iModel — ordinary users should never do this.
+Note that modifying iModel settings requires an exclusive write lock on the entire iModel (obtained automatically by `withEditTxn`) — ordinary users should never do this.
 
 ### Deleting iModel settings
 
-To remove an entire settings dictionary from an iModel, use [IModelDb.deleteSettingDictionary]($backend):
+To remove an entire settings dictionary from an iModel, use [EditTxn.deleteSettingDictionary]($backend) (via `withEditTxn`):
 
 ```ts
-iModel.deleteSettingDictionary("landscapePro/iModelSettings");
+await withEditTxn(iModel, async (txn) => txn.deleteSettingDictionary("landscapePro/iModelSettings"));
 ```
 
 ### Reading iModel settings
@@ -292,7 +292,7 @@ An iModel doesn't inherently know which iTwin settings container it should use. 
 The next time the iModel is opened, your application reads the saved reference and passes it to the [IModelHost.getITwinWorkspace]($backend) overload that accepts [WorkspaceDbSettingsProps]($backend):
 
 ```ts
-const settingsRef = iModel.workspace.settings.getSetting("landscapePro/itwinSettingsRef");
+const settingsRef = iModel.workspace.settings.getSetting<WorkspaceDbSettingsProps>("landscapePro/itwinSettingsRef");
 if (settingsRef !== undefined) {
   const iTwinWorkspace = await IModelHost.getITwinWorkspace(settingsRef);
   // iTwinWorkspace.settings now contains the iTwin-level settings.

@@ -28,11 +28,11 @@ graph LR
         note["Versioned · Immutable once published<br/>Semver-based · Container-scoped"]
     end
 
-    subgraph SettingsContainer["Settings container"]
+    subgraph SettingsContainer["Settings container (containerType: &quot;settings&quot;)"]
         SDB["<b>Settings</b><br/>Key-value config<br/>JSON dictionaries<br/>Priority-based merge"]
     end
 
-    subgraph WorkspaceContainer["Workspace container"]
+    subgraph WorkspaceContainer["Workspace container (containerType: &quot;workspace&quot;)"]
         WDB["<b>Resources</b><br/>Named resources<br/>Strings, blobs, files<br/>On-demand lookup"]
     end
 

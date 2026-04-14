@@ -231,7 +231,7 @@ describe("Workspace Examples", () => {
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.QuerySettingDictionary
       const hardinessRange = iModel.workspace.settings.getObject<HardinessRange>("landscapePro/hardinessRange");
-      // returns { minimum: 8, maximum: 10 }
+      // returns { minimum: 6, maximum: 8 }
       defaultTool = iModel.workspace.settings.getString("landscapePro/ui/defaultTool");
       // returns "place-koi-pond" as specified by IModelHost.appWorkspace.settings.
       // __PUBLISH_EXTRACT_END__
@@ -262,6 +262,7 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.GetITwinWorkspace
       const iTwinWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
       const defaultView = iTwinWorkspace.settings.getString("myApp/defaultView");
+      iTwinWorkspace.close();
       // __PUBLISH_EXTRACT_END__
       expect(defaultView).to.equal("plan");
 
@@ -269,11 +270,10 @@ describe("Workspace Examples", () => {
       const workspace = await IModelHost.getITwinWorkspace(iTwinId);
       const defaultViewFromRead = workspace.settings.getString("myApp/defaultView");
       const maxItems = workspace.settings.getNumber("myApp/maxDisplayedItems");
+      workspace.close();
       // __PUBLISH_EXTRACT_END__
       expect(defaultViewFromRead).to.equal("plan");
       expect(maxItems).to.equal(100);
-      iTwinWorkspace.close();
-      workspace.close();
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.DeleteITwinSetting
       await IModelHost.deleteSettingDictionary(iTwinId, "myApp/settings");
@@ -431,6 +431,7 @@ describe("Workspace Examples", () => {
 
       const workspaceForTreeDbs = await IModelHost.getITwinWorkspace(iTwinId);
       const workspaceTreeDbs = await workspaceForTreeDbs.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
+      workspaceForTreeDbs.close();
       // __PUBLISH_EXTRACT_END__
       expect(workspaceTreeDbs.length).to.equal(2);
 
@@ -536,6 +537,7 @@ describe("Workspace Examples", () => {
       await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/itwinSettingsRef": settingsSourcesForModelRef,
       }));
+      iTwinWorkspaceForModelRef.close();
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.OverrideITwinSettingAtIModelLevel
