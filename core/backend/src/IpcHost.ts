@@ -12,7 +12,8 @@ import {
   BriefcaseConnectionProps,
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
+  StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
@@ -342,16 +343,31 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseTxns(numOperations);
+    return BriefcaseDb.findByKey(key).txns.reverseTxns(numOperations);
   }
+
+  public async reverseTxnsAsync(key: string, numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reverseTxnsAsync(numOperations, args);
+  }
+
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseAll();
+    return BriefcaseDb.findByKey(key).txns.reverseAll();
   }
+
+  public async reverseAllTxnsAsync(key: string, args?: ReverseTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reverseAllTxnsAsync(args);
+  }
+
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reinstateTxn();
+    return BriefcaseDb.findByKey(key).txns.reinstateTxn();
   }
+
+  public async reinstateTxnAsync(key: string, args?: ReinstateTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reinstateTxnAsync(args);
+  }
+
   public async restartTxnSession(key: string): Promise<void> {
-    return IModelDb.findByKey(key)[_nativeDb].restartTxnSession();
+    return IModelDb.findByKey(key).restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

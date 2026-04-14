@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
+import { GeometryHandler, IStrokeHandler, UniformStrokeCollector } from "../../geometry3d/GeometryHandler";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
@@ -336,11 +336,16 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Add strokes from this spiral to `dest`.
-   * * Linestrings will usually stroke as just their points.
-   * * If maxEdgeLength is given, this will sub-stroke within the linestring -- not what we want.
+   * @param options optional stroking options. Pass `undefined` to return cached strokes.
    */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-    this.activeStrokes.emitStrokes(dest, options);
+    if (!options)
+      this.activeStrokes.emitStrokes(dest, options);
+    else {
+      const stroker = new UniformStrokeCollector(this);
+      this.emitStrokableParts(stroker, options);
+      stroker.claimLineString(dest);
+    }
   }
   /** Emit stroke fragments to `dest` handler. */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
@@ -457,7 +462,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const radians = this.globalFractionToBearingRadians(globalFraction);
     const c = Math.cos(radians);
     const s = Math.sin(radians);
-    const delta = this.activeFractionInterval.signedDelta();
+    const delta = this._arcLength01 * this.activeFractionInterval.signedDelta();
     const a = delta;
     const b = a * delta;
     const vectorX = this.localToWorld.matrix.multiplyXY(a * c, a * s);
