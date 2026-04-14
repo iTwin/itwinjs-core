@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, Guid } from "@itwin/core-bentley";
+import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
 import { SqliteStatement } from "./SqliteStatement";
 import { ECNativeChangeInstance, ECNativeChangeSource } from "./ECChangesetReaderTypes";
@@ -107,7 +107,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     public readonly bufferedReadInstanceSizeInBytes: number = NativeSqliteBackedInstanceCache.defaultBufferSize,
   ) {
     this._db = new SQLiteDb();
-    this._db.createDb("", undefined, { skipFileCheck: true, rawSQLite: true }); // creating temp sqlite db
+    this._db.openDb("", { skipFileCheck: true, rawSQLite: true, openMode: OpenMode.ReadWrite }); // creating temp sqlite db
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceSizeInBytes must be greater than 0");
     this.createTempTable();
