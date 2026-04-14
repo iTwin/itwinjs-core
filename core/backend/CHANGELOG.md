@@ -1,6 +1,144 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Apr 2026 13:03:16 GMT and should not be manually modified.
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Patches
+
+- Fix operator precedence bug in WorkspaceImpl.getContainerAsync that silently discarded explicit access tokens
+
+### Updates
+
+- For StandaloneDb make sure to delete txns
+- Remove unnecessary warning when calling `IModelDb.saveChanges` with no unsaved changes.
+- QueryBinder should not fail on bind empty array
+- Fix WorkspaceDb/SettingsDb instance caching, cloud version defaulting, and `getSetting` prototype-chain guard.
+- Added SettingsDb and SettingsEditor APIs for dedicated JSON settings storage, separate from WorkspaceDb.
+- Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
+- Added withQueryReader to ECDb and iModel and also created ECSqlSyncReader to query imodels in true row by row fashion
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Clarify what inProgress does in documentation
+- Add lifecycle events for pull merge.
+- Changed the tolerance for comparing coordinate in CRS tests
+- Added IModelDb.exportGraphicsAsync and exportPartGraphicsAsync.
+- Validate that ViewDefinition2d has a valid baseModelId.
+- Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results
+- Swap deprecated calls to logException for new logError
+- Change CloudSqlite `validateDbVersion` to fallback to default when version is any falsy value
+- Added semantic rebase support to allow merging incoming or local schema changes without full lock.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+### Updates
+
+- Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Add lifecycle events for pull merge.
+- Add function for retrieving changes to Data Definition Language from native reader
+- Three callbacks added to SchemaImportOptions to allow apps to perform channel upgrades and data transformations pre and post schema import/upgrade.
+- Added api for SQLite vacuum and analyze commands and a single optimize API which does both. Added optional boolean parameter to IModelDb.close to optimize before closing.
+- Updated text annotation geometry code to use margin values multiplied by textheight
+- Accept render priority for TextAnnotation elements
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- Fix crash when discarding changes
+- Do not fail abort() due to local unsaved changes
+- Improve unit test for rebase to include linktable relationships
+- Documentation of a case where ECInstanceId got reused across two different classes
+- Update iModelDb.clearCaches() to clear ECDbCache
+- ChannelRoot gets created with the correct aspect relationship class.
+- introduce better mechanism for enabling standaloneDb edits
+- Mobile: don't do workspace update checks when offline
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:31 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Added incrementalSchemaLoading setting on IModelHostOptions and IModelHostConfiguration to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.
+- Enhance rebase event handling in TxnManager 
+- Add test for enumerating transaction changes during recompute
+- Make discardChanges() public preview
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
+- Temporarily skipping the health check stats test
+- Add support for Node.js 24
+- Changes iModelDb.abandonChanges() to only clear element, model, and instanceKey caches instead of all backend caches
+- Fixes and enhancements for text fields.
+- Add APIs for project and sheet information.
+- Made change to backend to raise an event when pushing and pulling changes.
+- Added new api to create leader terminator geometry for different shapes
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT

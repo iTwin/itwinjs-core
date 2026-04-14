@@ -429,7 +429,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     const origin = transform.origin;
     if (!transform.matrix.computeCachedInverse(true))
       return false;
-    const coffs = transform.matrix.inverseCoffs!;
+    const coffs = transform.matrix.inverseCoffs;
     const xx = x - origin.x;
     const yy = y - origin.y;
     const zz = z - origin.z;

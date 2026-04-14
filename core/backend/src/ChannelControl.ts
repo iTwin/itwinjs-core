@@ -8,11 +8,38 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited, _verifyChannel } from "./internal/Symbols";
+import { IModelDb } from "./IModelDb";
+import type { EditTxn } from "./EditTxn";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
  */
 export type ChannelKey = string;
+
+/**
+ * Context provided to the channel upgrade callback.
+ * @beta
+ */
+export interface ChannelUpgradeContext<T = any> {
+  iModel: IModelDb;
+  channelKey: string;
+  fromVersion: string;
+  toVersion: string;
+  /** Optional data to be used during the upgrade */
+  data?: T;
+}
+
+/**
+ * Options for upgrading a channel before schema import.
+ * The framework will automatically populate the context with iModel and data.
+ * @beta
+ */
+export interface ChannelUpgradeOptions<T = any> {
+  channelKey: string;
+  fromVersion: string;
+  toVersion: string;
+  callback: (context: ChannelUpgradeContext<T>) => Promise<void>;
+}
 
 /**
  * Controls which channels of an iModel are permitted for write operations. An implementation of this interface is
@@ -40,10 +67,38 @@ export interface ChannelControl {
    * @throws if the element is already in a channel different than the shared channel, or if
    * there is already another channelRoot element for the specified channelKey
    */
+  makeChannelRoot(args: {
+    elementId: Id64String;
+    channelKey: ChannelKey;
+    /** The transaction to use for the operation. */
+    txn: EditTxn;
+  }): void;
+  /** Make an existing element a new Channel root.
+   * @throws if the element is already in a channel different than the shared channel, or if
+   * there is already another channelRoot element for the specified channelKey
+   * @deprecated Use [[makeChannelRoot]] and supply `txn`.
+   */
   makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
   /** Insert a new Subject element that is a Channel Root in this iModel.
    * @returns the ElementId of the new Subject element.
    * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
+   */
+  insertChannelSubject(args: {
+    /** The name of the new Subject element */
+    subjectName: string;
+    /** The channel key for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
+    channelKey: ChannelKey;
+    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
+    parentSubjectId?: Id64String;
+    /** Optional description for new Subject. */
+    description?: string;
+    /** The EditTxn to use for the operation. */
+    txn: EditTxn;
+  }): Id64String;
+  /** Insert a new Subject element that is a Channel Root in this iModel.
+   * @returns the ElementId of the new Subject element.
+   * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
+   * @deprecated Use [[insertChannelSubject]] and supply `txn`.
    */
   insertChannelSubject(args: {
     /** The name of the new Subject element */
@@ -65,6 +120,12 @@ export interface ChannelControl {
 
   /** @internal */
   [_verifyChannel]: (modelId: Id64String) => void;
+
+  /**
+   * Upgrade a channel to a new version.
+   * @beta
+   */
+  upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 }
 
 /** @beta */

@@ -50,7 +50,7 @@ We can now use the file system API to write the xml to file.
 
 ## Schemas from an iModel
 
-Use [IModelDb.schemaContext] to access the schemas and to create a SchemaContextEditor that knows about the schemas in the iModel:
+Use [IModelDb.schemaContext]($core-backend) to access the schemas and to create a SchemaContextEditor that knows about the schemas in the iModel:
 
 ```ts
 [[include:IModelSchemas.loadFromDb]]

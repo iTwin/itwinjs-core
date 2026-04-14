@@ -1,6 +1,93 @@
 # Change Log - @itwin/linear-referencing-backend
 
-This log was last generated on Thu, 20 Nov 2025 22:31:49 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Apr 2026 13:03:16 GMT and should not be manually modified.
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+_Version update only_
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+_Version update only_
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+_Version update only_
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+_Version update only_
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+_Version update only_
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:32 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Add support for Node.js 24
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
 
 ## 5.3.3
 Thu, 20 Nov 2025 22:30:37 GMT

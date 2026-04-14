@@ -11,6 +11,7 @@ ECSQL allows use of these built-in functions:
 1. [`strToGuid()`](#strtoguid-guid-string) - covert string guid to binary guid.
 1. [`guidToStr()`](#guidtostr-binary-guid) - covert binary guid to string guid.
 1. [`navigation_value()`](#navigation_value-ecnavigationproperty-path-id--RelECClassId) - Constructs an ECNavigation value, given ECNavigation property, Id and optionaly, RelECClassId.
+1. [`supports_instance_query()`](#supports_instance_query-class-name-or-class-id) - Returns whether a class supports [instance queries](./InstanceQuery.md) (`SELECT $`).
 
 ## ec_classname( _ecclassId_ [, _format-string_ | _format-id_] )
 
@@ -183,6 +184,63 @@ SELECT NAVIGATION_VALUE(bis.Element.Model, 1, 2)
 
 -- properties can be passed to the Id and RelECClassId arguments as well, but FROM clause should be specified
 SELECT NAVIGATION_VALUE(bis.Element.Model, Model.Id, Model.RelECClassId) [MyNavProp] FROM bis.Model
+```
+
+## supports_instance_query( _class-name-or-class-id_ )
+
+Returns `1` if the given class supports [instance queries](./InstanceQuery.md) (`SELECT $`), `0` otherwise.
+
+This is useful to check ahead of time whether a particular class can be used with the `$` or `$->` instance query syntax, avoiding runtime errors.
+
+### Parameters
+
+Accepts exactly one argument:
+
+- **Text class name**: A qualified class name using either schema name or alias, with `.` or `:` as delimiter.
+  Examples: `'BisCore.Element'`, `'bis:Element'`, `'BisCore:Element'`
+- **Integer class id**: The `ECClassId` of the class.
+
+### Returns
+
+| Input                                                                             | Result |
+| --------------------------------------------------------------------------------- | ------ |
+| Entity class (e.g. `BisCore.Element`)                                             | `1`    |
+| Link table relationship class (e.g. `BisCore.CategorySelectorRefersToCategories`) | `1`    |
+| Mixin class                                                                       | `0`    |
+| Non-existent class                                                                | `0`    |
+| `NULL`                                                                            | `0`    |
+
+Returns an error if the argument format is invalid (e.g. missing schema qualifier).
+
+### Example
+
+```sql
+-- Check if a specific class supports instance queries
+SELECT supports_instance_query('BisCore.Element')
+-- Returns: 1
+
+-- Works with schema alias
+SELECT supports_instance_query('bis:Element')
+-- Returns: 1
+
+-- Check a link table relationship
+SELECT supports_instance_query('BisCore.ModelSelectorRefersToModels')
+-- Returns: 1
+
+-- Returns 0 for classes that don't exist
+SELECT supports_instance_query('BisCore.DoesNotExist')
+-- Returns: 0
+
+-- Use with ec_classid() to check by class id
+SELECT supports_instance_query(ec_classid('BisCore', 'Element'))
+-- Returns: 1
+
+-- Find all classes in a schema that support instance queries
+SELECT c.Name
+FROM meta.ECClassDef c
+JOIN meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId
+WHERE s.Name = 'BisCore'
+  AND supports_instance_query(c.ECInstanceId) = 1
 ```
 
 [ECSql Syntax](./index.md)

@@ -401,8 +401,7 @@ export class PolyfaceQuery {
     for (visitor.reset(); visitor.moveToNextFacet();) {
       const facetData = PolygonOps.volumeBetweenPolygonAndPlane(visitor.point, plane, options);
       signedVolumeTimes6 += facetData.volume6;
-      if (!skipMoments) {
-        assert(posSums !== undefined && negSums !== undefined && facetData.origin !== undefined && facetData.products !== undefined);
+      if (posSums && negSums && facetData.origin && facetData.products) {
         if (facetData.area2 > 0)
           posSums.accumulateProductsFromOrigin(facetData.origin, facetData.products, 1.0);
         else
@@ -564,20 +563,20 @@ export class PolyfaceQuery {
     return -2;
   }
   /**
- * Test for convex volume by dihedral angle tests on all edges.
- * * This tests if all dihedral angles of the mesh are positive.
- * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
- * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
- * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
- * component, such as a pyramid with no underside.
- * * It is not a correct test if there are multiple, disjoint components.
- * * Take the above-mentioned pyramid with no underside.
- * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
- * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
- * @param source mesh.
- * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
- * @returns true if all dihedral angles of the mesh are positive.
- */
+   * Test for convex volume by dihedral angle tests on all edges.
+   * * This tests if all dihedral angles of the mesh are positive.
+   * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
+   * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
+   * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
+   * component, such as a pyramid with no underside.
+   * * It is not a correct test if there are multiple, disjoint components.
+   * * Take the above-mentioned pyramid with no underside.
+   * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
+   * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+   * @param source mesh.
+   * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
+   * @returns true if all dihedral angles of the mesh are positive.
+   */
   public static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
@@ -916,12 +915,11 @@ export class PolyfaceQuery {
   public static awaitBlockCount = 0;
   /** Execute `context.projectToPolygon` until its work estimates accumulate to workLimit.  */
   private static async continueAnnounceSweepLinestringToConvexPolyfaceXY(
-    context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
+    context: SweepLineStringToFacetContext, polyface: Polyface, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
   ): Promise<number> {
     let workCount = 0;
-    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
-      workCount += context.projectToPolygon(visitor.point, announce, visitor.clientPolyface()!, visitor.currentReadIndex());
-    }
+    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet())
+      workCount += context.projectToPolygon(visitor.point, announce, polyface, visitor.currentReadIndex());
     return workCount;
   }
   /**
@@ -941,7 +939,7 @@ export class PolyfaceQuery {
     if (context) {
       const visitor = polyface.createVisitor(0);
       let workCount;
-      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
+      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, polyface, visitor, announce)))) {
         workTotal += workCount;
         this.awaitBlockCount++;
         // GeometryCoreTestIO.consoleLog({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });
@@ -1587,14 +1585,17 @@ export class PolyfaceQuery {
   public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1); // this is to visit the existing facets
     const newFacetVisitor = polyface.createVisitor(0); // this is to build the new facets
-    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
+    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30);
     const builder = PolyfaceBuilder.create();
+    if (!rangeSearcher) {
+      builder.addFacetsFromVisitor(oldFacetVisitor);
+      return builder.claimPolyface(false);
+    }
     const edgeRange = Range3d.createNull();
     const point0 = Point3d.create();
     const point1 = Point3d.create();
     const spacePoint = Point3d.create();
     const segment = LineSegment3d.create(point0, point1);
-
     for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
       newFacetVisitor.clearArrays();
       for (let i = 0; i + 1 < oldFacetVisitor.point.length; i++) {

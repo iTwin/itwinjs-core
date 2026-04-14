@@ -419,31 +419,38 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect small relative", dataA, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
+  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value. */
   public testCoordinateOrder(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA + Geometry.smallMetricDistance < dataB)
       return this.announceOK();
     return this.announceError("Expect coordinate order", dataA, dataB, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
+  /** Return true if dataA is parallel to dataB. */
   public testParallel(dataA: Vector3d, dataB: Vector3d, ...params: any[]): boolean {
     if (dataA.isParallelTo(dataB))
       return this.announceOK();
     return this.announceError("Expect parallel", dataA, dataB, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
+  /** Return true if dataA is perpendicular to dataB. */
   public testPerpendicular(dataA: Vector3d, dataB: Vector3d, ...params: any[]): boolean {
     if (dataA.isPerpendicularTo(dataB))
       return this.announceOK();
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
+  /** Return true if dataA is parallel to dataB. */
   public testParallel2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (dataA.isParallelTo(dataB))
       return this.announceOK();
     return this.announceError("Expect parallel", dataA, dataB, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
+  /** Return true if dataA is parallel or anti-parallel to dataB. */
+  public testParallelOrAntiParallel2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
+    if (dataA.isParallelTo(dataB, true))
+      return this.announceOK();
+    return this.announceError("Expect parallel or anti-parallel", dataA, dataB, params);
+  }
+
+  /** Return true if dataA is perpendicular to dataB. */
   public testPerpendicular2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (dataA.isPerpendicularTo(dataB))
       return this.announceOK();
@@ -481,7 +488,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
-  /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
+  /** Return true if dataA contains dataB. */
   public testContainsCoordinate(dataA: GrowableFloat64Array, dataB: number, ...params: any[]): boolean {
     for (let i = 0; i < dataA.length; i++)
       if (Geometry.isSameCoordinate(dataA.atUncheckedIndex(i), dataB)) {
@@ -563,14 +570,15 @@ export class Checker {
   public static setTransform(transform: Transform) { Checker._transform = transform; }
   public static getTransform(): Transform { return Checker._transform; }
 
-  public static saveTransformed(g: GeometryQuery, maxCoordinate: number = 1.0e12) {
+  public static saveTransformed(g: GeometryQuery, maxCoordinate: number = Geometry.largeCoordinateResult) {
     const range = g.range();
-
-    if (!range.isNull && range.maxAbs() <= maxCoordinate) {
-      Checker._cache.push(g.clone()!);
+    const gClone = g.clone();
+    if (!range.isNull && range.maxAbs() <= maxCoordinate && gClone) {
+      Checker._cache.push(gClone);
       Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }
+
   public static saveTransformedLineString(points: Point3d[]) {
     const cv = LineString3d.createPoints(points);
     Checker.saveTransformed(cv);

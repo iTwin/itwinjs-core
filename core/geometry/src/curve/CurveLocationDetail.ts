@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert, OrderedComparator } from "@itwin/core-bentley";
 import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -115,6 +116,10 @@ export class CurveLocationDetail {
   /** Test if this pair has fraction1 defined. */
   public get hasFraction1(): boolean {
     return this.fraction1 !== undefined;
+  }
+  /** Test if this detail defines an interval. Preferable to [[CurveLocationDetail.hasFraction1]]. */
+  public isInterval(): this is { fraction1: number, point1: Point3d } {
+    return this.fraction1 !== undefined && this.point1 !== undefined;
   }
   /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex). */
   public get isIsolated(): boolean {
@@ -374,11 +379,13 @@ export class CurveLocationDetail {
     }
   }
   /**
-   * Return the fraction where f falls between fraction and fraction1.
-   * * ASSUME fraction1 defined
+   * Return the fraction where `f` falls between `fraction` and `fraction1`.
+   * * If the fractions are too close or `fraction1` is undefined, `defaultFraction` is returned.
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
-    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
+    if (this.fraction1 === undefined)
+      return defaultFraction;
+    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1, f);
     if (a === undefined)
       return defaultFraction;
     return a;
@@ -546,6 +553,72 @@ export class CurveLocationDetailPair {
    */
   public tryTransformInPlace(transform: Transform): boolean {
     return this.detailA.tryTransformInPlace(transform) && this.detailB.tryTransformInPlace(transform);
+  }
+  /**
+   * Return a pair comparator useful for sorting an array of detail pairs by their fractions.
+   * * Comparison assumes detailA curves are the same and detailB curves are the same.
+   * * Comparison checks for equality of pair fractions, then of pair points, then sorts by detailA.fraction, then detailB.fraction.
+   * @param fractionTol tolerance for comparing fractions. Default value [[Geometry.smallFraction]].
+   * @param pointTol tolerance for comparing points, used if fractions are distinct. Default value [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to perform point comparisons in xy only. Default is false (compare 3D points).
+   * @param equateClosedCurveFractions whether to equate fractions 0 and 1 for physically closed curves. Default is false.
+   */
+  public static comparePairsByFractions(
+    fractionTol: number = Geometry.smallFraction,
+    pointTol: number = Geometry.smallMetricDistance,
+    xyOnly: boolean = false,
+    equateClosedCurveFractions: boolean = false,
+  ): OrderedComparator<CurveLocationDetailPair> {
+    return (p0: CurveLocationDetailPair, p1: CurveLocationDetailPair): number => {
+      assert(() => p0.detailA.curve === p1.detailA.curve && p0.detailB.curve === p1.detailB.curve, "pairs are compatible");
+      const curveA = p0.detailA.curve;
+      const curveB = p0.detailB.curve;
+      let fraction0A = p0.detailA.fraction;
+      let fraction0B = p0.detailB.fraction;
+      let fraction1A = p1.detailA.fraction;
+      let fraction1B = p1.detailB.fraction;
+      if (equateClosedCurveFractions) {
+        if (curveA?.isPhysicallyClosedCurve(pointTol, xyOnly)) {
+          if (Geometry.isAlmostEqualEitherNumber(p0.detailA.fraction, 0, 1, fractionTol))
+            fraction0A = 0;
+          if (Geometry.isAlmostEqualEitherNumber(p1.detailA.fraction, 0, 1, fractionTol))
+            fraction1A = 0;
+        }
+        if (curveB?.isPhysicallyClosedCurve(pointTol, xyOnly)) {
+          if (Geometry.isAlmostEqualEitherNumber(p0.detailB.fraction, 0, 1, fractionTol))
+            fraction0B = 0;
+          if (Geometry.isAlmostEqualEitherNumber(p1.detailB.fraction, 0, 1, fractionTol))
+            fraction1B = 0;
+        }
+      }
+      const sameFractionsA = Geometry.isAlmostEqualNumber(fraction0A, fraction1A, fractionTol);
+      if (sameFractionsA && Geometry.isAlmostEqualNumber(fraction0B, fraction1B, fractionTol))
+        return 0;
+      const samePointsA = xyOnly ? p0.detailA.point.isAlmostEqualXY(p1.detailA.point, pointTol) : p0.detailA.point.isAlmostEqual(p1.detailA.point, pointTol);
+      if (samePointsA && (xyOnly ? p0.detailB.point.isAlmostEqualXY(p1.detailB.point, pointTol) : p0.detailB.point.isAlmostEqual(p1.detailB.point, pointTol)))
+        return 0;
+      return sameFractionsA ? fraction0B - fraction1B : fraction0A - fraction1A;
+    };
+  }
+  /**
+   * Return a pair comparator useful for sorting an array of detail pairs by their points.
+   * * Comparison sorts the points lexicographically, `detailA.point` first, then `detailB.point`.
+   * @param pointTol tolerance for comparing points. Default value [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to perform point comparisons in xy only. Default is false (compare 3D points).
+   */
+  public static comparePairsByPoints(
+    pointTol: number = Geometry.smallMetricDistance,
+    xyOnly: boolean = false,
+  ): OrderedComparator<CurveLocationDetailPair> {
+    return (p0: CurveLocationDetailPair, p1: CurveLocationDetailPair): number => {
+      const comparePoints = xyOnly ? Geometry.compareXY(pointTol) : Geometry.compareXYZ(pointTol);
+      const compareA = comparePoints(p0.detailA.point, p1.detailA.point);
+      const compareB = comparePoints(p0.detailB.point, p1.detailB.point);
+      const samePointsA = compareA === 0;
+      if (samePointsA && compareB === 0)
+        return 0;
+      return samePointsA ? compareB : compareA;
+    };
   }
 }
 

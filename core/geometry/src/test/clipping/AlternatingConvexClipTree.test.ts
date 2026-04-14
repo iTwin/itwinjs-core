@@ -24,7 +24,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { Transform } from "../../geometry3d/Transform";
 import { UsageSums } from "../../numerics/UsageSums";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

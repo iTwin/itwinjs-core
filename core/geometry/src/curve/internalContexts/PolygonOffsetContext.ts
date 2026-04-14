@@ -495,7 +495,7 @@ export class PolygonWireOffsetContext {
     Joint.collectStrokesFromChain(joint0, chain, numPoints);  // compute offset corners (by extension/trim)
     const n = chain.packedPoints.length;
     if (n > 1) {
-      if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
+      if (chain.packedPoints.almostEqualUncheckedIndexIndex(0, n - 1))
         return Loop.create(chain);
       else
         return Path.create(chain);

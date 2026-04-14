@@ -7,7 +7,6 @@
  * @module Solid
  */
 
-import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -232,7 +231,7 @@ export class Box extends SolidPrimitive {
    * * v = 1 as the z=1 local plane
    * Return the (rectangular) section at fractional v
    */
-  public constantVSection(zFraction: number): CurveCollection {
+  public constantVSection(zFraction: number): Loop {
     const ls = this.strokeConstantVSection(zFraction);
     return Loop.create(ls);
   }

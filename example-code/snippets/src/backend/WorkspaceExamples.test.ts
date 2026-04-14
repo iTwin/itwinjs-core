@@ -6,9 +6,10 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
-    BlobContainer,
-  EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, SettingGroupSchema, SettingsContainer,
-  SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
+  BlobContainer,
+  EditableWorkspaceContainer, EditableWorkspaceDb,
+  IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps,
+  SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -220,9 +221,9 @@ describe("Workspace Examples", () => {
 
       const range: HardinessRange = { minimum: 6, maximum: 8 };
       await iModel.acquireSchemaLock();
-      iModel.saveSettingDictionary("landscapePro/iModelSettings", {
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/hardinessRange": range,
-      });
+      }));
       // __PUBLISH_EXTRACT_END__
       const iModelName = iModel.pathName;
       iModel.close();
@@ -241,6 +242,45 @@ describe("Workspace Examples", () => {
       AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
 
       const iTwinId = Guid.createValue();
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveITwinSettings
+      IModelHost.settingsSchemas.addGroup({
+        schemaPrefix: "myApp",
+        description: "MyApp settings",
+        settingDefs: {
+          defaultView: { type: "string" },
+          maxDisplayedItems: { type: "integer" },
+        },
+      });
+
+      await IModelHost.saveSettingDictionary(iTwinId, "myApp/settings", {
+        "myApp/defaultView": "plan",
+        "myApp/maxDisplayedItems": 100,
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.GetITwinWorkspace
+      const iTwinWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
+      const defaultView = iTwinWorkspace.settings.getString("myApp/defaultView");
+      // __PUBLISH_EXTRACT_END__
+      expect(defaultView).to.equal("plan");
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.ReadITwinSettings
+      const workspace = await IModelHost.getITwinWorkspace(iTwinId);
+      const defaultViewFromRead = workspace.settings.getString("myApp/defaultView");
+      const maxItems = workspace.settings.getNumber("myApp/maxDisplayedItems");
+      // __PUBLISH_EXTRACT_END__
+      expect(defaultViewFromRead).to.equal("plan");
+      expect(maxItems).to.equal(100);
+      iTwinWorkspace.close();
+      workspace.close();
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.DeleteITwinSetting
+      await IModelHost.deleteSettingDictionary(iTwinId, "myApp/settings");
+      // __PUBLISH_EXTRACT_END__
+      const workspaceAfterDelete = await IModelHost.getITwinWorkspace(iTwinId);
+      expect(workspaceAfterDelete.settings.getString("myApp/defaultView")).to.be.undefined;
+      workspaceAfterDelete.close();
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreateWorkspaceDb
       const editor = WorkspaceEditor.construct();
@@ -378,6 +418,39 @@ describe("Workspace Examples", () => {
       expect(cornusDb.cloudProps!.version).to.equal("1.0.1");
       expect(abiesDb.cloudProps!.version).to.equal("1.0.0");
 
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveTreeDbsToITwin
+      assert(undefined !== cornusDb.cloudProps);
+      assert(undefined !== abiesDb.cloudProps);
+
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps },
+          { ...abiesDb.cloudProps },
+        ],
+      });
+
+      const workspaceForTreeDbs = await IModelHost.getITwinWorkspace(iTwinId);
+      const workspaceTreeDbs = await workspaceForTreeDbs.getWorkspaceDbs({ settingName: "landscapePro/flora/treeDbs" });
+      // __PUBLISH_EXTRACT_END__
+      expect(workspaceTreeDbs.length).to.equal(2);
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.UpdateTreeDbVersionAtITwin
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps, version: "1.1.1" },
+          { ...abiesDb.cloudProps },
+        ],
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // restore to current latest for any subsequent use
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/flora", {
+        "landscapePro/flora/treeDbs": [
+          { ...cornusDb.cloudProps },
+          { ...abiesDb.cloudProps },
+        ],
+      });
+
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.getAvailableTrees
@@ -454,6 +527,73 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
 
       expect(allTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Roughleaf Dogwood", "Pacific Silver Fir", "Balsam Fir"]);
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveITwinSettingsReferenceInIModel
+      const iTwinWorkspaceForModelRef = await IModelHost.getITwinWorkspace(iTwinId);
+      const settingsSourcesForModelRef = iTwinWorkspaceForModelRef.settingsSources;
+      assert(undefined !== settingsSourcesForModelRef);
+
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
+        "landscapePro/itwinSettingsRef": settingsSourcesForModelRef,
+      }));
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.OverrideITwinSettingAtIModelLevel
+      // The iTwin setting says "naturalistic", but this iModel is a formal garden.
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelOverrides", {
+        "landscapePro/flora/preferredStyle": "formal",
+      }));
+      // __PUBLISH_EXTRACT_END__
+
+      // Reload the iModel so workspace setting dictionaries saved to disk are re-resolved.
+      iModel.close();
+      iModel = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
+
+      // verify the iModel-level override wins
+      const style = iModel.workspace.settings.getString("landscapePro/flora/preferredStyle");
+      expect(style).to.equal("formal");
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.VersionAndPinITwinSettings
+      // Pin the iModel to the current version of the iTwin settings.
+      // The settingsSources already include the version of the settings WorkspaceDb;
+      // saving that version into the iModel locks it to that snapshot.
+      const pinnedSettingsSources = Array.isArray(settingsSourcesForModelRef)
+        ? settingsSourcesForModelRef
+        : [settingsSourcesForModelRef];
+
+      await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
+        "landscapePro/itwinSettingsRef": pinnedSettingsSources,
+      }));
+      // __PUBLISH_EXTRACT_END__
+    });
+
+    it("Find and open a workspace container by iTwinId", async () => {
+      IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      const iTwinId = Guid.createValue();
+
+      // Create a workspace container so there's something to find.
+      const setupEditor = WorkspaceEditor.construct();
+      await setupEditor.createNewCloudContainer({
+        metadata: { label: "Findable Workspace", description: "Workspace found via findContainers" },
+        scope: { iTwinId },
+        manifest: { workspaceName: "FindMe", description: "findContainers example" },
+      });
+      setupEditor.close();
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.findContainers
+      // Find and open workspace containers for a given iTwin in a single call.
+      // This queries the BlobContainer service for workspace containers matching the iTwinId,
+      // requests write access tokens, and opens each matching container.
+      const editor = WorkspaceEditor.construct();
+      const containers = await editor.findContainers({ iTwinId });
+
+      // Use the first container — it is ready for reading or editing its WorkspaceDbs.
+      const container = containers[0];
+      const workspaceDb = container.getEditableDb({});
+      expect(workspaceDb).to.not.be.undefined;
+      editor.close();
+      // __PUBLISH_EXTRACT_END__
     });
   });
 });

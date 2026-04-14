@@ -23,6 +23,10 @@
     "docSiteId": 6,
     "displayName": "UI"
   },
+  "quantity-formatting": {
+    "docSiteId": 7,
+    "displayName": "Quantity Formatting"
+  },
   "metadata": {
     "customIndex": "index.html",
     "logo": "assets/itwinjs-logo.svg",
@@ -34,7 +38,8 @@
       "bis",
       "reference",
       "changehistory",
-      "presentation"
+      "presentation",
+      "quantity-formatting"
     ],
     "headerTabs": {
       "Samples": "sample-showcase",

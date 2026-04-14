@@ -221,8 +221,8 @@ export class SingleTreeSearchHandlerForClosestPointOnLineString3d extends Single
   private _workSegment?: LineSegment3d;
   /** Test a segment indexed in the range tree as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    const segment = this._workSegment = this.context.lineString.getIndexedSegment(candidateIndex, this._workSegment)!;
-    if (segment) {
+    if (0 <= candidateIndex && candidateIndex < this.context.lineString.numEdges()) {
+      const segment = this._workSegment = this.context.lineString.getUncheckedIndexedSegment(candidateIndex, this._workSegment);
       const cld = segment.closestPoint(this.spacePoint, false);
       LineString3d.convertLocalToGlobalDetail(cld, candidateIndex, this.context.lineString.numEdges(), this.context.lineString);
       this.context.numPointTest++;
@@ -284,16 +284,18 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
   private static _workSegmentB?: LineSegment3d;
   /** Compute and test the closest approach between two segments, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
-    this.contextA.numPointTest++;
-    const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
-      this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA)!;
-    const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
-      this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
-    const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
-    if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
-      LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
-      LineString3d.convertLocalToGlobalDetail(cldPair.detailB, indexB, this.contextB.lineString.numEdges(), this.contextB.lineString);
-      this.searchState.testAndSave(cldPair, cldPair.detailA.a);
+    if (0 <= indexA && indexA < this.contextA.lineString.numEdges() && 0 <= indexB && indexB < this.contextB.lineString.numEdges()) {
+      this.contextA.numPointTest++;
+      const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
+        this.contextA.lineString.getUncheckedIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA);
+      const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
+        this.contextB.lineString.getUncheckedIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB);
+      const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
+      if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
+        LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
+        LineString3d.convertLocalToGlobalDetail(cldPair.detailB, indexB, this.contextB.lineString.numEdges(), this.contextB.lineString);
+        this.searchState.testAndSave(cldPair, cldPair.detailA.a);
+      }
     }
   }
 }

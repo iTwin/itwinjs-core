@@ -9,6 +9,7 @@ import { Drawing } from "../../Element";
 import { DocumentListModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withEditTxn } from "../../EditTxn";
 
 describe("Drawing", () => {
   let imodel: SnapshotDb;
@@ -17,13 +18,13 @@ describe("Drawing", () => {
   before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("Drawing", "Drawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "DrawingTest" } });
-    documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
+    documentListModelId = withEditTxn(imodel, (txn) => DocumentListModel.insert(txn, SnapshotDb.rootSubjectId, "DocumentList"));
   });
 
   after(() => {
     imodel.close();
   });
-  
+
   class TestDrawing extends Drawing {
     public constructor(props: DrawingProps) {
       super(props, imodel);
@@ -41,7 +42,7 @@ describe("Drawing", () => {
       if (undefined !== scaleFactor) {
         props.scaleFactor = scaleFactor;
       }
-      
+
       return props;
     }
 
@@ -101,7 +102,7 @@ describe("Drawing", () => {
       function test(scaleFactor: number | undefined): void {
         const insertProps = makeDrawingProps(scaleFactor);
         expect(insertProps.scaleFactor).to.equal(scaleFactor);
-        const elemId = imodel.elements.insertElement(insertProps);
+        const elemId = withEditTxn(imodel, (txn) => txn.insertElement(insertProps));
         const readProps = imodel.elements.getElementProps<DrawingProps>(elemId);
         expect(readProps.scaleFactor).to.equal(scaleFactor);
       }
@@ -118,7 +119,7 @@ describe("Drawing", () => {
 
   describe("insert", () => {
     function insertDrawing(scaleFactor: number | undefined): Drawing {
-      const drawingId = Drawing.insert(imodel, documentListModelId, Guid.createValue(), scaleFactor);
+      const drawingId = withEditTxn(imodel, (txn) => Drawing.insert(txn, documentListModelId, Guid.createValue(), scaleFactor));
       return imodel.elements.getElement<Drawing>(drawingId);
     }
 

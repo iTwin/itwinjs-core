@@ -234,17 +234,21 @@ export class ClipVector implements Clipper {
     if (this._clips.length === 0)
       return retVal;
     let firstClipShape: ClipShape | undefined;
+    const fwdTrans = Transform.createIdentity();
+    const invTrans = Transform.createIdentity();
     const deltaTrans = Transform.createIdentity();
 
     for (const clip of this._clips) {
       if (clip instanceof ClipShape) {
         if (firstClipShape !== undefined && clip !== firstClipShape) {      // Is not the first iteration
-          let fwdTrans = Transform.createIdentity();
-          let invTrans = Transform.createIdentity();
+          fwdTrans.setIdentity();
+          invTrans.setIdentity();
 
-          if (firstClipShape.transformValid && clip.transformValid) {
-            fwdTrans = clip.transformFromClip!.clone();
-            invTrans = firstClipShape.transformToClip!.clone();
+          if (firstClipShape.hasTransformToClip()) {
+            if (clip.hasTransformFromClip()) {
+              clip.transformFromClip.clone(fwdTrans);
+              firstClipShape.transformToClip.clone(invTrans);
+            }
           }
           deltaTrans.setFrom(invTrans.multiplyTransformTransform(fwdTrans));
         }
@@ -255,13 +259,13 @@ export class ClipVector implements Clipper {
         if (clip.polygon !== undefined) {
           clipM = ClipMaskXYZRangePlanes.XAndY;
 
-          if (clip.zHighValid) {
+          if (clip.hasZHigh()) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZHigh;
-            zFront = clip.zHigh!;
+            zFront = clip.zHigh;
           }
-          if (clip.zLowValid) {
+          if (clip.hasZLow()) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZLow;
-            zBack = clip.zLow!;
+            zBack = clip.zLow;
           }
 
           for (const point of clip.polygon)
@@ -274,8 +278,8 @@ export class ClipVector implements Clipper {
     retVal.push(clipM);
     retVal.push(zBack);
     retVal.push(zFront);
-    if (transform && firstClipShape)
-      transform.setFrom(firstClipShape.transformFromClip!);
+    if (transform && firstClipShape && firstClipShape.hasTransformFromClip())
+      transform.setFrom(firstClipShape.transformFromClip);
     return retVal;
   }
   /** Sets this ClipVector and all of its members to the visibility specified. */

@@ -33,6 +33,7 @@ import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { BoundingSphere } from '@itwin/core-common';
+import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseDownloader } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { ByteStream } from '@itwin/core-bentley';
@@ -41,8 +42,10 @@ import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CatalogIModel } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
+import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
+import { ChangesetProps } from '@itwin/core-common';
 import { ClipIntersectionStyle } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
@@ -164,6 +167,7 @@ import { LinePixels } from '@itwin/core-common';
 import { Listener } from '@itwin/core-bentley';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { Localization } from '@itwin/core-common';
+import { LockState } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
@@ -258,6 +262,7 @@ import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
 import { RealityDataStatus } from '@itwin/core-bentley';
 import { RealityModelDisplaySettings } from '@itwin/core-common';
+import { ReinstateTxnArgs } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -270,6 +275,7 @@ import { RenderTexture } from '@itwin/core-common';
 import { RenderTextureParams } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RenderType } from '@itwin/webgl-compatibility';
+import { ReverseTxnArgs } from '@itwin/core-common';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
@@ -316,6 +322,7 @@ import { Transform } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
+import { TxnProps } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
@@ -975,6 +982,7 @@ export class AccuDrawViewportUI extends AccuDraw {
             color: string;
             padding: string;
             focused: {
+                color: string;
                 backgroundColor: string;
                 innerStroke: string;
                 border: {
@@ -1509,9 +1517,9 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
     abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
     // (undocumented)
-    storeFormatOverrides: ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => Promise<void>;
+    storeFormatOverrides: (input: QuantityFormatOverridesChangedArgs) => Promise<void>;
     abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
-    storeUnitSystemSetting: ({ system }: FormattingUnitSystemChangedArgs) => Promise<void>;
+    storeUnitSystemSetting: (input: FormattingUnitSystemChangedArgs) => Promise<void>;
 }
 
 // @public
@@ -1721,8 +1729,11 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
+    protected constructor(props: BriefcaseConnectionProps, openMode: OpenMode);
+    // @deprecated
     abandonChanges(): Promise<void>;
+    // @beta
+    readonly briefcaseId?: number;
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
     // @beta
@@ -1736,14 +1747,19 @@ export class BriefcaseConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
+    // @alpha
+    get locks(): LockService | undefined;
     // @internal
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
+    // @alpha
+    static openFile(briefcaseProps: OpenBriefcaseProps, lockServiceFactory?: LockServiceFactory): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
+    // @deprecated
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
@@ -1784,6 +1800,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyAfterUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
+    notifyApplyIncomingChangesBegin(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
+    notifyApplyIncomingChangesEnd(changes: ChangesetProps[]): void;
+    // @internal (undocumented)
     notifyBeforeUndoRedo(isUndo: boolean): void;
     // @internal (undocumented)
     notifyChangesApplied(): void;
@@ -1791,6 +1811,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     notifyCommit(): void;
     // @internal (undocumented)
     notifyCommitted(hasPendingTxns: boolean, time: number): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsBegin(): void;
+    // @internal (undocumented)
+    notifyDownloadChangesetsEnd(): void;
     // @internal (undocumented)
     notifyEcefLocationChanged(ecef: EcefLocationProps | undefined): void;
     // @internal (undocumented)
@@ -1810,30 +1834,78 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyPulledChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
+    notifyPullMergeBegin(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
+    notifyPullMergeEnd(changeset: ChangesetIdWithIndex): void;
+    // @internal (undocumented)
     notifyPushedChanges(parentChangeset: ChangesetIndexAndId): void;
+    // @internal (undocumented)
+    notifyRebaseBegin(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
+    notifyRebaseTxnBegin(txn: TxnProps): void;
+    // @internal (undocumented)
+    notifyRebaseTxnEnd(txn: TxnProps): void;
     // @internal (undocumented)
     notifyReplayedExternalTxns(): void;
     // @internal (undocumented)
     notifyReplayExternalTxns(): void;
     // @internal (undocumented)
+    notifyReverseLocalChangesBegin(): void;
+    // @internal (undocumented)
+    notifyReverseLocalChangesEnd(txns: TxnProps[]): void;
+    // @internal (undocumented)
     notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
+    // @alpha
+    readonly onApplyIncomingChangesBegin: BeEvent<(changesets: ChangesetProps[]) => void>;
+    // @alpha
+    readonly onApplyIncomingChangesEnd: BeEvent<(changes: ChangesetProps[]) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
     readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
+    // @alpha
+    readonly onDownloadChangesetsBegin: BeEvent<() => void>;
+    // @alpha
+    readonly onDownloadChangesetsEnd: BeEvent<() => void>;
     readonly onElementsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnEntityChanges) => void>;
+    // @alpha
+    readonly onPullMergeBegin: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    // @alpha
+    readonly onPullMergeEnd: BeEvent<(changeset: ChangesetIdWithIndex) => void>;
+    // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnProps[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<(txns: TxnProps[]) => void>;
+    // @alpha
+    readonly onRebaseTxnBegin: BeEvent<(txnProps: TxnProps) => void>;
+    // @alpha
+    readonly onRebaseTxnEnd: BeEvent<(txnProps: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     readonly onReplayExternalTxns: BeEvent<() => void>;
+    // @alpha
+    readonly onReverseLocalChangesBegin: BeEvent<() => void>;
+    // @alpha
+    readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     reinstateTxn(): Promise<IModelStatus>;
+    // @beta
+    reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
+    // @beta
+    reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseSingleTxn(): Promise<IModelStatus>;
+    // @beta
+    reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseTxns(numOperations: number): Promise<IModelStatus>;
+    // @beta
+    reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -1919,6 +1991,7 @@ export namespace CatalogConnection {
 export class CategorySelectorState extends ElementState {
     constructor(props: CategorySelectorProps, iModel: IModelConnection);
     addCategories(arg: Id64Arg): void;
+    addCategoriesBatched(arg: Id64Arg): void;
     // (undocumented)
     get categories(): Set<string>;
     set categories(categories: Set<string>);
@@ -1926,6 +1999,7 @@ export class CategorySelectorState extends ElementState {
     // (undocumented)
     static get className(): string;
     dropCategories(arg: Id64Arg): void;
+    dropCategoriesBatched(arg: Id64Arg): void;
     equalState(other: CategorySelectorState): boolean;
     has(id: Id64String): boolean;
     isCategoryViewed(categoryId: Id64String): boolean;
@@ -2093,6 +2167,8 @@ export class ContextRealityModelState extends ContextRealityModel {
     // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     get classifiers(): SpatialClassifiersState;
+    // @internal (undocumented)
+    detachLayerListeners(): void;
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
@@ -3966,6 +4042,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
         };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
+        BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
     };
     indices?: GltfId;
     material?: GltfId;
@@ -3993,12 +4070,12 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean, lineStyle?: MaterialLineStyle): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
     // (undocumented)
-    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined;
+    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined, constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined, normalMapUseConstantLod?: boolean): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
@@ -4068,7 +4145,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected readFeatureIndices(_json: any): number[] | undefined;
     // (undocumented)
-    readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals?: boolean, needParams?: boolean): RealityTileGeometry;
+    readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals?: boolean, needParams?: boolean): Promise<RealityTileGeometry>;
     // (undocumented)
     protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
     // (undocumented)
@@ -4926,6 +5003,8 @@ export class IModelApp {
     static get applicationId(): string;
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
+    // @beta
+    static applicationLogoCardFooter?: () => HTMLElement;
     static get applicationVersion(): string;
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
@@ -5587,6 +5666,8 @@ export class LayerTileTreeReferenceHandler {
     // (undocumented)
     clearLayers(): void;
     // (undocumented)
+    detachFromDisplayStyle(): void;
+    // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     initializeLayers(context: SceneContext): boolean;
@@ -5729,6 +5810,16 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
+
+// @alpha
+export interface LockService {
+    checkElementLockAvailability(elementId: Id64String, lock: LockState): Promise<boolean>;
+    getExclusiveForeignLocks(): Promise<Id64Set>;
+    getSharedForeignLocks(): Promise<Id64Set>;
+}
+
+// @alpha
+export type LockServiceFactory = (iModel: BriefcaseConnection) => Promise<LockService>;
 
 // @internal
 export class LogoDecoration implements CanvasDecoration {
@@ -7040,6 +7131,8 @@ export interface MeshArgs {
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
+        useConstantLod?: boolean;
+        constantLodParams?: TextureMapping.ConstantLodParamProps;
     };
     vertIndices: number[];
 }
@@ -7867,6 +7960,7 @@ export class PlanarGridTransparency {
 // @public
 export interface PolylineArgs {
     colors: ColorIndex;
+    cumulativeDistances?: Float32Array;
     features: FeatureIndex;
     flags: PolylineFlags;
     linePixels: LinePixels;
@@ -7910,6 +8004,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
     run(..._args: any[]): Promise<boolean>;
+    // @deprecated
     saveChanges(): Promise<void>;
     // (undocumented)
     targetIsLocked: boolean;
@@ -8159,6 +8254,8 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
     transform?: Transform;
+    // @alpha
+    useViewportRenderMode?: boolean;
 }
 
 // @beta
@@ -8430,7 +8527,7 @@ export class RealityTile extends Tile {
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // @internal (undocumented)
     setContent(content: RealityTileContent): void;
-    // @internal (undocumented)
+    // @internal
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
     readonly tree: RealityTileTree;
@@ -13179,7 +13276,7 @@ export abstract class Viewport implements Disposable, TileUser {
     get backgroundMapTileTreeReference(): TileTreeReference | undefined;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
-    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
+    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean, batchNotify?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // @internal (undocumented)
