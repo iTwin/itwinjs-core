@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { expect } from "chai";
 import * as path from "path";
 import {
   BriefcaseDb,
@@ -192,7 +192,7 @@ describe("ECChangesetReader Examples", () => {
 
     while (reader.step()) {
       if (reader.inserted)
-        expect(reader.inserted!.ECClassId).to.exist;
+        expect(reader.inserted.ECClassId).to.exist;
     }
     // __PUBLISH_EXTRACT_END__
   });
@@ -272,7 +272,7 @@ describe("ECChangesetReader Examples", () => {
       // Only properties listed here were read directly from the changeset binary.
       // Other properties on the instance may reflect the current live-iModel state.
       if (changedProps.includes("Tags"))
-        console.log("Tags changed →", instance.Tags);
+        expect(instance.Tags).to.exist;
     }
     // __PUBLISH_EXTRACT_END__
 
@@ -306,8 +306,10 @@ describe("ECChangesetReader Examples", () => {
     using reader = ECChangesetReader.openLocalChanges({ db });
     using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
-    for (const instance of pcu.instances)
-      console.log(instance.ECInstanceId, instance.$meta.op);
+    for (const instance of pcu.instances) {
+      expect(instance.ECInstanceId).to.exist;
+      expect(instance.$meta.op).to.exist;
+    }
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChangesIncludeInMemory
@@ -336,8 +338,8 @@ describe("ECChangesetReader Examples", () => {
 
     for (const instance of pcu.instances) {
       // Property keys on the instance use camelCase JS names:
-      console.log(instance.id);        // ECInstanceId → id
-      console.log(instance.className); // ECClassId → className (resolved to full class name)
+      expect(instance.id).to.exist;        // ECInstanceId → id
+      expect(instance.className).to.exist; // ECClassId → className (resolved to full class name)
       // Navigation property sub-keys also use camelCase:
       // instance.category → { id: "0x...", relClassName: "BisCore.GeometricElement2dIsInCategory" }
       // Array property names are also camelCased:
@@ -359,7 +361,9 @@ describe("ECChangesetReader Examples", () => {
 
     for (const instance of pcu.instances) {
       // Only ECInstanceId and ECClassId are populated — all other properties are absent
-      console.log(instance.$meta.op, instance.ECInstanceId, instance.ECClassId);
+      expect(instance.$meta.op).to.exist;
+      expect(instance.ECInstanceId).to.exist;
+      expect(instance.ECClassId).to.exist;
     }
     // __PUBLISH_EXTRACT_END__
   });
@@ -370,8 +374,10 @@ describe("ECChangesetReader Examples", () => {
     using pcu = new ECNativePartialChangeUnifier(cache);
     using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
     while (reader.step()) pcu.appendFrom(reader);
-    for (const instance of pcu.instances)
-      console.log(instance.ECInstanceId, instance.$meta.op);
+    for (const instance of pcu.instances) {
+      expect(instance.ECInstanceId).to.exist;
+      expect(instance.$meta.op).to.exist;
+    }
     // __PUBLISH_EXTRACT_END__
   });
 });
@@ -456,8 +462,8 @@ describe("ECChangesetReader Examples — complete worked example", () => {
       // elem.Payload instanceof Uint8Array  → [1, 2, 3]
       // elem.Tags → ["alpha", "beta"]
       // elem.$meta.changeFetchedPropNames.includes("Tags") → true
-      console.log("insert op:", elem?.$meta.op);
-      console.log("insert Tags:", elem?.Tags);
+      expect(elem?.$meta.op).to.exist;
+      expect(elem?.Tags).to.exist;
     }
 
     // 8. Read the update changeset individually
@@ -476,8 +482,8 @@ describe("ECChangesetReader Examples — complete worked example", () => {
       // elemNew.Tags → ["alpha", "beta", "gamma"]
       // elemOld.Tags → ["alpha", "beta"]
       // elemNew.$meta.changeFetchedPropNames.includes("Tags") → true
-      console.log("update new Tags:", elemNew?.Tags);
-      console.log("update old Tags:", elemOld?.Tags);
+      expect(elemNew?.Tags).to.exist;
+      expect(elemOld?.Tags).to.exist;
     }
 
     // 9. Read both changesets as a group
@@ -496,8 +502,8 @@ describe("ECChangesetReader Examples — complete worked example", () => {
       // op is "Inserted" because the first appearance across the group was an insert.
       // Final Tags value reflects the update (["alpha","beta","gamma"]).
       // tables accumulated: ["bis_Element", "bis_GeometricElement2d"]
-      console.log("group op:", elem?.$meta.op);       // "Inserted"
-      console.log("group final Tags:", elem?.Tags);    // ["alpha","beta","gamma"]
+      expect(elem?.$meta.op).to.exist;
+      expect(elem?.Tags).to.exist;
     }
 
     txn.end();
