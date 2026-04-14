@@ -13,7 +13,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { XAndY } from "../geometry3d/XYZProps";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToNumberFunction } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
@@ -324,7 +324,7 @@ export enum RegionGroupOpType {
   Union = 0,
   Parity = 1,
   Intersection = 2,
-  NonBounding = -1,
+  NonBounding = -1, // The RegionGroupMembers are not regions and therefore do not participate in parity rules
 }
 
 /**
@@ -455,7 +455,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   /** bridge edges */
   public extraGeometry!: RegionGroup;
   public graph!: HalfEdgeGraph;
-  public faceAreaFunction!: NodeToNumberFunction;
+  public faceAreaFunction!: HalfEdgeToNumberFunction;
   public binaryOp: RegionBinaryOpType;
   private constructor(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType) {
     this.groupA = new RegionGroup(this, groupTypeA);
@@ -531,99 +531,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
   }
   /**
-   * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops, i.e.:
-   * * the bridge edge is dangling
-   * * the bridge edge is adjacent to multiple faces
-   * * the bridge edge is adjacent to a negative area face
-   * @returns the number of extraneous bridge edges removed from the graph.
-   */
-  private removeExtraneousBridgeEdges(): number {
-    const toHeal: HalfEdge[] = [];
-    const interiorBridges: HalfEdge[] = [];
-
-    // lambda test for boundary edge. Relies only on face loop orientation. Doesn't use HalfEdgeMasks!
-    const isExteriorEdge = (node: HalfEdge): boolean => {
-      if (this.faceAreaFunction(node) < 0.0)
-        return true;
-      if (!node.findAroundFace(node.edgeMate))
-        return this.faceAreaFunction(node.edgeMate) < 0.0;
-      return false;
-    };
-
-    // isolate dangling bridges, bridges separating different faces, and "exterior" bridges in the negative area face
-    this.graph.announceEdges((_graph: HalfEdgeGraph, node: HalfEdge): boolean => {
-      if (node.edgeTag !== undefined) {
-        if (node.edgeTag instanceof CurveLocationDetail) {
-          if (node.edgeTag.curve) {
-            if (node.edgeTag.curve.parent instanceof RegionGroupMember) {
-              if (node.edgeTag.curve.parent.parentGroup === this.extraGeometry) {
-                if (node.isDangling || node.edgeMate.isDangling || !node.findAroundFace(node.edgeMate) || this.faceAreaFunction(node) < 0.0) {
-                  toHeal.push(node.vertexSuccessor);
-                  toHeal.push(node.edgeMate.vertexSuccessor);
-                  node.isolateEdge();
-                } else {
-                  interiorBridges.push(node);
-                }
-              }
-            }
-          }
-        }
-      }
-      return true;
-    });
-
-    // At this point, all bridges that were exterior are isolated, but this may have caused formerly
-    // interior bridges to become exterior. Now we successively isolate exterior bridges until none remain.
-    let numIsolatedThisPass: number;
-    do {
-      numIsolatedThisPass = 0;
-      for (const node of interiorBridges) {
-        if (!node.isIsolatedEdge && isExteriorEdge(node)) {
-          toHeal.push(node.vertexSuccessor);
-          toHeal.push(node.edgeMate.vertexSuccessor);
-          node.isolateEdge();
-          numIsolatedThisPass++;
-        }
-      }
-    } while (numIsolatedThisPass > 0);
-
-    // lambda to extend the detail interval on a side of a healed edge
-    const mergeDetails = (he: HalfEdge | undefined, newFraction?: number, newPoint?: Point3d): void => {
-        if (he && he.edgeTag instanceof CurveLocationDetail && he.sortData !== undefined && newFraction !== undefined && newPoint) {
-          if (he.sortData > 0)
-            he.edgeTag.captureFraction1Point1(newFraction, newPoint);
-          else
-            he.edgeTag.captureFractionPoint(newFraction, newPoint);
-        }
-      };
-
-    // At this point all removable bridges are isolated. Clean up their original vertex loops, if possible.
-    for (const doomedA of toHeal) {
-      const doomedB = doomedA.vertexSuccessor;
-      if ( // are the geometries mergeable?
-        doomedA !== doomedB &&
-        doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined &&
-        doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined &&
-        doomedA.edgeTag.curve === doomedB.edgeTag.curve &&
-        doomedA.edgeTag.isInterval() && doomedB.edgeTag.isInterval() &&
-        doomedA.sortData * doomedB.sortData < 0 &&
-        ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1)) ||
-         (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1 - doomedB.edgeTag.fraction)))
-      ) {
-        const survivorA = HalfEdge.healEdge(doomedA, false);
-        if (survivorA) {
-          const endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
-          const endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
-          mergeDetails(survivorA, endFractionA, endPointA);
-          const endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
-          const endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
-          mergeDetails(survivorA.edgeMate, endFractionB, endPointB);
-        }
-      }
-    }
-    return this.graph.deleteIsolatedEdges();
-  }
-  /**
    * Markup and assembly steps for geometry in the RegionGroups.
    * * Annotate connection from group to curves.
    *    * groups with point data but no curves get no further annotation.
@@ -646,9 +553,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
-    this.graph = graph;
-    this.faceAreaFunction = faceAreaFromCurvedEdgeData;
-    this.removeExtraneousBridgeEdges();
+    RegionOps.removeExtraneousBridgeEdges(this.graph = graph, undefined, this.faceAreaFunction = faceAreaFromCurvedEdgeData);
   }
   private _announceFaceFunction?: AnnounceClassifiedFace;
   /**
@@ -842,7 +747,7 @@ export class GraphComponent {
    * @param extendRangeForEdge optional function to compute edge range.  If undefined, linear edge is assumed.
    * @param faceAreaFunction optional function to compute face area.  If undefined, linear edges are assumed.
    */
-  public buildFaceData(extendRangeForEdge: NodeAndRangeFunction | undefined, faceAreaFunction: NodeToNumberFunction | undefined) {
+  public buildFaceData(extendRangeForEdge: NodeAndRangeFunction | undefined, faceAreaFunction: HalfEdgeToNumberFunction | undefined) {
     const vertexFunction = (node: HalfEdge) => {
       if (extendRangeForEdge)
         extendRangeForEdge(node, this.range);
