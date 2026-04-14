@@ -335,11 +335,18 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
       if (fs.existsSync(resultsPath))
         break;
       const reason = result.exitCode !== 0
-        ? `crashed (exit ${result.exitCode})`
+        ? `crashed (exit ${result.exitCode} / 0x${(result.exitCode >>> 0).toString(16).toUpperCase()})`
         : `exited cleanly but produced no test results`;
-      console.warn(`shard-${index} ${reason} — retrying (attempt ${retry + 2}) with --disable-gpu`);
+      const lastTest = result.lastTestLine ? ` | last test: ${result.lastTestLine}` : "";
+      console.warn(`shard-${index} ${reason}${lastTest} — retrying (attempt ${retry + 2})`);
+      // Brief delay to let the OS reclaim resources from the crashed process
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       cleanupCacheDir(result.cacheDir);
-      result = await runShard(files, index, ["--disable-gpu"]);
+      // Preserve original electronArgs and add --disable-gpu as a crash-recovery measure
+      const retryArgs = [...(electronArgs ?? [])];
+      if (!retryArgs.includes("--disable-gpu"))
+        retryArgs.push("--disable-gpu");
+      result = await runShard(files, index, retryArgs);
     }
 
     results.push(result);
