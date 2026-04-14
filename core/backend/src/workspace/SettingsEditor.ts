@@ -140,8 +140,6 @@ export namespace SettingsContainers {
         includePrerelease: true,
       });
     }
-
-    results.sort((a, b) => a.priority - b.priority);
     return results;
   }
 }
