@@ -238,6 +238,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     hookTimeout,
     importRewritePatterns,
     rendererSetup,
+    electronArgs,
     env: extraEnv,
   } = options;
 
@@ -295,15 +296,6 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const totalFiles = shards.reduce((n, s) => n + s.length, 0);
   console.log(`Running ${totalFiles} test files across ${shards.length} Electron shards`);
 
-  // On CI, always disable GPU compositing for the initial run. CI machines use
-  // software rendering (SwiftShader on Linux, WARP on Windows) — there is no real
-  // GPU. Skipping the GPU process avoids transient `CreateCommandBuffer` failures
-  // when multiple Electron shards race for GPU resources on the same agent.
-  const isCI = !!(process.env.CI || process.env.TF_BUILD || process.env.AGENT_ID);
-  // macOS CI agents have real GPUs — --disable-gpu breaks WebGL context creation there.
-  // Only disable GPU on Linux/Windows CI where software renderers (SwiftShader/WARP) contend.
-  const defaultElectronArgs = isCI && process.platform !== "darwin" ? ["--disable-gpu"] : undefined;
-
   // Run all shards in parallel, with automatic retries for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
   const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
@@ -331,7 +323,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   }
 
   const promises = shards.map(async (files, index) => {
-    let result = await runShard(files, index, defaultElectronArgs);
+    let result = await runShard(files, index, electronArgs);
 
     // Retry up to twice if the shard produced no test results at all. This covers:
     // - Crashed shards (non-zero exit, e.g. native exception or OOM)

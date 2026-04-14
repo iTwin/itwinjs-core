@@ -80,6 +80,13 @@ if (testUtilPath) {
 
 describe("Full-Stack Tests (Electron Renderer)", () => {
   it("should pass all Electron renderer tests (parallel shards)", async () => {
+    // On CI, disable GPU compositing for Linux/Windows. CI machines use software
+    // renderers (SwiftShader on Linux, WARP on Windows) — parallel Electron shards
+    // racing for GPU resources cause transient CreateCommandBuffer failures.
+    // macOS CI has real GPUs; --disable-gpu would break WebGL there.
+    const isCI = !!(process.env.CI || process.env.TF_BUILD || process.env.AGENT_ID);
+    const ciElectronArgs = isCI && process.platform !== "darwin" ? ["--disable-gpu"] : [];
+
     const results = await runElectronTests({
       backendInitModule: path.resolve(process.cwd(), "lib/backend/backend"),
       setupFile: path.resolve(process.cwd(), "lib/frontend/vitest.setup.js"),
@@ -92,6 +99,7 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
       timeout: sessionTimeout,
       importRewritePatterns: ["@itwin/core-electron/[^\"']+"],
       rendererSetup: itwinRendererSetup,
+      electronArgs: ciElectronArgs,
       env: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         IMODELJS_CORE_DIRNAME: path.resolve(process.cwd(), "../.."),

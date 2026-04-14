@@ -46,6 +46,19 @@ export interface ElectronTestRunnerOptions {
    */
   importRewritePatterns?: string[];
   /**
+   * Extra command-line arguments passed to the Electron binary for every shard.
+   * Use this to pass platform- or environment-specific flags such as `--disable-gpu`
+   * on CI machines that use software renderers (SwiftShader on Linux, WARP on Windows).
+   *
+   * @example
+   * ```ts
+   * // Disable GPU compositing on Linux/Windows CI to avoid transient failures
+   * const isCI = !!(process.env.CI || process.env.TF_BUILD);
+   * electronArgs: isCI && process.platform !== "darwin" ? ["--disable-gpu"] : [],
+   * ```
+   */
+  electronArgs?: string[];
+  /**
    * A string of JavaScript code injected into the renderer harness after all test
    * files have been loaded (and `require.cache` is populated) but before suites
    * are executed. Use this to monkey-patch loaded modules, configure globals, or
