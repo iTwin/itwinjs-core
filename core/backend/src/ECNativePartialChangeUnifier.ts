@@ -7,11 +7,10 @@
  */
 import { DbResult, Guid } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
-import { ECDb } from "./ECDb";
 import { SqliteStatement } from "./SqliteStatement";
 import { ECNativeChangeInstance, ECNativeChangeSource } from "./ECChangesetReaderTypes";
-import { AnyDb } from "./SqliteChangesetReader";
 import { _nativeDb } from "./internal/Symbols";
+import { SQLiteDb } from "./SQLiteDb";
 
 // ---------------------------------------------------------------------------
 // ECNativeChangeUnifierCache — interface + factory
@@ -48,16 +47,14 @@ export namespace ECNativeChangeUnifierCache {
   /**
    * Creates a SQLite-backed cache stored in a temporary table of the given database.
    * Slower than in-memory but handles large changesets without exhausting memory.
-   * @param db Database that will host the temporary cache table.
    * @param bufferedReadInstanceSizeInBytes Read-batch size in bytes (default 10 MB).
    * @returns An {@link ECChangeCache} backed by a SQLite temp table.
    * @beta
    */
   export function createSqliteBackedCache(
-    db: AnyDb,
     bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10,
   ): ECNativeChangeCache {
-    return new NativeSqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
+    return new NativeSqliteBackedInstanceCache(bufferedReadInstanceSizeInBytes);
   }
 }
 
@@ -103,13 +100,14 @@ class NativeInMemoryInstanceCache implements ECNativeChangeCache {
 // ---------------------------------------------------------------------------
 
 class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
-  private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
+  private readonly _cacheTable = `[${Guid.createValue()}]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10 MB
-
+  private _db: SQLiteDb;
   public constructor(
-    private readonly _db: AnyDb,
     public readonly bufferedReadInstanceSizeInBytes: number = NativeSqliteBackedInstanceCache.defaultBufferSize,
   ) {
+    this._db = new SQLiteDb();
+    this._db.createDb("", undefined, { skipFileCheck: true, rawSQLite: true });
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceSizeInBytes must be greater than 0");
     this.createTempTable();
@@ -119,21 +117,6 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     this._db.withSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt: SqliteStatement) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to create temp cache table");
-    });
-  }
-
-  private dropTempTable(): void {
-    if (this._db instanceof ECDb) {
-      this._db.saveChanges();
-      this._db.clearStatementCache();
-    } else {
-      this._db[_nativeDb].saveChanges();
-      this._db.clearCaches();
-    }
-    // clearing caches because otherwise dropping the table is not possible due to cached prepared statements that reference the table.
-    this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt: SqliteStatement) => {
-      if (DbResult.BE_SQLITE_DONE !== stmt.step())
-        throw new Error("unable to drop temp cache table");
     });
   }
 
@@ -196,7 +179,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
 
   public [Symbol.dispose](): void {
     if (this._db.isOpen)
-      this.dropTempTable();
+      this._db.closeDb(true);
   }
 }
 

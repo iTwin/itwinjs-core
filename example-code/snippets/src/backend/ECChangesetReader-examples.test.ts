@@ -370,7 +370,7 @@ describe("ECChangesetReader Examples", () => {
 
   it("SQLite-backed cache for large changesets", () => {
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.CacheStrategies
-    using cache = ECNativeChangeUnifierCache.createSqliteBackedCache(db);
+    using cache = ECNativeChangeUnifierCache.createSqliteBackedCache();
     using pcu = new ECNativePartialChangeUnifier(cache);
     using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
     while (reader.step()) pcu.appendFrom(reader);
@@ -427,7 +427,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
       code: Code.createEmpty(),
       Payload: new Uint8Array([0x01, 0x02, 0x03]), // eslint-disable-line @typescript-eslint/naming-convention
       Tags: ["alpha", "beta"], // eslint-disable-line @typescript-eslint/naming-convention
-    });
+    } as any);
     txn.saveChanges("insert widget");
     await db.pushChanges({ description: "insert widget", accessToken: adminToken });
 

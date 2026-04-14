@@ -31,7 +31,7 @@ function readTxn(
 ): ECNativeChangeInstance[] {
   using reader = ECChangesetReader.openTxn({ db, txnId, mode, rowOptions, invert });
   const inMemCache = useInMemoryUnifierCache ?? true;
-  using pcu = new ECNativePartialChangeUnifier(inMemCache ? ECNativeChangeUnifierCache.createInMemoryCache() : ECNativeChangeUnifierCache.createSqliteBackedCache(db));
+  using pcu = new ECNativePartialChangeUnifier(inMemCache ? ECNativeChangeUnifierCache.createInMemoryCache() : ECNativeChangeUnifierCache.createSqliteBackedCache());
   while (reader.step())
     pcu.appendFrom(reader);
   const instances = Array.from(pcu.instances);
@@ -2918,7 +2918,7 @@ describe("ECChangesetReader filters", () => {
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
     assert.deepEqual([...modelNew!.$meta.tables].sort(), ["bis_Model"].sort());
-    assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
+    assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [1].sort());
     assert.isString(modelNew!.$meta.nativeKey);
     assert.equal(modelNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(modelNew!.$meta.mode, "All_Properties");
@@ -3052,7 +3052,7 @@ describe("ECChangesetReader filters", () => {
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
     assert.deepEqual([...modelNew!.$meta.tables].sort(), ["bis_Model"].sort());
-    assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
+    assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [1].sort());
     assert.isString(modelNew!.$meta.nativeKey);
     assert.equal(modelNew!.$meta.nativeKey.split(`-`).length, 2);
     assert.equal(modelNew!.$meta.mode, "All_Properties");
@@ -3385,7 +3385,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     // === openFile: insert changeset ===
     {
       using reader = ECChangesetReader.openLocalChanges({ db: rwIModel, rowOptions: { abbreviateBlobs: false } });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
+      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache());
       while (reader.step())
         pcu.appendFrom(reader);
       const instances = Array.from(pcu.instances);
@@ -3438,7 +3438,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     // === openFile: update changeset ===
     {
       using reader = ECChangesetReader.openInMemoryChanges({ db: rwIModel, rowOptions: { abbreviateBlobs: false } });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
+      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache());
       while (reader.step())
         pcu.appendFrom(reader);
       const instances = Array.from(pcu.instances);
@@ -3485,7 +3485,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     // elem Old only comes from the update changeset.
     {
       using reader = ECChangesetReader.openLocalChanges({ db: rwIModel, includeInMemoryChanges: true, rowOptions: { abbreviateBlobs: false } });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
+      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache());
       while (reader.step())
         pcu.appendFrom(reader);
       const instances = Array.from(pcu.instances);
@@ -4015,7 +4015,7 @@ describe("ECChangesetReader: instance reused with a different class (class chang
   });
 });
 
-describe("ECChangesetReader: overflow table insert and update", () => {
+describe("ECChangesetReader: overflow table insert and update and delete", () => {
   let rwIModel: BriefcaseDb;
   let elementId: Id64String;
   let drawingModelId: Id64String;
