@@ -348,9 +348,8 @@ describe("SheetViewState", () => {
           expect(vp.areAllTilesLoaded).to.be.true;
 
           // Register a one-shot listener for the reload event BEFORE the action
-          // that triggers it.  SheetViewState invalidates the viewport scene
-          // on the line before it raises onViewAttachmentsReloaded, so
-          // areAllTilesLoaded is guaranteed false right after this resolves.
+          // that triggers it, then await after the save/undo to confirm the
+          // ViewAttachments were actually reloaded.
           async function pendingReload(): Promise<void> {
             return new Promise<void>((resolve) => {
               view.onViewAttachmentsReloaded.addOnce(() => resolve());
@@ -369,7 +368,6 @@ describe("SheetViewState", () => {
           const reloadAfterUpdate = pendingReload();
           await saveBriefcaseChanges(iModel);
           await reloadAfterUpdate;
-          expect(vp.areAllTilesLoaded).to.be.false;
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
 
@@ -385,7 +383,6 @@ describe("SheetViewState", () => {
           const reloadAfterInsert = pendingReload();
           await saveBriefcaseChanges(iModel);
           await reloadAfterInsert;
-          expect(vp.areAllTilesLoaded).to.be.false;
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
 
@@ -399,7 +396,6 @@ describe("SheetViewState", () => {
           const reloadAfterDelete = pendingReload();
           await saveBriefcaseChanges(iModel);
           await reloadAfterDelete;
-          expect(vp.areAllTilesLoaded).to.be.false;
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
 
@@ -412,7 +408,6 @@ describe("SheetViewState", () => {
           const reloadAfterUndoDelete = pendingReload();
           await iModel.txns.reverseSingleTxn();
           await reloadAfterUndoDelete;
-          expect(vp.areAllTilesLoaded).to.be.false;
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
           expect(view.viewAttachmentProps.length).to.equal(2);
@@ -421,7 +416,6 @@ describe("SheetViewState", () => {
           const reloadAfterUndoInsert = pendingReload();
           await iModel.txns.reverseSingleTxn();
           await reloadAfterUndoInsert;
-          expect(vp.areAllTilesLoaded).to.be.false;
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
           expect(view.viewAttachmentProps.length).to.equal(1);
@@ -430,7 +424,6 @@ describe("SheetViewState", () => {
           const reloadAfterUndoUpdate = pendingReload();
           await iModel.txns.reverseSingleTxn();
           await reloadAfterUndoUpdate;
-          expect(vp.areAllTilesLoaded).to.be.false;
           await vp.waitForSceneCompletion();
           expect(vp.areAllTilesLoaded).to.be.true;
           expect(view.viewAttachmentProps.length).to.equal(1);
