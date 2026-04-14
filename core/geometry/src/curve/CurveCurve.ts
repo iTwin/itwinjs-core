@@ -102,7 +102,7 @@ export class CurveCurve {
    * * If more than one approach is returned, one of them is the closest approach.
    * * If an input curve is a `CurveCollection`, then close approaches are computed to each `CurvePrimitive` child.
    * This can lead to many returned pairs, especially when both inputs are `CurveCollection`s. If an input curve is
-   * an `AnyRegion` then close approaches are computed only to the boundary curves, not to the interior.
+   * an `AnyRegion`, then close approaches are computed only to the defining curves, not to the area they enclose.
    * @param curveA first curve
    * @param curveB second curve
    * @param maxDistance maximum xy-distance to consider between the curves.
@@ -137,6 +137,7 @@ export class CurveCurve {
     let iMin = 0;
     let minDistXY = 2 * maxDistance;
     for (let i = 0; i < closeApproaches.length; ++i) {
+      // TODO: this distance should already be in detail.a. Verify this, then just use it instead of recomputing below.
       const distXY = closeApproaches[i].detailA.point.distanceXY(closeApproaches[i].detailB.point);
       if (distXY < minDistXY) {
         iMin = i;

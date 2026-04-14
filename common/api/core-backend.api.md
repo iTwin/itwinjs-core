@@ -221,6 +221,7 @@ import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
+import { ReinstateTxnArgs } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelatedElementProps } from '@itwin/core-common';
 import { RelationshipClass } from '@itwin/ecschema-metadata';
@@ -231,6 +232,7 @@ import { RenderSchedule } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
+import { ReverseTxnArgs } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
@@ -442,6 +444,10 @@ export interface AzureBlobStorageCredentials {
 
 // @public
 export interface BackendHubAccess {
+    // @beta
+    abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
+    // @beta
+    abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
@@ -5062,13 +5068,25 @@ export interface LockControl {
     readonly [_implementationProhibited]: unknown;
     // @internal
     [_releaseAllLocks]: () => Promise<void>;
+    // @beta
+    abandonAllLocks(): Promise<void>;
+    // @beta
+    abandonLocksForCurrentUnsavedTxn(): Promise<boolean>;
+    // @beta
+    abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean>;
     acquireLocks(arg: {
         shared?: Id64Arg;
         exclusive?: Id64Arg;
     }): Promise<void>;
+    // @beta
+    acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean>;
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     checkSharedLock(id: Id64String, type: string, operation: string): void;
+    // @beta
+    clearTxnLockRecords(txnId: Id64String): void;
     holdsExclusiveLock(id: Id64String): boolean;
+    // @beta
+    holdsNecessaryLocksForReinstatingTxn(txnId: Id64String): boolean;
     holdsSharedLock(id: Id64String): boolean;
     readonly isServerBased: boolean;
     releaseAllLocks(): Promise<void>;
@@ -7359,6 +7377,8 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    // @beta
+    cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
@@ -7447,12 +7467,22 @@ export class TxnManager {
     // @internal (undocumented)
     readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
+    // @beta
+    reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void>;
     reportError(error: ValidationError): void;
     restartSession(): void;
     reverseAll(): IModelStatus;
+    // @beta
+    reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseSingleTxn(): IModelStatus;
+    // @beta
+    reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseTo(txnId: TxnIdString): IModelStatus;
+    // @beta
+    reverseToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
     reverseTxns(numOperations: number): IModelStatus;
+    // @beta
+    reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void>;
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
