@@ -224,11 +224,51 @@ export interface BackendHubAccess {
    */
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
+  /**
+   * Abandons the specified locks when none of the associated elements have
+   * been or will be modified. Depending on the {@link LockState} specified for the lock,
+   * it may be returned to the {@link LockState.Shared} state or released entirely. It is only
+   * valid to call this method when none of the elements protected by the locks have been edited, or if all edits
+   * have been reversed or abandoned without pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   *
+   * It is an error to specify {@link LockState.Exclusive} for any element, to specify {@link LockState.Shared}
+   * for an element where the Exclusive lock is not currently held, or to include any element for which no lock
+   * is currently held.
+   *
+   * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
+   * explicitly by an IModelHub, it will be implemented implicitly by calling
+   * {@link BackendHubAccess.acquireLocks} with the same locks and passing `changeset.id=""` and
+   * `changeset.index=0` in the first argument to indicate that the lock state should change without updating
+   * the changeset associated with the locks.
+   *
+   * @beta
+   */
+  abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
+
   /** Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests. */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** Release all currently held locks */
   releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
+
+  /**
+   * Abandons all currently held locks when none of the associated elements have been or will be modified.
+   * It is only valid to call this method when none of the elements protected by the locks have been edited,
+   * or if all edits have been reversed or abandoned without pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   *
+   * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
+   * explicitly by an IModelHub, it will be implemented implicitly by calling
+   * {@link BackendHubAccess.releaseAllLocks}, passing `changeset.id=""` and `changeset.index=0` in the
+   * first argument to indicate that the lock state should change without updating the changeset associated
+   * with the locks.
+   *
+   * @beta
+   */
+  abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;

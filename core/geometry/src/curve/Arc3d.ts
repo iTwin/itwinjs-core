@@ -756,6 +756,17 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return this.fractionToPoint(0.0, result);
   }
   /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    if (this.sweep.isFullCircle)
+      return true;
+    return super.isPhysicallyClosedCurve(tolerance, xyOnly);
+  }
+  /**
    * Return the end point of the arc.
    * @param result optional preallocated result.
    */

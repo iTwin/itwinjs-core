@@ -250,3 +250,31 @@ export namespace EditTxnError {
     return ITwinError.isError<EditTxnError>(error, scope, key);
   }
 }
+
+/** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
+ * @beta
+ */
+export namespace ServerBasedLocksError {
+  /** the ITwinError scope for `ServerBasedLocksError`s. */
+  export const scope = "itwin-ServerBasedLocks";
+
+  /** Keys that identify `ServerBasedLocksError`s */
+  export type Key =
+    /** The briefcase contains unsaved changes */
+    "has-unsaved-changes" |
+    /** A SQLite error occurred while reading or writing the "locks" database */
+    "lock-database-problem" |
+    /** The specified Txn ID is not known to the TxnManager */
+    "txn-id-not-found" |
+    /** Attempted to abandon locks for a Txn that has not yet been reversed */
+    "txn-not-reversed";
+
+  /** Instantiate and throw a ServerBasedLocksError */
+  export function throwError(key: Key, message: string): never {
+    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
+  }
+  /** Determine whether an error object is a ServerBasedLocksError */
+  export function isError(error: unknown, key?: Key): error is ITwinError {
+    return ITwinError.isError<ITwinError>(error, scope, key);
+  }
+}
