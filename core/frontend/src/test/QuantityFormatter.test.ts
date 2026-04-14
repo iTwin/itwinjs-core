@@ -981,7 +981,7 @@ describe("Failed reload recovery (Issue 5)", () => {
       return originalLoad(...args);
     };
 
-    // setActiveUnitSystem triggers enqueueReload → calls loadFormatAndParsingMapsForSystem
+    // setActiveUnitSystem triggers scheduleReload → calls loadFormatAndParsingMapsForSystem
     await qf.setActiveUnitSystem("metric");
 
     // After failure: isReady should be restored (stale-but-usable)

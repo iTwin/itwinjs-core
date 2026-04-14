@@ -8106,8 +8106,6 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     createFormatterSpec(props: CreateFormattingSpecProps): Promise<FormatterSpec>;
     // @beta
     createParserSpec(props: CreateFormattingSpecProps): Promise<ParserSpec>;
-    // @internal
-    protected enqueueReload(intent: ReloadIntent): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
@@ -8166,6 +8164,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     resetToUseInternalUnitsProvider(): Promise<void>;
+    // @internal
+    protected scheduleReload(intent: ReloadIntent): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;

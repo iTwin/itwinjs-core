@@ -399,7 +399,7 @@ export class FormatsProviderManager implements FormatsProvider {
 type ReloadIntent =
   | { scope: "full" }
   | { scope: "formatsChanged"; args: FormatsChangedArgs }
-  | { scope: "activeSystem" };
+  | { scope: "activeSystem"; emitSystemChanged?: boolean };
 
 /** The QuantityFormatter class provides methods for formatting and parsing quantities. There are a set of standard quantity types
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
@@ -521,9 +521,13 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
   }
 
-  /** Enqueue an async reload. If no reload is in flight, runs immediately. If a reload is
-   * already in flight, stores the intent as pending (latest-wins: only the last queued reload
+  /** Schedule an async reload. If no reload is in flight, runs immediately. If a reload is
+   * already in flight, stores the intent as pending (latest-wins: only the last scheduled reload
    * is kept). `finalizeReload()` fires only when the queue is fully drained.
+   *
+   * **Await semantics:** When a reload is already in flight, the returned promise resolves
+   * immediately *without* the requested reload having run. Callers that need to know when
+   * the reload has actually completed should listen for `onFormattingReady` instead.
    *
    * Reload intents:
    * - `"full"` — rebuild entire registry + re-register provider listener (onInitialized, setUnitsProvider)
@@ -531,7 +535,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * - `"activeSystem"` — reload format/parsing maps for current unit system (setActiveUnitSystem, reinitializeFormatAndParsingsMaps)
    * @internal
    */
-  protected async enqueueReload(intent: ReloadIntent): Promise<void> {
+  protected async scheduleReload(intent: ReloadIntent): Promise<void> {
     if (this._reloadInFlight) {
       // A reload is already running — queue this one (latest-wins)
       this._pendingReload = intent;
@@ -551,7 +555,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       if (this._pendingReload) {
         const next = this._pendingReload;
         this._pendingReload = undefined;
-        return this.enqueueReload(next);
+        return this.scheduleReload(next);
       }
       // Restore prior ready state so stale-but-usable specs remain accessible
       if (this._hasEverBeenReady) {
@@ -566,7 +570,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       const next = this._pendingReload;
       this._pendingReload = undefined;
       this._reloadInFlight = false;
-      return this.enqueueReload(next);
+      return this.scheduleReload(next);
     }
 
     // Queue is drained — finalize
@@ -577,7 +581,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       const next = this._pendingReload;
       this._pendingReload = undefined;
       this._reloadInFlight = false;
-      return this.enqueueReload(next);
+      return this.scheduleReload(next);
     }
 
     this._reloadInFlight = false;
@@ -605,6 +609,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       }
       case "activeSystem":
         await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
+        if (intent.emitSystemChanged) {
+          this._deferredSystemChangedEmit = { system: this._activeUnitSystem };
+        }
         break;
     }
   }
@@ -792,7 +799,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * @internal
    */
   public async onInitialized() {
-    await this.enqueueReload({ scope: "full" });
+    await this.scheduleReload({ scope: "full" });
   }
 
   /** Core reload logic — does all async I/O and cache rebuilding without events or state management.
@@ -820,7 +827,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     // Register formatsProvider listener that triggers a queued reload when formats change
     this._removeFormatsProviderListener = IModelApp.formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
-      void this.enqueueReload({ scope: "formatsChanged", args });
+      void this.scheduleReload({ scope: "formatsChanged", args });
     });
 
     // initialize default format and parsing specs
@@ -906,7 +913,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     try {
       // force all cached data to be reinitialized
-      await this.enqueueReload({ scope: "full" });
+      await this.scheduleReload({ scope: "full" });
     } catch (err) {
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
@@ -961,8 +968,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
 
     unitSystemKey && (this._activeUnitSystem = unitSystemKey);
-    await this.enqueueReload({ scope: "activeSystem" });
-    fireUnitSystemChanged && this.onActiveFormattingUnitSystemChanged.emit({ system: this._activeUnitSystem });
+    await this.scheduleReload({ scope: "activeSystem", emitSystemChanged: fireUnitSystemChanged });
     IModelApp.toolAdmin && startDefaultTool && await IModelApp.toolAdmin.startDefaultTool();
   }
 
@@ -978,11 +984,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       return;
 
     this._activeUnitSystem = systemType;
-    await this.enqueueReload({ scope: "activeSystem" });
+    await this.scheduleReload({ scope: "activeSystem", emitSystemChanged: true });
     // allow settings provider to store the change
     await this._unitFormattingSettingsProvider?.storeUnitSystemSetting({ system: systemType });
-    // fire current event
-    this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
       return IModelApp.toolAdmin.startDefaultTool();
   }
