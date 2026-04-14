@@ -446,7 +446,6 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  private _schemas?: RuntimeSchemaContext;
   private _schemasPromise?: Promise<RuntimeSchemaContext>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
@@ -1727,18 +1726,16 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public async getSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._schemas !== undefined && !this._schemas.isOutdated && this._schemasPromise === undefined)
-      return this._schemas;
-    if (this._schemasPromise !== undefined)
-      return this._schemasPromise;
-
-    this._schemasPromise = this._hydrateSchemas();
-    try {
-      this._schemas = await this._schemasPromise;
-      return this._schemas;
-    } finally {
-      this._schemasPromise = undefined;
+    if (this._schemasPromise) {
+      const ctx = await this._schemasPromise;
+      if (!ctx.isOutdated)
+        return ctx;
     }
+    this._schemasPromise = this._hydrateSchemas().catch((err) => {
+      this._schemasPromise = undefined;
+      throw err;
+    });
+    return this._schemasPromise;
   }
 
   /** Check if the cached runtime schema context is stale and reload if necessary.
@@ -1750,31 +1747,18 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public async refreshSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._schemasPromise !== undefined)
-      return this._schemasPromise;
-    if (this._schemas === undefined)
+    if (!this._schemasPromise)
       return this.getSchemas();
-
-    // Set the promise synchronously so concurrent callers join this check-and-reload
-    // instead of starting their own hydration during the await.
-    this._schemasPromise = this._checkAndRefreshSchemas();
-    try {
-      return await this._schemasPromise;
-    } finally {
-      this._schemasPromise = undefined;
-    }
-  }
-
-  private async _checkAndRefreshSchemas(): Promise<RuntimeSchemaContext> {
+    const existing = await this._schemasPromise;
     const liveToken = await this._fetchSchemaToken();
-    if (this._schemas && liveToken === this._schemas.schemaToken)
-      return this._schemas;
-
-    const newCtx = await this._hydrateSchemas();
-    if (this._schemas)
-      this._schemas.markOutdated();
-    this._schemas = newCtx;
-    return newCtx;
+    if (liveToken === existing.schemaToken && !existing.isOutdated)
+      return existing;
+    existing.markOutdated();
+    this._schemasPromise = this._hydrateSchemas().catch((err) => {
+      this._schemasPromise = undefined;
+      throw err;
+    });
+    return this._schemasPromise;
   }
 
   private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
@@ -1808,14 +1792,18 @@ export abstract class IModelDb extends IModel {
    * and the next `getSchemas()` call will load a fresh context.
    */
   private _scheduleSchemaCheck(): void {
-    if (!this._schemas || this._schemas.isOutdated || this._schemasPromise)
+    const promise = this._schemasPromise;
+    if (!promise)
       return;
-    const cachedToken = this._schemas.schemaToken;
-    if (!cachedToken)
-      return; // no token to compare against - context was built without one
-    this._fetchSchemaToken().then((liveToken) => {
-      if (this._schemas && !this._schemas.isOutdated && liveToken !== cachedToken)
-        this._schemas.markOutdated();
+    promise.then(async (ctx) => {
+      if (ctx.isOutdated)
+        return;
+      const cachedToken = ctx.schemaToken;
+      if (!cachedToken)
+        return;
+      const liveToken = await this._fetchSchemaToken();
+      if (!ctx.isOutdated && liveToken !== cachedToken)
+        ctx.markOutdated();
     }).catch((err) => {
       Logger.logInfo(BackendLoggerCategory.IModelDb, `Background schema token check failed: ${err}`);
     });

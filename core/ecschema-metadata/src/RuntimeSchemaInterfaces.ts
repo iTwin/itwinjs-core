@@ -90,6 +90,7 @@ export interface SchemaData {
   readonly koqCount: number;
   readonly catRangeStart: number;
   readonly catCount: number;
+  readonly isHidden: boolean;
 }
 
 /** Internal storage for a class.
@@ -113,6 +114,7 @@ export interface ClassData {
   readonly strengthDirection: StrengthDirection;
   readonly sourceConstraintIdx: number;
   readonly targetConstraintIdx: number;
+  readonly isHidden: boolean;
 }
 
 /** Shared, deduplicated property definition. Many properties may reference the same def.

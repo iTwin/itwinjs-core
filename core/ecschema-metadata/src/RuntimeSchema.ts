@@ -45,6 +45,10 @@ export class RuntimeSchema {
   public get writeVersion(): number { return this._data.versionWrite; }
   public get minorVersion(): number { return this._data.versionMinor; }
 
+  /** Reflects the `HiddenSchema` custom attribute from `CoreCustomAttributes`.
+   * Schemas marked hidden are typically excluded from UI display but remain accessible programmatically. */
+  public get isHidden(): boolean { return this._data.isHidden; }
+
   /** "SchemaName.RR.WW.mm" - dot-separated, matching the EC schema versioning convention. */
   public get fullName(): string {
     const d = this._data;
@@ -189,6 +193,10 @@ export class RuntimeClass {
   // Modifier checks
   public get isAbstract(): boolean { return this._data.modifier === ClassModifier.Abstract; }
   public get isSealed(): boolean { return this._data.modifier === ClassModifier.Sealed; }
+
+  /** Reflects the `HiddenClass` custom attribute from `CoreCustomAttributes`.
+   * Classes marked hidden are typically excluded from UI display but remain accessible programmatically. */
+  public get isHidden(): boolean { return this._data.isHidden; }
 
   // Hierarchy
 

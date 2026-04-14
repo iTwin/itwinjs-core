@@ -161,7 +161,6 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
-  private _schemas?: RuntimeSchemaContext;
   private _schemasPromise?: Promise<RuntimeSchemaContext>;
 
   /** Load the FontMap for this IModelConnection.
@@ -654,21 +653,16 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async getSchemas(): Promise<RuntimeSchemaContext> {
-    if (this._schemas !== undefined && !this._schemas.isOutdated && this._schemasPromise === undefined)
-      return this._schemas;
-    if (this._schemasPromise !== undefined)
-      return this._schemasPromise;
-
-    this._schemasPromise = this._fetchSchemas();
-    try {
-      const newCtx = await this._schemasPromise;
-      if (this._schemas)
-        this._schemas.markOutdated();
-      this._schemas = newCtx;
-      return this._schemas;
-    } finally {
-      this._schemasPromise = undefined;
+    if (this._schemasPromise) {
+      const ctx = await this._schemasPromise;
+      if (!ctx.isOutdated)
+        return ctx;
     }
+    this._schemasPromise = this._fetchSchemas().catch((err) => {
+      this._schemasPromise = undefined;
+      throw err;
+    });
+    return this._schemasPromise;
   }
 
   private async _fetchSchemas(): Promise<RuntimeSchemaContext> {

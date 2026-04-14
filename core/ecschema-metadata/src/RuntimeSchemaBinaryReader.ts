@@ -94,6 +94,7 @@ interface PendingClass {
   propRefs: PendingPropRef[];
   constraints: PendingConstraint[];
   schemaName: string;
+  isHidden: boolean;
 }
 
 /** A property reference from the binary PropertyDefTable. During parsing, `preDefIdx` stores the
@@ -224,6 +225,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
     const label = reader.readSRef();
     const description = reader.readSRef();
     const ecInstanceId = reader.readU32();
+    const isHidden = reader.readU8() !== 0;
 
     const schemaIdx = builder.addSchema({
       ecInstanceId,
@@ -238,6 +240,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       enumRangeStart: 0, enumCount: 0,
       koqRangeStart: 0, koqCount: 0,
       catRangeStart: 0, catCount: 0,
+      isHidden,
     });
     schemaEcIdToIdx.set(ecInstanceId, schemaIdx);
     schemaInfos.push({ name, schemaIdx, classNameToIdx: new Map() });
@@ -381,6 +384,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       relStrengthDir = reader.readU8() as StrengthDirection;
     }
     const cEcInstanceId = reader.readU32();
+    const cIsHidden = reader.readU8() !== 0;
 
     // Base classes (count-prefixed)
     const baseCount = reader.readU16();
@@ -459,6 +463,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       strengthDirection: relStrengthDir,
       sourceConstraintIdx: -1,
       targetConstraintIdx: -1,
+      isHidden: cIsHidden,
     });
     schemaInfo.classNameToIdx.set(cName.toLowerCase(), classIdx);
     classRowIdToIdx.set(cEcInstanceId, classIdx);
@@ -478,6 +483,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       propRefs,
       constraints,
       schemaName: schemaInfo.name,
+      isHidden: cIsHidden,
     });
   }
 
@@ -663,6 +669,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
       strengthDirection: pc.relStrengthDir,
       sourceConstraintIdx,
       targetConstraintIdx,
+      isHidden: pc.isHidden,
     };
     builder.updateClass(pc.classIdx, updatedClass);
   }

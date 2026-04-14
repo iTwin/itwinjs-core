@@ -10,6 +10,7 @@ import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, Navigatio
 import { assert, expect } from "chai";
 import * as path from "path";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { TestUtils } from "../TestUtils";
 
 /** Schemas excluded from the runtime binary blob by the C++ writer.
  * Must stay in sync with `IsExcludedSchema()` in `RuntimeSchemaWriter.cpp`.
@@ -39,11 +40,8 @@ const excludedRuntimeSchemas: ReadonlySet<string> = new Set([
  */
 describe("RuntimeSchemaContext cross-validation", () => {
   before(async () => {
-    await IModelHost.startup();
-  });
-
-  after(async () => {
-    await IModelHost.shutdown();
+    if (!IModelHost.isValid)
+      await TestUtils.startBackend();
   });
 
   /** All test iModels to validate. Add paths here to test against larger/real iModels. */
@@ -353,7 +351,7 @@ describe("RuntimeSchemaContext cross-validation", () => {
               const metaSrc = metaRel!.source;
               if (metaSrc.abstractConstraint !== undefined && rClass.source.abstractConstraint !== undefined) {
                 expect(rClass.source.abstractConstraint.name).to.equal(
-                  metaSrc.abstractConstraint!.fullName.split(".").pop(),
+                  metaSrc.abstractConstraint.fullName.split(".").pop(),
                   `source abstractConstraint mismatch for ${rClass.fullName}`,
                 );
               }
@@ -364,7 +362,7 @@ describe("RuntimeSchemaContext cross-validation", () => {
               const metaTgt = metaRel!.target;
               if (metaTgt.abstractConstraint !== undefined && rClass.target.abstractConstraint !== undefined) {
                 expect(rClass.target.abstractConstraint.name).to.equal(
-                  metaTgt.abstractConstraint!.fullName.split(".").pop(),
+                  metaTgt.abstractConstraint.fullName.split(".").pop(),
                   `target abstractConstraint mismatch for ${rClass.fullName}`,
                 );
               }
