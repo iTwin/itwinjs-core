@@ -177,7 +177,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param fractionB1 end of the subcurve of cpB
    * @param reversed whether to reverse the details in the recorded intersection pair
    * @param intervalDetails optional data for a coincident segment intersection
-   * @param fractionTol relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults to [[Geometry.smallAngleRadians]].
+   * @param fractionTol relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults
+   * to [[Geometry.smallAngleRadians]].
    */
   private recordPointWithLocalFractions(
     localFractionA: number,
@@ -1337,19 +1338,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
-    /*
     // NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH .
     // "easy" if both present BezierCurve3dH span loaders
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentBsplineCurve(
-        this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
-        curve, this._extendA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
-    }
-    */
     return undefined;
   }
 }

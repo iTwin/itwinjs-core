@@ -46,7 +46,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     this._workRay = Ray3d.createZero();
     this._closestPoint = result;
     if (this._closestPoint)
-      this._closestPoint.a = Geometry.largeCoordinateResult
+      this._closestPoint.a = Geometry.largeCoordinateResult;
     this._extend = extend ?? false;
     this._xyOnly = xyOnly ?? false;
     this.startCurvePrimitive(undefined);

@@ -273,6 +273,7 @@ function visualizeAndTestSpiralCloseApproaches(
     );
   };
 
+  // test both paths
   const closeApproachesAB = CurveCurve.closeApproachProjectedXYPairs(curve0, curve1, maxDistance);
   testSpiralIntersection(closeApproachesAB);
   const closeApproachesBA = CurveCurve.closeApproachProjectedXYPairs(curve1, curve0, maxDistance);
