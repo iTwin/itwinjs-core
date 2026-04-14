@@ -13,7 +13,7 @@ At runtime, settings and resources are accessed through one of three workspace s
 |---|---|---|
 | [IModelHost.appWorkspace]($backend) | Application-wide defaults and configuration | Available immediately after [IModelHost.startup]($backend) |
 | [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings shared across all iModels in an iTwin | Requires an iTwinId; no iModel needed |
-| [IModelDb.workspace]($backend) | iModel-specific overrides, inherits from the app scope (iTwin settings must be loaded explicitly) | Available when an iModel is open |
+| [IModelDb.workspace]($backend) | iModel-specific overrides; falls back to `appWorkspace` for unresolved settings. Does **not** automatically include iTwin-scoped settings | Available when an iModel is open |
 
 Each scope layers on top of the previous one through the [Settings priority stack](./Settings.md#settings-priorities). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
 
@@ -46,47 +46,19 @@ graph LR
 | **Purpose** | Application configuration | Data resources |
 | **Content** | JSON key-value dictionaries | Strings, blobs, embedded files |
 | **Container type** | `"settings"` | `"workspace"` |
-| **Discovery** | Via [WorkspaceEditor.queryContainers]($backend) — no iModel needed | Referenced from settings values |
+| **Discovery** | Automatic via [IModelHost.getITwinWorkspace]($backend) — no iModel needed | Referenced from settings values |
 | **Resolution order** | Loaded first | Loaded second, via settings pointers |
 | **Write API** | [WorkspaceEditor]($backend) with `containerType: "settings"` | [WorkspaceEditor]($backend) |
 | **Versioning** | Semver — immutable once published | Semver — immutable once published |
 
 ## How settings and resources connect
 
-The flow at runtime always starts from settings:
+At runtime the flow always starts from settings:
 
-```mermaid
-sequenceDiagram
-    participant App as Application
-    participant WE as WorkspaceEditor
-    participant W as Workspace
-    participant SC as Settings container
-    participant WDB as WorkspaceDb
+1. **Discover and load** — call [IModelHost.getITwinWorkspace]($backend) with an iTwinId. This automatically discovers settings containers for the iTwin, loads their dictionaries into the [Settings priority stack](./Settings.md#settings-priorities), and returns a [Workspace]($backend) ready to use. No iModel is required.
+2. **Resolve resources** — read settings values that point to [WorkspaceDb]($backend) containers, then open those containers to access resources.
 
-    Note over App,WE: Setup (admin, one-time)
-    WE->>WE: WorkspaceEditor.construct()
-    WE->>SC: createNewCloudContainer() — containerType: "settings"
-    WE->>SC: Write settings (e.g. "landscapePro/flora/treeDbs" → [containerId, version])
-    WE->>SC: releaseWriteLock() — publishes, becomes immutable
-
-    Note over App,WDB: Runtime (every session)
-    App->>WE: queryContainers({ iTwinId, containerType: "settings" })
-    WE-->>App: [{ containerId, label, ... }]
-    App->>W: getContainer({ containerId })
-    App->>W: loadSettingsDictionary({ priority: SettingsPriority.iTwin })
-    W->>SC: Load all settings into priority stack
-    SC-->>W: SettingsDictionary added at priority 400
-    App->>W: settings.getObject("landscapePro/flora/treeDbs")
-    W-->>App: [{ containerId: "abc...", version: "1.1.0" }]
-    App->>W: getWorkspaceDbs({ dbs: [...] })
-    W->>WDB: Open WorkspaceDb
-    WDB-->>App: Resources available
-```
-
-Key points:
-- The settings container is discovered **by iTwinId** using [WorkspaceEditor.queryContainers]($backend) with `containerType: "settings"` — no iModel is required at this stage.
-- The caller explicitly provides the [SettingsPriority]($backend) when loading settings. There is no automatic mapping from container scope to priority.
-- Once the settings are loaded, they tell the application which `WorkspaceDb` containers to open.
+> For advanced scenarios (admin tooling, custom discovery logic), [WorkspaceEditor.queryContainers]($backend) provides lower-level access to enumerate containers by iTwinId and `containerType`.
 
 ## Scope and priority
 
@@ -125,25 +97,11 @@ In practice:
 
 ## Container discovery
 
-Settings containers are tagged with `containerType: "settings"` in their cloud metadata, making them independently discoverable without opening an iModel:
+[IModelHost.getITwinWorkspace]($backend) handles settings container discovery automatically — it queries for containers tagged with `containerType: "settings"`, loads their dictionaries, and returns a ready-to-use [Workspace]($backend). Most application code does not need to interact with the discovery layer directly.
 
-```mermaid
-graph TD
-    Q["WorkspaceEditor.queryContainers()<br/>{ iTwinId, containerType: 'settings' }"]
+[WorkspaceDb]($backend) containers (`containerType: "workspace"`) are discovered *indirectly* — by reading settings values that point to them. See [Workspace resources](./Workspace.md) for details.
 
-    Q --> Filter["BlobContainer.service<br/>filters by containerType: 'settings'"]
-
-    Filter --> C1["Settings container A<br/>(iTwin scope)"]
-    Filter --> C2["Settings container B<br/>(iModel scope)"]
-
-    C1 --> L1["getContainer() → loadSettingsDictionary()<br/>priority: SettingsPriority.iTwin (400)"]
-    C2 --> L2["getContainer() → loadSettingsDictionary()<br/>priority: SettingsPriority.iModel (600)"]
-
-    L1 --> Stack["Settings priority stack"]
-    L2 --> Stack
-```
-
-This is in contrast to [WorkspaceDb]($backend) containers, which use `containerType: "workspace"` and are discovered *indirectly* — by reading settings values that point to them.
+> For admin tooling or custom workflows, [WorkspaceEditor.queryContainers]($backend) provides direct access to enumerate containers by iTwinId and `containerType`. See [Settings containers](./Settings.md#settings-containers) for examples.
 
 ## Recommended reading order
 

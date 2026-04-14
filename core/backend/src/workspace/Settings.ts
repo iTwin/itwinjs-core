@@ -207,7 +207,7 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  * [[SettingGroupSchema]]s) at this time.
  *
  * iModel-specific settings are stored in the iModel's property table and loaded into [[IModelDb.workspace]] when the iModel is first opened.
- * You can add and remove a [[SettingsDictionary]] from the property table using [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]].
+ * You can add and remove a [[SettingsDictionary]] from the property table using [[EditTxn.saveSettingDictionary]] and [[EditTxn.deleteSettingDictionary]].
  *
  * iTwin-specific settings are stored in a [[CloudSqliteContainer]] in the cloud.
  * When [[IModelHost.getITwinWorkspace]] is invoked, the container is accessed using the iTwinId and the settings are loaded into the returned [[Workspace]].
@@ -256,8 +256,7 @@ export interface Settings {
 
   /** Add a new [[SettingsDictionary]] with the priority, name, and [[WorkspaceDb]] specified by `props` and setting values supplied by `settings`.
    * @note If a dictionary with the same name and [[WorkspaceDb]] already exists, it will be replaced.
-   * @note Values added via this method exist only for the current session. They are not persisted and will be lost when the iModel is closed.
-   * To persist settings across sessions, use [[IModelDb.saveSettingDictionary]].
+   * @note Values added via this method exist only for the current session. They are not persisted and will be lost when the host shuts down.
    * @see [[addFile]], [[addJson]], and [[addDirectory]] for convenient ways to add dictionaries from various sources.
    */
   addDictionary(props: SettingsDictionaryProps, settings: SettingsContainer): void;

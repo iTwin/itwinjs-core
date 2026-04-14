@@ -14,7 +14,7 @@ At runtime, settings and resources are accessed through one of three workspace s
 |---|---|---|
 | [IModelHost.appWorkspace]($backend) | Application-wide defaults and resources that every user of the application needs, regardless of which iTwin or iModel is open. | Available immediately after [IModelHost.startup]($backend). |
 | [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings and resources shared across all iModels in an iTwin. Use this for admin-managed configuration like tree databases, font libraries, or compliance settings that apply to an entire project. | Requires an iTwinId; no iModel needed. |
-| [IModelDb.workspace]($backend) | iModel-specific overrides — settings or resources that apply only to one iModel. Inherits from both the app workspace and the iTwin workspace, so you only need to configure what differs. | Available when an iModel is open. |
+| [IModelDb.workspace]($backend) | iModel-specific overrides — settings or resources that apply only to one iModel. Falls back to `appWorkspace` for unresolved settings. Does **not** automatically include iTwin-scoped settings. | Available when an iModel is open. |
 
 Each scope layers on top of the previous one through the [settings priority stack](./Settings.md#settings-priorities): iModel settings override iTwin settings, which override application defaults. For details on how to save, read, and manage settings at each scope, see [iTwin settings](./Settings.md#itwin-settings) and [iModel settings](./Settings.md#imodel-settings).
 

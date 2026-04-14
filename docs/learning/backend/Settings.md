@@ -190,6 +190,8 @@ With those in place, load the iTwin workspace scope:
 
 The returned [Workspace]($backend) gives you access to all settings and resources associated with the iTwin.
 
+> **Important:** The workspace returned by [IModelHost.getITwinWorkspace]($backend) is caller-owned. Call `close()` on it when you are finished to release cloud connections and cached data.
+
 ### Saving iTwin settings
 
 To save a named settings dictionary for an iTwin, call [IModelHost.saveSettingDictionary]($backend) with a dictionary name and a [SettingsContainer]($backend) of key-value pairs:
@@ -287,7 +289,19 @@ An iModel doesn't inherently know which iTwin settings container it should use. 
 [[include:WorkspaceExamples.SaveITwinSettingsReferenceInIModel]]
 ```
 
-The next time the iModel is opened, your app reads `landscapePro/itwinSettingsRef` and uses it to load the same iTwin settings container. By default this resolves to the latest version of those settings.
+The next time the iModel is opened, your application reads the saved reference and passes it to the [IModelHost.getITwinWorkspace]($backend) overload that accepts [WorkspaceDbSettingsProps]($backend):
+
+```ts
+const settingsRef = iModel.workspace.settings.getSetting("landscapePro/itwinSettingsRef");
+if (settingsRef !== undefined) {
+  const iTwinWorkspace = await IModelHost.getITwinWorkspace(settingsRef);
+  // iTwinWorkspace.settings now contains the iTwin-level settings.
+  // ... use the settings, then close when finished:
+  iTwinWorkspace.close();
+}
+```
+
+By default this resolves to the latest version of those settings.
 
 ### Pinning iTwin settings versions
 
@@ -298,6 +312,8 @@ If you need to pin the iModel to a specific version of the iTwin settings — so
 ```
 
 ## Settings containers
+
+> **When do you need this section?** The [IModelHost.saveSettingDictionary]($backend) and [IModelHost.deleteSettingDictionary]($backend) APIs shown in [iTwin settings](#itwin-settings) are sufficient for most application code — they manage the underlying settings container automatically. The `WorkspaceEditor`-based workflow described here is for **administrators** who need fine-grained control: creating containers explicitly, versioning, inspecting individual resources, or updating specific settings without replacing an entire dictionary.
 
 For production deployments, settings should be stored in the cloud — versionable, discoverable without opening an iModel, and manageable independently of any resource containers. That is the role of a **settings container**.
 
