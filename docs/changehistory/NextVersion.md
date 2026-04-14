@@ -58,6 +58,8 @@ while (reader.step()) {
 }
 ```
 
+When a row does not match an active filter it is skipped entirely — the reader automatically advances to the next row.
+
 `reader.deleted` and `reader.inserted` carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
 
 For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ECChangesetReader](../learning/backend/ECChangesetReader.md).

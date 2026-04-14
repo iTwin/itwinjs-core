@@ -210,9 +210,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Restrict iteration to changes from the named SQLite tables.
-   * That means both `inserted` and `deleted` will be undefined for changes from tables
-   * other than the ones passed in the filter.
-   * The rest of the metadata related data fields like `op`, `isIndirectChange`, etc. will still be populated for filtered-out rows.
+   * That means the rows for changes from other tables will be skipped entirely and won't be visible through the reader.
    * @param tableNames SQLite table names to include.
    * @beta
    */
@@ -222,9 +220,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Restrict iteration to changes with the given operation types.
-   * That means both `inserted` and `deleted` will be undefined for changes
-   * with op-codes other than the ones passed in the filter.
-   * The rest of the metadata related data fields like `isIndirectChange`, `tableName`, etc. will still be populated for filtered-out rows.
+   * That means the rows for changes with other operation types will be skipped entirely and won't be visible through the reader.
    * @param ops Operations to include.
    * @beta
    */
@@ -234,9 +230,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Restrict iteration to changes for the given EC class ids.
-   * That means both `inserted` and `deleted` fields will be undefined for changes related to
-   * classIds other than the ones passed in the filter.
-   * The rest of the metadata related data fields like `op`, `isIndirectChange`, `tableName`, etc. will still be populated for filtered-out rows.
+   * That means the rows for changes from other EC classes will be skipped entirely and won't be visible through the reader.
    * @param classIds ECClassId values (as hex Id64 strings) to include.
    * @beta
    */

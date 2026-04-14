@@ -324,7 +324,7 @@ In short: use `useJsName` names when reading property values off the instance, b
 
 ## Filtering — restricting which changes are yielded
 
-After opening a reader (and before the first `step()` call) you can install one or more filters to narrow the change stream. Filters affect which instances are populated in `inserted` / `deleted` — **the reader still steps through every underlying row**, so `op`, `tableName`, `isECTable`, and `isIndirectChange` are always populated regardless of filters.
+After opening a reader (and before the first `step()` call) you can install one or more filters to narrow the change stream. When a row does not match an active filter it is **skipped entirely** — the reader automatically advances to the next row.
 
 Three independent filter axes are available and can be combined:
 
