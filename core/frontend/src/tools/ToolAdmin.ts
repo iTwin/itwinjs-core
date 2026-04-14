@@ -553,7 +553,7 @@ export class ToolAdmin {
     const pos = this.getMousePosition(event);
     const button = this.getMouseButton(ev.button);
 
-    this.currentInputState.setKeyQualifiers(ev);
+    await this.updateKeyQualifiers(ev);
     return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
   }
 
@@ -563,7 +563,7 @@ export class ToolAdmin {
     if (undefined === vp || this.filterViewport(vp))
       return EventHandled.Yes;
     const current = this.currentInputState;
-    current.setKeyQualifiers(ev);
+    await this.updateKeyQualifiers(ev);
 
     if (ev.deltaY === 0)
       return EventHandled.No;
@@ -648,10 +648,10 @@ export class ToolAdmin {
       case "touchstart":
         if (touchEvent.changedTouches.length === touchEvent.targetTouches.length)
           vp.setAnimator(); // Clear viewport animator on start of new touch input (first contact point added)...
-        current.setKeyQualifiers(touchEvent);
+        await this.updateKeyQualifiers(touchEvent);
         break;
       case "touchend":
-        current.setKeyQualifiers(touchEvent);
+        await this.updateKeyQualifiers(touchEvent);
         break;
     }
 
@@ -1188,6 +1188,8 @@ export class ToolAdmin {
     if (undefined === vp)
       return;
 
+    await this.updateKeyQualifiers(event.ev as MouseEvent);
+
     const pos = this.getMousePosition(event);
     const mov = this.getMouseMovement(event);
 
@@ -1431,6 +1433,56 @@ export class ToolAdmin {
     }
   }
 
+  private get _isFocusHome(): boolean {
+    return (document.body === document.activeElement);
+  }
+
+  private _setFocusHome(): void {
+    const element = document.activeElement as HTMLElement;
+    if (element && element !== document.body)
+      element.blur();
+    document.body.focus();
+  }
+
+  /** Inform active tool of changes to modifier keys.
+   * Only doing this from onKeyTransition is insufficient as focus can be somewhere such as
+   * tool settings while the user is interacting with the view.
+   */
+  private async updateKeyQualifiers(event: MouseEvent | TouchEvent): Promise<void> {
+    const current = this.currentInputState;
+    const before = current.qualifiers;
+    current.setKeyQualifiers(event);
+    const after = current.qualifiers;
+
+    if (before === after)
+      return;
+
+    const getModifierKeyName = (modifier: BeModifierKeys): "Shift" | "Control" | "Alt" => {
+      switch (modifier) {
+        case BeModifierKeys.Shift: return "Shift";
+        case BeModifierKeys.Control: return "Control";
+        default: return "Alt";
+      }
+    };
+
+    const modifiers = [BeModifierKeys.Shift, BeModifierKeys.Control, BeModifierKeys.Alt];
+    for (const modifier of modifiers) {
+      const wasDown = 0 !== (before & modifier);
+      const isDown = 0 !== (after & modifier);
+      if (wasDown === isDown)
+        continue;
+
+      const keyEvent = new KeyboardEvent(isDown ? "keydown" : "keyup", {
+        key: getModifierKeyName(modifier),
+        shiftKey: 0 !== (after & BeModifierKeys.Shift),
+        ctrlKey: 0 !== (after & BeModifierKeys.Control),
+        altKey: 0 !== (after & BeModifierKeys.Alt),
+      });
+
+      await this.onModifierKeyTransition(isDown, modifier, keyEvent);
+    }
+  }
+
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
       case "Alt": return BeModifierKeys.Alt;
@@ -1465,20 +1517,42 @@ export class ToolAdmin {
     return { handled, result };
   }
 
-  /** Process shortcut key events */
+  /** Process shortcut key events
+   * @return true if handled and no further processing of event should occur.
+   */
   public async processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean> {
     return false;
+  }
+
+  /** Event for every key down and up transition.
+   * @return true if handled and no further processing of event should occur.
+   */
+  protected processKeyboardEvent(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+    if (this._isFocusHome || undefined !== IModelApp.accuDraw.getFocusItem())
+      return false; // Focus is Home or AccuDraw, allow shortcuts...
+
+    // TODO: Escape can't be only option to move focus to Home if apps are also using it to start default tool? Should this be a ToolSettings option?
+    if (wentDown && keyEvent.key === "Escape")
+      this._setFocusHome();
+
+    return true;
   }
 
   /** Event for every key down and up transition. */
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
-    this.currentInputState.setKeyQualifiers(keyEvent);
 
-    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+    // Don't send modifier transition event to active tool if cursor is not over a view...
+    if (undefined !== this.currentInputState.viewport) {
+      this.currentInputState.setKeyQualifiers(keyEvent);
 
-    if (BeModifierKeys.None !== modifierKey)
-      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
+      const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+      if (BeModifierKeys.None !== modifierKey)
+        return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
+    }
+
+    if (this.processKeyboardEvent(keyEvent, wentDown))
+      return EventHandled.Yes;
 
     if (wentDown && keyEvent.ctrlKey) {
       const { handled, result } = await this.onCtrlKeyPressed(keyEvent);
