@@ -300,7 +300,9 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   // GPU. Skipping the GPU process avoids transient `CreateCommandBuffer` failures
   // when multiple Electron shards race for GPU resources on the same agent.
   const isCI = !!(process.env.CI || process.env.TF_BUILD || process.env.AGENT_ID);
-  const defaultElectronArgs = isCI ? ["--disable-gpu"] : undefined;
+  // macOS CI agents have real GPUs — --disable-gpu breaks WebGL context creation there.
+  // Only disable GPU on Linux/Windows CI where software renderers (SwiftShader/WARP) contend.
+  const defaultElectronArgs = isCI && process.platform !== "darwin" ? ["--disable-gpu"] : undefined;
 
   // Run all shards in parallel, with automatic retries for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
