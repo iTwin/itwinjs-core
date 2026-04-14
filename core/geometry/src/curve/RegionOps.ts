@@ -26,12 +26,13 @@ import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { MomentData } from "../geometry4d/MomentData";
 import { IndexedPolyface, Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, HalfEdgeToNumberFunction } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphOps } from "../topology/Merging";
 import { Triangulator } from "../topology/Triangulation";
 import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
+import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurveOps } from "./CurveOps";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyChain, AnyCurve, AnyRegion } from "./CurveTypes";
@@ -51,7 +52,7 @@ import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
-import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
+import { RegionBooleanContext, RegionGroupMember, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
 
@@ -465,7 +466,7 @@ export class RegionOps {
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
     const z = RegionOps.getZCoordinate(operation === RegionBinaryOpType.BMinusA ? loopsB : loopsA);
-    const options: PlanarSubdivision.CreateRegionInFaceOptions = {compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z};
+    const options: PlanarSubdivision.CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
     context.runClassificationSweep(
       operation,
       (_graph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
@@ -833,25 +834,118 @@ export class RegionOps {
     }
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
+
+  /**
+   * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops.
+   * * If edgeTags are `CurveLocationDetail`s, e.g., as set by `PlanarSubdivision.assembleHalfEdgeGraph`, attempt to heal edges split by removed bridge edges.
+   * @param graph half edges to process.
+   * @param isBridgeEdge optional function to identify a bridge edge. Default looks for `HalfEdgeMask.BRIDGE_EDGE`.
+   * @param faceToArea optional function to compute face area. Default is `HalfEdgeGraphSearch.signedFaceArea`.
+   * @returns the number of extraneous bridge edges removed from the graph.
+   * @internal
+   */
+  public static removeExtraneousBridgeEdges(
+    graph: HalfEdgeGraph,
+    isBridgeEdge?: HalfEdgeToBooleanFunction,
+    faceToArea?: HalfEdgeToNumberFunction,
+  ): number {
+    const toHeal: HalfEdge[] = [];
+    const interiorBridges: HalfEdge[] = [];
+    if (!faceToArea)
+      faceToArea = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node);
+    if (!isBridgeEdge)
+      isBridgeEdge = (node: HalfEdge): boolean => node.isMaskSet(HalfEdgeMask.BRIDGE_EDGE);
+    // isolate dangling bridges, bridges separating different faces, and "exterior" bridges in the negative area face
+    graph.announceEdges((_g: HalfEdgeGraph, node: HalfEdge): boolean => {
+      if (isBridgeEdge(node)) {
+        if (node.isDangling || node.edgeMate.isDangling || !node.findAroundFace(node.edgeMate) || faceToArea(node) < 0.0) {
+          toHeal.push(node.vertexSuccessor);
+          toHeal.push(node.edgeMate.vertexSuccessor);
+          node.isolateEdge();
+        } else {
+          interiorBridges.push(node);
+        }
+      }
+      return true;
+    });
+    // Relies only on face loop orientation. Doesn't use static HalfEdgeMasks!
+    const isBoundaryEdge = (node: HalfEdge): boolean => {
+      if (faceToArea(node) < 0.0)
+        return true; // exterior face
+      if (node.findAroundFace(node.edgeMate))
+        return false; // interior washer face
+      return faceToArea(node.edgeMate) < 0.0; // adjacent to exterior face
+    };
+    // All bridges in the negative area face were isolated, but this may have promoted other bridges to the
+    // negative area face. Keep isolating these bridge edges until none remain.
+    let numIsolatedThisPass: number;
+    do {
+      numIsolatedThisPass = 0;
+      for (const node of interiorBridges) {
+        if (!node.isIsolatedEdge && isBoundaryEdge(node)) {
+          toHeal.push(node.vertexSuccessor);
+          toHeal.push(node.edgeMate.vertexSuccessor);
+          node.isolateEdge();
+          numIsolatedThisPass++;
+        }
+      }
+    } while (numIsolatedThisPass > 0);
+    // lambda to extend the detail interval on a side of a healed edge
+    const mergeDetails = (he: HalfEdge | undefined, newFraction?: number, newPoint?: Point3d): void => {
+      if (he && he.edgeTag instanceof CurveLocationDetail && he.sortData !== undefined && newFraction !== undefined && newPoint) {
+        if (he.sortData > 0)
+          he.edgeTag.captureFraction1Point1(newFraction, newPoint);
+        else
+          he.edgeTag.captureFractionPoint(newFraction, newPoint);
+      }
+    };
+    // At this point all removable bridges are isolated. Clean up their original vertex loops, if possible.
+    for (const doomedA of toHeal) {
+      const doomedB = doomedA.vertexSuccessor;
+      if ( // are the geometries mergeable?
+        doomedA !== doomedB &&
+        doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined &&
+        doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined &&
+        doomedA.edgeTag.curve === doomedB.edgeTag.curve &&
+        doomedA.edgeTag.isInterval() && doomedB.edgeTag.isInterval() &&
+        doomedA.sortData * doomedB.sortData < 0 &&
+        ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1)) ||
+          (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1 - doomedB.edgeTag.fraction)))
+      ) {
+        const survivorA = HalfEdge.healEdge(doomedA, false);
+        if (survivorA) {
+          const endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
+          const endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
+          mergeDetails(survivorA, endFractionA, endPointA);
+          const endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
+          const endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
+          mergeDetails(survivorA.edgeMate, endFractionB, endPointB);
+        }
+      }
+    }
+    return graph.deleteIsolatedEdges();
+  }
   /**
    * Collect inputs that are nominally closed: regions, and physically closed curves.
    * * Physically closed input curves are each returned wrapped in a Loop to facilitate xy-algorithms,
    * but outside this limited context, these Loops only makes sense if they are planar.
+   * @param curves inputs
+   * @param openCurves optional array to receive open input curves that were not returned as regions.
+   * @param tolerance optional distance tolerance for determining physical closure. Default is [[Geometry.smallMetricDistance]].
   */
-  private static collectRegionsAndClosedPrimitives(curves: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance): AnyRegion[] {
+  private static collectRegionsAndClosedPrimitives(curves: AnyCurve | AnyCurve[], openCurves?: AnyCurve[], tolerance: number = Geometry.smallMetricDistance): AnyRegion[] {
     const regions: AnyRegion[] = [];
     if (!Array.isArray(curves))
       curves = [curves];
     for (const curve of curves) {
-      if (curve instanceof Loop || curve instanceof ParityRegion || curve instanceof UnionRegion) {
+      if (curve instanceof Loop || curve instanceof ParityRegion || curve instanceof UnionRegion)
         regions.push(curve);
-      } else if (curve instanceof Path) {
-        if (curve.isPhysicallyClosedCurve(tolerance))
-          regions.push(Loop.create(...curve.children));
-      } else if (curve instanceof CurvePrimitive) {
-        if (curve.isPhysicallyClosedCurve(tolerance))
-          regions.push(Loop.create(curve));
-      }
+      else if (curve instanceof Path && curve.isPhysicallyClosedCurve(tolerance))
+        regions.push(Loop.create(...curve.children));
+      else if (curve instanceof CurvePrimitive && curve.isPhysicallyClosedCurve(tolerance))
+        regions.push(Loop.create(curve));
+      else if (openCurves)
+        openCurves.push(curve);
     }
     return regions;
   }
@@ -861,9 +955,9 @@ export class RegionOps {
    * * "Holes" implied/bounded by inputs are _not_ preserved/discovered in output; in particular [[ParityRegion]]
    * hole loops are treated like any other positive area loops.
    * * A common use case of this method is to assemble the bounding negative-area "exterior" loop for each connected
-   * component of input curves. Passing `addBridges = true` decreases the number of connected components for nested
-   * input [[Loop]]s, and thus increases the likelihood of returning exactly one exterior loop. (This is why the
-   * default value for `addBridges` is `true`.)
+   * component of input curves. Passing addBridges = true adds "bridge" segments to connect unconnected input [[Loops]]s
+   * and thereby increases the likelihood that a single connected component is returned. (This is why the default value
+   * for addBridges is true.)
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
    * @param tolerance optional distance tolerance for coincidence. Default is [[Geometry.smallMetricDistance]].
@@ -886,21 +980,30 @@ export class RegionOps {
     primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
-    if (addBridges) { // generate a temp graph to extract its bridge edges
+    let hasOpenCurve: boolean = false;
+    if (addBridges) { // generate a temp graph from ONLY the closed inputs to extract its bridge edges
       const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
-      const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
+      const openCurves: AnyCurve[] = [];
+      const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, openCurves, tolerance);
+      hasOpenCurve = openCurves.length > 0;
       if (regions.length > 0) {
         context.addMembers(regions, undefined);
         context.annotateAndMergeCurvesInGraph(tolerance);
         context.graph.announceEdges((_graph, edge: HalfEdge) => {
-          if (edge.isMaskSet(HalfEdgeMask.BRIDGE_EDGE))
-            primitives.push(LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d()));
+          if (edge.isMaskSet(HalfEdgeMask.BRIDGE_EDGE)) {
+            // ensure the bridge edge roundtrips thru assembleHalfEdgeGraph so that we can filter it later if necessary
+            const bridgeSegment = LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d());
+            bridgeSegment.parent = new RegionGroupMember(bridgeSegment, context.extraGeometry);
+            primitives.push(bridgeSegment);
+          }
           return true;
         });
       }
     }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
+    if (addBridges && hasOpenCurve)
+      RegionOps.removeExtraneousBridgeEdges(graph);
     return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
   }
   /**

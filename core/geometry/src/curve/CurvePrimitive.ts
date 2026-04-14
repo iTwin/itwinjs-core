@@ -819,17 +819,17 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * Return the stroke count required for given options.
    * * This returns a single number
-   * * See computeComponentStrokeCountForOptions to get structured per-component counts and fraction mappings.
+   * * See [[computeAndAttachRecursiveStrokeCounts]] to get structured per-component counts and fraction mappings.
    * @param options StrokeOptions that determine count
    */
   public abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
   /**
    * Attach StrokeCountMap structure to this primitive (and recursively to any children)
-   * * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and attaches it.
-   * * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   * * Subdivided primitives (linestring, bspline curve) implement themselves and attach a StrokeCountMap containing the
+   * * Base class implementation (here) gets the simple count from [[computeStrokeCountForOptions]] and attaches it.
+   * * [[LineString3d]], [[Arc3d]], [[BezierCurve3d]], [[BezierCurve3dH]] accept that default.
+   * * Subdivided primitives ([[LineString3d]], [[BSplineCurve3d]]) implement themselves and attach a StrokeCountMap containing the
    *       total count, and also containing an array of StrokeCountMap per component.
-   * * For CurvePrimitiveWithDistanceIndex, the top level gets (only) a total count, and each child gets
+   * * For [[CurveChainWithDistanceIndex]], the top level gets (only) a total count, and each child gets
    *       its own StrokeCountMap with appropriate structure.
    * @param options StrokeOptions that determine count
    * @param parentStrokeMap optional map from parent.  Its count, curveLength, and a1 values are increased with count
@@ -846,11 +846,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /**
    * Evaluate strokes at fractions indicated in a StrokeCountMap.
-   *   * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and strokes at
+   *   * Base class implementation (here) gets the simple count from [[computeStrokeCountForOptions]] and strokes at
    * uniform fractions.
-   *   * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   *   * Subdivided primitives (linestring, bspline curve) implement themselves and evaluate within components.
-   *   * CurvePrimitiveWithDistanceIndex recurses to its children.
+   *   * [[LineString3d]], [[Arc3d]], [[BezierCurve3d]], [[BezierCurve3dH]] accept that default.
+   *   * Subdivided primitives ([[LineString3d]], [[BSplineCurve3d]]) implement themselves and evaluate within components.
+   *   * [[CurveChainWithDistanceIndex]] recurses to its children.
    * * if packedFraction and packedDerivative arrays are present in the LineString3d, fill them.
    * @param map = stroke count data.
    * @param linestring = receiver linestring.
@@ -881,7 +881,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * Return an array containing only the curve primitives.
    * * This DEFAULT implementation simply pushes `this` to the collectorArray.
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
-   * @param smallestPossiblePrimitives if true, a [[CurvePrimitiveWithDistanceIndex]] recurses on its (otherwise hidden)
+   * @param smallestPossiblePrimitives if true, a [[CurveChainWithDistanceIndex]] recurses on its (otherwise hidden)
    * children. If false, it returns only itself.
    * @param explodeLinestrings if true, push a [[LineSegment3d]] for each segment of a [[LineString3d]]. If false,
    * push only the [[LineString3d]].
@@ -896,8 +896,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * This DEFAULT implementation captures the optional collector and calls [[collectCurvePrimitivesGo]].
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without
    * clearing the array.)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true,
-   * it recurses to its (otherwise hidden) children.
+   * @param smallestPossiblePrimitives if false (default), a [[CurveChainWithDistanceIndex]] returns only itself;
+   * otherwise, it recurses to its (otherwise hidden) children.
+   * @param explodeLinestrings whether to return [[LineSegment3d]]s for a [[LineString3d]] (default false).
    */
   public collectCurvePrimitives(
     collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLinestrings: boolean = false,

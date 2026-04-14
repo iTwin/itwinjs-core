@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BeTimePoint, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -1511,7 +1511,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    return (IModelStatus.Success === await imodel.txns.reverseSingleTxn() ? true : false);
+    return imodel.txns.reverseSingleTxnAsync().then(() => true).catch(() => false);
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1527,7 +1527,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    return (IModelStatus.Success === await imodel.txns.reinstateTxn() ? true : false);
+    return imodel.txns.reinstateTxnAsync().then(() => true).catch(() => false);
   }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
