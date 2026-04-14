@@ -58,3 +58,21 @@ export interface SaveChangesArgs {
    */
   appData?: { [key: string]: any };
 }
+
+/** Arguments to [[TxnManager]]'s async reverse and cancel methods.
+ * @beta
+ */
+export interface ReverseTxnArgs {
+  /** If `true`, locks acquired when the reversed Txns were originally created are retained. If `false` or not specified,
+   * these locks are abandoned. */
+  readonly retainLocks?: boolean;
+}
+
+/** Arguments to [[TxnManager]]'s async reinstate methods.
+ * @beta
+ */
+export interface ReinstateTxnArgs {
+  /** If `true`, locks acquired during the current, unsaved Txn are retained, even while the unsaved changes
+   * themselves are abandoned. If `false` or not specified, the locks are abandoned along with the changes. */
+  readonly retainLocks?: boolean;
+}
