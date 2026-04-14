@@ -129,7 +129,13 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
-    reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._mode);
+    try {
+      reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._mode);
+    }
+    catch (e) {
+      reader.close();
+      throw e;
+    }
     return reader;
   }
 
@@ -147,7 +153,13 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
-    reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._mode);
+    try {
+      reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._mode);
+    }
+    catch (e) {
+      reader.close();
+      throw e;
+    }
     return reader;
   }
 
@@ -160,12 +172,17 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @beta
    */
   public static openLocalChanges(
-    args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: true },
+    args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean },
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
-    reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._mode);
+    try {
+      reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._mode);
+    } catch (e) {
+      reader.close();
+      throw e;
+    }
     return reader;
   }
 
@@ -182,7 +199,12 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
-    reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._mode);
+    try {
+      reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._mode);
+    } catch (e) {
+      reader.close();
+      throw e;
+    }
     return reader;
   }
 
@@ -200,7 +222,12 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions ?? {};
     reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
-    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._mode);
+    try {
+      reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._mode);
+    } catch (e) {
+      reader.close();
+      throw e;
+    }
     return reader;
   }
 

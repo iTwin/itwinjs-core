@@ -22,7 +22,7 @@ import { _nativeDb } from "./internal/Symbols";
  * partial EC change instances.
  * @beta
  */
-export interface ECChangeCache extends Disposable {
+export interface ECNativeChangeCache extends Disposable {
   /** Retrieve a cached instance by key, or `undefined` if absent. */
   get(key: string): ECNativeChangeInstance | undefined;
   /** Insert or replace a cached instance. */
@@ -41,7 +41,7 @@ export namespace ECNativeChangeUnifierCache {
    * @returns An {@link ECChangeCache} backed by an in-memory `Map`.
    * @beta
    */
-  export function createInMemoryCache(): ECChangeCache {
+  export function createInMemoryCache(): ECNativeChangeCache {
     return new NativeInMemoryInstanceCache();
   }
 
@@ -56,7 +56,7 @@ export namespace ECNativeChangeUnifierCache {
   export function createSqliteBackedCache(
     db: AnyDb,
     bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10,
-  ): ECChangeCache {
+  ): ECNativeChangeCache {
     return new NativeSqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
   }
 }
@@ -65,7 +65,7 @@ export namespace ECNativeChangeUnifierCache {
 // Private: NativeInMemoryInstanceCache
 // ---------------------------------------------------------------------------
 
-class NativeInMemoryInstanceCache implements ECChangeCache {
+class NativeInMemoryInstanceCache implements ECNativeChangeCache {
   private readonly _cache = new Map<string, ECNativeChangeInstance>();
 
   public get(key: string): ECNativeChangeInstance | undefined {
@@ -102,7 +102,7 @@ class NativeInMemoryInstanceCache implements ECChangeCache {
 // Private: NativeSqliteBackedInstanceCache
 // ---------------------------------------------------------------------------
 
-class NativeSqliteBackedInstanceCache implements ECChangeCache {
+class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
   private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10 MB
 
@@ -124,11 +124,9 @@ class NativeSqliteBackedInstanceCache implements ECChangeCache {
 
   private dropTempTable(): void {
     if (this._db instanceof ECDb) {
-      this._db.saveChanges();
       this._db.clearStatementCache();
     } else {
-      this._db[_nativeDb].saveChanges();
-      this._db.clearCaches();
+      this._db.clearCaches({ instanceCachesOnly: true });
     }
     this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt: SqliteStatement) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
@@ -171,12 +169,15 @@ class NativeSqliteBackedInstanceCache implements ECChangeCache {
       GROUP BY [bucket]`;
 
     const stmt = this._db.prepareSqliteStatement(sql);
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const bucket = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ECNativeChangeInstance[];
-      for (const instance of bucket)
-        yield instance;
+    try {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const bucket = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ECNativeChangeInstance[];
+        for (const instance of bucket)
+          yield instance;
+      }
+    } finally {
+      stmt[Symbol.dispose]();
     }
-    stmt[Symbol.dispose]();
   }
 
   public count(): number {
@@ -221,7 +222,7 @@ class NativeSqliteBackedInstanceCache implements ECChangeCache {
  */
 export class ECNativePartialChangeUnifier implements Disposable {
   public constructor(
-    private readonly _cache: ECChangeCache = new NativeInMemoryInstanceCache(),
+    private readonly _cache: ECNativeChangeCache = new NativeInMemoryInstanceCache(),
   ) { }
 
   /** Releases the underlying cache. */

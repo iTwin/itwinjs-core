@@ -6,7 +6,7 @@
 
 ### How change data is stored
 
-iTwin.js stores changes at the SQLite table-row level. A single EC entity may typically map to multiple tables or single table. Each table row change is a separate entry in the changeset stream.
+A single EC entity may typically map to multiple tables or a single table.
 
 `ECChangesetReader` reads these raw table-row changes and emits one `ECNativeChangeInstance` per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into `ECNativePartialChangeUnifier`.
 
@@ -597,7 +597,7 @@ const newX = elementNew.s.X; // 100 — correct
 
 ### Summary
 
-This scenario is not tied to the type of change being opened by the `ECChangesetReader` i.e. it doesnot depend on whether a change group or a changeset or a transaction is opened. It might happen when the iModel's state is not in sync with the change being read. In other words it might happen when the iModel's state is not **at** the change being read.
+It doesnot depend on whether a change group or a changeset or a transaction is opened. It might happen when the iModel's state is not in sync with the change being read. In other words it might happen when the iModel's state is not **at** the change being read.
 
 | Scenario | Risk | Mitigation |
 |---|---|---|
