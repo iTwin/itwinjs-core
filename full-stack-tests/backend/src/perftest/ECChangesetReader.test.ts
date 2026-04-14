@@ -90,7 +90,7 @@ describe("ECChangesetReaderAPI", async () => {
 
     const cacheConfigs = [
       { label: "ECNativeUnifier-InMemoryCache", createCache: () => ECNativeChangeUnifierCache.createInMemoryCache() },
-      { label: "ECNativeUnifier-SqliteBackedCache", createCache: () => ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel) },
+      { label: "ECNativeUnifier-SqliteBackedCache", createCache: () => ECNativeChangeUnifierCache.createSqliteBackedCache() },
     ];
 
     for (const cacheConfig of cacheConfigs) {

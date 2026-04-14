@@ -37,7 +37,7 @@ export namespace ECNativeChangeUnifierCache {
   /**
    * Creates an in-memory cache backed by a `Map`.
    * Fast, but may exhaust memory for very large changesets.
-   * @returns An {@link ECChangeCache} backed by an in-memory `Map`.
+   * @returns An {@link ECNativeChangeCache} backed by an in-memory `Map`.
    * @beta
    */
   export function createInMemoryCache(): ECNativeChangeCache {
@@ -48,7 +48,7 @@ export namespace ECNativeChangeUnifierCache {
    * Creates a SQLite-backed cache stored in a temporary table of the given database.
    * Slower than in-memory but handles large changesets without exhausting memory.
    * @param bufferedReadInstanceSizeInBytes Read-batch size in bytes (default 10 MB).
-   * @returns An {@link ECChangeCache} backed by a SQLite temp table.
+   * @returns An {@link ECNativeChangeCache} backed by a SQLite temp table.
    * @beta
    */
   export function createSqliteBackedCache(

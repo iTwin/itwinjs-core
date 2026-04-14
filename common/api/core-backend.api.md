@@ -2242,11 +2242,10 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @beta
-export interface ECChangeCache extends Disposable {
-    all(): IterableIterator<ECNativeChangeInstance>;
-    count(): number;
-    get(key: string): ECNativeChangeInstance | undefined;
-    set(key: string, value: ECNativeChangeInstance): void;
+export enum ECChangesetMode {
+    All_Properties = 0,
+    Bis_Element_Properties = 1,
+    Instance_Key = 2
 }
 
 // @beta
@@ -2273,7 +2272,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     }): ECChangesetReader;
     static openLocalChanges(args: Omit<ECChangesetReaderArgs, "db"> & {
         db: IModelDb;
-        includeInMemoryChanges?: true;
+        includeInMemoryChanges?: boolean;
     }): ECChangesetReader;
     static openTxn(args: Omit<ECChangesetReaderArgs, "db"> & {
         db: IModelDb;
@@ -2290,8 +2289,15 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 export interface ECChangesetReaderArgs {
     readonly db: AnyDb;
     readonly invert?: boolean;
-    readonly mode?: IModelJsNative.ECChangesetReader.Mode;
-    readonly rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+    readonly mode?: ECChangesetMode;
+    readonly rowOptions?: ECChangesetRowAdapterOptions;
+}
+
+// @beta
+export interface ECChangesetRowAdapterOptions {
+    abbreviateBlobs?: boolean;
+    classIdsToClassNames?: boolean;
+    useJsName?: boolean;
 }
 
 // @beta @deprecated
@@ -2380,6 +2386,14 @@ export interface ECEnumValue {
 }
 
 // @beta
+export interface ECNativeChangeCache extends Disposable {
+    all(): IterableIterator<ECNativeChangeInstance>;
+    count(): number;
+    get(key: string): ECNativeChangeInstance | undefined;
+    set(key: string, value: ECNativeChangeInstance): void;
+}
+
+// @beta
 export interface ECNativeChangeInstance {
     $meta: ECNativeChangeMeta;
     [key: string]: any;
@@ -2387,13 +2401,13 @@ export interface ECNativeChangeInstance {
 
 // @beta
 export interface ECNativeChangeMeta {
+    changeFetchedPropNames: string[];
     changeIndexes: number[];
-    changesetFetchedProps: string[];
     isIndirectChange: boolean;
     mode: string;
     nativeKey: string;
     op: ECNativeChangeOp;
-    rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+    rowOptions?: ECChangesetRowAdapterOptions;
     stage: ECNativeChangeStage;
     tables: string[];
 }
@@ -2413,14 +2427,14 @@ export type ECNativeChangeStage = "Old" | "New";
 
 // @beta (undocumented)
 export namespace ECNativeChangeUnifierCache {
-    export function createInMemoryCache(): ECChangeCache;
-    export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeCache;
+    export function createInMemoryCache(): ECNativeChangeCache;
+    export function createSqliteBackedCache(bufferedReadInstanceSizeInBytes?: number): ECNativeChangeCache;
 }
 
 // @beta
 export class ECNativePartialChangeUnifier implements Disposable {
     [Symbol.dispose](): void;
-    constructor(_cache?: ECChangeCache);
+    constructor(_cache?: ECNativeChangeCache);
     appendFrom(source: ECNativeChangeSource): void;
     get instanceCount(): number;
     get instances(): IterableIterator<ECNativeChangeInstance>;
@@ -5504,10 +5518,8 @@ export function parseTextAnnotationData(json: string | undefined): VersionedJSON
 export class PartialECChangeUnifier implements Disposable {
     [Symbol.dispose](): void;
     constructor(_db: AnyDb, _cache?: ECChangeUnifierCache);
-    // @deprecated
     appendFrom(adaptor: ChangesetECAdaptor): void;
     getInstanceCount(): number;
-    // @deprecated
     get instances(): IterableIterator<ChangedECInstance>;
 }
 

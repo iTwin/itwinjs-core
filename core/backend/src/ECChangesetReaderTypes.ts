@@ -149,6 +149,6 @@ export interface ECChangesetReaderArgs {
   readonly invert?: boolean;
   /** Row adaptor options controlling how EC property values are formatted. */
   readonly rowOptions?: ECChangesetRowAdapterOptions;
-  /** Controls which properties are included in the change output. Defaults to {@link ECChangesetMode.AllProperties}. */
+  /** Controls which properties are included in the change output. Defaults to ECChangesetMode.All_Properties. */
   readonly mode?: ECChangesetMode;
 }

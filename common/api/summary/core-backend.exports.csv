@@ -172,9 +172,10 @@ preview;class;DrawingModel
 public;class;DrawingViewDefinition
 preview;class;DrawingViewDefinition
 beta;class;DriverBundleElement
-beta;interface;ECChangeCache
+beta;enum;ECChangesetMode
 beta;class;ECChangesetReader
 beta;interface;ECChangesetReaderArgs
+beta;interface;ECChangesetRowAdapterOptions
 beta;interface;ECChangeUnifierCache
 deprecated;interface;ECChangeUnifierCache
 beta;namespace;ECChangeUnifierCache
@@ -183,6 +184,7 @@ public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
 deprecated;interface;ECEnumValue
+beta;interface;ECNativeChangeCache
 beta;interface;ECNativeChangeInstance
 beta;interface;ECNativeChangeMeta
 beta;type;ECNativeChangeOp
