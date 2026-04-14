@@ -12,18 +12,7 @@ A single EC entity may typically map to multiple tables or a single table.
 
 ### The reader–unifier pipeline
 
-```ts
-using reader = ECChangesetReader.openFile({ db, fileName });
-using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-
-while (reader.step()) {
-  pcu.appendFrom(reader);
-}
-
-for (const instance of pcu.instances) {
-  console.log(instance.ECInstanceId, instance.$meta.op, instance.$meta.stage);
-}
-```
+[[include:ECChangesetReader.BasicPipeline]]
 
 After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables.
 
@@ -125,83 +114,29 @@ try {
 
 ### `openFile` — read a single pushed changeset file
 
-```ts
-import { ECChangesetReader, ECNativePartialChangeUnifier, ECNativeChangeUnifierCache } from "@itwin/core-backend";
-
-const changesets = await iModelDb.pullChanges();
-// or: const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
-
-using reader = ECChangesetReader.openFile({
-  db: iModelDb,
-  fileName: changesets[1].pathname,
-  rowOptions: { abbreviateBlobs: false }, // return full binary instead of { bytes: N }
-});
-using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-
-while (reader.step())
-  pcu.appendFrom(reader);
-
-for (const instance of pcu.instances) {
-  console.log(instance.$meta.op, instance.ECInstanceId, instance.$meta.stage);
-}
-```
+[[include:ECChangesetReader.BasicPipeline]]
 
 ### `openGroup` — read multiple changesets as a single stream
 
 `openGroup` concatenates multiple changeset files into one logical stream. The unifier merges them across the whole group — an element that was inserted in changeset 1 and updated in changeset 2 surfaces as a single `"Inserted"` `"New"` instance reflecting its final state.
 
-```ts
-using reader = ECChangesetReader.openGroup({
-  db: iModelDb,
-  changesetFiles: [insertCs.pathname, updateCs.pathname],
-  rowOptions: { abbreviateBlobs: false },
-});
-using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-
-while (reader.step())
-  pcu.appendFrom(reader);
-
-// The merged instance for an insert+update pair will have:
-//   $meta.op === "Inserted"  (because the first appearance was an insert)
-//   $meta.tables = ["bis_Element", "bis_GeometricElement2d"]  (accumulated across both changesets)
-//   properties reflect the final update values
-```
+[[include:ECChangesetReader.OpenGroup]]
 
 ### `openTxn` — read a saved (not yet pushed) local transaction
 
-```ts
-const txnId = iModelDb.txns.getLastSavedTxnProps()!.id;
-
-using reader = ECChangesetReader.openTxn({ db: iModelDb, txnId });
-using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-
-while (reader.step())
-  pcu.appendFrom(reader);
-
-const instances = Array.from(pcu.instances);
-const inserted = instances.find((i) => i.$meta.op === "Inserted");
-```
+[[include:ECChangesetReader.OpenTxn]]
 
 ### `openLocalChanges` — read all local un-pushed saved changes
 
-```ts
-using reader = ECChangesetReader.openLocalChanges({ db: iModelDb });
-```
+[[include:ECChangesetReader.OpenLocalChanges]]
 
 Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved) changes on top:
 
-```ts
-using reader = ECChangesetReader.openLocalChanges({
-  db: iModelDb,
-  includeInMemoryChanges: true,
-});
-```
+[[include:ECChangesetReader.OpenLocalChangesIncludeInMemory]]
 
 ### `openInMemoryChanges` — read only the in-memory (unsaved) changes
 
-```ts
-using reader = ECChangesetReader.openInMemoryChanges({ db: iModelDb });
-```
+[[include:ECChangesetReader.OpenInMemoryChanges]]
 
 ---
 
@@ -215,21 +150,12 @@ All `open*` methods accept a `mode` argument that controls which properties are 
 | `Bis_Element_Properties` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
 | `Instance_Key` | Only `ECInstanceId` and `ECClassId` |
 
-```ts
-import { IModelJsNative } from "@bentley/imodeljs-native";
-
-using reader = ECChangesetReader.openFile({
-  db: iModelDb,
-  fileName: changeset.pathname,
-  mode: IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties,
-  rowOptions: { classIdsToClassNames: true }, // combine with rowOptions for richer output
-});
-```
+[[include:ECChangesetReader.ModeInstanceKey]]
 
 The active mode name is stored as a human-readable string in `instance.$meta.mode`:
 
 ```ts
-assert.equal(instance.$meta.mode, "Bis_Element_Properties");
+assert.equal(instance.$meta.mode, "Instance_Key");
 ```
 
 ---
@@ -249,44 +175,15 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 
 ### Example — `classIdsToClassNames`
 
-```ts
-using reader = ECChangesetReader.openFile({
-  db: iModelDb,
-  fileName: changeset.pathname,
-  rowOptions: { classIdsToClassNames: true },
-});
-// ...
-assert.equal(elem.ECClassId, "TestDomain.Test2dElement");
-assert.deepEqual(elem.Category, { Id: categoryId, RelECClassId: "BisCore.GeometricElement2dIsInCategory" });
-```
+[[include:ECChangesetReader.RowOptionsClassNames]]
 
 ### Example — `useJsName`
 
-```ts
-using reader = ECChangesetReader.openTxn({
-  db: iModelDb,
-  txnId,
-  rowOptions: { useJsName: true },
-});
-// ...
-assert.equal(elem.id, elementId);           // ECInstanceId → id
-assert.equal(elem.className, "TestDomain.Test2dElement"); // ECClassId → className (resolved, not hex)
-assert.deepEqual(elem.category, { id: categoryId, relClassName: "BisCore.GeometricElement2dIsInCategory" });
-// Struct sub-keys are also lowercased:
-assert.deepEqual(elem.structProp, { x: 1, y: 2, z: 3, label: "origin", pt2d: { x: 0.5, y: 0.5 }, pt3d: { x: 1, y: 2, z: 3 } });
-```
+[[include:ECChangesetReader.UseJsName]]
 
 ### Example — reading full binary blobs
 
-```ts
-using reader = ECChangesetReader.openFile({
-  db: iModelDb,
-  fileName: changeset.pathname,
-  rowOptions: { abbreviateBlobs: false },
-});
-// ...
-assert.deepEqual(elem.BinProp, new Uint8Array([1, 2, 3, 4]));
-```
+[[include:ECChangesetReader.RowOptionsAbbreviateBlobs]]
 
 ---
 
@@ -296,27 +193,7 @@ assert.deepEqual(elem.BinProp, new Uint8Array([1, 2, 3, 4]));
 
 This means you must always check `changeFetchedPropNames` using the schema-level EC property name, not the JS name:
 
-```ts
-using reader = ECChangesetReader.openFile({
-  db: iModelDb,
-  fileName: changeset.pathname,
-  rowOptions: { useJsName: true }, // instance keys are camelCase
-});
-using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-while (reader.step()) pcu.appendFrom(reader);
-
-for (const instance of pcu.instances) {
-  // Instance property keys are camelCase due to useJsName:
-  console.log(instance.lastMod);        // JS name — correct
-  console.log(instance.category?.id);  // JS name — correct
-
-  // changeFetchedPropNames always uses original EC names, NOT JS names:
-  instance.$meta.changeFetchedPropNames.has("LastMod");       // ✅ correct
-  instance.$meta.changeFetchedPropNames.has("lastMod");       // ❌ never true
-  instance.$meta.changeFetchedPropNames.has("Category.Id");   // ✅ correct
-  instance.$meta.changeFetchedPropNames.has("category.id");   // ❌ never true
-}
-```
+[[include:ECChangesetReader.UseJsNameAndChangeFetchedPropNames]]
 
 In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changeFetchedPropNames`.
 
@@ -340,34 +217,11 @@ Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling t
 
 ### Example — only yield inserts and updates for a specific table
 
-```ts
-using reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
-
-reader.setTableNameFilters(new Set(["bis_Element"]));
-reader.setOpCodeFilters(new Set(["Inserted", "Updated"]));
-
-while (reader.step()) {
-  if (reader.inserted) {
-    // Only bis_Element rows with op Inserted or Updated reach here.
-    console.log(reader.inserted.ECInstanceId, reader.inserted.$meta.op);
-  }
-  // reader.deleted is always undefined because "Deleted" was not included.
-}
-```
+[[include:ECChangesetReader.FilterTable]]
 
 ### Example — only yield changes for a known set of EC class ids
 
-```ts
-const classIds = new Set([physicalElementClassId, drawingElementClassId]);
-
-using reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
-reader.setClassIdFilters(classIds);
-
-while (reader.step()) {
-  if (reader.inserted)
-    console.log("class match →", reader.inserted.ECClassId);
-}
-```
+[[include:ECChangesetReader.FilterClassIds]]
 
 ### Clearing filters at runtime
 
@@ -385,10 +239,7 @@ reader.clearClassIdFilters();
 
 By default `ECNativePartialChangeUnifier` uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
 
-```ts
-using cache = ECNativeChangeUnifierCache.createSqliteBackedCache(iModelDb);
-using pcu = new ECNativePartialChangeUnifier(cache);
-```
+[[include:ECChangesetReader.CacheStrategies]]
 
 ---
 
@@ -396,138 +247,7 @@ using pcu = new ECNativePartialChangeUnifier(cache);
 
 The following example imports a custom schema, inserts an element, pushes a second update, and demonstrates reading each changeset independently and then together as a group:
 
-```ts
-import path from "path";
-import {
-  ECChangesetReader,
-  ECNativePartialChangeUnifier,
-  ECNativeChangeUnifierCache,
-  IModelDb,
-  HubWrappers,
-  HubMock,
-  DrawingCategory,
-  IModelTestUtils,
-  ChannelControl,
-} from "@itwin/core-backend";
-import { Code, IModel, SubCategoryAppearance, ColorDef } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley";
-
-async function example(adminToken: string, iTwinId: string, outputDir: string) {
-  // 1. Create/open briefcase
-  const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "demo", accessToken: adminToken });
-  const db = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
-
-  // 2. Import schema with a binary and a string-array property
-  const schema = `<?xml version="1.0" encoding="UTF-8"?>
-  <ECSchema schemaName="Demo" alias="d" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-    <ECEntityClass typeName="Widget">
-      <BaseClass>bis:GraphicalElement2d</BaseClass>
-      <ECProperty propertyName="Payload" typeName="binary"/>
-      <ECArrayProperty propertyName="Tags" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
-    </ECEntityClass>
-  </ECSchema>`;
-  await db.importSchemaStrings([schema]);
-  db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-
-  await db.locks.acquireLocks({ shared: IModel.dictionaryId });
-  const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(db, Code.createEmpty(), true);
-  const catId = DrawingCategory.insert(db, IModel.dictionaryId, "DemoCat",
-    new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,0,255)").toJSON() }));
-  db.saveChanges("setup");
-  await db.pushChanges({ description: "setup", accessToken: adminToken });
-
-  // 3. Changeset 2 — insert
-  await db.locks.acquireLocks({ shared: modelId });
-  const elementId: Id64String = db.elements.insertElement({
-    classFullName: "Demo:Widget",
-    model: modelId,
-    category: catId,
-    code: Code.createEmpty(),
-    Payload: new Uint8Array([0x01, 0x02, 0x03]),
-    Tags: ["alpha", "beta"],
-  } as any);
-  db.saveChanges("insert widget");
-  await db.pushChanges({ description: "insert widget", accessToken: adminToken });
-
-  // 4. Changeset 3 — update
-  await db.locks.acquireLocks({ exclusive: elementId });
-  db.elements.updateElement({
-    ...db.elements.getElementProps(elementId),
-    Tags: ["alpha", "beta", "gamma"],
-  } as any);
-  db.saveChanges("update widget");
-  await db.pushChanges({ description: "update widget", accessToken: adminToken });
-
-  // 5. Download changesets
-  const targetDir = path.join(outputDir, iModelId, "changesets");
-  const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
-  const [, insertCs, updateCs] = changesets; // [setup, insert, update]
-
-  // 6. Read insert changeset individually
-  {
-    using reader = ECChangesetReader.openFile({
-      db,
-      fileName: insertCs.pathname,
-      rowOptions: { abbreviateBlobs: false },
-    });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-    while (reader.step()) pcu.appendFrom(reader);
-
-    const elem = Array.from(pcu.instances).find(
-      (i) => i.ECInstanceId === elementId && i.$meta.stage === "New"
-    );
-    // elem.$meta.op === "Inserted"
-    // elem.Payload instanceof Uint8Array  → [1, 2, 3]
-    // elem.Tags → ["alpha", "beta"]
-    // elem.$meta.changeFetchedPropNames.has("Tags") → true
-    console.log("insert op:", elem?.$meta.op);
-    console.log("insert Tags:", elem?.Tags);
-  }
-
-  // 7. Read update changeset individually
-  {
-    using reader = ECChangesetReader.openFile({
-      db,
-      fileName: updateCs.pathname,
-      rowOptions: { abbreviateBlobs: false },
-    });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-    while (reader.step()) pcu.appendFrom(reader);
-
-    const instances = Array.from(pcu.instances);
-    const elemNew = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
-    const elemOld = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "Old");
-    // elemNew.Tags → ["alpha", "beta", "gamma"]
-    // elemOld.Tags → ["alpha", "beta"]
-    // elemNew.$meta.changeFetchedPropNames.has("Tags") → true
-    console.log("update new Tags:", elemNew?.Tags);
-    console.log("update old Tags:", elemOld?.Tags);
-  }
-
-  // 8. Read both changesets as a group
-  {
-    using reader = ECChangesetReader.openGroup({
-      db,
-      changesetFiles: [insertCs.pathname, updateCs.pathname],
-      rowOptions: { abbreviateBlobs: false },
-    });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-    while (reader.step()) pcu.appendFrom(reader);
-
-    const elem = Array.from(pcu.instances).find(
-      (i) => i.ECInstanceId === elementId && i.$meta.stage === "New"
-    );
-    // op is "Inserted" because the first appearance across the group was an insert.
-    // Final Tags value reflects the update (["alpha","beta","gamma"]).
-    // tables accumulated: ["bis_Element", "bis_GeometricElement2d"]
-    console.log("group op:", elem?.$meta.op);         // "Inserted"
-    console.log("group final Tags:", elem?.Tags);      // ["alpha","beta","gamma"]
-  }
-
-  db.close();
-}
-```
+[[include:ECChangesetReader.WorkedExample]]
 
 ---
 
@@ -553,7 +273,7 @@ Two concrete failure modes arise:
 using reader = ECChangesetReader.openFile({
   db: iModelDb,          // iModel has already applied the delete
   fileName: updateChangeset.pathname,
-  mode: IModelJsNative.ECChangesetReader.Mode.Instance_Key,
+  mode: ECChangesetMode.Instance_Key,
   rowOptions: { classIdsToClassNames: true },
 });
 // ...

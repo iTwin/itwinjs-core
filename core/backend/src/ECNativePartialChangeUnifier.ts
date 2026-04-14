@@ -124,10 +124,13 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
 
   private dropTempTable(): void {
     if (this._db instanceof ECDb) {
+      this._db.saveChanges();
       this._db.clearStatementCache();
     } else {
-      this._db.clearCaches({ instanceCachesOnly: true });
+      this._db[_nativeDb].saveChanges();
+      this._db.clearCaches();
     }
+    // clearing caches because otherwise dropping the table is not possible due to cached prepared statements that reference the table.
     this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt: SqliteStatement) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to drop temp cache table");

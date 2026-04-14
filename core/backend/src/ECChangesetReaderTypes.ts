@@ -5,7 +5,6 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AnyDb } from "./SqliteChangesetReader";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +22,46 @@ export type ECNativeChangeOp = "Inserted" | "Updated" | "Deleted";
  * @beta
  */
 export type ECNativeChangeStage = "Old" | "New";
+
+/**
+ * Controls which properties are included in the output of {@link ECChangesetReader}.
+ * @beta
+ */
+export enum ECChangesetMode {
+  /** All EC properties mapped to changed tables. */
+  All_Properties = 0,
+  /** For classes whose base class is `BisCore:Element`, only `BisCore:Element` properties
+   * mapped to changed tables are returned. If no `BisCore:Element` class property changed,
+   * only `ECInstanceId` and `ECClassId` are returned. For other classes all mapped properties
+   * are returned. */
+  Bis_Element_Properties = 1,
+  /** Only `ECInstanceId` and `ECClassId`. */
+  Instance_Key = 2,
+}
+
+/**
+ * Row-formatting options for {@link ECChangesetReader} factory methods.
+ * Controls how EC property values are represented in the returned instances.
+ * @beta
+ */
+export interface ECChangesetRowAdapterOptions {
+  /**
+   * When `false`, binary properties are returned as full `Uint8Array` values.
+   * When `true` (or omitted), binary properties are summarized as `{ bytes: N }`.
+   */
+  abbreviateBlobs?: boolean;
+  /**
+   * When `true`, `ECClassId` and `RelECClassId` values are converted from hex strings
+   * to fully-qualified class names (e.g. `"BisCore.DrawingModel"`).
+   */
+  classIdsToClassNames?: boolean;
+  /**
+   * When `true`, all property keys and struct sub-keys are returned in camelCase
+   * (e.g. `id`, `className`, `lastMod`). Navigation property sub-keys use
+   * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
+   */
+  useJsName?: boolean;
+}
 
 // ---------------------------------------------------------------------------
 // Public interfaces
@@ -58,7 +97,7 @@ export interface ECNativeChangeMeta {
   Similaly if both X and Y changed for the same point2d property, the returned property name will be "CustomStruct.Myp2d". */
   changeFetchedPropNames: string[];
   /** Row adaptor options that were active when this change row was captured. */
-  rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
+  rowOptions?: ECChangesetRowAdapterOptions;
   /** `true` when the change was applied indirectly */
   isIndirectChange: boolean;
 }
@@ -109,7 +148,7 @@ export interface ECChangesetReaderArgs {
   /** invert the changeset operations */
   readonly invert?: boolean;
   /** Row adaptor options controlling how EC property values are formatted. */
-  readonly rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
-  /** Controls which properties are included in the change output. Defaults to `All_Properties`. */
-  readonly mode?: IModelJsNative.ECChangesetReader.Mode;
+  readonly rowOptions?: ECChangesetRowAdapterOptions;
+  /** Controls which properties are included in the change output. Defaults to {@link ECChangesetMode.AllProperties}. */
+  readonly mode?: ECChangesetMode;
 }

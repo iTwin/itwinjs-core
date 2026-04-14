@@ -11,7 +11,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ECChangesetReaderArgs, ECNativeChangeInstance, ECNativeChangeOp, ECNativeChangeSource } from "./ECChangesetReaderTypes";
+import { ECChangesetMode, ECChangesetReaderArgs, ECChangesetRowAdapterOptions, ECNativeChangeInstance, ECNativeChangeOp, ECNativeChangeSource } from "./ECChangesetReaderTypes";
 import { AnyDb } from "./SqliteChangesetReader";
 
 
@@ -37,8 +37,8 @@ import { AnyDb } from "./SqliteChangesetReader";
 export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
-  private _rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions;
-  private _mode: IModelJsNative.ECChangesetReader.Mode = IModelJsNative.ECChangesetReader.Mode.All_Properties;
+  private _rowOptions?: ECChangesetRowAdapterOptions;
+  private _mode: ECChangesetMode = ECChangesetMode.All_Properties;
   private _changeIndex = 0;
   private _op?: ECNativeChangeOp;
   private _isECTable?: boolean;
@@ -100,15 +100,25 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     this.db = db;
   }
 
-  /** Convert a IModelJsNative.ECChangesetReader.Mode enum value to its string name.
+  /** Map public ECChangesetRowAdapterOptions to the native adaptor options.
+   * @internal */
+  private toNativeRowOptions(opts: ECChangesetRowAdapterOptions): IModelJsNative.ECSqlRowAdaptorOptions {
+    return {
+      abbreviateBlobs: opts.abbreviateBlobs,
+      classIdsToClassNames: opts.classIdsToClassNames,
+      useJsName: opts.useJsName,
+    };
+  }
+
+  /** Convert a ECChangesetMode enum value to its string name.
    * @internal
    */
-  private modeToString(mode: IModelJsNative.ECChangesetReader.Mode): string {
-    switch (mode) {
-      case IModelJsNative.ECChangesetReader.Mode.All_Properties: return "All_Properties";
-      case IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties: return "Bis_Element_Properties";
-      case IModelJsNative.ECChangesetReader.Mode.Instance_Key: return "Instance_Key";
-      default: return String(mode);
+  private modeToString(): string {
+    switch (this._mode) {
+      case ECChangesetMode.All_Properties: return "All_Properties";
+      case ECChangesetMode.Bis_Element_Properties: return "Bis_Element_Properties";
+      case ECChangesetMode.Instance_Key: return "Instance_Key";
+      default: throw new IModelError(IModelStatus.BadArg, `Invalid ECChangesetMode value: ${this._mode}`);
     }
   }
 
@@ -128,7 +138,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   public static openFile(args: { readonly fileName: string } & ECChangesetReaderArgs): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    const mode = args.mode ?? ECChangesetMode.All_Properties;
+    reader._mode = mode;
     try {
       reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._mode);
     }
@@ -152,7 +163,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       throw new Error("changesetFiles must contain at least one file.");
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    const mode = args.mode ?? ECChangesetMode.All_Properties;
+    reader._mode = mode;
     try {
       reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._mode);
     }
@@ -176,7 +188,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    const mode = args.mode ?? ECChangesetMode.All_Properties;
+    reader._mode = mode;
     try {
       reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._mode);
     } catch (e) {
@@ -198,7 +211,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    const mode = args.mode ?? ECChangesetMode.All_Properties;
+    reader._mode = mode;
     try {
       reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._mode);
     } catch (e) {
@@ -221,7 +235,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions ?? {};
-    reader._mode = args.mode ?? IModelJsNative.ECChangesetReader.Mode.All_Properties;
+    const mode = args.mode ?? ECChangesetMode.All_Properties;
+    reader._mode = mode;
     try {
       reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._mode);
     } catch (e) {
@@ -319,8 +334,10 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       this._isIndirectChange = meta.isIndirectChange;
       this._isECTable = meta.isECTable;
 
+      const nativeRowOpts = this._rowOptions ? this.toNativeRowOptions(this._rowOptions) : {};
+
       if (op === "Inserted" || op === "Updated") {
-        const rowValue = this._nativeReader.getValue(DbChangeStage.New, this._rowOptions ?? {});
+        const rowValue = this._nativeReader.getValue(DbChangeStage.New, nativeRowOpts);
         if (rowValue !== undefined) {
           this.inserted = {
             ...rowValue.data,
@@ -330,7 +347,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "New",
               nativeKey: rowValue.key,
-              mode: this.modeToString(this._mode),
+              mode: this.modeToString(),
               changeFetchedPropNames: rowValue.changeFetchedPropNames,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,
@@ -340,7 +357,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       }
 
       if (op === "Deleted" || op === "Updated") {
-        const rowValue = this._nativeReader.getValue(DbChangeStage.Old, this._rowOptions ?? {});
+        const rowValue = this._nativeReader.getValue(DbChangeStage.Old, nativeRowOpts);
         if (rowValue !== undefined) {
           this.deleted = {
             ...rowValue.data,
@@ -350,7 +367,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "Old",
               nativeKey: rowValue.key,
-              mode: this.modeToString(this._mode),
+              mode: this.modeToString(),
               changeFetchedPropNames: rowValue.changeFetchedPropNames,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,

@@ -7,28 +7,25 @@ import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } fr
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import { DrawingCategory } from "../../Category";
-import { _nativeDb, BriefcaseDb, ChannelControl, IModelJsNative } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, ChannelControl } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { ECChangesetReader } from "../../ECChangesetReader";
 import * as path from "node:path";
+import * as fs from "fs";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECNativeChangeUnifierCache, ECNativePartialChangeUnifier } from "../../ECNativePartialChangeUnifier";
-import { ECNativeChangeInstance } from "../../ECChangesetReaderTypes";
+import { ECChangesetMode, ECChangesetRowAdapterOptions, ECNativeChangeInstance } from "../../ECChangesetReaderTypes";
 import { EditTxn } from "../../EditTxn";
 
 /* eslint-disable @typescript-eslint/naming-convention */ // disabling it because the property names are not in camelcase, and we want to test them as-is
-// -------------------------------------------------------------------------------------------------
-// Drill-down suite: four local txns × three modes × rowOptions variants
-// See core/backend/src/ECChangesetReader-txn-drilldown-plan.md for the full spec.
-// -------------------------------------------------------------------------------------------------
 
 /** Open a txn, drive the unifier, log and return all merged instances. */
 function readTxn(
   db: BriefcaseDb,
   txnId: string,
-  mode?: IModelJsNative.ECChangesetReader.Mode,
-  rowOptions?: IModelJsNative.ECSqlRowAdaptorOptions,
+  mode?: ECChangesetMode,
+  rowOptions?: ECChangesetRowAdapterOptions,
   invert?: boolean,
   useInMemoryUnifierCache?: boolean,
 ): ECNativeChangeInstance[] {
@@ -397,7 +394,7 @@ describe("ECChangesetReader insert-full", () => {
   });
 
   it("txn1 insert-full | Bis_Element_Properties", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties, { classIdsToClassNames: true });
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Bis_Element_Properties, { classIdsToClassNames: true });
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -470,7 +467,7 @@ describe("ECChangesetReader insert-full", () => {
   });
 
   it("txn1 insert-full | Instance_Key", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Instance_Key);
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Instance_Key);
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -996,6 +993,130 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
+
+  it("txn1 insert-full | All_Properties | inMemoryCache vs sqliteBackedCache", () => {
+    const inMemoryInstances = readTxn(rwIModel, txnId);
+    const sqliteBackedInstances = readTxn(rwIModel, txnId, undefined, undefined, undefined, false);
+    assert.equal(inMemoryInstances.length, 3);
+    assert.equal(sqliteBackedInstances.length, 3);
+
+    // --- instances[0]: DrawingModel Updated New ---
+    const inMemoryModelNew = inMemoryInstances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    const sqliteBackedModelNew = sqliteBackedInstances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    expect(inMemoryModelNew).to.exist;
+    expect(sqliteBackedModelNew).to.exist;
+    assert.equal(inMemoryModelNew!.ECInstanceId, sqliteBackedModelNew!.ECInstanceId);
+    assert.equal(sqliteBackedModelNew!.ECClassId, inMemoryModelNew!.ECClassId);
+    assert.equal(inMemoryModelNew!.LastMod, sqliteBackedModelNew!.LastMod);
+    assert.equal(inMemoryModelNew!.GeometryGuid, sqliteBackedModelNew!.GeometryGuid);
+    // Object.keys
+    assert.deepEqual(Object.keys(inMemoryModelNew!).sort(), Object.keys(sqliteBackedModelNew!).sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(inMemoryModelNew!.$meta).sort(), Object.keys(sqliteBackedModelNew!.$meta).sort());
+    assert.equal(inMemoryModelNew!.$meta.op, sqliteBackedModelNew!.$meta.op);
+    assert.equal(inMemoryModelNew!.$meta.stage, sqliteBackedModelNew!.$meta.stage);
+    assert.deepEqual([...inMemoryModelNew!.$meta.tables].sort(), [...sqliteBackedModelNew!.$meta.tables].sort());
+    assert.deepEqual([...inMemoryModelNew!.$meta.changeIndexes].sort(), [...sqliteBackedModelNew!.$meta.changeIndexes].sort());
+    assert.isString(inMemoryModelNew!.$meta.nativeKey);
+    assert.equal(inMemoryModelNew!.$meta.nativeKey.split(`-`).length, 2);
+    assert.equal(inMemoryModelNew!.$meta.mode, sqliteBackedModelNew!.$meta.mode);
+    assert.deepEqual([...inMemoryModelNew!.$meta.changeFetchedPropNames].sort(), [...sqliteBackedModelNew!.$meta.changeFetchedPropNames].sort());
+    assert.deepEqual(inMemoryModelNew!.$meta.rowOptions, sqliteBackedModelNew!.$meta.rowOptions);
+    assert.equal(inMemoryModelNew!.$meta.isIndirectChange, sqliteBackedModelNew!.$meta.isIndirectChange);
+
+    // --- instances[1]: DrawingModel Updated Old ---
+    const inMemoryModelOld = inMemoryInstances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    const sqliteBackedModelOld = sqliteBackedInstances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(inMemoryModelOld).to.exist;
+    expect(sqliteBackedModelOld).to.exist;
+    assert.equal(inMemoryModelOld!.ECInstanceId, sqliteBackedModelOld!.ECInstanceId);
+    assert.equal(sqliteBackedModelOld!.ECClassId, inMemoryModelOld!.ECClassId);
+    // Object.keys
+    assert.deepEqual(Object.keys(inMemoryModelOld!).sort(), Object.keys(sqliteBackedModelOld!).sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(inMemoryModelOld!.$meta).sort(), Object.keys(sqliteBackedModelOld!.$meta).sort());
+    assert.equal(inMemoryModelOld!.$meta.op, sqliteBackedModelOld!.$meta.op);
+    assert.equal(inMemoryModelOld!.$meta.stage, sqliteBackedModelOld!.$meta.stage);
+    assert.deepEqual([...inMemoryModelOld!.$meta.tables].sort(), [...sqliteBackedModelOld!.$meta.tables].sort());
+    assert.equal(inMemoryModelOld!.$meta.mode, sqliteBackedModelOld!.$meta.mode);
+    assert.deepEqual([...inMemoryModelOld!.$meta.changeFetchedPropNames].sort(), [...sqliteBackedModelOld!.$meta.changeFetchedPropNames].sort());
+    assert.deepEqual(inMemoryModelOld!.$meta.rowOptions, sqliteBackedModelOld!.$meta.rowOptions);
+    assert.equal(inMemoryModelOld!.$meta.isIndirectChange, sqliteBackedModelOld!.$meta.isIndirectChange);
+
+    // --- instances[2]: Test2dElement Inserted New ---
+    const inMemoryElem = inMemoryInstances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
+    const sqliteBackedElem = sqliteBackedInstances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
+    expect(inMemoryElem).to.exist;
+    expect(sqliteBackedElem).to.exist;
+    assert.equal(inMemoryElem!.ECInstanceId, sqliteBackedElem!.ECInstanceId);
+    assert.equal(sqliteBackedElem!.ECClassId, inMemoryElem!.ECClassId);
+    assert.equal(inMemoryElem!.Model.Id, sqliteBackedElem!.Model.Id);
+    assert.equal(inMemoryElem!.Model.RelECClassId, sqliteBackedElem!.Model.RelECClassId);
+    assert.equal(inMemoryElem!.LastMod, sqliteBackedElem!.LastMod);
+    assert.equal(inMemoryElem!.CodeSpec.Id, sqliteBackedElem!.CodeSpec.Id);
+    assert.equal(inMemoryElem!.CodeSpec.RelECClassId, sqliteBackedElem!.CodeSpec.RelECClassId);
+
+    assert.equal(inMemoryElem!.CodeScope.Id, sqliteBackedElem!.CodeScope.Id);
+    assert.equal(inMemoryElem!.CodeScope.RelECClassId, sqliteBackedElem!.CodeScope.RelECClassId);
+    assert.equal(inMemoryElem!.FederationGuid, sqliteBackedElem!.FederationGuid);
+
+    assert.equal(inMemoryElem!.Category.Id, sqliteBackedElem!.Category.Id);
+    assert.equal(inMemoryElem!.Category.RelECClassId, sqliteBackedElem!.Category.RelECClassId);
+    assert.deepEqual(inMemoryElem!.Origin, sqliteBackedElem!.Origin);
+    assert.equal(inMemoryElem!.Rotation, sqliteBackedElem!.Rotation);
+    assert.deepEqual(inMemoryElem!.BBoxLow, sqliteBackedElem!.BBoxLow);
+    assert.deepEqual(inMemoryElem!.BBoxHigh, sqliteBackedElem!.BBoxHigh);
+    assert.equal(inMemoryElem!.GeometryStream, sqliteBackedElem!.GeometryStream);
+    assert.equal(inMemoryElem!.BinProp, sqliteBackedElem!.BinProp);
+    assert.equal(inMemoryElem!.StrProp, sqliteBackedElem!.StrProp);
+    assert.equal(inMemoryElem!.IntProp, sqliteBackedElem!.IntProp);
+    assert.equal(inMemoryElem!.LongProp, sqliteBackedElem!.LongProp);
+    assert.closeTo(inMemoryElem!.DblProp as number, sqliteBackedElem!.DblProp as number, 1e-10);
+    assert.equal(inMemoryElem!.BoolProp, sqliteBackedElem!.BoolProp);
+    assert.equal(inMemoryElem!.DtProp, sqliteBackedElem!.DtProp);
+    assert.deepEqual(inMemoryElem!.Pt2dProp, sqliteBackedElem!.Pt2dProp);
+    assert.deepEqual(inMemoryElem!.Pt3dProp, sqliteBackedElem!.Pt3dProp);
+    assert.deepEqual(inMemoryElem!.StructProp, sqliteBackedElem!.StructProp);
+    assert.deepEqual(inMemoryElem!.IntArrProp, sqliteBackedElem!.IntArrProp);
+    assert.deepEqual(inMemoryElem!.StrArrProp, sqliteBackedElem!.StrArrProp);
+    assert.deepEqual(inMemoryElem!.StructArrProp, sqliteBackedElem!.StructArrProp);
+    assert.equal(inMemoryElem!.RelatedElem.Id, sqliteBackedElem!.RelatedElem.Id);
+    assert.equal(inMemoryElem!.RelatedElem.RelECClassId, sqliteBackedElem!.RelatedElem.RelECClassId);
+    // Object.keys
+    assert.deepEqual(Object.keys(inMemoryElem!).sort(), Object.keys(sqliteBackedElem!).sort());
+    // $meta keys
+    assert.deepEqual(Object.keys(inMemoryElem!.$meta).sort(), Object.keys(sqliteBackedElem!.$meta).sort());
+    assert.equal(inMemoryElem!.$meta.op, sqliteBackedElem!.$meta.op);
+    assert.equal(inMemoryElem!.$meta.stage, sqliteBackedElem!.$meta.stage);
+    assert.deepEqual([...inMemoryElem!.$meta.tables].sort(), [...sqliteBackedElem!.$meta.tables].sort());
+    assert.deepEqual([...inMemoryElem!.$meta.changeIndexes].sort(), [...sqliteBackedElem!.$meta.changeIndexes].sort());
+    assert.equal(inMemoryElem!.$meta.nativeKey, sqliteBackedElem!.$meta.nativeKey);
+    assert.deepEqual([...inMemoryElem!.$meta.changeFetchedPropNames].sort(), [...sqliteBackedElem!.$meta.changeFetchedPropNames].sort());
+    assert.deepEqual(inMemoryElem!.$meta.rowOptions, sqliteBackedElem!.$meta.rowOptions);
+    assert.equal(inMemoryElem!.$meta.isIndirectChange, sqliteBackedElem!.$meta.isIndirectChange);
+  });
+  it("should throw error if tried to fetch changeset metadata values before stepping", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
+  it("should throw error if tried to fetch changeset metadata values after stepping past the end", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    while (reader.step()) { }
+    assert.equal(reader.step(), false);
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
 });
 
 describe("ECChangesetReader insert-partial", () => {
@@ -1282,7 +1403,7 @@ describe("ECChangesetReader insert-partial", () => {
   });
 
   it("txn2 insert-partial | Bis_Element_Properties", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties, { classIdsToClassNames: true });
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Bis_Element_Properties, { classIdsToClassNames: true });
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -1343,7 +1464,7 @@ describe("ECChangesetReader insert-partial", () => {
   });
 
   it("txn2 insert-partial | Instance_Key", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Instance_Key);
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Instance_Key);
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -1518,6 +1639,28 @@ describe("ECChangesetReader insert-partial", () => {
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.mode, "All_Properties");
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
+  });
+  it("should throw error if tried to fetch changeset metadata values before stepping", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
+  it("should throw error if tried to fetch changeset metadata values after stepping past the end", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    while (reader.step()) { }
+    assert.equal(reader.step(), false);
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
   });
 
 });
@@ -1815,7 +1958,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | Bis_Element_Properties", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties, { classIdsToClassNames: true }, undefined, false);
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Bis_Element_Properties, { classIdsToClassNames: true }, undefined, false);
     assert.equal(instances.length, 4);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -1892,7 +2035,7 @@ describe("ECChangesetReader update-full", () => {
   });
 
   it("txn3 update-full | Instance_Key", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Instance_Key, undefined, undefined, false);
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Instance_Key, undefined, undefined, false);
     assert.equal(instances.length, 4);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -2171,7 +2314,28 @@ describe("ECChangesetReader update-full", () => {
       "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
       "StructProp.Y", "StructProp.Z"].sort());
   });
-
+  it("should throw error if tried to fetch changeset metadata values before stepping", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
+  it("should throw error if tried to fetch changeset metadata values after stepping past the end", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    while (reader.step()) { }
+    assert.equal(reader.step(), false);
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
 });
 
 describe("ECChangesetReader delete-partial", () => {
@@ -2348,7 +2512,7 @@ describe("ECChangesetReader delete-partial", () => {
   });
 
   it("txn4 delete-partial | Bis_Element_Properties", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Bis_Element_Properties, { classIdsToClassNames: true });
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Bis_Element_Properties, { classIdsToClassNames: true });
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -2411,7 +2575,7 @@ describe("ECChangesetReader delete-partial", () => {
   });
 
   it("txn4 delete-partial | Instance_Key", () => {
-    const instances = readTxn(rwIModel, txnId, IModelJsNative.ECChangesetReader.Mode.Instance_Key);
+    const instances = readTxn(rwIModel, txnId, ECChangesetMode.Instance_Key);
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -2591,7 +2755,28 @@ describe("ECChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.mode, "All_Properties");
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
   });
-
+  it("should throw error if tried to fetch changeset metadata values before stepping", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
+  it("should throw error if tried to fetch changeset metadata values after stepping past the end", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+    while (reader.step()) { }
+    assert.equal(reader.step(), false);
+    expect(() => reader.isECTable).to.throw();
+    expect(() => reader.isIndirectChange).to.throw();
+    expect(() => reader.tableName).to.throw();
+    expect(() => reader.op).to.throw();
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+    reader.close();
+  });
 });
 
 describe("ECChangesetReader filters", () => {
@@ -3445,7 +3630,7 @@ describe("ECChangesetReader: behaviour in case imodel is not in sync with change
     expect(changesets.length).to.equal(4);
     const middleChangeset = changesets[Math.floor(changesets.length / 2)]; // index 2 = update
 
-    using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: middleChangeset.pathname, mode: IModelJsNative.ECChangesetReader.Mode.Instance_Key, rowOptions: { classIdsToClassNames: true } });
+    using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: middleChangeset.pathname, mode: ECChangesetMode.Instance_Key, rowOptions: { classIdsToClassNames: true } });
     using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
     while (reader.step())
       pcu.appendFrom(reader);
@@ -3912,7 +4097,7 @@ describe("ECChangesetReader: overflow table insert and update", () => {
     HubMock.shutdown();
   });
 
-  it("update txn | bis_GeometricElement2d_Overflow rows merged; overflow props correct in New and Old", () => {
+  it("txn | bis_GeometricElement2d_Overflow rows merged; overflow props correct in New and Old", async () => {
     // --- update txn ---
     const updateInstances = readTxn(rwIModel, updateTxnId, undefined, { classIdsToClassNames: true });
     assert.equal(updateInstances.length, 4);
@@ -4034,6 +4219,211 @@ describe("ECChangesetReader: overflow table insert and update", () => {
     assert.deepEqual(insertElem!.BBoxLow, { X: -5, Y: -5 });
     assert.deepEqual(insertElem!.BBoxHigh, { X: 5, Y: 5 });
     assert.include(String(insertElem!.GeometryStream), "\"bytes\"");
+
+    // --- delete txn ---
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the delete txn
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await rwIModel.locks.acquireLocks({ exclusive: elementId });
+    txn.deleteElement(elementId);
+    txn.saveChanges("delete overflow element");
+    const deleteTxnId = rwIModel.txns.getLastSavedTxnProps()!.id;
+
+    const deleteInstances = readTxn(rwIModel, deleteTxnId, undefined, { classIdsToClassNames: true });
+    // DrawingModel Updated New + Old (indirect) + OverflowElement Deleted Old
+    assert.equal(deleteInstances.length, 3);
+
+    // DrawingModel Updated New (indirect side-effect)
+    const updateModelNewForDelete = deleteInstances.find((i) => i.ECClassId === "BisCore.DrawingModel" && i.$meta.stage === "New");
+    expect(updateModelNewForDelete).to.exist;
+    assert.equal(updateModelNewForDelete!.$meta.op, "Updated");
+    assert.isString(updateModelNewForDelete!.LastMod);
+    assert.isString(updateModelNewForDelete!.GeometryGuid);
+    assert.deepEqual(Object.keys(updateModelNewForDelete!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "$meta", "GeometryGuid"].sort());
+    assert.deepEqual([...updateModelNewForDelete!.$meta.tables], ["bis_Model"]);
+    assert.deepEqual([...updateModelNewForDelete!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(updateModelNewForDelete!.$meta.rowOptions, { classIdsToClassNames: true });
+    assert.equal(updateModelNewForDelete!.$meta.isIndirectChange, true);
+
+    // DrawingModel Updated Old
+    const updateModelOldForDelete = deleteInstances.find((i) => i.ECClassId === "BisCore.DrawingModel" && i.$meta.stage === "Old");
+    expect(updateModelOldForDelete).to.exist;
+    assert.equal(updateModelOldForDelete!.$meta.op, "Updated");
+    assert.isString(updateModelOldForDelete!.LastMod);
+    assert.isString(updateModelNewForDelete!.GeometryGuid);
+    assert.deepEqual(Object.keys(updateModelOldForDelete!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "$meta", "GeometryGuid"].sort());
+    assert.deepEqual([...updateModelOldForDelete!.$meta.tables], ["bis_Model"]);
+    assert.deepEqual([...updateModelOldForDelete!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.equal(updateModelOldForDelete!.$meta.isIndirectChange, true);
+
+    // OverflowElement Deleted Old
+    const deletedElemOld = deleteInstances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "Old");
+    expect(deletedElemOld).to.exist;
+    assert.equal(deletedElemOld!.ECClassId, "TestDomain.OverflowElement");
+    assert.equal(deletedElemOld!.$meta.op, "Deleted");
+    assert.equal(deletedElemOld!.$meta.stage, "Old");
+    assert.equal(deletedElemOld!.$meta.isIndirectChange, false);
+    assert.deepEqual(deletedElemOld!.$meta.rowOptions, { classIdsToClassNames: true });
+
+    // All three physical tables contributed to the delete row
+    assert.deepEqual([...deletedElemOld!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d", "bis_GeometricElement2d_Overflow"].sort());
+
+    // All 36 domain props are recorded in changeFetchedPropNames
+    const deleteFetchedProps = [...deletedElemOld!.$meta.changeFetchedPropNames];
+    for (let i = 0; i < nProps; i++) {
+      assert.include(deleteFetchedProps, propName(i), `changeFetchedPropNames should contain p${i}`);
+    }
+
+    // p0–p33 still carry the original insert values; p34/p35 carry the updated values
+    for (let i = 0; i < 34; i++) {
+      assert.equal(deletedElemOld![propName(i)], insertVal(i), `p${i} should be '${insertVal(i)}'`);
+    }
+    assert.equal(deletedElemOld![propName(34)], updateVal(34));
+    assert.equal(deletedElemOld![propName(35)], updateVal(35));
+
+    // Spot-check BIS properties
+    assert.equal(deletedElemOld!.Model.Id, drawingModelId);
+    assert.equal(deletedElemOld!.Model.RelECClassId, "BisCore.ModelContainsElements");
+    assert.equal(deletedElemOld!.Category.Id, drawingCategoryId);
+    assert.equal(deletedElemOld!.Category.RelECClassId, "BisCore.GeometricElement2dIsInCategory");
+    assert.equal(deletedElemOld!.CodeSpec.Id, "0x1");
+    assert.equal(deletedElemOld!.CodeSpec.RelECClassId, "BisCore.CodeSpecSpecifiesCode");
+    assert.equal(deletedElemOld!.CodeScope.Id, "0x1");
+    assert.equal(deletedElemOld!.CodeScope.RelECClassId, "BisCore.ElementScopesCode");
+    assert.isString(deletedElemOld!.FederationGuid);
+    assert.isString(deletedElemOld!.LastMod);
+    assert.deepEqual(deletedElemOld!.Origin, { X: 0, Y: 0 });
+    assert.equal(deletedElemOld!.Rotation, 0);
+    assert.deepEqual(deletedElemOld!.BBoxLow, { X: -5, Y: -5 });
+    assert.deepEqual(deletedElemOld!.BBoxHigh, { X: 5, Y: 5 });
+    assert.include(String(deletedElemOld!.GeometryStream), "\"bytes\"");
+  });
+});
+
+describe("ECChangesetReader: invalid inputs", () => {
+  let iModel: BriefcaseDb;
+  let txn: EditTxn;
+  let validChangesetPath: string;
+
+  before(async () => {
+    HubMock.startup("ECChangesetReaderInvalidInputs", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "invalidInputs", accessToken: adminToken });
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    txn = startTestTxn(iModel, "ECChangesetReader invalid inputs setup");
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Push one changeset so we have a valid .changeset file to reference.
+    await iModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+    txn.saveChanges("setup");
+    await iModel.pushChanges({ description: "setup", accessToken: adminToken });
+
+    const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+    const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+    assert.isAtLeast(changesets.length, 1);
+    validChangesetPath = changesets[0].pathname;
+  });
+
+  after(() => {
+    txn.end();
+    iModel?.close();
+    HubMock.shutdown();
+  });
+
+  // --- openFile ---
+
+  it("openFile: non-existent file path throws", () => {
+    expect(() =>
+      ECChangesetReader.openFile({ db: iModel, fileName: "/does/not/exist.changeset" }),
+    ).to.throw();
+  });
+
+  it("openFile: empty file name throws", () => {
+    expect(() =>
+      ECChangesetReader.openFile({ db: iModel, fileName: "" }),
+    ).to.throw();
+  });
+
+  it("openFile: path points to a directory throws", () => {
+    expect(() =>
+      ECChangesetReader.openFile({ db: iModel, fileName: KnownTestLocations.outputDir }),
+    ).to.throw();
+  });
+
+  it("openFile: path points to a plain text file (not .changeset) throws", () => {
+    const txtFile = path.join(KnownTestLocations.outputDir, "not_a_changeset.txt");
+    // Write a small non-changeset file and expect the reader to reject it.
+    fs.writeFileSync(txtFile, "this is not a changeset");
+
+    using reader = ECChangesetReader.openFile({ db: iModel, fileName: txtFile });
+    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
+  });
+
+  // --- openGroup ---
+
+  it("openGroup: empty changesetFiles array throws synchronously", () => {
+    expect(() =>
+      ECChangesetReader.openGroup({ db: iModel, changesetFiles: [] }),
+    ).to.throw();
+  });
+
+  it("openGroup: single non-existent path throws", () => {
+    expect(() =>
+      ECChangesetReader.openGroup({ db: iModel, changesetFiles: ["/does/not/exist.changeset"] }),
+    ).to.throw();
+  });
+
+  it("openGroup: first file valid, second file non-existent throws", () => {
+    expect(() =>
+      ECChangesetReader.openGroup({ db: iModel, changesetFiles: [validChangesetPath, "/does/not/exist.changeset"] }),
+    ).to.throw();
+  });
+
+  it("openGroup: file list containing an empty string throws", () => {
+    expect(() =>
+      ECChangesetReader.openGroup({ db: iModel, changesetFiles: [""] }),
+    ).to.throw();
+  });
+
+  it("openGroup: duplicate paths reads the same changeset twice without throwing", () => {
+    // Passing the same changeset file twice is unusual but not necessarily an error at open time.
+    // The reader should open and step without throwing; the caller is responsible for any semantic issues.
+    expect(() => {
+      using reader = ECChangesetReader.openGroup({ db: iModel, changesetFiles: [validChangesetPath, validChangesetPath] });
+      while (reader.step()) { /* drain */ }
+    }).to.not.throw();
+  });
+
+  // --- openTxn ---
+
+  it("openTxn: non-existent txn id throws", () => {
+    expect(() =>
+      ECChangesetReader.openTxn({ db: iModel, txnId: "0xdeadbeef" }),
+    ).to.throw();
+  });
+
+  it("openTxn: empty string txn id throws", () => {
+    expect(() =>
+      ECChangesetReader.openTxn({ db: iModel, txnId: "" }),
+    ).to.throw();
+  });
+
+  // --- property accessors before step() ---
+
+  it("accessing tableName before step() throws", () => {
+    using reader = ECChangesetReader.openFile({ db: iModel, fileName: validChangesetPath });
+    expect(() => reader.tableName).to.throw();
+  });
+
+  it("accessing isECTable before step() throws", () => {
+    using reader = ECChangesetReader.openFile({ db: iModel, fileName: validChangesetPath });
+    expect(() => reader.isECTable).to.throw();
+  });
+
+  it("accessing isIndirectChange before step() throws", () => {
+    using reader = ECChangesetReader.openFile({ db: iModel, fileName: validChangesetPath });
+    expect(() => reader.isIndirectChange).to.throw();
   });
 });
 

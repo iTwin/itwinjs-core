@@ -33,7 +33,7 @@ describe("ECChangesetReaderAPI", async () => {
     await IModelHost.shutdown();
   });
 
-  it("Large Changeset Performance - InMemoryCache", async () => {
+  it("Large Changeset Performance", async () => {
     const adminToken = "super manager token";
     const iModelName = "LargeChangesetTest";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
@@ -88,98 +88,30 @@ describe("ECChangesetReaderAPI", async () => {
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
 
-    for (const testCase of testCases) {
-      using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: changesets[testCase.testCaseNum].pathname });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-      reader.setOpCodeFilters(new Set(["Inserted"]));
-      assert.equal(pcu.instanceCount, 0, "Unifier should be empty before any changes are applied");
-
-      const watch = new StopWatch();
-      watch.start();
-
-      while (reader.step())
-        pcu.appendFrom(reader);
-
-      watch.stop();
-
-      assert.equal(pcu.instanceCount, testCase.numElements, "Number of instances should match the number of inserted elements");
-      reporter.addEntry("ECChangesetReaderAPI", "ECNativeUnifier-InMemoryCache", "Execution time (seconds)", watch.elapsedSeconds, { iModelId: rwIModelId, changesetId: changesets[testCase.testCaseNum].id, changesetInserts: testCase.numElements });
-    }
-
-    rwIModel.close();
-  });
-
-  it("Large Changeset Performance - SqliteBackedCache", async () => {
-    const adminToken = "super manager token";
-    const iModelName = "LargeChangesetTest";
-    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
-    assert.isNotEmpty(rwIModelId);
-
-    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-
-    const schema = `<?xml version="1.0" encoding="UTF-8"?>
-    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-        <ECEntityClass typeName="TestElement">
-            <BaseClass>bis:GraphicalElement2d</BaseClass>
-            <ECProperty propertyName="name" typeName="string"/>
-        </ECEntityClass>
-    </ECSchema>`;
-    await rwIModel.importSchemaStrings([schema]);
-    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-
-    const codeProps = Code.createEmpty();
-    codeProps.value = "DrawingModel";
-    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
-    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
-    if (undefined === drawingCategoryId)
-      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
-
-    await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
-
-    const testCases = [
-      { testCaseNum: 1, numElements: 1000 },
-      { testCaseNum: 2, numElements: 10000 },
+    const cacheConfigs = [
+      { label: "ECNativeUnifier-InMemoryCache", createCache: () => ECNativeChangeUnifierCache.createInMemoryCache() },
+      { label: "ECNativeUnifier-SqliteBackedCache", createCache: () => ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel) },
     ];
 
-    const elementPropsTemplate = {
-      classFullName: "TestDomain:TestElement",
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-    };
+    for (const cacheConfig of cacheConfigs) {
+      for (const testCase of testCases) {
+        using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: changesets[testCase.testCaseNum].pathname });
+        using cache = cacheConfig.createCache();
+        using pcu = new ECNativePartialChangeUnifier(cache);
+        reader.setOpCodeFilters(new Set(["Inserted"]));
+        assert.equal(pcu.instanceCount, 0, "Unifier should be empty before any changes are applied");
 
-    for (const testCase of testCases) {
-      await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-      withEditTxn(rwIModel, (txn) => {
-        for (let i = 0; i < testCase.numElements; i++) {
-          const elementProps = { ...elementPropsTemplate, name: `Element_${testCase.numElements}_${i}` };
-          assert.isTrue(Id64.isValidId64(txn.insertElement(elementProps)), `Failed to insert element ${elementProps.name}`);
-        }
-      });
-      await rwIModel.pushChanges({ description: `Changeset with ${testCase.numElements} inserts`, accessToken: adminToken });
-    }
+        const watch = new StopWatch();
+        watch.start();
 
-    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
-    const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+        while (reader.step())
+          pcu.appendFrom(reader);
 
-    for (const testCase of testCases) {
-      using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: changesets[testCase.testCaseNum].pathname });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache(rwIModel));
-      reader.setOpCodeFilters(new Set(["Inserted"]));
-      assert.equal(pcu.instanceCount, 0, "Unifier should be empty before any changes are applied");
+        watch.stop();
 
-      const watch = new StopWatch();
-      watch.start();
-
-      while (reader.step())
-        pcu.appendFrom(reader);
-
-      watch.stop();
-
-      assert.equal(pcu.instanceCount, testCase.numElements, "Number of instances should match the number of inserted elements");
-      reporter.addEntry("ECChangesetReaderAPI", "ECNativeUnifier-SqliteBackedCache", "Execution time (seconds)", watch.elapsedSeconds, { iModelId: rwIModelId, changesetId: changesets[testCase.testCaseNum].id, changesetInserts: testCase.numElements });
+        assert.equal(pcu.instanceCount, testCase.numElements, "Number of instances should match the number of inserted elements");
+        reporter.addEntry("ECChangesetReaderAPI", cacheConfig.label, "Execution time (seconds)", watch.elapsedSeconds, { iModelId: rwIModelId, changesetId: changesets[testCase.testCaseNum].id, changesetInserts: testCase.numElements });
+      }
     }
 
     rwIModel.close();
