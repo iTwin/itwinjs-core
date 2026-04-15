@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
@@ -1236,6 +1236,7 @@ export class TxnManager {
   public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
+   * @note Consider using [[reverseTxnsAsync]] instead.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
    * @note If there are any outstanding uncommitted changes, they are reversed.
@@ -1249,31 +1250,206 @@ export class TxnManager {
     return this._nativeDb.reverseTxns(numOperations);
   }
 
-  /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+  /** Reverse the most recent operation.
+   * @note Consider using [[reverseSingleTxnAsync]] instead.
+   */
+  public reverseSingleTxn(): IModelStatus {
+    return this.reverseTxns(1);
+  }
 
-  /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  /** Reverse all changes back to the beginning of the session.
+   * @note Consider using [[reverseAllTxnsAsync]] instead.
+   */
+  public reverseAll(): IModelStatus {
+    return this._nativeDb.reverseAll();
+  }
 
   /** Reverse all changes back to a previously saved TxnId.
+   * @note Consider using [[reverseToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.reverseTo(txnId);
+  }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
+   * @note Consider using [[cancelToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.cancelTo(txnId);
+  }
+
+  /** Reverse (undo) the most recent operation(s) to this IModelDb. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If you do not want to abandon any locks, set [ReverseTxnArgs.retainLocks]($common) to true.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If numOperations is too large only the operations are reversible are reversed.
+   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
+   *  be reinstated together when/if ReinstateTxn is called.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTxns(numOperations));
+  }
+
+  /** Reverse (undo) the most recent operation to this IModelDb. By default, this method also
+   * abandons the locks that were acquired for that operation.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even though this method reverses only one operation, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.reverseTxnsAsync(1, args);
+  }
+
+  /** Reverse (undo) all operations back to the beginning of the session. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseAll());
+  }
+
+  /** Reverse (undo) all operations back to a previously saved TxnId. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to abandon locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   * @see  [[getCurrentTxnId]] [[cancelTo]]
+   */
+  public async reverseToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTo(txnId));
+  }
+
+  /** Reverse and then cancel (make non-reinstatable) all operations back to a previous TxnId. By default, this
+   * method also abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to abandon locks.
+   * @returns A promise that resolves to success if the transactions were reversed and cleared, or rejects with an IModelError otherwise.
+   */
+  public async cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void> {
+    // First reverse and abandon locks. Only cancel if that succeeds.
+    // This is important because the locks would become unabandonable if we canceled first and
+    // _then_ the abandonment failed. We expect the call to cancelTo to return "NothingToUndo",
+    // but that's ok - it will still clear the already-reversed txns.
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTo(txnId));
+    const status = this._nativeDb.cancelTo(txnId);
+    if (status !== IModelStatus.Success && status !== IModelStatus.NothingToUndo)
+      throw new IModelError(status, IModelError.getErrorKey(status));
+    this._iModel.locks.clearTxnLockRecords(txnId);
+  }
+
+  private async withLockAbandonment(args: ReverseTxnArgs | undefined, doReverseCallback: () => IModelStatus): Promise<void> {
+    const result = doReverseCallback();
+    if (result === IModelStatus.Success) {
+      if (!args?.retainLocks) {
+        // Abandon locks for the earliest txn, which abandons locks for the later ones, too.
+        await this._iModel.locks.abandonLocksForReversedTxn(this.getCurrentTxnId());
+      }
+    } else {
+      throw new IModelError(result, IModelError.getErrorKey(result));
+    }
+  }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
+   * @note This method will return [[IModelStatus.LockNotHeld]] and will not reinstate the Txn if the locks
+   * originally acquired by the Txn have been abandoned. Use [[reinstateTxnAsync]] to re-acquire the locks
+   * and reinstate the Txn in a single operation.
    */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus {
+    // Verify that the locks required by this txn have not been abandoned.
+    // If so, this method has no way to re-acquire them because it is synchronous. This
+    // is basically a developer error, mixing reverseTxnAsync with reinstateTxn (non-Async).
+    const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
+    if (
+      this.isTxnIdValid(reinstateRange.firstTxnId) &&
+      !this._iModel.locks.holdsNecessaryLocksForReinstatingTxn(this.queryPreviousTxnId(reinstateRange.lastTxnId))
+    ) {
+      return IModelStatus.LockNotHeld;
+    }
+
+    return this._iModel.reinstateTxn();
+  }
+
+  /** Reinstate the most recently reversed transaction. This method will first attempt
+   * to re-acquire the required locks, if they were abandoned after the operation was reversed.
+   * Since at any time multiple transactions can be reversed, it may take multiple calls to this
+   * method to reinstate all reversed operations.
+   * @beta
+   * @note If there are any outstanding unsaved changes, they are canceled before the Txn is reinstated. Unless
+   * [ReinstateTxnArgs.retainLocks]($common) is true, the locks associated with the unsaved changes are also abandoned.
+   * @param args Optional arguments to control the behavior of the reinstate operation, such as whether to retain
+   * locks when abandoning unsaved changes.
+   * @returns A Promise that resolves to success if a reversed transaction was reinstated, or rejects with an IModelError otherwise.
+   */
+  public async reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void> {
+    // We must abandon any unsaved changes here because it will be too late
+    // when reinstateTxn does it.
+    if (this.hasUnsavedChanges) {
+      this._iModel.clearCaches({ instanceCachesOnly: true });
+      this._iModel[_nativeDb].abandonChanges();
+    }
+
+    if (!args?.retainLocks) {
+      await this._iModel.locks.abandonLocksForCurrentUnsavedTxn();
+    }
+
+    const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
+    if (!this.isTxnIdValid(reinstateRange.firstTxnId)) {
+      throw new IModelError(IModelStatus.NothingToRedo, IModelError.getErrorKey(IModelStatus.NothingToRedo));
+    }
+
+    // Reacquire locks for the latest txn in the range, which will reacquire locks for all earlier txns, too.
+    await this._iModel.locks.acquireLocksForReinstatingTxn(this.queryPreviousTxnId(reinstateRange.lastTxnId));
+
+    const status = this.reinstateTxn();
+    if (status !== IModelStatus.Success) {
+      throw new IModelError(status, IModelError.getErrorKey(status));
+    }
+  }
 
   /** Get the Id of the first transaction, if any.
    */
@@ -1326,7 +1502,7 @@ export class TxnManager {
 
   /** Destroy the record of all local changes that have yet to be saved and/or pushed.
    * This permanently eradicates your changes - use with caution!
-   * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
+   * Typically, callers will want to subsequently use [[LockControl.abandonAllLocks]].
    * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
    */
   public deleteAllTxns(): void {
