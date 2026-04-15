@@ -17,6 +17,13 @@ import { SmallSystem } from "./SmallSystem";
 
 // cspell:word currentdFdX XYRR
 
+// A note on differences between using derivatives vs. approximate derivatives for Newton:
+// * Converged values are the same under both schemes.
+// * With derivatives, Newton convergence is quadratic rather than power 1.62 with approximate derivatives.
+// * With approximate derivatives:
+//   - the extra iterative cost is incidental for low iteration counts, and may even be offset by simpler computation.
+//   - the step choice is not based on serious analysis, so could be problematic.
+
 /**
  * Base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries from this base class.
@@ -34,7 +41,7 @@ export abstract class AbstractNewtonIterator {
    * Apply the current step (in all dimensions).
    * @param isFinalStep true if this is a final step.
    */
-  public abstract applyCurrentStep(isFinalStep: boolean): boolean;
+  public abstract applyCurrentStep(isFinalStep: boolean): void;
   /**
    * The constructor.
    * @param stepSizeTolerance tolerance to consider a single step converged.
@@ -42,13 +49,13 @@ export abstract class AbstractNewtonIterator {
    * it is expected that a first "accept" for (say) 10 to 14 digit step will be followed by another
    * iteration. A well behaved newton would then hypothetically double the number of digits to
    * 20 to 28. Since the IEEE double only carries 16 digits, this second-convergence step will
-   * typically achieve full precision.
-   * @param successiveConvergenceTarget number of successive convergences required for acceptance.
+   * typically achieve full precision. Default [[Geometry.smallNewtonStep]].
+   * @param successiveConvergenceTarget number of successive convergences required for acceptance. Default 2.
    * @param maxIterations max number of iterations. A typical newton step converges in 3 to 6 iterations.
-   * Allow 15 to 20 to catch difficult cases.
+   * Allow 15 to 20 to catch difficult cases. Default 15.
    */
   protected constructor(
-    stepSizeTolerance: number = 1.0e-11,
+    stepSizeTolerance: number = Geometry.smallNewtonStep,
     successiveConvergenceTarget: number = 2,
     maxIterations: number = 15,
   ) {
@@ -66,6 +73,17 @@ export abstract class AbstractNewtonIterator {
   protected _maxIterations: number;
   /** Number of iterations (incremented at each step). */
   public numIterations: number = 0;
+  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
+  public get stepSizeTolerance(): number {
+    return this._stepSizeTolerance;
+  }
+  /** Smallest iterate size difference in later iterations. */
+  private _leastDelta: number = Number.MAX_VALUE;
+  /** The current late iterate has the least delta encountered. Remember it. Implement along with [[restoreCandidate]].*/
+  protected cacheCandidate?(): void;
+  /** Set Newton result to the cached candidate. Implement along with [[cacheCandidate]]. */
+  protected restoreCandidate?(): void;
+
   /**
    * Test if a step is converged.
    * * Convergence is accepted with enough (_successiveConvergenceTarget) small steps (according to _stepSizeTolerance)
@@ -73,6 +91,10 @@ export abstract class AbstractNewtonIterator {
    * @param delta step size as reported by currentStepSize.
    */
   public testConvergence(delta: number): boolean {
+    if (this.cacheCandidate && delta < this._leastDelta && this.numIterations > 0.5 * this._maxIterations) {
+      this._leastDelta = delta;
+      this.cacheCandidate();
+    }
     if (Math.abs(delta) < this._stepSizeTolerance) {
       this._numAccepted++;
       return this._numAccepted >= this._successiveConvergenceTarget;
@@ -90,13 +112,16 @@ export abstract class AbstractNewtonIterator {
   public runIterations(): boolean {
     this._numAccepted = 0;
     this.numIterations = 0;
+    this._leastDelta = Number.MAX_VALUE;
     while (this.numIterations++ < this._maxIterations && this.computeStep()) {
-      if (this.testConvergence(this.currentStepSize()) && this.applyCurrentStep(true)) {
-        // console.log("iter: " + this.numIterations); // print number of Newton iterations for debug
+      if (this.testConvergence(this.currentStepSize())) {
+        this.applyCurrentStep(true);
         return true;
       }
       this.applyCurrentStep(false);
     }
+    if (this.restoreCandidate && this.numIterations >= this._maxIterations && Math.abs(this.currentStepSize()) > this._leastDelta)
+      this.restoreCandidate(); // we may have ended up in a late cycle; return our best guess
     return false;
   }
 }
@@ -138,9 +163,8 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
     this.setTarget(0);
   }
   /** Set the independent variable, i.e., x_n. */
-  public setX(x: number): boolean {
+  public setX(x: number) {
     this._currentX = x;
-    return true;
   }
   /** Get the independent variable, i.e., x_n. */
   public getX(): number {
@@ -151,9 +175,8 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
     this._target = y;
   }
   /** Move the current X by the just-computed step, i.e., `x_n - dx`. */
-  public applyCurrentStep(): boolean {
-    // console.log(this._currentX - this._currentStep); // print approximations for debug
-    return this.setX(this._currentX - this._currentStep);
+  public applyCurrentStep(): void {
+    this.setX(this._currentX - this._currentStep);
   }
   /** Compute the univariate newton step dx. */
   public computeStep(): boolean {
@@ -181,6 +204,31 @@ export abstract class NewtonEvaluatorRtoR {
   public abstract evaluate(x: number): boolean;
   /** Most recent function evaluation, i.e., f(x_n). */
   public currentF!: number;
+}
+
+/**
+ * Intermediate class for managing the parentCurve announcements from an IStrokeHandler.
+ * @internal
+ */
+export abstract class NewtonRtoRStrokeHandler extends NewtonEvaluatorRtoR {
+  protected _parentCurvePrimitive: CurvePrimitive | undefined;
+  constructor() {
+    super();
+    this._parentCurvePrimitive = undefined;
+  }
+  /**
+   * Retain the parentCurvePrimitive.
+   * * Calling this method tells the handler that the parent curve is to be used for detail searches.
+   * * Example: Transition spiral search is based on linestring first, then the exact spiral.
+   * * Example: CurveChainWithDistanceIndex does NOT do this announcement; the constituents act independently.
+   */
+  public startParentCurvePrimitive(curve: CurvePrimitive | undefined): void {
+    this._parentCurvePrimitive = curve;
+  }
+  /** Forget the parentCurvePrimitive */
+  public endParentCurvePrimitive(_curve: CurvePrimitive | undefined): void {
+    this._parentCurvePrimitive = undefined;
+  }
 }
 
 /**
@@ -213,18 +261,16 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
     this.derivativeH = 1.0e-8;
   }
   /** Set the independent variable, i.e., x_n. */
-  public setX(x: number): boolean {
+  public setX(x: number): void {
     this._currentX = x;
-    return true;
   }
   /** Get the independent variable, i.e., x_n. */
   public getX(): number {
     return this._currentX;
   }
   /** Move the current X by the just-computed step, i.e., `x_n - dx`. */
-  public applyCurrentStep(): boolean {
-    // console.log(this._currentX - this._currentStep); // print approximations for debug
-    return this.setX(this._currentX - this._currentStep);
+  public applyCurrentStep(): void {
+    this.setX(this._currentX - this._currentStep);
   }
   /** Univariate newton step dx, computed with approximate derivative. */
   public computeStep(): boolean {
@@ -296,17 +342,18 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   /**
    * Constructor for 2D newton iteration with derivatives.
    * @param func function that returns both function value and derivative.
+   * @param maxIterations max number of iterations. Default 15.
+   * @param stepSizeTolerance tolerance to consider a single step converged. Default [[Geometry.smallNewtonStep]].
    */
-  public constructor(func: NewtonEvaluatorRRtoRRD, maxIterations?: number) {
-    super(undefined, undefined, maxIterations);
+  public constructor(func: NewtonEvaluatorRRtoRRD, maxIterations?: number, stepSizeTolerance?: number) {
+    super(stepSizeTolerance, undefined, maxIterations);
     this._func = func;
     this._currentStep = Vector2d.createZero();
     this._currentUV = Point2d.createZero();
   }
   /** Set the current uv parameters, i.e., `X_n = (u_n, v_n)`. */
-  public setUV(u: number, v: number): boolean {
+  public setUV(u: number, v: number): void {
     this._currentUV.set(u, v);
-    return true;
   }
   /** Get the current u parameter of X_n, i.e., u_n. */
   public getU(): number {
@@ -316,14 +363,9 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   public getV(): number {
     return this._currentUV.y;
   }
-  /** Get the relative tolerance for comparing iterations in [[testConvergence]]. */
-  public get stepSizeTolerance(): number {
-    return this._stepSizeTolerance;
-  }
   /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
-  public applyCurrentStep(): boolean {
-    // console.log("(" + (this._currentUV.x - this._currentStep.x) + "," + (this._currentUV.y - this._currentStep.y) + ")");
-    return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y);
+  public applyCurrentStep(): void {
+    this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y);
   }
   /**
    * Evaluate the functions and derivatives at `X_n = (u_n, v_n)`, and solve the Jacobian matrix equation to
@@ -350,6 +392,20 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
       this._currentStep.y / (1.0 + Math.abs(this._currentUV.y)),
     );
   }
+  /** Candidate solution cache. */
+  private _cachedUV: Point2d | undefined;
+  /** The current late iterate has the least delta encountered. Remember it. */
+  protected override cacheCandidate(): void {
+    if (this._cachedUV)
+      this._cachedUV.setFrom(this._currentUV);
+    else
+      this._cachedUV = this._currentUV.clone();
+  }
+  /** Set Newton result to the cached candidate. */
+  protected override restoreCandidate(): void {
+    if (this._cachedUV)
+      this.setUV(this._cachedUV.x, this._cachedUV.y);
+  }
 }
 /**
  * SimpleNewton has static methods for newton methods with evaluated functions presented as immediate arguments
@@ -374,7 +430,7 @@ export class SimpleNewton {
   ): number | undefined {
     let numConverged = 0;
     let tolerance: number;
-    const relTol = 1.0e-11;
+    const relTol = Geometry.smallNewtonStep;
     for (let iteration = 0; iteration < 20; iteration++) {
       const f = func(x);
       const df = derivative(x);

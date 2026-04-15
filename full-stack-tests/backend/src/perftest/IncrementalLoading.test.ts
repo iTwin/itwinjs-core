@@ -23,7 +23,7 @@ interface TotalCounts {
  * Options for generating an EC schema.
  */
 interface ClassGenerationOptions {
-  classCount: number;  
+  classCount: number;
   propCountperClass?: number;
   customAttrCountperClass?: number;
   customAttrCountperProperty?: number;
@@ -43,20 +43,20 @@ interface SchemaGenerationOptions {
   schemaItemCount?: number;
 }
 
-describe("IncrementalLoadingPerformance", () => { 
+describe("IncrementalLoadingPerformance", () => {
   const testSuite = "IncrementalLoadingPerformance";
   const assetDir = path.join(__dirname, "../../../assets");
   const reporter = new Reporter();
-  
-  const testSchemaKey = new SchemaKey("TestSchema", ECVersion.fromString("01.00.00")); 
+
+  const testSchemaKey = new SchemaKey("TestSchema", ECVersion.fromString("01.00.00"));
   const defaultOptions = {
     schemaName: testSchemaKey.name,
     version: testSchemaKey.version.toString(),
     alias: "ts",
-    referenceSchemas: [{ schemaName:"BisCore", version:"01.00.14", alias: "bis" }],
+    referenceSchemas: [{ schemaName: "BisCore", version: "01.00.14", alias: "bis" }],
   };
   let snapshotFile: string;
- 
+
   function getClassGroups(opts: SchemaGenerationOptions) {
     return [
       opts.entityClasses,
@@ -116,7 +116,7 @@ describe("IncrementalLoadingPerformance", () => {
       totalCustomAttrCount,
     };
   }
-  
+
   async function getSchemaTotals(schema?: Schema): Promise<TotalCounts> {
     if (!schema) {
       return { totalItemCount: 0, totalClassCount: 0, totalPropertyCount: 0, totalCustomAttrCount: 0 };
@@ -155,10 +155,10 @@ describe("IncrementalLoadingPerformance", () => {
    * Generates XML string defining class custom attributes.
    * @param opts Options for generating class custom attributes.
    * @returns XML string defining class custom attributes.
-   * @returns 
+   * @returns
    */
   function getCustomAttributesXml(attrPerClass?: number, attrFileName?: string): string {
-    let customAttrXml: string = ""; 
+    let customAttrXml: string = "";
     if (attrPerClass && attrPerClass > 0) {
       customAttrXml += "\n\t<ECCustomAttributes>";
       for (let i = 0; i < attrPerClass; ++i) {
@@ -173,14 +173,14 @@ describe("IncrementalLoadingPerformance", () => {
    * Generates XML string defining class properties.
    * @param opts Options for generating class properties.
    * @returns XML string defining class properties.
-   * @returns 
+   * @returns
    */
   function getPropertiesXml(prefix: string, propsPerClass?: number, attrPerProperty?: number, attrFileName?: string): string {
     if (!propsPerClass || propsPerClass <= 0) return "";
 
     let propertiesXml: string = "";
     for (let i = 0; i < propsPerClass; ++i) {
-      propertiesXml += `\n\t<ECProperty propertyName="${prefix}_Prop${i}" typeName="string" displayLabel="Prop${i}" description="${prefix} Property${i}" priority="${i+1}">`
+      propertiesXml += `\n\t<ECProperty propertyName="${prefix}_Prop${i}" typeName="string" displayLabel="Prop${i}" description="${prefix} Property${i}" priority="${i + 1}">`
       if (attrPerProperty && attrPerProperty > 0) {
         propertiesXml += "\n\t    <ECCustomAttributes>";
         for (let j = 0; j < attrPerProperty; ++j) {
@@ -205,7 +205,7 @@ describe("IncrementalLoadingPerformance", () => {
     if (!opts || opts.classCount <= 0) return "";
     let classesXml: string = "";
     for (let i = 0; i < opts.classCount; ++i) {
-      classesXml += `\n    <ECRelationshipClass typeName="RelationshipTest${i}" strength="referencing" strengthDirection="forward" modifier="None" displayLabel="Test${i}" description="Relationship Test${i}">`;      
+      classesXml += `\n    <ECRelationshipClass typeName="RelationshipTest${i}" strength="referencing" strengthDirection="forward" modifier="None" displayLabel="Test${i}" description="Relationship Test${i}">`;
       classesXml += getCustomAttributesXml(opts.customAttrCountperClass, attrFileName);
       classesXml += `\n\t<BaseClass>${opts.baseClassName ?? "bis:ElementRefersToElements"}</BaseClass>`;
       classesXml += `\n\t<Source multiplicity="(0..*)" polymorphic="true" roleLabel="source">
@@ -249,7 +249,7 @@ describe("IncrementalLoadingPerformance", () => {
     if (!opts || opts.classCount <= 0) return "";
     let classesXml: string = "";
     for (let i = 0; i < opts.classCount; ++i) {
-      classesXml += `\n    <ECEntityClass typeName="EntityTest${i}" displayLabel="Test${i}" description="Entity Test${i}">`;      
+      classesXml += `\n    <ECEntityClass typeName="EntityTest${i}" displayLabel="Test${i}" description="Entity Test${i}">`;
       classesXml += getCustomAttributesXml(opts.customAttrCountperClass, attrFileName);
       classesXml += `\n\t<BaseClass>${opts.baseClassName ?? "bis:PhysicalElement"}</BaseClass>`;
       classesXml += getPropertiesXml(`EntityTest${i}`, opts.propCountperClass, opts.customAttrCountperProperty, attrFileName);
@@ -323,7 +323,7 @@ describe("IncrementalLoadingPerformance", () => {
     }
     // create property categories
     for (let i = 0; i < itemsCount; ++i) {
-      itemsXml += `    <PropertyCategory typeName="Category_Test${i}" description="Category Test${i}" displayLabel="Test${i}" priority="${i*10+1}"/>\n`;
+      itemsXml += `    <PropertyCategory typeName="Category_Test${i}" description="Category Test${i}" displayLabel="Test${i}" priority="${i * 10 + 1}"/>\n`;
     }
     // create phenomena
     for (let i = 0; i < itemsCount; ++i) {
@@ -332,8 +332,8 @@ describe("IncrementalLoadingPerformance", () => {
     // create enumerations
     for (let i = 0; i < itemsCount; ++i) {
       itemsXml += `    <ECEnumeration typeName="Enumeration_Test${i}" backingTypeName="int" displayLabel="Test${i}">
-        <ECEnumerator name="Test${i}_One" value="${i*2+1}" displayLabel="Test${i} One"/>
-        <ECEnumerator name="Test${i}_Two" value="${i*2+2}" displayLabel="Test${i} Two"/>
+        <ECEnumerator name="Test${i}_One" value="${i * 2 + 1}" displayLabel="Test${i} One"/>
+        <ECEnumerator name="Test${i}_Two" value="${i * 2 + 2}" displayLabel="Test${i} Two"/>
     </ECEnumeration>\n`;
     }
     // create units
@@ -346,7 +346,7 @@ describe("IncrementalLoadingPerformance", () => {
     }
     // create constants
     for (let i = 0; i < itemsCount; ++i) {
-      itemsXml += `    <Constant typeName="Constant_Test${i}" definition="1/TEST(${i})" phenomenon="Phenomenon_Test${i}" numerator="${(i+1)*0.001}" denominator="${(i+1)*0.0002}" description="Constant Test${i}"/>\n`;
+      itemsXml += `    <Constant typeName="Constant_Test${i}" definition="1/TEST(${i})" phenomenon="Phenomenon_Test${i}" numerator="${(i + 1) * 0.001}" denominator="${(i + 1) * 0.0002}" description="Constant Test${i}"/>\n`;
     }
     // create formats
     for (let i = 0; i < itemsCount; ++i) {
@@ -354,14 +354,14 @@ describe("IncrementalLoadingPerformance", () => {
     }
     // create kind of quantities
     for (let i = 0; i < itemsCount; ++i) {
-      itemsXml += `    <KindOfQuantity typeName="KOQ_Test${i}" persistenceUnit="Unit_Test${i}" presentationUnits="Format_Test${i}(4)[Unit_Test${i}]" relativeError="${(i+1)*0.001}" displayLabel="Test${i}"/>\n`;
+      itemsXml += `    <KindOfQuantity typeName="KOQ_Test${i}" persistenceUnit="Unit_Test${i}" presentationUnits="Format_Test${i}(4)[Unit_Test${i}]" relativeError="${(i + 1) * 0.001}" displayLabel="Test${i}"/>\n`;
     }
     return itemsXml;
   }
 
   /**
    * Generates schema from options
-   * @param options  Options for generating schema.  
+   * @param options  Options for generating schema.
    * @returns XML string defining schema.
    */
   function createSchemaFromOptions(options: SchemaGenerationOptions): string[] {
@@ -379,7 +379,7 @@ describe("IncrementalLoadingPerformance", () => {
       customAttributeClasses,
       schemaItemCount
     } = options;
-    
+
     // Find the max custom attribute counts across all class groups in options
     const maxCustomAttrCount = getClassGroups(options).reduce((max, g) =>
       Math.max(max, (g?.customAttrCountperClass ?? 0), (g?.customAttrCountperProperty ?? 0)), 0);
@@ -419,7 +419,7 @@ describe("IncrementalLoadingPerformance", () => {
     IModelJsFs.writeFileSync(schemaFilePath, xml);
     fileNames.push(schemaFilePath);
 
-    return fileNames; 
+    return fileNames;
   }
 
   async function waitSchemaLoading(schemaContext: SchemaContext, key: SchemaKey) {
@@ -430,7 +430,7 @@ describe("IncrementalLoadingPerformance", () => {
     if (schema?.loadingController !== undefined)
       await schema.loadingController.wait();
     const totalTime = stopWatch.stop().milliseconds;
-    
+
     return { schema, stubsTime, totalTime };
   }
 
@@ -440,12 +440,11 @@ describe("IncrementalLoadingPerformance", () => {
     IModelJsFs.mkdirSync(assetDir);
 
     await IModelHost.startup();
-    
+
     // create an empty imodel
     snapshotFile = IModelTestUtils.prepareOutputFile(testSuite, "IncrementalLoading.bim");
     const rootSubject = { name: "TestIModel", description: "Performance tests" };
     const imodel = StandaloneDb.createEmpty(snapshotFile, { rootSubject });
-    imodel.saveChanges();
     imodel.close();
   });
 
@@ -476,8 +475,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file(s)
           const schemaFileNames = createSchemaFromOptions(options);
-          await imodel.importSchemas(schemaFileNames);
-          imodel.saveChanges();
+          await imodel.importSchemas(schemaFileNames); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -498,7 +496,7 @@ describe("IncrementalLoadingPerformance", () => {
       });
     });
   });
-  
+
   describe("Increase Properties Tests", () => {
     configData.testCases.increaseProperties.forEach((testCase: SchemaGenerationOptions) => {
       it(`Gradually increase the number of properties (${getTotalPropertyCount(testCase)})`, async () => {
@@ -515,8 +513,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file(s)
           const schemaFileNames = createSchemaFromOptions(options);
-          await imodel.importSchemas(schemaFileNames);
-          imodel.saveChanges();
+          await imodel.importSchemas(schemaFileNames); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -554,8 +551,7 @@ describe("IncrementalLoadingPerformance", () => {
         try {
           // create schema file
           const schemaFileNames = createSchemaFromOptions(options);
-          await imodel.importSchemas(schemaFileNames);
-          imodel.saveChanges();
+          await imodel.importSchemas(schemaFileNames); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -588,13 +584,12 @@ describe("IncrementalLoadingPerformance", () => {
           ...(defaultOptions.referenceSchemas ?? []),
           ...(testCase.referenceSchemas ?? []),
         ];
-      
+
         const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
         try {
           // create schema file
           const schemaFileNames = createSchemaFromOptions(options);
-          await imodel.importSchemas(schemaFileNames);
-          imodel.saveChanges();
+          await imodel.importSchemas(schemaFileNames); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -602,7 +597,7 @@ describe("IncrementalLoadingPerformance", () => {
 
           const { schema, stubsTime, totalTime } = await waitSchemaLoading(schemaContext, testSchemaKey);
           assert.isDefined(schema);
-      
+
           const configTotals = getConfigTotals(options);
           const schemaTotals = await getSchemaTotals(schema);
           assert.deepEqual(configTotals, schemaTotals);
@@ -625,13 +620,13 @@ describe("IncrementalLoadingPerformance", () => {
 
         const createClassOptionsForLevel = (prevLevel: number, prefix: string, group?: ClassGenerationOptions): ClassGenerationOptions | undefined => {
           if (!group) return undefined;
-          const baseClassName = prevLevel > 0 ? `sch${prevLevel}:${prefix}${prevLevel-1}` : undefined;
+          const baseClassName = prevLevel > 0 ? `sch${prevLevel}:${prefix}${prevLevel - 1}` : undefined;
           return { ...group, baseClassName };
         }
         const createSchemaOptionsForLevel = (prevLevel: number, baseOpts: SchemaGenerationOptions): SchemaGenerationOptions => {
           return {
             referenceSchemas: [
-              ...(prevLevel > 0 ? [{ schemaName: `SimpleSchema${prevLevel}`, version: "01.00.00", alias: `sch${prevLevel}` }]: []),
+              ...(prevLevel > 0 ? [{ schemaName: `SimpleSchema${prevLevel}`, version: "01.00.00", alias: `sch${prevLevel}` }] : []),
               ...(defaultOptions.referenceSchemas ?? []),
               ...(baseOpts.referenceSchemas ?? []),
             ],
@@ -648,7 +643,7 @@ describe("IncrementalLoadingPerformance", () => {
             schemaName: `SimpleSchema${i}`,
             version: "01.00.00",
             alias: `sch${i}`,
-            ...createSchemaOptionsForLevel(i-1, testOpts), 
+            ...createSchemaOptionsForLevel(i - 1, testOpts),
           };
           schemaFileNames.push(...createSchemaFromOptions(schOpts));
         }
@@ -661,8 +656,7 @@ describe("IncrementalLoadingPerformance", () => {
 
         const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
         try {
-          await imodel.importSchemas(schemaFileNames);
-          imodel.saveChanges();
+          await imodel.importSchemas(schemaFileNames); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });
@@ -712,8 +706,7 @@ describe("IncrementalLoadingPerformance", () => {
 
         const imodel = StandaloneDb.openFile(snapshotFile, OpenMode.ReadWrite);
         try {
-          await imodel.importSchemas(schemaFileNames);
-          imodel.saveChanges();
+          await imodel.importSchemas(schemaFileNames); // auto-saves
 
           const schemaContext = new SchemaContext();
           const locater = new IModelIncrementalSchemaLocater(imodel, { useMultipleQueries: true });

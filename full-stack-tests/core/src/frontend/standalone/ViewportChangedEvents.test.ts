@@ -693,7 +693,11 @@ describe("Viewport changed events", async () => {
     expect(vp.view.viewsCategory(id64(0x1a))).to.be.false;
     expect(vp.view.viewsCategory(id64(0x1c))).to.be.false;
 
-    const waitForSubCats = async (catIds: Id64Arg): Promise<void> => {
+    // `expectAtomic` asserts that all categories load in a single batch — valid when a single
+    // changeCategoryDisplay call requests multiple categories (one backend request).
+    // When categories are requested by separate successive calls they are queued and loaded
+    // sequentially, so one may be cached before the next request even starts.
+    const waitForSubCats = async (catIds: Id64Arg, expectAtomic = true): Promise<void> => {
       for (const catId of Id64.iterable(catIds))
         expect(subcats.getSubCategories(catId)).to.be.undefined;
 
@@ -709,8 +713,13 @@ describe("Viewport changed events", async () => {
             ++numLoaded;
         }
 
-        if (0 !== numLoaded) {
-          // If one category was loaded, they all should have been.
+        if (numLoaded === Id64.sizeOf(catIds)) {
+          break;
+        }
+
+        if (numLoaded > 0 && expectAtomic) {
+          // If categories were requested in a single call they share one backend request,
+          // so if one is loaded they all should have been.
           expect(numLoaded).to.equal(Id64.sizeOf(catIds));
           break;
         }
@@ -730,8 +739,9 @@ describe("Viewport changed events", async () => {
 
     // If we turn on 2 more categories in succession, subcategories for both should be loaded asynchronously.
     // The loading of the first category's subcategories should not be interrupted by loading of second category's subcategories.
+    // Because these are separate calls, the queue loads them sequentially — don't assert atomic loading.
     vp.changeCategoryDisplay(id64(0x1a), true);
     vp.changeCategoryDisplay(id64(0x1c), true);
-    await waitForSubCats([id64(0x1c), id64(0x1a)]);
+    await waitForSubCats([id64(0x1c), id64(0x1a)], false);
   });
 });

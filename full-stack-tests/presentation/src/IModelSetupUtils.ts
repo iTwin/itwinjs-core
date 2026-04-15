@@ -6,7 +6,7 @@
 import { XMLParser } from "fast-xml-parser";
 import path from "path";
 import sanitize from "sanitize-filename";
-import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
+import { EditTxn, IModelDb, IModelJsFs, SnapshotDb, withEditTxn } from "@itwin/core-backend";
 import { assert, GuidString, Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
@@ -57,7 +57,6 @@ export async function buildTestIModelDb(name: string, cb: (db: IModelDb) => Prom
     db.close();
     throw e;
   }
-  db.saveChanges("Created test IModel");
   return { db, fileName: outputFile };
 }
 
@@ -115,8 +114,8 @@ export function importSchema(mochaContext: Mocha.Context, imodel: { importSchema
 }
 
 /** Insert a document partition element into created imodel. Return created element's className and Id. */
-export function insertDocumentPartition(db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
-  const id = db.elements.insertElement({
+export function insertDocumentPartitionTxn(txn: EditTxn, db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
+  const id = txn.insertElement({
     classFullName: "BisCore:DocumentPartition",
     model: IModel.repositoryModelId,
     parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
@@ -127,19 +126,24 @@ export function insertDocumentPartition(db: IModelDb, code: string, label?: stri
   return { className: "BisCore:DocumentPartition", id };
 }
 
+export function insertDocumentPartition(db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
+  return withEditTxn(db, (txn) => insertDocumentPartitionTxn(txn, db, code, label, federationGuid));
+}
+
 export function insertPhysicalModelWithPartition(props: { db: IModelDb; codeValue: string; partitionParentId?: Id64String }) {
   const { codeValue, partitionParentId, ...baseProps } = props;
   const partitionKey = insertPhysicalPartition({ ...baseProps, codeValue, parentId: partitionParentId ?? IModel.rootSubjectId });
   return insertPhysicalSubModel({ ...baseProps, modeledElementId: partitionKey.id });
 }
 
-export function insertPhysicalPartition(
+export function insertPhysicalPartitionTxn(
+  txn: EditTxn,
   props: { db: IModelDb; codeValue: string; parentId: Id64String } & Partial<Omit<InformationPartitionElementProps, "id" | "parent" | "code">>,
 ) {
-  const { db, classFullName, codeValue, parentId, ...partitionProps } = props;
+  const { classFullName, codeValue, parentId, ...partitionProps } = props;
   const defaultModelClassName = `BisCore:PhysicalPartition`;
   const className = classFullName ?? defaultModelClassName;
-  const partitionId = db.elements.insertElement({
+  const partitionId = txn.insertElement({
     classFullName: className,
     model: IModel.repositoryModelId,
     code: new Code({ spec: BisCodeSpec.informationPartitionElement, scope: parentId, value: codeValue }),
@@ -152,13 +156,20 @@ export function insertPhysicalPartition(
   return { className, id: partitionId };
 }
 
-export function insertPhysicalSubModel(
+export function insertPhysicalPartition(
+  props: { db: IModelDb; codeValue: string; parentId: Id64String } & Partial<Omit<InformationPartitionElementProps, "id" | "parent" | "code">>,
+) {
+  return withEditTxn(props.db, (txn) => insertPhysicalPartitionTxn(txn, props));
+}
+
+export function insertPhysicalSubModelTxn(
+  txn: EditTxn,
   props: { db: IModelDb; modeledElementId: Id64String } & Partial<Omit<GeometricModel3dProps, "id" | "modeledElement" | "parentModel">>,
 ) {
-  const { db, classFullName, modeledElementId, ...modelProps } = props;
+  const { classFullName, modeledElementId, ...modelProps } = props;
   const defaultModelClassName = `BisCore:PhysicalModel`;
   const className = classFullName ?? defaultModelClassName;
-  const modelId = db.models.insertModel({
+  const modelId = txn.insertModel({
     classFullName: className,
     modeledElement: { id: modeledElementId },
     ...modelProps,
@@ -166,15 +177,22 @@ export function insertPhysicalSubModel(
   return { className, id: modelId };
 }
 
+export function insertPhysicalSubModel(
+  props: { db: IModelDb; modeledElementId: Id64String } & Partial<Omit<GeometricModel3dProps, "id" | "modeledElement" | "parentModel">>,
+) {
+  return withEditTxn(props.db, (txn) => insertPhysicalSubModelTxn(txn, props));
+}
+
 /** Insert a spatial category element into created imodel. Return created element's className and Id. */
-export function insertSpatialCategory(
+export function insertSpatialCategoryTxn(
+  txn: EditTxn,
   props: { db: IModelDb; codeValue: string; modelId?: Id64String } & Partial<Omit<CategoryProps, "id" | "model" | "parent" | "code">>,
 ) {
-  const { db, classFullName, modelId, codeValue, ...categoryProps } = props;
+  const { classFullName, modelId, codeValue, ...categoryProps } = props;
   const defaultClassName = `BisCore:SpatialCategory`;
   const className = classFullName ?? defaultClassName;
   const model = modelId ?? IModel.dictionaryId;
-  const id = db.elements.insertElement({
+  const id = txn.insertElement({
     classFullName: className,
     model,
     code: new Code({ spec: BisCodeSpec.spatialCategory, scope: model, value: codeValue }),
@@ -183,42 +201,59 @@ export function insertSpatialCategory(
   return { className, id };
 }
 
+export function insertSpatialCategory(
+  props: { db: IModelDb; codeValue: string; modelId?: Id64String } & Partial<Omit<CategoryProps, "id" | "model" | "parent" | "code">>,
+) {
+  return withEditTxn(props.db, (txn) => insertSpatialCategoryTxn(txn, props));
+}
+
 /** Insert a physical element into created imodel. Return created element's className and Id. */
-export function insertPhysicalElement<TAdditionalProps extends object>(
+export function insertPhysicalElementTxn<TAdditionalProps extends object>(
+  txn: EditTxn,
   props: { db: IModelDb; modelId: Id64String; categoryId: Id64String; parentId?: Id64String } & Partial<
     Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
   > &
     TAdditionalProps,
 ) {
-  const { db, classFullName, modelId, categoryId, parentId, ...elementProps } = props;
+  const { classFullName, modelId, categoryId, parentId, ...elementProps } = props;
   const defaultClassName = "Generic:PhysicalObject";
   const className = classFullName ?? defaultClassName;
-  const id = db.elements.insertElement({
+  const id = txn.insertElement({
     classFullName: className,
     model: modelId,
     category: categoryId,
     code: Code.createEmpty(),
     ...(parentId
       ? {
-          parent: {
-            id: parentId,
-            relClassName: `BisCore:PhysicalElementAssemblesElements`,
-          },
-        }
+        parent: {
+          id: parentId,
+          relClassName: `BisCore:PhysicalElementAssemblesElements`,
+        },
+      }
       : undefined),
     ...elementProps,
   } as PhysicalElementProps);
   return { className, id };
 }
 
+export function insertPhysicalElement<TAdditionalProps extends object>(
+  props: { db: IModelDb; modelId: Id64String; categoryId: Id64String; parentId?: Id64String } & Partial<
+    Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
+  > &
+    TAdditionalProps,
+) {
+  return withEditTxn(props.db, (txn) => insertPhysicalElementTxn(txn, props));
+}
+
 /** Insert an aspect into created imodel, return its key */
-export function insertElementAspect<TAdditionalProps extends object>(
+export function insertElementAspectTxn<TAdditionalProps extends object>(
+  txn: EditTxn,
   props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
 ) {
-  const { db, classFullName, elementId, ...aspectProps } = props;
+  const { classFullName, elementId, ...aspectProps } = props;
   const defaultClassName = "BisCore:ElementMultiAspect";
   const className = classFullName ?? defaultClassName;
-  const id = db.elements.insertAspect({
+  const id = txn.insertAspect({
     classFullName: className,
     element: {
       id: elementId,
@@ -226,6 +261,12 @@ export function insertElementAspect<TAdditionalProps extends object>(
     ...aspectProps,
   } as ElementAspectProps);
   return { className, id };
+}
+
+export function insertElementAspect<TAdditionalProps extends object>(
+  props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
+) {
+  return withEditTxn(props.db, (txn) => insertElementAspectTxn(txn, props));
 }
 
 function setupOutputFileLocation(fileName: string): LocalFileName {

@@ -9,9 +9,10 @@ import { HubMock } from "../../internal/HubMock";
 import { HubWrappers } from "../IModelTestUtils";
 import { IModel, IModelError } from "@itwin/core-common";
 import { _nativeDb, ChannelControl, Subject, SubjectOwnsSubjects } from "../../core-backend";
+import { withEditTxn } from "../../EditTxn";
 
 describe("Integrity Check Tests", () => {
-let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
+  let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
 
   beforeEach(() => {
     iModelStub = sinon.createStubInstance(IModelDb);
@@ -76,7 +77,7 @@ let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
     });
 
     it("should handle empty results", async () => {
-      const asyncIterator = async function* () {};
+      const asyncIterator = async function* () { };
       iModelStub.createQueryReader.returns(asyncIterator() as any);
 
       const results = await performQuickIntegrityCheck(iModelStub as any);
@@ -281,188 +282,189 @@ let iModelStub: sinon.SinonStubbedInstance<IModelDb>;
 });
 
 describe("iModelDb integrityCheck Tests", () => {
-    let iTwinId: GuidString;
-    let iModel: BriefcaseDb;
+  let iTwinId: GuidString;
+  let iModel: BriefcaseDb;
 
-    before(() => {
-      HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
-      iTwinId = HubMock.iTwinId;
-    });
+  before(() => {
+    HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
 
-    after(() => HubMock.shutdown());
+  after(() => HubMock.shutdown());
 
-    beforeEach(async () => {
-      // Create new iModel
-      const adminToken = "super manager token";
-      const iModelName = "PRAGMA_test";
-      const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
-      assert.isNotEmpty(iModelId);
-      iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
-    });
+  beforeEach(async () => {
+    // Create new iModel
+    const adminToken = "super manager token";
+    const iModelName = "PRAGMA_test";
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(iModelId);
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+  });
 
-    afterEach(() => {
-      // Cleanup
-      iModel.close();
-    });
+  afterEach(() => {
+    // Cleanup
+    iModel.close();
+  });
 
-    it("should call integrityCheck on a new iModel and return no errors", async () => {
-      const results = await iModel.integrityCheck();
-      expect(results).to.have.lengthOf(1);
-      expect(results[0]).to.have.property("check").that.equals("Quick Check");
-      expect(results[0]).to.have.property("passed").that.equals(true);
-      expect(results[0]).to.have.property("results").that.is.an("array");
-      expect(results[0].results.length).to.equal(9);
-      assert(results[0].results.every((row) => (row as QuickIntegrityCheckResultRow).passed === true), "All specific checks should pass");
-    });
+  it("should call integrityCheck on a new iModel and return no errors", async () => {
+    const results = await iModel.integrityCheck();
+    expect(results).to.have.lengthOf(1);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(true);
+    expect(results[0]).to.have.property("results").that.is.an("array");
+    expect(results[0].results.length).to.equal(9);
+    assert(results[0].results.every((row) => (row as QuickIntegrityCheckResultRow).passed === true), "All specific checks should pass");
+  });
 
-    it("should call integrityCheck with no options selected and default to quick check", async () => {
-      const results = await iModel.integrityCheck({});
-      expect(results).to.have.lengthOf(1);
-      expect(results[0]).to.have.property("check").that.equals("Quick Check");
-      expect(results[0]).to.have.property("passed").that.equals(true);
-      expect(results[0].results.length).to.equal(9);
+  it("should call integrityCheck with no options selected and default to quick check", async () => {
+    const results = await iModel.integrityCheck({});
+    expect(results).to.have.lengthOf(1);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(true);
+    expect(results[0].results.length).to.equal(9);
 
-      const results2 = await iModel.integrityCheck({ quickCheck: false });
-      expect(results2).to.have.lengthOf(1);
-      expect(results2[0]).to.have.property("check").that.equals("Quick Check");
-      expect(results2[0]).to.have.property("passed").that.equals(true);
-      expect(results2[0].results.length).to.equal(9);
+    const results2 = await iModel.integrityCheck({ quickCheck: false });
+    expect(results2).to.have.lengthOf(1);
+    expect(results2[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results2[0]).to.have.property("passed").that.equals(true);
+    expect(results2[0].results.length).to.equal(9);
 
-      const results3 = await iModel.integrityCheck({
-        quickCheck: false,
-        specificChecks: {
-          checkDataColumns: false,
-          checkECProfile: false,
-          checkNavigationClassIds: false,
-          checkNavigationIds: false,
-          checkLinktableForeignKeyClassIds: false,
-          checkLinktableForeignKeyIds: false,
-          checkClassIds: false,
-          checkDataSchema: false,
-          checkSchemaLoad: false,
-          checkMissingChildRows: false,
-      }});
-      expect(results3).to.have.lengthOf(1);
-      expect(results3[0]).to.have.property("check").that.equals("Quick Check");
-      expect(results3[0]).to.have.property("passed").that.equals(true);
-      expect(results3[0].results.length).to.equal(9);
-    });
-
-    it("should throw an error when iModel is closed", async () => {
-      iModel.close();
-
-      try {
-        await iModel.integrityCheck();
-        assert.fail("Expected error was not thrown");
-      } catch (error) {
-        expect((error as IModelError).message).to.include("IModel is not open");
+    const results3 = await iModel.integrityCheck({
+      quickCheck: false,
+      specificChecks: {
+        checkDataColumns: false,
+        checkECProfile: false,
+        checkNavigationClassIds: false,
+        checkNavigationIds: false,
+        checkLinktableForeignKeyClassIds: false,
+        checkLinktableForeignKeyIds: false,
+        checkClassIds: false,
+        checkDataSchema: false,
+        checkSchemaLoad: false,
+        checkMissingChildRows: false,
       }
     });
+    expect(results3).to.have.lengthOf(1);
+    expect(results3[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results3[0]).to.have.property("passed").that.equals(true);
+    expect(results3[0].results.length).to.equal(9);
+  });
 
-    it("should call integrityCheck on a new iModel and run all specific integrity checks and return no errors", async () => {
-      const results = await iModel.integrityCheck({
-        specificChecks: {
-          checkDataColumns: true,
-          checkECProfile: true,
-          checkNavigationClassIds: true,
-          checkNavigationIds: true,
-          checkLinktableForeignKeyClassIds: true,
-          checkLinktableForeignKeyIds: true,
-          checkClassIds: true,
-          checkDataSchema: true,
-          checkSchemaLoad: true,
-          checkMissingChildRows: true,
-        },
-      });
-      expect(results).to.be.an("array");
-      expect(results).to.have.lengthOf(10);
+  it("should throw an error when iModel is closed", async () => {
+    iModel.close();
 
-      // Verify each check is present and has the expected structure
-      const checkNames = results.map((r) => r.check);
-      expect(checkNames).to.include.members([
-        "Check Data Columns",
-        "Check EC Profile",
-        "Check Navigation Class Ids",
-        "Check Navigation Ids",
-        "Check Link Table Foreign Key Class Ids",
-        "Check Link Table Foreign Key Ids",
-        "Check Class Ids",
-        "Check Data Schema",
-        "Check Schema Load",
-        "Check Missing Child Rows",
-      ]);
+    try {
+      await iModel.integrityCheck();
+      assert.fail("Expected error was not thrown");
+    } catch (error) {
+      expect((error as IModelError).message).to.include("IModel is not open");
+    }
+  });
 
-      // All checks should pass
-      results.forEach((result) => {
-        expect(result.passed).to.equal(true, `${result.check} should pass`);
-        expect(result.results).to.be.empty;
-      });
+  it("should call integrityCheck on a new iModel and run all specific integrity checks and return no errors", async () => {
+    const results = await iModel.integrityCheck({
+      specificChecks: {
+        checkDataColumns: true,
+        checkECProfile: true,
+        checkNavigationClassIds: true,
+        checkNavigationIds: true,
+        checkLinktableForeignKeyClassIds: true,
+        checkLinktableForeignKeyIds: true,
+        checkClassIds: true,
+        checkDataSchema: true,
+        checkSchemaLoad: true,
+        checkMissingChildRows: true,
+      },
     });
+    expect(results).to.be.an("array");
+    expect(results).to.have.lengthOf(10);
 
-    it("should call integrityCheck on an iModel with corrupt foreignKey Ids and return results", async () => {
-      // Insert two elements
-      iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-      await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+    // Verify each check is present and has the expected structure
+    const checkNames = results.map((r) => r.check);
+    expect(checkNames).to.include.members([
+      "Check Data Columns",
+      "Check EC Profile",
+      "Check Navigation Class Ids",
+      "Check Navigation Ids",
+      "Check Link Table Foreign Key Class Ids",
+      "Check Link Table Foreign Key Ids",
+      "Check Class Ids",
+      "Check Data Schema",
+      "Check Schema Load",
+      "Check Missing Child Rows",
+    ]);
 
-      const element1Id = iModel.elements.insertElement({
+    // All checks should pass
+    results.forEach((result) => {
+      expect(result.passed).to.equal(true, `${result.check} should pass`);
+      expect(result.results).to.be.empty;
+    });
+  });
+
+  it("should call integrityCheck on an iModel with corrupt foreignKey Ids and return results", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const [element1Id, element2Id] = withEditTxn(iModel, (txn) => ([
+      txn.insertElement({
         classFullName: Subject.classFullName,
         model: IModel.repositoryModelId,
         parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
         code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
-      });
-
-      const element2Id = iModel.elements.insertElement({
+      }),
+      txn.insertElement({
         classFullName: Subject.classFullName,
         model: IModel.repositoryModelId,
         parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
         code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
-      });
-      iModel.saveChanges();
+      }),
+    ]));
 
-      // Create a relationship between them
-      await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
-      const relationship = iModel.relationships.createInstance({
-        classFullName: "BisCore:SubjectRefersToSubject",
-        sourceId: element1Id,
-        targetId: element2Id,
-      });
-      const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
-      assert.isTrue(Id64.isValidId64(relationshipId));
-      iModel.saveChanges();
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = withEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
+    assert.isTrue(Id64.isValidId64(relationshipId));
 
-      // Delete one element without deleting the relationship to corrupt the iModel
+    // Delete one element without deleting the relationship to corrupt the iModel
+    withEditTxn(iModel, () => {
       const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
       expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
-      iModel.saveChanges();
-
-      // Run integrity check specifically for linktable foreign key Ids
-      const results = await iModel.integrityCheck({
-        quickCheck: true,
-        specificChecks: {
-          checkLinktableForeignKeyClassIds: true,
-          checkLinktableForeignKeyIds: true,
-        },
-      });
-
-      // Verify that the checkLinktableForeignKeyIds check reports the corruption
-      expect(results).to.have.lengthOf(3);
-      expect(results[0]).to.have.property("check").that.equals("Quick Check");
-      expect(results[0]).to.have.property("passed").that.equals(false);
-      expect(results[0]).to.have.property("results").that.is.an("array");
-      expect(results[0].results.length).to.equal(9);
-      assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
-      expect(results[1]).to.have.property("passed").that.equals(true);
-      expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
-      expect(results[2]).to.have.property("passed").that.equals(false);
-      expect(results[2].results).to.have.lengthOf(1);
-      expect(results[2].results[0]).to.deep.include({
-        sno: 1,
-        id: "0x20000000001",
-        relationship: "BisCore:ElementRefersToElements",
-        property: "TargetECInstanceId",
-        keyId: "0x20000000002",
-        primaryClass: "BisCore:Element",
-      });
     });
+
+    // Run integrity check specifically for linktable foreign key Ids
+    const results = await iModel.integrityCheck({
+      quickCheck: true,
+      specificChecks: {
+        checkLinktableForeignKeyClassIds: true,
+        checkLinktableForeignKeyIds: true,
+      },
+    });
+
+    // Verify that the checkLinktableForeignKeyIds check reports the corruption
+    expect(results).to.have.lengthOf(3);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(false);
+    expect(results[0]).to.have.property("results").that.is.an("array");
+    expect(results[0].results.length).to.equal(9);
+    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+    expect(results[1]).to.have.property("passed").that.equals(true);
+    expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
+    expect(results[2]).to.have.property("passed").that.equals(false);
+    expect(results[2].results).to.have.lengthOf(1);
+    expect(results[2].results[0]).to.deep.include({
+      sno: 1,
+      id: "0x20000000001",
+      relationship: "BisCore:ElementRefersToElements",
+      property: "TargetECInstanceId",
+      keyId: "0x20000000002",
+      primaryClass: "BisCore:Element",
+    });
+  });
 
 });
