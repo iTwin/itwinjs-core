@@ -328,7 +328,7 @@ export class CheckpointManager {
         }
       } finally {
         Logger.setLevel(NativeLoggerCategory.SQLite, prevLogLevel); // Set logging to what it was before we started applying changesets.
-        db.saveChanges();
+        db[_nativeDb].saveChanges();
         db.close();
       }
     } catch (error: any) {

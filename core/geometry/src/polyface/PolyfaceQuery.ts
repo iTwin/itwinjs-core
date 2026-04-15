@@ -563,20 +563,20 @@ export class PolyfaceQuery {
     return -2;
   }
   /**
- * Test for convex volume by dihedral angle tests on all edges.
- * * This tests if all dihedral angles of the mesh are positive.
- * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
- * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
- * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
- * component, such as a pyramid with no underside.
- * * It is not a correct test if there are multiple, disjoint components.
- * * Take the above-mentioned pyramid with no underside.
- * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
- * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
- * @param source mesh.
- * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
- * @returns true if all dihedral angles of the mesh are positive.
- */
+   * Test for convex volume by dihedral angle tests on all edges.
+   * * This tests if all dihedral angles of the mesh are positive.
+   * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
+   * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
+   * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
+   * component, such as a pyramid with no underside.
+   * * It is not a correct test if there are multiple, disjoint components.
+   * * Take the above-mentioned pyramid with no underside.
+   * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
+   * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+   * @param source mesh.
+   * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
+   * @returns true if all dihedral angles of the mesh are positive.
+   */
   public static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }

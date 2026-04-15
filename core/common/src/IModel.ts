@@ -111,6 +111,18 @@ export interface IModelProps {
  */
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
+/** The properties returned by the backend when creating a new [[BriefcaseConnection]] from the frontend with Ipc.
+ * These properties describe the iModel held on the backend for thew newly formed connection and are used to construct a new
+ * [[BriefcaseConnection]] instance on the frontend to access it.
+ * @public
+ */
+export interface BriefcaseConnectionProps extends IModelConnectionProps {
+  /** The ID of the briefcase.
+   * @beta
+   */
+  readonly briefcaseId?: number;
+}
+
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
  */

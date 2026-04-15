@@ -1,8 +1,28 @@
 # Workspaces and Settings
 
-Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources. Settings dictionaries inside of [Workspace.settings]($backend) provide values for individual settings, some of which are configured to point to one or more [WorkspaceDb]($backend)s that provide resources for particular purposes. The anatomy of a `Workspace` is illustrated below:
+Every non-trivial application requires some level of configuration to customize its run-time behavior and help it locate data resources required for it to perform its functions. An iTwin.js [Workspace]($backend) comprises the [Settings]($backend) that supply this configuration and the [WorkspaceContainer]($backend)s that provide those resources. Settings inside of [Workspace.settings]($backend) provide values for individual [SettingName]($backend)s, some of which point to one or more [WorkspaceDb]($backend)s that provide binary resources for particular purposes. The anatomy of a `Workspace` is illustrated below:
 
-![Anatomy of a Workspace](./workspace-anatomy.jpg)
+```mermaid
+graph LR
+  subgraph Workspace
+    S["Settings<br/>(priority-ordered stack)"]
+    subgraph Settings Containers
+      SC1["SettingsDb<br/>iTwin scope"]
+      SC2["SettingsDb<br/>iModel scope"]
+    end
+    subgraph Workspace Containers
+      WC1["WorkspaceDb<br/>fonts, textures"]
+      WC2["WorkspaceDb<br/>templates"]
+    end
+  end
+
+  SC1 -->|"loads as<br/>SettingsDictionary"| S
+  SC2 -->|"loads as<br/>SettingsDictionary"| S
+  S -->|"settings point to"| WC1
+  S -->|"settings point to"| WC2
+```
+
+Settings are stored in [SettingsDb]($backend) containers (cloud-hosted, versioned, and discoverable by `containerType: "settings"`). Binary resources like fonts, textures, and images are stored in [WorkspaceDb]($backend) containers. At runtime, each `SettingsDb` becomes one [SettingsDictionary]($backend) in the [Settings]($backend) priority stack, and those settings tell the application where to find the `WorkspaceDb`s it needs.
 
 To explore [Workspace]($backend) concepts, let's take the example of an imaginary application called "LandscapePro" that allows users to decorate an iModel by adding landscaping features like trees, shrubs, flower beds, and patio furniture.
 
@@ -109,39 +129,128 @@ A [SettingsPriority]($backend) is just a number, but specific values carry seman
 - [SettingsPriority.branch]($backend) describes settings that apply to all branches of a particular iModel.
 - [SettingsPriority.iModel]($backend) describes settings that apply to one specific iModel.
 
-[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). Those of higher priority are stored in an [IModelDb.workspace]($backend) - more on those [shortly](#imodel-settings).
+[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). iTwin-scoped settings are loaded into the workspace returned by [IModelHost.getITwinWorkspace]($backend) — see [iTwin settings](#itwin-settings). Settings of even higher priority (branch and iModel) are stored in an [IModelDb.workspace]($backend) — see [iModel settings](#imodel-settings).
 
-What about the "landscapePro/ui/availableTools" array? In the [LandscapePro schema](#settings-schemas), the corresponding `settingDef` has [SettingSchema.combineArray]($backend) set to `true`, meaning that - when multiple dictionaries provide a value for the setting - instead of being overridden, they are merged together to form a single array, eliminating duplicates, and sorted in descending order by dictionary priority.
+## iTwin settings
+
+So far, we have been working with [IModelHost.appWorkspace]($backend). But - as [mentioned above](#settings-priorities) - each iTwin has its own workspace as well, with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as named [SettingsDictionary]($backend)s in a [WorkspaceDb]($backend) scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in the container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
+
+Before using iTwin settings, ensure two services are configured:
+
+- [IModelHost.authorizationClient]($backend) — so the backend can acquire user tokens.
+- [BlobContainer.service]($backend) — so settings containers can be discovered and opened.
+
+With those in place, load the iTwin workspace:
+
+```ts
+[[include:WorkspaceExamples.GetITwinWorkspace]]
+```
+
+The returned [Workspace]($backend) gives you access to all settings and resources associated with the iTwin.
+
+### Saving iTwin settings
+
+To save a named settings dictionary for an iTwin, call [IModelHost.saveSettingDictionary]($backend) with a dictionary name and a [SettingsContainer]($backend) of key-value pairs:
+
+```ts
+[[include:WorkspaceExamples.SaveITwinSettings]]
+```
+
+If no settings container exists for the specified iTwin yet, one is created automatically. The dictionary name becomes the resource name in the [WorkspaceDb]($backend). Multiple named dictionaries can coexist in the same container.
+
+### Deleting iTwin settings
+
+To remove an entire named dictionary, use [IModelHost.deleteSettingDictionary]($backend):
+
+```ts
+[[include:WorkspaceExamples.DeleteITwinSetting]]
+```
+
+### Reading iTwin settings
+
+To read iTwin settings, query the `settings` of the [Workspace]($backend) returned by [IModelHost.getITwinWorkspace]($backend):
+
+```ts
+[[include:WorkspaceExamples.ReadITwinSettings]]
+```
+
+iTwin settings are loaded with [SettingsPriority.iTwin]($backend) priority.
 
 ## iModel settings
 
-So far, we have been working with [IModelHost.appWorkspace]($backend). But - as [mentioned above](#settings-priorities) - each [IModelDb]($backend) has its own workspace as well, with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as [SettingsDictionary]($backend)s in the iModel's `be_Props` table. When the iModel is opened, its [Workspace.settings]($backend) are populated from those dictionaries. So, an application is working in the context of a particular iModel, it should resolve setting values by asking [IModelDb.workspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iModel's settings dictionaries don't provide a value for the requested setting.
+Each [IModelDb]($backend) has its own [Workspace]($backend), accessible via [IModelDb.workspace]($backend). This workspace inherits all app-level and iTwin-level settings, and layers on settings stored inside the iModel itself. Because these iModel-level dictionaries are loaded at [SettingsPriority.iModel]($backend) — the highest built-in priority — they override any lower-priority setting with the same name.
 
-Since an iModel is located in a specific geographic region, LandscapePro wants to limit the selection of foliage based on the USDA hardiness zone(s) in which the iModel resides. An administrator could configure the hardiness zone of an iModel as follows:
+Use iModel settings when a particular iModel needs configuration that differs from the rest of its iTwin, or when you want to persist metadata (like an iTwin settings container reference) inside the iModel so it is available in future sessions.
+
+### Saving iModel settings
+
+To save settings into an iModel, call [IModelDb.saveSettingDictionary]($backend) with a dictionary name and a [SettingsContainer]($backend) of key-value pairs:
 
 ```ts
 [[include:WorkspaceExamples.saveSettingDictionary]]
 ```
 
-Note that modifying the iModel settings requires obtaining an exclusive write lock on the entire iModel. Ordinary users should never perform this kind of operation - only administrators.
+The dictionary name (e.g. `"landscapePro/iModelSettings"`) identifies the dictionary within the iModel. If a dictionary with that name already exists, it is replaced; otherwise a new one is created. You can save multiple dictionaries under different names.
 
-The next time we open the iModel, the new settings dictionary will automatically be loaded, and we can query its settings:
+### Deleting iModel settings
+
+To remove an entire settings dictionary from an iModel, use [IModelDb.deleteSettingDictionary]($backend):
+
+```ts
+iModel.deleteSettingDictionary("landscapePro/iModelSettings");
+```
+
+### Reading iModel settings
+
+Settings saved into the iModel are automatically loaded into [IModelDb.workspace]($backend). Read them the same way you read any other settings — the priority stack resolves the effective value:
 
 ```ts
 [[include:WorkspaceExamples.QuerySettingDictionary]]
 ```
 
-The "hardinessRange" setting is obtained from the iModel's settings dictionary, while the "defaultTool" falls back to the value defined in `IModelHost.appWorkspace.settings`.
+In the example above, `landscapePro/hardinessRange` was saved into the iModel, so it is returned from the iModel's dictionary. But `landscapePro/ui/defaultTool` was not saved at the iModel level, so it falls through to the app-level dictionary that defined it earlier.
+
+### Overriding iTwin settings per iModel
+
+Because [SettingsPriority.iModel]($backend) is higher than [SettingsPriority.iTwin]($backend), any setting saved at the iModel level takes precedence over the same setting at the iTwin level.
+
+For example, suppose the iTwin setting `landscapePro/flora/preferredStyle` is `"naturalistic"` for the entire iTwin, but one particular iModel represents a formal garden:
+
+```ts
+[[include:WorkspaceExamples.OverrideITwinSettingAtIModelLevel]]
+```
+
+Now when the application reads `landscapePro/flora/preferredStyle` from this iModel's workspace, it gets `"formal"`. All other iModels in the iTwin continue to use the iTwin-level value.
+
+### Referencing iTwin settings from an iModel
+
+An iModel doesn't inherently know which iTwin settings container it should use. By saving the container's identity as an iModel-level setting, the iTwin settings become part of the iModel's workspace — so [IModelDb.workspace]($backend) becomes the single place to resolve all settings and resources the iModel uses.
+
+```ts
+[[include:WorkspaceExamples.SaveITwinSettingsReferenceInIModel]]
+```
+
+The next time the iModel is opened, your app reads `landscapePro/itwinSettingsRef` and uses it to load the same iTwin settings container. By default this resolves to the latest version of those settings.
+
+### Pinning iTwin settings versions
+
+If you need to pin the iModel to a specific version of the iTwin settings — so that its configuration does not change even when the iTwin settings are updated — save the version alongside the container props:
+
+```ts
+[[include:WorkspaceExamples.VersionAndPinITwinSettings]]
+```
+
 
 ## Workspace resources
 
-"Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
+We've now covered settings — the name-value pairs that configure an application's behavior. But applications also depend on **resources**: binary data files like fonts, textures, images, and templates. This section explains how resources are stored and accessed.
+
+The kinds of resources vary widely, but common examples include:
 
 - [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
 - Images that can be used as pattern maps for [Texture]($backend)s.
-- [SettingsDictionary]($backend)s defining reusable settings.
 
-It might be technically possible to store resources in [Setting]($backend)s, but doing so would present significant disadvantages:
+While you could technically store resources as [Setting]($backend) values, doing so would present significant disadvantages:
 
 - Some resources, like images and fonts, may be defined in a binary format that is inefficient to represent using JSON.
 - Some resources, like geographic coordinate system definitions, must be extracted to files on the local file system before they can be used.
@@ -204,30 +313,25 @@ Note that we created one `WorkspaceContainer` to hold versions of the "cornus" `
 
 ### Accessing workspace resources
 
-Now that we have some [WorkspaceDb]($backend)s, we can configure our [Settings]($backend) to use them. The [LandscapePro schema](#settings-schemas) defines a "landscapePro/flora/treeDbs" setting that `extends` the type [itwin/core/workspace/workspaceDbList](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json). This type defines an array of [WorkspaceDbProps]($backend), and overrides the `combineArray` property to `true`. So, a setting of this type can be resolved to a list of [WorkspaceDb]($backend)s, sorted by [SettingsPriority]($backend), from which you can obtain resources.
+Now that we have some [WorkspaceDb]($backend)s, we can configure our [Settings]($backend) to use them. The [LandscapePro schema](#settings-schemas) defines a "landscapePro/flora/treeDbs" setting that `extends` the type [itwin/core/workspace/workspaceDbList](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/assets/Settings/Schemas/Workspace.Schema.json). This type defines an array of [WorkspaceDbProps]($backend), and overrides the `combineArray` property to `true`.
 
-Let's write a function that produces a list of all of the available trees that can survive in a specified USDA hardiness zone:
+In the iTwin-scoped workflow, administrators persist this setting through [IModelHost.saveSettingDictionary]($backend) so every iModel in the iTwin resolves the same tree databases:
+
+```ts
+[[include:WorkspaceExamples.SaveTreeDbsToITwin]]
+```
+
+With that setting in place, let's write a function that queries the resolved tree databases and returns every tree that can survive in a specified USDA hardiness zone:
 
 ```ts
 [[include:WorkspaceExamples.getAvailableTrees]]
 ```
 
-Now, let's configure the "landscapePro/flora/treeDbs" setting to point to the two `WorkspaceDb`s we created, and use the `getAvailableTrees` function to retrieve `TreeResource`s from it:
+Because the setting is stored at the iTwin scope, every iModel in the iTwin resolves the same tree resource list. When you publish a new version of a tree `WorkspaceDb`, update the iTwin setting so all iModels pick up the change:
 
 ```ts
-[[include:WorkspaceExamples.QueryResources]]
+[[include:WorkspaceExamples.UpdateTreeDbVersionAtITwin]]
 ```
 
-In the example above, `allTrees` includes all five tree species from the two genuses, because they all fall within the hardiness range (0, 13). `iModelTrees` excludes the Roughleaf Dogwood and Pacific Silver Fir, because their hardiness ranges of (9, 9) and (5, 5) do not intersect the iModel's hardiness range (6, 8).
+In this example, the setting explicitly references version 1.1.1 of the cornus `WorkspaceDb` — the patch that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest available version. In this case the result would be the same (1.1.1), but in the future, if a newer version were published, it would be picked up automatically. When you need **deterministic, reproducible** behavior — for example, in a regulated workflow — set `version` to a specific value to pin it. We could also configure the version more precisely using [semantic versioning](https://semver.org) rules to specify a range of acceptable versions. When compatible new versions of a `WorkspaceDb` are published, the workspace would automatically consume them without requiring any explicit changes to its [Settings]($backend).
 
-Note that we configured the setting to point to the patch 1.1.1 version of the cornus `WorkspaceDb` that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest version - in this case, 1.1.1 again, but if in the future we created a new version, that would become the new "latest" version and automatically get picked up for use.
-
-If we configure the setting to use version 1.1.0, then `allTrees` will not include the Northern Swamp Dogwood added in 1.1.1:
-
-```ts
-[[include:WorkspaceExamples.QuerySpecificVersion]]
-```
-
-We could also configure the version more precisely using [semantic versioning](https://semver.org) rules to specify a range of acceptable versions. When compatible new versions of a `WorkspaceDb` are published, the workspace would automatically consume them without requiring any explicit changes to its [Settings]($backend).
-
-It may be tempting to "optimize" by calling `getAvailableTrees` once when your application starts up and caching the result to reuse throughout the session, but remember that the list of trees is determined by a setting, and settings can change at any time during the session. If you must cache, make sure you listen for the [Settings.onSettingsChanged]($backend) event to be notified when your cache may have become stale.
