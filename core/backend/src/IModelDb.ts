@@ -4092,10 +4092,10 @@ class RefreshV2CheckpointSas {
 }
 
 /**
- * Arguments to open a cloud-backed briefcase from a V2 checkpoint.
+ * Arguments to open a lite briefcase from a V2 checkpoint.
  * @alpha
  */
-export interface OpenCloudBriefcaseArgs extends TokenArg {
+export interface OpenLiteBriefcaseArgs extends TokenArg {
   /** The checkpoint to attach to */
   readonly checkpoint: CheckpointProps;
   /** Optional pre-acquired briefcaseId. If not provided, one is acquired from iModelHub. */
@@ -4103,9 +4103,14 @@ export interface OpenCloudBriefcaseArgs extends TokenArg {
 }
 
 /**
- * A briefcase backed by a V2 checkpoint container. Blocks are streamed on demand from the cloud.
- * Local writes stay in the local cache and are never uploaded back to the checkpoint container.
- * Changesets can be pushed to iModelHub.
+ * A lightweight briefcase designed for short-lived edit sessions on a server or agent.
+ * Blocks are streamed on demand from a V2 checkpoint container — the full briefcase is never
+ * downloaded to disk. Local writes stay in a small local cache and are never uploaded back to
+ * the checkpoint container. Changesets can be pushed to iModelHub.
+ *
+ * This class is well-suited for agent and server-based workflows where only a small number of
+ * targeted edits are needed and full disk space for a traditional briefcase is not available or
+ * practical.
  *
  * **Constraints**:
  * - Local changes must be pushed before close. Unpushed changes are lost on close or crash.
@@ -4114,17 +4119,17 @@ export interface OpenCloudBriefcaseArgs extends TokenArg {
  *
  * @alpha
  */
-export class CloudBriefcaseDb extends BriefcaseDb {
+export class LiteBriefcaseDb extends BriefcaseDb {
   /** The cloud container backing this briefcase */
   private _cloudContainer: CloudSqlite.CloudContainer;
 
   /** @internal */
   public override get cloudContainer(): CloudSqlite.CloudContainer { return this._cloudContainer; }
 
-  /** true if this is a cloud-backed briefcase
+  /** true if this is a lite briefcase (does not require full download)
    * @alpha
    */
-  public get isCloudBriefcase(): boolean { return true; }
+  public get isLiteBriefcase(): boolean { return true; }
 
   private _refreshSas: RefreshV2CheckpointSas | undefined;
 
@@ -4140,16 +4145,20 @@ export class CloudBriefcaseDb extends BriefcaseDb {
   }
 
   /**
-   * Open a V2 checkpoint as a writable cloud-backed briefcase.
-   * Blocks are streamed on demand from the cloud. Local writes stay local.
-   * Changesets can be pushed to iModelHub. Blocks are never uploaded to the checkpoint container.
+   * Open a V2 checkpoint as a lite briefcase for lightweight, short-lived edits on a server or agent.
+   * The full briefcase is never downloaded — blocks stream on demand from the cloud container.
+   * Local writes stay in a small local cache and are never uploaded to the checkpoint container.
+   * Changesets can be pushed to iModelHub.
+   *
+   * This is the preferred method for agent/server workflows where only targeted edits are needed
+   * and full disk space for a traditional briefcase is not practical.
    *
    * @param args parameters specifying the checkpoint and optional briefcaseId
-   * @returns a new CloudBriefcaseDb
+   * @returns a new LiteBriefcaseDb
    * @throws IModelError if the checkpoint cannot be attached or if a briefcaseId cannot be acquired
    * @alpha
    */
-  public static async openCloud(args: OpenCloudBriefcaseArgs): Promise<CloudBriefcaseDb> {
+  public static async openCloud(args: OpenLiteBriefcaseArgs): Promise<LiteBriefcaseDb> {
     const { checkpoint } = args;
 
     // Acquire a briefcaseId if not provided. Track whether we acquired it so we can
@@ -4187,10 +4196,10 @@ export class CloudBriefcaseDb extends BriefcaseDb {
         nativeDb.saveChanges();
       } catch (err: any) {
         nativeDb.closeFile();
-        throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to set briefcaseId on cloud briefcase: ${err.message}`);
+        throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to set briefcaseId on lite briefcase: ${err.message}`);
       }
 
-      const db = new CloudBriefcaseDb({
+      const db = new LiteBriefcaseDb({
         nativeDb,
         key: file.key ?? Guid.createValue(),
         openMode: OpenMode.ReadWrite,
@@ -4216,7 +4225,7 @@ export class CloudBriefcaseDb extends BriefcaseDb {
           BriefcaseDb.onCodeServiceCreated.raiseEvent(db);
         } catch (e: any) {
           if ((e as CodeService.Error).errorId !== "NoCodeIndex") {
-            Logger.logWarning(loggerCategory, `CodeService not available for cloud briefcase: ${e.message}`);
+            Logger.logWarning(loggerCategory, `CodeService not available for lite briefcase: ${e.message}`);
           }
         }
       }
@@ -4249,7 +4258,7 @@ export class CloudBriefcaseDb extends BriefcaseDb {
   /** Override close to warn if there are unpushed local changes. */
   public override close(options?: CloseIModelArgs) {
     if (this.isOpen && this[_nativeDb].hasPendingTxns()) {
-      Logger.logWarning(loggerCategory, "Closing CloudBriefcaseDb with unpushed local changes. These changes will be lost.");
+      Logger.logWarning(loggerCategory, "Closing LiteBriefcaseDb with unpushed local changes. These changes will be lost.");
     }
     super.close(options);
   }

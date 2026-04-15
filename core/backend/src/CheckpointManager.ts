@@ -155,7 +155,7 @@ export class V2CheckpointManager {
   public static cleanup(): void {
     for (const [_, value] of this.containers.entries()) {
       if (value.isConnected)
-        // CloudBriefcaseDb containers may have local changes (blocks are never uploaded back to the checkpoint container).
+        // LiteBriefcaseDb containers may have local changes (blocks are never uploaded back to the checkpoint container).
         // Use detach:false in that case so we don't get an error — those blocks are intentionally discarded on cleanup.
         value.disconnect({ detach: !value.hasLocalChanges });
     }

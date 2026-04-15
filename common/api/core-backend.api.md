@@ -1127,7 +1127,7 @@ export interface CloseIModelArgs {
 }
 
 // @alpha
-export class CloudBriefcaseDb extends BriefcaseDb {
+export class LiteBriefcaseDb extends BriefcaseDb {
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
         key: string;
@@ -1138,8 +1138,8 @@ export class CloudBriefcaseDb extends BriefcaseDb {
     close(options?: CloseIModelArgs): void;
     // @internal (undocumented)
     get cloudContainer(): CloudSqlite.CloudContainer;
-    get isCloudBriefcase(): boolean;
-    static openCloud(args: OpenCloudBriefcaseArgs): Promise<CloudBriefcaseDb>;
+    get isLiteBriefcase(): boolean;
+    static openCloud(args: OpenLiteBriefcaseArgs): Promise<LiteBriefcaseDb>;
     // @internal
     refreshContainerToken(accessToken?: AccessToken): Promise<void>;
 }
@@ -5423,7 +5423,7 @@ export interface OnSubModelPropsArg extends OnElementArg {
 export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
 
 // @alpha
-export interface OpenCloudBriefcaseArgs extends TokenArg {
+export interface OpenLiteBriefcaseArgs extends TokenArg {
     readonly briefcaseId?: BriefcaseId;
     readonly checkpoint: CheckpointProps;
 }

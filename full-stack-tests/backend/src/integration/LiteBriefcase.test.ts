@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 /**
- * Integration tests for CloudBriefcaseDb — a briefcase backed by a V2 checkpoint container.
+ * Integration tests for LiteBriefcaseDb — a lightweight briefcase for short-lived edit
+ * sessions on a server or agent. Blocks stream on demand from a V2 checkpoint container;
+ * the full briefcase is never downloaded to disk.
  *
  * Required environment variable (set in full-stack-tests/backend/.env):
  *   IMJS_TEST_PROJECT_NAME  – name of the iTwin to create the test iModel in
@@ -21,11 +23,11 @@
  */
 
 import { expect } from "chai";
-import { BriefcaseDb, BriefcaseManager, CloudBriefcaseDb, IModelHost, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, LiteBriefcaseDb, IModelHost, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ChangesetProps } from "@itwin/core-common";
+import { ChangesetProps } from "@itwin/core-common";ππ
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 
@@ -35,10 +37,10 @@ import "./StartupShutdown"; // startup/shutdown IModelHost before/after all test
 // Suite
 // ---------------------------------------------------------------------------
 
-const propNamespace = "CloudBriefcaseTest";
-const iModelName = "CloudBriefcaseIntegrationTest";
+const propNamespace = "LiteBriefcaseTest";
+const iModelName = "LiteBriefcaseIntegrationTest";
 
-describe("CloudBriefcaseDb", function () {
+describe("LiteBriefcaseDb", function () {
   // Tests hit real iModelHub; allow generous timeouts.
   this.timeout(5 * 60 * 1000);
 
@@ -79,7 +81,7 @@ describe("CloudBriefcaseDb", function () {
       accessToken: managerToken,
       iTwinId,
       iModelName,
-      description: "Temporary iModel for CloudBriefcaseDb integration tests — safe to delete",
+      description: "Temporary iModel for LiteBriefcaseDb integration tests — safe to delete",
     });
   });
 
@@ -100,20 +102,20 @@ describe("CloudBriefcaseDb", function () {
   // -------------------------------------------------------------------------
 
   /**
-   * Scenario A: CloudBriefcaseDb → Regular BriefcaseDb
+   * Scenario A: LiteBriefcaseDb → Regular BriefcaseDb
    *
-   * 1. Open a CloudBriefcaseDb at the current tip.
+   * 1. Open a LiteBriefcaseDb at the current tip (no full download required).
    * 2. Write a file property and push to iModelHub.
    * 3. Open a regular BriefcaseDb as a second "user" and pull.
    * 4. Verify the property is visible on the regular briefcase.
    */
-  it("should push a change from CloudBriefcaseDb and pull it on a regular BriefcaseDb", async () => {
-    const propName = "cloud-to-regular";
-    const propValue = `written-by-cloud-${Date.now()}`;
+  it("should push a change from LiteBriefcaseDb and pull it on a regular BriefcaseDb", async () => {
+    const propName = "lite-to-regular";
+    const propValue = `written-by-lite-${Date.now()}`;
 
-    // -- Open cloud briefcase at the current tip -----------------------------
+    // -- Open lite briefcase at the current tip (streams blocks on demand) ---
     const latestChangeset = await IModelHost[_hubAccess].getLatestChangeset({ accessToken, iModelId });
-    const cloudDb = await CloudBriefcaseDb.openCloud({
+    const liteDb = await LiteBriefcaseDb.openCloud({
       accessToken,
       checkpoint: {
         accessToken,
@@ -126,17 +128,17 @@ describe("CloudBriefcaseDb", function () {
     });
 
     try {
-      // Verify instance type and isCloudBriefcase property
-      expect(cloudDb).to.be.instanceOf(CloudBriefcaseDb);
-      expect(cloudDb.isCloudBriefcase).to.be.true;
+      // Verify instance type and isLiteBriefcase property
+      expect(liteDb).to.be.instanceOf(LiteBriefcaseDb);
+      expect(liteDb.isLiteBriefcase).to.be.true;
 
-      withEditTxn(cloudDb, `CloudBriefcaseDb: write ${propName}`, (txn) => {
+      withEditTxn(liteDb, `LiteBriefcaseDb: write ${propName}`, (txn) => {
         txn.saveFileProperty({ namespace: propNamespace, name: propName }, propValue);
       });
-      await cloudDb.pushChanges({ accessToken, description: `CloudBriefcaseDb integration test: ${propName}` });
-      expect(cloudDb.changeset.id).to.not.be.empty;
+      await liteDb.pushChanges({ accessToken, description: `LiteBriefcaseDb integration test: ${propName}` });
+      expect(liteDb.changeset.id).to.not.be.empty;
     } finally {
-      cloudDb.close();
+      liteDb.close();
     }
 
     // -- Open a regular BriefcaseDb and pull to pick up the pushed changeset -
@@ -145,7 +147,7 @@ describe("CloudBriefcaseDb", function () {
     try {
       await regularDb.pullChanges({ accessToken });
       const readBack = regularDb.queryFilePropertyString({ namespace: propNamespace, name: propName });
-      expect(readBack).to.equal(propValue, "regular BriefcaseDb should see the property pushed from CloudBriefcaseDb");
+      expect(readBack).to.equal(propValue, "regular BriefcaseDb should see the property pushed from LiteBriefcaseDb");
     } finally {
       regularDb.close();
       await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, accessToken);
@@ -153,14 +155,14 @@ describe("CloudBriefcaseDb", function () {
   });
 
   /**
-   * Scenario B: Regular BriefcaseDb → CloudBriefcaseDb
+   * Scenario B: Regular BriefcaseDb → LiteBriefcaseDb
    *
    * 1. Open a regular BriefcaseDb, write a file property and push.
-   * 2. Open a CloudBriefcaseDb one changeset behind the push.
+   * 2. Open a LiteBriefcaseDb one changeset behind the push.
    * 3. Pull changes and verify the property is visible.
    */
-  it("should pull a change from a regular BriefcaseDb into a CloudBriefcaseDb", async () => {
-    const propName = "regular-to-cloud";
+  it("should pull a change from a regular BriefcaseDb into a LiteBriefcaseDb", async () => {
+    const propName = "regular-to-lite";
     const propValue = `written-by-regular-${Date.now()}`;
 
     // -- Open regular briefcase, write and push ------------------------------
@@ -180,15 +182,15 @@ describe("CloudBriefcaseDb", function () {
       await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, accessToken);
     }
 
-    // -- Open CloudBriefcaseDb one changeset behind the push so pullChanges
-    //    has something to fetch.
+    // -- Open LiteBriefcaseDb one changeset behind the push so pullChanges
+    //    has something to fetch. No full download needed — blocks stream on demand.
     const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     const pushedIndex = changesets.findIndex((cs: ChangesetProps) => cs.id === pushedChangesetId);
     const precedingChangeset: Pick<ChangesetProps, "id" | "index"> = pushedIndex > 0
       ? changesets[pushedIndex - 1]
       : { id: "", index: 0 };
 
-    const cloudDb = await CloudBriefcaseDb.openCloud({
+    const liteDb = await LiteBriefcaseDb.openCloud({
       accessToken,
       checkpoint: {
         accessToken,
@@ -201,11 +203,11 @@ describe("CloudBriefcaseDb", function () {
     });
 
     try {
-      await cloudDb.pullChanges({ accessToken });
-      const readBack = cloudDb.queryFilePropertyString({ namespace: propNamespace, name: propName });
-      expect(readBack).to.equal(propValue, "CloudBriefcaseDb should see the property pushed from the regular BriefcaseDb");
+      await liteDb.pullChanges({ accessToken });
+      const readBack = liteDb.queryFilePropertyString({ namespace: propNamespace, name: propName });
+      expect(readBack).to.equal(propValue, "LiteBriefcaseDb should see the property pushed from the regular BriefcaseDb");
     } finally {
-      cloudDb.close();
+      liteDb.close();
     }
   });
 });

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add CloudBriefcaseDb — a BriefcaseDb subclass backed by a V2 checkpoint container where blocks stream on demand from the cloud and local writes stay local.",
+      "comment": "Add LiteBriefcaseDb — a lightweight BriefcaseDb subclass for short-lived edit sessions on servers and agents. Blocks stream on demand from a V2 checkpoint container; the full iModel is never downloaded to disk.",
       "type": "none"
     }
   ],

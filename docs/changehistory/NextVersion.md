@@ -5,30 +5,38 @@ publish: false
 
 ## Backend
 
-### Cloud-backed briefcases using V2 checkpoints
+### Lightweight briefcases for server and agent workflows (`LiteBriefcaseDb`)
 
-The backend now supports opening a V2 checkpoint as a writable cloud-backed briefcase via the new [CloudBriefcaseDb]($backend) class and [OpenCloudBriefcaseArgs]($backend) interface. This lets applications stream iModel blocks on demand from a cloud container while keeping all local writes in a local cache — blocks are never uploaded back to the checkpoint container.
+The backend now supports opening a V2 checkpoint as a lightweight, writable briefcase via the new [LiteBriefcaseDb]($backend) class and [OpenLiteBriefcaseArgs]($backend) interface. Unlike a traditional `BriefcaseDb`, a lite briefcase **never downloads the full iModel** to disk — blocks are streamed on demand from the cloud container. This makes it ideal for short-lived edit sessions in server and agent workflows where only a small number of targeted changes are needed and full disk space is not available or practical.
 
 #### What's new
 
-- **`CloudBriefcaseDb`** (`@alpha`): a new `BriefcaseDb` subclass backed by a V2 checkpoint container. Changesets can be pushed to iModelHub normally. The container is read-only; local edits stay in a per-session local cache.
-- **`CloudBriefcaseDb.openCloud(args)`** (`@alpha`): static factory method that attaches the checkpoint container, acquires (or reuses) a briefcase ID, opens the database in read-write mode against the cloud container, and sets up SAS token refresh.
-- **`OpenCloudBriefcaseArgs`** (`@alpha`): arguments interface for `openCloud`, accepting a `CheckpointProps` and an optional pre-acquired `briefcaseId`.
+- **`LiteBriefcaseDb`** (`@alpha`): a new `BriefcaseDb` subclass designed for lightweight, agent-friendly edit sessions. The full iModel is never downloaded; blocks stream from a V2 checkpoint container on demand. Local writes stay in a small local cache and are never uploaded back to the checkpoint container. Changesets can be pushed to iModelHub normally.
+- **`LiteBriefcaseDb.openCloud(args)`** (`@alpha`): static factory method that attaches the checkpoint container, acquires (or reuses) a briefcase ID, opens the database in read-write mode against the cloud container, and sets up SAS token refresh.
+- **`OpenLiteBriefcaseArgs`** (`@alpha`): arguments interface for `openCloud`, accepting a `CheckpointProps` and an optional pre-acquired `briefcaseId`.
 - **`CloudSqlite.hasLocalChanges(container)`** (`@alpha`): helper to check whether a cloud container has uncommitted local changes that have not been uploaded.
-- **`V2CheckpointManager.attachForBriefcase(checkpoint)`** (`@alpha`): attaches a V2 checkpoint and returns both the `dbName` and the live `CloudContainer`, throwing if a mock container is used (mocks do not support cloud briefcase mode).
+- **`V2CheckpointManager.attachForBriefcase(checkpoint)`** (`@alpha`): attaches a V2 checkpoint and returns both the `dbName` and the live `CloudContainer`, throwing if a mock container is used (mocks do not support lite briefcase mode).
+
+#### Key characteristics
+
+- **No full download**: only the blocks actually read during your edits are fetched from the cloud.
+- **Minimal disk footprint**: local storage is limited to changed blocks and the local cache — suitable for ephemeral server/agent environments.
+- **Short-lived sessions**: designed for targeted edits (seconds to minutes), not long-running or full-file access workflows.
+- **Agent/server friendly**: no BCV daemon required; blocks are fetched directly from Azure Blob Storage.
 
 #### Constraints
 
-- Local changes **must** be pushed to iModelHub before the briefcase is closed. Any unpushed changes are lost on close or crash — `CloudBriefcaseDb.close()` logs a warning if pending transactions exist.
+- Local changes **must** be pushed to iModelHub before the briefcase is closed. Any unpushed changes are lost on close or crash — `LiteBriefcaseDb.close()` logs a warning if pending transactions exist.
 - The checkpoint blob container is **never** modified; this is a read-from-cloud, write-local-only pattern.
 - Pull/merge operations may trigger on-demand block fetching from the cloud container.
+- Not suitable for workflows that read or modify large portions of the iModel — use a traditional `BriefcaseDb` in those cases.
 
 #### Usage
 
 ```ts
-import { CloudBriefcaseDb, withEditTxn } from "@itwin/core-backend";
+import { LiteBriefcaseDb, withEditTxn } from "@itwin/core-backend";
 
-const db = await CloudBriefcaseDb.openCloud({
+const db = await LiteBriefcaseDb.openCloud({
   accessToken,
   checkpoint: {
     accessToken,
@@ -40,7 +48,7 @@ const db = await CloudBriefcaseDb.openCloud({
   },
 });
 
-// Make edits locally — blocks stream from the cloud on demand
+// Make targeted edits — only needed blocks are fetched from the cloud
 withEditTxn(db, "Add property", (txn) => {
   txn.saveFileProperty({ namespace: "MyApp", name: "key" }, "value");
 });
