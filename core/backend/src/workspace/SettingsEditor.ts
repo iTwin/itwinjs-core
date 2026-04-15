@@ -107,7 +107,7 @@ export namespace SettingsContainers {
 
     const userToken = await IModelHost.getAccessToken();
     const containers = await queryContainers({ iTwinId, includeParentITwins: true });
-    if (!containers || containers.length === 0) return undefined;
+    if (containers.length === 0) return undefined;
 
     const byITwin = new Map<string, BlobContainer.MetadataResponse[]>();
     for (const container of containers) {
