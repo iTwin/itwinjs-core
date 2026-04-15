@@ -445,25 +445,57 @@ describe("Cloud workspace containers", () => {
       const deletedWorkspace = await IModelHost.getITwinWorkspace(iTwin1Id);
       expect(deletedWorkspace.settings.getNumber("app1/max1")).equal(17);
       expect(deletedWorkspace.resolveWorkspaceDbSetting("app1/styles/textStyleDbs").length).equal(0);
-
-      // Verify organization-priority (parent iTwin) settings provide fallback for iTwin-priority settings.
-      await IModelHost.saveSettingDictionary(iTwin2Id, "org/defaults", { "app1/max1": 42, "app1/max2": 99 });
-      const orgWorkspace = await IModelHost.getITwinWorkspace(iTwin2Id);
-      let combinedWorkspace;
-      try {
-        assert(orgWorkspace.settingsSources !== undefined && deletedWorkspace.settingsSources !== undefined);
-        const orgSources = [orgWorkspace.settingsSources].flat().map((s) => ({ ...s, priority: SettingsPriority.organization }));
-        const childSources = [deletedWorkspace.settingsSources].flat();
-        combinedWorkspace = await IModelHost.getITwinWorkspace([...orgSources, ...childSources]);
-        expect(combinedWorkspace.settings.getNumber("app1/max1")).equal(17); // iTwin-priority overrides org
-        expect(combinedWorkspace.settings.getNumber("app1/max2")).equal(99); // org-priority fallback
-      } finally {
-        combinedWorkspace?.close();
-        orgWorkspace.close();
-      }
-
       deletedWorkspace.close();
     } finally {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
+
+  it("child iTwin settings override parent iTwin settings", async () => {
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+
+      await IModelHost.saveSettingDictionary(iTwin1Id, "app1/config", { "app1/max1": 17 });
+      await IModelHost.saveSettingDictionary(iTwin2Id, "org/defaults", { "app1/max1": 42, "app1/max2": 99 });
+      AzuriteTest.setParentITwin(iTwin1Id, iTwin2Id);
+
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      const workspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      try {
+        expect(workspace.settings.getNumber("app1/max1")).equal(17); // iTwin-priority overrides org
+        expect(workspace.settings.getNumber("app1/max2")).equal(99); // org-priority fallback
+      } finally {
+        workspace.close();
+      }
+    } finally {
+      AzuriteTest.clearParentITwins();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
+
+  it("child iTwin with no settings container inherits parent defaults", async () => {
+    const parentITwinId = Guid.createValue();
+    const childITwinId = Guid.createValue();
+
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+
+      // Only the parent iTwin has settings — the child has not customized yet.
+      await IModelHost.saveSettingDictionary(parentITwinId, "org/defaults", { "app1/max1": 77, "app1/max2": 88 });
+      AzuriteTest.setParentITwin(childITwinId, parentITwinId);
+
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      const workspace = await IModelHost.getITwinWorkspace(childITwinId);
+      try {
+        expect(workspace.settings.getNumber("app1/max1")).equal(77);
+        expect(workspace.settings.getNumber("app1/max2")).equal(88);
+      } finally {
+        workspace.close();
+      }
+    } finally {
+      AzuriteTest.clearParentITwins();
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     }
   });

@@ -79,10 +79,12 @@ describe("ITwin Workspace", () => {
       delete: async () => { },
       queryScope: async () => ({ iTwinId: childITwinId }),
       queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
-      queryContainersMetadata: async () => [
-        ...childContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: childITwinId, parentITwinId })),
-        ...parentContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: parentITwinId })),
-      ],
+      queryContainersMetadata: async (_userToken, args): Promise<BlobContainer.MetadataResponse[]> => {
+        const results: BlobContainer.MetadataResponse[] = childContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: childITwinId, parentITwinId }));
+        if (args.includeParentITwins)
+          results.push(...parentContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: parentITwinId })));
+        return results;
+      },
       updateJson: async () => { },
       requestToken: async ({ containerId }) => ({
         token: "",

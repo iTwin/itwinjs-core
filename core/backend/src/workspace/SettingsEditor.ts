@@ -109,7 +109,8 @@ export namespace SettingsContainers {
     const containers = await queryContainers({ iTwinId, includeParentITwins: true });
     if (containers.length === 0) return undefined;
 
-    const byITwin = new Map<string, BlobContainer.MetadataResponse[]>();
+    const seenITwins = new Set<string>();
+    const results: WorkspaceDbSettingsProps[] = [];
     for (const container of containers) {
       const ownerITwinId = container.iTwinId;
       if (undefined === ownerITwinId) {
@@ -118,25 +119,15 @@ export namespace SettingsContainers {
           iTwinId,
         });
       }
-      const group = byITwin.get(ownerITwinId);
-      if (group)
-        group.push(container);
-      else
-        byITwin.set(ownerITwinId, [container]);
-    }
-    for (const [ownerITwinId, group] of byITwin) {
-      if (group.length > 1) {
+      if (seenITwins.has(ownerITwinId)) {
         ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
           message: `Multiple iTwin settings containers were found for '${ownerITwinId}', so a container cannot be automatically selected.`,
           iTwinId: ownerITwinId,
         });
       }
-    }
+      seenITwins.add(ownerITwinId);
 
-    const results: WorkspaceDbSettingsProps[] = [];
-    for (const [ownerITwinId, group] of byITwin) {
-      const [container] = group;
-      // Parent iTwin containers currently all load at organization priority.
+      // All parent iTwin containers share organization priority regardless of depth in the hierarchy.
       const priority = ownerITwinId === iTwinId ? SettingsPriority.iTwin : SettingsPriority.organization;
       const tokenProps = await BlobContainer.service.requestToken({ containerId: container.containerId, accessLevel: "read", userToken });
       results.push({
