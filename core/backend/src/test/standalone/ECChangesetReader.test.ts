@@ -791,7 +791,7 @@ describe("ECChangesetReader insert-full", () => {
   });
 
   it("txn1 | rowOptions: abbreviateBlobs: false", () => {
-    const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: false });
+    const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: false }, undefined, false);
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---
@@ -901,7 +901,7 @@ describe("ECChangesetReader insert-full", () => {
   });
 
   it("txn1 | rowOptions: classIdsToClassNames + useJsName", () => {
-    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true });
+    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true }, undefined, false);
     assert.equal(instances.length, 3);
 
     // --- instances[0]: DrawingModel Updated New ---

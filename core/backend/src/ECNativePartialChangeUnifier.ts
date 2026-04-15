@@ -45,8 +45,11 @@ export namespace ECNativeChangeUnifierCache {
   }
 
   /**
-   * Creates a SQLite-backed cache stored in a temporary table of the given database.
-   * Slower than in-memory but handles large changesets without exhausting memory.
+   * Creates a SQLite-backed cache stored in a temporary SQlite database.
+   * Slower than in-memory but useful in handling large changesets.
+   * Temporary SQlite database is first created in memory and
+   * parts of a temporary database might be flushed to disk if the database becomes large or
+   * if SQLite comes under memory pressure.
    * @param bufferedReadInstanceSizeInBytes Read-batch size in bytes (default 10 MB).
    * @returns An {@link ECNativeChangeCache} backed by a SQLite temp table.
    * @beta
@@ -124,6 +127,8 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     return this._db.withPreparedSqliteStatement(
       `SELECT [value] FROM ${this._cacheTable} WHERE [key]=?`,
       (stmt: SqliteStatement) => {
+        stmt.reset();
+        stmt.clearBindings();
         stmt.bindString(1, key);
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
           return JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ECNativeChangeInstance;
@@ -137,6 +142,8 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${this._cacheTable} ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`,
       (stmt: SqliteStatement) => {
+        stmt.reset();
+        stmt.clearBindings();
         stmt.bindString(1, key);
         stmt.bindString(2, JSON.stringify(shallowCopy, Base64EncodedString.replacer));
         stmt.step();
@@ -170,6 +177,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     return this._db.withPreparedSqliteStatement(
       `SELECT COUNT(*) FROM ${this._cacheTable}`,
       (stmt: SqliteStatement) => {
+        stmt.reset();
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
           return stmt.getValue(0).getInteger();
         return 0;
@@ -178,8 +186,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
   }
 
   public [Symbol.dispose](): void {
-    if (this._db.isOpen)
-      this._db.closeDb(true);
+    this._db.closeDb();
   }
 }
 
