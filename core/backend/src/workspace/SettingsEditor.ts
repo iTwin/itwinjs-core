@@ -94,8 +94,10 @@ export namespace SettingsContainers {
   }
 
   /**
-   * Look up the settings container for an iTwin and obtain a read-only access token.
-   * @returns container props needed by [[IModelHost.getITwinWorkspace]].
+   * Look up settings containers for an iTwin and its parent iTwins and obtain read-only access tokens.
+   * @returns Container props needed by [[IModelHost.getITwinWorkspace]]. The requested iTwin's settings
+   * container is returned at [[SettingsPriority.iTwin]]; any parent iTwin containers are returned at
+   * [[SettingsPriority.organization]].
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    * @note Requires [[BlobContainer.service]] to be configured.
    */
@@ -134,6 +136,7 @@ export namespace SettingsContainers {
     const results: WorkspaceDbSettingsProps[] = [];
     for (const [ownerITwinId, group] of byITwin) {
       const [container] = group;
+      // Parent iTwin containers currently all load at organization priority.
       const priority = ownerITwinId === iTwinId ? SettingsPriority.iTwin : SettingsPriority.organization;
       const tokenProps = await BlobContainer.service.requestToken({ containerId: container.containerId, accessLevel: "read", userToken });
       results.push({
