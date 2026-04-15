@@ -465,4 +465,102 @@ describe("iModelDb integrityCheck Tests", () => {
       });
     });
 
+    it("should call integrityCheck after calling clearCache and return results", async () => {
+      // Insert two elements
+      iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+      const element1Id = iModel.elements.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+      });
+
+      const element2Id = iModel.elements.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+      });
+      iModel.saveChanges();
+
+      // Create a relationship between them
+      await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+      const relationship = iModel.relationships.createInstance({
+        classFullName: "BisCore:SubjectRefersToSubject",
+        sourceId: element1Id,
+        targetId: element2Id,
+      });
+      const relationshipId = iModel.relationships.insertInstance(relationship.toJSON());
+      assert.isTrue(Id64.isValidId64(relationshipId));
+      iModel.saveChanges();
+
+      // Delete one element without deleting the relationship to corrupt the iModel
+      const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+      expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+      iModel.saveChanges();
+
+      // Run integrity check specifically for linktable foreign key Ids
+      const results = await iModel.integrityCheck({
+        quickCheck: true,
+        specificChecks: {
+          checkLinktableForeignKeyClassIds: true,
+          checkLinktableForeignKeyIds: true,
+        },
+      });
+
+      // Verify that the checkLinktableForeignKeyIds check reports the corruption
+      expect(results).to.have.lengthOf(3);
+      expect(results[0]).to.have.property("check").that.equals("Quick Check");
+      expect(results[0]).to.have.property("passed").that.equals(false);
+      expect(results[0]).to.have.property("results").that.is.an("array");
+      expect(results[0].results.length).to.equal(9);
+      assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+      expect(results[1]).to.have.property("passed").that.equals(true);
+      expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
+      expect(results[2]).to.have.property("passed").that.equals(false);
+      expect(results[2].results).to.have.lengthOf(1);
+      expect(results[2].results[0]).to.deep.include({
+        sno: 1,
+        id: "0x20000000001",
+        relationship: "BisCore:ElementRefersToElements",
+        property: "TargetECInstanceId",
+        keyId: "0x20000000002",
+        primaryClass: "BisCore:Element",
+      });
+
+      // Clear caches
+      iModel.clearCaches();
+
+      // Run integrity check again after clearing cache
+      const resultsAfterClearCache = await iModel.integrityCheck({
+        quickCheck: true,
+        specificChecks: {
+          checkLinktableForeignKeyClassIds: true,
+          checkLinktableForeignKeyIds: true,
+        },
+      });
+
+      // Verify that the checkLinktableForeignKeyIds check still reports the corruption after clearing cache
+      expect(resultsAfterClearCache).to.have.lengthOf(3);
+      expect(resultsAfterClearCache[0]).to.have.property("check").that.equals("Quick Check");
+      expect(resultsAfterClearCache[0]).to.have.property("passed").that.equals(false);
+      expect(resultsAfterClearCache[0]).to.have.property("results").that.is.an("array");
+      expect(resultsAfterClearCache[0].results.length).to.equal(9);
+      assert(resultsAfterClearCache[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+      expect(resultsAfterClearCache[1]).to.have.property("passed").that.equals(true);
+      expect(resultsAfterClearCache[1]).to.have.property("results").that.is.an("array").that.is.empty;
+      expect(resultsAfterClearCache[2]).to.have.property("passed").that.equals(false);
+      expect(resultsAfterClearCache[2].results).to.have.lengthOf(1);
+      expect(resultsAfterClearCache[2].results[0]).to.deep.include({
+        sno: 1,
+        id: "0x20000000001",
+        relationship: "BisCore:ElementRefersToElements",
+        property: "TargetECInstanceId",
+        keyId: "0x20000000002",
+        primaryClass: "BisCore:Element",
+      });
+    });
+
 });

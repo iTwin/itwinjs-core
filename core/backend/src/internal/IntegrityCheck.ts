@@ -258,7 +258,7 @@ export function getIntegrityCheckName(check: string): string {
 export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<QuickIntegrityCheckResultRow[]> {
   const integrityCheckQuery = "PRAGMA integrity_check options enable_experimental_features";
   const integrityCheckResults: QuickIntegrityCheckResultRow[] = [];
-  for await (const row of iModel.createQueryReader(integrityCheckQuery)) {
+  for await (const row of iModel.createQueryReader(integrityCheckQuery, undefined, { usePrimaryConn: true })) {
     integrityCheckResults.push({ check: getIntegrityCheckName(row.check), passed: row.result, elapsedSeconds: row.elapsed_sec});
   };
   return integrityCheckResults;
@@ -287,70 +287,70 @@ export async function performSpecificIntegrityCheck(iModel: IModelDb, check: Int
   switch (check) {
     case "checkDataColumns": {
       const results: CheckDataColumnsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkDataColumns.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkDataColumns.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, table: row.table, column: row.column });
       }
       return results;
     }
     case "checkECProfile": {
       const results: CheckECProfileResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkECProfile.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkECProfile.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, type: row.type, name: row.name, issue: row.issue });
       }
       return results;
     }
     case "checkNavigationClassIds": {
       const results: CheckNavClassIdsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkNavigationClassIds.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkNavigationClassIds.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, id: row.id, class: row.class, property: row.property, navId: row.nav_id, navClassId: row.nav_classId });
       }
       return results;
     }
     case "checkNavigationIds": {
       const results: CheckNavIdsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkNavigationIds.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkNavigationIds.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, id: row.id, class: row.class, property: row.property, navId: row.nav_id, primaryClass: row.primary_class });
       }
       return results;
     }
     case "checkLinktableForeignKeyClassIds": {
       const results: CheckLinkTableFkClassIdsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkLinktableForeignKeyClassIds.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkLinktableForeignKeyClassIds.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, id: row.id, relationship: row.relationship, property: row.property, keyId: row.key_id, keyClassId: row.key_classId });
       }
       return results;
     }
     case "checkLinktableForeignKeyIds": {
       const results: CheckLinkTableFkIdsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkLinktableForeignKeyIds.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkLinktableForeignKeyIds.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, id: row.id, relationship: row.relationship, property: row.property, keyId: row.key_id, primaryClass: row.primary_class });
       }
       return results;
     }
     case "checkClassIds": {
       const results: CheckClassIdsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkClassIds.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkClassIds.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, class: row.class, id: row.id, classId: row.class_id, type: row.type });
       }
       return results;
     }
     case "checkDataSchema": {
       const results: CheckDataSchemaResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkDataSchema.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkDataSchema.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, type: row.type, name: row.name });
       }
       return results;
     }
     case "checkSchemaLoad": {
       const results: CheckSchemaLoadResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkSchemaLoad.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkSchemaLoad.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, schema: row.schema });
       }
       return results;
     }
     case "checkMissingChildRows": {
       const results: CheckMissingChildRowsResultRow[] = [];
-      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkMissingChildRows.sqlQuery)) {
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkMissingChildRows.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, class: row.class, id: row.id, classId: row.class_id, missingRowInTables: row.MissingRowInTables });
       }
       return results;
