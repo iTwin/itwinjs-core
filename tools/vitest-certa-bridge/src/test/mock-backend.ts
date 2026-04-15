@@ -12,6 +12,6 @@ registerBackendCallback("getEnv", () => JSON.stringify({ NODE_ENV: "test" }));
 registerBackendCallback("throwError", () => { throw new Error("intentional test error"); });
 
 // Return a cleanup function (matches certa's pattern)
-module.exports = async () => {
+export default async () => {
   // cleanup would go here
 };

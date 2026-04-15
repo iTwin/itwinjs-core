@@ -21,8 +21,8 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     it("should startup offline without errors", async () => {
       await usingOfflineScope(async () => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
         await ElectronApp.shutdown();
         await ElectronApp.startup({ iModelApp: TestUtility.iModelAppOptions }); // restart with no network available
         assert.isTrue(ElectronApp.isValid);

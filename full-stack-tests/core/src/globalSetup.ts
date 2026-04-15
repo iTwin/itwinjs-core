@@ -57,15 +57,15 @@ function killProc(proc: ChildProcess | undefined): Promise<void> {
   if (!proc || proc.killed || proc.exitCode !== null)
     return Promise.resolve();
   return new Promise((resolve) => {
-    proc.on("exit", () => resolve());
-    proc.kill("SIGTERM");
-    // Force kill after 5s if SIGTERM doesn't work
-    setTimeout(() => {
-      if (!proc.killed && proc.exitCode === null) {
+    const timer = setTimeout(() => {
+      if (!proc.killed && proc.exitCode === null)
         proc.kill("SIGKILL");
-      }
-      resolve();
     }, 5_000);
+    proc.on("exit", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    proc.kill("SIGTERM");
   });
 }
 

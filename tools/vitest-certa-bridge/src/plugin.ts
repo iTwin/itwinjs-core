@@ -61,8 +61,9 @@ window._CertaSendToBackend = async function(name, args) {
     configureServer(server) {
       // Load backendInitModule if specified
       if (opts.backendInitModule) {
+        const initModule = opts.backendInitModule;
         backendReady = (async () => {
-          const modulePath = resolve(process.cwd(), opts.backendInitModule!);
+          const modulePath = resolve(process.cwd(), initModule);
           const moduleUrl = pathToFileURL(modulePath).href;
           const mod = await import(moduleUrl);
           const result = mod.default ?? mod;
@@ -75,6 +76,7 @@ window._CertaSendToBackend = async function(name, args) {
             }
           }
         })();
+        backendReady.catch(() => {}); // suppress unhandled rejection — error propagates when middleware awaits
       } else {
         backendReady = Promise.resolve();
       }
@@ -98,37 +100,42 @@ window._CertaSendToBackend = async function(name, args) {
 
       // Add bridge middleware
       server.middlewares.use("/__certa_bridge", async (req, res) => {
-        if (req.method !== "POST") {
-          res.statusCode = 405;
-          res.end(JSON.stringify({ error: { message: "Method not allowed" } }));
-          return;
-        }
-
-        if (req.headers["x-certa-bridge-token"] !== bridgeToken) {
-          res.statusCode = 403;
-          res.end(JSON.stringify({ error: { message: "Invalid or missing bridge token" } }));
-          return;
-        }
-
-        // Read body
-        const chunks: Buffer[] = [];
-        for await (const chunk of req)
-          chunks.push(chunk as Buffer);
-        const body: BridgeRequest = JSON.parse(Buffer.concat(chunks).toString());
-
-        // Wait for backend to be ready
-        await backendReady;
-
-        // Execute callback
-        const response: BridgeResponse = {};
         try {
-          response.result = await executeRegisteredCallback(body.name, body.args);
-        } catch (err: any) {
-          response.error = { message: err.message, stack: err.stack };
-        }
+          if (req.method !== "POST") {
+            res.statusCode = 405;
+            res.end(JSON.stringify({ error: { message: "Method not allowed" } }));
+            return;
+          }
 
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(response));
+          if (req.headers["x-certa-bridge-token"] !== bridgeToken) {
+            res.statusCode = 403;
+            res.end(JSON.stringify({ error: { message: "Invalid or missing bridge token" } }));
+            return;
+          }
+
+          // Read body
+          const chunks: Buffer[] = [];
+          for await (const chunk of req)
+            chunks.push(chunk as Buffer);
+          const body: BridgeRequest = JSON.parse(Buffer.concat(chunks).toString());
+
+          // Wait for backend to be ready
+          await backendReady;
+
+          // Execute callback
+          const response: BridgeResponse = {};
+          try {
+            response.result = await executeRegisteredCallback(body.name, body.args);
+          } catch (err: any) {
+            response.error = { message: err.message, stack: err.stack };
+          }
+
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(response));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: { message: err.message, stack: err.stack } }));
+        }
       });
     },
   };

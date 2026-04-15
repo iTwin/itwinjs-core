@@ -49,6 +49,11 @@ if (!backendInitModule || !setupFile || !testDir) {
   process.exit(1);
 }
 
+// TypeScript doesn't narrow after process.exit(), so re-bind with known types.
+const _backendInitModule: string = backendInitModule;
+const _setupFile: string = setupFile;
+const _testDir: string = testDir;
+
 const bridgeToken = crypto.randomUUID();
 
 // Set unique userData directory per shard to prevent contention on the shared token store
@@ -86,7 +91,7 @@ async function main() {
 
   // Initialize backend (registers RPC impls, callbacks, etc.)
   console.log("[session] Starting backend init...");
-  const backendInit = require(backendInitModule!); // eslint-disable-line @typescript-eslint/no-require-imports
+  const backendInit = require(_backendInitModule);  
   if (backendInit && typeof backendInit.then === "function")
     await backendInit;
   console.log("[session] Backend init complete. Registered IPC handlers so far:", registeredChannels);
@@ -159,9 +164,9 @@ async function main() {
 
   if (manifestPath && fs.existsSync(manifestPath)) {
     const manifest = fs.readFileSync(manifestPath, "utf8").trim();
-    testFiles = manifest.split("\n").map((f) => path.resolve(testDir!, f));
+    testFiles = manifest.split("\n").map((f) => path.resolve(_testDir, f));
   } else {
-    const { globSync } = require("glob"); // eslint-disable-line @typescript-eslint/no-require-imports
+    const { globSync } = require("glob");  
     testFiles = globSync(testGlob, { cwd: testDir, absolute: true, windowsPathsNoEscape: true });
   }
 
@@ -173,9 +178,9 @@ async function main() {
   console.log(`Found ${testFiles.length} test files to run in Electron renderer`);
 
   // Build the renderer HTML with the complete test harness
-  const rendererScript = buildRendererHarness({ bridgeToken, setupFile: setupFile!, testFiles, grepPattern, testTimeout, hookTimeout, importRewritePatterns, rendererSetup });
+  const rendererScript = buildRendererHarness({ bridgeToken, setupFile: _setupFile, testFiles, grepPattern, testTimeout, hookTimeout, importRewritePatterns, rendererSetup });
 
-  const tempHtmlPath = path.join(testDir!, "..", "electron", `_test-runner-${shardId}.html`);
+  const tempHtmlPath = path.join(_testDir, "..", "electron", `_test-runner-${shardId}.html`);
   const htmlDir = path.dirname(tempHtmlPath);
   if (!fs.existsSync(htmlDir))
     fs.mkdirSync(htmlDir, { recursive: true });
@@ -189,6 +194,12 @@ async function main() {
 </body>
 </html>`;
   fs.writeFileSync(tempHtmlPath, html, "utf8");
+
+  // Best-effort cleanup of temp HTML file on exit
+  process.on("exit", () => {
+    try { fs.rmSync(tempHtmlPath, { force: true }); } catch {}
+  });
+
   await win.loadFile(tempHtmlPath);
 
   // Safety timeout

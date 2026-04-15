@@ -137,7 +137,7 @@ interface ShardExecResult {
 
 /** Spawn a single Electron shard process and wait for it to exit. */
 async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
-  const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const command = require("electron/index.js");  
 
   const env: Record<string, string> = {
     ...options.baseEnv,
@@ -256,23 +256,23 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
 
   // Pass configurable timeouts to shard processes
   if (testTimeout !== undefined)
-    baseEnv.ELECTRON_TEST_TIMEOUT = String(testTimeout); // eslint-disable-line @typescript-eslint/naming-convention
+    baseEnv.ELECTRON_TEST_TIMEOUT = String(testTimeout);  
   if (hookTimeout !== undefined)
-    baseEnv.ELECTRON_HOOK_TIMEOUT = String(hookTimeout); // eslint-disable-line @typescript-eslint/naming-convention
+    baseEnv.ELECTRON_HOOK_TIMEOUT = String(hookTimeout);  
 
   // Pass import rewrite patterns as JSON array for session to deserialize
   if (importRewritePatterns?.length)
-    baseEnv.ELECTRON_IMPORT_REWRITE_PATTERNS = JSON.stringify(importRewritePatterns); // eslint-disable-line @typescript-eslint/naming-convention
+    baseEnv.ELECTRON_IMPORT_REWRITE_PATTERNS = JSON.stringify(importRewritePatterns);  
 
   // Pass renderer setup JS as a base64-encoded string to avoid shell quoting issues
   if (rendererSetup)
-    baseEnv.ELECTRON_RENDERER_SETUP = Buffer.from(rendererSetup, "utf8").toString("base64"); // eslint-disable-line @typescript-eslint/naming-convention
+    baseEnv.ELECTRON_RENDERER_SETUP = Buffer.from(rendererSetup, "utf8").toString("base64");  
 
   // Load .env into the base env so all shards inherit it
   if (envFile && fs.existsSync(envFile)) {
     try {
-      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
-      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
+      const dotenv = require("dotenv");  
+      const dotenvExpand = require("dotenv-expand");  
       const envResult = dotenv.config({ path: envFile });
       if (!envResult.error)
         dotenvExpand(envResult);

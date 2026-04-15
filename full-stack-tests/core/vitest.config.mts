@@ -73,6 +73,8 @@ export default defineConfig({
     include: [
       // Pre-bundle transitive deps that Vite discovers late to avoid mid-test
       // reload which kills in-progress test suites (e.g. ECSqlAst).
+      // @see package.json devDependencies — these must be declared explicitly
+      // for Rush phantom prevention to allow resolution.
       "js-base64",
       "flatbuffers",
       "fuse.js",
@@ -154,8 +156,8 @@ export default defineConfig({
       screenshotFailures: false,
     },
     // Stream browser console output to CI logs for debugging hangs/timeouts.
-    onConsoleLog(log) {
-      return false; // don't suppress — let it print to stdout
+    onConsoleLog() {
+      // default behavior (return undefined) prints to stdout
     },
     reporters: [
       "verbose",

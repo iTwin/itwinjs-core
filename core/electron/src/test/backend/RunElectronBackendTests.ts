@@ -39,7 +39,7 @@ async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
 
 // Goes though every test registered in [testSuites] and executed each in separate Electron main process.
 for (const testSuite of testSuites) {
-  describe(testSuite.title, async () => {
+  describe(testSuite.title, () => {
     for (const test of testSuite.tests) {
       it(test.title, async () => {
         await spawnElectronMainProcess(testSuite.title, test.title);

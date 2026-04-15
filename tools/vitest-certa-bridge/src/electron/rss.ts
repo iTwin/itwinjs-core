@@ -11,6 +11,8 @@ import * as fs from "fs";
  * Returns 0 if the process no longer exists or the platform is unsupported.
  */
 export function sampleRssKb(pid: number): number {
+  if (!Number.isInteger(pid) || pid <= 0)
+    return 0;
   try {
     if (process.platform === "linux") {
       const status = fs.readFileSync(`/proc/${pid}/status`, "utf8");

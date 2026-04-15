@@ -26,14 +26,14 @@ export interface ElectronBridgeOptions {
  */
 export async function initElectronBridge(options: ElectronBridgeOptions = {}): Promise<{ token: string }> {
   // Use injected ipcMain or lazy-require electron
-  const ipcMain = options.ipcMain ?? require("electron").ipcMain; // eslint-disable-line @typescript-eslint/no-require-imports
+  const ipcMain = options.ipcMain ?? require("electron").ipcMain;  
 
   // Per-session token prevents rogue renderers from calling backend callbacks
   const token = crypto.randomUUID();
 
   // Load backend init module (registers callbacks into the global registry)
   if (options.backendInitModule) {
-    const initResult = require(options.backendInitModule); // eslint-disable-line @typescript-eslint/no-require-imports
+    const initResult = require(options.backendInitModule);  
     // If the module exports a promise (e.g. async init), await it
     if (initResult && typeof initResult.then === "function")
       await initResult;

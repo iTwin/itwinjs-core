@@ -6,11 +6,23 @@
 // Vitest setup file — registers custom matchers, initializes RPC client, and sets error handling.
 // Referenced via `setupFiles` in vitest.config.mts. Does NOT contain test assertions.
 
-import { expect } from "vitest";
+import { afterEach, beforeEach, expect } from "vitest";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
+import { TestUtility } from "./TestUtility";
+
+// --- Global cleanup hooks (catch iModel leaks across all suites) ---
+beforeEach(() => {
+  TestUtility.beginTestCleanupScope();
+});
+
+afterEach(async () => {
+  const leakError = await TestUtility.cleanupOpenIModels({ failOnLeaks: true });
+  if (leakError)
+    throw leakError;
+});
 
 // --- RPC configuration ---
 RpcConfiguration.developmentMode = true;
@@ -55,9 +67,16 @@ export function deepEqualWithFpTolerance(
       if ((a === null) !== (b === null))
         return false;
 
-      const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
-      const bSize = Object.keys(b).filter((k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined).length;
-      return aSize === bSize && Object.keys(a).every(
+      const aKeys = Object.keys(a);
+      const bKeys = Object.keys(b);
+      if (options.considerNonExistingAndUndefinedEqual) {
+        if (aKeys.filter((k) => a[k] !== undefined).length !== bKeys.filter((k) => b[k] !== undefined).length)
+          return false;
+      } else {
+        if (aKeys.length !== bKeys.length)
+          return false;
+      }
+      return aKeys.every(
         (key) =>
           (key in b || options.considerNonExistingAndUndefinedEqual) &&
           deepEqualWithFpTolerance(a[key], b[key], options),

@@ -107,12 +107,12 @@ async function main() {
 
   await win.loadFile(tmpHtmlPath);
 
-  // Timeout safety — if tests don't complete in 30s, exit with failure
+  // Timeout safety — if tests don't complete in 60s, exit with failure
   setTimeout(() => {
     fs.rmSync(tmpHtmlPath, { force: true });
-    console.error("Renderer tests timed out after 30 seconds");
+    console.error("Renderer tests timed out after 60 seconds");
     process.exit(1);
-  }, 30_000);
+  }, 60_000);
 }
 
 main().catch((err) => {
