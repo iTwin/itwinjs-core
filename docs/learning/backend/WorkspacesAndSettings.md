@@ -15,7 +15,7 @@ At runtime, settings and resources are accessed through one of three workspace s
 | [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings shared across all iModels in an iTwin | Requires an iTwinId; no iModel needed |
 | [IModelDb.workspace]($backend) | iModel-specific overrides; falls back to `appWorkspace` for unresolved settings. Does **not** automatically include iTwin-scoped settings | Available when an iModel is open |
 
-Each scope layers on top of the previous one through the [Settings priority stack](./Settings.md#settings-priorities). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
+`appWorkspace` and `IModelDb.workspace` share the same priority stack, so iModel-level settings automatically override application defaults. `getITwinWorkspace` is independent — its settings are only available to an iModel if explicitly referenced (see [Referencing iTwin settings from an iModel](./Settings.md#referencing-itwin-settings-from-an-imodel)). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
 
 ## The two container types
 
@@ -82,8 +82,13 @@ graph TD
     O -->|"overridden by"| B
     B -->|"overridden by"| M
 
-    style M fill:#d4edda,stroke:#28a745
-    style D fill:#f8f9fa,stroke:#6c757d
+    style AppWorkspace fill:#e8f4fd,stroke:#0366d6,color:#000
+    style IModelWorkspace fill:#fff8e1,stroke:#f9a825,color:#000
+    style D fill:#ffffff,stroke:#586069,color:#000
+    style A fill:#ffffff,stroke:#586069,color:#000
+    style O fill:#ffffff,stroke:#586069,color:#000
+    style B fill:#ffffff,stroke:#586069,color:#000
+    style M fill:#d4edda,stroke:#28a745,color:#000
 ```
 
 In practice:
