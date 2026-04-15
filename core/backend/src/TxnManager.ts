@@ -21,6 +21,7 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { withEditTxn } from "./EditTxn";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -474,6 +475,8 @@ export class RebaseManager {
       const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
       this.notifyRebaseBegin(reversedTxnProps);
 
+      const txnsToReinstate: TxnProps[] = [];
+
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
@@ -484,7 +487,11 @@ export class RebaseManager {
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
         const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
         if (shouldReinstate) {
-          nativeDb.pullMergeRebaseReinstateTxn();
+          if (this._iModel.editEvents) {
+            txnsToReinstate.push(txnProps);
+          } else {
+            nativeDb.pullMergeRebaseReinstateTxn();
+          }
           Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
         }
 
@@ -498,6 +505,18 @@ export class RebaseManager {
       }
 
       nativeDb.pullMergeRebaseEnd();
+
+
+      this._iModel.editEvents.startReplay();
+
+      for (const txnProps of txnsToReinstate) {
+        withEditTxn(this._iModel, (txn) => {
+          this._iModel.editEvents.replay(txn, txnProps.id);
+        });
+      }
+
+      this._iModel.editEvents.endReplay();
+
       this.notifyRebaseEnd(reversedTxnProps);
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");

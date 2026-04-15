@@ -278,3 +278,25 @@ export namespace ServerBasedLocksError {
     return ITwinError.isError<ITwinError>(error, scope, key);
   }
 }
+
+/** Errors related to txn event recording and replay through the [EditEvents]($backend) API.
+ * @beta
+ */
+export namespace EditEventsError {
+  /** the ITwinError scope for `EditEventsError`s. */
+  export const scope = "itwin-EditEvents";
+
+  /** Keys that identify `EditEventsError`s */
+  export type Key =
+    /** An error occurred occurred while accessing the event database */
+    "event-database-error";
+
+  /** Instantiate and throw an EditEventsError */
+  export function throwError(key: Key, message: string): never {
+    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
+  }
+  /** Determine whether an error object is an EditEventsError */
+  export function isError(error: unknown, key?: Key): error is ITwinError {
+    return ITwinError.isError<ITwinError>(error, scope, key);
+  }
+}

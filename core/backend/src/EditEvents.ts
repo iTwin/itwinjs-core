@@ -12,6 +12,7 @@ import type { IModelDb } from "./IModelDb";
 import type { EditTxn } from "./EditTxn";
 import { SQLiteDb } from "./SQLiteDb";
 import { _nativeDb } from "./internal/Symbols";
+import { EditEventsError } from "@itwin/core-common";
 
 /**
  * Manages a sidecar SQLite database that records every discrete, direct modification made through
@@ -31,7 +32,7 @@ export class EditEvents {
 
   /** @internal */
   public constructor(iModel: IModelDb) {
-    const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-events`;
+    const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-events2`;
     try {
       this._db.openDb(dbName, OpenMode.ReadWrite);
     } catch {
@@ -42,8 +43,10 @@ export class EditEvents {
       CREATE TABLE IF NOT EXISTS events(
         -- Sequential rowid assigned by SQLite; has no semantic meaning beyond ordering.
         id    INTEGER PRIMARY KEY NOT NULL,
+        txnId TEXT    NOT NULL,
         type  TEXT    NOT NULL,
-        props TEXT    NOT NULL
+        props TEXT    NOT NULL,
+        replay BOOLEAN NOT NULL DEFAULT FALSE
       )`);
     this._db.saveChanges();
   }
@@ -55,16 +58,20 @@ export class EditEvents {
 
   /**
    * Record a single editing event.
+   * @param txnId The transaction ID in which this event occurred.
    * @param type  A string identifying the operation (e.g. `"insertElement"`, `"deleteModel"`).
    * @param props The props object that was passed to the [[EditTxn]] method, serialised as JSON.
    * @internal
    */
-  public recordEvent(type: string, props: object): void {
+  public recordEvent(txnId: Id64String, type: string, props: object): void {
+    // TODO: we need a way to revese these events the same way we do txns.
+
     this._db.withPreparedSqliteStatement(
-      "INSERT INTO events(type, props) VALUES(?, ?)",
+      "INSERT INTO events(txnId, type, props) VALUES(?, ?, ?)",
       (stmt) => {
-        stmt.bindString(1, type);
-        stmt.bindString(2, JSON.stringify(props));
+        stmt.bindString(1, txnId);
+        stmt.bindString(2, type);
+        stmt.bindString(3, JSON.stringify(props));
         stmt.stepForWrite();
       },
     );
@@ -77,6 +84,24 @@ export class EditEvents {
   public close(): void {
     if (this._db.isOpen)
       this._db.closeDb(true);
+  }
+
+  public startReplay(): void {
+    // Mark all current events as replaying. This allows us to distinguish events that are being replayed from new
+    // events that may be recorded by the EditTxn methods we call during replay.
+    this._db.withPreparedSqliteStatement("UPDATE events SET replay = TRUE", (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        EditEventsError.throwError("event-database-error", "Failed to mark events as replaying");
+    });
+  }
+
+  public endReplay(): void {
+    // Delete all events that were marked as replaying. We don't want to keep them around since they
+    // would be indistinguishable from new events recorded during replay.
+    this._db.withPreparedSqliteStatement("DELETE FROM events WHERE replay = TRUE", (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        EditEventsError.throwError("event-database-error", "Failed to delete replayed events");
+    });
   }
 
   /**
@@ -94,11 +119,12 @@ export class EditEvents {
    * @param txn The active [[EditTxn]] into which events are replayed.
    * @beta
    */
-  public replay(txn: EditTxn): void {
+  public replay(txn: EditTxn, txnId: Id64String): void {
     const aspectIdMap = new Map<Id64String, Id64String>();
     const relationshipIdMap = new Map<Id64String, Id64String>();
 
-    this._db.withPreparedSqliteStatement("SELECT type, props FROM events ORDER BY id", (stmt) => {
+    this._db.withPreparedSqliteStatement("SELECT type, props FROM events WHERE txnId = ? ORDER BY id", (stmt) => {
+      stmt.bindString(1, txnId);
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         const type = stmt.getValueString(0);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

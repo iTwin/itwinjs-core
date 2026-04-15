@@ -73,10 +73,9 @@ export class EditTxn {
   }
 
   private recordEvent(type: string, props: object): void {
-    // TODO: Should we only record events for BriefcaseDbs?
-    if (this.iModel.isBriefcaseDb() && this.iModel.txns.isIndirectChanges)
+    if (!this.iModel.isBriefcaseDb() || this.iModel.txns.isIndirectChanges)
       return;
-    this.iModel.editEvents.recordEvent(type, props);
+    this.iModel.editEvents.recordEvent(this.iModel.txns.getCurrentTxnId(), type, props);
   }
 
   /** Start this EditTxn, making it the active transaction for the iModel.
