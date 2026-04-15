@@ -23,15 +23,15 @@ import { AnyDb } from "./SqliteChangesetReader";
  * Reads EC-typed changeset data natively from a changeset file, changeset group,
  * in-memory transaction, or local un-pushed changes.
  *
- * Implements {@link ECNativeChangeSource} so rows can be fed directly into
- * {@link ECNativePartialChangeUnifier} to merge partial (per-table) instances into
+ * Implements [ECNativeChangeSource]($backend) so rows can be fed directly into
+ * [ECNativePartialChangeUnifier]($backend) to merge partial (per-table) instances into
  * complete EC instances.
  *
- * When the current row is a non-EC internal SQLite table, `isECTable` is `false`
- * and both `inserted` and `deleted` remain `undefined`.
+ * When the current row is a non-EC internal SQLite table, [[isECTable]] is `false`
+ * and both [[inserted]] and [[deleted]] remain `undefined`.
  *
  * @note The native reader operates one SQLite table-row at a time. Multi-table EC
- * instances must be merged using {@link ECNativePartialChangeUnifier}.
+ * instances must be merged using [ECNativePartialChangeUnifier]($backend).
  * @beta
  */
 export class ECChangesetReader implements Disposable, ECNativeChangeSource {
@@ -50,7 +50,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * `true` when the current row belongs to an EC-mapped table.
-   * Valid only after a successful call to `step()`.
+   * Valid only after a successful call to [[step]].
    * @beta
    */
   public get isECTable(): boolean {
@@ -61,7 +61,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Name of the SQLite table for the current change row.
-   * Valid only after a successful call to `step()`.
+   * Valid only after a successful call to [[step]].
    * @beta
    */
   public get tableName(): string {
@@ -72,7 +72,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * `true` when the current change was applied indirectly
-   * Valid only after a successful call to step().
+   * Valid only after a successful call to [[step]].
    * @beta
    */
   public get isIndirectChange(): boolean {
@@ -82,15 +82,15 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /**
-   * Post-change (inserted or updated-new) EC instance, populated after each `step()` call.
-   * `undefined` when the current row is a Delete or a non-EC table row or `step()` returned false.
+   * Post-change (inserted or updated-new) EC instance, populated after each [[step]] call.
+   * `undefined` when the current row is a Delete or a non-EC table row or [[step]] returned false.
    * @beta
    */
   public inserted?: ECNativeChangeInstance;
 
   /**
-   * Pre-change (deleted or updated-old) EC instance, populated after each `step()` call.
-   * `undefined` when the current row is an Insert or a non-EC table row or `step()` returned false.
+   * Pre-change (deleted or updated-old) EC instance, populated after each [[step]] call.
+   * `undefined` when the current row is an Insert or a non-EC table row or [[step]] returned false.
    * @beta
    */
   public deleted?: ECNativeChangeInstance;
@@ -177,7 +177,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Read pending (not yet pushed) local changes from an open IModelDb.
-   * @param args.db Must be an `IModelDb` (not `ECDb`).
+   * @param args.db Must be an [IModelDb]($backend) (not [ECDb]($backend)).
    * @param args.includeInMemoryChanges Also include in-memory (not yet saved to disk) changes.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
@@ -201,7 +201,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Read the in-memory (not yet saved to disk) changes of an open IModelDb.
-   * @param args.db Must be an `IModelDb`.
+   * @param args.db Must be an [IModelDb]($backend).
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
    * @beta
@@ -224,7 +224,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * Read a single saved transaction by its id.
-   * @param args.db Must be an `IModelDb` (`ECDb` does not support transactions).
+   * @param args.db Must be an [IModelDb]($backend) ([ECDb]($backend) does not support transactions).
    * @param args.txnId The id of the saved transaction to read.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
@@ -384,7 +384,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 
   /**
    * SQLite opcode of the current change.
-   * Valid only after a successful call to `step()`.
+   * Valid only after a successful call to [[step]].
    * @beta
    */
   public get op(): ECNativeChangeOp {
@@ -413,7 +413,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /**
-   * Implements the `Disposable` contract — calls `close()`.
+   * Implements the `Disposable` contract — calls [[close]].
    * @beta
    */
   public [Symbol.dispose](): void {

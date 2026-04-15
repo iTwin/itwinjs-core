@@ -1,6 +1,6 @@
 # ECChangesetReader
 
-`ECChangesetReader` is a low-level API in `@itwin/core-backend` that reads EC-typed change data from a changeset file, a group of changeset files, an in-memory transaction, or local un-pushed changes. It is designed for use cases where you need to inspect what changed at the EC property level — for example, building audit trails, incremental projections, or custom synchronization logic.
+[ECChangesetReader]($backend) is a low-level API in `@itwin/core-backend` that reads EC-typed change data from a changeset file, a group of changeset files, an in-memory transaction, or local un-pushed changes. It is designed for use cases where you need to inspect what changed at the EC property level — for example, building audit trails, incremental projections, or custom synchronization logic.
 
 ## Core concepts
 
@@ -8,7 +8,7 @@
 
 A single EC entity may typically map to multiple tables or a single table.
 
-`ECChangesetReader` reads these raw table-row changes and emits one `ECNativeChangeInstance` per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into `ECNativePartialChangeUnifier`.
+[ECChangesetReader]($backend) reads these raw table-row changes and emits one [ECNativeChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [ECNativePartialChangeUnifier]($backend).
 
 ### The reader–unifier pipeline
 
@@ -16,7 +16,7 @@ A single EC entity may typically map to multiple tables or a single table.
 
 After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables.
 
-### `ECNativeChangeInstance` shape
+### [ECNativeChangeInstance]($backend) shape
 
 Every instance has an `$meta` property plus the EC property bag:
 
@@ -42,7 +42,7 @@ interface ECNativeChangeMeta {
 
 ### `changeFetchedPropNames` — what actually changed
 
-Each `ECNativeChangeInstance` carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
+Each [ECNativeChangeInstance]($backend) carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
 
 ```ts
 // Only trust props present in changeFetchedPropNames to reflect the changeset delta.
@@ -72,7 +72,7 @@ The names in `changeFetchedPropNames` follow these rules based on the property k
 
 ## Disposal — always close the reader and unifier
 
-`ECChangesetReader` and `ECNativePartialChangeUnifier` both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
+[ECChangesetReader]($backend) and [ECNativePartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
 
 The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
 
@@ -106,27 +106,27 @@ try {
 }
 ```
 
-> **Important:** The same rule applies to `ECNativeChangeUnifierCache` instances created via `ECNativeChangeUnifierCache.createSqliteBackedCache()` — they wrap a SQLite connection and must also be disposed.
+> **Important:** The same rule applies to [ECNativeChangeUnifierCache]($backend) instances created via [ECNativeChangeUnifierCache.createSqliteBackedCache]($backend) — they wrap a SQLite connection and must also be disposed.
 
 ---
 
 ## Opening a reader
 
-### `openFile` — read a single pushed changeset file
+### [ECChangesetReader.openFile]($backend) — read a single pushed changeset file
 
 [[include:ECChangesetReader.BasicPipeline]]
 
-### `openGroup` — read multiple changesets as a single stream
+### [ECChangesetReader.openGroup]($backend) — read multiple changesets as a single stream
 
-`openGroup` concatenates multiple changeset files into one logical stream. The unifier merges them across the whole group — an element that was inserted in changeset 1 and updated in changeset 2 surfaces as a single `"Inserted"` `"New"` instance reflecting its final state.
+[ECChangesetReader.openGroup]($backend) concatenates multiple changeset files into one logical stream. The unifier merges them across the whole group — an element that was inserted in changeset 1 and updated in changeset 2 surfaces as a single `"Inserted"` `"New"` instance reflecting its final state.
 
 [[include:ECChangesetReader.OpenGroup]]
 
-### `openTxn` — read a saved (not yet pushed) local transaction
+### [ECChangesetReader.openTxn]($backend) — read a saved (not yet pushed) local transaction
 
 [[include:ECChangesetReader.OpenTxn]]
 
-### `openLocalChanges` — read all local un-pushed saved changes
+### [ECChangesetReader.openLocalChanges]($backend) — read all local un-pushed saved changes
 
 [[include:ECChangesetReader.OpenLocalChanges]]
 
@@ -134,7 +134,7 @@ Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved
 
 [[include:ECChangesetReader.OpenLocalChangesIncludeInMemory]]
 
-### `openInMemoryChanges` — read only the in-memory (unsaved) changes
+### [ECChangesetReader.openInMemoryChanges]($backend) — read only the in-memory (unsaved) changes
 
 [[include:ECChangesetReader.OpenInMemoryChanges]]
 
@@ -201,15 +201,15 @@ In short: use `useJsName` names when reading property values off the instance, b
 
 ## Filtering — restricting which changes are yielded
 
-After opening a reader (and before the first `step()` call) you can install one or more filters to narrow the change stream. When a row does not match an active filter it is **skipped entirely** — the reader automatically advances to the next row.
+After opening a reader (and before the first [ECChangesetReader.step]($backend) call) you can install one or more filters to narrow the change stream. When a row does not match an active filter it is **skipped entirely** — the reader automatically advances to the next row.
 
 Three independent filter axes are available and can be combined:
 
 | Priority | Method | Filters on |
 |---|---|---|
-| 1 | `setOpCodeFilters(ops)` | Change operation (`"Inserted"`, `"Updated"`, `"Deleted"`) |
-| 2 | `setTableNameFilters(tableNames)` | SQLite table name of the row |
-| 3 | `setClassIdFilters(classIds)` | EC class id of the instance |
+| 1 | [ECChangesetReader.setOpCodeFilters]($backend) | Change operation (`"Inserted"`, `"Updated"`, `"Deleted"`) |
+| 2 | [ECChangesetReader.setTableNameFilters]($backend) | SQLite table name of the row |
+| 3 | [ECChangesetReader.setClassIdFilters]($backend) | EC class id of the instance |
 
 Filters are applied in the priority order above. If the op-code filter rejects a row, the table and class-id filters are not evaluated. If the table filter rejects a row, the class-id filter is not evaluated.
 
@@ -237,9 +237,105 @@ reader.clearClassIdFilters();
 
 ## Cache strategies
 
-By default `ECNativePartialChangeUnifier` uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
+By default [ECNativePartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
 
 [[include:ECChangesetReader.CacheStrategies]]
+
+---
+
+## Migrating from `ChangesetECAdaptor`
+
+The deprecated `ChangesetECAdaptor` / `PartialECChangeUnifier` stack is replaced by [ECChangesetReader]($backend) + [ECNativePartialChangeUnifier]($backend).
+
+### Basic pipeline — read and merge a changeset file
+
+**Before (deprecated)**
+
+```ts
+// SqliteChangesetReader requires disableSchemaCheck: true for use with ChangesetECAdaptor
+const reader = SqliteChangesetReader.openFile({ db: iModelDb, fileName, disableSchemaCheck: true });
+const adaptor = new ChangesetECAdaptor(reader);
+const unifier = new PartialECChangeUnifier(iModelDb);
+
+while (adaptor.step())
+  unifier.appendFrom(adaptor);
+
+for (const instance of unifier.instances) {
+  if (instance.$meta?.op === "Inserted")
+    console.log(instance.ECInstanceId);
+}
+
+unifier[Symbol.dispose]();
+adaptor[Symbol.dispose](); // also closes the underlying SqliteChangesetReader
+```
+
+**After (new API)**
+
+```ts
+using reader = ECChangesetReader.openFile({ db: iModelDb, fileName });
+using pcu = new ECNativePartialChangeUnifier();
+
+while (reader.step())
+  pcu.appendFrom(reader);
+
+for (const instance of pcu.instances) {
+  if (instance.$meta.op === "Inserted")
+    console.log(instance.ECInstanceId);
+}
+```
+
+### SQLite-backed cache for large changesets
+
+**Before (deprecated)**
+
+```ts
+// The old SQLite cache reused the live iModel's connection and wrote to a [temp] table on it
+using cache = ECChangeUnifierCache.createSqliteBackedCache(iModelDb);
+const unifier = new PartialECChangeUnifier(iModelDb, cache);
+```
+
+**After (new API)**
+
+```ts
+// The new cache opens its own private temporary SQLite database — no live iModel connection needed
+using cache = ECNativeChangeUnifierCache.createSqliteBackedCache();
+using pcu = new ECNativePartialChangeUnifier(cache);
+```
+
+### Filtering
+
+**Before (deprecated)** — fluent, class-name-based
+
+```ts
+adaptor
+  .acceptOp("Inserted")
+  .acceptTable("bis_Element")
+  .acceptClass("BisCore:Element"); // expands to all derived class ids internally
+```
+
+**After (new API)** — `Set`-based, class-id-based
+
+```ts
+reader.setOpCodeFilters(new Set(["Inserted"]));
+reader.setTableNameFilters(new Set(["bis_Element"]));
+reader.setClassIdFilters(new Set([elementClassId])); // pass ECClassId hex strings
+```
+
+### Key differences
+
+| Concern | Old (`ChangesetECAdaptor`) | New ([ECChangesetReader]($backend)) |
+|---|---|---|
+| Opening | `SqliteChangesetReader.openFile` + `new ChangesetECAdaptor(reader)` | `ECChangesetReader.openFile` directly |
+| `disableSchemaCheck` flag | Required (`true`) on `SqliteChangesetReader` | Not needed — schema check is built in |
+| Merging multi-table entities | `new PartialECChangeUnifier(db)` + `unifier.appendFrom(adaptor)` | `new ECNativePartialChangeUnifier()` + `pcu.appendFrom(reader)` |
+| `PartialECChangeUnifier` db arg | Required (uses live iModel connection for temp table) | Not needed (new unifier owns its temp db) |
+| SQLite cache db arg | `ECChangeUnifierCache.createSqliteBackedCache(db)` — reuses iModel connection | `ECNativeChangeUnifierCache.createSqliteBackedCache()` — self-contained |
+| Resource management | Manual `[Symbol.dispose]()` on each object | `using` declaration handles everything |
+| Filtering by class | `acceptClass(fullName)` — resolves derived classes via DB query | `setClassIdFilters(Set<Id64String>)` — caller provides ids |
+| Filtering API style | Fluent (`.acceptOp(...).acceptTable(...)`) | Setter methods with `Set<>` arguments |
+| Reading local / in-memory changes | Not supported | [ECChangesetReader.openLocalChanges]($backend), [ECChangesetReader.openInMemoryChanges]($backend) |
+| `$meta` on instances | Optional (`disableMetaData` flag could suppress it) | Always present |
+| Changed property tracking | Not available | `$meta.changeFetchedPropNames` lists exactly which properties came from the changeset binary |
 
 ---
 
@@ -289,9 +385,9 @@ using reader = ECChangesetReader.openFile({
 
 ### 2. Subsequent unsaved transaction pollutes property values
 
-**Scenario:** Three transactions occur in sequence: T1 inserts an element with `s = {x:1.5, y:2.5}`, T2 updates `s.X` to `100`, T3 updates `s.Y` to `200`. Reading T2 via `openTxn` after T3 has already been saved.
+**Scenario:** Three transactions occur in sequence: T1 inserts an element with `s = {x:1.5, y:2.5}`, T2 updates `s.X` to `100`, T3 updates `s.Y` to `200`. Reading T2 via [ECChangesetReader.openTxn]($backend) after T3 has already been saved.
 
-**What happens:** Because `openTxn` fetches non-changed properties from the live database (which reflects T3), the `Old` and `New` stage values for properties *not* recorded in the changeset reflect the current live state, not the state at T2. In this example:
+**What happens:** Because [ECChangesetReader.openTxn]($backend) fetches non-changed properties from the live database (which reflects T3), the `Old` and `New` stage values for properties *not* recorded in the changeset reflect the current live state, not the state at T2. In this example:
 
 ```ts
 // After T1 (insert s={1.5,2.5}), T2 (s.X→100), T3 (s.Y→200), reading T2:

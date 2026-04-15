@@ -24,7 +24,7 @@ export type ECNativeChangeOp = "Inserted" | "Updated" | "Deleted";
 export type ECNativeChangeStage = "Old" | "New";
 
 /**
- * Controls which properties are included in the output of {@link ECChangesetReader}.
+ * Controls which properties are included in the output of [ECChangesetReader]($backend).
  * @beta
  */
 export enum ECChangesetMode {
@@ -40,7 +40,7 @@ export enum ECChangesetMode {
 }
 
 /**
- * Row-formatting options for {@link ECChangesetReader} factory methods.
+ * Row-formatting options for [ECChangesetReader]($backend) factory methods.
  * Controls how EC property values are represented in the returned instances.
  * @beta
  */
@@ -68,7 +68,7 @@ export interface ECChangesetRowAdapterOptions {
 // ---------------------------------------------------------------------------
 
 /**
- * Metadata attached to every {@link ECNativeChangeInstance}.
+ * Metadata attached to every [[ECNativeChangeInstance]].
  * @beta
  */
 export interface ECNativeChangeMeta {
@@ -103,7 +103,7 @@ export interface ECNativeChangeMeta {
 }
 
 /**
- * An EC instance produced by {@link ECChangesetReader} after each `step()`.
+ * An EC instance produced by [ECChangesetReader]($backend) after each `step()`.
  * Contains the EC property bag plus mandatory `$meta` metadata.
  * @beta
  */
@@ -116,7 +116,7 @@ export interface ECNativeChangeInstance {
 
 /**
  * Contract for any reader that produces EC-typed changed instances compatible with
- * {@link ECNativePartialChangeUnifier}.
+ * [ECNativePartialChangeUnifier]($backend).
  * @beta
  */
 export interface ECNativeChangeSource {
@@ -139,7 +139,7 @@ export interface ECNativeChangeSource {
 // ---------------------------------------------------------------------------
 
 /**
- * Arguments common to all {@link ECChangesetReader} `open*` factory methods.
+ * Arguments common to all [ECChangesetReader]($backend) `open*` factory methods.
  * @beta
  */
 export interface ECChangesetReaderArgs {

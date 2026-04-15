@@ -17,7 +17,7 @@ import { SQLiteDb } from "./SQLiteDb";
 // ---------------------------------------------------------------------------
 
 /**
- * Cache used by {@link ECNativePartialChangeUnifier} to accumulate and merge
+ * Cache used by [[ECNativePartialChangeUnifier]] to accumulate and merge
  * partial EC change instances.
  * @beta
  */
@@ -37,7 +37,7 @@ export namespace ECNativeChangeUnifierCache {
   /**
    * Creates an in-memory cache backed by a `Map`.
    * Fast, but may exhaust memory for very large changesets.
-   * @returns An {@link ECNativeChangeCache} backed by an in-memory `Map`.
+   * @returns An [[ECNativeChangeCache]] backed by an in-memory `Map`.
    * @beta
    */
   export function createInMemoryCache(): ECNativeChangeCache {
@@ -51,7 +51,7 @@ export namespace ECNativeChangeUnifierCache {
    * parts of a temporary database might be flushed to disk if the database becomes large or
    * if SQLite comes under memory pressure.
    * @param bufferedReadInstanceSizeInBytes Read-batch size in bytes (default 10 MB).
-   * @returns An {@link ECNativeChangeCache} backed by a SQLite temp table.
+   * @returns An [[ECNativeChangeCache]] backed by a SQLite temp table.
    * @beta
    */
   export function createSqliteBackedCache(
@@ -231,7 +231,7 @@ export class ECNativePartialChangeUnifier implements Disposable {
   /**
    * Append partial changes from the current reader row and merge them into the cache.
    *
-   * @param source Any {@link ECNativeChangeSource} positioned on a valid row.
+   * @param source Any [ECNativeChangeSource]($backend) positioned on a valid row.
    * @beta
    */
   public appendFrom(source: ECNativeChangeSource): void {

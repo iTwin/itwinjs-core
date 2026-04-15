@@ -5,7 +5,7 @@ publish: false
 
 ## Backend
 
-### `ECChangesetReader` — native EC-typed changeset reader
+### [ECChangesetReader]($backend) — native EC-typed changeset reader
 
 The new [ECChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ECNativeChangeInstance]($backend) per SQLite table row.
 
@@ -15,11 +15,11 @@ The companion [ECNativePartialChangeUnifier]($backend) merges the per-table part
 
 | Method | Description |
 | ------ | ----------- |
-| `ECChangesetReader.openFile` | Read a single pushed changeset file |
-| `ECChangesetReader.openGroup` | Read several changeset files as one logical stream |
-| `ECChangesetReader.openLocalChanges` | Read pending (not yet pushed) local changes |
-| `ECChangesetReader.openInMemoryChanges` | Read in-memory (not yet saved) changes |
-| `ECChangesetReader.openTxn` | Read a single saved transaction by id |
+| [ECChangesetReader.openFile]($backend) | Read a single pushed changeset file |
+| [ECChangesetReader.openGroup]($backend) | Read several changeset files as one logical stream |
+| [ECChangesetReader.openLocalChanges]($backend) | Read pending (not yet pushed) local changes |
+| [ECChangesetReader.openInMemoryChanges]($backend) | Read in-memory (not yet saved) changes |
+| [ECChangesetReader.openTxn]($backend) | Read a single saved transaction by id |
 
 #### Example — inspect inserted elements from a changeset file
 
@@ -60,7 +60,7 @@ while (reader.step()) {
 
 When a row does not match an active filter it is skipped entirely — the reader automatically advances to the next row.
 
-`reader.deleted` and `reader.inserted` carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
+[ECChangesetReader.deleted]($backend) and [ECChangesetReader.inserted]($backend) carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
 
 For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ECChangesetReader](../learning/backend/ECChangesetReader.md).
 
