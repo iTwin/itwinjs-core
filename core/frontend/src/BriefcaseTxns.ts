@@ -10,7 +10,7 @@ import { BeEvent, IModelStatus } from "@itwin/core-bentley";
 import {
   ChangesetIdWithIndex,
   ChangesetIndexAndId, ChangesetProps, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, ipcAppChannels,
-  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
+  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, RootSubjectProps, TxnNotifications,
   TxnProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
@@ -252,6 +252,24 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     return this.reverseTxns(1);
   }
 
+  /** Reverse (undo) the most recent operation to this briefcase in the current session. By default, this method also
+   * abandons the locks that were acquired for that operation.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [TxnManager.beginMultiTxnOperation]($backend). So,
+   * even though this method reverses only one operation, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.reverseTxnsAsync(1, args);
+  }
+
   /** Reverse (undo) the most recent operation(s) to the briefcase in the current session.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if [[reinstateTxn]] is called.
@@ -264,6 +282,27 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     return IpcApp.appFunctionIpc.reverseTxns(this._iModel.key, numOperations);
   }
 
+  /** Reverse (undo) the most recent operation(s) to the briefcase in the current session. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If you do not want to abandon any locks, set [ReverseTxnArgs.retainLocks]($common) to true.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If numOperations is too large only the operations are reversible are reversed.
+   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
+   *  be reinstated together when/if ReinstateTxn is called.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    return IpcApp.appFunctionIpc.reverseTxnsAsync(this._iModel.key, numOperations, args);
+  }
+
   /** Reverse (undo) all changes back to the beginning of the session.
    * @see [[reinstateTxn]] to redo changes.
    * @see [[reverseSingleTxn]] to undo only the most recent operation.
@@ -271,6 +310,22 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    */
   public async reverseAll(): Promise<IModelStatus> {
     return IpcApp.appFunctionIpc.reverseAllTxn(this._iModel.key);
+  }
+
+  /** Reverse (undo) all operations back to the beginning of the session. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void> {
+    return IpcApp.appFunctionIpc.reverseAllTxnsAsync(this._iModel.key, args);
   }
 
   /** Reinstate (redo) the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
@@ -282,6 +337,20 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    */
   public async reinstateTxn(): Promise<IModelStatus> {
     return IpcApp.appFunctionIpc.reinstateTxn(this._iModel.key);
+  }
+
+  /** Reinstate (redo) the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
+   * may take multiple calls to this method to reinstate all reversed operations. This method also
+   * re-acquires the locks that were abandoned when those operations were reversed.
+   * @beta
+   * @param args Optional arguments to control the behavior of the reinstate operation.
+   * @returns Success if a reversed transaction was reinstated, error status otherwise.
+   * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
+   * @see [[isRedoPossible]] to determine if any reinstatable operations exist.
+   * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
+   */
+  public async reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void> {
+    return IpcApp.appFunctionIpc.reinstateTxnAsync(this._iModel.key, args);
   }
 
   /** Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed

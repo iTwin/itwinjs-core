@@ -799,8 +799,8 @@ export class DgnSpiralTypeQueries {
     [12, "biquadratic"],
     [13, "cosine"],
     [14, "sine"],
-    [15, "Viennese"],
-    [16, "weightedViennese"],
+    [15, "Viennese"], // not supported
+    [16, "weightedViennese"], // not supported
 
     [50, "WesternAustralian"],
     [51, "Czech"],
