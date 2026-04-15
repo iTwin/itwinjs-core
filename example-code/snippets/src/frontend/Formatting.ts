@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable no-console */
+import { assert } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
@@ -96,7 +96,7 @@ export async function waitForFormatterReady() {
   const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
   if (formatterSpec) {
     const formatted = IModelApp.quantityFormatter.formatQuantity(1.5, formatterSpec);
-    console.log(formatted);
+    assert(formatted.length > 0);
   }
 }
 // __PUBLISH_EXTRACT_END__
@@ -140,7 +140,7 @@ export function useFormatSpecHandle() {
 
   // format() returns a fallback string if specs aren't loaded yet
   const formatted = handle.format(1.5);
-  console.log(formatted);
+  assert(formatted.length > 0);
 
   // Explicitly dispose when done to unsubscribe from reload events
   handle[Symbol.dispose]();
@@ -157,7 +157,7 @@ export function useFormatSpecHandleWithUsing() {
 
   // The handle auto-refreshes when the formatter reloads
   const formatted = handle.format(2.75);
-  console.log(formatted);
+  assert(formatted.length > 0);
   // handle is automatically disposed at end of scope
 }
 // __PUBLISH_EXTRACT_END__
@@ -173,12 +173,11 @@ export function lookupSpecsByNameAndUnit() {
   if (entry) {
     // Format a value
     const formatted = IModelApp.quantityFormatter.formatQuantity(3.14, entry.formatterSpec);
-    console.log(formatted);
+    assert(formatted.length > 0);
 
     // Parse a user-entered string
     const result = entry.parserSpec.parseToQuantityValue("3.14 m");
-    if (result.ok)
-      console.log(`Parsed: ${result.value}`);
+    assert(result.ok && typeof result.value === "number");
   }
 }
 // __PUBLISH_EXTRACT_END__
@@ -192,7 +191,7 @@ export function formatKoqInMultipleSystems(meters: number) {
   if (metricSpec && imperialSpec) {
     const metricStr = IModelApp.quantityFormatter.formatQuantity(meters, metricSpec.formatterSpec);
     const imperialStr = IModelApp.quantityFormatter.formatQuantity(meters, imperialSpec.formatterSpec);
-    console.log(`Metric: ${metricStr}, Imperial: ${imperialStr}`);
+    assert(metricStr.length > 0 && imperialStr.length > 0);
   }
 }
 // __PUBLISH_EXTRACT_END__
