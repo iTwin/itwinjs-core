@@ -110,6 +110,12 @@ export namespace SettingsContainers {
     const byITwin = new Map<string, BlobContainer.MetadataResponse[]>();
     for (const container of containers) {
       const ownerITwinId = container.iTwinId;
+      if (undefined === ownerITwinId) {
+        ITwinSettingsError.throwError("missing-container-itwinid", {
+          message: `Settings container '${container.containerId}' has no iTwinId. Please upgrade to a newer version of the BlobContainer service that populates iTwinId in query results.`,
+          iTwinId,
+        });
+      }
       const group = byITwin.get(ownerITwinId);
       if (group)
         group.push(container);

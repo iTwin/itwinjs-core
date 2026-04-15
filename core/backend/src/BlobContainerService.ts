@@ -74,7 +74,7 @@ export namespace BlobContainer {
   export interface MetadataResponse extends Metadata {
     containerId: string;
     /** The iTwinId that owns this container. */
-    iTwinId: GuidString;
+    iTwinId?: GuidString;
     /** The parent iTwinId of the owning iTwin, if any. */
     parentITwinId?: GuidString;
   }
