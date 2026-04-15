@@ -8,7 +8,7 @@ import { Constant } from "../Metadata/Constant";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaKey } from "../SchemaKey";
-import { UnitConversion } from "./UnitConversion";
+import { UnitConversion } from "@itwin/core-quantity";
 import { UnitGraph } from "./UnitTree";
 
 /**

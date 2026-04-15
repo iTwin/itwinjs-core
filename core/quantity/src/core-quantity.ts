@@ -18,8 +18,15 @@ export * from "./Formatter/FormattingReadyCollector";
 export * from "./Formatter/Interfaces";
 export * from "./QuantityLoggerCategory";
 
+export * from "./UnitConversion/UnitConversion";
+export * from "./UnitConversion/Parser";
+export * from "./UnitConversion/Graph";
+export * from "./UnitConversion/UnitDefinitionResolver";
+export * from "./SerializedUnitSchema";
+export * from "./BundledUnitsProvider";
+
 /** @docs-package-description
- * The core-quantity package always runs in a web browser. It contains classes, interfaces, and definitions for formatting and parsing quantity values.
+ * The core-quantity package contains classes, interfaces, and definitions for formatting and parsing quantity values.
  */
 
 /**

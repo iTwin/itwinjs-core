@@ -25,6 +25,7 @@ publish: false
       - [Usage examples](#usage-examples-1)
       - [Configuration requirements](#configuration-requirements)
   - [Quantity Formatting](#quantity-formatting)
+    - [BundledUnitsProvider — full unit coverage without an iModel](#bundledunitsprovider--full-unit-coverage-without-an-imodel)
     - [Quantity Formatter improvements](#quantity-formatter-improvements)
       - [New APIs](#new-apis-2)
         - [`@itwin/core-quantity`](#itwincore-quantity)
@@ -252,6 +253,40 @@ To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationCl
 See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
 
 ## Quantity Formatting
+
+### BundledUnitsProvider — full unit coverage without an iModel
+
+[QuantityFormatter]($frontend) now defaults to [BundledUnitsProvider]($quantity) instead of the previous `BasicUnitsProvider`. This means:
+
+- **492 units** from the BIS `Units` schema are available out-of-the-box — covering all phenomena (length, area, volume, temperature, pressure, angle, force, etc.)
+- **No iModel required** — standalone tools, pre-iModel UIs, and non-iModel contexts now get full unit support
+- **`BundledUnitsProvider` is also available directly** from `@itwin/core-quantity` for use in backend or tool contexts:
+
+```typescript
+import { BundledUnitsProvider } from "@itwin/core-quantity";
+
+const provider = new BundledUnitsProvider();
+const meter = await provider.findUnitByName("Units.M");
+const foot = await provider.findUnitByName("Units.FT");
+const conv = await provider.getConversion(meter, foot);
+// conv.factor ≈ 3.28084
+```
+
+#### Migration
+
+If you were directly importing `BasicUnitsProvider` from `@itwin/core-frontend`, switch to `BundledUnitsProvider` from `@itwin/core-quantity`:
+
+```typescript
+// Before
+import { BasicUnitsProvider } from "@itwin/core-frontend";
+const provider = new BasicUnitsProvider();
+
+// After
+import { BundledUnitsProvider } from "@itwin/core-quantity";
+const provider = new BundledUnitsProvider();
+```
+
+`BasicUnitsProvider` is now deprecated but will continue to work for backward compatibility.
 
 ### Quantity Formatter improvements
 

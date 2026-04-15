@@ -10,9 +10,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { SchemaItemType } from "../ECObjects";
-import { UnitConversion } from "./UnitConversion";
-import { DefinitionFragment, parseDefinition } from "./Parser";
-import { Graph } from "./Graph";
+import { type DefinitionFragment, Graph, parseDefinition, UnitConversion } from "@itwin/core-quantity";
 
 /** @internal */
 export class GraphUtils {

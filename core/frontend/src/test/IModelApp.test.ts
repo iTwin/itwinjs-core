@@ -6,11 +6,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { EmptyLocalization } from "@itwin/core-common";
-import { UnitConversionProps, UnitProps } from "@itwin/core-quantity";
+import { BundledUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
-import { BasicUnitsProvider } from "../quantity-formatting/BasicUnitsProvider";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
@@ -195,11 +194,11 @@ describe("IModelApp startup tests", () => {
 });
 
 /**
- * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
- * but still delegates to BasicUnitsProvider for correct behaviour.
+ * A UnitsProvider that is NOT a BundledUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
+ * but still delegates to BundledUnitsProvider for correct behaviour.
  */
-class NonBasicUnitsProvider {
-  private readonly _delegate = new BasicUnitsProvider();
+class NonBundledUnitsProvider {
+  private readonly _delegate = new BundledUnitsProvider();
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
@@ -242,7 +241,7 @@ describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
     const formatter = IModelApp.quantityFormatter;
 
     // Install a non-default provider so resetToUseInternalUnitsProvider won't early-exit.
-    await formatter.setUnitsProvider(new NonBasicUnitsProvider());
+    await formatter.setUnitsProvider(new NonBundledUnitsProvider());
 
     await IModelApp.shutdown();
 

@@ -17,7 +17,9 @@ import { FractionalPrecision } from '@itwin/core-quantity';
 import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
+import { UnitConversion } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
+import { UnitConversionSource } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -2395,22 +2397,9 @@ export class Unit extends SchemaItem {
     get unitSystem(): LazyLoadedUnitSystem | undefined;
 }
 
-// @internal
-export class UnitConversion {
-    constructor(factor?: number, offset?: number);
-    compose(conversion: UnitConversion): UnitConversion;
-    evaluate(x: number): number;
-    // (undocumented)
-    readonly factor: number;
-    static from(unitOrConstant: Unit | Constant): UnitConversion;
-    // (undocumented)
-    static identity: UnitConversion;
-    inverse(): UnitConversion;
-    multiply(conversion: UnitConversion): UnitConversion;
-    // (undocumented)
-    readonly offset: number;
-    raise(power: number): UnitConversion;
-}
+export { UnitConversion }
+
+export { UnitConversionSource }
 
 // @internal
 export class UnitConverter {

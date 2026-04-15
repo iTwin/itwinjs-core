@@ -8,7 +8,7 @@
 
 import { BeEvent, BentleyError, BeUiEvent, BeUnorderedUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AddFormattingSpecArgs, AlternateUnitLabelsProvider, Format, FormatDefinition, FormatProps,
+  AddFormattingSpecArgs, AlternateUnitLabelsProvider, BundledUnitsProvider, Format, FormatDefinition, FormatProps,
   FormatsChangedArgs, FormatSpecHandle, FormatsProvider, FormatterSpec, FormattingReadyCollector,
   FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParseError, ParserSpec,
   QuantityParseResult, UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
@@ -16,7 +16,7 @@ import {
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
+import { getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
 import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
@@ -409,7 +409,7 @@ type ReloadIntent =
  */
 export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider {
   private static readonly _allUnitSystems: readonly UnitSystemKey[] = ["metric", "imperial", "usCustomary", "usSurvey"];
-  private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
+  private _unitsProvider: UnitsProvider = new BundledUnitsProvider();
   private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
   /** Registry containing available quantity type definitions. */
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
@@ -928,10 +928,10 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
    */
   public async resetToUseInternalUnitsProvider() {
-    if (this._unitsProvider instanceof BasicUnitsProvider)
+    if (this._unitsProvider instanceof BundledUnitsProvider)
       return;
 
-    await this.setUnitsProvider(new BasicUnitsProvider());
+    await this.setUnitsProvider(new BundledUnitsProvider());
   }
 
   /** Async call to register a CustomQuantityType and load the FormatSpec and ParserSpec for the new type. */

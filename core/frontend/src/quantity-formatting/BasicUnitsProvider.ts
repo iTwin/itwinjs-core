@@ -15,6 +15,7 @@ import { UNIT_EXTRA_DATA } from "./UnitsData";
 // cSpell:ignore ussurvey USCUSTOM
 
 /** Units provider that provides a limited number of UnitDefinitions that are needed to support basic tools.
+ * @deprecated in 5.9.0. Use BundledUnitsProvider from @itwin/core-quantity instead.
  * @internal
  */
 export class BasicUnitsProvider implements UnitsProvider {

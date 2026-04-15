@@ -187,6 +187,18 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
+export class BundledUnitsProvider implements UnitsProvider {
+    // (undocumented)
+    findUnit(unitLabel: string, _schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+    // (undocumented)
+    findUnitByName(unitName: string): Promise<UnitProps>;
+    // (undocumented)
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+    // (undocumented)
+    getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
+}
+
+// @beta
 export interface CloneOptions {
     precision?: DecimalPrecision | FractionalPrecision;
     primaryUnit?: CloneUnit;
@@ -237,6 +249,16 @@ export enum DecimalPrecision {
     Two = 2,
     // (undocumented)
     Zero = 0
+}
+
+// @internal (undocumented)
+export interface DefinitionFragment {
+    // (undocumented)
+    constant: boolean;
+    // (undocumented)
+    exponent: number;
+    // (undocumented)
+    name: string;
 }
 
 // @beta
@@ -475,6 +497,45 @@ export function getItemNamesFromFormatString(formatString: string): Iterable<str
 // @beta (undocumented)
 export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
 
+// @internal (undocumented)
+export class Graph<T> {
+    constructor();
+    // (undocumented)
+    edge: (v: string, w: string) => {
+        exponent: number;
+    };
+    // (undocumented)
+    edgeCount: () => number;
+    // (undocumented)
+    edges: () => {
+        v: string;
+        w: string;
+    }[];
+    // (undocumented)
+    graph: () => string;
+    // (undocumented)
+    hasNode: (nodeKey: string) => boolean;
+    // (undocumented)
+    node: (nodeKey: string) => T;
+    // (undocumented)
+    nodeCount: () => number;
+    // (undocumented)
+    nodes: () => string[];
+    // (undocumented)
+    outEdges: (v: string) => {
+        v: string;
+        w: string;
+    }[];
+    // (undocumented)
+    setEdge: (v: string, w: string, value: {
+        exponent: number;
+    }) => void;
+    // (undocumented)
+    setGraph: (label: string) => Graph<T>;
+    // (undocumented)
+    setNode: (nodeKey: string, nodeValue: T) => void;
+}
+
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
 
@@ -486,6 +547,9 @@ export interface MutableFormatsProvider extends FormatsProvider {
 
 // @beta (undocumented)
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision;
+
+// @internal (undocumented)
+export function parseDefinition(definition: string): Map<string, DefinitionFragment>;
 
 // @beta
 export interface ParsedQuantity {
@@ -733,6 +797,20 @@ export interface ResolvedFormatUnitSpec {
     readonly unit: UnitProps;
 }
 
+// @internal
+export interface ResolvedUnit {
+    // (undocumented)
+    readonly conversion: UnitConversion;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly unitSystem: string;
+}
+
 // @beta
 export enum ScientificType {
     Normalized = "Normalized",
@@ -741,6 +819,101 @@ export enum ScientificType {
 
 // @beta @deprecated (undocumented)
 export function scientificTypeToString(scientificType: ScientificType): string;
+
+// @beta
+export const SERIALIZED_UNIT_SCHEMA_VERSION = "1.0.0";
+
+// @beta
+export interface SerializedConstant {
+    // (undocumented)
+    readonly definition: string;
+    // (undocumented)
+    readonly denominator?: number;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly numerator?: number;
+    // (undocumented)
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly schemaItemType: "Constant";
+}
+
+// @beta
+export interface SerializedInvertedUnit {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly invertsUnit: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly schemaItemType: "InvertedUnit";
+    // (undocumented)
+    readonly unitSystem: string;
+}
+
+// @beta
+export interface SerializedPhenomenon {
+    // (undocumented)
+    readonly definition: string;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly schemaItemType: "Phenomenon";
+}
+
+// @beta
+export interface SerializedUnit {
+    // (undocumented)
+    readonly definition: string;
+    // (undocumented)
+    readonly denominator?: number;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly numerator?: number;
+    // (undocumented)
+    readonly offset?: number;
+    // (undocumented)
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly schemaItemType: "Unit";
+    // (undocumented)
+    readonly unitSystem: string;
+}
+
+// @beta
+export type SerializedUnitItem = SerializedConstant | SerializedUnit | SerializedInvertedUnit | SerializedUnitSystem | SerializedPhenomenon;
+
+// @beta
+export interface SerializedUnitSchema {
+    // (undocumented)
+    readonly alias: string;
+    // (undocumented)
+    readonly items: {
+        readonly [name: string]: SerializedUnitItem;
+    };
+    // (undocumented)
+    readonly name: string;
+    readonly version: string;
+}
+
+// @beta
+export interface SerializedUnitSystem {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly schemaItemType: "UnitSystem";
+}
 
 // @beta
 export enum ShowSignOption {
@@ -752,6 +925,23 @@ export enum ShowSignOption {
 
 // @beta @deprecated (undocumented)
 export function showSignOptionToString(showSign: ShowSignOption): string;
+
+// @internal
+export class UnitConversion {
+    constructor(factor?: number, offset?: number);
+    compose(conversion: UnitConversion): UnitConversion;
+    evaluate(x: number): number;
+    // (undocumented)
+    readonly factor: number;
+    static from(source: UnitConversionSource): UnitConversion;
+    // (undocumented)
+    static identity: UnitConversion;
+    inverse(): UnitConversion;
+    multiply(conversion: UnitConversion): UnitConversion;
+    // (undocumented)
+    readonly offset: number;
+    raise(power: number): UnitConversion;
+}
 
 // @beta
 export enum UnitConversionInvert {
@@ -766,6 +956,16 @@ export interface UnitConversionProps {
     offset: number;
 }
 
+// @internal
+export interface UnitConversionSource {
+    // (undocumented)
+    readonly denominator: number;
+    // (undocumented)
+    readonly numerator: number;
+    // (undocumented)
+    readonly offset?: number;
+}
+
 // @beta
 export interface UnitConversionSpec {
     conversion: UnitConversionProps;
@@ -773,6 +973,12 @@ export interface UnitConversionSpec {
     name: string;
     parseLabels?: string[];
     system: string;
+}
+
+// @internal
+export class UnitDefinitionResolver {
+    constructor(schema: SerializedUnitSchema);
+    resolveAll(): Map<string, ResolvedUnit>;
 }
 
 // @alpha
