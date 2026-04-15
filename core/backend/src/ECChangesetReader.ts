@@ -275,7 +275,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Restrict iteration to changes for the given EC class names.
    * That means the rows for changes from other EC classes will be skipped entirely and won't be visible through the reader.
    * @param classNames EC class names to include. The classNames should be in the full name format(i.e. "SchemaName:ClassName").
-   * Note: Schema names and class names must be provided in the correct case for proper filtering.
+   * Note: Schema names and class names must be provided in the correct case for proper filtering. Derived classes are not automatically included, so they must be specified explicitly if needed.
    * @beta
    */
   public setClassNameFilters(classNames: Set<string>): void {

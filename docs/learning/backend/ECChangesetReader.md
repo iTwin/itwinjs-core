@@ -331,7 +331,7 @@ reader.setClassNameFilters(new Set(["BisCore:Element"])); // full "SchemaName:Cl
 | `PartialECChangeUnifier` db arg | Required (uses live iModel connection for temp table) | Not needed (new unifier owns its temp db) |
 | SQLite cache db arg | `ECChangeUnifierCache.createSqliteBackedCache(db)` — reuses iModel connection | `ECNativeChangeUnifierCache.createSqliteBackedCache()` — self-contained |
 | Resource management | Manual `[Symbol.dispose]()` on each object | `using` declaration handles everything |
-| Filtering by class | `acceptClass(fullName)` — resolves derived classes via DB query | `setClassNameFilters(Set<string>)` — pass full `"SchemaName:ClassName"` strings |
+| Filtering by class | `acceptClass(fullName)` — automatically expands to all derived class ids, so a single class name filters the entire hierarchy | `setClassNameFilters(Set<string>)` — exact match only; does **not** expand to derived classes; pass each class name explicitly in `"SchemaName:ClassName"` format |
 | Filtering API style | Fluent (`.acceptOp(...).acceptTable(...)`) | Setter methods with `Set<>` arguments |
 | `$meta` on instances | Optional (`disableMetaData` flag could suppress it) | Always present |
 | Changed property tracking | Not available | `$meta.changeFetchedPropNames` lists exactly which properties came from the changeset binary |
