@@ -176,19 +176,14 @@ describe("ECChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("filter by EC class id", async () => {
-    // Look up the Widget class id by querying one of the inserted instances.
-    let widgetClassId = "";
-    for await (const row of db.createQueryReader(`SELECT ECClassId FROM ExSnippets.Widget LIMIT 1`))
-      widgetClassId = row[0];
-
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.FilterClassIds
-    // Restrict the stream to a known set of EC class ids.
+  it("filter by EC class name", () => {
+    // __PUBLISH_EXTRACT_START__ ECChangesetReader.FilterClassNames
+    // Restrict the stream to a known set of EC class names (full "SchemaName:ClassName" format).
     // Rows for any other class are skipped entirely.
-    const classIds = new Set([widgetClassId]);
+    const classNames = new Set(["ExSnippets:Widget"]);
 
     using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
-    reader.setClassIdFilters(classIds);
+    reader.setClassNameFilters(classNames);
 
     while (reader.step()) {
       if (reader.inserted)

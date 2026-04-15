@@ -208,10 +208,10 @@ Three independent filter axes are available and can be combined:
 | Priority | Method | Filters on |
 |---|---|---|
 | 1 | [ECChangesetReader.setOpCodeFilters]($backend) | Change operation (`"Inserted"`, `"Updated"`, `"Deleted"`) |
-| 2 | [ECChangesetReader.setTableNameFilters]($backend) | SQLite table name of the row |
-| 3 | [ECChangesetReader.setClassIdFilters]($backend) | EC class id of the instance |
+| 2 | [ECChangesetReader.setTableNameFilters]($backend) | SQLite table name of the row in proper case |
+| 3 | [ECChangesetReader.setClassNameFilters]($backend) | EC class name of the instance (format: `"SchemaName:ClassName"`) in proper case |
 
-Filters are applied in the priority order above. If the op-code filter rejects a row, the table and class-id filters are not evaluated. If the table filter rejects a row, the class-id filter is not evaluated.
+Filters are applied in the priority order above. If the op-code filter rejects a row, the table and class-name filters are not evaluated. If the table filter rejects a row, the class-name filter is not evaluated.
 
 Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling the corresponding `clear*` method.
 
@@ -219,9 +219,9 @@ Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling t
 
 [[include:ECChangesetReader.FilterTable]]
 
-### Example — only yield changes for a known set of EC class ids
+### Example — only yield changes for a known set of EC class names
 
-[[include:ECChangesetReader.FilterClassIds]]
+[[include:ECChangesetReader.FilterClassNames]]
 
 ### Clearing filters at runtime
 
@@ -230,7 +230,7 @@ All three filters can be cleared individually without reopening the reader:
 ```ts
 reader.clearTableNameFilters();
 reader.clearOpCodeFilters();
-reader.clearClassIdFilters();
+reader.clearClassNameFilters();
 ```
 
 ---
@@ -318,7 +318,7 @@ adaptor
 ```ts
 reader.setOpCodeFilters(new Set(["Inserted"]));
 reader.setTableNameFilters(new Set(["bis_Element"]));
-reader.setClassIdFilters(new Set([elementClassId])); // pass ECClassId hex strings
+reader.setClassNameFilters(new Set(["BisCore:Element"])); // full "SchemaName:ClassName" format, doesnot expand to any derived classes
 ```
 
 ### Key differences
@@ -331,9 +331,8 @@ reader.setClassIdFilters(new Set([elementClassId])); // pass ECClassId hex strin
 | `PartialECChangeUnifier` db arg | Required (uses live iModel connection for temp table) | Not needed (new unifier owns its temp db) |
 | SQLite cache db arg | `ECChangeUnifierCache.createSqliteBackedCache(db)` — reuses iModel connection | `ECNativeChangeUnifierCache.createSqliteBackedCache()` — self-contained |
 | Resource management | Manual `[Symbol.dispose]()` on each object | `using` declaration handles everything |
-| Filtering by class | `acceptClass(fullName)` — resolves derived classes via DB query | `setClassIdFilters(Set<Id64String>)` — caller provides ids |
+| Filtering by class | `acceptClass(fullName)` — resolves derived classes via DB query | `setClassNameFilters(Set<string>)` — pass full `"SchemaName:ClassName"` strings |
 | Filtering API style | Fluent (`.acceptOp(...).acceptTable(...)`) | Setter methods with `Set<>` arguments |
-| Reading local / in-memory changes | Not supported | [ECChangesetReader.openLocalChanges]($backend), [ECChangesetReader.openInMemoryChanges]($backend) |
 | `$meta` on instances | Optional (`disableMetaData` flag could suppress it) | Always present |
 | Changed property tracking | Not available | `$meta.changeFetchedPropNames` lists exactly which properties came from the changeset binary |
 

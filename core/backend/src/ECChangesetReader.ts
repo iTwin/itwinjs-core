@@ -254,6 +254,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Restrict iteration to changes from the named SQLite tables.
    * That means the rows for changes from other tables will be skipped entirely and won't be visible through the reader.
    * @param tableNames SQLite table names to include.
+   * Note: Table names must be provided in the correct case for proper filtering.
    * @beta
    */
   public setTableNameFilters(tableNames: Set<string>): void {
@@ -271,13 +272,14 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /**
-   * Restrict iteration to changes for the given EC class ids.
+   * Restrict iteration to changes for the given EC class names.
    * That means the rows for changes from other EC classes will be skipped entirely and won't be visible through the reader.
-   * @param classIds ECClassId values (as hex Id64 strings) to include.
+   * @param classNames EC class names to include. The classNames should be in the full name format(i.e. "SchemaName:ClassName").
+   * Note: Schema names and class names must be provided in the correct case for proper filtering.
    * @beta
    */
-  public setClassIdFilters(classIds: Set<Id64String>): void {
-    this._nativeReader.setClassIdFilters(Array.from(classIds));
+  public setClassNameFilters(classNames: Set<string>): void {
+    this._nativeReader.setClassNameFilters(Array.from(classNames));
   }
 
   /**
@@ -297,11 +299,11 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   }
 
   /**
-   * Remove the class-id filters
+   * Remove the class-name filters
    * @beta
    */
-  public clearClassIdFilters(): void {
-    this._nativeReader.clearClassIdFilters();
+  public clearClassNameFilters(): void {
+    this._nativeReader.clearClassNameFilters();
   }
 
   // ---------------------------------------------------------------------------

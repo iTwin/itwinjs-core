@@ -3021,18 +3021,10 @@ describe("ECChangesetReader filters", () => {
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
 
-  it("txn1 insert-full | filter by classId", () => {
-    let classId = "";
-    rwIModel.withQueryReader(`SELECT ECClassId from BisCore.DrawingModel WHERE ECInstanceId=${drawingModelId}`, (qr) => {
-      assert.isTrue(qr.step());
-      classId = qr.current.ecclassid;
-    });
-
-    assert.isTrue(Id64.isValid(classId));
-
+  it("txn1 insert-full | filter by className", () => {
     using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-    reader.setClassIdFilters(new Set([classId]));
+    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createSqliteBackedCache());
+    reader.setClassNameFilters(new Set(["BisCore:DrawingModel"]));
     while (reader.step())
       pcu.appendFrom(reader);
     const instances = Array.from(pcu.instances);
