@@ -185,20 +185,44 @@ export abstract class IpcHandler {
           visited.add(e);
           try {
             const serialized: any = { ...e };
+
+            for (const sym of Object.getOwnPropertySymbols(serialized))
+              delete serialized[sym]; // symbol-keyed properties cannot be structured-cloned
+
             if (e instanceof Error) {
               serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
               if (includeStack)
                 serialized.stack = e.stack;
+
+              // Error.cause is typically non-enumerable and must be copied explicitly.
+              if (Object.prototype.hasOwnProperty.call(e, "cause"))
+                serialized.cause = (e as { cause?: unknown }).cause;
             }
+
+            if (e instanceof BentleyError) {
+              serialized.iTwinErrorId = e.iTwinErrorId;
+              if (e.hasMetaData)
+                serialized.loggingMetadata = e.loggingMetadata;
+              delete serialized._metaData;
+            }
+
             // Only recurse into Error instances and plain objects — not class instances like Date or Buffer.
             const shouldRecurse = (val: any) => val instanceof Error || (JsonUtils.isObject(val) && Object.getPrototypeOf(val) === Object.prototype);
+            const isSerializableLeaf = (val: unknown): boolean => {
+              const t = typeof val;
+              return val === null || val === undefined || val instanceof Date
+                || t === "string" || t === "number" || t === "boolean";
+            };
             for (const key of Object.keys(serialized)) {
               const val = serialized[key];
               if (Array.isArray(val))
-                serialized[key] = val.map((item) => shouldRecurse(item) ? serializeError(item, includeStack, visited) : item);
+                serialized[key] = val.map((item) => shouldRecurse(item) ? serializeError(item, includeStack, visited) : isSerializableLeaf(item) ? item : undefined);
               else if (shouldRecurse(val))
                 serialized[key] = serializeError(val, includeStack, visited);
+              else if (!isSerializableLeaf(val))
+                delete serialized[key]; // strip non-cloneable values (functions, class instances, etc.)
             }
+
             return serialized;
           } finally {
             // Remove from the stack so a sibling branch can still serialize this object.
@@ -206,15 +230,7 @@ export abstract class IpcHandler {
           }
         };
 
-        const ret = { error: serializeError(err, !IpcHost.noStack) };
-
-        if (err instanceof BentleyError) {
-          ret.error.iTwinErrorId = err.iTwinErrorId;
-          if (err.hasMetaData)
-            ret.error.loggingMetadata = err.loggingMetadata;
-          delete ret.error._metaData;
-        }
-        return ret;
+        return { error: serializeError(err, !IpcHost.noStack) };
       }
     });
   }
