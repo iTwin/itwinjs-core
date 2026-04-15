@@ -1518,7 +1518,7 @@ export class ToolAdmin {
     const modifierKey = ToolAdmin.getModifierKey(keyEvent);
 
     if (BeModifierKeys.None !== modifierKey)
-      await this.onModifierKeyTransition("keydown" === keyEvent.type, modifierKey, keyEvent);
+      return this.onModifierKeyTransition("keydown" === keyEvent.type, modifierKey, keyEvent);
   }
 
   /** Event for every key down and up transition. */
