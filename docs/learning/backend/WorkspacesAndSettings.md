@@ -82,13 +82,8 @@ graph TD
     O -->|"overridden by"| B
     B -->|"overridden by"| M
 
-    style AppWorkspace fill:#e8f4fd,stroke:#0366d6,color:#000
-    style IModelWorkspace fill:#fff8e1,stroke:#f9a825,color:#000
-    style D fill:#ffffff,stroke:#586069,color:#000
-    style A fill:#ffffff,stroke:#586069,color:#000
-    style O fill:#ffffff,stroke:#586069,color:#000
-    style B fill:#ffffff,stroke:#586069,color:#000
-    style M fill:#d4edda,stroke:#28a745,color:#000
+    style M fill:#d4edda,stroke:#28a745
+    style D fill:#f8f9fa,stroke:#6c757d
 ```
 
 In practice:
