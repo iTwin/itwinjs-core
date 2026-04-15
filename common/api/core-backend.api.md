@@ -1126,6 +1126,24 @@ export interface CloseIModelArgs {
     optimize?: boolean;
 }
 
+// @alpha
+export class CloudBriefcaseDb extends BriefcaseDb {
+    protected constructor(args: {
+        nativeDb: IModelJsNative.DgnDb;
+        key: string;
+        openMode: OpenMode;
+        briefcaseId: number;
+        container: CloudSqlite.CloudContainer;
+    });
+    close(options?: CloseIModelArgs): void;
+    // @internal (undocumented)
+    get cloudContainer(): CloudSqlite.CloudContainer;
+    get isCloudBriefcase(): boolean;
+    static openCloud(args: OpenCloudBriefcaseArgs): Promise<CloudBriefcaseDb>;
+    // @internal
+    refreshContainerToken(accessToken?: AccessToken): Promise<void>;
+}
+
 // @public
 export interface CloudContainerArgs {
     // @internal (undocumented)
@@ -1376,6 +1394,8 @@ export namespace CloudSqlite {
     export function getBlobService(): BlobContainer.ContainerService;
     // (undocumented)
     export function getWriteLockHeldBy(container: CloudContainer): string | undefined;
+    // @alpha
+    export function hasLocalChanges(container: CloudContainer): boolean;
     // (undocumented)
     export function isSemverEditable(dbFullName: string, container: CloudContainer): boolean | readonly (string | number)[];
     // (undocumented)
@@ -5402,6 +5422,12 @@ export interface OnSubModelPropsArg extends OnElementArg {
 // @public
 export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
 
+// @alpha
+export interface OpenCloudBriefcaseArgs extends TokenArg {
+    readonly briefcaseId?: BriefcaseId;
+    readonly checkpoint: CheckpointProps;
+}
+
 // @public @preview
 export class OrthographicViewDefinition extends SpatialViewDefinition {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
@@ -7550,6 +7576,11 @@ export class V2CheckpointManager {
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
         container: CloudSqlite.CloudContainer | undefined;
+    }>;
+    // @alpha
+    static attachForBriefcase(checkpoint: CheckpointProps): Promise<{
+        dbName: string;
+        container: CloudSqlite.CloudContainer;
     }>;
     // (undocumented)
     static cleanup(): void;

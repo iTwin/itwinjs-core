@@ -169,19 +169,6 @@ export namespace CloudSqlite {
     readonly tokenRefreshSeconds?: number;
   }
 
-  /**
-   * Options for opening a cloud-attached database in local-write-only mode.
-   * In this mode, the database is read from the cloud container but all writes are held locally.
-   * No blocks are uploaded back to the cloud container.
-   * @alpha
-   */
-  export interface LocalWriteAccessProps {
-    /** The CloudContainer to read from. */
-    readonly container: CloudContainer;
-    /** The name of the database within the container. */
-    readonly dbName: string;
-  }
-
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
   export interface CachedDbProps {
     /** The total number of blocks in the database. */

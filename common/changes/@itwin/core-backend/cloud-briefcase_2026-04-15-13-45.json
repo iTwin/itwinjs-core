@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add CloudBriefcaseDb — a BriefcaseDb subclass backed by a V2 checkpoint container where blocks stream on demand from the cloud and local writes stay local.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -61,12 +61,14 @@ public;interface;CheckpointProps
 public;class;ClassRegistry
 beta;interface;ClearCachesOptions
 public;interface;CloseIModelArgs
+alpha;class;CloudBriefcaseDb
 public;interface;CloudContainerArgs
 beta;namespace;CloudSqlite
 internal;interface;BcvHttpLog
 internal;interface;BcvHttpLogFilterOptions
 internal;interface;BcvStats
 internal;interface;BcvStatsFilterOptions
+alpha;function;hasLocalChanges
 internal;interface;LockAndOpenArgs
 internal;function;transferDb
 beta;interface;CloudSqliteContainer
@@ -436,6 +438,7 @@ beta;interface;OnModelPropsArg
 beta;interface;OnSubModelIdArg
 beta;interface;OnSubModelPropsArg
 public;type;OpenBriefcaseArgs
+alpha;interface;OpenCloudBriefcaseArgs
 public;class;OrthographicViewDefinition
 preview;class;OrthographicViewDefinition
 internal;function;parseTextAnnotationData

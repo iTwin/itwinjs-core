@@ -4121,7 +4121,9 @@ export class CloudBriefcaseDb extends BriefcaseDb {
   /** @internal */
   public override get cloudContainer(): CloudSqlite.CloudContainer { return this._cloudContainer; }
 
-  /** true if this is a cloud-backed briefcase */
+  /** true if this is a cloud-backed briefcase
+   * @alpha
+   */
   public get isCloudBriefcase(): boolean { return true; }
 
   private _refreshSas: RefreshV2CheckpointSas | undefined;
@@ -4150,74 +4152,87 @@ export class CloudBriefcaseDb extends BriefcaseDb {
   public static async openCloud(args: OpenCloudBriefcaseArgs): Promise<CloudBriefcaseDb> {
     const { checkpoint } = args;
 
-    // Acquire a briefcaseId if not provided
+    // Acquire a briefcaseId if not provided. Track whether we acquired it so we can
+    // release it if a later step fails — prevents leaking hub resources.
+    const acquiredId = args.briefcaseId === undefined;
     const briefcaseId = args.briefcaseId ?? await BriefcaseManager.acquireNewBriefcaseId({
       accessToken: checkpoint.accessToken,
       iModelId: checkpoint.iModelId,
     });
 
-    // Attach the V2 checkpoint container
-    const { dbName, container } = await V2CheckpointManager.attachForBriefcase(checkpoint);
-
-    const key = CheckpointManager.getKey(checkpoint);
-
-    // Open the database in read-write mode against the cloud container.
-    // Local writes go to the local cache; blocks are never uploaded.
-    // skipWriteLockCheck: we intentionally skip the container write lock since we will never upload blocks.
-    const file = { path: dbName, key };
-    const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
-    IModelJsFs.recursiveMkDirSync(baseDir);
-    const openProps = { tempFileBase: join(baseDir, dbName), skipWriteLockCheck: true };
-    const nativeDb = new IModelNative.platform.DgnDb();
     try {
-      nativeDb.openIModel(dbName, OpenMode.ReadWrite, undefined, openProps, container, {});
-    } catch (err: any) {
-      throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to open cloud checkpoint as briefcase: ${err.message}`);
-    }
+      // Attach the V2 checkpoint container
+      const { dbName, container } = await V2CheckpointManager.attachForBriefcase(checkpoint);
 
-    // Set the briefcaseId on the native db so that changeset operations work correctly.
-    // This writes to a local dirty page that will never be uploaded.
-    try {
-      nativeDb.resetBriefcaseId(briefcaseId);
-      nativeDb.saveChanges();
-    } catch (err: any) {
-      nativeDb.closeFile();
-      throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to set briefcaseId on cloud briefcase: ${err.message}`);
-    }
+      const key = CheckpointManager.getKey(checkpoint);
 
-    const db = new CloudBriefcaseDb({
-      nativeDb,
-      key: file.key ?? Guid.createValue(),
-      openMode: OpenMode.ReadWrite,
-      briefcaseId,
-      container,
-    });
-
-    db._iTwinId = checkpoint.iTwinId;
-
-    // Set up SAS token refresh
-    const v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
-    if (v2props?.sasToken) {
-      db._refreshSas = new RefreshV2CheckpointSas(v2props.sasToken, checkpoint.reattachSafetySeconds);
-    }
-
-    // Load workspace settings
-    await db.loadWorkspaceSettings();
-
-    // Create code service if available
-    if (CodeService.createForIModel) {
+      // Open the database in read-write mode against the cloud container.
+      // Local writes go to the local cache; blocks are never uploaded.
+      // skipWriteLockCheck: we intentionally skip the container write lock since we will never upload blocks.
+      const file = { path: dbName, key };
+      const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+      IModelJsFs.recursiveMkDirSync(baseDir);
+      const openProps = { tempFileBase: join(baseDir, dbName), skipWriteLockCheck: true };
+      const nativeDb = new IModelNative.platform.DgnDb();
       try {
-        db._codeService = await CodeService.createForIModel(db);
-        BriefcaseDb.onCodeServiceCreated.raiseEvent(db);
-      } catch (e: any) {
-        if ((e as CodeService.Error).errorId !== "NoCodeIndex") {
-          Logger.logWarning(loggerCategory, `CodeService not available for cloud briefcase: ${e.message}`);
+        nativeDb.openIModel(dbName, OpenMode.ReadWrite, undefined, openProps, container, {});
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to open cloud checkpoint as briefcase: ${err.message}`);
+      }
+
+      // Set the briefcaseId on the native db so that changeset operations work correctly.
+      // This writes to a local dirty page that will never be uploaded.
+      try {
+        nativeDb.resetBriefcaseId(briefcaseId);
+        nativeDb.saveChanges();
+      } catch (err: any) {
+        nativeDb.closeFile();
+        throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to set briefcaseId on cloud briefcase: ${err.message}`);
+      }
+
+      const db = new CloudBriefcaseDb({
+        nativeDb,
+        key: file.key ?? Guid.createValue(),
+        openMode: OpenMode.ReadWrite,
+        briefcaseId,
+        container,
+      });
+
+      db._iTwinId = checkpoint.iTwinId;
+
+      // Set up SAS token refresh
+      const v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
+      if (v2props?.sasToken) {
+        db._refreshSas = new RefreshV2CheckpointSas(v2props.sasToken, checkpoint.reattachSafetySeconds);
+      }
+
+      // Load workspace settings
+      await db.loadWorkspaceSettings();
+
+      // Create code service if available
+      if (CodeService.createForIModel) {
+        try {
+          db._codeService = await CodeService.createForIModel(db);
+          BriefcaseDb.onCodeServiceCreated.raiseEvent(db);
+        } catch (e: any) {
+          if ((e as CodeService.Error).errorId !== "NoCodeIndex") {
+            Logger.logWarning(loggerCategory, `CodeService not available for cloud briefcase: ${e.message}`);
+          }
         }
       }
-    }
 
-    BriefcaseDb.onOpened.raiseEvent(db, { fileName: dbName });
-    return db;
+      BriefcaseDb.onOpened.raiseEvent(db, { fileName: dbName });
+      return db;
+    } catch (err) {
+      // Release the briefcaseId we acquired so it doesn't leak on the hub.
+      if (acquiredId) {
+        try {
+          const token = args.accessToken ?? checkpoint.accessToken ?? "";
+          await BriefcaseManager.releaseBriefcase(token, { briefcaseId, iModelId: checkpoint.iModelId });
+        } catch { }
+      }
+      throw err;
+    }
   }
 
   /**

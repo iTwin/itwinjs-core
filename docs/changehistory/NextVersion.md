@@ -5,6 +5,52 @@ publish: false
 
 ## Backend
 
+### Cloud-backed briefcases using V2 checkpoints
+
+The backend now supports opening a V2 checkpoint as a writable cloud-backed briefcase via the new [CloudBriefcaseDb]($backend) class and [OpenCloudBriefcaseArgs]($backend) interface. This lets applications stream iModel blocks on demand from a cloud container while keeping all local writes in a local cache — blocks are never uploaded back to the checkpoint container.
+
+#### What's new
+
+- **`CloudBriefcaseDb`** (`@alpha`): a new `BriefcaseDb` subclass backed by a V2 checkpoint container. Changesets can be pushed to iModelHub normally. The container is read-only; local edits stay in a per-session local cache.
+- **`CloudBriefcaseDb.openCloud(args)`** (`@alpha`): static factory method that attaches the checkpoint container, acquires (or reuses) a briefcase ID, opens the database in read-write mode against the cloud container, and sets up SAS token refresh.
+- **`OpenCloudBriefcaseArgs`** (`@alpha`): arguments interface for `openCloud`, accepting a `CheckpointProps` and an optional pre-acquired `briefcaseId`.
+- **`CloudSqlite.hasLocalChanges(container)`** (`@alpha`): helper to check whether a cloud container has uncommitted local changes that have not been uploaded.
+- **`V2CheckpointManager.attachForBriefcase(checkpoint)`** (`@alpha`): attaches a V2 checkpoint and returns both the `dbName` and the live `CloudContainer`, throwing if a mock container is used (mocks do not support cloud briefcase mode).
+
+#### Constraints
+
+- Local changes **must** be pushed to iModelHub before the briefcase is closed. Any unpushed changes are lost on close or crash — `CloudBriefcaseDb.close()` logs a warning if pending transactions exist.
+- The checkpoint blob container is **never** modified; this is a read-from-cloud, write-local-only pattern.
+- Pull/merge operations may trigger on-demand block fetching from the cloud container.
+
+#### Usage
+
+```ts
+import { CloudBriefcaseDb, withEditTxn } from "@itwin/core-backend";
+
+const db = await CloudBriefcaseDb.openCloud({
+  accessToken,
+  checkpoint: {
+    accessToken,
+    iTwinId,
+    iModelId,
+    changeset: { id: changesetId },
+    expectV2: true,        // fail fast if no V2 checkpoint is available
+    allowPreceding: true,  // accept the nearest preceding checkpoint
+  },
+});
+
+// Make edits locally — blocks stream from the cloud on demand
+withEditTxn(db, "Add property", (txn) => {
+  txn.saveFileProperty({ namespace: "MyApp", name: "key" }, "value");
+});
+
+// Push changesets to iModelHub when ready
+await db.pushChanges({ accessToken, description: "My changes" });
+
+db.close();
+```
+
 ### Explicit editing transactions with `EditTxn`
 
 The backend now provides [EditTxn]($backend) as the preferred way to perform writes to an iModel. This introduces an explicit transaction boundary around a unit of work: start editing, make one or more changes through the transaction, and then either save or abandon that scope.
