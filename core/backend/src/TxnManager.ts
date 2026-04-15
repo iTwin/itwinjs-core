@@ -324,6 +324,7 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
+  private _disposed: boolean = false;
 
   /** Event raised before pull merge process begins.
    * @alpha
@@ -449,9 +450,13 @@ export class RebaseManager {
 
   /** Disposes of this RebaseManager, clearing all event listeners.
    * Also calls [[RebaseHandler.dispose]] on the registered custom handler, if any.
+   * Subsequent calls are ignored.
    * @alpha
    */
   public dispose(): void {
+    if (this._disposed)
+      return;
+    this._disposed = true;
     this._customHandler?.dispose?.();
     this.onPullMergeBegin.clear();
     this.onRebaseBegin.clear();

@@ -1200,4 +1200,32 @@ describe("RebaseManager", () => {
     db.close();
     IModelJsFs.removeSync(testFileName);
   });
+
+  it("dispose is idempotent — subsequent calls are ignored", () => {
+    IModelTestUtils.registerTestBimSchema();
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    let disposeCallCount = 0;
+    const handler: RebaseHandler = {
+      shouldReinstate: (_txn) => true,
+      recompute: async (_txn) => {},
+      dispose: () => { disposeCallCount++; },
+    };
+    rebaser.setCustomHandler(handler);
+
+    rebaser.dispose();
+    expect(disposeCallCount).to.equal(1);
+
+    // Second and third calls must be no-ops
+    rebaser.dispose();
+    rebaser.dispose();
+    expect(disposeCallCount).to.equal(1);
+
+    db.close();
+    IModelJsFs.removeSync(testFileName);
+  });
 });
