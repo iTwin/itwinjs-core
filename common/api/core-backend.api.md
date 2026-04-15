@@ -2251,7 +2251,7 @@ export enum ECChangesetMode {
 // @beta
 export class ECChangesetReader implements Disposable, ECNativeChangeSource {
     [Symbol.dispose](): void;
-    clearClassIdFilters(): void;
+    clearClassNameFilters(): void;
     clearOpCodeFilters(): void;
     clearTableNameFilters(): void;
     close(): void;
@@ -2278,7 +2278,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
         db: IModelDb;
         txnId: Id64String;
     }): ECChangesetReader;
-    setClassIdFilters(classIds: Set<Id64String>): void;
+    setClassNameFilters(classNames: Set<string>): void;
     setOpCodeFilters(ops: Set<ECNativeChangeOp>): void;
     setTableNameFilters(tableNames: Set<string>): void;
     step(): boolean;
