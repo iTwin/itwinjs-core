@@ -27,7 +27,7 @@ import { BriefcaseDb, BriefcaseManager, LiteBriefcaseDb, IModelHost, V2Checkpoin
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ChangesetProps } from "@itwin/core-common";ππ
+import { ChangesetProps } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 
