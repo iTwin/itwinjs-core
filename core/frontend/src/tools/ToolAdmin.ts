@@ -483,6 +483,12 @@ export class ToolAdmin {
       ToolAdmin.addEvent(ev);
   };
 
+  /** Handler for modifier key transitions captured before focused UI elements can stop propagation. */
+  private static _keyEventCaptureHandler = (ev: KeyboardEvent) => {
+    if (!ev.repeat)
+      IModelApp.toolAdmin.onKeyTransitionCaptured(ev).catch(async (err) => ToolAdmin.exceptionHandler(err));
+  };
+
   /** @internal */
   public onInitialized() {
     if (typeof document === "undefined")
@@ -491,6 +497,9 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
     ["keydown", "keyup"].forEach((type) => {
+      document.addEventListener(type, ToolAdmin._keyEventCaptureHandler as EventListener, true);
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventCaptureHandler as EventListener, true));
+
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
       ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
     });
@@ -553,7 +562,7 @@ export class ToolAdmin {
     const pos = this.getMousePosition(event);
     const button = this.getMouseButton(ev.button);
 
-    await this.updateKeyQualifiers(ev);
+    this.currentInputState.setKeyQualifiers(ev);
     return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
   }
 
@@ -563,7 +572,7 @@ export class ToolAdmin {
     if (undefined === vp || this.filterViewport(vp))
       return EventHandled.Yes;
     const current = this.currentInputState;
-    await this.updateKeyQualifiers(ev);
+    current.setKeyQualifiers(ev);
 
     if (ev.deltaY === 0)
       return EventHandled.No;
@@ -648,10 +657,10 @@ export class ToolAdmin {
       case "touchstart":
         if (touchEvent.changedTouches.length === touchEvent.targetTouches.length)
           vp.setAnimator(); // Clear viewport animator on start of new touch input (first contact point added)...
-        await this.updateKeyQualifiers(touchEvent);
+        current.setKeyQualifiers(touchEvent);
         break;
       case "touchend":
-        await this.updateKeyQualifiers(touchEvent);
+        current.setKeyQualifiers(touchEvent);
         break;
     }
 
@@ -1188,8 +1197,6 @@ export class ToolAdmin {
     if (undefined === vp)
       return;
 
-    await this.updateKeyQualifiers(event.ev as MouseEvent);
-
     const pos = this.getMousePosition(event);
     const mov = this.getMouseMovement(event);
 
@@ -1444,45 +1451,6 @@ export class ToolAdmin {
     document.body.focus();
   }
 
-  /** Inform active tool of changes to modifier keys.
-   * Only doing this from onKeyTransition is insufficient as focus can be somewhere such as
-   * tool settings while the user is interacting with the view.
-   */
-  private async updateKeyQualifiers(event: MouseEvent | TouchEvent): Promise<void> {
-    const current = this.currentInputState;
-    const before = current.qualifiers;
-    current.setKeyQualifiers(event);
-    const after = current.qualifiers;
-
-    if (before === after)
-      return;
-
-    const getModifierKeyName = (modifier: BeModifierKeys): "Shift" | "Control" | "Alt" => {
-      switch (modifier) {
-        case BeModifierKeys.Shift: return "Shift";
-        case BeModifierKeys.Control: return "Control";
-        default: return "Alt";
-      }
-    };
-
-    const modifiers = [BeModifierKeys.Shift, BeModifierKeys.Control, BeModifierKeys.Alt];
-    for (const modifier of modifiers) {
-      const wasDown = 0 !== (before & modifier);
-      const isDown = 0 !== (after & modifier);
-      if (wasDown === isDown)
-        continue;
-
-      const keyEvent = new KeyboardEvent(isDown ? "keydown" : "keyup", {
-        key: getModifierKeyName(modifier),
-        shiftKey: 0 !== (after & BeModifierKeys.Shift),
-        ctrlKey: 0 !== (after & BeModifierKeys.Control),
-        altKey: 0 !== (after & BeModifierKeys.Alt),
-      });
-
-      await this.onModifierKeyTransition(isDown, modifier, keyEvent);
-    }
-  }
-
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
       case "Alt": return BeModifierKeys.Alt;
@@ -1517,7 +1485,7 @@ export class ToolAdmin {
     return { handled, result };
   }
 
-  /** Process shortcut key events
+  /** Sub-classes should override to process shortcut key events.
    * @return true if handled and no further processing of event should occur.
    */
   public async processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean> {
@@ -1525,31 +1493,37 @@ export class ToolAdmin {
   }
 
   /** Event for every key down and up transition.
+   * @note Called before processShortcutKey.
    * @return true if handled and no further processing of event should occur.
    */
   protected processKeyboardEvent(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
     if (this._isFocusHome || undefined !== IModelApp.accuDraw.getFocusItem())
       return false; // Focus is Home or AccuDraw, allow shortcuts...
 
-    // TODO: Escape can't be only option to move focus to Home if apps are also using it to start default tool? Should this be a ToolSettings option?
+    // NOTE: Need to provide a convenient way for the user to move focus to Home to use shortcuts.
+    // Escape is the obvious/traditional choice. For apps that want to use Escape to start
+    // the default tool, they can still do that in processShortcutKey when focus is Home;
+    // can also sub-class ToolAdmin to override this method.
     if (wentDown && keyEvent.key === "Escape")
       this._setFocusHome();
 
     return true;
   }
 
+  /** Need to check for modifier changes on capture phase as a ui element that calls stopPropagation
+   * prevents onKeyTransition from being called when bubbling.
+   */
+  private async onKeyTransitionCaptured(keyEvent: KeyboardEvent): Promise<void> {
+    this.currentInputState.setKeyQualifiers(keyEvent);
+    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+
+    if (BeModifierKeys.None !== modifierKey)
+      await this.onModifierKeyTransition("keydown" === keyEvent.type, modifierKey, keyEvent);
+  }
+
   /** Event for every key down and up transition. */
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
-
-    // Don't send modifier transition event to active tool if cursor is not over a view...
-    if (undefined !== this.currentInputState.viewport) {
-      this.currentInputState.setKeyQualifiers(keyEvent);
-
-      const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-      if (BeModifierKeys.None !== modifierKey)
-        return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
-    }
 
     if (this.processKeyboardEvent(keyEvent, wentDown))
       return EventHandled.Yes;
