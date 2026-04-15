@@ -110,7 +110,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     public readonly bufferedReadInstanceSizeInBytes: number = NativeSqliteBackedInstanceCache.defaultBufferSize,
   ) {
     this._db = new SQLiteDb();
-    this._db.openDb("", { skipFileCheck: true, rawSQLite: true, openMode: OpenMode.ReadWrite }); // creating temp sqlite db
+    this._db.openDb("", { skipFileCheck: true, rawSQLite: true, openMode: OpenMode.ReadWrite }); // creating temp sqlite db https://sqlite.org/inmemorydb.html#:~:text=Temporary%20Databases,under%20the%20default%20SQLite%20configuration.
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceSizeInBytes must be greater than 0");
     this.createTempTable();
