@@ -545,9 +545,8 @@ export namespace BlobContainer {
         label: string;
     }
     export interface MetadataResponse extends Metadata {
-        // (undocumented)
         containerId: string;
-        iTwinId: GuidString;
+        iTwinId?: GuidString;
         parentITwinId?: GuidString;
     }
     export type Provider = "azure" | "google";
