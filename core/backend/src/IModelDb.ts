@@ -4089,8 +4089,157 @@ class RefreshV2CheckpointSas {
 
     return this._promise;
   }
-
 }
+
+/**
+ * Arguments to open a cloud-backed briefcase from a V2 checkpoint.
+ * @alpha
+ */
+export interface OpenCloudBriefcaseArgs extends TokenArg {
+  /** The checkpoint to attach to */
+  readonly checkpoint: CheckpointProps;
+  /** Optional pre-acquired briefcaseId. If not provided, one is acquired from iModelHub. */
+  readonly briefcaseId?: BriefcaseId;
+}
+
+/**
+ * A briefcase backed by a V2 checkpoint container. Blocks are streamed on demand from the cloud.
+ * Local writes stay in the local cache and are never uploaded back to the checkpoint container.
+ * Changesets can be pushed to iModelHub.
+ *
+ * **Constraints**:
+ * - Local changes must be pushed before close. Unpushed changes are lost on close or crash.
+ * - No block upload — the checkpoint blob container is never modified.
+ * - Pull/merge operations may cause on-demand block fetching from the cloud.
+ *
+ * @alpha
+ */
+export class CloudBriefcaseDb extends BriefcaseDb {
+  /** The cloud container backing this briefcase */
+  private _cloudContainer: CloudSqlite.CloudContainer;
+
+  /** @internal */
+  public override get cloudContainer(): CloudSqlite.CloudContainer { return this._cloudContainer; }
+
+  /** true if this is a cloud-backed briefcase */
+  public get isCloudBriefcase(): boolean { return true; }
+
+  private _refreshSas: RefreshV2CheckpointSas | undefined;
+
+  protected constructor(args: {
+    nativeDb: IModelJsNative.DgnDb;
+    key: string;
+    openMode: OpenMode;
+    briefcaseId: number;
+    container: CloudSqlite.CloudContainer;
+  }) {
+    super({ nativeDb: args.nativeDb, key: args.key, openMode: args.openMode, briefcaseId: args.briefcaseId });
+    this._cloudContainer = args.container;
+  }
+
+  /**
+   * Open a V2 checkpoint as a writable cloud-backed briefcase.
+   * Blocks are streamed on demand from the cloud. Local writes stay local.
+   * Changesets can be pushed to iModelHub. Blocks are never uploaded to the checkpoint container.
+   *
+   * @param args parameters specifying the checkpoint and optional briefcaseId
+   * @returns a new CloudBriefcaseDb
+   * @throws IModelError if the checkpoint cannot be attached or if a briefcaseId cannot be acquired
+   * @alpha
+   */
+  public static async openCloud(args: OpenCloudBriefcaseArgs): Promise<CloudBriefcaseDb> {
+    const { checkpoint } = args;
+
+    // Acquire a briefcaseId if not provided
+    const briefcaseId = args.briefcaseId ?? await BriefcaseManager.acquireNewBriefcaseId({
+      accessToken: checkpoint.accessToken,
+      iModelId: checkpoint.iModelId,
+    });
+
+    // Attach the V2 checkpoint container
+    const { dbName, container } = await V2CheckpointManager.attachForBriefcase(checkpoint);
+
+    const key = CheckpointManager.getKey(checkpoint);
+
+    // Open the database in read-write mode against the cloud container.
+    // Local writes go to the local cache; blocks are never uploaded.
+    // skipWriteLockCheck: we intentionally skip the container write lock since we will never upload blocks.
+    const file = { path: dbName, key };
+    const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+    IModelJsFs.recursiveMkDirSync(baseDir);
+    const openProps = { tempFileBase: join(baseDir, dbName), skipWriteLockCheck: true };
+    const nativeDb = new IModelNative.platform.DgnDb();
+    try {
+      nativeDb.openIModel(dbName, OpenMode.ReadWrite, undefined, openProps, container, {});
+    } catch (err: any) {
+      throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to open cloud checkpoint as briefcase: ${err.message}`);
+    }
+
+    // Set the briefcaseId on the native db so that changeset operations work correctly.
+    // This writes to a local dirty page that will never be uploaded.
+    try {
+      nativeDb.resetBriefcaseId(briefcaseId);
+      nativeDb.saveChanges();
+    } catch (err: any) {
+      nativeDb.closeFile();
+      throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to set briefcaseId on cloud briefcase: ${err.message}`);
+    }
+
+    const db = new CloudBriefcaseDb({
+      nativeDb,
+      key: file.key ?? Guid.createValue(),
+      openMode: OpenMode.ReadWrite,
+      briefcaseId,
+      container,
+    });
+
+    db._iTwinId = checkpoint.iTwinId;
+
+    // Set up SAS token refresh
+    const v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
+    if (v2props?.sasToken) {
+      db._refreshSas = new RefreshV2CheckpointSas(v2props.sasToken, checkpoint.reattachSafetySeconds);
+    }
+
+    // Load workspace settings
+    await db.loadWorkspaceSettings();
+
+    // Create code service if available
+    if (CodeService.createForIModel) {
+      try {
+        db._codeService = await CodeService.createForIModel(db);
+        BriefcaseDb.onCodeServiceCreated.raiseEvent(db);
+      } catch (e: any) {
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") {
+          Logger.logWarning(loggerCategory, `CodeService not available for cloud briefcase: ${e.message}`);
+        }
+      }
+    }
+
+    BriefcaseDb.onOpened.raiseEvent(db, { fileName: dbName });
+    return db;
+  }
+
+  /**
+   * Refresh the SAS token for the cloud container if it is about to expire.
+   * @internal
+   */
+  public async refreshContainerToken(accessToken?: AccessToken): Promise<void> {
+    if (this._refreshSas) {
+      const token = accessToken ?? await IModelHost.getAccessToken();
+      await this._refreshSas.refreshSas(token, this);
+    }
+  }
+
+  /** Override close to warn if there are unpushed local changes. */
+  public override close(options?: CloseIModelArgs) {
+    if (this.isOpen && this[_nativeDb].hasPendingTxns()) {
+      Logger.logWarning(loggerCategory, "Closing CloudBriefcaseDb with unpushed local changes. These changes will be lost.");
+    }
+    super.close(options);
+  }
+}
+
 /** A *snapshot* iModel database file that is used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)

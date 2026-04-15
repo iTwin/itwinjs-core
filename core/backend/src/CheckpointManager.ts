@@ -249,6 +249,20 @@ export class V2CheckpointManager {
     }
   }
 
+  /**
+   * Attach a V2 checkpoint for use as a cloud-backed briefcase. The container is connected for reading
+   * and the database name is returned. Unlike the standard `attach()`, this method is intended for
+   * scenarios where the caller will open the database in read-write mode locally (without uploading
+   * blocks back to the container).
+   * @alpha
+   */
+  public static async attachForBriefcase(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
+    const result = await this.attach(checkpoint);
+    if (!result.container)
+      throw new IModelError(IModelStatus.BadRequest, "V2 checkpoint mock does not support cloud briefcase mode");
+    return { dbName: result.dbName, container: result.container };
+  }
+
   /** @internal */
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
