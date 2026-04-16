@@ -1496,15 +1496,15 @@ export class ToolAdmin {
    * @note Called before processShortcutKey.
    * @return true if handled and no further processing of event should occur.
    */
-  protected processKeyboardEvent(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+  protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
     if (this._isFocusHome || undefined !== IModelApp.accuDraw.getFocusItem())
       return false; // Focus is Home or AccuDraw, allow shortcuts...
 
-    // NOTE: Need to provide a convenient way for the user to move focus to Home to use shortcuts.
-    // Escape is the obvious/traditional choice. For apps that want to use Escape to start
-    // the default tool, they can still do that in processShortcutKey when focus is Home;
-    // can also sub-class ToolAdmin to override this method.
-    if (wentDown && keyEvent.key === "Escape")
+    // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
+    // Escape is the only practical choice with its default behavior that can cancel/close/blur.
+    // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
+    // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
+    if (keyEvent.key === "Escape" && !keyEvent.defaultPrevented && !keyEvent.isComposing)
       this._setFocusHome();
 
     return true;
