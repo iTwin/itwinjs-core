@@ -716,15 +716,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       bezierB.poleProductsXYZW(
         univariateBezierB.coffs, this._xyzwPlane.x, this._xyzwPlane.y, this._xyzwPlane.z, this._xyzwPlane.w,
       );
-      let errors = 0;
       const roots = univariateBezierB.roots(0.0, true);
       if (roots) {
         for (const r of roots) {
           let bezierBFraction = r;
           bezierB.fractionToPoint4d(bezierBFraction, this._xyzwB);
-          const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(
-            this._xyzwA0, this._xyzwA1, this._xyzwB,
-          );
+          const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(this._xyzwA0, this._xyzwA1, this._xyzwB);
           if (segmentAFraction !== undefined && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
             // We have a near intersection at fractions on the two beziers
@@ -732,30 +729,21 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
             const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
-            if (newtonSearcher.runIterations()) {
-              bezierAFraction = newtonSearcher.getU();
-              bezierBFraction = newtonSearcher.getV();
-            }
+
+            let converged = newtonSearcher.runIterations();
+            bezierAFraction = newtonSearcher.getU();
+            bezierBFraction = newtonSearcher.getV();
             const bcurveAFraction = bezierA.fractionToParentFraction(bezierAFraction);
             const bcurveBFraction = bezierB.fractionToParentFraction(bezierBFraction);
-            if (false) { // verify results
-              const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
-              const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
-              const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
-              const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
-              if (!xyzA0.isAlmostEqualXY(xyzA1))
-                errors++;
-              if (!xyzB0.isAlmostEqualXY(xyzB1))
-                errors++;
-              if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
-                errors++;
-              if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
-                errors++;
-            }
             if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
-              this.recordPointWithLocalFractions(
-                bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
-              );
+              const pointA = bezierA.fractionToPoint(bezierAFraction, CurveCurveIntersectXY._workPointA0);
+              const pointB = bezierB.fractionToPoint(bezierBFraction, CurveCurveIntersectXY._workPointB0);
+              if (!converged) { // Newton may have found close points even if it didn't converge parametrically
+                const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
+                converged = pointA.isAlmostEqualXY(pointB, strictTolerance); // we can afford to be choosy
+              }
+              if (converged)
+                this.recordPointWithLocalFractions(bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed);
             }
           }
         }

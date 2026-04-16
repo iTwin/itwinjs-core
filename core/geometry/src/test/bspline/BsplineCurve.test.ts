@@ -1112,7 +1112,7 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionXYPairs", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     // small bspline

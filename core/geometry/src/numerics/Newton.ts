@@ -79,7 +79,11 @@ export abstract class AbstractNewtonIterator {
   }
   /** Smallest iterate size difference in later iterations. */
   private _leastDelta: number = Number.MAX_VALUE;
-  /** The current late iterate has the least delta encountered. Remember it. Implement along with [[restoreCandidate]].*/
+  /**
+   * The current late iterate has the least delta encountered. Remember it. Implement along with [[restoreCandidate]].
+   * The cache ensures that even when Newton doesn't formally converge, the best approximation is returned, not the
+   * last (potentially diverged) iterate.
+   */
   protected cacheCandidate?(): void;
   /** Set Newton result to the cached candidate. Implement along with [[cacheCandidate]]. */
   protected restoreCandidate?(): void;
@@ -163,7 +167,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
     this.setTarget(0);
   }
   /** Set the independent variable, i.e., x_n. */
-  public setX(x: number) {
+  public setX(x: number): void {
     this._currentX = x;
   }
   /** Get the independent variable, i.e., x_n. */
