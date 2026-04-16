@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "add \"missing-container-itwinid\" to ITwinSettingsError",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
