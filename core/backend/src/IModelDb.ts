@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, RuntimeSchemaContext, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -446,7 +446,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  private _schemasPromise?: Promise<RuntimeSchemaContext>;
+  private _schemasPromise?: Promise<SchemaView>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1715,17 +1715,17 @@ export abstract class IModelDb extends IModel {
     return this._schemaContext;
   }
 
-  /** Get the runtime schema metadata context for this iModel. The context is built lazily on
-   * first call by fetching compact binary schema data via `PRAGMA runtime_schemas` through
-   * the ConcurrentQuery thread pool. Subsequent calls return the cached context. Multiple
-   * concurrent callers share a single in-flight build (including from `refreshSchemas`).
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
+   * concurrent callers share a single in-flight build (including from `refreshSchemaView`).
    *
-   * The returned `RuntimeSchemaContext` is a lightweight, read-only, synchronous API for
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
    * @beta
    */
-  public async getSchemas(): Promise<RuntimeSchemaContext> {
+  public async getSchemaView(): Promise<SchemaView> {
     if (this._schemasPromise) {
       const ctx = await this._schemasPromise;
       if (!ctx.isOutdated)
@@ -1738,17 +1738,17 @@ export abstract class IModelDb extends IModel {
     return this._schemasPromise;
   }
 
-  /** Check if the cached runtime schema context is stale and reload if necessary.
+  /** Check if the cached schema view is stale and reload if necessary.
    * Uses a lightweight `PRAGMA checksum(ecdb_schema)` to compare tokens without building the full
-   * binary blob. If the token matches, returns the existing cached context. If it changed, builds
-   * a new context and marks the old one as outdated.
+   * binary blob. If the token matches, returns the existing cached view. If it changed, builds
+   * a new view and marks the old one as outdated.
    *
-   * If no context is cached yet, this behaves identically to `getSchemas()`.
+   * If no view is cached yet, this behaves identically to `getSchemaView()`.
    * @beta
    */
-  public async refreshSchemas(): Promise<RuntimeSchemaContext> {
+  public async refreshSchemaView(): Promise<SchemaView> {
     if (!this._schemasPromise)
-      return this.getSchemas();
+      return this.getSchemaView();
     const existing = await this._schemasPromise;
     const liveToken = await this._fetchSchemaToken();
     if (liveToken === existing.schemaToken && !existing.isOutdated)
@@ -1761,22 +1761,22 @@ export abstract class IModelDb extends IModel {
     return this._schemasPromise;
   }
 
-  private async _hydrateSchemas(): Promise<RuntimeSchemaContext> {
+  private async _hydrateSchemas(): Promise<SchemaView> {
     // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
     // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
     // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
     // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
     // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
     // don't support OFFSET-based pagination.
-    const reader = this.createQueryReader("PRAGMA runtime_schemas");
+    const reader = this.createQueryReader("PRAGMA schema_view");
     const result = await reader.next();
     if (result.done)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned no rows");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned no rows");
     const data = result.value.data as Uint8Array | undefined;
     const token = result.value.schemaToken as string | undefined;
     if (data === undefined || data === null)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA runtime_schemas returned null data column");
-    return RuntimeSchemaContext.fromBinary(data, token ?? "");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
+    return SchemaView.fromBinary(data, token ?? "");
   }
 
   private async _fetchSchemaToken(): Promise<string> {
@@ -1788,8 +1788,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Schedule a non-blocking background check of the schema token.
-   * If the token has changed, the cached context is flagged as outdated
-   * and the next `getSchemas()` call will load a fresh context.
+   * If the token has changed, the cached view is flagged as outdated
+   * and the next `getSchemaView()` call will load a fresh view.
    */
   private _scheduleSchemaCheck(): void {
     const promise = this._schemasPromise;

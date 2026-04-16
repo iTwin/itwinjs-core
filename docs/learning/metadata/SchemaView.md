@@ -4,7 +4,7 @@
 
 It lives in `@itwin/ecschema-metadata` and is the recommended way to access schema metadata at runtime when you need fast, repeated lookups - for example in presentation rules, property grids, or data-driven UI.
 
-For the binary transport format specification, see [SchemaViewBinaryFormat.md](./RuntimeSchemaBinaryFormat.md).
+For the binary transport format specification, see [SchemaViewBinaryFormat.md](./SchemaViewBinaryFormat.md).
 
 ## Why not SchemaContext?
 
@@ -188,7 +188,7 @@ Calling `getProperties()` allocates a new `SchemaView.Property` wrapper for each
 
 ## Excluded schemas and data completeness
 
-`SchemaView` intentionally excludes a select list of schemas: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is defined in the C++ writer's `IsExcludedSchema()` function in `RuntimeSchemaWriter.cpp`.
+`SchemaView` intentionally excludes a select list of schemas: Units, Formats, ECDb-internal schemas (ECDbSystem, ECDbMap, etc.), and pure custom-attribute schemas (CoreCustomAttributes, EditorCustomAttributes, etc.). The full list is defined in the C++ writer's `IsExcludedSchema()` function in `SchemaViewWriter.cpp`.
 
 The rationale for Units/Formats being: We are in the process of decoupling those from schemas. In a yet to be shipped API they will be loaded separately, so this API will already only expose identifiers which will be used to perform the lookup.
 

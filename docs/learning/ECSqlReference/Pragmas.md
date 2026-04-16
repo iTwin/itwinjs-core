@@ -18,7 +18,7 @@ PRAGMA help
 | help                          | global | return list of pragma supported                                                 |
 | integrity_check               | global | performs integrity checks on ECDb                                               |
 | parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                                   |
-| runtime_schemas               | global | returns all schema metadata as a binary blob                                    |
+| schema_view                   | global | returns all schema metadata as a binary blob                                    |
 | disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                          |
 
 ## `PRAGMA checksum`
@@ -203,20 +203,20 @@ PRAGMA parse_tree ('SELECT ECClassId, CodeValue FROM bis.GeometricElement3d') EC
 }
 ```
 
-## `PRAGMA runtime_schemas`
+## `PRAGMA schema_view`
 
-Returns all EC schema metadata from the connection as a single compact binary blob. This is used internally by `RuntimeSchemaContext` to hydrate a lightweight, read-only schema cache in a single round-trip instead of loading each schema individually.
+Returns all EC schema metadata from the connection as a single compact binary blob. This is used internally by `SchemaView` to hydrate a lightweight, read-only schema cache in a single round-trip instead of loading each schema individually.
 
 The pragma accepts an optional integer argument to select the binary format version. When omitted, the latest supported version is returned (currently v1).
 
 ```sql
-PRAGMA runtime_schemas
+PRAGMA schema_view
 ```
 
 Explicitly request format version 1:
 
 ```sql
-PRAGMA runtime_schemas(1)
+PRAGMA schema_view(1)
 ```
 
 The result is a single row with the following columns:
@@ -234,7 +234,7 @@ Passing an unsupported format version returns an error:
 
 ```sql
 -- ERROR: unsupported format version
-PRAGMA runtime_schemas(99)
+PRAGMA schema_view(99)
 ```
 
 [ECSql Syntax](./index.md)

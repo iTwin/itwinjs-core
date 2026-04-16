@@ -35,7 +35,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import { RuntimeSchemaContext, runtimeSchemasFormatVersion, SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaView, schemaViewFormatVersion, SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 
@@ -161,7 +161,7 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
-  private _schemasPromise?: Promise<RuntimeSchemaContext>;
+  private _schemasPromise?: Promise<SchemaView>;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -642,17 +642,17 @@ export abstract class IModelConnection extends IModel {
     return this._schemaContext;
   }
 
-  /** Get the runtime schema metadata context for this iModel. The context is built lazily on
-   * first call by fetching compact binary schema data via `PRAGMA runtime_schemas` through
-   * the existing queryRows RPC (ConcurrentQuery). Subsequent calls return the cached context.
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the existing queryRows RPC (ConcurrentQuery). Subsequent calls return the cached view.
    * Multiple concurrent callers share a single in-flight fetch.
    *
-   * The returned `RuntimeSchemaContext` is a lightweight, read-only, synchronous API for
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
    * @beta
    */
-  public async getSchemas(): Promise<RuntimeSchemaContext> {
+  public async getSchemaView(): Promise<SchemaView> {
     if (this._schemasPromise) {
       const ctx = await this._schemasPromise;
       if (!ctx.isOutdated)
@@ -665,22 +665,22 @@ export abstract class IModelConnection extends IModel {
     return this._schemasPromise;
   }
 
-  private async _fetchSchemas(): Promise<RuntimeSchemaContext> {
+  private async _fetchSchemas(): Promise<SchemaView> {
     // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
     // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
     // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
     // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
     // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
     // don't support OFFSET-based pagination.
-    const reader = this.createQueryReader(`PRAGMA runtime_schemas(${runtimeSchemasFormatVersion})`);
+    const reader = this.createQueryReader(`PRAGMA schema_view(${schemaViewFormatVersion})`);
     const result = await reader.next();
     if (result.done)
-      throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned no rows");
+      throw new IModelError(IModelStatus.BadRequest, "PRAGMA schema_view returned no rows");
     const data = result.value.data as Uint8Array | undefined;
     const token = result.value.schemaToken as string | undefined;
     if (data === undefined || data === null)
-      throw new IModelError(IModelStatus.BadRequest, "PRAGMA runtime_schemas returned null data column");
-    return RuntimeSchemaContext.fromBinary(data, token ?? "");
+      throw new IModelError(IModelStatus.BadRequest, "PRAGMA schema_view returned null data column");
+    return SchemaView.fromBinary(data, token ?? "");
   }
 }
 

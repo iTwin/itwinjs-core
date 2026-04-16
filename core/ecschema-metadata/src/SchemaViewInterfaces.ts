@@ -8,11 +8,11 @@
 
 /** The binary format version that this TS reader supports.
  * The C++ writer in imodel-native must produce this version (or negotiate down to it).
- * Frontend callers should always request this version explicitly via `PRAGMA runtime_schemas(N)`.
+ * Frontend callers should always request this version explicitly via `PRAGMA schema_view(N)`.
  * Backend callers may omit it since native and backend are bundled together.
  * @beta
  */
-export const runtimeSchemasFormatVersion = 1;
+export const schemaViewFormatVersion = 1;
 
 /** Matches ec_Class.Type values in ECDb.
  * @beta

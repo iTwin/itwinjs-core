@@ -2,7 +2,7 @@
 
 The `ECDbMeta` schema allows querying schema information from an ECDb.
 
-> For an object-model alternative that loads all schemas in one shot, see [RuntimeSchemaContext](../metadata/RuntimeSchemaContext.md).
+> For an object-model alternative that loads all schemas in one shot, see [SchemaView](../metadata/SchemaView.md).
 
 ### Schemas in a file
 

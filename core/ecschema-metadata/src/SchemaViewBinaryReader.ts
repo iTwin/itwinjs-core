@@ -7,9 +7,9 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { RuntimeSchemaContext, RuntimeSchemaContextBuilder } from "./RuntimeSchemaContext";
+import { SchemaView, SchemaViewBuilder } from "./SchemaView";
 import { StrengthDirection, StrengthType } from "./ECObjects";
-import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, RuntimePrimitiveType, runtimeSchemasFormatVersion } from "./RuntimeSchemaInterfaces";
+import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, RuntimePrimitiveType, schemaViewFormatVersion } from "./SchemaViewInterfaces";
 
 /** Binary record tags for the runtime schema format.
  * Each tag marks a flat, count-prefixed table. Must stay in sync with the C++ writer. */
@@ -143,15 +143,15 @@ function expectTag(reader: BinaryReader, expected: Tag): void {
     throw new Error(`Expected tag 0x${expected.toString(16)} but found 0x${tag.toString(16)} at offset ${reader.pos - 1}`);
 }
 
-/** Parse a runtime schema blob (v2 flat format) into a `RuntimeSchemaContext`.
+/** Parse a schema view blob (binary format) into a `SchemaView`.
  *
- * v2 layout: Header, PropertyDefTable, SchemaTable, EnumTable, KoQTable, PropCatTable, ClassTable, StringTable.
+ * Layout: Header, PropertyDefTable, SchemaTable, EnumTable, KoQTable, PropCatTable, ClassTable, StringTable.
  * Each table is count-prefixed. Schema items carry their schema's ecInstanceId for ownership resolution.
  * Classes have count-prefixed inline sub-items (base classes, property refs, constraints).
  *
  * @beta
  */
-export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): RuntimeSchemaContext {
+export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): SchemaView {
   const reader = new BinaryReader(data);
 
   // Header: magic(4) + version(1) + stringTableOffset(4)
@@ -159,12 +159,12 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
   if (magic !== MAGIC)
     throw new Error(`Invalid runtime schema magic: 0x${magic.toString(16)}, expected 0x${MAGIC.toString(16)}`);
   const version = reader.readU8();
-  if (version !== runtimeSchemasFormatVersion)
-    throw new Error(`Unsupported runtime schema version: ${version}, expected ${runtimeSchemasFormatVersion}`);
+  if (version !== schemaViewFormatVersion)
+    throw new Error(`Unsupported schema view format version: ${version}, expected ${schemaViewFormatVersion}`);
   const stOffset = reader.readU32();
   reader.parseStringTable(stOffset);
 
-  const builder = new RuntimeSchemaContextBuilder();
+  const builder = new SchemaViewBuilder();
 
   // Cross-reference maps (ecInstanceId -> builder array index)
   const schemaEcIdToIdx = new Map<number, number>();
@@ -294,7 +294,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
           enumeratorCount++;
         }
       } catch (e) {
-        Logger.logWarning("ecschema-metadata.RuntimeSchema", `Malformed EnumValues JSON for enumeration "${eName}": ${e}`);
+        Logger.logWarning("ecschema-metadata.SchemaView", `Malformed EnumValues JSON for enumeration "${eName}": ${e}`);
       }
     }
 
@@ -677,7 +677,7 @@ export function parseRuntimeSchemaBlob(data: Uint8Array, schemaToken?: string): 
   if (danglingRefs.length > 0) {
     const cap = 20;
     const lines = danglingRefs.length <= cap ? danglingRefs : [...danglingRefs.slice(0, cap), `... and ${danglingRefs.length - cap} more`];
-    Logger.logWarning("ecschema-metadata.RuntimeSchema", `${danglingRefs.length} unresolved cross-reference(s) in runtime schema blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
+    Logger.logWarning("ecschema-metadata.SchemaView", `${danglingRefs.length} unresolved cross-reference(s) in schema view blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
   }
 
   return builder.build(schemaToken);

@@ -1,6 +1,6 @@
 # Schema View Binary Format
 
-This document specifies the binary blob format produced by `RuntimeSchemaWriter` (C++, imodel-native) and consumed by `parseSchemaViewBlob()` (TypeScript, ecschema-metadata). It is the transport format for `SchemaView` - see [SchemaView](./RuntimeSchemaContext.md) for the consumer API.
+This document specifies the binary blob format produced by `SchemaViewWriter` (C++, imodel-native) and consumed by `parseSchemaViewBlob()` (TypeScript, ecschema-metadata). It is the transport format for `SchemaView` - see [SchemaView](./SchemaView.md) for the consumer API.
 
 All multi-byte integers are **little-endian**. String references (SRef) are uint32 indices into the string table at the end of the blob. A SRef of 0 always refers to the empty string.
 
@@ -300,6 +300,6 @@ Row IDs (`schemaEcId`, `enumRowId`, `structClassRowId`, etc.) and name-based ref
 
 ## Implementation References
 
-- **Writer (C++)**: `iModelCore/ECDb/ECDb/RuntimeSchemaWriter.cpp` / `.h`
-- **Reader (TS)**: `core/ecschema-metadata/src/RuntimeSchemaBinaryReader.ts`
+- **Writer (C++)**: `iModelCore/ECDb/ECDb/SchemaViewWriter.cpp` / `.h`
+- **Reader (TS)**: `core/ecschema-metadata/src/SchemaViewBinaryReader.ts`
 - **Pragma handler**: `PRAGMA schema_view(N)` where N is the requested format version
