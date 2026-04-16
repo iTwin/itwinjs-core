@@ -579,7 +579,7 @@ describe("Workspace Examples", () => {
       const containerMetadata = await WorkspaceEditor.queryContainers({ iTwinId, containerType: "settings" });
       // Each entry includes a containerId and label that can be displayed in an admin UI.
       for (const entry of containerMetadata) {
-        console.log(`Container: ${entry.containerId}, label: ${entry.label}`);
+        console.log(`Container: ${entry.containerId}, label: ${entry.label}`); // eslint-disable-line no-console
       }
       // __PUBLISH_EXTRACT_END__
       expect(containerMetadata).to.be.an("array");
