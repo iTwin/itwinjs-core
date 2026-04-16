@@ -18,12 +18,19 @@ const invertGrep = process.env.VITEST_ELECTRON_INVERT !== undefined
   ? process.env.VITEST_ELECTRON_INVERT === "true"
   : true; // default: invert (exclude matching)
 
-// CI hosted agents have limited GPU resources; parallel Electron shards with
-// WebGL contexts cause GPU starvation on Windows/macOS SwiftShader, leading to
-// native crashes (0xC0000005 / 0xC0000409). Default to 1 shard on non-Linux.
+// Shard count policy:
+//   linux CI:    2 shards — software GL (SwiftShader) handles concurrent contexts.
+//   windows CI:  2 shards — --disable-gpu is set below (see ciElectronArgs), so the
+//                historical GPU-contention concern is moot. 2 shards halves the
+//                per-process memory pressure that triggers STATUS_STACK_BUFFER_OVERRUN
+//                (0xC0000409 fast-fail) on long sequential runs with the iTwin native addon.
+//   darwin CI / local:  1 shard — real GPU, cannot --disable-gpu without breaking WebGL tests.
+const isCIForSharding = !!(process.env.CI || process.env.TF_BUILD || process.env.AGENT_ID);
 const shardCount = process.env.VITEST_ELECTRON_SHARD_COUNT
   ? Number(process.env.VITEST_ELECTRON_SHARD_COUNT)
-  : process.platform === "linux" ? 2 : 1;
+  : process.platform === "linux" ? 2
+    : (process.platform === "win32" && isCIForSharding) ? 2
+      : 1;
 
 // When running integration tests (grep="#integration", invert=false), rendering
 // tests like PlanarClipMask need more time under CI SwiftShader. Default 240s
