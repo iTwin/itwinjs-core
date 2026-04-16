@@ -140,6 +140,7 @@ describe("IModelConnection (#integration)", () => {
       const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
       assert.isNotNull(readOnlyTest);
 
+      const connections: IModelConnection[] = [readOnlyTest];
       const promises = new Array<Promise<void>>();
       let n = 0;
       while (++n < 25) {
@@ -147,11 +148,19 @@ describe("IModelConnection (#integration)", () => {
           .then((readOnlyTest2: IModelConnection) => {
             assert.isNotNull(readOnlyTest2);
             assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
+            connections.push(readOnlyTest2);
           });
         promises.push(promise);
       }
 
       await Promise.all(promises);
+
+      // Close all connections to prevent leak detection by the global afterEach hook.
+      // Each openRemote creates a distinct CheckpointConnection object.
+      for (const conn of connections) {
+        if (!conn.isClosed)
+          await conn.close();
+      }
     });
   }
 
