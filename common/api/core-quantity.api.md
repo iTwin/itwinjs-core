@@ -188,14 +188,12 @@ export class BasicUnit implements UnitProps {
 
 // @beta
 export class BundledUnitsProvider implements UnitsProvider {
-    // (undocumented)
-    findUnit(unitLabel: string, _schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
-    // (undocumented)
+    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
-    // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
-    // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
+    // @internal
+    static resetForTesting(): void;
 }
 
 // @beta
@@ -820,28 +818,24 @@ export enum ScientificType {
 // @beta @deprecated (undocumented)
 export function scientificTypeToString(scientificType: ScientificType): string;
 
-// @beta
+// @internal
 export const SERIALIZED_UNIT_SCHEMA_VERSION = "1.0.0";
 
-// @beta
+// @internal
 export interface SerializedConstant {
-    // (undocumented)
     readonly definition: string;
-    // (undocumented)
     readonly denominator?: number;
     // (undocumented)
     readonly description?: string;
     // (undocumented)
     readonly label?: string;
-    // (undocumented)
     readonly numerator?: number;
-    // (undocumented)
     readonly phenomenon: string;
     // (undocumented)
     readonly schemaItemType: "Constant";
 }
 
-// @beta
+// @internal
 export interface SerializedInvertedUnit {
     // (undocumented)
     readonly description?: string;
@@ -855,9 +849,8 @@ export interface SerializedInvertedUnit {
     readonly unitSystem: string;
 }
 
-// @beta
+// @internal
 export interface SerializedPhenomenon {
-    // (undocumented)
     readonly definition: string;
     // (undocumented)
     readonly description?: string;
@@ -867,19 +860,15 @@ export interface SerializedPhenomenon {
     readonly schemaItemType: "Phenomenon";
 }
 
-// @beta
+// @internal
 export interface SerializedUnit {
-    // (undocumented)
     readonly definition: string;
-    // (undocumented)
     readonly denominator?: number;
     // (undocumented)
     readonly description?: string;
     // (undocumented)
     readonly label?: string;
-    // (undocumented)
     readonly numerator?: number;
-    // (undocumented)
     readonly offset?: number;
     // (undocumented)
     readonly phenomenon: string;
@@ -889,10 +878,10 @@ export interface SerializedUnit {
     readonly unitSystem: string;
 }
 
-// @beta
+// @internal
 export type SerializedUnitItem = SerializedConstant | SerializedUnit | SerializedInvertedUnit | SerializedUnitSystem | SerializedPhenomenon;
 
-// @beta
+// @internal
 export interface SerializedUnitSchema {
     // (undocumented)
     readonly alias: string;
@@ -905,7 +894,7 @@ export interface SerializedUnitSchema {
     readonly version: string;
 }
 
-// @beta
+// @internal
 export interface SerializedUnitSystem {
     // (undocumented)
     readonly description?: string;
@@ -951,6 +940,7 @@ export enum UnitConversionInvert {
 
 // @beta
 export interface UnitConversionProps {
+    error?: boolean;
     factor: number;
     inversion?: UnitConversionInvert;
     offset: number;

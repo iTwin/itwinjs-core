@@ -19,7 +19,6 @@ import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
-import { UnitConversionSource } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1532,7 +1531,7 @@ export enum PropertyType {
 }
 
 // @internal (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "PrimitiveArrayProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty";
 
 // @internal (undocumented)
 export namespace PropertyTypeUtils {
@@ -2398,8 +2397,6 @@ export class Unit extends SchemaItem {
 }
 
 export { UnitConversion }
-
-export { UnitConversionSource }
 
 // @internal
 export class UnitConverter {
