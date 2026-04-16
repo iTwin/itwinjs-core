@@ -11,7 +11,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -694,6 +694,16 @@ export namespace CloudSqlite {
   }
 
   /**
+   * Determine if error is a "transfer already completed" error.
+   * @param err Any thrown error
+   * @returns true if the error is a "transfer already completed" error, or false otherwise.
+   * @internal
+   */
+  function isTransferAlreadyCompletedError(err: any): boolean {
+    return ITwinError.isError(err, "imodel-native", "BadArg") && err.message === "transfer already completed";
+  }
+
+  /**
    * Clean any unused deleted blocks from cloud storage. Unused deleted blocks can accumulate in cloud storage in a couple of ways:
    * 1) When a database is updated, a subset of its blocks are replaced by new versions, sometimes leaving the originals unused.
    * 2) A database is deleted with [[CloudContainer.deleteDatabase]]
@@ -710,13 +720,22 @@ export namespace CloudSqlite {
       const onProgress = options?.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = cleanJob.getProgress();
-          total = progress.total;
-          const result = await onProgress(progress.loaded, progress.total);
-          if (result === 1)
-            cleanJob.stopAndSaveProgress();
-          else if (result !== 0)
-            cleanJob.cancelTransfer();
+          try {
+            const progress = cleanJob.getProgress();
+            total = progress.total;
+            const result = await onProgress(progress.loaded, progress.total);
+            if (result === 1)
+              cleanJob.stopAndSaveProgress();
+            else if (result !== 0)
+              cleanJob.cancelTransfer();
+          } catch (err: any) {
+            // A race condition exists where cleanJob has completed but the timer has not yet been cleared, or it
+            // completes while we are waiting on the onProgress callback. If this happens, we will get an error from any
+            // function call made to cleanJob after the job is done. In that case, just ignore the error.
+            if (isTransferAlreadyCompletedError(err))
+              return;
+            throw err;
+          }
         }, 250);
       }
       await cleanJob.promise;
@@ -745,10 +764,19 @@ export namespace CloudSqlite {
       const onProgress = props.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = transfer.getProgress();
-          total = progress.total;
-          if (onProgress(progress.loaded, progress.total))
-            transfer.cancelTransfer();
+          try {
+            const progress = transfer.getProgress();
+            total = progress.total;
+            if (onProgress(progress.loaded, progress.total))
+              transfer.cancelTransfer();
+          } catch (err: any) {
+            // A race condition exists where transfer has completed but the timer has not yet been cleared. If this
+            // happens, we will get an error from any function call made to transfer after the job is done. In that
+            // case, just ignore the error.
+            if (isTransferAlreadyCompletedError(err))
+              return;
+            throw err;
+          }
         }, 250);
       }
       await transfer.promise;
