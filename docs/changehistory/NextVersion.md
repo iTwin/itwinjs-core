@@ -274,19 +274,16 @@ const conv = await provider.getConversion(meter, foot);
 
 #### Migration
 
-If you were directly importing `BasicUnitsProvider` from `@itwin/core-frontend`, switch to `BundledUnitsProvider` from `@itwin/core-quantity`:
+`BundledUnitsProvider` from `@itwin/core-quantity` replaces the deprecated `BasicUnitsProvider`:
 
 ```typescript
-// Before
-import { BasicUnitsProvider } from "@itwin/core-frontend";
-const provider = new BasicUnitsProvider();
-
-// After
 import { BundledUnitsProvider } from "@itwin/core-quantity";
 const provider = new BundledUnitsProvider();
 ```
 
 `BasicUnitsProvider` is now deprecated but will continue to work for backward compatibility.
+
+> **Future change notice:** `BundledUnitsProvider.getConversion` now returns an `error` flag on the result when a conversion cannot be resolved (e.g., unknown units or incompatible phenomena). Currently, callers such as `QuantityFormatter` do not check this flag — unresolved conversions silently fall through as identity conversions (`factor: 1, offset: 0`). In a future minor release, the formatter and related APIs will begin enforcing this flag and rejecting erroneous conversions. If you consume `UnitConversionProps` directly, check for `error === true` now to prepare for this change.
 
 ### Quantity Formatter improvements
 
