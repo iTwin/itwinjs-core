@@ -44,7 +44,7 @@ Instance-specific *ad hoc* data on an Element can be captured in JSON format in 
 
 More carefully planned data can also be stored in JSON format. This is the case of [Authoring-focused attributes](#authoring-focused-attributes) in some cases, especially because such data typically only has one reader: the iTwin Native application that depends on it. In that case, it is recommended that a property different from the base `JsonProperties` is used to store it. Such kind of properties need to be defined as *string* [ECProperties](../../ec/ec-property.md) whose *extendedType* is set to *Json*. That strategy saves the data-writer application from having to define a namespace to avoid data collisions if it targeted the `JsonProperties` ECProperty instead.
 
-JSON-based properties shall not included in any generic UX control by default.
+JSON-based properties shall not be included in any generic UX control by default.
 
 ## Derived Properties
 
