@@ -1504,7 +1504,7 @@ export class ToolAdmin {
     // Escape is the only practical choice with its default behavior that can cancel/close/blur.
     // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
     // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
-    if (keyEvent.key === "Escape" && !keyEvent.defaultPrevented && !keyEvent.isComposing)
+    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome && !keyEvent.defaultPrevented && !keyEvent.isComposing)
       this._setFocusHome();
 
     return true;
