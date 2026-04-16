@@ -147,6 +147,10 @@ export class TileAdmin {
   public readonly optimizeBRepProcessing: boolean;
   /** @internal */
   public readonly disablePolyfaceDecimation: boolean;
+  /** When true, dynamic tiles retain stale graphics as fallback during regeneration to prevent flicker.
+   * @internal
+   */
+  public retainStaleDynamicTileChildren: boolean = true;
   /** @internal */
   public readonly useLargerTiles: boolean;
   /** @internal */

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, GuidString, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyError, GuidString, IModelStatus, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseDownloader, IModelError, LocalBriefcaseProps, SyncMode } from "@itwin/core-common";
 import { BriefcaseConnection, DownloadBriefcaseOptions, IModelConnection, NativeApp, SnapshotConnection } from "@itwin/core-frontend";
 import { getConfigurationBoolean } from "./DisplayTestApp";
@@ -70,10 +70,13 @@ export async function openIModel(props: OpenIModelProps): Promise<IModelConnecti
 }
 
 async function openIModelFile(fileName: string, writable: boolean): Promise<IModelConnection> {
+  if (writable)
+    return BriefcaseConnection.openStandalone(fileName, OpenMode.ReadWrite, { key: fileName });
+
   try {
-    return await BriefcaseConnection.openFile({ fileName, readonly: !writable, key: fileName });
+    return await BriefcaseConnection.openFile({ fileName, readonly: true, key: fileName });
   } catch (err) {
-    if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
+    if (err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
       return SnapshotConnection.openFile(fileName);
     else
       throw err;

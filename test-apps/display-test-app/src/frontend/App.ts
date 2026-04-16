@@ -31,7 +31,7 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool, DeformElementTool, ToggleStaleChildrenTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -379,6 +379,7 @@ export class DisplayTestApp {
       DisableModelTransformsTool,
       DockWindowTool,
       DrawingAidTestTool,
+      DeformElementTool,
       EditingScopeTool,
       ExitTool,
       FenceClassifySelectedTool,
@@ -423,6 +424,7 @@ export class DisplayTestApp {
       TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
       ToggleSecondaryIModelTool,
+      ToggleStaleChildrenTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,

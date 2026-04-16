@@ -154,8 +154,14 @@
     "MoveElement": {
       "keyin": "dta move element"
     },
+    "DeformElement": {
+      "keyin": "dta deform element"
+    },
     "SetEditorToolSettings": {
       "keyin": "dta editor settings"
+    },
+    "ToggleStaleChildren": {
+      "keyin": "dta toggle stale children"
     },
     "SyncViewports": {
       "keyin": "dta viewport sync"
