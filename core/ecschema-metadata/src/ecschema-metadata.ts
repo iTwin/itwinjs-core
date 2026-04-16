@@ -41,7 +41,6 @@ export * from "./SchemaJsonLocater";
 export * from "./SchemaKey";
 export * from "./SchemaLoader";
 export { UnitConversion } from "@itwin/core-quantity";
-export type { UnitConversionSource } from "@itwin/core-quantity";
 export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
