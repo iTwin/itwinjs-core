@@ -76,6 +76,8 @@ export interface UnitConversionProps {
   offset: number;
   /** If set, inverts the unit value (1/x) before or after conversion. */
   inversion?: UnitConversionInvert;
+  /** If true, indicates the conversion could not be resolved (e.g. unknown unit). */
+  error?: boolean;
 }
 
 /** Interface that defines potential parse units that may be found in user's string input of a quantity value.
