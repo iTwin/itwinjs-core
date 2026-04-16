@@ -452,7 +452,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("passed").that.equals(false);
     expect(results[0]).to.have.property("results").that.is.an("array");
     expect(results[0].results.length).to.equal(9);
-    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(results[1]).to.have.property("passed").that.equals(true);
     expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
     expect(results[2]).to.have.property("passed").that.equals(false);
@@ -518,7 +518,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("passed").that.equals(false);
     expect(results[0]).to.have.property("results").that.is.an("array");
     expect(results[0].results.length).to.equal(9);
-    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(results[1]).to.have.property("passed").that.equals(true);
     expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
     expect(results[2]).to.have.property("passed").that.equals(false);
@@ -550,7 +550,7 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(resultsAfterClearCache[0]).to.have.property("passed").that.equals(false);
     expect(resultsAfterClearCache[0]).to.have.property("results").that.is.an("array");
     expect(resultsAfterClearCache[0].results.length).to.equal(9);
-    assert(resultsAfterClearCache[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+    assert(resultsAfterClearCache[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(resultsAfterClearCache[1]).to.have.property("passed").that.equals(true);
     expect(resultsAfterClearCache[1]).to.have.property("results").that.is.an("array").that.is.empty;
     expect(resultsAfterClearCache[2]).to.have.property("passed").that.equals(false);
@@ -564,8 +564,5 @@ describe("iModelDb integrityCheck Tests", () => {
       primaryClass: "BisCore:Element",
     });
   });
-
-});
-
 
 });
