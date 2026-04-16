@@ -601,7 +601,7 @@ describe("CloudSqlite", () => {
     expect(container.garbageBlocks).to.be.greaterThan(0);
     const garbageBlocksPrev = container.garbageBlocks;
     return { container, garbageBlocksPrev };
-  }
+  };
 
   it("should be able to interrupt cleanDeletedBlocks operation", async () => {
     const { container, garbageBlocksPrev } = await prepareDbForCleaningBlocks();
