@@ -459,15 +459,15 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[2].results).to.have.lengthOf(1);
     expect(results[2].results[0]).to.deep.include({
       sno: 1,
-      id: "0x20000000001",
+      id: relationshipId,
       relationship: "BisCore:ElementRefersToElements",
       property: "TargetECInstanceId",
-      keyId: "0x20000000002",
+      keyId: element2Id,
       primaryClass: "BisCore:Element",
     });
   });
 
-  it("should call integrityCheck after calling clearCache and return results", async () => {
+  it("should call integrityCheck after calling clearCaches and return results", async () => {
     // Insert two elements
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
@@ -525,10 +525,10 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[2].results).to.have.lengthOf(1);
     expect(results[2].results[0]).to.deep.include({
       sno: 1,
-      id: "0x20000000001",
+      id: relationshipId,
       relationship: "BisCore:ElementRefersToElements",
       property: "TargetECInstanceId",
-      keyId: "0x20000000002",
+      keyId: element2Id,
       primaryClass: "BisCore:Element",
     });
 
@@ -557,10 +557,10 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(resultsAfterClearCache[2].results).to.have.lengthOf(1);
     expect(resultsAfterClearCache[2].results[0]).to.deep.include({
       sno: 1,
-      id: "0x20000000001",
+      id: relationshipId,
       relationship: "BisCore:ElementRefersToElements",
       property: "TargetECInstanceId",
-      keyId: "0x20000000002",
+      keyId: element2Id,
       primaryClass: "BisCore:Element",
     });
   });
@@ -623,10 +623,10 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[2].results).to.have.lengthOf(1);
     expect(results[2].results[0]).to.deep.include({
       sno: 1,
-      id: "0x20000000001",
+      id: relationshipId,
       relationship: "BisCore:ElementRefersToElements",
       property: "TargetECInstanceId",
-      keyId: "0x20000000002",
+      keyId: element2Id,
       primaryClass: "BisCore:Element",
     });
   });
