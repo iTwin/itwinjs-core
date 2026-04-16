@@ -187,11 +187,8 @@ Valid formats recognized by the ESLint rule:
 
 ### Draft PR Descriptions
 
-When creating or updating a draft PR, always include a `## Validation` section in the PR description. Summarize what was run, what passed, what was not run, and any known pre-existing failures or warnings using these fields:
+When creating or updating a draft PR, always include a `## Validation` section in the PR description. Summarize any targeted verification steps you performed beyond what CI checks cover, and note any known pre-existing failures or warnings:
 
-- `Build:`
-- `Lint:`
-- `Tests:`
 - `Targeted verification:`
 - `Known baseline issues:`
 
