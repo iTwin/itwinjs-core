@@ -361,6 +361,20 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
+    // Use absolute positions (better performance) only when the element is close enough to the model center
+    // that float32 precision is adequate. Elements far from the model center need per-element rtcCenter
+    // centering to avoid visible precision artifacts like jagged curves at high coordinates.
+    // Debug toggle: set (window as any).__forceAbsolutePositions = true to bypass the adaptive fix for A/B testing.
+    const forceAbsolute = typeof window !== "undefined" && (window as any).__forceAbsolutePositions === true;
+    let useAbsolutePositions: boolean;
+    if (forceAbsolute) {
+      useAbsolutePositions = true;
+    } else {
+      const center = this.range.center;
+      const maxCoord = Math.max(Math.abs(center.x), Math.abs(center.y), Math.abs(center.z));
+      useAbsolutePositions = !this.range.isNull && maxCoord < 10_000;
+    }
+
     const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
@@ -373,7 +387,7 @@ class GraphicsTile extends Tile {
       smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: this.tree.is3d,
       sectionCut: this.tree.stringifiedSectionClip,
-      useAbsolutePositions: true,
+      useAbsolutePositions,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);
