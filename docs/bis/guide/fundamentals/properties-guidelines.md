@@ -1,10 +1,12 @@
 # Properties: Guidelines
 
-BIS offers multiple ways to capture properties of Entities being modeled. It is the job of the schema designer to choose the most appropiate strategy to follow in every case. This article aims to provide general guidelines for the choosing among those strategies.
-
 ## Introduction
 
-Not every property of an Entity needs to be persisted into a BIS repository. Some properties can be derived from persisted data, therefore saving them in a BIS repository turns derived properties into effectively cached data that needs to be kept in-sync as the more fundamental properties change. This situation often applies to iTwin Native apps that directly store their data in BIS repositories.
+BIS offers multiple ways to capture properties of Entities being modeled. It is the job of the schema designer to choose the most appropiate strategy to follow in every case. This article aims to provide general guidelines for the choosing among those strategies.
+
+Properties of Entities model their attributes relevant in light of a particular modeling perspective. Examples of properties include the _inner diameter_ of a _Pipe_ (Physical Perspective), the _roughness coefficient_ of a _Pipe_ (Hydraulic Analysis perspective) or the _tag number_ of a _Piping Segment_ (Functional Perspective).
+
+Note that while a schema designer is responsible to model all relevant properties of an Entity, not every property needs to be persisted in a BIS repository. Some properties can be derived from other information already persisted. This is specially true for iTwin Native apps offering data-editing functionality. Persisting data about properties that could be derived turns them into, effectively, caches that need to be kept in-sync as the more fundamental information change. In general, caches add significant implementation complexity.
 
 ## Persisted Properties
 
@@ -12,13 +14,17 @@ The following sections focus on properties that are meant to be persisted in a B
 
 ### Essential Element Properties
 
-Properties considered *essential* according to the semantics and [modeling perspective](../data-organization/modeling-perspectives.md) captured by the element-class modeling the associated Entity, are typically captured in a BIS class as _First-class_ properties. Under that strategy, a property of an Entity is implemented as an [ECProperty](../../ec/ec-property.md) directly defined on the [Element-class](./data-classification.md#element-class) that represents it.
+Schema designers' job include identifying which properties being modeled are *essential* according to the semantics and [modeling perspective](../data-organization/modeling-perspectives.md) captured by the element-class modeling the associated Entity. The _physical material_ an Entity is made of or its _shape_ or _dimensions_ are examples of property considered essential in light of the Physical modeling of such Entity.
 
-Note, however, that there may be *essential* properties whose applicability dependend on the state of a more general *essential* property on a specific Entity. Such *essential* properties shall be implemented via a class-hierarchy based on [`_Mandatory_ Element-Aspects`](./elementaspect-fundamentals.md#sub-properties-and-mandatory-elementaspects). If the overall concept is considered *essential* for the associated Entity, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively). See [Sub-Properties and _mandatory_ ElementAspects](./elementaspect-fundamentals.md#sub-properties-and-mandatory-elementaspects) for more information and an example of this situation.
+Properties considered as essential are typically captured in a BIS class as its _first-class_ properties. Under that strategy, a property of an Entity is implemented as an [ECProperty](../../ec/ec-property.md) directly defined on the [Element-class](./data-classification.md#element-class) that represents it.
+
+Note, however, that there may be *essential* properties whose applicability dependend on the state of a more general *essential* property on a specific Entity. As an example, the applicability of essential properties such as _Diameter_ or _Height_ depends on the _Shape_ of an Entity. Such *essential* properties shall be implemented via a class-hierarchy based on [`_Mandatory_ Element-Aspects`](./elementaspect-fundamentals.md#sub-properties-and-mandatory-elementaspects). If the overall concept is considered *essential* for the associated Entity in a given modeling perspective, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively). See [Sub-Properties and _mandatory_ ElementAspects](./elementaspect-fundamentals.md#sub-properties-and-mandatory-elementaspects) for more information and an example of this situation.
 
 *Essential* Element properties shall be shown in UX controls as attribution of their associated Element-class, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
 
 ### Non-essential Element Properties
+
+Schema designers' may consider some properties as non-essential. They typically provide additional information about an Entity but they are not required to correctly describe it given its semantics in a particular modeling perspective. Examples include _Year Installed_ of a _Pipe_ from a Hydraulic Analysis perspective - a property not needed to carry out such kind of simulation - or _Compression Strength_ of an Entity modeled in a Physical perspective.
 
 Properties of an Entity considered non-essential are implemented as [EC Properties](../../ec/ec-property.md) of an [Element-Aspect](./elementaspect-fundamentals.md). An `Element-Aspect` is a set of properties that can be attached to an `Element` instance.
 
@@ -36,7 +42,7 @@ Link-table relationship properties shall not be included in any generic UX contr
 
 Instance-specific *ad hoc* data on an Element can be captured in JSON format in the [`JsonProperties`](./element-fundamentals.md#jsonproperties) property of an `Element`. See [`Advantages and Disadvantages of JsonProperties`](./element-fundamentals.md#advantages-and-disadvantages-of-jsonproperties) for additional information on this topic.
 
-More carefully planned data can also be stored in JSON format. This is the case of [Authoring-focused attributes](#authoring-focused-attributes) in some cases, especially because such data typically only has one reader: the iTwin Native application that depends on it. In that case, it is recommended that a property different from the base `JsonProperties` is used to store it. Such kind of properties need to be defined as *string* [ECProperties](../../ec/ec-property.md) whose *extendedType* is set to *Json*.
+More carefully planned data can also be stored in JSON format. This is the case of [Authoring-focused attributes](#authoring-focused-attributes) in some cases, especially because such data typically only has one reader: the iTwin Native application that depends on it. In that case, it is recommended that a property different from the base `JsonProperties` is used to store it. Such kind of properties need to be defined as *string* [ECProperties](../../ec/ec-property.md) whose *extendedType* is set to *Json*. That strategy saves the data-writer application from having to define a namespace to avoid data collisions if it targeted the `JsonProperties` ECProperty instead.
 
 JSON-based properties shall not included in any generic UX control by default.
 
@@ -62,9 +68,9 @@ iTwin Native applications, which use BIS repositories as their primary Data Stor
 
 - Overall style (Line-style, font, arrow-style, etc) and any other related setting associated to a Dimensioning element.
 - Settings (e.g. prefix, seed, sequence, suffix, etc) that drive the automatic assignment of *Names* on certain Elements.
-- Prpoerties associated to Template-recipes and other parametric algorithms that help users create Road, Rail or Bridge 3D models.
+- Properties associated to Template-recipes and other parametric algorithms that help users create Road, Rail or Bridge 3D models.
 
-Each iTwin Native application shall evaluate the aforementioned strategies while modeling authoring-focused properties, keeping in mind considerations such as desired UX behaviors. In general, `First-class` properties of Elements modeling real-world Entities are not mixed with autoring-focused properties on the same Element-class. The latter are typically introduced via application-specific Element or Aspect subclasses, or as JSON data. This last option leads to the need of custom application UX developments that expose it correctly to its users.
+Each iTwin Native application shall evaluate the aforementioned strategies while modeling authoring-focused properties, keeping in mind considerations such as desired UX behaviors. In general, essential properties of Elements modeling real-world Entities are not mixed with autoring-focused properties on the same Element-class. The latter are typically introduced via application-specific Element or Aspect subclasses, or as JSON data. This last option leads to the need of custom application UX developments that expose it correctly to its users.
 
 ---
 | Next: [Mixins](./mixins.md)
