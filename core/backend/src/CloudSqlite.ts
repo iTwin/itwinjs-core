@@ -729,6 +729,10 @@ export namespace CloudSqlite {
             else if (result !== 0)
               cleanJob.cancelTransfer();
           } catch (err: any) {
+            if (timer) {
+              clearInterval(timer);
+              timer = undefined;
+            }
             // A race condition exists where cleanJob has completed but the timer has not yet been cleared, or it
             // completes while we are waiting on the onProgress callback. If this happens, we will get an error from any
             // function call made to cleanJob after the job is done. In that case, just ignore the error.
@@ -770,6 +774,10 @@ export namespace CloudSqlite {
             if (onProgress(progress.loaded, progress.total))
               transfer.cancelTransfer();
           } catch (err: any) {
+            if (timer) {
+              clearInterval(timer);
+              timer = undefined;
+            }
             // A race condition exists where transfer has completed but the timer has not yet been cleared. If this
             // happens, we will get an error from any function call made to transfer after the job is done. In that
             // case, just ignore the error.
