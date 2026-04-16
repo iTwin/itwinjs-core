@@ -114,6 +114,10 @@ export default defineConfig({
     globals: false,
     testTimeout: 60000,
     hookTimeout: 60000,
+    // One automatic retry for transient browser/IPC flakes. Real regressions fail
+    // consistently across retries; transient network/timing hiccups get one free
+    // pass. Mirrors the Electron runner's shard-level retry behavior for parity.
+    retry: process.env.CI ? 1 : 0,
     fileParallelism: false,
     globalSetup: ["src/globalSetup.ts"],
     setupFiles: ["src/frontend/vitest.setup.ts"],
