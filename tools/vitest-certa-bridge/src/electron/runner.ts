@@ -322,31 +322,69 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     }
   }
 
+  // When a shard produces no test-results.json, it crashed or exited silently
+  // before writing results. Re-running the same 68-file manifest on Windows tends
+  // to crash again the same way (cumulative native-addon memory pressure, residual
+  // GPU/renderer children from the prior process). The strategy:
+  //   1. One plain retry with --disable-gpu — covers transient GPU-init failures.
+  //   2. If still no results, BISECT — split the file list in half and run each
+  //      half in its own Electron process. Halves per-process memory pressure,
+  //      isolates a bad-neighborhood file if one exists, and narrows the failure
+  //      report. Real regressions (a file that deterministically crashes Electron)
+  //      still fail because bisection stops at single-file shards which can't be split.
+  // Real test failures always produce 1+ results and are never retried.
+  const crashRecoveryArgs = (() => {
+    const args = [...(electronArgs ?? [])];
+    if (!args.includes("--disable-gpu"))
+      args.push("--disable-gpu");
+    return args;
+  })();
+
+  const producedResults = (r: { cacheDir: string }) =>
+    fs.existsSync(path.join(r.cacheDir, "test-results.json"));
+
+  const describeFailure = (r: { exitCode: number; lastTestLine: string }) => {
+    const reason = r.exitCode !== 0
+      ? `crashed (exit ${r.exitCode} / 0x${(r.exitCode >>> 0).toString(16).toUpperCase()})`
+      : `exited cleanly but produced no test results`;
+    const lastTest = r.lastTestLine ? ` | last test: ${r.lastTestLine}` : "";
+    return `${reason}${lastTest}`;
+  };
+
   const promises = shards.map(async (files, index) => {
     let result = await runShard(files, index, electronArgs);
 
-    // Retry up to twice if the shard produced no test results at all. This covers:
-    // - Crashed shards (non-zero exit, e.g. native exception or OOM)
-    // - Silent exits (exit 0 but 0 results, e.g. GPU process init failure)
-    // - Transient Electron startup failures (exit 0, no results even after first retry)
-    // Real test failures always produce 1+ results and are never retried.
-    for (let retry = 0; retry < 2; retry++) {
-      const resultsPath = path.join(result.cacheDir, "test-results.json");
-      if (fs.existsSync(resultsPath))
-        break;
-      const reason = result.exitCode !== 0
-        ? `crashed (exit ${result.exitCode} / 0x${(result.exitCode >>> 0).toString(16).toUpperCase()})`
-        : `exited cleanly but produced no test results`;
-      const lastTest = result.lastTestLine ? ` | last test: ${result.lastTestLine}` : "";
-      console.warn(`shard-${index} ${reason}${lastTest} — retrying (attempt ${retry + 2})`);
-      // Brief delay to let the OS reclaim resources from the crashed process
+    // Step 1: plain retry with --disable-gpu for transient startup / GPU-init failures.
+    if (!producedResults(result)) {
+      console.warn(`shard-${index} ${describeFailure(result)} — retrying once with --disable-gpu`);
       await new Promise((resolve) => setTimeout(resolve, 2000));
       cleanupCacheDir(result.cacheDir);
-      // Preserve original electronArgs and add --disable-gpu as a crash-recovery measure
-      const retryArgs = [...(electronArgs ?? [])];
-      if (!retryArgs.includes("--disable-gpu"))
-        retryArgs.push("--disable-gpu");
-      result = await runShard(files, index, retryArgs);
+      result = await runShard(files, index, crashRecoveryArgs);
+    }
+
+    // Step 2: bisect if the retry still didn't produce results and we have >1 file.
+    if (!producedResults(result) && files.length > 1) {
+      const mid = Math.ceil(files.length / 2);
+      const halfA = files.slice(0, mid);
+      const halfB = files.slice(mid);
+      console.warn(
+        `shard-${index} ${describeFailure(result)} after retry — bisecting ${files.length} files into ` +
+        `${halfA.length}+${halfB.length} (shard-${index}a + shard-${index}b)`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      cleanupCacheDir(result.cacheDir);
+      // Use disjoint sub-indices so shard-level reporting stays distinguishable.
+      // Multiplying by 1000 keeps sub-shard indices well away from any plausible
+      // real shard index (shardCount is typically <= 8).
+      const subIndexA = index * 1000 + 1;
+      const subIndexB = index * 1000 + 2;
+      const [resultA, resultB] = await Promise.all([
+        runShard(halfA, subIndexA, crashRecoveryArgs),
+        runShard(halfB, subIndexB, crashRecoveryArgs),
+      ]);
+      results.push(resultA);
+      results.push(resultB);
+      return;
     }
 
     results.push(result);
