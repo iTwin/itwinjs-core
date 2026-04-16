@@ -673,7 +673,7 @@ describe("CloudSqlite", () => {
         return 2; // return a number greater than 1 to abort the cleanDeletedBlocks operation.
       }
       return 0; // return 0 to not abort the cleanDeletedBlocks operation.
-    }
+    };
 
     // In the past, cleanDeletedBlocks would occasionally throw an error inside a setInterval handler. This is because a
     // race condition could cause the handler to still be called after cleanDeletedBlocks had already resolved and
