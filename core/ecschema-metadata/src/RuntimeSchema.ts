@@ -605,6 +605,46 @@ export class RuntimeEnumerator {
   public get value(): number | string { return this._data.value; }
 }
 
+/** A parsed presentation format override from a KindOfQuantity. Names are alias-qualified
+ * as stored in ECDb (e.g. `"f:DefaultRealU"`, `"u:M"`). The alias can be resolved to a
+ * full schema name via the schema's alias if needed.
+ *
+ * Format string syntax: `formatName(precision)[unitName|label][unitName|label]...`
+ * @beta
+ */
+export interface RuntimePresentationFormat {
+  /** Format name (alias-qualified), e.g. `"f:DefaultRealU"`. */
+  readonly name: string;
+  /** Precision override. `undefined` if the format string does not override precision. */
+  readonly precision?: number;
+  /** Unit overrides as `[unitName, labelOverride]` tuples. `unitName` is alias-qualified
+   * (e.g. `"u:M"`). `labelOverride` is `undefined` when no label was specified, or a
+   * string (possibly empty) when a `|` separator was present.
+   */
+  readonly unitAndLabels?: ReadonlyArray<readonly [string, string | undefined]>;
+}
+
+/** Parse a single format override string into a `RuntimePresentationFormat`.
+ * @internal
+ */
+export function parseFormatString(formatString: string): RuntimePresentationFormat {
+  const nameMatch = /^([\w.:]+)/.exec(formatString);
+  if (!nameMatch)
+    return { name: formatString };
+
+  const name = nameMatch[1];
+  const precMatch = /\((\d+)\)/.exec(formatString);
+  const precision = precMatch ? parseInt(precMatch[1], 10) : undefined;
+
+  const unitRgx = /\[([^\|\]]+)(?:\|([^\]]*))?\]/g;
+  const units: Array<readonly [string, string | undefined]> = [];
+  let m;
+  while ((m = unitRgx.exec(formatString)) !== null)
+    units.push([m[1], m[2] !== undefined ? m[2] : undefined]);
+
+  return { name, precision, unitAndLabels: units.length > 0 ? units : undefined };
+}
+
 /** Lightweight view over a KindOfQuantity in a `RuntimeSchemaContext`.
  * @beta
  */
@@ -643,10 +683,33 @@ export class RuntimeKoQ {
     return sid !== 0 ? this._ctx.strings[sid] : "";
   }
   // EC XML serializes this as "presentationUnits"; we use "presentationFormats" to align with KindOfQuantity.presentationFormats in ecschema-metadata.
-  /** Presentation format strings, semicolon-separated. Empty string if none. */
-  public get presentationFormats(): string {
+  /** Raw presentation format string as stored in ECDb (`ec_KindOfQuantity.PresentationUnits`).
+   * This is a JSON array of format override strings. Empty string if none are defined.
+   * Prefer `presentationFormats` for structured access.
+   */
+  public get presentationFormatsRaw(): string {
     const sid = this._data.presentationFormatsSid;
     return sid !== 0 ? this._ctx.strings[sid] : "";
+  }
+
+  /** Presentation formats parsed into structured overrides. Each entry has the format name
+   * (alias-qualified, e.g. `"f:DefaultRealU"`), optional precision override, and optional
+   * unit-and-label overrides. Returns an empty array if no presentation formats are defined.
+   *
+   * Example - given a raw string of `["f:DefaultRealU(4)[u:M_PER_SEC_SQ]","f:DefaultRealU(4)[u:CM_PER_SEC_SQ]"]`:
+   * ```ts
+   * // [
+   * //   { name: "f:DefaultRealU", precision: 4, unitAndLabels: [["u:M_PER_SEC_SQ", undefined]] },
+   * //   { name: "f:DefaultRealU", precision: 4, unitAndLabels: [["u:CM_PER_SEC_SQ", undefined]] },
+   * // ]
+   * ```
+   */
+  public get presentationFormats(): readonly RuntimePresentationFormat[] {
+    const raw = this.presentationFormatsRaw;
+    if (raw === "")
+      return [];
+    const formats: string[] = JSON.parse(raw);
+    return formats.map((f) => parseFormatString(f));
   }
 }
 

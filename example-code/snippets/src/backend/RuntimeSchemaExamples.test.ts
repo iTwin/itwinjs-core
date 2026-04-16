@@ -171,6 +171,17 @@ describe("RuntimeSchemaContext Examples", () => {
     for (const koq of bis.getKindOfQuantities()) {
       assert.isNotEmpty(koq.name);
       assert.isNotEmpty(koq.fullName); // "SchemaName:KoqName"
+
+      // Parsed presentation formats - each has the format name, optional precision,
+      // and optional unit overrides (all alias-qualified, e.g. "f:DefaultRealU", "u:M").
+      for (const fmt of koq.presentationFormats) {
+        assert.isNotEmpty(fmt.name);
+        // fmt.precision - number or undefined
+        // fmt.unitAndLabels - array of [unitName, labelOverride] tuples or undefined
+      }
+
+      // The raw JSON string is available for custom parsing
+      // koq.presentationFormatsRaw - e.g. '["f:DefaultRealU(2)[u:M]","f:DefaultRealU(2)[u:FT]"]'
     }
 
     // Properties can reference a category

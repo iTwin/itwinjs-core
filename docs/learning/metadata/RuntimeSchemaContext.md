@@ -12,7 +12,7 @@ SchemaContext is from the full-fidelity schema toolkit. It models every detail o
 
 That completeness has a cost at runtime:
 
-|                       | SchemaContext                                         | RuntimeSchemaContext                                                    |
+|                       | SchemaContext                                             | RuntimeSchemaContext                                                    |
 | --------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
 | **Loading**           | One async RPC per schema (84 schemas = 84 round-trips)    | Single binary blob, one RPC call                                        |
 | **Memory**            | full object graph with cross-references                   | flat arrays, string dedup, property dedup, consumes  90-95% less memory |
@@ -88,10 +88,60 @@ Schemas contain enumerations with typed enumerators.
 
 ## Kind of quantity and property categories
 
-Properties can reference a kind of quantity (KoQ) or a property category.
+Properties can reference a kind of quantity (KoQ) or a property category. KoQs carry presentation format information - `presentationFormats` returns parsed `RuntimePresentationFormat` objects with the format name, optional precision override, and optional unit/label overrides. All names are alias-qualified (e.g. `"f:DefaultRealU"`, `"u:M"`).
 
 ```ts
 [[include:RuntimeSchemaContext.koq-and-categories]]
+```
+
+### Resolving format and unit names
+
+Presentation format names use schema aliases (e.g. `"f"` for `Formats`, `"u"` for `Units`). The Units and Formats schemas are excluded from `RuntimeSchemaContext` because they will be accessed through a separate dedicated API in the future.
+
+If you need the actual format definitions or unit details today, you can resolve the alias-qualified names via **ecschema-metadata** or **ECSQL**:
+
+#### Via ecschema-metadata (SchemaContext)
+
+Split the alias-qualified name at `:` - the left part is the schema alias (e.g. `"f"` -> `"Formats"`, `"u"` -> `"Units"`), the right part is the item name. Look up the schema item via `IModelDb.schemaContext`:
+
+```ts
+const fmt = koq.presentationFormats[0]; // { name: "f:DefaultRealU", precision: 2, unitAndLabels: [["u:M", undefined]] }
+
+// Resolve format: "f:DefaultRealU" -> "Formats.DefaultRealU"
+const format = iModel.schemaContext.getSchemaItemSync("Formats.DefaultRealU", Format);
+// format.precision, format.type, format.formatTraits, etc.
+
+// Resolve unit: "u:M" -> "Units.M"
+const unit = iModel.schemaContext.getSchemaItemSync("Units.M", Unit);
+// unit.fullName, unit.label, await unit.unitSystem, etc.
+
+// To build a FormatterSpec for quantity formatting, use SchemaUnitProvider:
+const unitsProvider = new SchemaUnitProvider(iModel.schemaContext);
+const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+```
+
+#### Via ECSQL (ECDbMeta)
+
+Query `meta.FormatDef` for the format's `NumericSpec` (a JSON object with type, precision, traits, etc.) and `meta.UnitDef` for unit details:
+
+```ts
+// Look up the base format definition
+for await (const row of iModel.createQueryReader(
+  "SELECT NumericSpec, CompositeSpec FROM meta.FormatDef WHERE Name = 'DefaultRealU' AND Schema.Name = 'Formats'",
+)) { /* row.numericSpec is a JSON string with FormatProps */ }
+
+// Look up a unit and its unit system
+for await (const row of iModel.createQueryReader(
+  "SELECT Name, DisplayLabel, UnitSystem.Name FROM meta.UnitDef WHERE Name = 'M' AND Schema.Name = 'Units'",
+)) { /* row.name, row.displayLabel, row.unitSystemName */ }
+
+// For composite formats (like AngleDMS with degrees/minutes/seconds), query the composite units:
+for await (const row of iModel.createQueryReader(
+  `SELECT cu.Ordinal, cu.Unit.Name, cu.Label
+   FROM meta.FormatCompositeUnitDef cu
+   WHERE cu.Format.Name = 'AngleDMS' AND cu.Format.Schema.Name = 'Formats'
+   ORDER BY cu.Ordinal`,
+)) { /* row.ordinal, row.unitName, row.label */ }
 ```
 
 ## Views
