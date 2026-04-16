@@ -1002,11 +1002,13 @@ export namespace SchemaView {
     const precMatch = /\((\d+)\)/.exec(formatString);
     const precision = precMatch ? parseInt(precMatch[1], 10) : undefined;
 
-    const unitRgx = /\[([^\|\]]+)(?:\|([^\]]*))?\]/g;
+    const bracketRgx = /\[([^\]]+)\]/g;
     const units: Array<readonly [string, string | undefined]> = [];
     let m;
-    while ((m = unitRgx.exec(formatString)) !== null)
-      units.push([m[1], m[2] !== undefined ? m[2] : undefined]);
+    while ((m = bracketRgx.exec(formatString)) !== null) {
+      const pipeIdx = m[1].indexOf("|");
+      units.push(pipeIdx < 0 ? [m[1], undefined] : [m[1].substring(0, pipeIdx), m[1].substring(pipeIdx + 1)]);
+    }
 
     return { name, precision, unitAndLabels: units.length > 0 ? units : undefined };
   }
