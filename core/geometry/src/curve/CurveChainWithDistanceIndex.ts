@@ -879,16 +879,41 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return undefined;
   }
   /**
+   * Given a parent chain, convert the corresponding child detail in the specified pair.
+   * * Converted details refer to the chain's global parameterization instead of the child's.
+   * * It is assumed that `pair.detailA.curve` is a child of chainA (similarly for chainB).
+   * @param pair detail pair to convert in place
+   * @param chainA convert pair.detailA to the global parameterization of chainA
+   * @param chainB convert pair.detailB to the global parameterization of chainB
+   * @return the converted pair
+   */
+  public static convertChildDetailToChainDetailSingle(
+    pair: CurveLocationDetailPair,
+    chainA?: CurveChainWithDistanceIndex,
+    chainB?: CurveChainWithDistanceIndex,
+  ): CurveLocationDetailPair {
+    if (chainA) {
+      const chainDetail = chainA.computeChainDetail(pair.detailA);
+      if (chainDetail)
+        pair.detailA = chainDetail;
+    }
+    if (chainB) {
+      const chainDetail = chainB.computeChainDetail(pair.detailB);
+      if (chainDetail)
+        pair.detailB = chainDetail;
+    }
+    return pair;
+  }
+  /**
    * Given a parent chain, convert the corresponding child details in the specified pairs.
    * * Converted details refer to the chain's global parameterization instead of the child's.
    * * It is assumed that for all i >= index0, `pairs[i].detailA.curve` is a child of chainA (similarly for chainB).
-   * @param pairs array to mutate
+   * @param pairs array of pairs to convert in place
    * @param index0 convert details of pairs in the tail of the array, starting at index0
    * @param chainA convert each specified detailA to the global parameterization of chainA
    * @param chainB convert each specified detailB to the global parameterization of chainB
    * @param compressAdjacent whether to remove adjacent duplicate pairs after conversion
    * @return the converted array
-   * @internal
    */
   public static convertChildDetailToChainDetail(
     pairs: CurveLocationDetailPair[],
@@ -897,19 +922,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainB?: CurveChainWithDistanceIndex,
     compressAdjacent?: boolean,
   ): CurveLocationDetailPair[] {
-    for (let i = index0; i < pairs.length; ++i) {
-      const childDetailPair = pairs[i];
-      if (chainA) {
-        const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
-        if (chainDetail)
-          childDetailPair.detailA = chainDetail;
-      }
-      if (chainB) {
-        const chainDetail = chainB.computeChainDetail(childDetailPair.detailB);
-        if (chainDetail)
-          childDetailPair.detailB = chainDetail;
-      }
-    }
+    for (let i = index0; i < pairs.length; ++i)
+      pairs[i] = this.convertChildDetailToChainDetailSingle(pairs[i], chainA, chainB);
     if (compressAdjacent)
       pairs = CurveLocationDetailPair.removeAdjacentDuplicates(pairs, index0);
     return pairs;

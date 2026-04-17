@@ -693,17 +693,18 @@ export class Matrix3d implements BeJSONFunctions {
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 0), vectorU);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 1), vectorV);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 2), vectorW);
+    target.inverseState = InverseMatrixState.unknown;
     return target;
   }
   /**
    * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * `vectorA1 = Normalized vectorA` is placed in the column specified by **first** letter in
+   * * `vectorA1 = Normalized vectorA` is placed in the column specified by the **first** letter in
    * the AxisOrder name.
-   * * Normalized `vectorC1 = vectorA1 cross vectorB` is placed in the column specified by **third**
+   * * Normalized `vectorC1 = vectorA1 cross vectorB` is placed in the column specified by the **third**
    * letter in the AxisOrder name.
-   * * Normalized  `vectorC1 cross vectorA` is placed in the column specified by **second**
+   * * Normalized  `vectorC1 cross vectorA` is placed in the column specified by the **second**
    * letter in the AxisOrder name.
-   * * This function internally uses createShuffledColumns.
+   * * This function internally uses [[createShuffledColumns]].
    */
   public static createRigidFromColumns(
     vectorA: Vector3d, vectorB: Vector3d, axisOrder: AxisOrder, result?: Matrix3d,
