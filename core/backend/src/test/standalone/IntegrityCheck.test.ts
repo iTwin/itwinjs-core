@@ -401,7 +401,7 @@ describe("iModelDb integrityCheck Tests", () => {
     });
   });
 
-  it("should call integrityCheck on an iModel with corrupt foreignKey Ids and return results", async () => {
+  it("should report corrupt foreignKey Ids", async () => {
     // Insert two elements
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
@@ -446,6 +446,17 @@ describe("iModelDb integrityCheck Tests", () => {
       },
     });
 
+    // Run integrity check with default options — quickCheck only, no specific checks
+    const justQuickCheck = await iModel.integrityCheck();
+
+    expect(justQuickCheck).to.have.lengthOf(1);
+    expect(justQuickCheck[0]).to.have.property("check").that.equals("Quick Check");
+    expect(justQuickCheck[0]).to.have.property("passed").that.equals(false);
+    expect(justQuickCheck[0].results.length).to.equal(9);
+    const foreignKeyCheck = justQuickCheck[0].results.find((row) => (row as QuickIntegrityCheckResultRow).check === "Check Link Table Foreign Key Ids");
+    assert.isDefined(foreignKeyCheck, "Check Link Table Foreign Key Ids sub-check should be present in quickCheck results");
+    expect((foreignKeyCheck as QuickIntegrityCheckResultRow).passed).to.equal(false, "Check Link Table Foreign Key Ids should report failure");
+
     // Verify that the checkLinktableForeignKeyIds check reports the corruption
     expect(results).to.have.lengthOf(3);
     expect(results[0]).to.have.property("check").that.equals("Quick Check");
@@ -467,7 +478,7 @@ describe("iModelDb integrityCheck Tests", () => {
     });
   });
 
-  it("should call integrityCheck after calling clearCaches and return results", async () => {
+  it("should report corrupt foreignKey Ids after calling clearCaches", async () => {
     // Insert two elements
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
@@ -565,7 +576,7 @@ describe("iModelDb integrityCheck Tests", () => {
     });
   });
 
-  it("should call integrityCheck on an iModel with unsaved corrupt foreignKey Ids and return results", async () => {
+  it("should report corrupt foreignKey Ids on an iModel with unsaved changes", async () => {
     // Insert two elements
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
@@ -631,4 +642,62 @@ describe("iModelDb integrityCheck Tests", () => {
     });
   });
 
+  it("should report corrupt source-side foreignKey Ids", async () => {
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const [element1Id, element2Id] = withEditTxn(iModel, (txn) => ([
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+      }),
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+      }),
+    ]));
+
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = withEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
+    assert.isTrue(Id64.isValidId64(relationshipId));
+
+    // Delete the SOURCE element to create a source-side FK orphan
+    withEditTxn(iModel, () => {
+      const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element1Id}`);
+      expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    });
+
+    const results = await iModel.integrityCheck({
+      quickCheck: true,
+      specificChecks: {
+        checkLinktableForeignKeyIds: true,
+      },
+    });
+
+    // Quick Check + specific Check Link Table Foreign Key Ids
+    expect(results).to.have.lengthOf(2);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(false);
+
+    // Specific check should find the source-side orphan
+    expect(results[1]).to.have.property("check").that.equals("Check Link Table Foreign Key Ids");
+    expect(results[1]).to.have.property("passed").that.equals(false);
+    expect(results[1].results).to.have.length.greaterThanOrEqual(1);
+    expect(results[1].results[0]).to.deep.include({
+      id: relationshipId,
+      relationship: "BisCore:ElementRefersToElements",
+      property: "SourceECInstanceId",
+      keyId: element1Id,
+      primaryClass: "BisCore:Element",
+    });
+  });
 });
