@@ -22,6 +22,7 @@ export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitDefinitionResolver";
 export * from "./SerializedUnitSchema";
 export * from "./BasicUnitsProvider";
+export * from "./CompositeUnitsProvider";
 export * from "./internal/cross-package";
 
 /** @docs-package-description
