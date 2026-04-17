@@ -35,7 +35,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import { SchemaView, schemaViewFormatVersion, SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaView, schemaViewFormatVersion } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 
@@ -663,6 +663,47 @@ export abstract class IModelConnection extends IModel {
       throw err;
     });
     return this._schemasPromise;
+  }
+
+
+  /**
+   * Checks whether the iModel's schemas have changed since the current cached [[SchemaView]] was
+   * built, and discards the cache only if they have.
+   *
+   * Frontend code paths that may affect schemas - such as [[BriefcaseConnection.pullChanges]], or
+   * application-specific IPC calls that import or upgrade schemas - cannot reliably determine
+   * whether the operation actually modified any schemas. The IPC response for a pull, for example,
+   * returns only the new changeset id, not the list of applied changesets with their types.
+   * Unconditionally discarding the cached [[SchemaView]] after every such operation would cause
+   * unnecessary reloads in the common case where schemas are unchanged. This method avoids that
+   * cost by fetching a lightweight schema checksum via `PRAGMA checksum(ecdb_schema)` and
+   * comparing it against the token stored in the cached view. Only when the token differs is the
+   * cache discarded.
+   *
+   * Subclasses that expose operations which may modify schemas should await this method after the
+   * operation completes to ensure [[getSchemaView]] returns a fresh view if needed.
+   * @internal
+   */
+  protected async invalidateSchemaViewIfChanged(): Promise<void> {
+    if (!this._schemasPromise)
+      return;
+    try {
+      const existing = await this._schemasPromise;
+      if (!existing.schemaToken)
+        return;
+      const reader = this.createQueryReader("PRAGMA checksum(ecdb_schema)");
+      const result = await reader.next();
+      if (result.done)
+        return;
+      const liveToken = result.value.sha3_256 as string;
+      if (liveToken !== existing.schemaToken) {
+        this._schemasPromise = undefined;
+        existing.markOutdated();
+      }
+    } catch {
+      // If the checksum check fails, leave the cache as-is. A stale view is preferable
+      // to propagating an error from what is essentially a background housekeeping step.
+    }
   }
 
   private async _fetchSchemas(): Promise<SchemaView> {

@@ -420,6 +420,7 @@ export class BriefcaseConnection extends IModelConnection {
     } finally {
       removeListeners.forEach((remove) => remove());
     }
+    await this.invalidateSchemaViewIfChanged();
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.

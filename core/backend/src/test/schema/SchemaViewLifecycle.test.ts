@@ -55,7 +55,7 @@ describe("SchemaView lifecycle", () => {
     await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
   });
 
-  it("getSchemaView reflects imported schema and refreshSchemaView detects token change", async () => {
+  it("getSchemaView reflects imported schema after importSchemaStrings", async () => {
     // Open a briefcase, get initial context
     const bc = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -65,12 +65,11 @@ describe("SchemaView lifecycle", () => {
     expect(ctx1.isOutdated).to.be.false;
 
     // Import v1 schema - adds TestElement with PropA
-    // importSchemaStrings saves changes internally and calls clearCaches, which
-    // schedules a background schema token check.
+    // importSchemaStrings calls clearCaches which immediately invalidates _schemasPromise.
     await bc.importSchemaStrings([testSchemaV1]);
 
-    // refreshSchemas should detect the schema token changed and rebuild
-    const ctx2 = await bc.refreshSchemaView();
+    // importSchemaStrings calls clearCaches which immediately invalidates the cached view
+    const ctx2 = await bc.getSchemaView();
     expect(ctx1.isOutdated).to.be.true;
     expect(ctx2.isOutdated).to.be.false;
 
@@ -82,8 +81,8 @@ describe("SchemaView lifecycle", () => {
     // Import v2 schema - adds PropB
     await bc.importSchemaStrings([testSchemaV2]);
 
-    // refreshSchemas picks up the new property
-    const ctx3 = await bc.refreshSchemaView();
+    // cache is again invalidated automatically
+    const ctx3 = await bc.getSchemaView();
     expect(ctx2.isOutdated).to.be.true;
     expect(ctx3.isOutdated).to.be.false;
 
@@ -133,9 +132,8 @@ describe("SchemaView lifecycle", () => {
     // bc2: pull changes
     await bc2.pullChanges();
 
-    // After pulling, the cached context should be stale. clearCaches triggers _scheduleSchemaCheck
-    // which runs asynchronously. Use refreshSchemaView to force a synchronous recheck.
-    const ctxAfterPull = await bc2.refreshSchemaView();
+    // After pulling a schema changeset, clearCaches is called which immediately nulls _schemasPromise.
+    const ctxAfterPull = await bc2.getSchemaView();
     expect(ctxBefore.isOutdated).to.be.true;
     const testClass = ctxAfterPull.findClass("RuntimeSchemaLifecycleTest:TestElement");
     expect(testClass).to.not.be.undefined;
@@ -146,7 +144,7 @@ describe("SchemaView lifecycle", () => {
 
     // bc2: pull again
     await bc2.pullChanges();
-    const ctxAfterPull2 = await bc2.refreshSchemaView();
+    const ctxAfterPull2 = await bc2.getSchemaView();
     expect(ctxAfterPull.isOutdated).to.be.true;
     const updated = ctxAfterPull2.findClass("RuntimeSchemaLifecycleTest:TestElement");
     expect(updated).to.not.be.undefined;

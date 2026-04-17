@@ -1153,7 +1153,11 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      this._scheduleSchemaCheck();
+      if (this._schemasPromise) {
+        const old = this._schemasPromise;
+        this._schemasPromise = undefined;
+        old.then((view) => view.markOutdated()).catch(() => {});
+      }
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1718,7 +1722,7 @@ export abstract class IModelDb extends IModel {
   /** Get the schema view for this iModel. The view is built lazily on
    * first call by fetching compact binary schema data via `PRAGMA schema_view` through
    * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
-   * concurrent callers share a single in-flight build (including from `refreshSchemaView`).
+   * concurrent callers share a single in-flight build.
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
@@ -1731,29 +1735,6 @@ export abstract class IModelDb extends IModel {
       if (!ctx.isOutdated)
         return ctx;
     }
-    this._schemasPromise = this._hydrateSchemas().catch((err) => {
-      this._schemasPromise = undefined;
-      throw err;
-    });
-    return this._schemasPromise;
-  }
-
-  /** Check if the cached schema view is stale and reload if necessary.
-   * Uses a lightweight `PRAGMA checksum(ecdb_schema)` to compare tokens without building the full
-   * binary blob. If the token matches, returns the existing cached view. If it changed, builds
-   * a new view and marks the old one as outdated.
-   *
-   * If no view is cached yet, this behaves identically to `getSchemaView()`.
-   * @beta
-   */
-  public async refreshSchemaView(): Promise<SchemaView> {
-    if (!this._schemasPromise)
-      return this.getSchemaView();
-    const existing = await this._schemasPromise;
-    const liveToken = await this._fetchSchemaToken();
-    if (liveToken === existing.schemaToken && !existing.isOutdated)
-      return existing;
-    existing.markOutdated();
     this._schemasPromise = this._hydrateSchemas().catch((err) => {
       this._schemasPromise = undefined;
       throw err;
@@ -1777,36 +1758,6 @@ export abstract class IModelDb extends IModel {
     if (data === undefined || data === null)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
     return SchemaView.fromBinary(data, token ?? "");
-  }
-
-  private async _fetchSchemaToken(): Promise<string> {
-    const reader = this.createQueryReader("PRAGMA checksum(ecdb_schema)");
-    const result = await reader.next();
-    if (result.done)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(ecdb_schema) returned no rows");
-    return result.value.sha3_256 as string;
-  }
-
-  /** Schedule a non-blocking background check of the schema token.
-   * If the token has changed, the cached view is flagged as outdated
-   * and the next `getSchemaView()` call will load a fresh view.
-   */
-  private _scheduleSchemaCheck(): void {
-    const promise = this._schemasPromise;
-    if (!promise)
-      return;
-    promise.then(async (ctx) => {
-      if (ctx.isOutdated)
-        return;
-      const cachedToken = ctx.schemaToken;
-      if (!cachedToken)
-        return;
-      const liveToken = await this._fetchSchemaToken();
-      if (!ctx.isOutdated && liveToken !== cachedToken)
-        ctx.markOutdated();
-    }).catch((err) => {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, `Background schema token check failed: ${err}`);
-    });
   }
 
   /** Get the linkTableRelationships for this IModel */
