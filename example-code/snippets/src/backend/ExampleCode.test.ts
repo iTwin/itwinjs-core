@@ -5,7 +5,7 @@
 
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, EditTxn, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject, withEditTxn } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometry, ElementGeometryInfo, IModel } from "@itwin/core-common";
 import { BentleyGeometryFlatBuffer, Geometry, IModelJson, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
@@ -166,7 +166,7 @@ describe("Example Code", () => {
     buf = IModelJsFs.readFileSync(jsonFileName);
     assert.isTrue(buf.length > 0, "read json file");
     const geometryFromJSON = IModelJson.Reader.parse(JSON.parse(buf.toString()));
-    assert.isTrue(geometryFromJSON !== undefined, "deserialized fb geometry");
+    assert.isTrue(geometryFromJSON !== undefined, "deserialized json geometry");
 
     // verify geometry
     assert.instanceOf(geometryFromFB, Sphere, "FB geometry is an ellipsoid");
@@ -305,13 +305,20 @@ namespace Snippets {
         myIModel.elementGeometryRequest({
           elementId,
           onGeometry: (info: ElementGeometryInfo) => {
-            for (const entry of info.entryArray) {
-              if (options && options.exportJSON) {
-                const geom = BentleyGeometryFlatBuffer.bytesToGeometry(entry.data, true);
-                const json = IModelJson.Writer.toIModelJson(geom);
-                IModelJsFs.writeFileSync(`${filePathNameBase}-${elementId.toString()}.json`, JSON.stringify(json));
-              } else
-                IModelJsFs.writeFileSync(`${filePathNameBase}-${elementId.toString()}.fb`, entry.data);
+            const it = new ElementGeometry.Iterator(info);
+            for (const entry of it) {
+              if (ElementGeometry.isGeometryQueryEntry(entry.value)) {
+                if (options && options.exportJSON) {
+                  const geom = entry.toGeometryQuery();
+                  if (geom !== undefined) {
+                    const json = IModelJson.Writer.toIModelJson(geom);
+                    if (json !== undefined)
+                      IModelJsFs.writeFileSync(`${filePathNameBase}-${elementId.toString()}.json`, JSON.stringify(json));
+                  }
+                } else {
+                  IModelJsFs.writeFileSync(`${filePathNameBase}-${elementId.toString()}.fb`, entry.value.data);
+                }
+              }
             }
           }
         });
