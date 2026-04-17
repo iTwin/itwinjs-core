@@ -23,6 +23,7 @@ import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -52,6 +53,19 @@ export class FullStackTestIpcHandler extends IpcHandler implements FullStackTest
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
+  }
+
+  public async createTempBimCopy(sourcePath: string): Promise<string> {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "itj-fullstack-"));
+    const destPath = path.join(tempDir, path.basename(sourcePath));
+    fs.copyFileSync(sourcePath, destPath);
+    return destPath;
+  }
+
+  public async deleteTempBimCopy(tempFilePath: string): Promise<void> {
+    // Remove the enclosing temp dir so SQLite sidecar files (-journal/-wal/-shm) are cleaned up too.
+    const tempDir = path.dirname(tempFilePath);
+    fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 3 });
   }
 
   public async throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string) {

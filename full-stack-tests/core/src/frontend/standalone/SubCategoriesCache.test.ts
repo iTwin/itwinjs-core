@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
+import { coreFullStackTestIpc, initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
@@ -367,7 +367,8 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
     let dictId: Id64String;
     const changedElements = new Set<Id64String>();
 
-    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+    const sourceFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+    let perTestFilePath: string;
 
     beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
@@ -378,13 +379,17 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
       await TestUtility.shutdownFrontend();
     });
 
-    // Open a fresh BriefcaseConnection per test so that IPC listeners,
-    // SubCategoriesCache state, and event sets cannot leak between tests.
-    // This mirrors the pattern used by BriefcaseTxns.test.ts which passes
-    // consistently on all platforms.
+    // Open a fresh BriefcaseConnection against a *per-test copy* of the .bim so that
+    // native-layer state (TxnManager change-set buffers, SQLite page cache, etc.) cannot
+    // leak between tests. This was introduced to fix a Windows-only flake in the
+    // "invalidates cache for parent category when subcategory is added, deleted, or modified"
+    // test: when rush cover retried the suite, a stale update from a previous attempt was
+    // persisted in the shared asset and caused a later red→green update to be elided at
+    // the native layer, suppressing the onElementsChanged event the test was awaiting.
     beforeEach(async () => {
       changedElements.clear();
-      bc = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+      perTestFilePath = await coreFullStackTestIpc.createTempBimCopy(sourceFilePath);
+      bc = await BriefcaseConnection.openStandalone(perTestFilePath, OpenMode.ReadWrite);
 
       bc.txns.onElementsChanged.addListener((changes) => {
         for (const key of ["inserted", "updated", "deleted"] as const) {
@@ -401,10 +406,18 @@ describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () 
     });
 
     afterEach(async () => {
-      // Undo all committed txns so close() persists a clean file.
-      // This prevents stale element state if the pipeline retries rush cover.
-      await bc.txns.reverseAll();
-      await bc.close();
+      // Undo all committed txns so close() persists a clean file, then assert the
+      // return code. A silent non-Success here previously masked the root cause of the
+      // Windows flake described in beforeEach. Cleanup of the per-test copy must run
+      // even if reverseAll or close throws, so wrap in try/finally.
+      let reverseStatus: IModelStatus | undefined;
+      try {
+        reverseStatus = await bc.txns.reverseAll();
+        await bc.close();
+      } finally {
+        await coreFullStackTestIpc.deleteTempBimCopy(perTestFilePath);
+      }
+      expect(reverseStatus).to.equal(IModelStatus.Success);
     });
 
     // The backend sends change events synchronously but the frontend receives
