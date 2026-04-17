@@ -24,9 +24,13 @@ interface InvertedEntry {
  * Lazy static initialization: the JSON is parsed, all units resolved, and lookup indexes built on
  * first use. Subsequent instances share the same static data.
  *
+ * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
+ * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.
+ *
+ * @see createUnitsProvider for layering schema-defined units on top of basic BIS units.
  * @beta
  */
-export class BundledUnitsProvider implements UnitsProvider {
+export class BasicUnitsProvider implements UnitsProvider {
   // ── Static shared state ──────────────────────────────────────────────
   private static _initialized = false;
   private static _nameMap = new Map<string, IndexedUnit>();
@@ -35,7 +39,7 @@ export class BundledUnitsProvider implements UnitsProvider {
   private static _invertedUnits = new Map<string, InvertedEntry>();
 
   private static _ensureInitialized(): void {
-    if (BundledUnitsProvider._initialized)
+    if (BasicUnitsProvider._initialized)
       return;
 
     const resolver = new UnitDefinitionResolver(schema as SerializedUnitSchema);
@@ -60,17 +64,17 @@ export class BundledUnitsProvider implements UnitsProvider {
 
       const indexed: IndexedUnit = { props, resolved: entry };
 
-      BundledUnitsProvider._nameMap.set(fullName, indexed);
+      BasicUnitsProvider._nameMap.set(fullName, indexed);
       // Label index — lowercase for case-insensitive lookup
       const lowerLabel = entry.label.toLowerCase();
-      const byLabel = BundledUnitsProvider._labelMap.get(lowerLabel) ?? [];
+      const byLabel = BasicUnitsProvider._labelMap.get(lowerLabel) ?? [];
       byLabel.push(indexed);
-      BundledUnitsProvider._labelMap.set(lowerLabel, byLabel);
+      BasicUnitsProvider._labelMap.set(lowerLabel, byLabel);
 
       // Phenomenon index
-      const byPhen = BundledUnitsProvider._phenomenonMap.get(phenomenon) ?? [];
+      const byPhen = BasicUnitsProvider._phenomenonMap.get(phenomenon) ?? [];
       byPhen.push(indexed);
-      BundledUnitsProvider._phenomenonMap.set(phenomenon, byPhen);
+      BasicUnitsProvider._phenomenonMap.set(phenomenon, byPhen);
     }
 
     // Handle InvertedUnit items (3 in current schema)
@@ -84,7 +88,7 @@ export class BundledUnitsProvider implements UnitsProvider {
       const unitSystem = inv.unitSystem;
 
       // Derive phenomenon from the unit it inverts
-      const invertedSource = BundledUnitsProvider._nameMap.get(invertsName);
+      const invertedSource = BasicUnitsProvider._nameMap.get(invertsName);
       const phenomenon = invertedSource?.props.phenomenon ?? "";
 
       const props: UnitProps = {
@@ -95,7 +99,7 @@ export class BundledUnitsProvider implements UnitsProvider {
         system: unitSystem,
       };
 
-      BundledUnitsProvider._invertedUnits.set(fullName, { props, invertsUnitName: invertsName });
+      BasicUnitsProvider._invertedUnits.set(fullName, { props, invertsUnitName: invertsName });
 
       // Also index the inverted unit by name for findUnitByName
       // We'll create a synthetic IndexedUnit with identity conversion — actual conversion is handled in getConversion
@@ -104,20 +108,20 @@ export class BundledUnitsProvider implements UnitsProvider {
           props,
           resolved: { ...invertedSource.resolved, name: fullName, label: props.label, unitSystem },
         };
-        BundledUnitsProvider._nameMap.set(fullName, indexed);
+        BasicUnitsProvider._nameMap.set(fullName, indexed);
 
         const lowerLabel = props.label.toLowerCase();
-        const byLabel = BundledUnitsProvider._labelMap.get(lowerLabel) ?? [];
+        const byLabel = BasicUnitsProvider._labelMap.get(lowerLabel) ?? [];
         byLabel.push(indexed);
-        BundledUnitsProvider._labelMap.set(lowerLabel, byLabel);
+        BasicUnitsProvider._labelMap.set(lowerLabel, byLabel);
 
-        const byPhen = BundledUnitsProvider._phenomenonMap.get(phenomenon) ?? [];
+        const byPhen = BasicUnitsProvider._phenomenonMap.get(phenomenon) ?? [];
         byPhen.push(indexed);
-        BundledUnitsProvider._phenomenonMap.set(phenomenon, byPhen);
+        BasicUnitsProvider._phenomenonMap.set(phenomenon, byPhen);
       }
     }
 
-    BundledUnitsProvider._initialized = true;
+    BasicUnitsProvider._initialized = true;
   }
 
   // ── UnitsProvider implementation ─────────────────────────────────────
@@ -131,9 +135,9 @@ export class BundledUnitsProvider implements UnitsProvider {
    */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     void schemaName; // Reserved for future schema-scoped filtering
-    BundledUnitsProvider._ensureInitialized();
+    BasicUnitsProvider._ensureInitialized();
 
-    const candidates = BundledUnitsProvider._labelMap.get(unitLabel.toLowerCase());
+    const candidates = BasicUnitsProvider._labelMap.get(unitLabel.toLowerCase());
     if (!candidates || candidates.length === 0)
       return new BadUnit();
 
@@ -155,8 +159,8 @@ export class BundledUnitsProvider implements UnitsProvider {
    * @returns An array of matching `UnitProps`, or an empty array if none.
    */
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
-    BundledUnitsProvider._ensureInitialized();
-    const entries = BundledUnitsProvider._phenomenonMap.get(phenomenon);
+    BasicUnitsProvider._ensureInitialized();
+    const entries = BasicUnitsProvider._phenomenonMap.get(phenomenon);
     return entries ? entries.map((e) => e.props) : [];
   }
 
@@ -165,8 +169,8 @@ export class BundledUnitsProvider implements UnitsProvider {
    * @returns The matching `UnitProps`, or a `BadUnit` if not found.
    */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
-    BundledUnitsProvider._ensureInitialized();
-    const entry = BundledUnitsProvider._nameMap.get(unitName);
+    BasicUnitsProvider._ensureInitialized();
+    const entry = BasicUnitsProvider._nameMap.get(unitName);
     return entry ? entry.props : new BadUnit();
   }
 
@@ -177,31 +181,31 @@ export class BundledUnitsProvider implements UnitsProvider {
    * @returns A `UnitConversionProps` with `factor`, `offset`, and optionally `inversion` and `error`.
    */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    BundledUnitsProvider._ensureInitialized();
+    BasicUnitsProvider._ensureInitialized();
 
-    const from = BundledUnitsProvider._nameMap.get(fromUnit.name);
-    const to = BundledUnitsProvider._nameMap.get(toUnit.name);
+    const from = BasicUnitsProvider._nameMap.get(fromUnit.name);
+    const to = BasicUnitsProvider._nameMap.get(toUnit.name);
 
     if (!from || !to)
       return { factor: 1.0, offset: 0.0, error: true };
 
-    const fromInverted = BundledUnitsProvider._invertedUnits.get(fromUnit.name);
-    const toInverted = BundledUnitsProvider._invertedUnits.get(toUnit.name);
+    const fromInverted = BasicUnitsProvider._invertedUnits.get(fromUnit.name);
+    const toInverted = BasicUnitsProvider._invertedUnits.get(toUnit.name);
 
     // Validate dimensional compatibility — reject cross-phenomenon conversions
     const fromPhenomenon = fromInverted
-      ? BundledUnitsProvider._nameMap.get(fromInverted.invertsUnitName)?.props.phenomenon
+      ? BasicUnitsProvider._nameMap.get(fromInverted.invertsUnitName)?.props.phenomenon
       : from.props.phenomenon;
     const toPhenomenon = toInverted
-      ? BundledUnitsProvider._nameMap.get(toInverted.invertsUnitName)?.props.phenomenon
+      ? BasicUnitsProvider._nameMap.get(toInverted.invertsUnitName)?.props.phenomenon
       : to.props.phenomenon;
     if (fromPhenomenon !== toPhenomenon)
       return { factor: 1.0, offset: 0.0, error: true };
 
     // Case: both are inverted units
     if (fromInverted && toInverted) {
-      const innerFrom = BundledUnitsProvider._nameMap.get(fromInverted.invertsUnitName);
-      const innerTo = BundledUnitsProvider._nameMap.get(toInverted.invertsUnitName);
+      const innerFrom = BasicUnitsProvider._nameMap.get(fromInverted.invertsUnitName);
+      const innerTo = BasicUnitsProvider._nameMap.get(toInverted.invertsUnitName);
       if (innerFrom && innerTo) {
         const c = innerFrom.resolved.conversion.inverse().compose(innerTo.resolved.conversion);
         return { factor: c.factor, offset: c.offset };
@@ -210,7 +214,7 @@ export class BundledUnitsProvider implements UnitsProvider {
 
     // Case: from is an inverted unit
     if (fromInverted) {
-      const innerFrom = BundledUnitsProvider._nameMap.get(fromInverted.invertsUnitName);
+      const innerFrom = BasicUnitsProvider._nameMap.get(fromInverted.invertsUnitName);
       if (innerFrom) {
         const c = innerFrom.resolved.conversion.inverse().compose(to.resolved.conversion);
         return { factor: c.factor, offset: c.offset, inversion: UnitConversionInvert.InvertPreConversion };
@@ -219,7 +223,7 @@ export class BundledUnitsProvider implements UnitsProvider {
 
     // Case: to is an inverted unit
     if (toInverted) {
-      const innerTo = BundledUnitsProvider._nameMap.get(toInverted.invertsUnitName);
+      const innerTo = BasicUnitsProvider._nameMap.get(toInverted.invertsUnitName);
       if (innerTo) {
         const c = from.resolved.conversion.inverse().compose(innerTo.resolved.conversion);
         return { factor: c.factor, offset: c.offset, inversion: UnitConversionInvert.InvertPostConversion };
@@ -235,10 +239,10 @@ export class BundledUnitsProvider implements UnitsProvider {
    * @internal
    */
   public static resetForTesting(): void {
-    BundledUnitsProvider._initialized = false;
-    BundledUnitsProvider._nameMap.clear();
-    BundledUnitsProvider._labelMap.clear();
-    BundledUnitsProvider._phenomenonMap.clear();
-    BundledUnitsProvider._invertedUnits.clear();
+    BasicUnitsProvider._initialized = false;
+    BasicUnitsProvider._nameMap.clear();
+    BasicUnitsProvider._labelMap.clear();
+    BasicUnitsProvider._phenomenonMap.clear();
+    BasicUnitsProvider._invertedUnits.clear();
   }
 }

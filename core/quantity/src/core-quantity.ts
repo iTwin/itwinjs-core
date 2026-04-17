@@ -21,7 +21,7 @@ export * from "./QuantityLoggerCategory";
 export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitDefinitionResolver";
 export * from "./SerializedUnitSchema";
-export * from "./BundledUnitsProvider";
+export * from "./BasicUnitsProvider";
 export * from "./internal/cross-package";
 
 /** @docs-package-description
