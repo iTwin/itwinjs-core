@@ -9,6 +9,7 @@ import { ProfileOptions } from "@itwin/core-common";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as path from "path";
+import { TestUtils } from "../TestUtils";
 
 interface Options {
   readonly bimFile?: string;
@@ -56,7 +57,7 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
 
   public static async create<TOptions extends Options>(options?: TOptions): Promise<TestContext<SchemaLocaterType<TOptions>>> {
     if (!IModelHost.isValid) {
-      await IModelHost.startup()
+      await TestUtils.startBackend();
     }
 
     const iModel = options?.bimFile ?
@@ -135,7 +136,6 @@ export class TestContext<TLocater = never> implements AsyncDisposable {
 
     const schemaXml = await getOrderedSchemaStrings(testSchema);
     await this._iModel.importSchemaStrings(schemaXml);
-    this._iModel.saveChanges();
 
     if (this.iModel.isBriefcaseDb() && !this.iModel.isReadonly) {
       await this.iModel.pushChanges({ description: "import test schema" });
@@ -173,3 +173,4 @@ async function getSchemaString(schema: Schema): Promise<string> {
 
   return xml;
 }
+

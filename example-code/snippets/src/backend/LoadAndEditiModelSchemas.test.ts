@@ -7,7 +7,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { ECClassModifier, PrimitiveType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaXml } from "@itwin/ecschema-locaters";
 import { SchemaContextEditor } from "@itwin/ecschema-editing";
-import { StandaloneDb } from "@itwin/core-backend";
+import { EditTxn, StandaloneDb } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
 
 describe("SchemaLoadAndEdit", () => {
@@ -54,7 +54,10 @@ describe("SchemaLoadAndEdit", () => {
       throw new Error(`Schema Key ${schemaKey.toString(true)} not found in context`);
     }
     const schemaXml = await SchemaXml.writeString(pipingSchema);
-    await iModelDb.importSchemaStrings([schemaXml]);
+    const txn = new EditTxn(iModelDb, "schema load and edit test");
+    txn.start();
+    await txn.iModel.importSchemaStrings([schemaXml]);
+    txn.end("abandon");
     // __PUBLISH_EXTRACT_END__
 
   });

@@ -66,7 +66,7 @@ A [FormatsProvider]($quantity) supplies format definitions for a [KindOfQuantity
 **Characteristics:**
 
 - Loads formats from KindOfQuantity definitions in schemas
-- Filters formats by unit system (metric, imperial, usCustomary, usSurvey)
+- Filters formats by unit system preference group — see [Unit Systems and UnitSystemKey](../definitions/Units.md#unit-systems-and-unitsystemkey) for how each key maps to EC UnitSystems
 - Throws error for invalid [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name)
 - Read-only format provider
 

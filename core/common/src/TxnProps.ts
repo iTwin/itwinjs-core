@@ -1,10 +1,18 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module iModels
+ */
+
 import { Id64String } from "@itwin/core-bentley";
 
 /**
  * @alpha
  * Transaction types
  */
-export type TxnType = "Data" | "ECSchema" | "Ddl";
+export type TxnType = "Data" | "ECSchema" | "Schema" | "Ddl"; // TODO: Remove "Schema" in favor of "ECSchema". Currently thats a bug in native code....for schema txns we get txn type as "Schema" instead of "ECSchema".
 
 /**
  * @alpha
@@ -34,7 +42,7 @@ export interface TxnProps {
 
 /**
  * Arguments for saving changes to the iModel.
- * @alpha
+ * @beta
  */
 export interface SaveChangesArgs {
   /**
@@ -49,4 +57,22 @@ export interface SaveChangesArgs {
    * Optional application-specific data to include with the changes.
    */
   appData?: { [key: string]: any };
+}
+
+/** Arguments to [[TxnManager]]'s async reverse and cancel methods.
+ * @beta
+ */
+export interface ReverseTxnArgs {
+  /** If `true`, locks acquired when the reversed Txns were originally created are retained. If `false` or not specified,
+   * these locks are abandoned. */
+  readonly retainLocks?: boolean;
+}
+
+/** Arguments to [[TxnManager]]'s async reinstate methods.
+ * @beta
+ */
+export interface ReinstateTxnArgs {
+  /** If `true`, locks acquired during the current, unsaved Txn are retained, even while the unsaved changes
+   * themselves are abandoned. If `false` or not specified, the locks are abandoned along with the changes. */
+  readonly retainLocks?: boolean;
 }

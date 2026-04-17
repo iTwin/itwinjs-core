@@ -756,6 +756,17 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return this.fractionToPoint(0.0, result);
   }
   /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    if (this.sweep.isFullCircle)
+      return true;
+    return super.isPhysicallyClosedCurve(tolerance, xyOnly);
+  }
+  /**
    * Return the end point of the arc.
    * @param result optional preallocated result.
    */
@@ -786,7 +797,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const simpleLength = this.getFractionToDistanceScale();
     if (simpleLength !== undefined)
       return simpleLength * Math.abs(fraction1 - fraction0);
-    // fall through for true ellipse . .. stroke and accumulate quadrature with typical count .  ..
+    // fall through for true ellipse . .. stroke and accumulate quadrature with typical count
     let f0 = fraction0;
     let f1 = fraction1;
     if (fraction0 > fraction1) {
@@ -891,49 +902,63 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Return details of the closest point on the arc, optionally extending to full ellipse.
    * @param spacePoint search for point closest to this point.
-   * @param extend if true, consider projections to the complete ellipse. If false, consider only endpoints and
-   * projections within the arc sweep.
+   * @param extend if true, consider projections to the complete ellipse. If false (default), consider only endpoints
+   * and projections within the arc sweep. Note that for an open arc, extending one end is the same as extending both ends.
    * @param result optional preallocated result.
    */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
-    const allRadians = this.allPerpendicularAngles(spacePoint, true, true);
-    let extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
-    let extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
-    // distinct extends for cyclic space are awkward ....
-    if (this._sweep.isFullCircle) {
-      extend0 = CurveExtendMode.None;
-      extend1 = CurveExtendMode.None;
+    const allRadians = this.allPerpendicularAngles(spacePoint, true, false);
+    // test endpoints if and only if arc is open and unextended
+    if (!this._sweep.isFullCircle) {
+      const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
+      const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
+      if (extend0 === CurveExtendMode.None && extend1 === CurveExtendMode.None) {
+        allRadians.push(this._sweep.startRadians);
+        allRadians.push(this._sweep.endRadians);
+      }
     }
-    if (extend0 !== CurveExtendMode.None && extend1 !== CurveExtendMode.None) {
-      allRadians.push(this._sweep.startRadians);
-      allRadians.push(this._sweep.endRadians);
-    }
-    // hm... logically there must at least two angles there ...  but if it happens return the start point ...
     const workRay = Ray3d.createZero();
-    if (allRadians.length === 0) {
-      result.setFR(0.0, this.radiansToPointAndDerivative(this._sweep.startRadians, workRay));
-      result.a = spacePoint.distance(result.point);
+    if (allRadians.length === 0) { // shouldn't happen; there should always be at least 2 angles
+      result.setFR(0.0, this.radiansToPointAndDerivative(this._sweep.startRadians, workRay), spacePoint.distance(result.point));
     } else {
       let dMin = Number.MAX_VALUE;
       let d = 0;
       for (const radians of allRadians) {
-        const fraction = CurveExtendOptions.resolveRadiansToSweepFraction(extend, radians, this.sweep);
-        if (fraction !== undefined) {
-          this.fractionToPointAndDerivative(fraction, workRay);
-
+        const validatedFraction = CurveExtendOptions.resolveRadiansToValidSweepFraction(extend, radians, this.sweep);
+        if (validatedFraction.isValid) {
+          this.fractionToPointAndDerivative(validatedFraction.fraction, workRay);
           d = spacePoint.distance(workRay.origin);
           if (d < dMin) {
             dMin = d;
-            result.setFR(fraction, workRay);
-            result.a = d;
+            result.setFR(validatedFraction.fraction, workRay, d);
           }
         }
       }
     }
     return result;
+  }
+  /**
+   * Search for a point on the Arc3d that is closest to the spacePoint as viewed in the xy-plane (ignoring z).
+   * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
+   * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
+   * succeed.
+   * @param spacePoint point in space.
+   * @param extend if true, consider projections to the complete ellipse. If false (default), consider only endpoints
+   * and projections within the arc sweep. Note that for an open arc, extending one end is the same as extending both ends.
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public override closestPointXY(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    // prevent `ClosestPointStroker.claimResult` from clamping an exterior fraction when arc is half-extended
+    const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
+    const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
+    extend = extend0 !== CurveExtendMode.None || extend1 !== CurveExtendMode.None;
+    return super.closestPointXY(spacePoint, extend, result); // TODO: implement exact solution instead of deferring to superclass
   }
   /** Override of [[CurvePrimitive.emitTangents]] for Arc3d. */
   public override emitTangents(
@@ -1003,6 +1028,20 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const axy = this._matrix.columnXDotColumnY();
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
+  /** Return true if the vector0 and vector90 xy parts are of equal length and perpendicular. */
+  public get isCircularXY(): boolean {
+    const columnX = this._matrix.columnX();
+    const columnY = this._matrix.columnY();
+    const axx = columnX.magnitudeSquaredXY();
+    const ayy = columnY.magnitudeSquaredXY();
+    const axy = columnX.dotProductXY(columnY);
+    return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
+  }
+  /** Return true if the arc has zero radius (is a point). */
+  public get isDegenerateCircle(): boolean {
+    return Geometry.isSmallMetricDistanceSquared(this._matrix.columnXMagnitudeSquared()) &&
+      Geometry.isSmallMetricDistanceSquared(this._matrix.columnYMagnitudeSquared());
+  }
   /** Return radius if the vector0 and vector90 are of equal length and perpendicular. Ignores z. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);
@@ -1020,7 +1059,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public circularRadius(): number | undefined {
     return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }
-
   /** Return the larger length of the two defining vectors. */
   public maxVectorLength(): number {
     return Math.max(this._matrix.columnXMagnitude(), this._matrix.columnYMagnitude());
@@ -1429,15 +1467,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         // const theta = vector12.angleTo(bisector);
         // vector10, vector12, and bisector are UNIT vectors
         // bisector splits the angle between vector10 and vector12
-        const perpendicular = vector12.minus(vector10);
+        const perpendicular = vector12.minus(vector10); // perpendicular to bisector
         const perpendicularMagnitude = perpendicular.magnitude(); // == 2 * sin(theta)
         const sinTheta = 0.5 * perpendicularMagnitude;
-        if (!Geometry.isSmallAngleRadians(sinTheta)) {  // for small theta, sinTheta is almost equal to theta
+        if (!Geometry.isSmallAngleRadians(sinTheta)) { // for small theta, sinTheta is almost equal to theta
           const cosTheta = Math.sqrt(1 - sinTheta * sinTheta);
           const tanTheta = sinTheta / cosTheta;
-          const alphaRadians = Math.acos(sinTheta);
-          const distanceToCenter = radius / sinTheta;
-          const distanceToTangency = radius / tanTheta;
+          // [arc center, arc start, point1] form a right triangle with angle theta at point1
+          const alphaRadians = Math.acos(sinTheta); // == pi/2 - theta
+          const distanceToCenter = radius / sinTheta; // distance from point1 to arc center along bisector
+          const distanceToTangency = radius / tanTheta; // distance from point1 to start/end of arc along vector10/vector12
           const f10 = distanceToTangency / d10;
           const f12 = distanceToTangency / d12;
           const center = point1.plusScaled(bisector, distanceToCenter);
@@ -1445,7 +1484,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
           perpendicular.scaleInPlace(radius / perpendicularMagnitude);
           const arc02 = Arc3d.create(
             center, bisector, perpendicular, AngleSweep.createStartEndRadians(-alphaRadians, alphaRadians),
-          );
+          ); // arc02 is a circle with the given radius because both bisector and perpendicular have length radius
           return { arc: arc02, fraction10: f10, fraction12: f12, point: point1.clone() };
         }
       }

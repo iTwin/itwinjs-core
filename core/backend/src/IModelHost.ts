@@ -13,7 +13,7 @@ import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "node:os";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, IModelError, ITwinSettingsError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import type { ServerStorage } from "@itwin/object-storage-core";
@@ -24,6 +24,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { CloudSqlite } from "./CloudSqlite";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
+import { EditTxn } from "./EditTxn";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
@@ -32,11 +33,13 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
+import { type Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
+import { settingsWorkspaceDbName } from "./workspace/SettingsDb";
+import { SettingsContainers, SettingsEditor } from "./workspace/SettingsEditor";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { Workspace, WorkspaceDbLoadError, WorkspaceDbSettingsProps, WorkspaceOpts } from "./workspace/Workspace";
 import { join, normalize as normalizeDir } from "path";
-import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
@@ -84,6 +87,16 @@ export interface AzureBlobStorageCredentials {
   accessKey: string;
   baseUrl?: string;
 }
+
+/** Controls how iModel writes through the implicit transaction are enforced.
+ *
+ * Allowed values:
+ * - "allow": preserve pre-version 5.8.0 behavior for backwards compatibility.
+ * - "log": allow the operation but log each implicit write as an error case.
+ * - "throw": reject writes through the implicit transaction and require explicit EditTxns.
+ * @beta
+ */
+export type ImplicitWriteEnforcement = "allow" | "log" | "throw";
 
 /**
  * Options for [[IModelHost.startup]]
@@ -212,6 +225,19 @@ export interface IModelHostOptions {
    * @beta
    */
   incrementalSchemaLoading?: "enabled" | "disabled";
+  /**
+   * Configuration controlling whether to use semantic rebase or not.
+   * @beta
+   */
+  useSemanticRebase?: boolean;
+
+  /**
+    * Controls how writes through the implicit transaction are enforced.
+    * See [[ImplicitWriteEnforcement]] for the allowed values.
+    * Defaults to "allow" for backwards compatibility.
+   * @beta
+   */
+  implicitWriteEnforcement?: ImplicitWriteEnforcement;
 }
 
 /** Configuration of core-backend.
@@ -264,6 +290,17 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public incrementalSchemaLoading: "enabled" | "disabled" = "disabled";
+  /**
+   * Configuration controlling whether to use semantic rebase or not. By default it is undefined meaning semantic rebase is not used.
+   * @beta
+   */
+  public useSemanticRebase?: boolean;
+  /**
+    * Controls how writes through the implicit transaction are enforced.
+    * See [[IModelHostOptions.implicitWriteEnforcement]] for the meaning of each allowed value.
+   * @beta
+   */
+  public implicitWriteEnforcement: ImplicitWriteEnforcement = "allow";
 }
 
 /**
@@ -296,6 +333,23 @@ class ApplicationSettings extends SettingsImpl {
       this._remove();
       this._remove = undefined;
     }
+  }
+}
+
+/**
+ * Settings for an iTwin. May only include settings priority for iTwin and organization.
+ */
+class ITwinWorkspaceSettings extends SettingsImpl {
+  protected override verifyPriority(priority: SettingsPriority) {
+    if (priority <= SettingsPriority.application)
+      ITwinSettingsError.throwError("invalid-priority", { message: `Settings with priority ${priority} cannot be added to an iTwin workspace.` });
+    if (priority > SettingsPriority.iTwin)
+      ITwinSettingsError.throwError("invalid-priority", { message: `Settings with priority ${priority} cannot be added to an iTwin workspace.` });
+  }
+
+  public override * getSettingEntries<T extends Setting>(name: string): Iterable<{ value: T, dictionary: SettingsDictionary }> {
+    yield* super.getSettingEntries(name);
+    yield* IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
 }
 
@@ -384,6 +438,90 @@ export class IModelHost {
    * @beta
    */
   public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
+
+  /** Obtain the [[Workspace]] for an iTwin by discovering its settings container.
+   * All named dictionary resources in the container's [[WorkspaceDb]] are loaded into the workspace at [[SettingsPriority.iTwin]].
+   * @note This method requires an internet connection to discover the container.
+   * To use an iTwin workspace offline, use the overload that accepts [[WorkspaceDbSettingsProps]].
+   * @note The returned workspace is caller-owned. Call `close` when finished.
+   * @beta
+   */
+  public static async getITwinWorkspace(iTwinId: GuidString): Promise<OwnedWorkspace>;
+  /** Obtain the [[Workspace]] for an iTwin.
+   * The supplied [[WorkspaceDbSettingsProps]] are passed directly to [[Workspace.loadSettingsDictionary]].
+    * @note You can derive these from the `settingsSources` property on a previously returned workspace.
+    * @note The returned workspace is caller-owned. Call `close` when finished.
+   * @beta
+   */
+  public static async getITwinWorkspace(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[]): Promise<OwnedWorkspace>;
+  /** @internal */
+  public static async getITwinWorkspace(args: GuidString | WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[]): Promise<OwnedWorkspace> {
+    const isITwinId = typeof args === "string";
+    const workspace = constructWorkspace(new ITwinWorkspaceSettings());
+
+    try {
+      const settingsSources = isITwinId ? await SettingsContainers.getITwinSettingsSources(args) : args;
+      if (undefined === settingsSources)
+        return workspace;
+
+      workspace.settingsSources = settingsSources;
+
+      const problems: WorkspaceDbLoadError[] = [];
+      await workspace.loadSettingsDictionary(settingsSources, problems);
+
+      if (problems.length > 0) {
+        const label = isITwinId ? `iTwin '${args}'` : "the supplied settings workspace db properties";
+        throwWorkspaceDbLoadErrors(`attempting to load workspace settings for ${label}`, problems);
+      }
+
+      return workspace;
+    } catch (error) {
+      workspace.close();
+      throw error;
+    }
+  }
+
+  /** Save a named [[SettingsDictionary]] to the iTwin's settings container.
+   * If no iTwin settings container exists for `iTwinId`, one is created.
+   * The dictionary is stored as a named resource in the container's default [[WorkspaceDb]], where `name` is used as the resource name.
+   * @param iTwinId The iTwin whose settings container should be updated.
+   * @param name The name of the dictionary, used as the resource name in the [[WorkspaceDb]].
+   * @param settings The settings key-value pairs to store.
+   * @note uses [[IModelHost.userMoniker]] as the user name for acquiring the write lock on the settings container.
+   * @beta
+   */
+  public static async saveSettingDictionary(iTwinId: GuidString, name: string, settings: SettingsContainer): Promise<void> {
+    const { editor, container } = await SettingsEditor.constructForITwin(iTwinId);
+    try {
+      await container.withEditableDb(this.userMoniker, (db) => {
+        db.updateSettingsResource(settings, name);
+      }, { dbName: settingsWorkspaceDbName });
+    } finally {
+      editor.close();
+    }
+  }
+
+  /** Delete a named [[SettingsDictionary]] from the iTwin's settings container.
+   * If no iTwin settings container exists, this method does nothing.
+   * @param iTwinId The iTwin whose settings container should be updated.
+   * @param name The name of the dictionary (resource name) to delete.
+   * @note uses [[IModelHost.userMoniker]] as the user name for acquiring the write lock on the settings container.
+   * @beta
+   */
+  public static async deleteSettingDictionary(iTwinId: GuidString, name: string): Promise<void> {
+    const settingsEditor = await SettingsEditor.getForITwin(iTwinId);
+    if (undefined === settingsEditor)
+      return;
+
+    const { editor, container } = settingsEditor;
+    try {
+      await container.withEditableDb(this.userMoniker, (db) => {
+        db.removeString(name);
+      }, { dbName: settingsWorkspaceDbName });
+    } finally {
+      editor.close();
+    }
+  }
 
   /** The registry of schemas describing the [[Setting]]s for the application session.
    * Applications should register their schemas via methods like [[SettingsSchemas.addGroup]].
@@ -509,7 +647,7 @@ export class IModelHost {
     this.loadNative(options);
     this.setupCacheDir(options);
     this.initializeWorkspace(options);
-
+    EditTxn.implicitWriteEnforcement = options.implicitWriteEnforcement ?? "allow";
     BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
     [
@@ -569,6 +707,7 @@ export class IModelHost {
     this.onBeforeShutdown.raiseEvent();
 
     this.configuration = undefined;
+    EditTxn.implicitWriteEnforcement = "allow";
     this.tileStorage = undefined;
 
     this._appWorkspace?.close();
@@ -649,6 +788,14 @@ export class IModelHost {
    */
   public static get compressCachedTiles(): boolean {
     return false !== IModelHost.configuration?.compressCachedTiles;
+  }
+
+  /**
+   * Whether to use semantic rebase or not.
+   * @internal
+   */
+  public static get useSemanticRebase(): boolean {
+    return undefined !== IModelHost.configuration && (IModelHost.configuration.useSemanticRebase ? true : false);
   }
 
   private static setupTileCache() {

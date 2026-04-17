@@ -229,7 +229,10 @@ class SchemaDeserializer {
       await IModelHost.shutdown();
     }
 
-    return schema!;
+    if (undefined === schema)
+      throw new Error(`Failed to locate schema for ${schemaFilePath}.`);
+
+    return schema;
   }
 
   /**
