@@ -114,6 +114,17 @@ describe("createUnitsProvider", () => {
       const conv = await provider.getConversion(m, ft);
       expect(conv.factor).toBeCloseTo(3.28084, 3);
     });
+
+    it("falls back to basic conversion when primary returns { error: true }", async () => {
+      const provider = createUnitsProvider({
+        primary: makePrimaryStub({ getConversion: async () => ({ factor: 1, offset: 0, error: true }) }),
+      });
+      const m = await provider.findUnitByName("Units.M");
+      const ft = await provider.findUnitByName("Units.FT");
+      const conv = await provider.getConversion(m, ft);
+      expect(conv.error).not.toBe(true);
+      expect(conv.factor).toBeCloseTo(3.28084, 3);
+    });
   });
 
   describe("preferBasic: true", () => {
@@ -136,6 +147,21 @@ describe("createUnitsProvider", () => {
       // "Custom.M" is not in BasicUnitsProvider, so it falls back to primary
       const unit = await provider.findUnitByName("Custom.M");
       expect(unit).toBe(VALID_UNIT);
+    });
+
+    it("falls back to primary conversion when basic returns { error: true } (cross-phenomenon)", async () => {
+      // Basic returns error:true for cross-phenomenon; primary can handle it
+      const provider = createUnitsProvider({
+        primary: makePrimaryStub({ getConversion: async () => PRIMARY_CONVERSION }),
+        preferBasic: true,
+      });
+      // Units from different phenomena — basic will return { error: true }
+      const m = await provider.findUnitByName("Units.M");
+      const celsius: UnitProps = { name: "Units.CELSIUS", label: "°C", phenomenon: "Units.TEMPERATURE", isValid: true, system: "Units.SI" };
+      const conv = await provider.getConversion(m, celsius);
+      // Basic can't convert LENGTH → TEMPERATURE, so primary's result should be used
+      expect(conv.factor).toBe(2.0);
+      expect(conv.error).not.toBe(true);
     });
   });
 

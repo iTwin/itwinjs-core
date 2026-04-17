@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** Current version of the serialized unit schema format. Follows semver.
+/** Current version of the serialization format for `SerializedUnitSchema`.
+ * Bump the major version when the structure of the JSON changes incompatibly.
+ * This is independent of the EC schema version in `Units.json`.
  * @internal
  */
 export const SERIALIZED_UNIT_SCHEMA_VERSION = "1.0.0";
@@ -84,7 +86,7 @@ export type SerializedUnitItem = SerializedConstant | SerializedUnit | Serialize
  * @internal
  */
 export interface SerializedUnitSchema {
-  /** Semver string identifying the serialization format. Consumers should reject unknown major versions. */
+  /** EC schema version string from the source schema (e.g. `"01.00.00"`). */
   readonly version: string;
   readonly name: string;
   readonly alias: string;

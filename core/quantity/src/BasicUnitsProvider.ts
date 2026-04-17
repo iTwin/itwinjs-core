@@ -128,13 +128,14 @@ export class BasicUnitsProvider implements UnitsProvider {
 
   /** Find a unit by its display label, optionally filtering by schema name, phenomenon, and unit system.
    * @param unitLabel - The display label to search for (case-insensitive).
-   * @param schemaName - Optional schema name filter (currently unused).
+   * @param schemaName - Optional schema name filter. Returns `BadUnit` if provided and not `"Units"`.
    * @param phenomenon - Optional phenomenon filter (e.g. `"Units.LENGTH"`).
    * @param unitSystem - Optional unit system filter (e.g. `"Units.METRIC"`).
    * @returns The matching `UnitProps`, or a `BadUnit` if no match is found.
    */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    void schemaName; // Reserved for future schema-scoped filtering
+    if (schemaName && schemaName !== "Units")
+      return new BadUnit();
     BasicUnitsProvider._ensureInitialized();
 
     const candidates = BasicUnitsProvider._labelMap.get(unitLabel.toLowerCase());

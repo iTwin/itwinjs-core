@@ -46,6 +46,17 @@ describe("BasicUnitsProvider", () => {
       expect(unit.name).toBe("Units.FT");
     });
 
+    it("returns BadUnit when schemaName is provided and is not 'Units'", async () => {
+      const unit = await provider.findUnit("m", "NonExistentSchema");
+      expect(unit.isValid).toBe(false);
+    });
+
+    it("succeeds when schemaName is 'Units'", async () => {
+      const unit = await provider.findUnit("m", "Units");
+      expect(unit.isValid).toBe(true);
+      expect(unit.name).toBe("Units.M");
+    });
+
     it("returns invalid for unknown label", async () => {
       const unit = await provider.findUnit("nonexistent_unit_xyz");
       expect(unit.isValid).toBe(false);

@@ -51,50 +51,57 @@ export function createUnitsProvider(options: CreateUnitsProviderOptions = {}): U
   if (!primary)
     return basic;
 
-  const [first, second] = options.preferBasic ? [basic, primary] : [primary, basic];
-  return new CompositeUnitsProvider(first, second);
+  const providers = options.preferBasic ? [basic, primary] : [primary, basic];
+  return new CompositeUnitsProvider(providers);
 }
 
 class CompositeUnitsProvider implements UnitsProvider {
-  constructor(private readonly _first: UnitsProvider, private readonly _second: UnitsProvider) {}
+  constructor(private readonly _providers: UnitsProvider[]) {}
 
   public async findUnit(label: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    const hit = await tryFind(async () => this._first.findUnit(label, schemaName, phenomenon, unitSystem));
-    if (hit?.isValid)
-      return hit;
-    return this._second.findUnit(label, schemaName, phenomenon, unitSystem);
+    for (let i = 0; i < this._providers.length - 1; i++) {
+      const hit = await tryFind(async () => this._providers[i].findUnit(label, schemaName, phenomenon, unitSystem));
+      if (hit?.isValid)
+        return hit;
+    }
+    return this._providers[this._providers.length - 1].findUnit(label, schemaName, phenomenon, unitSystem);
   }
 
   public async findUnitByName(name: string): Promise<UnitProps> {
-    const hit = await tryFind(async () => this._first.findUnitByName(name));
-    if (hit?.isValid)
-      return hit;
-    return this._second.findUnitByName(name);
+    for (let i = 0; i < this._providers.length - 1; i++) {
+      const hit = await tryFind(async () => this._providers[i].findUnitByName(name));
+      if (hit?.isValid)
+        return hit;
+    }
+    return this._providers[this._providers.length - 1].findUnitByName(name);
   }
 
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
-    const [a, b] = await Promise.all([
-      tryList(async () => this._first.getUnitsByFamily(phenomenon)),
-      tryList(async () => this._second.getUnitsByFamily(phenomenon)),
-    ]);
-    // Merge, dedupe by UnitProps.name (fully-qualified), first-seen wins (order reflects preferBasic).
+    const results = await Promise.all(
+      this._providers.map(async (p) => tryList(async () => p.getUnitsByFamily(phenomenon))),
+    );
     const seen = new Set<string>();
     const out: UnitProps[] = [];
-    for (const u of [...a, ...b]) {
-      if (!seen.has(u.name)) {
-        seen.add(u.name);
-        out.push(u);
+    for (const units of results) {
+      for (const u of units) {
+        if (!seen.has(u.name)) {
+          seen.add(u.name);
+          out.push(u);
+        }
       }
     }
     return out;
   }
 
   public async getConversion(from: UnitProps, to: UnitProps): Promise<UnitConversionProps> {
-    try {
-      return await this._first.getConversion(from, to);
-    } catch {
-      return this._second.getConversion(from, to);
+    for (let i = 0; i < this._providers.length - 1; i++) {
+      try {
+        const result = await this._providers[i].getConversion(from, to);
+        if (!result.error)
+          return result;
+      } catch { /* fall through to next provider */ }
     }
+    return this._providers[this._providers.length - 1].getConversion(from, to);
   }
 }
 
