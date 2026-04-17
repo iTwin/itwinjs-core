@@ -55,7 +55,9 @@ class RealityModelTileUtils {
     }
 
     let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
-    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume);
+    if (undefined === range)
+      throw new TypeError("Unable to determine range from the root bounding volume.");
     if (undefined === rootTransform)
       rootTransform = Transform.createIdentity();
 
@@ -106,7 +108,10 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
   let range: Range3d;
   try {
     const ecefRange = await RealityModelTileUtils.rangeFromUrl(url);
-    range = iModelDb.getEcefTransform().inverse()!.multiplyRange(ecefRange);
+    const worldToEcef = iModelDb.getEcefTransform().inverse();
+    if (undefined === worldToEcef)
+      throw new TypeError("Unable to determine the iModel ECEF transform.");
+    range = worldToEcef.multiplyRange(ecefRange);
   } catch {
     range = projectExtents;
     range.low.z = -200.0;

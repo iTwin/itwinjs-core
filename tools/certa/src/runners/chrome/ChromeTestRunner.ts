@@ -57,7 +57,11 @@ export class ChromeTestRunner {
     if (process.env.CI || process.env.TF_BUILD)
       (config.mochaOptions as any).forbidOnly = true;
 
-    const { failures, coverage } = await runTestsInPlaywright(config, process.env.CERTA_PORT!);
+    const port = process.env.CERTA_PORT;
+    if (undefined === port)
+      throw new Error("CERTA_PORT is not defined.");
+
+    const { failures, coverage } = await runTestsInPlaywright(config, port);
     webserverProcess.kill();
 
     // Save nyc/istanbul coverage file.
