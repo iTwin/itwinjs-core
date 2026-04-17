@@ -128,6 +128,20 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
+// @beta
+export class BeUnorderedEvent<T extends Listener> {
+    addListener(listener: T, scope?: any): () => void;
+    addOnce(listener: T, scope?: any): () => void;
+    clear(): void;
+    get numberOfListeners(): number;
+    raiseEvent(...args: Parameters<T>): void;
+}
+
+// @beta
+export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
+    emit(args: TEventArgs): void;
+}
+
 // @public
 export enum BriefcaseStatus {
     // (undocumented)

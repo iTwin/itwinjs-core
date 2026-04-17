@@ -115,16 +115,20 @@ export class SchemaReadHelper<T = unknown> {
       await this.readSchemaInfo(schema, rawSchema, addSchemaToCache);
     }
 
+    const schemaInfo = this._schemaInfo;
+    if (!schemaInfo)
+      throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Schema info not loaded for ${schema.schemaKey.toString()}`);
+
     // If not adding schema to cache (occurs in readSchemaInfo), we must load the schema here
     if (!addSchemaToCache) {
-      const loadedSchema = await this.loadSchema(this._schemaInfo!, schema);
+      const loadedSchema = await this.loadSchema(schemaInfo, schema);
       if (undefined === loadedSchema)
         throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
 
       return loadedSchema;
     }
 
-    const cachedSchema = await this._context.getCachedSchema(this._schemaInfo!.schemaKey, SchemaMatchType.Latest);
+    const cachedSchema = await this._context.getCachedSchema(schemaInfo.schemaKey, SchemaMatchType.Latest);
     if (undefined === cachedSchema)
       throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
 
@@ -163,8 +167,8 @@ export class SchemaReadHelper<T = unknown> {
         continue;
 
       const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
-        await this._visitorHelper.visitSchemaPart(loadedItem!);
+      if (loadedItem && this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
+        await this._visitorHelper.visitSchemaPart(loadedItem);
       }
     }
 
@@ -205,8 +209,8 @@ export class SchemaReadHelper<T = unknown> {
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
-      if (this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
-        this._visitorHelper.visitSchemaPartSync(loadedItem!);
+      if (loadedItem && this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
+        this._visitorHelper.visitSchemaPartSync(loadedItem);
       }
     }
 
@@ -250,15 +254,19 @@ export class SchemaReadHelper<T = unknown> {
    * @param ref The object to read the SchemaReference's props from.
    */
   private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
+    const schema = this._schema;
+    if (!schema)
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema not set when loading reference ${ref.name}`);
+
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
     const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (!refSchema)
-      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${schema.schemaKey.name}`);
 
-    (this._schema as MutableSchema).addReferenceSync(refSchema);
+    (schema as MutableSchema).addReferenceSync(refSchema);
 
-    SchemaGraph.generateGraphSync(this._schema!).throwIfCycles();
-    const results = this.validateSchemaReferences(this._schema!);
+    SchemaGraph.generateGraphSync(schema).throwIfCycles();
+    const results = this.validateSchemaReferences(schema);
 
     let errorMessage: string = "";
     for (const result of results) {
@@ -516,15 +524,18 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
     if (isInThisSchema) {
-      schemaItem = await this._schema!.getItem(itemName);
+      if (!this._schema)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema not set when resolving SchemaItem ${name}`);
+      const schema = this._schema;
+      schemaItem = await schema.getItem(itemName);
       if (schemaItem)
         return schemaItem;
 
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
-        schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
-        if (!skipVisitor && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
-          await this._visitorHelper.visitSchemaPart(schemaItem!);
+        schemaItem = await this.loadSchemaItem(schema, ...foundItem);
+        if (!skipVisitor && schemaItem && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
+          await this._visitorHelper.visitSchemaPart(schemaItem);
         }
         if (loadCallBack && schemaItem)
           loadCallBack(schemaItem);
@@ -558,19 +569,24 @@ export class SchemaReadHelper<T = unknown> {
     if (undefined === schemaName || schemaName.length === 0)
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
-    if (isInThisSchema && undefined === this._schema!.getItemSync(itemName)) {
-      const foundItem = this._parser.findItem(itemName);
-      if (foundItem) {
-        schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
-        if (!skipVisitor && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
-          this._visitorHelper.visitSchemaPartSync(schemaItem!);
-        }
-        if (loadCallBack && schemaItem)
-          loadCallBack(schemaItem);
+    if (isInThisSchema) {
+      if (!this._schema)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Schema not set when resolving SchemaItem ${name}`);
+      const schema = this._schema;
+      if (undefined === schema.getItemSync(itemName)) {
+        const foundItem = this._parser.findItem(itemName);
+        if (foundItem) {
+          schemaItem = this.loadSchemaItemSync(schema, ...foundItem);
+          if (!skipVisitor && schemaItem && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
+            this._visitorHelper.visitSchemaPartSync(schemaItem);
+          }
+          if (loadCallBack && schemaItem)
+            loadCallBack(schemaItem);
 
-        return schemaItem;
+          return schemaItem;
+        }
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
       }
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
     }
 
     schemaItem = this._context.getSchemaItemSync(new SchemaItemKey(itemName, new SchemaKey(schemaName)));
