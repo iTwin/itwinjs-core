@@ -296,31 +296,6 @@ describe("ECChangesetReader Examples", () => {
     void changed;
   });
 
-  it("openLocalChanges — read local saved changes", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChanges
-    using reader = ECChangesetReader.openLocalChanges({ db });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
-    while (reader.step()) pcu.appendFrom(reader);
-    for (const instance of pcu.instances) {
-      expect(instance.ECInstanceId).to.exist;
-      expect(instance.$meta.op).to.exist;
-    }
-    // __PUBLISH_EXTRACT_END__
-
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChangesIncludeInMemory
-    // Pass includeInMemoryChanges: true to also include the in-memory (not yet saved) changes:
-    using reader2 = ECChangesetReader.openLocalChanges({ db, includeInMemoryChanges: true });
-    // __PUBLISH_EXTRACT_END__
-    void reader2;
-  });
-
-  it("openInMemoryChanges — read in-memory changes", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenInMemoryChanges
-    using reader = ECChangesetReader.openInMemoryChanges({ db });
-    // __PUBLISH_EXTRACT_END__
-    void reader;
-  });
-
   it("useJsName row option", () => {
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.UseJsName
     using reader = ECChangesetReader.openFile({
@@ -374,6 +349,50 @@ describe("ECChangesetReader Examples", () => {
       expect(instance.$meta.op).to.exist;
     }
     // __PUBLISH_EXTRACT_END__
+  });
+
+  it("openLocalChanges — read local saved changes", async () => {
+    await db.locks.acquireLocks({ shared: modelId });
+    elementId = txn.insertElement({
+      classFullName: "ExSnippets:Widget",
+      model: modelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+      Label: "second", // eslint-disable-line @typescript-eslint/naming-convention
+      Tags: ["alpha", "beta"], // eslint-disable-line @typescript-eslint/naming-convention
+    } as any);
+    txn.saveChanges("insert second widget");
+    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChanges
+    using reader = ECChangesetReader.openLocalChanges({ db });
+    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    while (reader.step()) pcu.appendFrom(reader);
+    for (const instance of pcu.instances) {
+      expect(instance.ECInstanceId).to.exist;
+      expect(instance.$meta.op).to.exist;
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChangesIncludeInMemory
+    // Pass includeInMemoryChanges: true to also include the in-memory (not yet saved) changes:
+    using reader2 = ECChangesetReader.openLocalChanges({ db, includeInMemoryChanges: true });
+    // __PUBLISH_EXTRACT_END__
+    void reader2;
+  });
+
+  it("openInMemoryChanges — read in-memory changes", async () => {
+    await db.locks.acquireLocks({ shared: modelId });
+    elementId = txn.insertElement({
+      classFullName: "ExSnippets:Widget",
+      model: modelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+      Label: "third", // eslint-disable-line @typescript-eslint/naming-convention
+      Tags: ["alpha", "beta"], // eslint-disable-line @typescript-eslint/naming-convention
+    } as any);
+    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenInMemoryChanges
+    using reader = ECChangesetReader.openInMemoryChanges({ db });
+    // __PUBLISH_EXTRACT_END__
+    void reader;
   });
 });
 
