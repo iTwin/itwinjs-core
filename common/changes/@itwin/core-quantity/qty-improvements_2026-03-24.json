@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add Units namespace with typed constants, findPersistenceUnitForPhenomenon helper, and impliedUnitSystem to FormatsChangedArgs.",
+      "type": "minor",
+      "packageName": "@itwin/core-quantity"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
