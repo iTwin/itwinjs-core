@@ -756,9 +756,12 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
-      if (intervalPromises.size > 0) {
-        await Promise.all(intervalPromises);
-      }
+    }
+    // Note: if an error is thrown before we get here then we don't care about any possible errors from the interval
+    // callbacks, so we don't await the promises in that case. If we do get here, then we want to await any remaining
+    // promises to ensure all callbacks have completed before this function returns.
+    if (intervalPromises.size > 0) {
+      await Promise.all(intervalPromises);
     }
   }
 
@@ -790,7 +793,7 @@ export namespace CloudSqlite {
               // happens, we will get an error from any function call made to transfer after the job is done. In that
               // case, just ignore the error.
               if (isTransferAlreadyCompletedError(err))
-                  return;
+                return;
               throw err;
             }
           });
@@ -806,9 +809,12 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
-      if (intervalPromises.size > 0) {
-        await Promise.all(intervalPromises);
-      }
+    }
+    // Note: if an error is thrown before we get here then we don't care about any possible errors from the interval
+    // callbacks, so we don't await the promises in that case. If we do get here, then we want to await any remaining
+    // promises to ensure all callbacks have completed before this function returns.
+    if (intervalPromises.size > 0) {
+      await Promise.all(intervalPromises);
     }
   }
 
