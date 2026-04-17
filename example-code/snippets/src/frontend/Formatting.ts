@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
+import { createUnitsProvider } from "@itwin/core-quantity";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Unit_System_Configuration
@@ -27,7 +28,10 @@ export function addAlternateUnitLabels() {
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.SchemaUnitProvider_Registration
 /** Register SchemaUnitProvider when IModelConnection is opened */
 export async function registerSchemaUnitProvider(iModelConnection: IModelConnection) {
-  await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(iModelConnection.schemaContext));
+  // Wrap SchemaUnitProvider with createUnitsProvider so basic BIS units fill any gaps
+  await IModelApp.quantityFormatter.setUnitsProvider(
+    createUnitsProvider({ primary: new SchemaUnitProvider(iModelConnection.schemaContext) }),
+  );
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -35,7 +39,9 @@ export async function registerSchemaUnitProvider(iModelConnection: IModelConnect
 /** Register SchemaUnitProvider automatically when IModelConnection opens */
 export function setupIModelConnectionListener() {
   IModelConnection.onOpen.addListener(async (iModelConnection: IModelConnection) => {
-    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(iModelConnection.schemaContext));
+    await IModelApp.quantityFormatter.setUnitsProvider(
+      createUnitsProvider({ primary: new SchemaUnitProvider(iModelConnection.schemaContext) }),
+    );
   });
 }
 // __PUBLISH_EXTRACT_END__
