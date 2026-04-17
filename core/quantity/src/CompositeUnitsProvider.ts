@@ -59,14 +59,14 @@ class CompositeUnitsProvider implements UnitsProvider {
   constructor(private readonly _first: UnitsProvider, private readonly _second: UnitsProvider) {}
 
   public async findUnit(label: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    const hit = await tryFind(() => this._first.findUnit(label, schemaName, phenomenon, unitSystem));
+    const hit = await tryFind(async () => this._first.findUnit(label, schemaName, phenomenon, unitSystem));
     if (hit?.isValid)
       return hit;
     return this._second.findUnit(label, schemaName, phenomenon, unitSystem);
   }
 
   public async findUnitByName(name: string): Promise<UnitProps> {
-    const hit = await tryFind(() => this._first.findUnitByName(name));
+    const hit = await tryFind(async () => this._first.findUnitByName(name));
     if (hit?.isValid)
       return hit;
     return this._second.findUnitByName(name);
@@ -74,8 +74,8 @@ class CompositeUnitsProvider implements UnitsProvider {
 
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
     const [a, b] = await Promise.all([
-      tryList(() => this._first.getUnitsByFamily(phenomenon)),
-      tryList(() => this._second.getUnitsByFamily(phenomenon)),
+      tryList(async () => this._first.getUnitsByFamily(phenomenon)),
+      tryList(async () => this._second.getUnitsByFamily(phenomenon)),
     ]);
     // Merge, dedupe by UnitProps.name (fully-qualified), first-seen wins (order reflects preferBasic).
     const seen = new Set<string>();

@@ -187,7 +187,7 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
-export class BundledUnitsProvider implements UnitsProvider {
+export class BasicUnitsProvider implements UnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
@@ -211,6 +211,15 @@ export interface CloneUnit {
     label?: string;
     // (undocumented)
     unit?: UnitProps;
+}
+
+// @beta
+export function createUnitsProvider(options?: CreateUnitsProviderOptions): UnitsProvider;
+
+// @beta
+export interface CreateUnitsProviderOptions {
+    preferBasic?: boolean;
+    primary?: UnitsProvider;
 }
 
 // @beta

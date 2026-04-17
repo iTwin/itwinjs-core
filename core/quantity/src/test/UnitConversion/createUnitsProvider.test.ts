@@ -21,7 +21,6 @@ function makePrimaryStub(overrides: Partial<UnitsProvider> = {}): UnitsProvider 
 
 const VALID_UNIT: UnitProps = { name: "Custom.M", label: "m", phenomenon: "Units.LENGTH", isValid: true, system: "Units.SI" };
 const VALID_UNIT2: UnitProps = { name: "Custom.FT", label: "ft", phenomenon: "Units.LENGTH", isValid: true, system: "Units.USCUSTOM" };
-const BASIC_CONVERSION: UnitConversionProps = { factor: 3.28084, offset: 0 };
 const PRIMARY_CONVERSION: UnitConversionProps = { factor: 2.0, offset: 0 };
 
 describe("createUnitsProvider", () => {

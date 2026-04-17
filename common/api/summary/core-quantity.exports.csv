@@ -8,9 +8,11 @@ internal;function;applyConversion
 beta;class;BadUnit
 beta;class;BaseFormat
 beta;class;BasicUnit
-beta;class;BundledUnitsProvider
+beta;class;BasicUnitsProvider
 beta;interface;CloneOptions
 beta;interface;CloneUnit
+beta;function;createUnitsProvider
+beta;interface;CreateUnitsProviderOptions
 beta;interface;CustomFormatProps
 beta;enum;DecimalPrecision
 internal;interface;DefinitionFragment
