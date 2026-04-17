@@ -11,7 +11,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, intervalWrapper, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -496,7 +496,7 @@ export namespace CloudSqlite {
    * Notes:
    * - all methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
    * Otherwise they will throw an exception or return meaningless values.
-   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]].)
+   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]]).
    * - a single CloudContainer may hold more than one SQLiteDb, but often they are 1:1.
    * - the write lock is per-Container, not per-SQLiteDb (which is the reason they are often 1:1)
    * - the accessToken (a SAS key) member provides time limited, restricted, access to the container. It must be refreshed before it expires.
@@ -714,32 +714,35 @@ export namespace CloudSqlite {
    */
   export async function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void> {
     let timer: NodeJS.Timeout | undefined;
+    const intervalPromises = new Set<Promise<void>>();
     try {
       const cleanJob = new NativeLibrary.nativeLib.CancellableCloudSqliteJob("cleanup", container, options);
       let total = 0;
       const onProgress = options?.onProgress;
       if (onProgress) {
-        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          try {
-            const progress = cleanJob.getProgress();
-            total = progress.total;
-            const result = await onProgress(progress.loaded, progress.total);
-            if (result === 1)
-              cleanJob.stopAndSaveProgress();
-            else if (result !== 0)
-              cleanJob.cancelTransfer();
-          } catch (err: any) {
-            if (timer) {
-              clearInterval(timer);
-              timer = undefined;
+        timer = setInterval(() => { // set an interval timer to show progress every 250ms
+          void intervalWrapper(intervalPromises, async () => {
+            try {
+              const progress = cleanJob.getProgress();
+              total = progress.total;
+              const result = await onProgress(progress.loaded, progress.total);
+              if (result === 1)
+                cleanJob.stopAndSaveProgress();
+              else if (result !== 0)
+                cleanJob.cancelTransfer();
+            } catch (err: any) {
+              if (timer) {
+                clearInterval(timer);
+                timer = undefined;
+              }
+              // A race condition exists where cleanJob has completed but the timer has not yet been cleared, or it
+              // completes while we are waiting on the onProgress callback. If this happens, we will get an error from any
+              // function call made to cleanJob after the job is done. In that case, just ignore the error.
+              if (isTransferAlreadyCompletedError(err))
+                return;
+              throw err;
             }
-            // A race condition exists where cleanJob has completed but the timer has not yet been cleared, or it
-            // completes while we are waiting on the onProgress callback. If this happens, we will get an error from any
-            // function call made to cleanJob after the job is done. In that case, just ignore the error.
-            if (isTransferAlreadyCompletedError(err))
-              return;
-            throw err;
-          }
+          });
         }, 250);
       }
       await cleanJob.promise;
@@ -753,6 +756,9 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
+      if (intervalPromises.size > 0) {
+        await Promise.all(intervalPromises);
+      }
     }
   }
 
@@ -762,29 +768,32 @@ export namespace CloudSqlite {
       mkdirSync(dirname(props.localFileName), { recursive: true }); // make sure the directory exists before starting download
 
     let timer: NodeJS.Timeout | undefined;
+    const intervalPromises = new Set<Promise<void>>();
     try {
       const transfer = new NativeLibrary.nativeLib.CancellableCloudSqliteJob(direction, container, props);
       let total = 0;
       const onProgress = props.onProgress;
       if (onProgress) {
-        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          try {
-            const progress = transfer.getProgress();
-            total = progress.total;
-            if (onProgress(progress.loaded, progress.total))
-              transfer.cancelTransfer();
-          } catch (err: any) {
-            if (timer) {
-              clearInterval(timer);
-              timer = undefined;
+        timer = setInterval(() => { // set an interval timer to show progress every 250ms
+          void intervalWrapper(intervalPromises, async () => {
+            try {
+              const progress = transfer.getProgress();
+              total = progress.total;
+              if (onProgress(progress.loaded, progress.total))
+                transfer.cancelTransfer();
+            } catch (err: any) {
+              if (timer) {
+                clearInterval(timer);
+                timer = undefined;
+              }
+              // A race condition exists where transfer has completed but the timer has not yet been cleared. If this
+              // happens, we will get an error from any function call made to transfer after the job is done. In that
+              // case, just ignore the error.
+              if (isTransferAlreadyCompletedError(err))
+                  return;
+              throw err;
             }
-            // A race condition exists where transfer has completed but the timer has not yet been cleared. If this
-            // happens, we will get an error from any function call made to transfer after the job is done. In that
-            // case, just ignore the error.
-            if (isTransferAlreadyCompletedError(err))
-              return;
-            throw err;
-          }
+          });
         }, 250);
       }
       await transfer.promise;
@@ -797,7 +806,9 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
-
+      if (intervalPromises.size > 0) {
+        await Promise.all(intervalPromises);
+      }
     }
   }
 

@@ -699,14 +699,17 @@ describe("CloudSqlite", () => {
     };
     process.on("uncaughtException", exceptionHandler);
 
+    // Faking the interval setup in cleanDeletedBlocks.
+    const clock = sinon.useFakeTimers({ toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1 });
+
     try {
-      // Faking the interval setup in cleanDeletedBlocks.
-      const clock = sinon.useFakeTimers({ toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1 });
       let resolved = false;
+      let cleanDeletedBlocksError: any;
       CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, findOrphanedBlocks: true, onProgress }).then(() => {
         resolved = true;
-      }).catch(() => {
+      }).catch((err) => {
         resolved = true;
+        cleanDeletedBlocksError = err;
       });
 
       while (!resolved || !progressWaited) {
@@ -719,6 +722,10 @@ describe("CloudSqlite", () => {
       clock.reset();
       clock.restore();
 
+      if (cleanDeletedBlocksError) {
+        throw cleanDeletedBlocksError; // cleanDeletedBlocks should not throw an error, even if onProgress is slow and returns non-zero.
+      }
+
       // Check for unhandled errors
       if (unhandledRejections.length > 0) {
         throw new Error(`Unhandled rejection detected: ${unhandledRejections[0]}`);
@@ -730,11 +737,12 @@ describe("CloudSqlite", () => {
       container.checkForChanges();
       expect(container.garbageBlocks).to.be.equal(0); // we should have successfully cleaned our garbage blocks, because of slow onProgress.
 
-      container.releaseWriteLock();
-      container.disconnect({ detach: true });
     } finally {
+      clock.restore();
       process.off("unhandledRejection", rejectionHandler);
       process.off("uncaughtException", exceptionHandler);
+      container.releaseWriteLock();
+      container.disconnect({ detach: true });
     }
   });
 
