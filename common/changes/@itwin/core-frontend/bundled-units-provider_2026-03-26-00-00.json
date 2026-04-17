@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "QuantityFormatter now defaults to BundledUnitsProvider (492 units) instead of BasicUnitsProvider (40 units). BasicUnitsProvider is deprecated.",
+      "comment": "QuantityFormatter now defaults to BasicUnitsProvider (492 units) from @itwin/core-quantity instead of the old internal BasicUnitsProvider (~40 units). The core-frontend internal BasicUnitsProvider is removed.",
       "type": "none"
     }
   ],

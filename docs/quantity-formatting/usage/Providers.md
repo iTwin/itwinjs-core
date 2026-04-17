@@ -21,9 +21,9 @@ A units provider acts as a registry and converter for units. When you need to fo
 3. **Provides conversion factors** between these units
 4. **Validates unit compatibility** (ensures units are in the same phenomenon)
 
-#### BundledUnitsProvider
+#### BasicUnitsProvider
 
-[BundledUnitsProvider]($quantity) is a standalone provider backed by the full BIS `Units` schema (492 units) bundled as a JSON asset in `@itwin/core-quantity`. It is the default provider used by `IModelApp.quantityFormatter` when no iModel-specific provider is registered.
+[BasicUnitsProvider]($quantity) is a standalone provider backed by the full BIS `Units` schema (492 units) bundled as a JSON asset in `@itwin/core-quantity`. It is the default provider used by `IModelApp.quantityFormatter` when no iModel-specific provider is registered.
 
 **Characteristics:**
 
@@ -39,7 +39,23 @@ A units provider acts as a registry and converter for units. When you need to fo
 - Pre-iModel UIs or standalone formatting scenarios
 - As a lightweight alternative to `SchemaUnitProvider` when domain-specific custom units are not needed
 
-> **Deprecation note:** `BasicUnitsProvider` (previously exported from `@itwin/core-frontend`) is now deprecated. It contained only a small subset of common units. Use `BundledUnitsProvider` from `@itwin/core-quantity` instead.
+> **Note:** The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was a limited provider (≈40 units) and has been removed. Use [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead.
+
+#### createUnitsProvider
+
+[createUnitsProvider]($quantity) is a factory function that layers a `primary` provider (such as `SchemaUnitProvider`) on top of `BasicUnitsProvider`. Schema-defined units win on overlap; basic BIS units fill any gaps. Pass `preferBasic: true` to invert precedence.
+
+```typescript
+import { createUnitsProvider } from "@itwin/core-quantity";
+import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
+
+const provider = createUnitsProvider({
+  primary: new SchemaUnitProvider(schemaContext),
+});
+// SchemaUnitProvider units win; BasicUnitsProvider fills gaps
+```
+
+When no `primary` is supplied, `createUnitsProvider()` returns a plain `new BasicUnitsProvider()` — no wrapper.
 
 #### SchemaUnitProvider
 
@@ -216,7 +232,7 @@ The recommended approach is to automatically register the provider when any IMod
 
 </details>
 
-If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to [BundledUnitsProvider]($quantity).
+If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to [BasicUnitsProvider]($quantity).
 
 ### Registering FormatsProvider
 

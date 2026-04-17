@@ -18,7 +18,7 @@ This section is organized by developer persona and common workflows:
 
 **For Application Developers** - Essential for setting up formatting infrastructure
 
-Learn about UnitsProvider and FormatsProvider implementations, including BundledUnitsProvider, SchemaUnitProvider, SchemaFormatsProvider, MutableFormatsProvider, and FormatSetFormatsProvider. Covers how to register and configure providers during application initialization or when an iModel is opened.
+Learn about UnitsProvider and FormatsProvider implementations, including BasicUnitsProvider, SchemaUnitProvider, SchemaFormatsProvider, MutableFormatsProvider, and FormatSetFormatsProvider. Covers how to register and configure providers during application initialization or when an iModel is opened.
 
 ### [Parsing and Formatting](./ParsingAndFormatting.md)
 

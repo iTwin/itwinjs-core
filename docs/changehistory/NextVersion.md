@@ -25,7 +25,7 @@ publish: false
       - [Usage examples](#usage-examples-1)
       - [Configuration requirements](#configuration-requirements)
   - [Quantity Formatting](#quantity-formatting)
-    - [BundledUnitsProvider — full unit coverage without an iModel](#bundledunitsprovider--full-unit-coverage-without-an-imodel)
+    - [BasicUnitsProvider and createUnitsProvider — layered unit resolution](#basicunitsprovider-and-createunitsprovider--layered-unit-resolution)
     - [Quantity Formatter improvements](#quantity-formatter-improvements)
       - [New APIs](#new-apis-2)
         - [`@itwin/core-quantity`](#itwincore-quantity)
@@ -254,36 +254,76 @@ See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full 
 
 ## Quantity Formatting
 
-### BundledUnitsProvider — full unit coverage without an iModel
+### BasicUnitsProvider and createUnitsProvider — layered unit resolution
 
-[QuantityFormatter]($frontend) now defaults to [BundledUnitsProvider]($quantity) instead of the previous `BasicUnitsProvider`. This means:
+`@itwin/core-quantity` now exposes `BasicUnitsProvider` and `createUnitsProvider` for layered unit resolution.
+
+[QuantityFormatter]($frontend) now defaults to [BasicUnitsProvider]($quantity) — the zero-dependency provider backed by the full BIS `Units` schema (492 units). This means:
 
 - **492 units** from the BIS `Units` schema are available out-of-the-box — covering all phenomena (length, area, volume, temperature, pressure, angle, force, etc.)
 - **No iModel required** — standalone tools, pre-iModel UIs, and non-iModel contexts now get full unit support
-- **`BundledUnitsProvider` is also available directly** from `@itwin/core-quantity` for use in backend or tool contexts:
+- **`BasicUnitsProvider` is directly importable** from `@itwin/core-quantity` for use in backend or tool contexts:
 
 ```typescript
-import { BundledUnitsProvider } from "@itwin/core-quantity";
+import { BasicUnitsProvider } from "@itwin/core-quantity";
 
-const provider = new BundledUnitsProvider();
+const provider = new BasicUnitsProvider();
 const meter = await provider.findUnitByName("Units.M");
 const foot = await provider.findUnitByName("Units.FT");
 const conv = await provider.getConversion(meter, foot);
 // conv.factor ≈ 3.28084
 ```
 
-#### Migration
+#### Layering schema units on top of basic units
 
-`BundledUnitsProvider` from `@itwin/core-quantity` replaces the deprecated `BasicUnitsProvider`:
+The new [createUnitsProvider]($quantity) factory composes a `primary` provider (such as `SchemaUnitProvider` for an open iModel) with the bundled BIS units as a fallback:
 
 ```typescript
-import { BundledUnitsProvider } from "@itwin/core-quantity";
-const provider = new BundledUnitsProvider();
+import { createUnitsProvider } from "@itwin/core-quantity";
+import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
+
+// When an iModel is opened — schema units win; basic BIS units fill any gaps.
+IModelConnection.onOpen.addListener(async (iModelConnection) => {
+  await IModelApp.quantityFormatter.setUnitsProvider(
+    createUnitsProvider({ primary: new SchemaUnitProvider(iModelConnection.schemaContext) }),
+  );
+});
 ```
 
-`BasicUnitsProvider` is now deprecated but will continue to work for backward compatibility.
+Precedence rules:
+- `primary` wins by default (`preferBasic: false`): primary resolves → use it; primary returns invalid unit or throws → fall back to basic
+- `preferBasic: true`: basic BIS units win; primary is consulted only when basic can't answer
+- `getUnitsByFamily` always merges results from both providers (deduplicated by fully-qualified unit name)
 
-> **Future change notice:** `BundledUnitsProvider.getConversion` now returns an `error` flag on the result when a conversion cannot be resolved (e.g., unknown units or incompatible phenomena). Currently, callers such as `QuantityFormatter` do not check this flag — unresolved conversions silently fall through as identity conversions (`factor: 1, offset: 0`). In a future minor release, the formatter and related APIs will begin enforcing this flag and rejecting erroneous conversions. If you consume `UnitConversionProps` directly, check for `error === true` now to prepare for this change.
+When no `primary` is supplied, `createUnitsProvider()` returns a plain `new BasicUnitsProvider()` — no wrapper, preserving `instanceof` checks.
+
+#### Migration for backend and tool consumers
+
+Backends or tools that previously needed a `SchemaContext` just to get unit definitions can now use `BasicUnitsProvider` directly:
+
+```typescript
+// Before: required spinning up a SchemaContext for unit lookups
+// After: zero dependencies, zero setup
+import { BasicUnitsProvider } from "@itwin/core-quantity";
+
+const provider = new BasicUnitsProvider();
+```
+
+#### Migration from the old core-frontend `BasicUnitsProvider`
+
+The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was `@internal` + `@deprecated` and has been removed. It was a limited provider (≈40 units). Replace all imports with [BasicUnitsProvider]($quantity) from `@itwin/core-quantity`:
+
+```typescript
+// Before (no longer available):
+import { BasicUnitsProvider } from "@itwin/core-frontend";
+
+// After:
+import { BasicUnitsProvider } from "@itwin/core-quantity";
+```
+
+> **Note:** `BundledUnitsProvider` was a working name used during development of this feature. It was renamed to `BasicUnitsProvider` before shipping. If you were using `BundledUnitsProvider` from a pre-release build, replace it with `BasicUnitsProvider`.
+
+> **Future change notice:** `BasicUnitsProvider.getConversion` returns an `error` flag on the result when a conversion cannot be resolved (e.g., unknown units or incompatible phenomena). Currently, callers such as `QuantityFormatter` do not check this flag — unresolved conversions silently fall through as identity conversions (`factor: 1, offset: 0`). In a future minor release, the formatter and related APIs will begin enforcing this flag and rejecting erroneous conversions. If you consume `UnitConversionProps` directly, check for `error === true` now to prepare for this change.
 
 ### Quantity Formatter improvements
 
@@ -291,6 +331,9 @@ const provider = new BundledUnitsProvider();
 
 ##### `@itwin/core-quantity`
 
+- **[BasicUnitsProvider]($quantity)** — Zero-dependency provider backed by the full BIS `Units` schema (492 units). The default for `QuantityFormatter`. Equivalent to `createUnitsProvider()` with no arguments.
+- **[createUnitsProvider]($quantity)** — Factory that returns a layered `UnitsProvider`. Pass a `primary` provider (e.g. `SchemaUnitProvider`) and the bundled BIS units act as a fallback. Supports `preferBasic` to invert the precedence order.
+- **[CreateUnitsProviderOptions]($quantity)** — Options interface for `createUnitsProvider`: `primary` and `preferBasic`.
 - **`Units` namespace** — Typed constants for commonly used unit names (e.g., `Units.M`, `Units.FT`, `Units.RAD`). Eliminates magic strings when referencing units programmatically.
 - **`findPersistenceUnitForPhenomenon()`** — Maps phenomenon names to their canonical SI persistence unit.
 - **`FormatsChangedArgs.impliedUnitSystem`** — Allows a `FormatsProvider` to indicate which unit system its format set implies.
