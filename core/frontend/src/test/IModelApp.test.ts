@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { EmptyLocalization } from "@itwin/core-common";
-import { BundledUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
+import { BasicUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
@@ -194,11 +194,11 @@ describe("IModelApp startup tests", () => {
 });
 
 /**
- * A UnitsProvider that is NOT a BundledUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
- * but still delegates to BundledUnitsProvider for correct behaviour.
+ * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
+ * but still delegates to BasicUnitsProvider for correct behaviour.
  */
 class NonBundledUnitsProvider {
-  private readonly _delegate = new BundledUnitsProvider();
+  private readonly _delegate = new BasicUnitsProvider();
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
