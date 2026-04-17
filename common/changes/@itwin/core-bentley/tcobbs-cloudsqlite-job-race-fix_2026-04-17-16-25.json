@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Added intervalWrapper utility function.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
