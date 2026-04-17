@@ -102,7 +102,7 @@ export class RelationshipClasses extends ECClasses {
 
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name ?? "", schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name ?? "Unknown", schemaKey), e);
     }
   }
 

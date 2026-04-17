@@ -376,8 +376,8 @@ export class SchemaEditingError extends Error {
   public constructor(public readonly errorNumber: ECEditingStatus, public readonly identifier: AnyIdentifier, public readonly innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
     super(message);
     this._ruleViolations = ruleViolations;
-    this._schemaKey = identifier.schemaKey,
-      this.generateMessage();
+    this._schemaKey = identifier.schemaKey;
+    this.generateMessage();
   }
 
   /**
