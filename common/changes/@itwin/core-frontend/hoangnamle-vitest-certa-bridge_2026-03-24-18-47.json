@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Changed internal `const enum` types (RenderPass, GeometryType, RenderOrder) to regular enums for compatibility with Vitest ESM test runner.",
+      "comment": "Add vitest-certa-bridge plugin and migrate integration tests to Vitest.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }
