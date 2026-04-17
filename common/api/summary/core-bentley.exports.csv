@@ -77,6 +77,7 @@ public;enum;IModelHubStatus
 public;enum;IModelStatus
 public;class;IndexedValue
 public;class;IndexMap
+beta;function;intervalWrapper
 public;function;isDisposable
 public;function;isIDisposable
 deprecated;function;isIDisposable

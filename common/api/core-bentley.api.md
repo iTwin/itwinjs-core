@@ -1044,6 +1044,9 @@ export class IndexMap<T> {
     toArray(): T[];
 }
 
+// @beta
+export function intervalWrapper(intervalPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
+
 // @public
 export function isDisposable(obj: unknown): obj is Disposable;
 
