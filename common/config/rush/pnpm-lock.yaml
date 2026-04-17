@@ -715,6 +715,9 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.13)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.13.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.1)(yaml@2.8.3)
       webpack:
         specifier: ^5.97.1
         version: 5.97.1(webpack-cli@5.0.1)
@@ -1094,9 +1097,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
@@ -1106,30 +1106,21 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
       '@types/i18next':
         specifier: ^8.4.2
         version: 8.4.2
       '@types/i18next-browser-languagedetector':
         specifier: ^2.0.1
         version: 2.0.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.0)(webpack@5.97.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.0
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
+      '@vitest/browser':
+        specifier: ^3.0.6
+        version: 3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.2(@types/node@20.17.0)(terser@5.46.1)(yaml@2.8.3))(vitest@3.0.6)
+      '@vitest/coverage-v8':
+        specifier: ^3.0.6
+        version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -1139,18 +1130,12 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
-      webpack:
-        specifier: ^5.97.1
-        version: 5.97.1(webpack-cli@5.0.1)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.0.1(webpack@5.97.1)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.13)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.13.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.1)(yaml@2.8.3)
 
   ../../core/markup:
     dependencies:
@@ -2400,6 +2385,9 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../../core/geometry
+      '@itwin/core-i18n':
+        specifier: workspace:*
+        version: link:../../core/i18n
       '@itwin/core-markup':
         specifier: workspace:*
         version: link:../../core/markup
@@ -2428,8 +2416,8 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.22.2
-        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)
+        specifier: ^0.22.3
+        version: 0.22.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -2494,36 +2482,24 @@ importers:
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
+      '@itwin/vitest-certa-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-certa-bridge
+      '@loaders.gl/draco':
+        specifier: ~4.3.4
+        version: 4.3.4(@loaders.gl/core@4.3.4)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      '@types/sinon':
-        specifier: ^17.0.2
-        version: 17.0.2
-      '@types/sinon-chai':
-        specifier: ^3.2.0
-        version: 3.2.0
+      '@vitest/browser':
+        specifier: ^3.0.6
+        version: 3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.2(@types/node@20.17.0)(terser@5.46.1)(yaml@2.8.3))(vitest@3.0.6)
       assert:
         specifier: ^2.0.0
         version: 2.0.0
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.0)(webpack@5.97.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.0
       browserify-zlib:
         specifier: ^0.2.0
         version: 0.2.0
@@ -2539,39 +2515,48 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
+      flatbuffers:
+        specifier: ~1.12.0
+        version: 1.12.0
+      fuse.js:
+        specifier: ^3.3.0
+        version: 3.3.0
       glob:
         specifier: ^10.5.0
         version: 10.5.0
       https-browserify:
         specifier: ^1.0.0
         version: 1.0.0
+      i18next:
+        specifier: ^21.9.1
+        version: 21.9.1
+      i18next-browser-languagedetector:
+        specifier: ^6.1.2
+        version: 6.1.2
+      i18next-http-backend:
+        specifier: ^3.0.2
+        version: 3.0.2
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
+      js-base64:
+        specifier: ^3.6.1
+        version: 3.6.1
       mkdirp:
         specifier: ^1.0.4
         version: 1.0.4
       nock:
         specifier: ^12.0.3
         version: 12.0.3
-      npm-run-all2:
-        specifier: ^7.0.2
-        version: 7.0.2
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.97.1)
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       path-browserify:
         specifier: ^1.0.1
         version: 1.0.1
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.97.1)
       stream-browserify:
         specifier: ^3.0.0
         version: 3.0.0
@@ -2581,21 +2566,21 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
-      webpack:
-        specifier: ^5.97.1
-        version: 5.97.1(webpack-cli@5.0.1)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.0.1(webpack@5.97.1)
+      vite:
+        specifier: ^6.4.2
+        version: 6.4.2(@types/node@20.17.0)(terser@5.46.1)(yaml@2.8.3)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.13)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.13.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.1)(yaml@2.8.3)
+      wms-capabilities:
+        specifier: 0.4.0
+        version: 0.4.0
 
   ../../full-stack-tests/ecschema-rpc-interface:
     dependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../../core/bentley
@@ -2644,21 +2629,12 @@ importers:
       '@itwin/presentation-frontend':
         specifier: workspace:*
         version: link:../../presentation/frontend
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.3.10)
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
       dotenv-expand:
         specifier: ^5.1.0
         version: 5.1.0
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
       openid-client:
         specifier: ^4.7.4
         version: 4.7.4
@@ -2675,24 +2651,18 @@ importers:
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
+      '@itwin/vitest-certa-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-certa-bridge
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      assert:
-        specifier: ^2.0.0
-        version: 2.0.0
-      browserify-zlib:
-        specifier: ^0.2.0
-        version: 0.2.0
+      '@vitest/browser':
+        specifier: ^3.0.6
+        version: 3.0.6(@types/node@20.17.0)(playwright@1.56.1)(typescript@5.6.2)(vite@6.4.2(@types/node@20.17.0)(terser@5.46.1)(yaml@2.8.3))(vitest@3.0.6)
+      '@vitest/coverage-v8':
+        specifier: ^3.0.6
+        version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
@@ -2708,30 +2678,18 @@ importers:
       npm-run-all2:
         specifier: ^7.0.2
         version: 7.0.2
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.97.1)
-      path-browserify:
-        specifier: ^1.0.1
-        version: 1.0.1
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.97.1)
-      stream-browserify:
-        specifier: ^3.0.0
-        version: 3.0.0
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
-      webpack:
-        specifier: ^5.97.1
-        version: 5.97.1(webpack-cli@5.0.1)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.0.1(webpack@5.97.1)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.13)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.13.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.1)(yaml@2.8.3)
 
   ../../full-stack-tests/presentation:
     dependencies:
@@ -3539,8 +3497,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/electron-authorization':
-        specifier: ^0.22.2
-        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)
+        specifier: ^0.22.3
+        version: 0.22.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
         version: link:../../extensions/frontend-tiles
@@ -3738,8 +3696,8 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.22.2
-        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)
+        specifier: ^0.22.3
+        version: 0.22.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
         version: link:../../core/frontend-devtools
@@ -4381,6 +4339,36 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+
+  ../../tools/vitest-certa-bridge:
+    devDependencies:
+      '@itwin/build-tools':
+        specifier: workspace:*
+        version: link:../build
+      '@itwin/eslint-plugin':
+        specifier: ^6.0.0
+        version: 6.0.0(eslint@9.31.0)(typescript@5.6.2)
+      '@types/node':
+        specifier: ~20.17.0
+        version: 20.17.0
+      electron:
+        specifier: ^41.0.0
+        version: 41.0.0
+      eslint:
+        specifier: ^9.31.0
+        version: 9.31.0
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      typescript:
+        specifier: ~5.6.2
+        version: 5.6.2
+      vite:
+        specifier: ^6.4.2
+        version: 6.4.2(@types/node@20.17.0)(terser@5.46.1)(yaml@2.8.3)
+      vitest:
+        specifier: ^3.0.6
+        version: 3.0.6(@types/debug@4.1.13)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.13.4(@types/node@20.17.0)(typescript@5.6.2))(terser@5.46.1)(yaml@2.8.3)
 
   ../../ui/appui-abstract:
     devDependencies:
@@ -5172,8 +5160,8 @@ packages:
   '@itwin/core-bentley@5.8.2':
     resolution: {integrity: sha512-CqJeGA31giUBkG9EUoXG9e1MjqU7OKmBL1/iHAJmTX/DoPERA8RCVZfgvnT1Uh0bnXpgqOghooJrDdNyqaUmkw==}
 
-  '@itwin/electron-authorization@0.22.2':
-    resolution: {integrity: sha512-4sZAgQarJuZ2q0sV6pf0qnanhE0MtnEZk17oSzT9NHAZXbXUDriI2AgNlZbIEHfFQOcdFWkA7lVRroWMSM/1uw==}
+  '@itwin/electron-authorization@0.22.3':
+    resolution: {integrity: sha512-kjSIOW/JCeoWjDUibJLHH3va+rxY2ptLA5U5yuDjE67tiIRcxwRg5uzWULPEi8AsTwO+xtzfnQZRlsmqpoN6IQ==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -11731,7 +11719,7 @@ snapshots:
 
   '@itwin/core-bentley@5.8.2': {}
 
-  '@itwin/electron-authorization@0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)':
+  '@itwin/electron-authorization@0.22.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@41.0.0)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -12427,7 +12415,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/responselike': 1.0.3
 
   '@types/caseless@0.12.5': {}
@@ -12453,7 +12441,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/cookiejar@2.1.5': {}
 
@@ -12487,14 +12475,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.8':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/qs': 6.15.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/qs': 6.15.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -12522,7 +12510,7 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/geojson@7946.0.14': {}
 
@@ -12563,11 +12551,11 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/lodash@4.14.202': {}
 
@@ -12613,7 +12601,7 @@ snapshots:
 
   '@types/readable-stream@4.0.23':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/request@2.48.13':
     dependencies:
@@ -12624,18 +12612,18 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/semver@7.3.10': {}
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
@@ -12672,7 +12660,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       form-data: 4.0.5
 
   '@types/supertest@6.0.2':
@@ -12701,7 +12689,7 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -12711,7 +12699,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.58.2(@typescript-eslint/parser@8.58.2(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)':
@@ -15594,7 +15582,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -16671,7 +16659,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       long: 5.3.2
 
   protocols@2.0.2: {}
@@ -18288,7 +18276,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   wms-capabilities@0.4.0:
     dependencies:
