@@ -16,61 +16,61 @@ export const integrityCheckTypeMap = {
     name: "Check Data Columns",
     resultType: "CheckDataColumnsResultRow",
     sqlCommand: "check_data_columns",
-    sqlQuery: `PRAGMA integrity_check(check_data_columns) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_data_columns) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkECProfile: {
     name: "Check EC Profile",
     resultType: "CheckECProfileResultRow",
     sqlCommand: "check_ec_profile",
-    sqlQuery: `PRAGMA integrity_check(check_ec_profile) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_ec_profile) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkNavigationClassIds: {
     name: "Check Navigation Class Ids",
     resultType: "CheckNavClassIdsResultRow",
     sqlCommand: "check_nav_class_ids",
-    sqlQuery: `PRAGMA integrity_check(check_nav_class_ids) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_nav_class_ids) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkNavigationIds: {
     name: "Check Navigation Ids",
     resultType: "CheckNavIdsResultRow",
     sqlCommand: "check_nav_ids",
-    sqlQuery: `PRAGMA integrity_check(check_nav_ids) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_nav_ids) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkLinktableForeignKeyClassIds: {
     name: "Check Link Table Foreign Key Class Ids",
     resultType: "CheckLinkTableFkClassIdsResultRow",
     sqlCommand: "check_linktable_fk_class_ids",
-    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_class_ids) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_class_ids) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkLinktableForeignKeyIds: {
     name: "Check Link Table Foreign Key Ids",
     resultType: "CheckLinkTableFkIdsResultRow",
     sqlCommand: "check_linktable_fk_ids",
-    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_ids) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_linktable_fk_ids) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkClassIds: {
     name: "Check Class Ids",
     resultType: "CheckClassIdsResultRow",
     sqlCommand: "check_class_ids",
-    sqlQuery: `PRAGMA integrity_check(check_class_ids) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_class_ids) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkDataSchema: {
     name: "Check Data Schema",
     resultType: "CheckDataSchemaResultRow",
     sqlCommand: "check_data_schema",
-    sqlQuery: `PRAGMA integrity_check(check_data_schema) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_data_schema) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkSchemaLoad: {
     name: "Check Schema Load",
     resultType: "CheckSchemaLoadResultRow",
     sqlCommand: "check_schema_load",
-    sqlQuery: `PRAGMA integrity_check(check_schema_load) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_schema_load) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
   checkMissingChildRows: {
     name: "Check Missing Child Rows",
     resultType: "CheckMissingChildRowsResultRow",
     sqlCommand: "check_missing_child_rows",
-    sqlQuery: `PRAGMA integrity_check(check_missing_child_rows) options enable_experimental_features`,
+    sqlQuery: `PRAGMA integrity_check(check_missing_child_rows) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
 } as const;
 
@@ -256,7 +256,7 @@ export function getIntegrityCheckName(check: string): string {
  * @internal
  */
 export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<QuickIntegrityCheckResultRow[]> {
-  const integrityCheckQuery = "PRAGMA integrity_check options enable_experimental_features";
+  const integrityCheckQuery = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
   const integrityCheckResults: QuickIntegrityCheckResultRow[] = [];
   for await (const row of iModel.createQueryReader(integrityCheckQuery, undefined, { usePrimaryConn: true })) {
     integrityCheckResults.push({ check: getIntegrityCheckName(row.check), passed: row.result, elapsedSeconds: row.elapsed_sec});
