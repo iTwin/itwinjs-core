@@ -590,7 +590,7 @@ describe("Quantity formatter", async () => {
 
       // Exact values do not exist in document
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 0.3048006, "Units.M");
-      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 79200.0 / 3937.0, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
     });
@@ -721,7 +721,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
 
     await quantityFormatter.setActiveUnitSystem("metric");
     await testFormatting(QuantityType.Length, 1000.0, `1000 m`);
@@ -744,7 +744,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
 
     await quantityFormatter.setActiveUnitSystem("usSurvey");
     await testFormatting(QuantityType.Length, 1000.0, `3280.8333 ft`);
