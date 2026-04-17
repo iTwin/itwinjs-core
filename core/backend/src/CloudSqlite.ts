@@ -11,7 +11,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, intervalWrapper, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch, wrapTimerCallback,
 } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -721,7 +721,7 @@ export namespace CloudSqlite {
       const onProgress = options?.onProgress;
       if (onProgress) {
         timer = setInterval(() => { // set an interval timer to show progress every 250ms
-          void intervalWrapper(intervalPromises, async () => {
+          void wrapTimerCallback(intervalPromises, async () => {
             try {
               const progress = cleanJob.getProgress();
               total = progress.total;
@@ -775,7 +775,7 @@ export namespace CloudSqlite {
       const onProgress = props.onProgress;
       if (onProgress) {
         timer = setInterval(() => { // set an interval timer to show progress every 250ms
-          void intervalWrapper(intervalPromises, async () => {
+          void wrapTimerCallback(intervalPromises, async () => {
             try {
               const progress = transfer.getProgress();
               total = progress.total;

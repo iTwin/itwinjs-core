@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-bentley",
-      "comment": "Added intervalWrapper utility function.",
+      "comment": "Added wrapTimerCallback utility function.",
       "type": "none"
     }
   ],

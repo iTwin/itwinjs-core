@@ -1045,7 +1045,7 @@ export class IndexMap<T> {
 }
 
 // @beta
-export function intervalWrapper(intervalPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
+export function wrapTimerCallback(intervalPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
 
 // @public
 export function isDisposable(obj: unknown): obj is Disposable;
