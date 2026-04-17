@@ -450,43 +450,6 @@ export class ReproJaggedCurvesTool extends Tool {
  * After toggling, exit and re-enter editing scope (run `dta edit` twice) to force
  * dynamic tiles to regenerate with the new setting.
  */
-export class ToggleAbsolutePositionsTool extends Tool {
-  public static override toolId = "ToggleAbsolutePositions";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
-
-  public override async run(): Promise<boolean> {
-    const current = (window as any).__forceAbsolutePositions === true;
-    (window as any).__forceAbsolutePositions = !current;
-    const state = !current ? "ON (bug: always useAbsolutePositions)" : "OFF (fix: adaptive precision)";
-
-    // Force dynamic tiles to regenerate by applying a no-op transform to all selected elements.
-    // This triggers handleGeometryChanges → tile.update() → disposes cached graphics → re-requested with new setting.
-    const vp = IModelApp.viewManager.selectedView;
-    const imodel = vp?.iModel;
-    if (imodel?.isBriefcaseConnection() && imodel.editingScope) {
-      const elementIds = Array.from(imodel.selectionSet.elements);
-      if (elementIds.length > 0) {
-        // Exit and re-enter the editing scope. This commits the element to static tiles,
-        // then we nudge it to put it back into dynamic tiles with the new setting.
-        await imodel.editingScope.exit();
-        await imodel.enterEditingScope();
-        setTitle(imodel);
-
-        // Nudge the element by a sub-nanometer amount to force it into dynamic tiles.
-        await transformElements(imodel, elementIds, Transform.createTranslationXYZ(1e-10, 0, 0));
-        await basicManipulationIpc.saveChanges("ToggleAbsolutePositions");
-      }
-    }
-
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(
-      OutputMessagePriority.Info,
-      `Force absolute positions: ${state}. Selected elements refreshed.`,
-    ));
-    return true;
-  }
-}
-
 export class SetEditorToolSettingsTool extends Tool {
   public static override toolId = "SetEditorToolSettings";
   public static override get minArgs() { return 1; }

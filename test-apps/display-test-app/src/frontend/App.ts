@@ -31,7 +31,7 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, ReproJaggedCurvesTool, SetEditorToolSettingsTool, ToggleAbsolutePositionsTool } from "./EditingTools";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, ReproJaggedCurvesTool, SetEditorToolSettingsTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -422,7 +422,6 @@ export class DisplayTestApp {
       SyncViewportsTool,
       TerrainDrapeTool,
       TextDecorationTool,
-      ToggleAbsolutePositionsTool,
       ToggleAspectRatioSkewDecoratorTool,
       ToggleSecondaryIModelTool,
       TimePointComparisonTool,

@@ -19,6 +19,15 @@ import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
 } from "../../tile/internal";
 
+/** Maximum coordinate magnitude (in meters, world space) at which we use absolute positions for dynamic tile
+ * graphics requests. Beyond this threshold, per-element `rtcCenter` centering is used instead to avoid float32
+ * precision loss. This threshold is a pragmatic tradeoff between the performance
+ * benefit of absolute positions and the precision needed to avoid visible artifacts like jagged curves when
+ * projects are centered far from the coordinate system origin.
+ * @see useAbsolutePositions in [[GraphicsTile.requestContent]]
+ */
+const absolutePositionDistanceThreshold = 10_000;
+
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
  * [[GraphicalEditingScope]].
@@ -40,7 +49,7 @@ export abstract class DynamicIModelTile extends Tile {
 
   /** Exposed strictly for tests. */
   public abstract get hiddenElements(): Id64Array;
-  
+
   /** Strictly for tests. */
   public abstract get dynamicElements(): Id64Array;
 
@@ -361,19 +370,13 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
-    // Use absolute positions (better performance) only when the element is close enough to the model center
-    // that float32 precision is adequate. Elements far from the model center need per-element rtcCenter
-    // centering to avoid visible precision artifacts like jagged curves at high coordinates.
-    // Debug toggle: set (window as any).__forceAbsolutePositions = true to bypass the adaptive fix for A/B testing.
-    const forceAbsolute = typeof window !== "undefined" && (window as any).__forceAbsolutePositions === true;
-    let useAbsolutePositions: boolean;
-    if (forceAbsolute) {
-      useAbsolutePositions = true;
-    } else {
-      const center = this.range.center;
-      const maxCoord = Math.max(Math.abs(center.x), Math.abs(center.y), Math.abs(center.z));
-      useAbsolutePositions = !this.range.isNull && maxCoord < 10_000;
-    }
+    // Use absolute positions (better performance) only when the element's world-space coordinates are
+    // small enough that float32 precision is adequate. For projects far from the coordinate system origin,
+    // large coordinates cause visible precision artifacts (jagged curves). In those cases, fall back to
+    // per-element rtcCenter centering. See absolutePositionDistanceThreshold for details.
+    const worldCenter = this.tree.iModelTransform.multiplyPoint3d(this.range.center);
+    const maxCoord = Math.max(Math.abs(worldCenter.x), Math.abs(worldCenter.y), Math.abs(worldCenter.z));
+    const useAbsolutePositions = !this.range.isNull && maxCoord < absolutePositionDistanceThreshold;
 
     const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),

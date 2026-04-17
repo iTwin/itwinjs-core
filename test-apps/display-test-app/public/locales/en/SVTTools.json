@@ -160,9 +160,6 @@
     "ReproJaggedCurves": {
       "keyin": "dta repro jagged curves"
     },
-    "ToggleAbsolutePositions": {
-      "keyin": "dta toggle absolute positions"
-    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },
