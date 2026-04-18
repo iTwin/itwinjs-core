@@ -185,6 +185,13 @@ Valid formats recognized by the ESLint rule:
 
 **Critical**: Always run `rush extract-api` and `rush change` before pushing - CI will fail otherwise.
 
+### Draft PR Descriptions
+
+When creating or updating a draft PR, always include a `## Validation` section in the PR description. Summarize any targeted verification steps you performed beyond what CI checks cover, and note any known pre-existing failures or warnings:
+
+- `Targeted verification:`
+- `Known baseline issues:`
+
 ## Build Tools
 
 TypeScript compilation outputs dual format: CJS in `lib/cjs/`, ESM in `lib/esm/`.
