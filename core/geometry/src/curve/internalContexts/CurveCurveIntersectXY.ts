@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { assert, DuplicatePolicy, OrderedComparator, SortedArray } from "@itwin/core-bentley";
+import { assert, DuplicatePolicy, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -1170,12 +1170,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Process tail of `this._results` for xy-intersections between the curve and spiral.
-   * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which
-   * case remove it.
+   * * Refine each result via Newton iteration. If it doesn't converge, remove it.
    * @param curveA The other curve primitive. May also be a transition spiral.
    * @param spiralB The transition spiral.
    * @param index0 index of first entry in tail of `this._results` to refine.
-   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
+   * @param reversed whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
   private refineSpiralResultsByNewton(
     curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
@@ -1187,29 +1186,16 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const maxIterations = 100; // observed 73 iterations to convergence in tangent case
     const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
     const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
-    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (
-      a: CurveLocationDetailPair, b: CurveLocationDetailPair,
-    ): number => {
-      assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
-      // sort on either fraction, then on the point, using appropriate tolerances for each
-      if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
-        return 0;
-      if (a.detailA.point.isAlmostEqualXY(b.detailA.point, this._coincidentGeometryContext.tolerance))
-        return 0;
-      return a.detailA.fraction - b.detailA.fraction;
-    };
-    const myResults = new SortedArray<CurveLocationDetailPair>(comparePairs, DuplicatePolicy.Retain);
-    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): boolean => {
-      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
-      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, cpB.fractionToPoint(fB));
+    const compare = CurveLocationDetailPair.comparePairsByFractions(fractionTol, this._coincidentGeometryContext.tolerance, true);
+    const myResults = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
+    const pushToMyResults = (cpA: CurvePrimitive, fA: number, pA: Point3d, cpB: CurvePrimitive, fB: number, pB: Point3d): void => {
+      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, pA);
+      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, pB);
       detailA.setIntervalRole(CurveIntervalRole.isolated);
       detailB.setIntervalRole(CurveIntervalRole.isolated);
-      let pushed = false;
-      myResults.insert(
-        new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true,
-      );
-      return pushed;
+      myResults.insert(new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB));
     };
+    const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
     for (let i = index0; i < this._results.length; i++) {
       const pair = this._results[i];
       const detailA = reversed ? pair.detailB : pair.detailA;
@@ -1218,17 +1204,16 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const extendA0 = reversed ? this._extendB0 : this._extendA0;
       const extendA1 = reversed ? this._extendB1 : this._extendA1;
       newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
-      if (newtonSearcher.runIterations()) {
-        const fractionA = newtonSearcher.getU();
-        const fractionB = newtonSearcher.getV();
-        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false))
-          pushToMyResults(curveA, fractionA, spiralB, fractionB);
-      } else if (newtonSearcher.numIterations < 10) {
-        // if Newton failed early due to vanishing (partial) derivative, check for a root there
-        const fractionA = newtonSearcher.getU();
-        const fractionB = newtonSearcher.getV();
-        if (curveA.fractionToPoint(fractionA).isAlmostEqualXY(spiralB.fractionToPoint(fractionB), this._coincidentGeometryContext.tolerance))
-          pushToMyResults(curveA, fractionA, spiralB, fractionB);
+      let converged = newtonSearcher.runIterations();
+      const fractionA = newtonSearcher.getU();
+      const fractionB = newtonSearcher.getV();
+      if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false)) {
+        const pointA = curveA.fractionToPoint(fractionA, CurveCurveIntersectXY._workPointA0);
+        const pointB = spiralB.fractionToPoint(fractionB, CurveCurveIntersectXY._workPointB0);
+        if (!converged) // Newton may have found close points even if it didn't converge parametrically
+          converged = pointA.isAlmostEqualXY(pointB, strictTolerance); // we can afford to be choosy
+        if (converged)
+          pushToMyResults(curveA, fractionA, pointA, spiralB, fractionB, pointB);
       }
     }
     this._results.splice(index0, this._results.length - index0, ...myResults.extractArray());
@@ -1277,7 +1262,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
   ): number {
     const i0 = this._results.length;
-    // handleLineString3d requires us to swap geometries:
+    // handleLineString3d requires us to swap geometries
     const geomB = this._geometryB;
     const extendB0 = this._extendB0;
     const extendB1 = this._extendB1;

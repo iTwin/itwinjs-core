@@ -84,7 +84,10 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
       return undefined;
 
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
-    const alias = this.getSchemaAlias(maxCandidate.schemaText!);
+    if (!maxCandidate.schemaText)
+      return undefined;
+
+    const alias = this.getSchemaAlias(maxCandidate.schemaText);
     const schema = new Schema(context, maxCandidate, alias);
     context.addSchemaSync(schema);
 

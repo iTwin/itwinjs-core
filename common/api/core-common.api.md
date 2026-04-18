@@ -5611,11 +5611,17 @@ export interface IpcAppFunctions {
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    reinstateTxnAsync: (key: string, args?: ReinstateTxnArgs) => Promise<void>;
+    // (undocumented)
     restartTxnSession: (key: string) => Promise<void>;
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    reverseAllTxnsAsync: (key: string, args?: ReverseTxnArgs) => Promise<void>;
+    // (undocumented)
     reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseTxnsAsync: (key: string, numOperations: number, args?: ReverseTxnArgs) => Promise<void>;
     // @deprecated (undocumented)
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
@@ -8042,6 +8048,11 @@ export class RealityModelDisplaySettings {
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
+// @beta
+export interface ReinstateTxnArgs {
+    readonly retainLocks?: boolean;
+}
+
 // @public @preview
 export class RelatedElement implements RelatedElementProps {
     constructor(props: RelatedElementProps);
@@ -8639,6 +8650,11 @@ export class ResponseLike implements Response {
     get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
     // (undocumented)
     get url(): string;
+}
+
+// @beta
+export interface ReverseTxnArgs {
+    readonly retainLocks?: boolean;
 }
 
 // @public
@@ -9534,6 +9550,22 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     path: string;
     // (undocumented)
     protocolVersion?: number;
+}
+
+// @beta
+export namespace ServerBasedLocksError {
+    const scope = "itwin-ServerBasedLocks";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The briefcase contains unsaved changes */
+    "has-unsaved-changes" |
+    /** A SQLite error occurred while reading or writing the "locks" database */
+    "lock-database-problem" |
+    /** The specified Txn ID is not known to the TxnManager */
+    "txn-id-not-found" |
+    /** Attempted to abandon locks for a Txn that has not yet been reversed */
+    "txn-not-reversed";
+    export function throwError(key: Key, message: string): never;
 }
 
 // @public (undocumented)

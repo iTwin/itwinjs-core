@@ -127,6 +127,7 @@ export class AngleSweep implements BeJSONFunctions {
     clone(): AngleSweep;
     cloneComplement(reverseDirection?: boolean, result?: AngleSweep): AngleSweep;
     cloneMinusRadians(radians: number): AngleSweep;
+    clonePlusRadians(radians: number): AngleSweep;
     static create(data?: AngleSweep | Angle): AngleSweep;
     static create360(startRadians?: number, result?: AngleSweep): AngleSweep;
     static createFullLatitude(): AngleSweep;
@@ -286,6 +287,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     get isDegenerateCircle(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    isPhysicallyClosedCurve(tolerance?: number, xyOnly?: boolean): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     matrixClone(): Matrix3d;
     get matrixRef(): Matrix3d;
@@ -1613,8 +1615,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     computeChainDetail(childDetail: CurveLocationDetail, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-    // @internal
     static convertChildDetailToChainDetail(pairs: CurveLocationDetailPair[], index0: number, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex, compressAdjacent?: boolean): CurveLocationDetailPair[];
+    static convertChildDetailToChainDetailSingle(pair: CurveLocationDetailPair, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex): CurveLocationDetailPair;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
     curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
@@ -1817,6 +1819,8 @@ export class CurveLocationDetailPair {
     constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail);
     approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
+    static comparePairsByFractions(fractionTol?: number, pointTol?: number, xyOnly?: boolean, equateClosedCurveFractions?: boolean): OrderedComparator<CurveLocationDetailPair>;
+    static comparePairsByPoints(pointTol?: number, xyOnly?: boolean): OrderedComparator<CurveLocationDetailPair>;
     static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     detailA: CurveLocationDetail;
@@ -2350,6 +2354,7 @@ export class Geometry {
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
+    static readonly smallNewtonStep = 1e-11;
     static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined;
     static split3Way01(x: number, tolerance?: number): -1 | 0 | 1;
     static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number;
@@ -5574,6 +5579,8 @@ export class RegionOps {
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
     static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeToleranceOrOptions?: number | RegionBooleanXYOptions): AnyRegion | undefined;
     // @internal
+    static removeExtraneousBridgeEdges(graph: HalfEdgeGraph, isBridgeEdge?: HalfEdgeToBooleanFunction, faceToArea?: HalfEdgeToNumberFunction): number;
+    // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static simplifyRegion(region: AnyRegion): AnyRegion | undefined;
     static simplifyRegionType(region: AnyRegion): AnyRegion;
@@ -6222,6 +6229,21 @@ export interface TrigValues {
     c: number;
     radians: number;
     s: number;
+}
+
+// @public
+export class UniformStrokeCollector implements IStrokeHandler {
+    constructor(cp?: CurvePrimitive, fractionTol?: number);
+    announceIntervalForUniformStepStrokes(_c: CurvePrimitive, numStrokes: number, f0: number, f1: number): void;
+    announcePointTangent(_p: Point3d, f: number, _v: Vector3d): void;
+    announceSegmentInterval(_c: CurvePrimitive, _p0: Point3d, _p1: Point3d, _numStrokes: number, f0: number, f1: number): void;
+    claimFractions(remove01?: boolean): number[];
+    claimLineString(result?: LineString3d): LineString3d | undefined;
+    endCurvePrimitive(_c: CurvePrimitive): void;
+    endParentCurvePrimitive(_c: CurvePrimitive): void;
+    needPrimaryGeometryForStrokes(): boolean;
+    startCurvePrimitive(cp: CurvePrimitive): void;
+    startParentCurvePrimitive(_c: CurvePrimitive): void;
 }
 
 // @public

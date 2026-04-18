@@ -12,6 +12,6 @@ sourceMapSupport.install();
 // It gets pretty close though, so we'll just monkey-patch here to fix them.
 const originalPrepareStackTrace = Error.prepareStackTrace;
 Error.prepareStackTrace = function (...args) {
-  const res = originalPrepareStackTrace!.call(this, ...args);
+  const res = String(originalPrepareStackTrace ? originalPrepareStackTrace.call(this, ...args) : args[0]);
   return res.replace(/\(.*file:(\/|\\)/g, "(").replace(/at .*file:(\/|\\)/g, "at ");
 };
