@@ -15,4 +15,5 @@
 - [Providers](./usage/Providers.md)
 - [Unit Conversion](./usage/UnitConversion.md)
 - [Parsing and Formatting](./usage/ParsingAndFormatting.md)
+- [QuantityFormatter Lifecycle](./usage/QuantityFormatterAdvanced.md)
 - [QuantityFormatting (Outdated)](./usage/QuantityFormatting-old.md)
