@@ -75,6 +75,7 @@ import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
+import { ECSpecVersion } from '@itwin/ecschema-metadata';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlReaderBase } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
@@ -2610,6 +2611,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
+    deleteElements(ids: Id64Array): Id64Set;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
@@ -3914,6 +3916,8 @@ export abstract class IModelDb extends IModel {
     exportSchema(args: ExportSchemaArgs): void;
     // @beta
     exportSchemas(outputDirectory: LocalFileName): void;
+    // @beta
+    exportSchemaXmlString(schemaName: string, ecSpecVersion?: ECSpecVersion): string | undefined;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // @deprecated (undocumented)
@@ -5712,6 +5716,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 
 // @alpha
 export interface RebaseHandler {
+    dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
@@ -5725,6 +5730,7 @@ export class RebaseManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     canAbort(): boolean;
+    dispose(): void;
     inProgress(): boolean;
     get isAborting(): boolean;
     get isMerging(): boolean;

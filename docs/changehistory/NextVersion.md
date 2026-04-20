@@ -8,6 +8,7 @@ publish: false
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
+    - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
       - [Why SettingsDb?](#why-settingsdb)
       - [New APIs](#new-apis)
@@ -104,6 +105,31 @@ db.withQueryReader(query, (reader) => {
   }
 });
 ```
+
+### Bulk element deletion with `deleteElements`
+
+[EditTxn.deleteElements]($backend) is a new `@beta` API that efficiently deletes many elements in a single native operation when removing trees of elements, partitions, or mixes of ordinary and definition elements.
+It is intended as the preferred replacement for [EditTxn.deleteElement]($backend)
+
+**What it does that `deleteElement` does not:**
+
+- Automatically cascades into the full parent-child subtree of every requested element — you only need to pass root IDs.
+- Cascades into sub-models: deleting a partition element also removes the entire sub-model and all elements inside it.
+- Handles intra set constraint violations without failing.
+- Handles `DefinitionElement` usage checks inline — no need to call `deleteDefinitionElements` separately.
+- Returns a `Id64Set` of IDs that **could not** be deleted due to constraint violations (e.g. code-scope dependencies held by elements outside the delete set), rather than throwing.
+- Better performance when deleting elements in bulk.
+
+**Basic usage:**
+
+```typescript
+const failed: Id64Set = txn.deleteElements([idA, idB, idC]);
+if (failed.size > 0) {
+  // These elements were blocked by an integrity constraint — inspect `failed` to decide how to proceed.
+}
+```
+
+See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full documentation including constraint violation details and lifecycle callback behavior.
 
 ### Dedicated SettingsDb for workspace settings
 

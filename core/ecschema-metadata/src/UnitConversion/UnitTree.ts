@@ -38,7 +38,7 @@ export class GraphUtils {
       );
     } else {
       if (baseUnitsMap.has(key)) {
-        const oldExponent = baseUnitsMap.get(key)!;
+        const oldExponent = baseUnitsMap.get(key) ?? 0;
         baseUnitsMap.set(key, oldExponent + accumulatedExponent);
       } else {
         baseUnitsMap.set(key, accumulatedExponent);
@@ -121,7 +121,7 @@ export class UnitGraph {
    * @param unit Current unit to be added to graph
    */
   public async addUnit(unit: Unit | Constant): Promise<void> {
-    if(this._unitsInProgress.has(unit.key.fullName))
+    if (this._unitsInProgress.has(unit.key.fullName))
       return this._unitsInProgress.get(unit.key.fullName);
 
     if (this._graph.hasNode(unit.key.fullName))

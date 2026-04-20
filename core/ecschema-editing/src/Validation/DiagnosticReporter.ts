@@ -70,7 +70,7 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
   public report(diagnostic: AnyDiagnostic) {
     if (this._suppressions && this._suppressions.has(diagnostic.schema.fullName)) {
       const suppressedCodes = this._suppressions.get(diagnostic.schema.fullName);
-      if (suppressedCodes!.includes(diagnostic.code))
+      if (suppressedCodes?.includes(diagnostic.code))
         return;
     }
 
