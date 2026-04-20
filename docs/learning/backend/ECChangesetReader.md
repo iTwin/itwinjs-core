@@ -8,7 +8,7 @@
 
 A single EC entity may typically map to multiple tables or a single table.
 
-[ECChangesetReader]($backend) reads these raw table-row changes and emits one [ECNativeChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [ECNativePartialChangeUnifier]($backend).
+[ECChangesetReader]($backend) reads these raw table-row changes and emits one [ChangeInstance]($backend) per row. To reconstruct a complete, merged EC instance across all tables, pipe the reader into [PartialChangeUnifier]($backend).
 
 ### The reader–unifier pipeline
 
@@ -16,20 +16,20 @@ A single EC entity may typically map to multiple tables or a single table.
 
 After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables.
 
-### [ECNativeChangeInstance]($backend) shape
+### [ChangeInstance]($backend) shape
 
 Every instance has an `$meta` property plus the EC property bag:
 
 ```ts
-interface ECNativeChangeMeta {
+interface ChangeMeta {
   op: "Inserted" | "Updated" | "Deleted";
   stage: "New" | "Old";
   tables: string[];          // SQLite tables that contributed rows
   changeIndexes: number[];   // stream positions of those rows
-  nativeKey: string;         // ECInstanceId-ECClassId key used for merging
-  mode: string;              // "All_Properties" | "Bis_Element_Properties" | "Instance_Key"
+  instanceKey: string;       // ECInstanceId-ECClassId key used for merging
+  propFilter: string;        // "All" | "BisCoreElement" | "InstanceKey"
   changeFetchedPropNames: string[]; // property names actually read from the change binary
-  rowOptions?: object;       // the rowOptions passed when opening the reader
+  rowOptions?: RowFormatOptions; // the rowOptions passed when opening the reader
   isIndirectChange: boolean; // true when the change was applied indirectly
 }
 ```
@@ -42,7 +42,7 @@ interface ECNativeChangeMeta {
 
 ### `changeFetchedPropNames` — what actually changed
 
-Each [ECNativeChangeInstance]($backend) carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
+Each [ChangeInstance]($backend) carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
 
 ```ts
 // Only trust props present in changeFetchedPropNames to reflect the changeset delta.
@@ -72,14 +72,14 @@ The names in `changeFetchedPropNames` follow these rules based on the property k
 
 ## Disposal — always close the reader and unifier
 
-[ECChangesetReader]($backend) and [ECNativePartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
+[ECChangesetReader]($backend) and [PartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
 
 The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
 
 ```ts
 {
   using reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
-  using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+  using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
   while (reader.step())
     pcu.appendFrom(reader);
@@ -94,7 +94,7 @@ If you cannot use `using` (e.g. the reader must cross async boundaries or live b
 
 ```ts
 const reader = ECChangesetReader.openFile({ db, fileName: changeset.pathname });
-const pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 try {
   while (reader.step())
     pcu.appendFrom(reader);
@@ -106,7 +106,7 @@ try {
 }
 ```
 
-> **Important:** The same rule applies to [ECNativeChangeUnifierCache]($backend) instances created via [ECNativeChangeUnifierCache.createSqliteBackedCache]($backend) — they wrap a SQLite connection and must also be disposed.
+> **Important:** The same rule applies to [ChangeCache]($backend) instances created via [ChangeUnifierCache.createSqliteBackedCache]($backend) — they wrap a SQLite connection and must also be disposed.
 
 ---
 
@@ -140,22 +140,22 @@ Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved
 
 ---
 
-## Mode — controlling which properties are returned
+## Property filter — controlling which properties are returned
 
-All `open*` methods accept a `mode` argument that controls which properties are included:
+All `open*` methods accept a `propFilter` argument that controls which properties are included:
 
-| Mode | Properties returned |
+| Filter | Properties returned |
 |---|---|
-| `All_Properties` (default) | All EC properties mapped to changed tables |
-| `Bis_Element_Properties` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
-| `Instance_Key` | Only `ECInstanceId` and `ECClassId` |
+| `All` (default) | All EC properties mapped to changed tables |
+| `BisCoreElement` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
+| `InstanceKey` | Only `ECInstanceId` and `ECClassId` |
 
 [[include:ECChangesetReader.ModeInstanceKey]]
 
-The active mode name is stored as a human-readable string in `instance.$meta.mode`:
+The active filter name is stored as a human-readable string in `instance.$meta.propFilter`:
 
 ```ts
-assert.equal(instance.$meta.mode, "Instance_Key");
+assert.equal(instance.$meta.propFilter, "InstanceKey");
 ```
 
 ---
@@ -237,7 +237,7 @@ reader.clearClassNameFilters();
 
 ## Cache strategies
 
-By default [ECNativePartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
+By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
 
 [[include:ECChangesetReader.CacheStrategies]]
 
@@ -245,7 +245,7 @@ By default [ECNativePartialChangeUnifier]($backend) uses an in-memory cache (`Ma
 
 ## Migrating from [ChangesetECAdaptor]($backend)
 
-The deprecated [ChangesetECAdaptor]($backend) / [PartialECChangeUnifier]($backend) stack is replaced by [ECChangesetReader]($backend) + [ECNativePartialChangeUnifier]($backend).
+The deprecated [ChangesetECAdaptor]($backend) / [PartialECChangeUnifier]($backend) stack is replaced by [ECChangesetReader]($backend) + [PartialChangeUnifier]($backend).
 
 ### Basic pipeline — read and merge a changeset file
 
@@ -273,7 +273,7 @@ adaptor[Symbol.dispose](); // also closes the underlying SqliteChangesetReader
 
 ```ts
 using reader = ECChangesetReader.openFile({ db: iModelDb, fileName });
-using pcu = new ECNativePartialChangeUnifier();
+using pcu = new PartialChangeUnifier();
 
 while (reader.step())
   pcu.appendFrom(reader);
@@ -298,8 +298,8 @@ const unifier = new PartialECChangeUnifier(iModelDb, cache);
 
 ```ts
 // The new cache opens its own private temporary SQLite database — no live iModel connection needed
-using cache = ECNativeChangeUnifierCache.createSqliteBackedCache();
-using pcu = new ECNativePartialChangeUnifier(cache);
+using cache = ChangeUnifierCache.createSqliteBackedCache();
+using pcu = new PartialChangeUnifier(cache);
 ```
 
 ### Filtering
@@ -327,9 +327,9 @@ reader.setClassNameFilters(new Set(["BisCore:Element"])); // full "SchemaName:Cl
 |---|---|---|
 | Opening | `SqliteChangesetReader.openFile` + `new ChangesetECAdaptor(reader)` | `ECChangesetReader.openFile` directly |
 | `disableSchemaCheck` flag | Required (`true`) on `SqliteChangesetReader` | Not needed — schema check is built in |
-| Merging multi-table entities | `new PartialECChangeUnifier(db)` + `unifier.appendFrom(adaptor)` | `new ECNativePartialChangeUnifier()` + `pcu.appendFrom(reader)` |
+| Merging multi-table entities | `new PartialECChangeUnifier(db)` + `unifier.appendFrom(adaptor)` | `new PartialChangeUnifier()` + `pcu.appendFrom(reader)` |
 | `PartialECChangeUnifier` db arg | Required (uses live iModel connection for temp table) | Not needed (new unifier owns its temp db) |
-| SQLite cache db arg | `ECChangeUnifierCache.createSqliteBackedCache(db)` — reuses iModel connection | `ECNativeChangeUnifierCache.createSqliteBackedCache()` — self-contained |
+| SQLite cache db arg | `ECChangeUnifierCache.createSqliteBackedCache(db)` — reuses iModel connection | `ChangeUnifierCache.createSqliteBackedCache()` — self-contained |
 | Resource management | Manual `[Symbol.dispose]()` on each object | `using` declaration handles everything |
 | Filtering by class | `acceptClass(fullName)` — automatically expands to all derived class ids, so a single class name filters the entire hierarchy | `setClassNameFilters(Set<string>)` — exact match only; does **not** expand to derived classes; pass each class name explicitly in `"SchemaName:ClassName"` format |
 | Filtering API style | Fluent (`.acceptOp(...).acceptTable(...)`) | Setter methods with `Set<>` arguments |
@@ -368,7 +368,7 @@ Two concrete failure modes arise:
 using reader = ECChangesetReader.openFile({
   db: iModelDb,          // iModel has already applied the delete
   fileName: updateChangeset.pathname,
-  mode: ECChangesetMode.Instance_Key,
+  propFilter: PropertyFilter.InstanceKey,
   rowOptions: { classIdsToClassNames: true },
 });
 // ...

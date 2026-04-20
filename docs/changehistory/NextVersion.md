@@ -16,6 +16,7 @@ publish: false
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Backend](#backend)
+    - [ECChangesetReader — native EC-typed changeset reader](#ecchangesetreader--native-ec-typed-changeset-reader)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
       - [What changed](#what-changed)
       - [Migration guidance](#migration-guidance)
@@ -144,9 +145,9 @@ Settings containers are deliberately separate from workspace containers. Both ex
 
 ### [ECChangesetReader]($backend) — native EC-typed changeset reader
 
-The new [ECChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ECNativeChangeInstance]($backend) per SQLite table row.
+The new [ECChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ChangeInstance]($backend) per SQLite table row.
 
-The companion [ECNativePartialChangeUnifier]($backend) merges the per-table partial rows back into complete EC instances that span all tables mapped to a single EC entity.
+The companion [PartialChangeUnifier]($backend) merges the per-table partial rows back into complete EC instances that span all tables mapped to a single EC entity.
 
 #### Reader factory methods
 
@@ -161,10 +162,10 @@ The companion [ECNativePartialChangeUnifier]($backend) merges the per-table part
 #### Example — inspect inserted elements from a changeset file
 
 ```ts
-import { ECChangesetReader, ECNativePartialChangeUnifier, ECNativeChangeUnifierCache } from "@itwin/core-backend";
+import { ECChangesetReader, PartialChangeUnifier, ChangeUnifierCache } from "@itwin/core-backend";
 
 using reader = ECChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
-using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
 while (reader.step()) {
   pcu.appendFrom(reader);

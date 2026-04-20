@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ChannelControl, DrawingCategory, ECChangesetReader, ChangeUnifierCache, PartialChangeUnifier, IModelHost } from "@itwin/core-backend";
+import { ChangeUnifierCache, ChannelControl, DrawingCategory, ECChangesetReader, IModelHost, PartialChangeUnifier } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";

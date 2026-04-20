@@ -7,13 +7,13 @@ import { expect } from "chai";
 import * as path from "path";
 import {
   BriefcaseDb,
+  ChangeUnifierCache,
   ChannelControl,
   DrawingCategory,
-  PropertyFilter,
   ECChangesetReader,
   EditTxn,
   PartialChangeUnifier,
-  ChangeUnifierCache,
+  PropertyFilter,
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
