@@ -13,7 +13,7 @@ import {
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
   CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement, RelatedElementProps,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  resolveNavProp, resolveNavPropId, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
@@ -261,14 +261,14 @@ export abstract class ViewDefinition extends DefinitionElement {
     super(props, iModel);
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const categorySelectorId = Id64.fromJSON(props.categorySelector?.id ?? props.categorySelectorId);
-    if (!Id64.isValid(categorySelectorId))
+    const categorySelectorId = Id64.fromJSON(resolveNavPropId(props.categorySelector, props.categorySelectorId));
+    if (Id64.isInvalid(categorySelectorId))
       throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
     this.categorySelector = { id: categorySelectorId, relClassName: props.categorySelector?.relClassName };
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const displayStyleId = Id64.fromJSON(props.displayStyle?.id ?? props.displayStyleId);
-    if (!Id64.isValid(displayStyleId))
+    const displayStyleId = Id64.fromJSON(resolveNavPropId(props.displayStyle, props.displayStyleId));
+    if (Id64.isInvalid(displayStyleId))
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
     this.displayStyle = { id: displayStyleId, relClassName: props.displayStyle?.relClassName };
   }
@@ -321,10 +321,10 @@ export abstract class ViewDefinition extends DefinitionElement {
   public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.categorySelector = props.categorySelector ?? { id: props.categorySelectorId };
+    inst.categoryselector = resolveNavProp(props.categorySelector, props.categorySelectorId);
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.displayStyle = props.displayStyle ?? { id: props.displayStyleId };
+    inst.displayStyle = resolveNavProp(props.displayStyle, props.displayStyleId);
     return inst;
   }
 
@@ -332,11 +332,11 @@ export abstract class ViewDefinition extends DefinitionElement {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelector = this.categorySelector;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    json.categorySelectorId = this.categorySelectorId;
+    json.categorySelectorId = this.categorySelectorId;  // for backward compatibility
 
     json.displayStyle = this.displayStyle;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    json.displayStyleId = this.displayStyleId;
+    json.displayStyleId = this.displayStyleId;  // for backward compatibility
     return json;
   }
 
@@ -536,8 +536,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const modelSelectorId = Id64.fromJSON(props.modelSelector?.id ?? props.modelSelectorId);
-    if (!Id64.isValid(modelSelectorId))
+    const modelSelectorId = Id64.fromJSON(resolveNavPropId(props.modelSelector, props.modelSelectorId));
+    if (Id64.isInvalid(modelSelectorId))
       throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
     this.modelSelector = { id: modelSelectorId, relClassName: props.modelSelector?.relClassName };
   }
@@ -551,7 +551,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelector = this.modelSelector;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    json.modelSelectorId = this.modelSelectorId;
+    json.modelSelectorId = this.modelSelectorId;  // for backward compatibility
     return json;
   }
 
@@ -591,7 +591,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.modelSelector = props.modelSelector ?? { id: props.modelSelectorId };
+    inst.modelSelector = resolveNavProp(props.modelSelector, props.modelSelectorId);
     return inst;
   }
 
@@ -768,10 +768,11 @@ export class ViewDefinition2d extends ViewDefinition {
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const baseModelId = Id64.fromJSON(props.baseModel?.id ?? props.baseModelId);
-    if (!Id64.isValid(baseModelId))
+    const baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
+    if (Id64.isInvalid(baseModelId))
       throw new IModelError(IModelStatus.BadArg, `baseModelId is invalid`);
     this.baseModel = { id: baseModelId, relClassName: props.baseModel?.relClassName };
+
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
@@ -833,7 +834,7 @@ export class ViewDefinition2d extends ViewDefinition {
   public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    inst.baseModel = props.baseModel ?? { id: props.baseModelId };
+    inst.baseModel = resolveNavProp(props.baseModel, props.baseModelId);
     inst.origin = props.origin;
     inst.extents = props.delta;
     inst.rotationAngle = props.angle;

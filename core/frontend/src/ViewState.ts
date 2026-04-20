@@ -15,7 +15,7 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
   HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
-  ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
+  ModelClipGroups, Npc, RenderSchedule, resolveNavPropId, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -351,12 +351,15 @@ export abstract class ViewState extends ElementState {
   /** Convert to JSON representation. */
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
+
     json.categorySelector = { id: this.categorySelector.id };
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    json.categorySelectorId = this.categorySelector.id;
+    json.categorySelectorId = this.categorySelector.id; // for backward compatibility
+
     json.displayStyle = { id: this.displayStyle.id };
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    json.displayStyleId = this.displayStyle.id;
+    json.displayStyleId = this.displayStyle.id; // for backward compatibility
+
     json.isPrivate = this.isPrivate;
     json.description = this.description;
     return json;
@@ -2348,8 +2351,10 @@ export abstract class ViewState2d extends ViewState {
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this._baseModelId = Id64.fromJSON(props.baseModel?.id ?? props.baseModelId);
+    this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
+
     this._details = new ViewDetails(this.jsonProperties);
   }
 
@@ -2359,8 +2364,10 @@ export abstract class ViewState2d extends ViewState {
     val.delta = this.delta;
     val.angle = this.angle;
     val.baseModel = { id: this.baseModelId };
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    val.baseModelId = this.baseModelId;
+    val.baseModelId = this.baseModelId; // for backward compatibility
+
     return val;
   }
 

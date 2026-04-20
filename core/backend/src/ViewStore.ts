@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, Mar
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
+  RenderTimelineProps, resolveNavPropId, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -1071,15 +1071,12 @@ export namespace ViewStore {
     private makeViewDefinitionProps(viewDefinition: ViewDefinitionProps) {
       const viewDef = cloneProps(viewDefinition); // don't modify input
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelector?.id ?? viewDef.categorySelectorId);
+      this.verifyRowId(tableName.categorySelectors, resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId));
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.verifyRowId(tableName.displayStyles, viewDef.displayStyle?.id ?? viewDef.displayStyleId);
+      this.verifyRowId(tableName.displayStyles, resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId));
       const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const effectiveModelSelectorId = spatialViewDefinitionProps.modelSelector?.id ?? spatialViewDefinitionProps.modelSelectorId;
-      if (effectiveModelSelectorId) {
-        this.verifyRowId(tableName.modelSelectors, effectiveModelSelectorId);
-      }
+      this.verifyRowId(tableName.modelSelectors, resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId));
 
       const viewDef2d = (viewDef as ViewDefinition2dProps);
       if (viewDef2d.baseModel) {
@@ -1117,11 +1114,11 @@ export namespace ViewStore {
           isPrivate: args.isPrivate,
           json: JSON.stringify(viewDef),
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          modelSel: maybeRow(spatialViewDefinitionProps.modelSelector?.id ?? spatialViewDefinitionProps.modelSelectorId),
+          modelSel: maybeRow(resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId)),
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          categorySel: toRowId(viewDef.categorySelector?.id ?? viewDef.categorySelectorId),
+          categorySel: toRowId(resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId)),
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          displayStyle: toRowId(viewDef.displayStyle?.id ?? viewDef.displayStyleId),
+          displayStyle: toRowId(resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId)),
         });
       } catch (e) {
         const err = e as SqliteStatement.DbError;
@@ -1138,11 +1135,11 @@ export namespace ViewStore {
       this.withSqliteStatement(`UPDATE ${tableName.views} SET json=?,modelSel=?,categorySel=?,displayStyle=? WHERE Id=?`, (stmt) => {
         stmt.bindString(1, JSON.stringify(viewDef));
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        stmt.maybeBindInteger(2, maybeRow(spatialViewDefinitionProps.modelSelector?.id ?? spatialViewDefinitionProps.modelSelectorId));
+        stmt.maybeBindInteger(2, maybeRow(resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId)));
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        stmt.bindInteger(3, toRowId(viewDef.categorySelector?.id ?? viewDef.categorySelectorId));
+        stmt.bindInteger(3, toRowId(resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId)));
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        stmt.bindInteger(4, toRowId(viewDef.displayStyle?.id ?? viewDef.displayStyleId));
+        stmt.bindInteger(4, toRowId(resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId)));
         stmt.bindInteger(5, toRowId(args.viewId));
         stmt.stepForWrite();
       });
@@ -1338,7 +1335,7 @@ export namespace ViewStore {
       const owner = args.owner;
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const categorySelectorId = (args.viewDefinition.categorySelector?.id ?? args.viewDefinition.categorySelectorId);
+      const categorySelectorId = resolveNavPropId(args.viewDefinition.categorySelector, args.viewDefinition.categorySelectorId);
       if (ViewStoreRpc.isViewStoreId(categorySelectorId)) {
         this.verifyRowId(tableName.categorySelectors, categorySelectorId);
       } else {
@@ -1351,7 +1348,7 @@ export namespace ViewStore {
 
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const modelSelectorId = (spatialDef.modelSelector?.id ?? spatialDef.modelSelectorId);
+      const modelSelectorId = resolveNavPropId(spatialDef.modelSelector, spatialDef.modelSelectorId);
       if (ViewStoreRpc.isViewStoreId(modelSelectorId)) {
         this.verifyRowId(tableName.modelSelectors, modelSelectorId);
       } else if (args.modelSelectorProps) {
@@ -1363,7 +1360,7 @@ export namespace ViewStore {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const displayStyleId = (spatialDef.displayStyle?.id ?? spatialDef.displayStyleId);
+      const displayStyleId = resolveNavPropId(spatialDef.displayStyle, spatialDef.displayStyleId);
       if (ViewStoreRpc.isViewStoreId(displayStyleId)) {
         this.verifyRowId(tableName.displayStyles, displayStyleId);
       } else {

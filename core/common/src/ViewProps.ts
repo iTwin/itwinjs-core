@@ -151,6 +151,26 @@ export interface ViewQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
 
+/**
+ * Helper to resolve navigation property ids represented as independent Id64Strings.
+ * @internal
+ *
+ * @note This function will be redundant once all deprecated fields are removed. All calls to this function will need to be removed as well.
+ */
+export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String {
+  return navProp?.id ?? deprecatedNavPropId;
+}
+
+/**
+ * Helper to resolve navigation properties represented as Id64Strings.
+ * @internal
+ *
+ * @note This function will be redundant once all deprecated fields are removed. All calls to this function will need to be removed as well.
+ */
+export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps {
+  return navProp ?? { id: deprecatedNavPropId };
+}
+
 /** Parameters used to construct a ViewDefinition
  * @public
  * @extensions

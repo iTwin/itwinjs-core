@@ -8615,6 +8615,12 @@ export interface RequestNewBriefcaseProps {
     readonly iTwinId: GuidString;
 }
 
+// @internal
+export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps;
+
+// @internal
+export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
+
 // @internal (undocumented)
 export class ResponseLike implements Response {
     constructor(data: any);
