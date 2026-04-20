@@ -61,7 +61,7 @@ internal;class;ECSchemaError
 internal;namespace;ECSchemaNamespaceUris
 public;enum;ECSchemaStatus
 preview;enum;ECSchemaStatus
-internal;interface;ECSpecVersion
+beta;interface;ECSpecVersion
 internal;interface;ECSqlQueryOptions
 internal;class;ECSqlSchemaLocater
 internal;interface;ECSqlSchemaLocaterOptions
