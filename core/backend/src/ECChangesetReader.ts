@@ -11,8 +11,8 @@ import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ECChangesetMode, ECChangesetReaderArgs, ECChangesetRowAdapterOptions, ECNativeChangeInstance, ECNativeChangeOp, ECNativeChangeSource } from "./ECChangesetReaderTypes";
-import { AnyDb } from "./SqliteChangesetReader";
+import { ChangeInstance, ChangeSource, ECChangesetReaderArgs, PropertyFilter, RowFormatOptions } from "./ECChangesetReaderTypes";
+import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
 
 
 // ---------------------------------------------------------------------------
@@ -34,13 +34,13 @@ import { AnyDb } from "./SqliteChangesetReader";
  * instances must be merged using [ECNativePartialChangeUnifier]($backend).
  * @beta
  */
-export class ECChangesetReader implements Disposable, ECNativeChangeSource {
+export class ECChangesetReader implements Disposable, ChangeSource {
   private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
-  private _rowOptions?: ECChangesetRowAdapterOptions;
-  private _mode: ECChangesetMode = ECChangesetMode.All_Properties;
+  private _rowOptions?: RowFormatOptions;
+  private _propFilter: PropertyFilter = PropertyFilter.All;
   private _changeIndex = 0;
-  private _op?: ECNativeChangeOp;
+  private _op?: SqliteChangeOp;
   private _isECTable?: boolean;
   private _tableName?: string;
   private _isIndirectChange?: boolean;
@@ -86,23 +86,23 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * `undefined` when the current row is a Delete or a non-EC table row or [[step]] returned false.
    * @beta
    */
-  public inserted?: ECNativeChangeInstance;
+  public inserted?: ChangeInstance;
 
   /**
    * Pre-change (deleted or updated-old) EC instance, populated after each [[step]] call.
    * `undefined` when the current row is an Insert or a non-EC table row or [[step]] returned false.
    * @beta
    */
-  public deleted?: ECNativeChangeInstance;
+  public deleted?: ChangeInstance;
 
   // Private — callers use static factory methods.
   private constructor(db: AnyDb) {
     this.db = db;
   }
 
-  /** Map public ECChangesetRowAdapterOptions to the native adaptor options.
+  /** Map public RowFormatOptions to the native adaptor options.
    * @internal */
-  private toNativeRowOptions(opts: ECChangesetRowAdapterOptions): IModelJsNative.ECSqlRowAdaptorOptions {
+  private toNativeRowOptions(opts: RowFormatOptions): IModelJsNative.ECSqlRowAdaptorOptions {
     return {
       abbreviateBlobs: opts.abbreviateBlobs,
       classIdsToClassNames: opts.classIdsToClassNames,
@@ -113,12 +113,12 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   /** Convert a ECChangesetMode enum value to its string name.
    * @internal
    */
-  private modeToString(): string {
-    switch (this._mode) {
-      case ECChangesetMode.All_Properties: return "All_Properties";
-      case ECChangesetMode.Bis_Element_Properties: return "Bis_Element_Properties";
-      case ECChangesetMode.Instance_Key: return "Instance_Key";
-      default: throw new IModelError(IModelStatus.BadArg, `Invalid ECChangesetMode value: ${this._mode}`);
+  private propFilterToString(): string {
+    switch (this._propFilter) {
+      case PropertyFilter.All: return "All";
+      case PropertyFilter.BisCoreElement: return "BisCoreElement";
+      case PropertyFilter.InstanceKey: return "InstanceKey";
+      default: throw new IModelError(IModelStatus.BadArg, `Invalid PropertyFilter value: ${this._propFilter}`);
     }
   }
 
@@ -132,16 +132,16 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @param args.db Database at or after the changeset's ending state, used for schema resolution.
    * @param args.invert When `true`, invert all operations (Insert↔Delete).
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
-   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
+   * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
   public static openFile(args: { readonly fileName: string } & ECChangesetReaderArgs): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    const mode = args.mode ?? ECChangesetMode.All_Properties;
-    reader._mode = mode;
+    const propFilter = args.propFilter ?? PropertyFilter.All;
+    reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._mode);
+      reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._propFilter);
     }
     catch (e) {
       reader.close();
@@ -155,7 +155,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @param args.changesetFiles Ordered list of changeset file paths.
    * @param args.db Database with schema at or ahead of the last changeset.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
-   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
+   * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
   public static openGroup(args: { readonly changesetFiles: string[] } & ECChangesetReaderArgs): ECChangesetReader {
@@ -163,10 +163,10 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       throw new Error("changesetFiles must contain at least one file.");
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    const mode = args.mode ?? ECChangesetMode.All_Properties;
-    reader._mode = mode;
+    const propFilter = args.propFilter ?? PropertyFilter.All;
+    reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._mode);
+      reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._propFilter);
     }
     catch (e) {
       reader.close();
@@ -180,7 +180,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @param args.db Must be an [IModelDb]($backend) (not [ECDb]($backend)).
    * @param args.includeInMemoryChanges Also include in-memory (not yet saved to disk) changes.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
-   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
+   * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
   public static openLocalChanges(
@@ -188,10 +188,10 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    const mode = args.mode ?? ECChangesetMode.All_Properties;
-    reader._mode = mode;
+    const propFilter = args.propFilter ?? PropertyFilter.All;
+    reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._mode);
+      reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._propFilter);
     } catch (e) {
       reader.close();
       throw e;
@@ -203,7 +203,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Read the in-memory (not yet saved to disk) changes of an open IModelDb.
    * @param args.db Must be an [IModelDb]($backend).
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
-   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
+   * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
   public static openInMemoryChanges(
@@ -211,10 +211,10 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
-    const mode = args.mode ?? ECChangesetMode.All_Properties;
-    reader._mode = mode;
+    const propFilter = args.propFilter ?? PropertyFilter.All;
+    reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._mode);
+      reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._propFilter);
     } catch (e) {
       reader.close();
       throw e;
@@ -227,7 +227,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @param args.db Must be an [IModelDb]($backend) ([ECDb]($backend) does not support transactions).
    * @param args.txnId The id of the saved transaction to read.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
-   * @param args.mode Controls which properties are included. Defaults to `All_Properties`.
+   * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
   public static openTxn(
@@ -235,10 +235,10 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
   ): ECChangesetReader {
     const reader = new ECChangesetReader(args.db);
     reader._rowOptions = args.rowOptions ?? {};
-    const mode = args.mode ?? ECChangesetMode.All_Properties;
-    reader._mode = mode;
+    const propFilter = args.propFilter ?? PropertyFilter.All;
+    reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._mode);
+      reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._propFilter);
     } catch (e) {
       reader.close();
       throw e;
@@ -267,7 +267,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * @param ops Operations to include.
    * @beta
    */
-  public setOpCodeFilters(ops: Set<ECNativeChangeOp>): void {
+  public setOpCodeFilters(ops: Set<SqliteChangeOp>): void {
     this._nativeReader.setOpCodeFilters(Array.from(ops));
   }
 
@@ -327,9 +327,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
       this._changeIndex++;
       const meta = this._nativeReader.getChangeMetadata();
       const nativeOp = meta.opCode;
-      const op: ECNativeChangeOp =
-        nativeOp === DbOpcode.Insert ? "Inserted" :
-          nativeOp === DbOpcode.Delete ? "Deleted" : "Updated";
+      const op: SqliteChangeOp = nativeOp === DbOpcode.Insert ? "Inserted" : nativeOp === DbOpcode.Update ? "Updated" : "Deleted";
       this._op = op;
 
       this._tableName = meta.tableName
@@ -348,8 +346,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               tables: [this._tableName],
               changeIndexes: [this._changeIndex],
               stage: "New",
-              nativeKey: rowValue.key,
-              mode: this.modeToString(),
+              instanceKey: rowValue.key,
+              propFilter: this.propFilterToString(),
               changeFetchedPropNames: rowValue.changeFetchedPropNames,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,
@@ -368,8 +366,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
               tables: [this._tableName],
               changeIndexes: [this._changeIndex],
               stage: "Old",
-              nativeKey: rowValue.key,
-              mode: this.modeToString(),
+              instanceKey: rowValue.key,
+              propFilter: this.propFilterToString(),
               changeFetchedPropNames: rowValue.changeFetchedPropNames,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,
@@ -389,7 +387,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
    * Valid only after a successful call to [[step]].
    * @beta
    */
-  public get op(): ECNativeChangeOp {
+  public get op(): SqliteChangeOp {
     if (this._op === undefined)
       throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.op is only valid after step() has positioned the reader on a current valid change.");
     return this._op;

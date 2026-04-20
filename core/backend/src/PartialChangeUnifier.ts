@@ -8,7 +8,7 @@
 import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
 import { SqliteStatement } from "./SqliteStatement";
-import { ECNativeChangeInstance, ECNativeChangeSource } from "./ECChangesetReaderTypes";
+import { ChangeInstance, ChangeSource } from "./ECChangesetReaderTypes";
 import { _nativeDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 
@@ -21,27 +21,27 @@ import { SQLiteDb } from "./SQLiteDb";
  * partial EC change instances.
  * @beta
  */
-export interface ECNativeChangeCache extends Disposable {
+export interface ChangeCache extends Disposable {
   /** Retrieve a cached instance by key, or `undefined` if absent. */
-  get(key: string): ECNativeChangeInstance | undefined;
+  get(key: string): ChangeInstance | undefined;
   /** Insert or replace a cached instance. */
-  set(key: string, value: ECNativeChangeInstance): void;
+  set(key: string, value: ChangeInstance): void;
   /** Iterate over all cached instances. */
-  all(): IterableIterator<ECNativeChangeInstance>;
+  all(): IterableIterator<ChangeInstance>;
   /** Number of instances currently in the cache. */
   count(): number;
 }
 
 /** @beta */
-export namespace ECNativeChangeUnifierCache {
+export namespace ChangeUnifierCache {
   /**
    * Creates an in-memory cache backed by a `Map`.
    * Fast, but may exhaust memory for very large changesets.
-   * @returns An [[ECNativeChangeCache]] backed by an in-memory `Map`.
+   * @returns An [[ChangeCache]] backed by an in-memory `Map`.
    * @beta
    */
-  export function createInMemoryCache(): ECNativeChangeCache {
-    return new NativeInMemoryInstanceCache();
+  export function createInMemoryCache(): ChangeCache {
+    return new InMemoryCache();
   }
 
   /**
@@ -51,28 +51,28 @@ export namespace ECNativeChangeUnifierCache {
    * parts of a temporary database might be flushed to disk if the database becomes large or
    * if SQLite comes under memory pressure.
    * @param bufferedReadInstanceSizeInBytes Read-batch size in bytes (default 10 MB).
-   * @returns An [[ECNativeChangeCache]] backed by a SQLite temp table.
+   * @returns An [[ChangeCache]] backed by a SQLite temp table.
    * @beta
    */
   export function createSqliteBackedCache(
     bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10,
-  ): ECNativeChangeCache {
-    return new NativeSqliteBackedInstanceCache(bufferedReadInstanceSizeInBytes);
+  ): ChangeCache {
+    return new SqliteBackedCache(bufferedReadInstanceSizeInBytes);
   }
 }
 
 // ---------------------------------------------------------------------------
-// Private: NativeInMemoryInstanceCache
+// Private: InMemoryCache
 // ---------------------------------------------------------------------------
 
-class NativeInMemoryInstanceCache implements ECNativeChangeCache {
-  private readonly _cache = new Map<string, ECNativeChangeInstance>();
+class InMemoryCache implements ChangeCache {
+  private readonly _cache = new Map<string, ChangeInstance>();
 
-  public get(key: string): ECNativeChangeInstance | undefined {
+  public get(key: string): ChangeInstance | undefined {
     return this._cache.get(key);
   }
 
-  public set(key: string, value: ECNativeChangeInstance): void {
+  public set(key: string, value: ChangeInstance): void {
     // Remove undefined meta keys to keep serialised form compact.
     const meta = value.$meta as any;
     if (meta) {
@@ -81,7 +81,7 @@ class NativeInMemoryInstanceCache implements ECNativeChangeCache {
     this._cache.set(key, value);
   }
 
-  public *all(): IterableIterator<ECNativeChangeInstance> {
+  public *all(): IterableIterator<ChangeInstance> {
     for (const key of Array.from(this._cache.keys()).sort()) {
       const instance = this._cache.get(key);
       if (instance)
@@ -102,12 +102,12 @@ class NativeInMemoryInstanceCache implements ECNativeChangeCache {
 // Private: NativeSqliteBackedInstanceCache
 // ---------------------------------------------------------------------------
 
-class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
+class SqliteBackedCache implements ChangeCache {
   private readonly _cacheTable = `[${Guid.createValue()}]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10 MB
   private _db: SQLiteDb;
   public constructor(
-    public readonly bufferedReadInstanceSizeInBytes: number = NativeSqliteBackedInstanceCache.defaultBufferSize,
+    public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedCache.defaultBufferSize,
   ) {
     this._db = new SQLiteDb();
     this._db.openDb("", { skipFileCheck: true, rawSQLite: true, openMode: OpenMode.ReadWrite }); // creating temp sqlite db https://sqlite.org/inmemorydb.html#:~:text=Temporary%20Databases,under%20the%20default%20SQLite%20configuration.
@@ -123,7 +123,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     });
   }
 
-  public get(key: string): ECNativeChangeInstance | undefined {
+  public get(key: string): ChangeInstance | undefined {
     return this._db.withPreparedSqliteStatement(
       `SELECT [value] FROM ${this._cacheTable} WHERE [key]=?`,
       (stmt: SqliteStatement) => {
@@ -131,13 +131,13 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
         stmt.clearBindings();
         stmt.bindString(1, key);
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
-          return JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ECNativeChangeInstance;
+          return JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangeInstance;
         return undefined;
       },
     );
   }
 
-  public set(key: string, value: ECNativeChangeInstance): void {
+  public set(key: string, value: ChangeInstance): void {
     const shallowCopy = Object.assign({}, value);
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${this._cacheTable} ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`,
@@ -151,7 +151,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     );
   }
 
-  public *all(): IterableIterator<ECNativeChangeInstance> {
+  public *all(): IterableIterator<ChangeInstance> {
     const sql = `
       SELECT JSON_GROUP_ARRAY(JSON([value]))
       FROM (
@@ -164,7 +164,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
     const stmt = this._db.prepareSqliteStatement(sql);
     try {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const bucket = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ECNativeChangeInstance[];
+        const bucket = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangeInstance[];
         for (const instance of bucket)
           yield instance;
       }
@@ -191,7 +191,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
 }
 
 // ---------------------------------------------------------------------------
-// ECNativePartialChangeUnifier
+// PartialChangeUnifier
 // ---------------------------------------------------------------------------
 
 /**
@@ -205,7 +205,7 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
  * **Usage:**
  * ```ts
  * using reader = ECChangesetReader.openFile({ fileName, db });
- * using unifier = new ECNativePartialChangeUnifier();
+ * using unifier = new PartialChangeUnifier();
  * while (reader.step()) {
  *   unifier.appendFrom(reader);
  * }
@@ -213,9 +213,9 @@ class NativeSqliteBackedInstanceCache implements ECNativeChangeCache {
  * ```
  * @beta
  */
-export class ECNativePartialChangeUnifier implements Disposable {
+export class PartialChangeUnifier implements Disposable {
   public constructor(
-    private readonly _cache: ECNativeChangeCache = new NativeInMemoryInstanceCache(),
+    private readonly _cache: ChangeCache = new InMemoryCache(),
   ) { }
 
   /** Releases the underlying cache. */
@@ -234,7 +234,7 @@ export class ECNativePartialChangeUnifier implements Disposable {
    * @param source Any [ECNativeChangeSource]($backend) positioned on a valid row.
    * @beta
    */
-  public appendFrom(source: ECNativeChangeSource): void {
+  public appendFrom(source: ChangeSource): void {
     if (source.op === "Updated") {
       if (source.inserted)
         this.combine(source.inserted);
@@ -251,7 +251,7 @@ export class ECNativePartialChangeUnifier implements Disposable {
    * Iterator over all fully-merged EC change instances.
    * @beta
    */
-  public get instances(): IterableIterator<ECNativeChangeInstance> {
+  public get instances(): IterableIterator<ChangeInstance> {
     return this._cache.all();
   }
 
@@ -259,12 +259,12 @@ export class ECNativePartialChangeUnifier implements Disposable {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  private buildKey(instance: ECNativeChangeInstance): string {
-    const { nativeKey, stage } = instance.$meta;
-    return `${nativeKey}-${stage}`.toLowerCase();
+  private buildKey(instance: ChangeInstance): string {
+    const { instanceKey, stage } = instance.$meta;
+    return `${instanceKey}-${stage}`.toLowerCase();
   }
 
-  private combine(rhs: ECNativeChangeInstance): void {
+  private combine(rhs: ChangeInstance): void {
     const key = this.buildKey(rhs);
     const lhs = this._cache.get(key);
     if (lhs) {

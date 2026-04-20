@@ -5,38 +5,26 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { AnyDb } from "./SqliteChangesetReader";
+import { AnyDb, SqliteChangeOp, SqliteValueStage } from "./SqliteChangesetReader";
 
 // ---------------------------------------------------------------------------
 // Type aliases
 // ---------------------------------------------------------------------------
 
 /**
- * Operation that caused an EC change.
- * @beta
- */
-export type ECNativeChangeOp = "Inserted" | "Updated" | "Deleted";
-
-/**
- * Which snapshot of the changed EC row.
- * @beta
- */
-export type ECNativeChangeStage = "Old" | "New";
-
-/**
  * Controls which properties are included in the output of [ECChangesetReader]($backend).
  * @beta
  */
-export enum ECChangesetMode {
+export enum PropertyFilter {
   /** All EC properties mapped to changed tables. */
-  All_Properties = 0,
+  All = 0,
   /** For classes whose base class is `BisCore:Element`, only `BisCore:Element` properties
    * mapped to changed tables are returned. If no `BisCore:Element` class property changed,
    * only `ECInstanceId` and `ECClassId` are returned. For other classes all mapped properties
    * are returned. */
-  Bis_Element_Properties = 1,
+  BisCoreElement = 1,
   /** Only `ECInstanceId` and `ECClassId`. */
-  Instance_Key = 2,
+  InstanceKey = 2,
 }
 
 /**
@@ -44,7 +32,7 @@ export enum ECChangesetMode {
  * Controls how EC property values are represented in the returned instances.
  * @beta
  */
-export interface ECChangesetRowAdapterOptions {
+export interface RowFormatOptions {
   /**
    * When `false`, binary properties are returned as full `Uint8Array` values.
    * When `true` (or omitted), binary properties are summarized as `{ bytes: N }`.
@@ -71,22 +59,21 @@ export interface ECChangesetRowAdapterOptions {
  * Metadata attached to every [[ECNativeChangeInstance]].
  * @beta
  */
-export interface ECNativeChangeMeta {
+export interface ChangeMeta {
   /** SQLite tables that contributed columns to this change row. */
   tables: string[];
   /** Operation that produced this change. */
-  op: ECNativeChangeOp;
+  op: SqliteChangeOp;
   /** Whether this is the pre-change (`"Old"`) or post-change (`"New"`) snapshot. */
-  stage: ECNativeChangeStage;
+  stage: SqliteValueStage;
   /** Change-stream index positions. */
   changeIndexes: number[];
   /**
-   * Native instance key computed by the native layer.
-   * Encodes ECInstanceId and class Id.
+   * ECInstanceId and class Id in format "<ECInstanceId>-<ECClassId>".
    */
-  nativeKey: string;
-  /** Reader mode that was active when this change row was captured. */
-  mode: string;
+  instanceKey: string;
+  /** Reader property filter that was active when this change row was captured. */
+  propFilter: string;
   /** EC property names fetched from the current row of changeset or transaction or any other change stream.
    For compound data properties like point2d, point3d or navigation properties,
   the full name of the property is returned in case all the components of the property are fetched from the change.
@@ -97,7 +84,7 @@ export interface ECNativeChangeMeta {
   Similaly if both X and Y changed for the same point2d property, the returned property name will be "CustomStruct.Myp2d". */
   changeFetchedPropNames: string[];
   /** Row adaptor options that were active when this change row was captured. */
-  rowOptions?: ECChangesetRowAdapterOptions;
+  rowOptions?: RowFormatOptions;
   /** `true` when the change was applied indirectly */
   isIndirectChange: boolean;
 }
@@ -107,9 +94,9 @@ export interface ECNativeChangeMeta {
  * Contains the EC property bag plus mandatory `$meta` metadata.
  * @beta
  */
-export interface ECNativeChangeInstance {
+export interface ChangeInstance {
   /** Metadata describing the origin and identity of this change. */
-  $meta: ECNativeChangeMeta;
+  $meta: ChangeMeta;
   /** EC property bag (ECClassId, ECInstanceId, user-defined properties, ...). */
   [key: string]: any;
 }
@@ -119,19 +106,19 @@ export interface ECNativeChangeInstance {
  * [ECNativePartialChangeUnifier]($backend).
  * @beta
  */
-export interface ECNativeChangeSource {
+export interface ChangeSource {
   /** The SQLite opcode of the current change row. */
-  readonly op: ECNativeChangeOp;
+  readonly op: SqliteChangeOp;
   /**
    * The newly-inserted or post-update EC instance.
    * `undefined` when the current row is a Delete, or when `isECTable` is `false`.
    */
-  readonly inserted?: ECNativeChangeInstance;
+  readonly inserted?: ChangeInstance;
   /**
    * The deleted or pre-update EC instance.
    * `undefined` when the current row is an Insert, or when `isECTable` is `false`.
    */
-  readonly deleted?: ECNativeChangeInstance;
+  readonly deleted?: ChangeInstance;
 }
 
 // ---------------------------------------------------------------------------
@@ -148,7 +135,7 @@ export interface ECChangesetReaderArgs {
   /** invert the changeset operations */
   readonly invert?: boolean;
   /** Row adaptor options controlling how EC property values are formatted. */
-  readonly rowOptions?: ECChangesetRowAdapterOptions;
-  /** Controls which properties are included in the change output. Defaults to ECChangesetMode.All_Properties. */
-  readonly mode?: ECChangesetMode;
+  readonly rowOptions?: RowFormatOptions;
+  /** Controls which properties are included in the change output. Defaults to PropertyFilter.All. */
+  readonly propFilter?: PropertyFilter;
 }

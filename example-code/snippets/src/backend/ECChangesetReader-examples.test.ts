@@ -9,11 +9,11 @@ import {
   BriefcaseDb,
   ChannelControl,
   DrawingCategory,
-  ECChangesetMode,
+  PropertyFilter,
   ECChangesetReader,
-  ECNativeChangeUnifierCache,
-  ECNativePartialChangeUnifier,
   EditTxn,
+  PartialChangeUnifier,
+  ChangeUnifierCache,
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
@@ -116,7 +116,7 @@ describe("ECChangesetReader Examples", () => {
   it("basic reader–unifier pipeline", () => {
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.BasicPipeline
     using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
     while (reader.step()) {
       pcu.appendFrom(reader);
@@ -140,7 +140,7 @@ describe("ECChangesetReader Examples", () => {
       db,
       changesetFiles: [insertChangesetPath, updateChangesetPath],
     });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
     while (reader.step()) {
       pcu.appendFrom(reader);
@@ -199,7 +199,7 @@ describe("ECChangesetReader Examples", () => {
       fileName: insertChangesetPath,
       rowOptions: { classIdsToClassNames: true },
     });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     for (const instance of pcu.instances) {
@@ -218,7 +218,7 @@ describe("ECChangesetReader Examples", () => {
       fileName: insertChangesetPath,
       rowOptions: { useJsName: true }, // property keys are camelCase
     });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     for (const instance of pcu.instances) {
@@ -243,7 +243,7 @@ describe("ECChangesetReader Examples", () => {
       fileName: insertChangesetPath,
       rowOptions: { abbreviateBlobs: false }, // return full Uint8Array instead of { bytes: N }
     });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     for (const instance of pcu.instances) {
@@ -257,7 +257,7 @@ describe("ECChangesetReader Examples", () => {
   it("changeFetchedPropNames — trusting only what the changeset recorded", () => {
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.ChangeFetchedPropNames
     using reader = ECChangesetReader.openFile({ db, fileName: updateChangesetPath });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     for (const instance of pcu.instances) {
@@ -287,7 +287,7 @@ describe("ECChangesetReader Examples", () => {
 
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenTxn
     using reader = ECChangesetReader.openTxn({ db, txnId });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     const instances = Array.from(pcu.instances);
@@ -303,7 +303,7 @@ describe("ECChangesetReader Examples", () => {
       fileName: insertChangesetPath,
       rowOptions: { useJsName: true },
     });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     for (const instance of pcu.instances) {
@@ -323,10 +323,10 @@ describe("ECChangesetReader Examples", () => {
     using reader = ECChangesetReader.openFile({
       db,
       fileName: insertChangesetPath,
-      mode: ECChangesetMode.Instance_Key,
+      propFilter: PropertyFilter.InstanceKey,
       rowOptions: { classIdsToClassNames: true },
     });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
     for (const instance of pcu.instances) {
@@ -340,8 +340,8 @@ describe("ECChangesetReader Examples", () => {
 
   it("SQLite-backed cache for large changesets", () => {
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.CacheStrategies
-    using cache = ECNativeChangeUnifierCache.createSqliteBackedCache();
-    using pcu = new ECNativePartialChangeUnifier(cache);
+    using cache = ChangeUnifierCache.createSqliteBackedCache();
+    using pcu = new PartialChangeUnifier(cache);
     using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
     while (reader.step()) pcu.appendFrom(reader);
     for (const instance of pcu.instances) {
@@ -364,7 +364,7 @@ describe("ECChangesetReader Examples", () => {
     txn.saveChanges("insert second widget");
     // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChanges
     using reader = ECChangesetReader.openLocalChanges({ db });
-    using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
     for (const instance of pcu.instances) {
       expect(instance.ECInstanceId).to.exist;
@@ -466,7 +466,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
         fileName: insertCs.pathname,
         rowOptions: { abbreviateBlobs: false },
       });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
 
       const elem = Array.from(pcu.instances).find(
@@ -487,7 +487,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
         fileName: updateCs.pathname,
         rowOptions: { abbreviateBlobs: false },
       });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
 
       const instances = Array.from(pcu.instances);
@@ -507,7 +507,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
         changesetFiles: [insertCs.pathname, updateCs.pathname],
         rowOptions: { abbreviateBlobs: false },
       });
-      using pcu = new ECNativePartialChangeUnifier(ECNativeChangeUnifierCache.createInMemoryCache());
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
 
       const elem = Array.from(pcu.instances).find(

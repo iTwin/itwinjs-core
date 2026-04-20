@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ChannelControl, DrawingCategory, ECChangesetReader, ECNativeChangeUnifierCache, ECNativePartialChangeUnifier, IModelHost } from "@itwin/core-backend";
+import { ChannelControl, DrawingCategory, ECChangesetReader, ChangeUnifierCache, PartialChangeUnifier, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
@@ -89,15 +89,15 @@ describe("ECChangesetReaderAPI", async () => {
     const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
 
     const cacheConfigs = [
-      { label: "ECNativeUnifier-InMemoryCache", createCache: () => ECNativeChangeUnifierCache.createInMemoryCache() },
-      { label: "ECNativeUnifier-SqliteBackedCache", createCache: () => ECNativeChangeUnifierCache.createSqliteBackedCache() },
+      { label: "Unifier-InMemoryCache", createCache: () => ChangeUnifierCache.createInMemoryCache() },
+      { label: "Unifier-SqliteBackedCache", createCache: () => ChangeUnifierCache.createSqliteBackedCache() },
     ];
 
     for (const cacheConfig of cacheConfigs) {
       for (const testCase of testCases) {
         using reader = ECChangesetReader.openFile({ db: rwIModel, fileName: changesets[testCase.testCaseNum].pathname });
         using cache = cacheConfig.createCache();
-        using pcu = new ECNativePartialChangeUnifier(cache);
+        using pcu = new PartialChangeUnifier(cache);
         reader.setOpCodeFilters(new Set(["Inserted"]));
         assert.equal(pcu.instanceCount, 0, "Unifier should be empty before any changes are applied");
 

@@ -87,7 +87,7 @@ export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
 export * from "./ECChangesetReader";
 export * from "./ECChangesetReaderTypes";
-export * from "./ECNativePartialChangeUnifier";
+export * from "./PartialChangeUnifier";
 
 export * from "./internal/cross-package";
 
