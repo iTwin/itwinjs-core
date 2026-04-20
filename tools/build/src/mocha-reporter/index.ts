@@ -54,8 +54,10 @@ const isCI = process.env.CI || process.env.TF_BUILD;
 if (isCI) {
   if (typeof (mocha) !== "undefined")
     mocha.forbidOnly();
-  else
-    require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })]!.exports.forbidOnly = true;
+  else {
+    const mocharc = require(require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths }));
+    mocharc.forbidOnly = true;
+  }
 }
 
 // This is necessary to enable colored output when running in rush test:

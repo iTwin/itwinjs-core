@@ -107,7 +107,23 @@ export interface UnitsProvider {
 }
 
 /**
- * Used to uniquely identify a unit system.
+ * Identifies a user-facing unit system preference group.
+ *
+ * A `UnitSystemKey` does **not** map one-to-one to an EC `UnitSystem` element. Instead, each key
+ * represents a *preference group* that matches against one or more EC `UnitSystem` names in
+ * priority order when resolving formats from a `KindOfQuantity`:
+ *
+ * | Key            | EC UnitSystems matched (highest priority first)         |
+ * | -------------- | ------------------------------------------------------- |
+ * | `"metric"`     | SI / METRIC, INTERNATIONAL, FINANCE                     |
+ * | `"imperial"`   | IMPERIAL, USCUSTOM, INTERNATIONAL, FINANCE               |
+ * | `"usCustomary"`| USCUSTOM, INTERNATIONAL, FINANCE                         |
+ * | `"usSurvey"`   | USSURVEY, USCUSTOM, INTERNATIONAL, FINANCE               |
+ *
+ * EC `UnitSystem` elements not listed above (e.g. CGS, MARITIME, INDUSTRIAL) are not covered by
+ * any preference group and will only appear if a `KindOfQuantity` explicitly references them.
+ *
+ * @see [SchemaFormatsProvider]($ecschema-metadata) for how preference groups resolve formats.
  * @beta
  */
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";

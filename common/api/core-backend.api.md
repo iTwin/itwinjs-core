@@ -75,6 +75,7 @@ import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
+import { ECSpecVersion } from '@itwin/ecschema-metadata';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlReaderBase } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
@@ -3914,6 +3915,8 @@ export abstract class IModelDb extends IModel {
     exportSchema(args: ExportSchemaArgs): void;
     // @beta
     exportSchemas(outputDirectory: LocalFileName): void;
+    // @beta
+    exportSchemaXmlString(schemaName: string, ecSpecVersion?: ECSpecVersion): string | undefined;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // @deprecated (undocumented)
