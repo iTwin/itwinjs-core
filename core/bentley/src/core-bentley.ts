@@ -36,6 +36,7 @@ export * from "./Tracing";
 export * from "./TupleKeyedMap";
 export * from "./TypedArrayBuilder";
 export * from "./UnexpectedErrors";
+export * from "./UtilityFunctions";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
 
