@@ -34,6 +34,14 @@ export * from "./internal/cross-package";
  * Classes, Interfaces, and definitions used to format and parse quantity values.
  */
 /**
+ * @docs-group-description BasicUnitsProvider
+ * A UnitsProvider backed by the bundled BIS Units schema JSON asset.
+ */
+/**
+ * @docs-group-description CompositeUnitsProvider
+ * Factory and composition utilities for layering multiple UnitsProviders.
+ */
+/**
  * @docs-group-description Logging
  * Logger categories used by this package.
  */
