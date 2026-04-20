@@ -158,7 +158,7 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
 
       assert.throws(() => txn.deleteElements([Id64.invalid, rootA]), `Invalid element ids: 0`);
-      assert.throws(() => txn.deleteElements(["not-an-id", rootA]), `Invalid element ids: 0`);
+      assert.throws(() => txn.deleteElements(["not-an-id", rootA]), `Invalid element ids: not-an-id`);
 
       assertExists(rootA, "rootA should not have been deleted after a throw");
     });
