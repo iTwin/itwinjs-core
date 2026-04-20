@@ -555,7 +555,7 @@ describe("DeleteDefinitionElements", () => {
         // geometryPartId is referenced by PhysicalObject1's geometry stream
         const failed = txn.deleteElements([geometryPartId]);
         assert.isTrue(failed.has(geometryPartId), "in-use definition element must be in failed set");
-        assert.isDefined(geometryPartId, "in-use definition element must not be deleted");
+        assert.isDefined(iModelDb.elements.tryGetElement(geometryPartId), "in-use definition element must not be deleted");
       });
 
       it("returns only the in-use definition element in the failed set when mixing used and unused parts", () => {
@@ -586,7 +586,7 @@ describe("DeleteDefinitionElements", () => {
       it("keeps an in-use RenderMaterial in the failed set and does not delete it", () => {
         const failed = txn.deleteElements([renderMaterialId]);
         assert.isTrue(failed.has(renderMaterialId), "in-use RenderMaterial must be in failed set");
-        assert.isDefined(renderMaterialId, "in-use RenderMaterial must not be deleted");
+        assert.isDefined(iModelDb.elements.tryGetElement(renderMaterialId), "in-use RenderMaterial must not be deleted");
       });
 
       it("deletes an unused RenderMaterial", () => {
@@ -597,7 +597,7 @@ describe("DeleteDefinitionElements", () => {
       it("keeps an in-use Texture in the failed set and does not delete it", () => {
         const failed = txn.deleteElements([textureId]);
         assert.isTrue(failed.has(textureId), "in-use Texture must be in failed set");
-        assert.isDefined(textureId, "in-use Texture must not be deleted");
+        assert.isDefined(iModelDb.elements.tryGetElement(textureId), "in-use Texture must not be deleted");
       });
 
       it("deletes an unused Texture", () => {
@@ -646,7 +646,7 @@ describe("DeleteDefinitionElements", () => {
       it("keeps an in-use SpatialCategory in the failed set and does not delete it", () => {
         const failed = txn.deleteElements([spatialCategoryId]);
         assert.isTrue(failed.has(spatialCategoryId), "in-use SpatialCategory must be in failed set");
-        assert.isDefined(spatialCategoryId, "in-use SpatialCategory must not be deleted");
+        assert.isDefined(iModelDb.elements.tryGetElement(spatialCategoryId), "in-use SpatialCategory must not be deleted");
       });
 
       it("keeps the default SubCategory in the failed set when its parent SpatialCategory is in use", () => {
@@ -654,13 +654,13 @@ describe("DeleteDefinitionElements", () => {
         const defaultSubCategoryId = spatialCategory.myDefaultSubCategoryId();
         const failed = txn.deleteElements([defaultSubCategoryId]);
         assert.isTrue(failed.has(defaultSubCategoryId), "default SubCategory must be in failed set");
-        assert.isDefined(defaultSubCategoryId, "default SubCategory must not be deleted");
+        assert.isDefined(iModelDb.elements.tryGetElement(defaultSubCategoryId), "default SubCategory must not be deleted");
       });
 
       it("keeps a used non-default SubCategory in the failed set and does not delete it", () => {
         const failed = txn.deleteElements([subCategoryId]);
         assert.isTrue(failed.has(subCategoryId), "in-use SubCategory must be in failed set");
-        assert.isDefined(subCategoryId, "in-use SubCategory must not be deleted");
+        assert.isDefined(iModelDb.elements.tryGetElement(subCategoryId), "in-use SubCategory must not be deleted");
       });
 
       it("deletes an unused non-default SubCategory", () => {

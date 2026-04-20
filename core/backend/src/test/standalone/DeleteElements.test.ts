@@ -1,6 +1,6 @@
 import { assert } from "chai";
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, IModel, IModelError, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -69,9 +69,10 @@ describe("deleteElements (native bulk delete API)", () => {
   const assertExists = (id: Id64String, msg: string) => assert.isDefined(iModelDb.elements.tryGetElement(id), msg);
   const assertDeleted = (id: Id64String, msg: string) => assert.isUndefined(iModelDb.elements.tryGetElement(id), msg);
 
-  // Run deleteElements, then verify each id in `deleted` is gone and each id in `retained` is still present.
-  const executeTestCase = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array) => {
-    txn.deleteElements(idsToDelete);
+  // Run deleteElements, then verify the returned failed set, check each id in `deleted` is gone and each id in `retained` is still present.
+  const executeTestCase = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
+    const failed: Id64Set = txn.deleteElements(idsToDelete);
+    assert.sameMembers(Array.from(failed), expectedFailed, `[${label}] failed set mismatch`);
 
     for (const id of deleted)
       assertDeleted(id, `[${label}] ${id} should have been deleted`);
@@ -156,8 +157,8 @@ describe("deleteElements (native bulk delete API)", () => {
     it("invalid IDs in the input throw an exception", () => {
       const rootA = insertElement();
 
-      assert.throws(() => txn.deleteElements([Id64.invalid, rootA]), IModelError);
-      assert.throws(() => txn.deleteElements(["not-an-id", rootA]), IModelError);
+      assert.throws(() => txn.deleteElements([Id64.invalid, rootA]), `Invalid element ids: 0`);
+      assert.throws(() => txn.deleteElements(["not-an-id", rootA]), `Invalid element ids: 0`);
 
       assertExists(rootA, "rootA should not have been deleted after a throw");
     });
@@ -232,7 +233,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("depth-1 child scopes unrelated root - delete child only",
         [childA],
         [],
-        [rootA, childA, rootB]);
+        [rootA, childA, rootB],
+        [childA]);
 
       executeTestCase("depth-1 child scopes unrelated root - delete root only",
         [rootB],
@@ -272,8 +274,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC]);
-      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC]);
+      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], [rootA]);
+      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], [rootB]);
       executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
 
       executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
@@ -291,7 +293,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("deep gap chain: A ignored, D deleted",
         [rootA, rootD],
         [rootD],
-        [rootA, rootB, rootC]);
+        [rootA, rootB, rootC],
+        [rootA]);
     });
 
     it("two elements using the same scope", () => {
@@ -352,7 +355,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("sibling scope - delete only scope element, ignored due to external childB",
         [childA],
         [],
-        [parent, childA, childB]);
+        [parent, childA, childB],
+        [childA]);
     });
   });
 
@@ -364,7 +368,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("external scopes root",
         [rootA, rootB],
         [rootB],
-        [rootA, external]);
+        [rootA, external],
+        [rootA]);
     });
 
     it("depth-1 child is code scope for external", () => {
@@ -375,7 +380,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("external scopes depth-1 child - parent subtree ignored",
         [rootA, rootB],
         [rootB],
-        [rootA, childA, external]);
+        [rootA, childA, external],
+        [rootA]);
     });
 
     it("depth-2 grandchild is code scope for external", () => {
@@ -387,7 +393,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("external scopes depth-2 grandchild - grandparent subtree ignored",
         [rootA, rootB],
         [rootB],
-        [rootA, childA, grandchildA, external]);
+        [rootA, childA, grandchildA, external],
+        [rootA]);
     });
 
     it("only the child is passed for deletion", () => {
@@ -397,7 +404,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("external scopes requested child",
         [childA],
         [],
-        [rootA, childA, external]);
+        [rootA, childA, external],
+        [childA]);
     });
 
     it("root has both an external scope dependent AND an intra-set scope dependent", () => {
@@ -407,7 +415,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("root ignored due to external; sibling still deleted",
         [rootA, rootB],
         [rootB],
-        [rootA, external]);
+        [rootA, external],
+        [rootA]);
     });
 
     it("two independent external scope violations", () => {
@@ -419,7 +428,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("two independent violations",
         [rootA, rootB, rootC],
         [rootC],
-        [rootA, rootB, extX, extY]);
+        [rootA, rootB, extX, extY],
+        [rootA, rootB]);
     });
   });
 
@@ -474,7 +484,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("delete child only - scoped root also removed",
         [childA1],
         [],
-        [rootA, childA1, rootB, childB1]);
+        [rootA, childA1, rootB, childB1],
+        [childA1]);
     });
 
     it("root scopes a depth-1 child in sibling tree - delete both roots, all descendants removed", () => {
@@ -530,7 +541,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("external scopes depth-2 grandchild, unrelated childB deleted",
         [grandchildA, rootA, childB],
         [childB],
-        [rootA, childA, grandchildA, rootB, external]);
+        [rootA, childA, grandchildA, rootB, external],
+        [rootA, grandchildA]);
     });
 
     it("two trees: one has external scope violation, other is deleted cleanly", () => {
@@ -545,7 +557,8 @@ describe("deleteElements (native bulk delete API)", () => {
       executeTestCase("one tree ignored, other fully deleted",
         [rootA, rootB],
         [rootB, childB1, childB2, gcB],
-        [rootA, childA, gcA, external]);
+        [rootA, childA, gcA, external],
+        [rootA]);
     });
   });
 

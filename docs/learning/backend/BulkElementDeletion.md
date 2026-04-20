@@ -13,8 +13,8 @@ if (failed.size > 0) {
 }
 ```
 
-You do **not** need to call [IModelDb.Elements.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements with indentical semantics.
-The only difference being `deleteDefinitionElements` will silenty ignore non-definition elements in the set, where as `deleteElements`, being able to handle both will delete everything that it can (definition/non-definition).
+You do **not** need to call [IModelDb.Elements.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and it performs the same usage checks for definitions.
+The only behavioral difference is that `deleteDefinitionElements` silently ignores non-definition elements in the input, whereas deleteElements will attempt to delete everything it can.
 
 ## What gets deleted
 
@@ -79,10 +79,11 @@ No manual cleanup of these tables is required.
 
 `deleteElements` fires the standard lifecycle callbacks for every element in the final delete set (after constraint violators have been pruned):
 
-- `_OnDelete` — fired for every element that was originally in the input array.
-- `_OnDeleted` — fired for every element that will be deleted including child elements and sub-model elements.
-- `_OnChildDelete` / `_OnChildDeleted` — fired on the **parent** element when a child is deleted and that parent is **not** itself being deleted.
-- `_OnSubModelDelete` / `_OnSubModelDeleted` — fired on the modeled element when its sub-model is deleted.
+- [`Element.onDelete`]($backend) — fired for every element that was originally in the input array.
+- [`Element.onDeleted`]($backend) — fired for every element that will be deleted including child elements and sub-model elements.
+- [`Element.onChildDelete`]($backend) / [`Element.onChildDeleted`]($backend) — fired on the **parent** element when a child is deleted and that parent is **not** itself being deleted.
+- [`Element.onSubModelDelete`]($backend) / [`Element.onSubModelDeleted`]($backend) — fired on the modeled element when its sub-model is deleted.
+- [`Model.onDelete`]($backend) / [`Model.onDeleted`]($backend) — fired on the sub-model being deleted when the modeled element is deleted.
 
 > **Note:** Callbacks cannot veto a deletion in `deleteElements`. Any veto attempt from a callback is ignored. If you need per-element veto semantics, use [IModelDb.Elements.deleteElement]($backend) on individual elements instead.
 
@@ -93,6 +94,5 @@ Use `deleteElements` when:
 - Deleting a mix of ordinary and definition elements.
 
 Use `deleteElement` when:
-- You are deleting less than 10 elements at a time.
-- You are certain the element has no children or sub-model.
-- You want a hard failure if any constraint is violated instead of the element(s)'s exclusion.
+- You want a hard failure on any constraint violation rather than silent exclusion and a returned failed set.
+- You need callback vetoes to be respected.

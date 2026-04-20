@@ -2874,37 +2874,6 @@ export namespace IModelDb {
       this._iModel[_implicitTxn].deleteElement(ids);
     }
 
-    /**
-     * Delete multiple elements from the model.
-     * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
-     * @returns A set of ids for any elements that could not be deleted.
-     * @throws [[IModelError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
-     * @beta
-     */
-    public deleteElements(ids: Id64Array): Id64Set {
-      const invalidIds: Id64Set = new Set<Id64String>();
-      for (const id of ids) {
-        if (!Id64.isValidId64(id))
-          invalidIds.add(id);
-      }
-
-      if (invalidIds.size > 0) {
-        throw new IModelError(IModelStatus.BadArg, `Invalid element ids: ${Array.from(invalidIds).join(", ")}`);
-      }
-
-      const failedToDelete = this._iModel[_nativeDb].deleteElements(ids);
-      const failedToDeleteSet = failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
-
-      for (const id of ids) {
-        if (!failedToDeleteSet.has(id)) {
-          this[_cache].delete({ id });
-          this[_instanceKeyCache].deleteById(id);
-        }
-      }
-
-      return failedToDeleteSet;
-    }
-
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
      * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
      * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
