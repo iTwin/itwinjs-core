@@ -34,6 +34,9 @@ In practice:
 
 ## Recommended reading order
 
+> **Prefer hands-on learning?** Start with the [tutorial](./WorkspaceTutorial.md) — it introduces each concept as the code demands it, then come back here for reference.
+
 1. **This overview** — understand the two systems and three workspace scopes.
 2. **[Settings](./Settings.md)** — how to define settings schemas, load dictionaries, read values, and create/manage settings containers in the cloud.
 3. **[Workspace resources](./Workspace.md)** — how to create, version, and access binary resources stored in [WorkspaceDb]($backend) containers.
+4. **[Tutorial: Configuring an iTwin Application](./WorkspaceTutorial.md)** — a hands-on walkthrough that builds a complete application configuration end-to-end.

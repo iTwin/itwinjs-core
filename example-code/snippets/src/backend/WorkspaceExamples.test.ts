@@ -282,6 +282,24 @@ describe("Workspace Examples", () => {
       expect(workspaceAfterDelete.settings.getString("myApp/defaultView")).to.be.undefined;
       workspaceAfterDelete.close();
 
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.SaveLandscapeProToITwin
+      await IModelHost.saveSettingDictionary(iTwinId, "landscapePro/iTwinDefaults", {
+        "landscapePro/flora/preferredStyle": "naturalistic",
+        "landscapePro/ui/defaultTool": "place-shrub",
+        "landscapePro/ui/availableTools": ["place-shrub", "place-koi-pond", "apply-mulch"],
+        "landscapePro/hardinessRange": { minimum: 6, maximum: 8 },
+      });
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.ReadLandscapeProFromITwin
+      const lpWorkspace = await IModelHost.getITwinWorkspace(iTwinId);
+      const lpStyle = lpWorkspace.settings.getString("landscapePro/flora/preferredStyle"); // "naturalistic"
+      const lpTool = lpWorkspace.settings.getString("landscapePro/ui/defaultTool"); // "place-shrub"
+      lpWorkspace.close();
+      // __PUBLISH_EXTRACT_END__
+      expect(lpStyle).to.equal("naturalistic");
+      expect(lpTool).to.equal("place-shrub");
+
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreateWorkspaceDb
       const editor = WorkspaceEditor.construct();
 
@@ -600,52 +618,50 @@ describe("Workspace Examples", () => {
       const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
         metadata: { label: "Project Settings", description: "Settings for this iTwin" },
         scope: { iTwinId },
+        containerType: "settings",
         manifest: { workspaceName: "settings", description: "iTwin settings container" },
       });
 
-      // Acquire the write lock — only one user can hold it at a time.
-      container.acquireWriteLock("admin");
-
-      // Open an editable WorkspaceDb inside the container.
-      const settingsDb = container.getEditableDb({});
-
-      // Write settings as a named resource.
+      // Write settings using withEditableDb — it acquires the lock, opens the db,
+      // runs your callback, then closes the db and publishes.
       const settings: SettingsContainer = {
         "myApp/theme": "dark",
         "myApp/maxItems": 50,
       };
-      settingsDb.updateSettingsResource(settings);
-
-      // Release the lock to publish the changes.
-      container.releaseWriteLock();
+      await container.withEditableDb("admin", (settingsDb) => {
+        settingsDb.updateSettingsResource(settings);
+      });
       editor.close();
       // __PUBLISH_EXTRACT_END__
 
-      // Re-open for update and read tests
-      const editor2 = WorkspaceEditor.construct();
-      const containers2 = await editor2.findContainers({ iTwinId, containerType: "settings" });
-      const container2 = containers2[0];
-
       // __PUBLISH_EXTRACT_START__ SettingsContainer.updateSetting
       // Update a single setting without affecting others.
-      // Acquire the write lock, read existing settings, change one entry, and publish.
-      await container2.withEditableDb("admin", (db) => {
+      // Re-open the container, acquire the write lock, read existing settings, change one entry, and publish.
+      const updateEditor = WorkspaceEditor.construct();
+      const updateContainers = await updateEditor.findContainers({ iTwinId, containerType: "settings" });
+      const updateContainer = updateContainers[0];
+      await updateContainer.withEditableDb("admin", (db) => {
         const current = JSON.parse(db.getString("settingsDictionary") ?? "{}") as SettingsContainer;
         current["myApp/maxItems"] = 100;
         db.updateSettingsResource(current);
       });
+      updateEditor.close();
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ SettingsContainer.getSettings
       // Read all settings stored in a settings container.
-      const readDb: WorkspaceDb = container2.getEditableDb({});
-      const raw = readDb.getString("settingsDictionary");
-      const allSettings = raw ? JSON.parse(raw) as SettingsContainer : {};
+      let allSettings: SettingsContainer = {};
+      const readEditor = WorkspaceEditor.construct();
+      const readContainers = await readEditor.findContainers({ iTwinId, containerType: "settings" });
+      const readContainer = readContainers[0];
+      await readContainer.withEditableDb("admin", (readDb) => {
+        const raw = readDb.getString("settingsDictionary");
+        allSettings = raw ? JSON.parse(raw) as SettingsContainer : {};
+      });
+      readEditor.close();
       // __PUBLISH_EXTRACT_END__
       expect(allSettings["myApp/maxItems"]).to.equal(100);
       expect(allSettings["myApp/theme"]).to.equal("dark");
-
-      editor2.close();
     });
 
     it("Find and open a workspace container by iTwinId", async () => {
