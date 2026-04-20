@@ -5715,6 +5715,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 
 // @alpha
 export interface RebaseHandler {
+    dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
@@ -5728,6 +5729,7 @@ export class RebaseManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     canAbort(): boolean;
+    dispose(): void;
     inProgress(): boolean;
     get isAborting(): boolean;
     get isMerging(): boolean;
