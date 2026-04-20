@@ -330,7 +330,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
       const op: SqliteChangeOp = nativeOp === DbOpcode.Insert ? "Inserted" : nativeOp === DbOpcode.Update ? "Updated" : "Deleted";
       this._op = op;
 
-      this._tableName = meta.tableName
+      this._tableName = meta.tableName;
       this._isIndirectChange = meta.isIndirectChange;
       this._isECTable = meta.isECTable;
 
