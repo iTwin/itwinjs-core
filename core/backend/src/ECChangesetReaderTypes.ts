@@ -56,7 +56,7 @@ export interface RowFormatOptions {
 // ---------------------------------------------------------------------------
 
 /**
- * Metadata attached to every [[ECNativeChangeInstance]].
+ * Metadata attached to every [[ChangeInstance]].
  * @beta
  */
 export interface ChangeMeta {
@@ -103,7 +103,7 @@ export interface ChangeInstance {
 
 /**
  * Contract for any reader that produces EC-typed changed instances compatible with
- * [ECNativePartialChangeUnifier]($backend).
+ * [PartialChangeUnifier]($backend).
  * @beta
  */
 export interface ChangeSource {

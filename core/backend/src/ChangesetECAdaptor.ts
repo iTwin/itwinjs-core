@@ -354,7 +354,7 @@ class ECDbMap {
 /**
  * Record meta data for the change.
  * @beta
- * @deprecated Use [ECNativeChangeMeta]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangeMeta]($backend) with [ECChangesetReader]($backend) instead.
  * */
 export interface ChangeMetaData {
   /** list of tables making up this EC change */
@@ -374,7 +374,7 @@ export interface ChangeMetaData {
 /**
  * Represent EC change derived from low level sqlite change
  * @beta
- * @deprecated Use [ECNativeChangeInstance]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangeInstance]($backend) with [ECChangesetReader]($backend) instead.
  */
 export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -416,7 +416,7 @@ namespace DateTime {
 /**
  * Represents a cache for unifying EC changes.
  * @beta
- * @deprecated Use [ECNativeChangeCache]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangeCache]($backend) with [ECChangesetReader]($backend) instead.
  */
 export interface ECChangeUnifierCache extends Disposable {
   /**
@@ -447,7 +447,7 @@ export interface ECChangeUnifierCache extends Disposable {
 }
 /**
  * @beta
- * @deprecated Use [ECNativeChangeUnifierCache.createInMemoryCache]($backend) / [ECNativeChangeUnifierCache.createSqliteBackedCache]($backend) instead.
+ * @deprecated Use [ChangeUnifierCache.createInMemoryCache]($backend) / [ChangeUnifierCache.createSqliteBackedCache]($backend) instead.
 */
 export namespace ECChangeUnifierCache {
   /**
@@ -657,7 +657,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
  * Partial changes is per table and a single instance can
  * span multiple tables.
  * @beta
- * @deprecated Use [ECNativePartialChangeUnifier]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [PartialChangeUnifier]($backend) with [ECChangesetReader]($backend) instead.
  */
 export class PartialECChangeUnifier implements Disposable {
   private _readonly = false;

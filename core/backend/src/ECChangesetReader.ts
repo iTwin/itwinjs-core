@@ -23,15 +23,15 @@ import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
  * Reads EC-typed changeset data natively from a changeset file, changeset group,
  * in-memory transaction, or local un-pushed changes.
  *
- * Implements [ECNativeChangeSource]($backend) so rows can be fed directly into
- * [ECNativePartialChangeUnifier]($backend) to merge partial (per-table) instances into
+ * Implements [ChangeSource]($backend) so rows can be fed directly into
+ * [PartialChangeUnifier]($backend) to merge partial (per-table) instances into
  * complete EC instances.
  *
  * When the current row is a non-EC internal SQLite table, [[isECTable]] is `false`
  * and both [[inserted]] and [[deleted]] remain `undefined`.
  *
  * @note The native reader operates one SQLite table-row at a time. Multi-table EC
- * instances must be merged using [ECNativePartialChangeUnifier]($backend).
+ * instances must be merged using [PartialChangeUnifier]($backend).
  * @beta
  */
 export class ECChangesetReader implements Disposable, ChangeSource {
@@ -110,7 +110,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
     };
   }
 
-  /** Convert a ECChangesetMode enum value to its string name.
+  /** Convert a PropertyFilter enum value to its string name.
    * @internal
    */
   private propFilterToString(): string {

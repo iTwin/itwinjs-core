@@ -17,7 +17,7 @@ import { SQLiteDb } from "./SQLiteDb";
 // ---------------------------------------------------------------------------
 
 /**
- * Cache used by [[ECNativePartialChangeUnifier]] to accumulate and merge
+ * Cache used by [[PartialChangeUnifier]] to accumulate and merge
  * partial EC change instances.
  * @beta
  */
@@ -198,9 +198,7 @@ class SqliteBackedCache implements ChangeCache {
  * Combines partial EC change instances (one per SQLite table row) into complete
  * instances that span all tables mapping to a single EC entity.
  *
- * The merge key is derived from the native `key` stored in `$meta.nativeKey`, which
- * is computed by the C++ layer and already encodes the EC instance identity (ECInstanceId
- * + root class). No additional SQL queries are required for key construction.
+ * The merge key is derived from the `instanceKey` and `stage` stored in `$meta.instanceKey` and `$meta.stage`.
  *
  * **Usage:**
  * ```ts
@@ -231,7 +229,7 @@ export class PartialChangeUnifier implements Disposable {
   /**
    * Append partial changes from the current reader row and merge them into the cache.
    *
-   * @param source Any [ECNativeChangeSource]($backend) positioned on a valid row.
+   * @param source Any [ChangeSource]($backend) positioned on a valid row.
    * @beta
    */
   public appendFrom(source: ChangeSource): void {
