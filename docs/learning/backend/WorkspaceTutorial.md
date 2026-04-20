@@ -187,13 +187,17 @@ An iModel doesn't automatically inherit iTwin settings — [IModelDb.workspace](
 [[include:WorkspaceExamples.SaveITwinSettingsReferenceInIModel]]
 ```
 
-The next time the iModel is opened, your application reads the saved reference and loads the iTwin settings into the iModel's workspace.
+Because the reference has no `version` constraint, the iModel always uses the latest available version of the iTwin settings. This is usually what you want — updates to the iTwin's configuration automatically apply to all its iModels.
 
-To pin the iModel to a specific version of the iTwin settings — so its configuration doesn't change when the iTwin settings are updated:
+### Pinning to a specific version
+
+Sometimes you need reproducibility — a regulatory submission or a client deliverable that must use exactly the settings it was designed with. To pin the iModel to the current version of the iTwin settings, resolve each settings [WorkspaceDb]($backend) and record its exact version:
 
 ```ts
 [[include:WorkspaceExamples.VersionAndPinITwinSettings]]
 ```
+
+The key difference is the `version` field. A floating reference (no version) follows the latest; a pinned reference (exact version like `"1.0.0"`) locks the iModel to that snapshot. To unpin later, save the reference again without a version.
 
 ## What we built
 
