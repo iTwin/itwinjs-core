@@ -3,6 +3,143 @@ publish: false
 ---
 # NextVersion
 
+- [NextVersion](#nextversion)
+  - [@itwin/core-bentley](#itwincore-bentley)
+    - [BeUnorderedEvent](#beunorderedevent)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [WithQueryReader API](#withqueryreader-api)
+    - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
+      - [Why SettingsDb?](#why-settingsdb)
+      - [New APIs](#new-apis)
+      - [Usage examples](#usage-examples)
+        - [Creating a local SettingsDb](#creating-a-local-settingsdb)
+      - [Container type convention](#container-type-convention)
+      - [Container separation and lock isolation](#container-separation-and-lock-isolation)
+  - [Backend](#backend)
+    - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
+      - [What changed](#what-changed)
+      - [Migration guidance](#migration-guidance)
+      - [`implicitWriteEnforcement`](#implicitwriteenforcement)
+    - [iTwin settings workspace](#itwin-settings-workspace)
+      - [New APIs](#new-apis-1)
+      - [Usage examples](#usage-examples-1)
+      - [Configuration requirements](#configuration-requirements)
+  - [Quantity Formatting](#quantity-formatting)
+    - [Quantity Formatter improvements](#quantity-formatter-improvements)
+      - [New APIs](#new-apis-2)
+        - [`@itwin/core-quantity`](#itwincore-quantity)
+        - [`@itwin/core-frontend`](#itwincore-frontend)
+      - [Bug fixes](#bug-fixes)
+      - [Behavioral changes](#behavioral-changes)
+
+## @itwin/core-bentley
+
+### BeUnorderedEvent
+
+**`BeUnorderedEvent<T>`** and **`BeUnorderedUiEvent<T>`** are new Set-backed event classes where listeners can safely add or remove themselves during event emission. Useful for patterns where many independent subscribers need to react to the same event without worrying about concurrent modification.
+
+**Closure-only unsubscription:** Unlike [BeEvent]($bentley), `BeUnorderedEvent` does not expose `has()` or `removeListener()`. The only way to unsubscribe is to call the closure returned by `addListener()` or `addOnce()`:
+
+```typescript
+const remove = myEvent.addListener((args) => { /* ... */ });
+// later:
+remove(); // O(1) removal
+```
+
+This is intentional — it avoids a class of bugs where `removeListener()` silently fails to match due to inline closures or binding mismatches (e.g. `event.addListener(() => this.onFoo())` followed by `event.removeListener(() => this.onFoo())` removes nothing because the two arrow functions are different objects). Capturing the returned closure is a reliable unsubscription pattern and enables O(1) removal via `Set.delete`.
+
+## @itwin/core-backend
+
+### WithQueryReader API
+
+A new [withQueryReader]($docs/learning/backend/WithQueryReaderCodeExamples.md) method has been added to both [ECDb]($backend) and [IModelDb]($backend), providing true row-by-row behavior for ECSQL queries with synchronous execution. This API introduces a new [ECSqlSyncReader]($backend) through the [ECSqlRowExecutor]($backend) and supports configuration via [SynchronousQueryOptions]($backend).
+
+**Key Features:**
+
+- **True row-by-row streaming**: Unlike the existing async reader APIs, `withQueryReader` provides synchronous row-by-row access to query results
+- **Consistent API across databases**: The same interface is available on both `ECDb` and `IModelDb` instances
+- **Configurable behavior**: Support for various query options through `SynchronousQueryOptions`
+
+**Usage Examples:**
+
+```typescript
+// ECDb usage
+db.withQueryReader("SELECT ECInstanceId, UserLabel FROM bis.Element LIMIT 100", (reader) => {
+  while (reader.step()) {
+    const row = reader.current;
+    console.log(`ID: ${row.id}, Label: ${row.userLabel}`);
+  }
+});
+
+// IModelDb usage with options
+iModelDb.withQueryReader(
+  "SELECT ECInstanceId, CodeValue FROM bis.Element",
+  (reader) => {
+    while (reader.step()) {
+      const row = reader.current;
+      processElement(row);
+    }
+  }
+);
+```
+
+**Migration from deprecated APIs:**
+
+This API serves as the recommended replacement for synchronous query scenarios previously handled by the deprecated `ECSqlStatement` for read-only operations:
+
+```typescript
+// Before - using deprecated ECSqlStatement
+db.withPreparedStatement(query, (stmt) => {
+  while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+    const row = stmt.getRow();
+    processRow(row);
+  }
+});
+
+// Now - using withQueryReader
+db.withQueryReader(query, (reader) => {
+  while (reader.step()) {
+    const row = reader.current;
+    processRow(row);
+  }
+});
+```
+
+### Dedicated SettingsDb for workspace settings
+
+A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
+
+#### Why SettingsDb?
+
+Previously, settings and binary resources (fonts, textures, templates) were stored together in `WorkspaceDb` containers. This coupling created issues:
+
+- **Lookup**: Finding which containers hold settings required opening each one
+- **Granularity**: Settings updates required republishing entire containers with large binary resources
+- **Separation of concerns**: Settings (JSON key-value) and resources (binary blobs) have different access patterns
+
+#### New APIs
+
+- [SettingsDb]($backend): Read-only interface with `getSetting()` and `getSettings()` for accessing settings stored in a dedicated database
+- `EditableSettingsDb`: Write interface with `updateSetting()`, `removeSetting()`, and `updateSettings()` for modifying settings within a SettingsDb
+- [SettingsEditor]($backend): Write interface for creating and managing SettingsDb containers
+- `Workspace.getSettingsDb`: Method to open a SettingsDb from a previously-loaded container by its `containerId` and desired priority
+
+#### Usage examples
+
+See [SettingsDb]($docs/learning/backend/Workspace.md#settingsdb) for full documentation.
+
+#### Container type convention
+
+SettingsDb containers use `containerType: "settings"` in their cloud metadata, enabling them to be discovered independently of any iModel.
+
+#### Container separation and lock isolation
+
+Settings containers are deliberately separate from workspace containers. Both extend the new [CloudSqliteContainer]($backend) base interface, but `EditableSettingsCloudContainer` does not extend [WorkspaceContainer]($backend). This means:
+
+- **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
+- **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
+- **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
+
 ## Backend
 
 ### Explicit editing transactions with `EditTxn`
@@ -113,3 +250,40 @@ Delete it:
 To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationClient]($backend) and [BlobContainer.service]($backend) so the backend can query and update the iTwin settings workspace container.
 
 See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
+
+## Quantity Formatting
+
+### Quantity Formatter improvements
+
+#### New APIs
+
+##### `@itwin/core-quantity`
+
+- **`Units` namespace** — Typed constants for commonly used unit names (e.g., `Units.M`, `Units.FT`, `Units.RAD`). Eliminates magic strings when referencing units programmatically.
+- **`findPersistenceUnitForPhenomenon()`** — Maps phenomenon names to their canonical SI persistence unit.
+- **`FormatsChangedArgs.impliedUnitSystem`** — Allows a `FormatsProvider` to indicate which unit system its format set implies.
+
+##### `@itwin/core-frontend`
+
+- **[QuantityFormatter.onBeforeFormattingReady]($frontend)** — Pre-ready event that fires before [QuantityFormatter.onFormattingReady]($frontend). Providers use it to register async work (e.g., loading domain formats) via the [FormattingReadyCollector]($quantity) passed to listeners. The formatter awaits all pending work (with a 20-second default timeout) before emitting `onFormattingReady`.
+- **[FormattingReadyCollector]($quantity)** — Collector class passed to `onBeforeFormattingReady` listeners. Call `addPendingWork(promise)` to register async work that must complete before the formatter is considered ready.
+- **[QuantityFormatter.onFormattingReady]($frontend)** — Terminal "ready" signal that fires after every reload path completes and all `onBeforeFormattingReady` work has settled. Uses `BeUnorderedUiEvent` (Set-backed) for safe concurrent modification and O(1) unsubscription.
+- **[QuantityFormatter.isReady]($frontend)** — Synchronous check for whether the formatter is ready.
+- **[QuantityFormatter.whenInitialized]($frontend)** — One-shot promise that resolves after the first successful initialization.
+- **[FormatSpecHandle]($quantity)** — Cacheable handle to formatting specs that auto-refreshes on reload. Created via `QuantityFormatter.getFormatSpecHandle()`. Now accepts an optional `system` parameter to pin the handle to a specific unit system.
+- **[QuantityFormatter.getFormatSpecHandle]($frontend)** — Factory for `FormatSpecHandle` instances. Now accepts an optional `system` parameter.
+- **[QuantityFormatter.getSpecsByNameAndUnit]($frontend)** — Now accepts a single [FormattingSpecArgs]($quantity) object with `name`, `persistenceUnitName`, and an optional `system` to retrieve specs for a specific unit system instead of only the active system.
+- **[QuantityFormatter.addFormattingSpecsToRegistry]($frontend)** — Now accepts an optional `system` parameter to register specs for a specific unit system.
+- **`FormatsProvider.getFormat(name, system?)`** — Optional `system` parameter for per-system KindOfQuantity format resolution.
+
+#### Bug fixes
+
+- **Fixed listener leak in `FormatsProviderManager`** — Replacing `IModelApp.formatsProvider` multiple times no longer stacks listeners. Old listeners are properly removed before new ones are added.
+
+#### Behavioral changes
+
+- **Three-level spec registry** — `_formatSpecsRegistry` is now keyed by KoQ name, persistence unit, and unit system (`[koqName][persistenceUnit][unitSystem]`). The same KoQ with different persistence units or different unit systems can coexist. This is a **protected member type change** — subclasses accessing this field directly will need to update.
+- **`getSpecsByName()` return type changed** — Now returns `Map<string, FormattingSpecEntry> | undefined` instead of `FormattingSpecEntry | undefined`.
+- **Two-phase ready flow** — Formatting readiness now follows a two-phase pattern: `onBeforeFormattingReady` fires first (providers register async work via the collector), and the formatter awaits all pending work with a 20-second default timeout before emitting `onFormattingReady`. Rejections are logged as warnings but do not prevent the formatter from becoming ready.
+
+For detailed usage documentation and code examples, see [QuantityFormatter Lifecycle & Integration](../quantity-formatting/usage/QuantityFormatterAdvanced.md).
