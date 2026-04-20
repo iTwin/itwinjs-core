@@ -243,9 +243,9 @@ By default [ECNativePartialChangeUnifier]($backend) uses an in-memory cache (`Ma
 
 ---
 
-## Migrating from `ChangesetECAdaptor`
+## Migrating from [ChangesetECAdaptor]($backend)
 
-The deprecated `ChangesetECAdaptor` / `PartialECChangeUnifier` stack is replaced by [ECChangesetReader]($backend) + [ECNativePartialChangeUnifier]($backend).
+The deprecated [ChangesetECAdaptor]($backend) / [PartialECChangeUnifier]($backend) stack is replaced by [ECChangesetReader]($backend) + [ECNativePartialChangeUnifier]($backend).
 
 ### Basic pipeline — read and merge a changeset file
 
@@ -351,7 +351,7 @@ The following example imports a custom schema, inserts an element, pushes a seco
 > **See also:** the test suite `"ECChangesetReader: behaviour in case imodel is not in sync with change file or transaction being read"` in
 > `core/backend/src/test/standalone/ECChangesetReader.test.ts`.
 
-`ECChangesetReader` uses the **live iModel** in two ways: to resolve `ECClassId` in case it is not part of the changeset or transaction(very common in cases of `Update` because generally only element props are updated not the class of the instance), and to fill in the non-changed components of compound property values. For compound types — `Point2d`, `Point3d`, and navigation properties - when a changeset records a change to only one component, the reader must fetch the remaining components from the live iModel to reconstruct the full value. For example, if only `X` changes in a `Point2d` property, `Y` is read from the current live database state. This means the reader's output quality depends on the current state of the iModel — specifically whether the entity being read still exists in the database at the time of reading, and whether subsequent transactions have already modified the components that were not part of the recorded changeset delta.
+[ECChangesetReader]($backend) uses the **live iModel** in two ways: to resolve `ECClassId` in case it is not part of the changeset or transaction(very common in cases of `Update` because generally only element props are updated not the class of the instance), and to fill in the non-changed components of compound property values. For compound types — `Point2d`, `Point3d`, and navigation properties - when a changeset records a change to only one component, the reader must fetch the remaining components from the live iModel to reconstruct the full value. For example, if only `X` changes in a `Point2d` property, `Y` is read from the current live database state. This means the reader's output quality depends on the current state of the iModel — specifically whether the entity being read still exists in the database at the time of reading, and whether subsequent transactions have already modified the components that were not part of the recorded changeset delta.
 
 Two concrete failure modes arise:
 
