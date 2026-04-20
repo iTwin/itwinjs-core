@@ -1,39 +1,39 @@
 # Bulk Element Deletion
 
-[IModelDb.Elements.deleteElements]($backend) provides an efficient way to delete many elements in one call. `deleteElements` expands parent-child hierarchies, cascades into sub-models, checks and prunes constraint violators, fires lifecycle callbacks, NULLs dangling non-constraint references, and cleans up link-table relationships — all in a single native operation.
+[EditTxn.deleteElements]($backend) provides an efficient way to delete many elements in one call. `deleteElements` expands parent-child hierarchies, cascades into sub-models, checks and prunes constraint violators, fires lifecycle callbacks, NULLs dangling non-constraint references, and cleans up link-table relationships - all in a single native operation.
 
 ## Basic usage
 
 Pass an array of element IDs to delete. The method returns a set of IDs that could **not** be deleted because they would violate an integrity constraint (see [Constraint violations](#constraint-violations) below).
 
 ```typescript
-const failed: Id64Set = iModel.elements.deleteElements([idA, idB, idC]);
+const failed: Id64Set = txn.deleteElements([idA, idB, idC]);
 if (failed.size > 0) {
   // Some elements could not be deleted; inspect `failed` to see which ones.
 }
 ```
 
-You do **not** need to call [IModelDb.Elements.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and it performs the same usage checks for definitions.
+You do **not** need to call [EditTxn.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and it performs the same usage checks for definitions.
 The only behavioral difference is that `deleteDefinitionElements` silently ignores non-definition elements in the input, whereas deleteElements will attempt to delete everything it can.
 
 ## What gets deleted
 
-### Child elements — automatic cascade
+### Child elements - automatic cascade
 
 You only need to supply root IDs. `deleteElements` recursively walks every element's parent-child tree and includes all descendants in the delete set automatically. Passing a child that is already a descendant of another element in the input is safe; the duplicate element is de-duplicated internally.
 
 ```typescript
 // Deleting a parent automatically removes all of its children and grandchildren.
-iModel.elements.deleteElements([parentId]);
+txn.deleteElements([parentId]);
 ```
 
-### Sub-models — automatic cascade
+### Sub-models - automatic cascade
 
 If a deleted element is the modeled element of a sub-model (i.e., it is a _partition element_ or any element that acts as a model root), the entire sub-model, including every element inside it is also deleted. The corresponding `Model` row is removed as well.
 
 ```typescript
 // Deleting a partition deletes its PhysicalModel and all elements inside that model.
-iModel.elements.deleteElements([partitionId]);
+txn.deleteElements([partitionId]);
 ```
 
 ### DefinitionElements
@@ -43,8 +43,8 @@ DefinitionElements (categories, subcategories, geometry parts, render materials,
 Importantly, _intra-set_ usages are resolved correctly: if element A references element B and both are in the input, neither blocks the other.
 
 ```typescript
-// Delete a ViewDefinition together with the CategorySelector, ModelSelector and DisplayStyle it owns — all intra-set references are resolved automatically.
-iModel.elements.deleteElements([viewId, categorySelectorId, modelSelectorId, displayStyleId]);
+// Delete a ViewDefinition together with the CategorySelector, ModelSelector and DisplayStyle it owns - all intra-set references are resolved automatically.
+txn.deleteElements([viewId, categorySelectorId, modelSelectorId, displayStyleId]);
 ```
 
 ## Constraint violations
@@ -59,19 +59,19 @@ An element is a _constraint violator_ and will **not** be deleted (neither will 
 
 All constraint violators, together with their entire subtrees (descendants and sub-model contents), are removed from the delete set and are returned in the failed `Id64Set`.
 
-## Non-constraint references — automatic NULLing
+## Non-constraint references - automatic NULLing
 
 Some references are not enforced as database constraints and therefore do not block deletion. `deleteElements` patches these automatically before removing the elements:
 
-- **`TypeDefinitionId`** on `GeometricElement3d` and `GeometricElement2d` rows — set to `NULL` when the referenced type element is being deleted and the geometric element itself is **not** in the delete set.
+- **`TypeDefinitionId`** on `GeometricElement3d` and `GeometricElement2d` rows - set to `NULL` when the referenced type element is being deleted and the geometric element itself is **not** in the delete set.
 
 ## Link-table relationship cleanup
 
 `deleteElements` automatically removes rows from link-table relationship tables that reference deleted elements:
 
-- **`ElementRefersToElements`** — rows where either the source or target element is deleted.
-- **`ElementDrivesElement`** — rows where either the source or target element is deleted.
-- **`ModelSelectorRefersToModels`** — rows where the target model (modeled element) is deleted.
+- **`ElementRefersToElements`** - rows where either the source or target element is deleted.
+- **`ElementDrivesElement`** - rows where either the source or target element is deleted.
+- **`ModelSelectorRefersToModels`** - rows where the target model (modeled element) is deleted.
 
 No manual cleanup of these tables is required.
 
@@ -79,13 +79,13 @@ No manual cleanup of these tables is required.
 
 `deleteElements` fires the standard lifecycle callbacks for every element in the final delete set (after constraint violators have been pruned):
 
-- [`Element.onDelete`]($backend) — fired for every element that was originally in the input array.
-- [`Element.onDeleted`]($backend) — fired for every element that will be deleted including child elements and sub-model elements.
-- [`Element.onChildDelete`]($backend) / [`Element.onChildDeleted`]($backend) — fired on the **parent** element when a child is deleted and that parent is **not** itself being deleted.
-- [`Element.onSubModelDelete`]($backend) / [`Element.onSubModelDeleted`]($backend) — fired on the modeled element when its sub-model is deleted.
-- [`Model.onDelete`]($backend) / [`Model.onDeleted`]($backend) — fired on the sub-model being deleted when the modeled element is deleted.
+- `Element.onDelete` - fired for every element that was originally in the input array.
+- `Element.onDeleted` - fired for every element that will be deleted including child elements and sub-model elements.
+- `Element.onChildDelete` / `Element.onChildDeleted` - fired on the **parent** element when a child is deleted and that parent is **not** itself being deleted.
+- `Element.onSubModelDelete` / `Element.onSubModelDeleted` - fired on the modeled element when its sub-model is deleted.
+- `Model.onDelete` / `Model.onDeleted` - fired on the sub-model being deleted when the modeled element is deleted.
 
-> **Note:** Callbacks cannot veto a deletion in `deleteElements`. Any veto attempt from a callback is ignored. If you need per-element veto semantics, use [IModelDb.Elements.deleteElement]($backend) on individual elements instead.
+> **Note:** Callbacks cannot veto a deletion in `deleteElements`. Any veto attempt from a callback is ignored. If you need per-element veto semantics, use [EditTxn.deleteElement]($backend) on individual elements instead.
 
 Use `deleteElements` when:
 
