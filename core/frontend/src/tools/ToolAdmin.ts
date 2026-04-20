@@ -486,7 +486,7 @@ export class ToolAdmin {
   /** Handler for modifier key transitions captured before focused UI elements can stop propagation. */
   private static _keyEventCaptureHandler = (ev: KeyboardEvent) => {
     if (!ev.repeat)
-      IModelApp.toolAdmin.onKeyTransitionCaptured(ev).catch(async (err) => ToolAdmin.exceptionHandler(err));
+      IModelApp.toolAdmin.onKeyTransitionCaptured(ev).catch((err) => ToolAdmin.exceptionHandler(err));
   };
 
   /** @internal */
