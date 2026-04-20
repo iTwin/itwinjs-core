@@ -856,6 +856,14 @@ export class CategorySelector extends DefinitionElement {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface ChangeCache extends Disposable {
+    all(): IterableIterator<ChangeInstance>;
+    count(): number;
+    get(key: string): ChangeInstance | undefined;
+    set(key: string, value: ChangeInstance): void;
+}
+
 // @beta @deprecated
 export interface ChangedECInstance {
     // (undocumented)
@@ -899,10 +907,29 @@ export interface ChangeFormatArgs {
 }
 
 // @beta
+export interface ChangeInstance {
+    $meta: ChangeMeta;
+    [key: string]: any;
+}
+
+// @beta
 export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
     id: Id64String;
+}
+
+// @beta
+export interface ChangeMeta {
+    changeFetchedPropNames: string[];
+    changeIndexes: number[];
+    instanceKey: string;
+    isIndirectChange: boolean;
+    op: SqliteChangeOp;
+    propFilter: string;
+    rowOptions?: RowFormatOptions;
+    stage: SqliteValueStage;
+    tables: string[];
 }
 
 // @beta @deprecated
@@ -960,6 +987,13 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 // @beta
+export interface ChangeSource {
+    readonly deleted?: ChangeInstance;
+    readonly inserted?: ChangeInstance;
+    readonly op: SqliteChangeOp;
+}
+
+// @beta
 export interface ChangeSummary {
     // (undocumented)
     changeSet: {
@@ -991,6 +1025,12 @@ export class ChangeSummaryManager {
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
+}
+
+// @beta (undocumented)
+export namespace ChangeUnifierCache {
+    export function createInMemoryCache(): ChangeCache;
+    export function createSqliteBackedCache(bufferedReadInstanceSizeInBytes?: number): ChangeCache;
 }
 
 // @beta
@@ -2248,25 +2288,18 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @beta
-export enum ECChangesetMode {
-    All_Properties = 0,
-    Bis_Element_Properties = 1,
-    Instance_Key = 2
-}
-
-// @beta
-export class ECChangesetReader implements Disposable, ECNativeChangeSource {
+export class ECChangesetReader implements Disposable, ChangeSource {
     [Symbol.dispose](): void;
     clearClassNameFilters(): void;
     clearOpCodeFilters(): void;
     clearTableNameFilters(): void;
     close(): void;
     readonly db: AnyDb;
-    deleted?: ECNativeChangeInstance;
-    inserted?: ECNativeChangeInstance;
+    deleted?: ChangeInstance;
+    inserted?: ChangeInstance;
     get isECTable(): boolean;
     get isIndirectChange(): boolean;
-    get op(): ECNativeChangeOp;
+    get op(): SqliteChangeOp;
     static openFile(args: {
         readonly fileName: string;
     } & ECChangesetReaderArgs): ECChangesetReader;
@@ -2285,7 +2318,7 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
         txnId: Id64String;
     }): ECChangesetReader;
     setClassNameFilters(classNames: Set<string>): void;
-    setOpCodeFilters(ops: Set<ECNativeChangeOp>): void;
+    setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
     setTableNameFilters(tableNames: Set<string>): void;
     step(): boolean;
     get tableName(): string;
@@ -2295,15 +2328,8 @@ export class ECChangesetReader implements Disposable, ECNativeChangeSource {
 export interface ECChangesetReaderArgs {
     readonly db: AnyDb;
     readonly invert?: boolean;
-    readonly mode?: ECChangesetMode;
-    readonly rowOptions?: ECChangesetRowAdapterOptions;
-}
-
-// @beta
-export interface ECChangesetRowAdapterOptions {
-    abbreviateBlobs?: boolean;
-    classIdsToClassNames?: boolean;
-    useJsName?: boolean;
+    readonly propFilter?: PropertyFilter;
+    readonly rowOptions?: RowFormatOptions;
 }
 
 // @beta @deprecated
@@ -2389,61 +2415,6 @@ export interface ECEnumValue {
     schema: string;
     // (undocumented)
     value: number | string;
-}
-
-// @beta
-export interface ECNativeChangeCache extends Disposable {
-    all(): IterableIterator<ECNativeChangeInstance>;
-    count(): number;
-    get(key: string): ECNativeChangeInstance | undefined;
-    set(key: string, value: ECNativeChangeInstance): void;
-}
-
-// @beta
-export interface ECNativeChangeInstance {
-    $meta: ECNativeChangeMeta;
-    [key: string]: any;
-}
-
-// @beta
-export interface ECNativeChangeMeta {
-    changeFetchedPropNames: string[];
-    changeIndexes: number[];
-    isIndirectChange: boolean;
-    mode: string;
-    nativeKey: string;
-    op: ECNativeChangeOp;
-    rowOptions?: ECChangesetRowAdapterOptions;
-    stage: ECNativeChangeStage;
-    tables: string[];
-}
-
-// @beta
-export type ECNativeChangeOp = "Inserted" | "Updated" | "Deleted";
-
-// @beta
-export interface ECNativeChangeSource {
-    readonly deleted?: ECNativeChangeInstance;
-    readonly inserted?: ECNativeChangeInstance;
-    readonly op: ECNativeChangeOp;
-}
-
-// @beta
-export type ECNativeChangeStage = "Old" | "New";
-
-// @beta (undocumented)
-export namespace ECNativeChangeUnifierCache {
-    export function createInMemoryCache(): ECNativeChangeCache;
-    export function createSqliteBackedCache(bufferedReadInstanceSizeInBytes?: number): ECNativeChangeCache;
-}
-
-// @beta
-export class ECNativePartialChangeUnifier implements Disposable {
-    [Symbol.dispose](): void;
-    constructor(_cache?: ECNativeChangeCache);
-    appendFrom(source: ECNativeChangeSource): void;
-    get instanceCount(): number;
-    get instances(): IterableIterator<ECNativeChangeInstance>;
 }
 
 // @public @preview
@@ -5532,6 +5503,15 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 // @internal
 export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined;
 
+// @beta
+export class PartialChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_cache?: ChangeCache);
+    appendFrom(source: ChangeSource): void;
+    get instanceCount(): number;
+    get instances(): IterableIterator<ChangeInstance>;
+}
+
 // @beta @deprecated
 export class PartialECChangeUnifier implements Disposable {
     [Symbol.dispose](): void;
@@ -5717,6 +5697,13 @@ export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
     code?: Code;
     iModel: IModelDb;
     parentSubjectId: Id64String;
+}
+
+// @beta
+export enum PropertyFilter {
+    All = 0,
+    BisCoreElement = 1,
+    InstanceKey = 2
 }
 
 // @public @preview
@@ -6076,6 +6063,13 @@ export abstract class RoleElement extends Element_2 {
 export class RoleModel extends Model {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface RowFormatOptions {
+    abbreviateBlobs?: boolean;
+    classIdsToClassNames?: boolean;
+    useJsName?: boolean;
 }
 
 // @public
