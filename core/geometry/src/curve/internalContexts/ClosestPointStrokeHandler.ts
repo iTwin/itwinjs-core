@@ -11,12 +11,11 @@ import { Geometry } from "../../Geometry";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
+import { Newton1dUnboundedApproximateDerivative, NewtonRtoRStrokeHandler } from "../../numerics/Newton";
 import { SmallSystem } from "../../numerics/SmallSystem";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**
  * Context for searching for the closest point to a CurvePrimitive.

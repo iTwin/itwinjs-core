@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -2356,6 +2356,17 @@ export abstract class IModelDb extends IModel {
     processSchemaWriteStatus(this[_nativeDb].exportSchemas(outputDirectory));
   }
 
+  /** Serializes the specified ECSchema to an XML string.
+   * @param schemaName The name of the schema to serialize.
+   * @param ecSpecVersion The ECXml specification version to use for the output XML.
+   * @returns The schema XML string, or `undefined` if the schema was not found or serialization failed.
+   * @beta
+   */
+  public exportSchemaXmlString(schemaName: string, ecSpecVersion?: ECSpecVersion): string | undefined {
+    const nativeVersion = ecSpecVersion === undefined ? undefined : ((ecSpecVersion.readVersion << 16) | ecSpecVersion.writeVersion);
+    return this[_nativeDb].schemaToXmlString(schemaName, nativeVersion);
+  }
+
   /** Attempt to simplify the geometry stream of a single [[GeometricElement]] or [[GeometryPart]] as specified by `args`.
    * @beta
    */
@@ -3521,7 +3532,7 @@ export class BriefcaseDb extends IModelDb {
 
     // attempt to release locks must happen after changes are undone successfully
     Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
-    await this.locks.releaseAllLocks();
+    await this.locks.abandonAllLocks();
   }
 
   /**
