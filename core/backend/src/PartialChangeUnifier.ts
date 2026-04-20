@@ -13,7 +13,7 @@ import { _nativeDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 
 // ---------------------------------------------------------------------------
-// ECNativeChangeUnifierCache — interface + factory
+// ChangeCache — interface + factory
 // ---------------------------------------------------------------------------
 
 /**
