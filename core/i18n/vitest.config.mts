@@ -17,7 +17,12 @@ function serveLocales(): Plugin {
         if (req.url) {
           const match = req.url.match(/\/locales\/([^?]+\.json)(?:\?.*)?$/);
           if (match) {
-            const filePath = path.resolve(__dirname, "src/test/public/locales", match[1]);
+            const localesDir = path.resolve(__dirname, "src/test/public/locales");
+            const filePath = path.resolve(localesDir, match[1]);
+            if (!filePath.startsWith(localesDir)) {
+              next();
+              return;
+            }
             if (fs.existsSync(filePath)) {
               res.setHeader("Content-Type", "application/json");
               res.setHeader("Access-Control-Allow-Origin", "*");

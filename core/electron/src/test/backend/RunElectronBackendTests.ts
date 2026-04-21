@@ -13,9 +13,9 @@ async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
   const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-require-imports
 
   const args = [
-    // RunSingleTest runs inside a spawned Electron main process (needs real
-    // Electron APIs), so it must use compiled JS — tsx/esm loaders don't
-    // work reliably inside Electron's custom module system.
+    // RunSingleTest runs inside a spawned Electron main process, so it must
+    // use compiled JS — tsx/esm loaders don't work reliably inside
+    // Electron's custom module system.
     path.resolve(process.cwd(), "lib/cjs/test/backend/RunSingleTest.js"),
   ];
 

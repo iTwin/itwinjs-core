@@ -16,7 +16,7 @@ export interface BridgeResponse {
 }
 
 export interface CertaBridgeOptions {
-  /** Path to the backend init module (relative to project root). The module should export a function that optionally returns a cleanup callback. */
+  /** Path to the backend init module (relative to project root). The module performs initialization via side effects when imported. It may optionally export a cleanup function as its default export, which will be called when the dev server closes. */
   backendInitModule?: string;
   /** When set, configures Vite's dev-server proxy to forward `/ipc` WebSocket traffic to `ws://localhost:<backendPort>`. Required for tests that use `LocalhostIpcApp`. */
   backendPort?: number;
