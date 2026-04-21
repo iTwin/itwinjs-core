@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add dispose method to RebaseManager",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

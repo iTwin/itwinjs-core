@@ -13,7 +13,7 @@ import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnManager, withEditTxn,
+  EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnManager, withEditTxn,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
@@ -1116,5 +1116,116 @@ describe("TxnManager", () => {
   });
 });
 
+describe("RebaseManager", () => {
+  it("dispose clears all event listeners", () => {
+    IModelTestUtils.registerTestBimSchema();
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
 
+    const listener = () => {};
+    const events: Array<keyof typeof rebaser> = [
+      "onPullMergeBegin",
+      "onRebaseBegin",
+      "onRebaseTxnBegin",
+      "onRebaseTxnEnd",
+      "onRebaseEnd",
+      "onPullMergeEnd",
+      "onApplyIncomingChangesBegin",
+      "onApplyIncomingChangesEnd",
+      "onReverseLocalChangesBegin",
+      "onReverseLocalChangesEnd",
+      "onDownloadChangesetsBegin",
+      "onDownloadChangesetsEnd",
+    ];
 
+    for (const name of events)
+      (rebaser[name] as BeEvent<any>).addListener(listener);
+
+    for (const name of events)
+      expect((rebaser[name] as BeEvent<any>).numberOfListeners).to.equal(1, `expected 1 listener on ${String(name)} before dispose`);
+
+    rebaser.dispose();
+
+    for (const name of events)
+      expect((rebaser[name] as BeEvent<any>).numberOfListeners).to.equal(0, `expected 0 listeners on ${String(name)} after dispose`);
+
+    db.close();
+    IModelJsFs.removeSync(testFileName);
+  });
+
+  it("rebaser.dispose is called when iModel is closed", () => {
+    IModelTestUtils.registerTestBimSchema();
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    const listener = () => {};
+    rebaser.onRebaseBegin.addListener(listener);
+    rebaser.onRebaseEnd.addListener(listener);
+    expect(rebaser.onRebaseBegin.numberOfListeners).to.equal(1);
+    expect(rebaser.onRebaseEnd.numberOfListeners).to.equal(1);
+
+    db.close();
+
+    expect(rebaser.onRebaseBegin.numberOfListeners).to.equal(0);
+    expect(rebaser.onRebaseEnd.numberOfListeners).to.equal(0);
+
+    IModelJsFs.removeSync(testFileName);
+  });
+
+  it("RebaseHandler.dispose is called when RebaseManager is disposed", () => {
+    IModelTestUtils.registerTestBimSchema();
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    let disposeCallCount = 0;
+    const handler: RebaseHandler = {
+      shouldReinstate: (_txn) => true,
+      recompute: async (_txn) => {},
+      dispose: () => { disposeCallCount++; },
+    };
+    rebaser.setCustomHandler(handler);
+
+    expect(disposeCallCount).to.equal(0);
+    rebaser.dispose();
+    expect(disposeCallCount).to.equal(1);
+
+    db.close();
+    IModelJsFs.removeSync(testFileName);
+  });
+
+  it("dispose is idempotent — subsequent calls are ignored", () => {
+    IModelTestUtils.registerTestBimSchema();
+    const testFileName = IModelTestUtils.prepareOutputFile("RebaseManager", `${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), testFileName);
+
+    const db = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const rebaser = db.txns.rebaser;
+
+    let disposeCallCount = 0;
+    const handler: RebaseHandler = {
+      shouldReinstate: (_txn) => true,
+      recompute: async (_txn) => {},
+      dispose: () => { disposeCallCount++; },
+    };
+    rebaser.setCustomHandler(handler);
+
+    rebaser.dispose();
+    expect(disposeCallCount).to.equal(1);
+
+    // Second and third calls must be no-ops
+    rebaser.dispose();
+    rebaser.dispose();
+    expect(disposeCallCount).to.equal(1);
+
+    db.close();
+    IModelJsFs.removeSync(testFileName);
+  });
+});
