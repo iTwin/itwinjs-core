@@ -88,6 +88,8 @@ API changes require:
 
 All published packages use **lockstep versioning** (`prerelease-monorepo-lockStep` policy). Versions are automatically synchronized across packages - do NOT manually edit internal dependency versions in `package.json`.
 
+When generating a changelog non-interactively with `rush change`, always use bump type `"none"` in the generated change file. In this lockstep monorepo, version bumps are coordinated separately and changelog entries should not choose per-package bump types like `"patch"` or `"minor"`.
+
 ## Testing
 
 ### Mocha vs Vitest
@@ -182,6 +184,13 @@ Valid formats recognized by the ESLint rule:
 7. For backports: Title PR with `[release/X.X.x] Description` and use `@Mergifyio backport release/X.X.x`
 
 **Critical**: Always run `rush extract-api` and `rush change` before pushing - CI will fail otherwise.
+
+### Draft PR Descriptions
+
+When creating or updating a draft PR, always include a `## Validation` section in the PR description. Summarize any targeted verification steps you performed beyond what CI checks cover, and note any known pre-existing failures or warnings:
+
+- `Targeted verification:`
+- `Known baseline issues:`
 
 ## Build Tools
 

@@ -1,9 +1,10 @@
 import { assert, expect } from "chai";
 import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { setupIntegrationLogging } from "./StartupShutdown";
 
 describe("Discarding local txns test", async () => {
   let briefcases: BriefcaseDb[];
@@ -12,6 +13,7 @@ describe("Discarding local txns test", async () => {
   let drawingModelId: GuidString;
 
   before(async () => {
+    setupIntegrationLogging();
     await IModelHost.startup();
     HubMock.startup("discardLocalTxnsTest", KnownTestLocations.outputDir);
   });
@@ -66,12 +68,11 @@ describe("Discarding local txns test", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await firstBriefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, createdDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(firstBriefcase, codeProps, true);
+    const [, createdDrawingModelId] = withEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     drawingModelId = createdDrawingModelId;
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (!drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
-    firstBriefcase.saveChanges();
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
     await firstBriefcase.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
     await secondBriefcase.pullChanges();
 
@@ -85,13 +86,12 @@ describe("Discarding local txns test", async () => {
 
   async function insertElement(briefcase: BriefcaseDb, name: string) {
     await briefcase.locks.acquireLocks({ shared: drawingModelId });
-    const elementId = briefcase.elements.insertElement({
+    const elementId = withEditTxn(briefcase, (txn) => txn.insertElement({
       ...elementPropsTemplate,
       elementName: name,
       elementState: "Inserted",
-    });
+    }));
     assert.isTrue(Id64.isValidId64(elementId));
-    briefcase.saveChanges();
 
     testElement(briefcase, elementId, "Inserted");
     return elementId;
@@ -106,16 +106,14 @@ describe("Discarding local txns test", async () => {
     }
     assert.isDefined(props);
     (props as any).elementState = state;
-    briefcase.elements.updateElement(props as any);
-    briefcase.saveChanges();
+    withEditTxn(briefcase, (txn) => txn.updateElement(props as any));
 
     testElement(briefcase, id, state);
   }
 
   async function deleteElement(briefcase: BriefcaseDb, id: Id64String) {
     await briefcase.locks.acquireLocks({ exclusive: id });
-    briefcase.elements.deleteElement(id);
-    briefcase.saveChanges();
+    withEditTxn(briefcase, (txn) => txn.deleteElement(id));
 
     testElement(briefcase, id);
   }
@@ -266,7 +264,7 @@ describe("Discarding local txns test", async () => {
         sourceId: el1Id,
         targetId: el2Id,
       };
-      const relId = briefcase.relationships.insertInstance(relProps);
+      const relId = withEditTxn(briefcase, (txn) => txn.insertRelationship(relProps));
       assert.isTrue(Id64.isValidId64(relId));
 
       assert.isUndefined(briefcase.relationships.tryGetInstance("TestSchema:ElementConnectsToElement", relId));

@@ -22,6 +22,7 @@ Quantity formatting is organized into two main areas:
 - [Parsing and Formatting](./usage/ParsingAndFormatting.md) - Using FormatterSpec and ParserSpec to format values and parse user input
 - [Unit Conversion](./usage/UnitConversion.md) - How unit conversions work during formatting and parsing operations
 - [QuantityFormatter Integration](./usage/ParsingAndFormatting.md#usage-in-itwin-tools-and-components) - Integrating with IModelApp.quantityFormatter
+- [QuantityFormatter Lifecycle](./usage/QuantityFormatterAdvanced.md) - Readiness, spec provider integration, multi-system access, and FormatSpecHandle
 - [Migrating from QuantityType to KindOfQuantity](./usage/ParsingAndFormatting.md#migrating-from-quantitytype-to-kindofquantity) - Moving to schema-based formatting
 - [core-quantity API](https://www.itwinjs.org/reference/core-quantity/quantity/) - Formatter, Parser, FormatterSpec, ParserSpec classes
 - [ecschema-metadata API](https://www.itwinjs.org/reference/ecschema-metadata/) - Format, SchemaUnitProvider, SchemaFormatsProvider classes

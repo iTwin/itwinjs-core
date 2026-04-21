@@ -25,6 +25,7 @@ These packages provide the following functions to support backend operations:
   - [Open an IModelDb](./IModelDb.md)
   - [Synchronizing with iModelHub](./IModelDbSync.md)
   - [Writing to an IModelDb](./IModelDbReadwrite.md)
+  - [EditTxn transaction model and migration guidance](./EditTxn.md)
   - [iModel Transformation and Data Exchange](../transformer/index.md)
   - [Optimize iModel with SQLite commands](./IModelOptimization.md)
   - [Fonts](./Fonts.md)
@@ -36,6 +37,7 @@ These packages provide the following functions to support backend operations:
 - Loading and Creating Elements, ElementAspects, and Models
   - [Access Elements](./AccessElements.md)
   - [Create Elements](./CreateElements.md)
+  - [Delete Elements in Bulk](./BulkElementDeletion.md)
   - [Access ElementAspects](./AccessElementAspects.md)
   - [Create ElementAspects](./CreateElementAspects.md)
   - [Access Models](./AccessModels.md)

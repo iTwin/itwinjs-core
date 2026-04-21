@@ -112,8 +112,8 @@ export class EntityClass extends ECClass implements HasMixins {
    *
    * @internal
    */
-protected override async buildPropertyCache(): Promise<Map<string, Property>> {
-  const cache = new Map<string, Property>();
+  protected override async buildPropertyCache(): Promise<Map<string, Property>> {
+    const cache = new Map<string, Property>();
     const baseClass = await this.baseClass;
     if (baseClass) {
       for (const property of await baseClass.getProperties()) {
@@ -138,7 +138,7 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
       }
     }
     return cache;
-}
+  }
 
   /**
    *
@@ -243,7 +243,7 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
               if (undefined === mixin)
                 throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
               return mixin;
-          }));
+            }));
         }
       }
     }
@@ -296,7 +296,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${typeof relationship === "string" ? relationship : relationship.fullName}, is not a valid RelationshipClassInterface.`);
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
@@ -321,7 +321,7 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${typeof relationship === "string" ? relationship : relationship.fullName}, is not a valid RelationshipClassInterface.`);
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);

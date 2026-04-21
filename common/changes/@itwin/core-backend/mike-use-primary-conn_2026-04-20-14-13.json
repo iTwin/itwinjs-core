@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update integrityCheck to use primary connection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

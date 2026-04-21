@@ -9,19 +9,19 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeFunction, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { NodeXYZUV } from "../../topology/HalfEdgeNodeXYZUV";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
 import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Checker } from "../Checker";
 import { OutputManager } from "../clipping/ClipPlanes.test";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function logGraph(graph: HalfEdgeGraph, title: any): void {
   GeometryCoreTestIO.consoleLog(` == begin == ${title}`);
@@ -109,8 +109,8 @@ export class GraphChecker {
   }
   public static dumpGraph(
     graph: HalfEdgeGraph | undefined,
-    formatNode: NodeFunction = (node) => HalfEdge.nodeToIdXYString(node),
-    formatNodeWithoutCoordinates: NodeFunction = (node) => HalfEdge.nodeToId(node),
+    formatNode: HalfEdgeFunction = (node) => HalfEdge.nodeToIdXYString(node),
+    formatNodeWithoutCoordinates: HalfEdgeFunction = (node) => HalfEdge.nodeToId(node),
   ) {
     if (graph === undefined) {
       GeometryCoreTestIO.consoleLog("**** EMPTY GRAPH ****");
@@ -118,12 +118,12 @@ export class GraphChecker {
     }
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();
-    const faceData = [];
+    GeometryCoreTestIO.consoleLog(`**FACE LOOPS: ${faces.length}`);
     for (const f of faces) {
-      faceData.push(f.collectAroundFace(formatNode));
+      const nodes = f.collectAroundFace(formatNode);
+      GeometryCoreTestIO.consoleLog(`[face loop with ${nodes.length} nodes]`);
+      GeometryCoreTestIO.consoleLog(nodes);
     }
-    GeometryCoreTestIO.consoleLog(`**FACE LOOPS ${faces.length}`);
-    GeometryCoreTestIO.consoleLog(faceData);
 
     const vData = [];
     for (const v of vertices) {
@@ -134,7 +134,7 @@ export class GraphChecker {
       } else
         vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
-    GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS ${vertices.length}`);
+    GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS: ${vertices.length}`);
     GeometryCoreTestIO.consoleLog(vData);
 
   }

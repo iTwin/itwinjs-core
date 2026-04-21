@@ -2,15 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, ECSqlReader, IModel, PhysicalElementProps, QueryBinder, QueryOptionsBuilder, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
-import { DefinitionModel, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
+import { DefinitionModel, ECSqlInsertResult, ECSqlSyncReader, ElementTreeDeleter, ElementTreeWalkerScope, PhysicalModel, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { Range3d } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { withEditTxn } from "../../EditTxn";
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 const expect = chai.expect;
@@ -190,6 +192,38 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
       await readerCallback(reader);
     });
+
+    it("should bind Range3d", async () => {
+      const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
+
+      using ecdb = ECDbTestHelper.createECDb(outDir, "bindrange3d.ecdb",
+        `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="Range3d" typeName="binary"/>
+        </ECEntityClass>
+       </ECSchema>`);
+
+      assert.isTrue(ecdb.isOpen);
+
+      ecdb.withCachedWriteStatement("INSERT INTO test.Foo([Range3d]) VALUES(?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindRange3d(1, testRange);
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      });
+      ecdb.saveChanges();
+
+      const params = new QueryBinder();
+      params.bindRange3d(1, testRange);
+      const reader = ecdb.createQueryReader("SELECT ECInstanceId, [Range3d] FROM test.Foo WHERE Range3d=?", params);
+
+      const rows = await reader.toArray();
+      const rangeBlob: Uint8Array = rows[0][1];
+      const rangeFloatArray = new Float64Array(rangeBlob.buffer);
+      assert.equal(rangeFloatArray.length, 6);
+      const actualRange = new Range3d(...rangeFloatArray);
+      assert.isTrue(actualRange.isAlmostEqual(testRange));
+    });
+
   });
 
   describe("Works as iterable iterator", () => {
@@ -1336,7 +1370,7 @@ describe("createQueryReader vs withQueryReader ", () => {
     ) {
       const newScope = new ElementTreeWalkerScope(scope, element);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this._iModel.withPreparedStatement(
+      this.txn.iModel.withPreparedStatement(
         `
         SELECT ECInstanceId
         FROM bis.Element
@@ -1366,24 +1400,12 @@ describe("createQueryReader vs withQueryReader ", () => {
       rootSubject: { name: "empty " },
     });
 
-    const subjectId = Subject.insert(
-      testIModelDb,
-      IModel.rootSubjectId,
-      "Subject",
-      "Subject Description"
-    );
+    const subjectId = withEditTxn(testIModelDb, (txn) => Subject.insert(txn, IModel.rootSubjectId, "Subject", "Subject Description"));
 
-    const physicalModelId = PhysicalModel.insert(
-      testIModelDb,
-      subjectId,
-      "Physical"
-    );
-
-    const definitionModelId = DefinitionModel.insert(
-      testIModelDb,
-      subjectId,
-      "Definition"
-    );
+    const [physicalModelId, definitionModelId] = withEditTxn(testIModelDb, (txn) => [
+      PhysicalModel.insert(txn, subjectId, "Physical"),
+      DefinitionModel.insert(txn, subjectId, "Definition"),
+    ]);
 
     const spatialCategoryId = IModelTestUtils.insertSpatialCategory(
       testIModelDb,
@@ -1400,18 +1422,18 @@ describe("createQueryReader vs withQueryReader ", () => {
       userLabel: "ScopingElement",
     };
 
-    const scopingElement =
-      testIModelDb.elements.insertElement(physicalObjectProps5);
-
     const childElement: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: spatialCategoryId,
-      code: { spec: "0x1", scope: scopingElement },
+      code: { spec: "0x1", scope: Id64.invalid },
       userLabel: "ScopedElement",
     };
-    testIModelDb.elements.insertElement(childElement);
-    testIModelDb.saveChanges();
+    withEditTxn(testIModelDb, (txn) => {
+      const scopingElement = txn.insertElement(physicalObjectProps5);
+      childElement.code = { spec: "0x1", scope: scopingElement };
+      txn.insertElement(childElement);
+    });
     return testIModelDb;
   }
 
@@ -1429,14 +1451,13 @@ describe("createQueryReader vs withQueryReader ", () => {
     FROM ${PhysicalObject.classFullName}
     `;
     const reader = iModelDb.createQueryReader(sql, undefined, { usePrimaryConn: true });
-    const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
     await reader.step(); // step to initialize reader
     const firstId = reader.current[0];
-    elementTreeDeleter.deleteNormalElements(firstId);
+    withEditTxn(iModelDb, (txn) => new TestElementCascadingDeleter(txn).deleteNormalElements(firstId));
     await reader.step(); // step to initialize reader
     const secondId = reader.current[0];
     // This is because ecsqlreader built using createQueryReader caches results and so when it tries to access the second element, it is already deleted from the database and it throws "Not Found" error.
-    expect(() => elementTreeDeleter.deleteNormalElements(secondId)).to.throw();
+    expect(() => withEditTxn(iModelDb, (txn) => new TestElementCascadingDeleter(txn).deleteNormalElements(secondId))).to.throw();
   });
 
   it("Passing while using withQueryReader()", async () => {
@@ -1445,15 +1466,15 @@ describe("createQueryReader vs withQueryReader ", () => {
     FROM ${PhysicalObject.classFullName}
     `;
     iModelDb.withQueryReader(sql, (reader) => {
-      const elementTreeDeleter = new TestElementCascadingDeleter(iModelDb);
       let cntSteps = 0;
       while (reader.step()) {
         const id = reader.current[0];
-        elementTreeDeleter.deleteNormalElements(id);
+        withEditTxn(iModelDb, (txn) => new TestElementCascadingDeleter(txn).deleteNormalElements(id));
         cntSteps++;
       }
       assert.equal(cntSteps, 1);
     });
   });
 });
+
 

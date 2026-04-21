@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
@@ -12,7 +12,7 @@ import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner,
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, RealityModelTileTree, TileTreeOwner,
 } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
@@ -283,6 +283,30 @@ describe("ContextRealityModelState", () => {
       });
       expect(transientRef.modelId).toEqual(transientId);
       expect(transientRef.treeOwner).toEqual(style.trees[0].owner);
+    });
+  });
+
+  describe("layer listener cleanup", () => {
+    it("detachLayerListeners delegates to _treeRef", () => {
+      const style = new Style();
+      const model = style.attachRealityModel({ tilesetUrl: "a" });
+
+      // Spy on the tree ref's detachLayerListeners
+      const treeRef = model.treeRef as RealityModelTileTree.Reference;
+      const spy = vi.spyOn(treeRef, "detachLayerListeners");
+
+      model.detachLayerListeners();
+      expect(spy).toHaveBeenCalledOnce();
+    });
+
+    it("detachLayerListeners can be called multiple times safely", () => {
+      const style = new Style();
+      const model = style.attachRealityModel({ tilesetUrl: "a" });
+
+      expect(() => {
+        model.detachLayerListeners();
+        model.detachLayerListeners();
+      }).not.toThrow();
     });
   });
 });
