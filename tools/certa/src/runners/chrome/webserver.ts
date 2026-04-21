@@ -19,8 +19,15 @@ app.all("/*", (_req, res, next) => {
 
 // The generated HTML file should be served at the "root" URL (i.e., http://localhost:3000/).
 app.use("/", (req, resp, next) => {
-  if (req.path === "/")
-    resp.sendFile(process.env.CERTA_PATH!);
+  if (req.path === "/") {
+    const certaPath = process.env.CERTA_PATH;
+    if (undefined === certaPath) {
+      resp.sendStatus(500);
+      return;
+    }
+
+    resp.sendFile(certaPath);
+  }
   else
     next();
 });
@@ -60,7 +67,8 @@ let port = parseInt(process.env.CERTA_PORT ?? "3000", 10);
 const server = http.createServer(app);
 server.on("listening", async () => {
   console.log(`Certa web frontend now listening on port ${port}`);
-  process.send!(port);
+  if (undefined !== process.send)
+    process.send(port);
 });
 
 // The preferred port (process.env.CERTA_PORT) may be in use.  If that happens detect a free port and try again.

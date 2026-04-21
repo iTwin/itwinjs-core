@@ -11888,6 +11888,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean;
     processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -12067,6 +12068,8 @@ export class ToolSettings {
     static enableVirtualCursorForLocate: boolean;
     // @beta
     static enableVolumeSelection: boolean;
+    // @beta
+    static escapeMovesFocusToHome: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;

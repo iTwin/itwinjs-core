@@ -164,5 +164,6 @@ public;class;UnexpectedErrors
 public;function;using
 deprecated;function;using
 public;function;utf8ToString
+beta;function;wrapTimerCallback
 public;class;YieldManager
 public;interface;YieldManagerOptions
