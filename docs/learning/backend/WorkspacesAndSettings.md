@@ -17,10 +17,6 @@ At runtime, settings and resources are accessed through one of three workspace s
 
 All three scopes use the same [Settings priority stack](./Settings.md#settings-priorities) — iTwin-level and iModel-level settings both override application defaults. `getITwinWorkspace` is independent from `IModelDb.workspace` — its settings are only available to an iModel if explicitly referenced (see [Referencing iTwin settings from an iModel](./Settings.md#referencing-itwin-settings-from-an-imodel)). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
 
-## How settings and resources connect
-
-At runtime the flow starts from settings: the workspace discovers and loads settings containers, then application code reads settings values that point to [WorkspaceDb]($backend) containers and opens those containers to access resources. See [Settings](./Settings.md) and [Workspace resources](./Workspace.md) for details on each system.
-
 ## Scope and priority
 
 Settings from multiple sources are merged using a priority stack. A higher-priority dictionary overrides a lower-priority one for any given setting name.

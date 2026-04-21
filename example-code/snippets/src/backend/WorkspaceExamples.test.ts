@@ -9,7 +9,7 @@ import {
   BlobContainer,
   EditableWorkspaceContainer, EditableWorkspaceDb,
   IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps,
-  SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceEditor,
+  SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceDbSettingsProps, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -575,6 +575,16 @@ describe("Workspace Examples", () => {
       const style = iModel.workspace.settings.getString("landscapePro/flora/preferredStyle");
       expect(style).to.equal("formal");
 
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.LoadITwinSettingsFromIModel
+      const settingsRef = iModel.workspace.settings.getSetting<WorkspaceDbSettingsProps>("landscapePro/itwinSettingsRef");
+      if (settingsRef !== undefined) {
+        const iTwinWs = await IModelHost.getITwinWorkspace(settingsRef);
+        // iTwinWs.settings now contains the iTwin-level settings.
+        // ... use the settings, then close when finished:
+        iTwinWs.close();
+      }
+      // __PUBLISH_EXTRACT_END__
+
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.VersionAndPinITwinSettings
       // Pin the iModel to the exact settings version currently in use.
       // Unlike the floating reference above, adding a `version` field locks
@@ -584,19 +594,18 @@ describe("Workspace Examples", () => {
       const floatingRefs = iTwinWorkspaceToPin.settingsSources;
       assert(undefined !== floatingRefs);
 
-      // Resolve each settings source to its current version and bake that into the reference.
+      // Add an explicit version to each settings source reference.
       const sources = Array.isArray(floatingRefs) ? floatingRefs : [floatingRefs];
-      const pinnedRefs = await Promise.all(
-        sources.map(async (source) => {
-          const db = await iTwinWorkspaceToPin.getWorkspaceDb(source);
-          return { ...source, version: db.version }; // e.g., "1.0.0" instead of undefined (latest)
-        }),
-      );
+      const pinnedRefs = sources.map((source) => ({ ...source, version: "1.0.0" }));
 
       await withEditTxn(iModel, async (txn) => txn.saveSettingDictionary("landscapePro/iModelSettings", {
         "landscapePro/itwinSettingsRef": pinnedRefs,
       }));
       iTwinWorkspaceToPin.close();
+      // __PUBLISH_EXTRACT_END__
+
+      // __PUBLISH_EXTRACT_START__ WorkspaceExamples.DeleteIModelSettingDictionary
+      await withEditTxn(iModel, async (txn) => txn.deleteSettingDictionary("landscapePro/iModelSettings"));
       // __PUBLISH_EXTRACT_END__
     });
 
