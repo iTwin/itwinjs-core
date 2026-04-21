@@ -37,6 +37,7 @@ These packages provide the following functions to support backend operations:
 - Loading and Creating Elements, ElementAspects, and Models
   - [Access Elements](./AccessElements.md)
   - [Create Elements](./CreateElements.md)
+  - [Delete Elements in Bulk](./BulkElementDeletion.md)
   - [Access ElementAspects](./AccessElementAspects.md)
   - [Create ElementAspects](./CreateElementAspects.md)
   - [Access Models](./AccessModels.md)
