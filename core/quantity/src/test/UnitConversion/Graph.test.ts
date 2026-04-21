@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Graph } from "../../UnitConversion/Graph";
+import { DirectedGraph } from "../../UnitConversion/Graph";
 
-describe("Graph", () => {
+describe("DirectedGraph", () => {
   it("starts empty", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     expect(g.nodeCount()).toBe(0);
     expect(g.edgeCount()).toBe(0);
   });
 
   it("adds nodes", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     expect(g.nodeCount()).toBe(2);
@@ -23,7 +23,7 @@ describe("Graph", () => {
   });
 
   it("updates existing node value", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     g.setNode("a", "A1");
     g.setNode("a", "A2");
     expect(g.nodeCount()).toBe(1);
@@ -31,7 +31,7 @@ describe("Graph", () => {
   });
 
   it("adds edges", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     g.setEdge("a", "b", { exponent: 1 });
@@ -40,7 +40,7 @@ describe("Graph", () => {
   });
 
   it("accumulates exponents on duplicate edges", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     g.setEdge("a", "b", { exponent: 2 });
@@ -50,7 +50,7 @@ describe("Graph", () => {
   });
 
   it("lists outgoing edges", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     g.setNode("c", "C");
@@ -63,14 +63,14 @@ describe("Graph", () => {
   });
 
   it("lists all nodes", () => {
-    const g = new Graph<number>();
+    const g = new DirectedGraph<number>();
     g.setNode("x", 1);
     g.setNode("y", 2);
     expect(g.nodes().sort()).toEqual(["x", "y"]);
   });
 
   it("sets and gets graph label", () => {
-    const g = new Graph<string>();
+    const g = new DirectedGraph<string>();
     g.setGraph("test");
     expect(g.graph()).toBe("test");
   });

@@ -16,6 +16,7 @@ beta;interface;CreateUnitsProviderOptions
 beta;interface;CustomFormatProps
 beta;enum;DecimalPrecision
 internal;interface;DefinitionFragment
+internal;class;DirectedGraph
 beta;class;Format
 beta;interface;FormatCompositeProps
 beta;interface;FormatDefinition
@@ -40,7 +41,6 @@ beta;interface;FormatUnitSpec
 beta;enum;FractionalPrecision
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
-internal;class;Graph
 beta;const;isCustomFormatProps
 beta;interface;MutableFormatsProvider
 beta;function;parseDecimalPrecision

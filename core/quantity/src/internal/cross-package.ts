@@ -4,6 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 // Used by ecschema-metadata (UnitTree.ts)
-export { Graph } from "../UnitConversion/Graph";
+export { DirectedGraph } from "../UnitConversion/Graph";
 export { parseDefinition } from "../UnitConversion/Parser";
 export type { DefinitionFragment } from "../UnitConversion/Parser";

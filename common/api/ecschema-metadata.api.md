@@ -2396,8 +2396,6 @@ export class Unit extends SchemaItem {
     get unitSystem(): LazyLoadedUnitSystem | undefined;
 }
 
-export { UnitConversion }
-
 // @internal
 export class UnitConverter {
     constructor(_context: SchemaContext);

@@ -45,7 +45,7 @@ interface OutEdgesMap {
 }
 
 /** @internal */
-export class Graph<T> {
+export class DirectedGraph<T> {
   private _edgeKeyDelim = "\x01";
   private _label = "";
   private _nodeCount = 0;
@@ -62,7 +62,7 @@ export class Graph<T> {
     this._outEdges = {};
   }
 
-  public setGraph = (label: string): Graph<T> => {
+  public setGraph = (label: string): DirectedGraph<T> => {
     this._label = label;
     return this;
   };
