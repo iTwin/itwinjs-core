@@ -1074,9 +1074,13 @@ export namespace ViewStore {
       this.verifyRowId(tableName.categorySelectors, resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId));
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.verifyRowId(tableName.displayStyles, resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId));
+
       const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.verifyRowId(tableName.modelSelectors, resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId));
+      const effectiveModelSelectorId = resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId);
+      if (effectiveModelSelectorId) {
+        this.verifyRowId(tableName.modelSelectors, effectiveModelSelectorId);
+      }
 
       const viewDef2d = (viewDef as ViewDefinition2dProps);
       if (viewDef2d.baseModel) {
