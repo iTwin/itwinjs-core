@@ -899,6 +899,7 @@ export interface SerializedUnitSchema {
     };
     // (undocumented)
     readonly name: string;
+    readonly sourceEcSchemaVersion?: string;
     readonly version: string;
 }
 

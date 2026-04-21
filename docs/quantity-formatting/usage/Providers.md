@@ -23,20 +23,21 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 #### BasicUnitsProvider
 
-[BasicUnitsProvider]($quantity) is a standalone provider backed by the full BIS `Units` schema (492 units) bundled as a JSON asset in `@itwin/core-quantity`. It is the default provider used by `IModelApp.quantityFormatter` when no iModel-specific provider is registered.
+[BasicUnitsProvider]($quantity) is a standalone provider backed by the full BIS `Units` schema bundled as a JSON asset in `@itwin/core-quantity`. It is the default provider used by `IModelApp.quantityFormatter` when no iModel-specific provider is registered.
 
 **Characteristics:**
 
 - No dependencies on iModels or schemas — works in any context (frontend, backend, tools)
-- Contains **492 units** covering all BIS phenomena (length, area, volume, temperature, pressure, angle, force, velocity, etc.)
-- Lazy initialization: the JSON is parsed and units resolved on first use; subsequent instances share static data
+- Contains all BIS units covering all phenomena (length, area, volume, temperature, pressure, angle, force, velocity, etc.)
+- Unit data is resolved lazily on first use and cached at module scope — construction is essentially free, and multiple instances share the same immutable lookup indexes
 - Available from `@itwin/core-quantity`, so it can be used outside `@itwin/core-frontend`
+- The bundled unit data is versioned: `version` tracks the serialization format, and `sourceEcSchemaVersion` records which BIS Units EC schema release the data was derived from
 
 **When to use:**
 
 - Default for all applications — enabled automatically by `QuantityFormatter`
 - Backend or CLI tools that need unit resolution without an iModel
-- Pre-iModel UIs or standalone formatting scenarios
+- UIs and workflows that don't need an iModel, like iTwin-level workflows
 - As a lightweight alternative to `SchemaUnitProvider` when domain-specific custom units are not needed
 
 > **Note:** The `BasicUnitsProvider` previously exported from `@itwin/core-frontend` was a limited provider (≈40 units) and has been removed. Use [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead.
@@ -65,7 +66,6 @@ When no `primary` is supplied, `createUnitsProvider()` returns a plain `new Basi
 
 - Requires access to ECSchemas via [SchemaContext]($ecschema-metadata), commonly through iModels
 - Accesses units through [SchemaContext]($ecschema-metadata)
-- Supports custom domain-specific units
 - Supports custom domain-specific units not included in the bundled BIS `Units` schema
 
 **When to use:**

@@ -18,11 +18,109 @@ interface InvertedEntry {
   readonly invertsUnitName: string;
 }
 
+/** Immutable lookup indexes resolved from the bundled Units.json. */
+interface ResolvedState {
+  readonly nameMap: Map<string, IndexedUnit>;
+  readonly labelMap: Map<string, IndexedUnit[]>;
+  readonly phenomenonMap: Map<string, IndexedUnit[]>;
+  readonly invertedUnits: Map<string, InvertedEntry>;
+}
+
+// Module-level cache: the unit data is derived deterministically from the static Units.json
+// import, so the resolved indexes are effectively an immutable constant. Caching at module
+// scope avoids redundant work when multiple BasicUnitsProvider instances are created (e.g.
+// in tests or when composed inside CompositeUnitsProvider).
+let cachedState: ResolvedState | undefined;
+
+function resolveState(): ResolvedState {
+  if (cachedState)
+    return cachedState;
+
+  const nameMap = new Map<string, IndexedUnit>();
+  const labelMap = new Map<string, IndexedUnit[]>();
+  const phenomenonMap = new Map<string, IndexedUnit[]>();
+  const invertedUnits = new Map<string, InvertedEntry>();
+
+  const s = schema as SerializedUnitSchema;
+  const resolver = new UnitDefinitionResolver(s);
+  const resolved = resolver.resolveAll();
+
+  for (const [qualifiedName, entry] of resolved) {
+    const item = s.items[qualifiedName.split(":")[1]] as SerializedUnit;
+    const phenomenon = item.phenomenon;
+    const unitSystem = item.unitSystem;
+
+    const fullName = `${s.name}.${qualifiedName.split(":")[1]}`;
+    const props: UnitProps = {
+      name: fullName,
+      label: entry.label,
+      phenomenon,
+      isValid: true,
+      system: unitSystem,
+    };
+
+    const indexed: IndexedUnit = { props, resolved: entry };
+
+    nameMap.set(fullName, indexed);
+    const lowerLabel = entry.label.toLowerCase();
+    const byLabel = labelMap.get(lowerLabel) ?? [];
+    byLabel.push(indexed);
+    labelMap.set(lowerLabel, byLabel);
+
+    const byPhen = phenomenonMap.get(phenomenon) ?? [];
+    byPhen.push(indexed);
+    phenomenonMap.set(phenomenon, byPhen);
+  }
+
+  // Handle InvertedUnit items
+  for (const [name, item] of Object.entries(s.items)) {
+    if (item.schemaItemType !== "InvertedUnit")
+      continue;
+    const inv: SerializedInvertedUnit = item;
+    const fullName = `${s.name}.${name}`;
+    const invertsName = inv.invertsUnit.includes(".") ? inv.invertsUnit : `${s.name}.${inv.invertsUnit.includes(":") ? inv.invertsUnit.split(":")[1] : inv.invertsUnit}`;
+    const unitSystem = inv.unitSystem;
+
+    const invertedSource = nameMap.get(invertsName);
+    const phenomenon = invertedSource?.props.phenomenon ?? "";
+
+    const props: UnitProps = {
+      name: fullName,
+      label: inv.label ?? name,
+      phenomenon,
+      isValid: true,
+      system: unitSystem,
+    };
+
+    invertedUnits.set(fullName, { props, invertsUnitName: invertsName });
+
+    if (invertedSource) {
+      const indexed: IndexedUnit = {
+        props,
+        resolved: { ...invertedSource.resolved, name: fullName, label: props.label, unitSystem },
+      };
+      nameMap.set(fullName, indexed);
+
+      const lowerLabel = props.label.toLowerCase();
+      const byLabel = labelMap.get(lowerLabel) ?? [];
+      byLabel.push(indexed);
+      labelMap.set(lowerLabel, byLabel);
+
+      const byPhen = phenomenonMap.get(phenomenon) ?? [];
+      byPhen.push(indexed);
+      phenomenonMap.set(phenomenon, byPhen);
+    }
+  }
+
+  cachedState = { nameMap, labelMap, phenomenonMap, invertedUnits };
+  return cachedState;
+}
+
 /**
- * A `UnitsProvider` backed by the full BIS `Units.ecschema.json` (492 units) bundled as a JSON asset.
+ * A `UnitsProvider` backed by the full BIS `Units.ecschema.json` bundled as a JSON asset.
  *
- * The JSON is parsed and all units resolved during construction. Each instance owns its own
- * lookup indexes — no shared static state.
+ * Unit data is resolved lazily on first use and cached at module scope — construction is
+ * essentially free, and multiple instances share the same immutable lookup indexes.
  *
  * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
  * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.
@@ -31,83 +129,17 @@ interface InvertedEntry {
  * @beta
  */
 export class BasicUnitsProvider implements UnitsProvider {
-  private readonly _nameMap = new Map<string, IndexedUnit>();
-  private readonly _labelMap = new Map<string, IndexedUnit[]>();
-  private readonly _phenomenonMap = new Map<string, IndexedUnit[]>();
-  private readonly _invertedUnits = new Map<string, InvertedEntry>();
+  private readonly _nameMap: Map<string, IndexedUnit>;
+  private readonly _labelMap: Map<string, IndexedUnit[]>;
+  private readonly _phenomenonMap: Map<string, IndexedUnit[]>;
+  private readonly _invertedUnits: Map<string, InvertedEntry>;
 
-  public constructor() {
-    const resolver = new UnitDefinitionResolver(schema as SerializedUnitSchema);
-    const resolved = resolver.resolveAll();
-
-    for (const [qualifiedName, entry] of resolved) {
-      const s = schema as SerializedUnitSchema;
-      const item = s.items[qualifiedName.split(":")[1]] as SerializedUnit;
-      const phenomenon = item.phenomenon;
-      const unitSystem = item.unitSystem;
-
-      const fullName = `${s.name}.${qualifiedName.split(":")[1]}`;
-      const props: UnitProps = {
-        name: fullName,
-        label: entry.label,
-        phenomenon,
-        isValid: true,
-        system: unitSystem,
-      };
-
-      const indexed: IndexedUnit = { props, resolved: entry };
-
-      this._nameMap.set(fullName, indexed);
-      const lowerLabel = entry.label.toLowerCase();
-      const byLabel = this._labelMap.get(lowerLabel) ?? [];
-      byLabel.push(indexed);
-      this._labelMap.set(lowerLabel, byLabel);
-
-      const byPhen = this._phenomenonMap.get(phenomenon) ?? [];
-      byPhen.push(indexed);
-      this._phenomenonMap.set(phenomenon, byPhen);
-    }
-
-    // Handle InvertedUnit items
-    const s2 = schema as SerializedUnitSchema;
-    for (const [name, item] of Object.entries(s2.items)) {
-      if (item.schemaItemType !== "InvertedUnit")
-        continue;
-      const inv: SerializedInvertedUnit = item;
-      const fullName = `${s2.name}.${name}`;
-      const invertsName = inv.invertsUnit.includes(".") ? inv.invertsUnit : `${s2.name}.${inv.invertsUnit.includes(":") ? inv.invertsUnit.split(":")[1] : inv.invertsUnit}`;
-      const unitSystem = inv.unitSystem;
-
-      const invertedSource = this._nameMap.get(invertsName);
-      const phenomenon = invertedSource?.props.phenomenon ?? "";
-
-      const props: UnitProps = {
-        name: fullName,
-        label: inv.label ?? name,
-        phenomenon,
-        isValid: true,
-        system: unitSystem,
-      };
-
-      this._invertedUnits.set(fullName, { props, invertsUnitName: invertsName });
-
-      if (invertedSource) {
-        const indexed: IndexedUnit = {
-          props,
-          resolved: { ...invertedSource.resolved, name: fullName, label: props.label, unitSystem },
-        };
-        this._nameMap.set(fullName, indexed);
-
-        const lowerLabel = props.label.toLowerCase();
-        const byLabel = this._labelMap.get(lowerLabel) ?? [];
-        byLabel.push(indexed);
-        this._labelMap.set(lowerLabel, byLabel);
-
-        const byPhen = this._phenomenonMap.get(phenomenon) ?? [];
-        byPhen.push(indexed);
-        this._phenomenonMap.set(phenomenon, byPhen);
-      }
-    }
+  constructor() {
+    const state = resolveState();
+    this._nameMap = state.nameMap;
+    this._labelMap = state.labelMap;
+    this._phenomenonMap = state.phenomenonMap;
+    this._invertedUnits = state.invertedUnits;
   }
 
   // ── UnitsProvider implementation ─────────────────────────────────────

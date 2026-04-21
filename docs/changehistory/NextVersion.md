@@ -258,10 +258,10 @@ See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full 
 
 `@itwin/core-quantity` now exposes `BasicUnitsProvider` and `createUnitsProvider` for layered unit resolution.
 
-[QuantityFormatter]($frontend) now defaults to [BasicUnitsProvider]($quantity) — the zero-dependency provider backed by the full BIS `Units` schema (492 units). This means:
+[QuantityFormatter]($frontend) now defaults to [BasicUnitsProvider]($quantity) — the zero-dependency provider backed by the full BIS `Units` schema. This means:
 
-- **492 units** from the BIS `Units` schema are available out-of-the-box — covering all phenomena (length, area, volume, temperature, pressure, angle, force, etc.)
-- **No iModel required** — standalone tools, pre-iModel UIs, and non-iModel contexts now get full unit support
+- All BIS units are available out-of-the-box — covering all phenomena (length, area, volume, temperature, pressure, angle, force, etc.)
+- **No iModel required** — UIs and workflows that don't need an iModel (like iTwin-level workflows) now get full unit support
 - **`BasicUnitsProvider` is directly importable** from `@itwin/core-quantity` for use in backend or tool contexts:
 
 ```typescript

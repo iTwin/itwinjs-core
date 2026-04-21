@@ -4,8 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** Current version of the serialization format for `SerializedUnitSchema`.
- * Bump the major version when the structure of the JSON changes incompatibly.
- * This is independent of the EC schema version in `Units.json`.
+ *
+ * This tracks the **JSON structure**, not the unit data content. Three version axes exist:
+ *
+ * - **Format version** (`SERIALIZED_UNIT_SCHEMA_VERSION`): bump the major version when
+ *   the shape of the `SerializedUnitSchema` interfaces changes incompatibly (e.g. renaming
+ *   fields, removing required properties). Minor bumps for backward-compatible additions.
+ *
+ * - **Data version** (`version` inside `Units.json`): tracks the content of the unit data
+ *   itself — which units are present and their conversion factors. Bump when units are
+ *   added, removed, or their definitions change.
+ *
+ * - **Source provenance** (`sourceEcSchemaVersion` inside `Units.json`): records which version
+ *   of the BIS Units EC schema the data was derived from (e.g. `"01.00.09"`). This is a
+ *   traceability marker, not a runtime contract.
+ *
+ * All three are independent: a new unit can be added (data version bump) without changing
+ * the serialization format, and vice versa.
+ *
  * @internal
  */
 export const SERIALIZED_UNIT_SCHEMA_VERSION = "1.0.0";
@@ -86,9 +102,11 @@ export type SerializedUnitItem = SerializedConstant | SerializedUnit | Serialize
  * @internal
  */
 export interface SerializedUnitSchema {
-  /** EC schema version string from the source schema (e.g. `"01.00.00"`). */
+  /** Serialization format version, matching `SERIALIZED_UNIT_SCHEMA_VERSION` (e.g. `"01.00.00"`). */
   readonly version: string;
   readonly name: string;
   readonly alias: string;
+  /** EC schema version of the source BIS Units schema this data was derived from (e.g. `"01.00.09"`). */
+  readonly sourceEcSchemaVersion?: string;
   readonly items: { readonly [name: string]: SerializedUnitItem };
 }
