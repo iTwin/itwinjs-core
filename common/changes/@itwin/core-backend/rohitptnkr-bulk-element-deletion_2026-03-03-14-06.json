@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added deleteElements method for bulk element deletion with automatic cascade, constraint checking, and cleanup.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
