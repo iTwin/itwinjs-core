@@ -188,7 +188,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
     assert.isString(modelNew!.$meta.instanceKey);
     assert.equal(modelNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -205,7 +205,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
     assert.deepEqual([...modelOld!.$meta.tables].sort(), ["bis_Model"].sort());
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -265,7 +265,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
       'CodeSpec.Id', 'CodeValue', 'DblProp', 'DtProp', 'ECClassId', 'ECInstanceId',
@@ -300,7 +300,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
     assert.isString(modelNew!.$meta.instanceKey);
     assert.equal(modelNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -319,7 +319,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
     assert.deepEqual([...modelOld!.$meta.tables].sort(), ["bis_Model"].sort());
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -379,7 +379,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
       'CodeSpec.Id', 'CodeValue', 'DblProp', 'DtProp', 'ECClassId', 'ECInstanceId',
@@ -408,7 +408,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -422,7 +422,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -459,7 +459,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "BisCoreElement");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "ECClassId", "CodeScope.Id", "CodeSpec.Id",
       "CodeValue", "FederationGuid", "JsonProperties", "LastMod", "Model.Id", "Parent", "UserLabel"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
@@ -483,7 +483,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [3].sort());
     assert.isString(modelNew!.$meta.instanceKey);
     assert.equal(modelNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(modelNew!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -497,7 +497,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -519,7 +519,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "InstanceKey");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "ECClassId"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, {});
     assert.equal(elem!.$meta.isIndirectChange, false);
@@ -540,7 +540,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -554,7 +554,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -599,7 +599,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.stage, "New");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(),
       ["ECInstanceId", "ECClassId", "Model.Id", "LastMod", "CodeSpec.Id", "CodeScope.Id",
@@ -628,7 +628,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { useJsName: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -643,7 +643,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { useJsName: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -691,7 +691,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.stage, "New");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
       'CodeSpec.Id', 'CodeValue', 'DblProp', 'DtProp', 'ECClassId',
@@ -720,7 +720,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { abbreviateBlobs: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -734,7 +734,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { abbreviateBlobs: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -785,7 +785,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.stage, "New");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { abbreviateBlobs: true });
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
@@ -805,7 +805,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { abbreviateBlobs: false });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -819,7 +819,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { abbreviateBlobs: false });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -895,7 +895,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.stage, "New");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { abbreviateBlobs: false });
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
@@ -916,7 +916,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -931,7 +931,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -978,7 +978,7 @@ describe("ECChangesetReader insert-full", () => {
     assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.stage, "New");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id',
       'CodeScope.Id', 'CodeSpec.Id',
@@ -1224,7 +1224,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -1239,7 +1239,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -1288,7 +1288,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'ECInstanceId', 'ECClassId', 'Model.Id', 'LastMod', 'CodeSpec.Id',
       'CodeScope.Id', 'CodeValue', 'UserLabel', 'Parent', 'FederationGuid',
@@ -1320,7 +1320,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -1337,7 +1337,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -1385,7 +1385,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'ECInstanceId', 'ECClassId', 'Model.Id', 'LastMod', 'CodeSpec.Id',
       'CodeScope.Id', 'CodeValue', 'UserLabel', 'Parent', 'FederationGuid',
@@ -1417,7 +1417,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -1431,7 +1431,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -1456,7 +1456,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "BisCoreElement");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "ECClassId", "CodeScope.Id",
       "CodeSpec.Id", "CodeValue", "FederationGuid", "JsonProperties", "LastMod", "Model.Id", "Parent", "UserLabel"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
@@ -1476,7 +1476,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -1490,7 +1490,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -1511,7 +1511,7 @@ describe("ECChangesetReader insert-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "InstanceKey");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "ECClassId"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, {});
     assert.equal(elem!.$meta.isIndirectChange, false);
@@ -1543,7 +1543,7 @@ describe("ECChangesetReader insert-partial", () => {
       "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope", "FederationGuid", "$meta", "Category",
     ].sort());
     assert.equal(elem!.$meta.op, "Inserted");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
   });
 
@@ -1576,7 +1576,7 @@ describe("ECChangesetReader insert-partial", () => {
       "id", "className", "model", "lastMod", "codeSpec", "codeScope", "federationGuid", "$meta", "category",
     ].sort());
     assert.equal(elem!.$meta.op, "Inserted");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { useJsName: true });
   });
 
@@ -1605,7 +1605,7 @@ describe("ECChangesetReader insert-partial", () => {
       "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope", "FederationGuid", "$meta", "Category",
     ].sort());
     assert.equal(elem!.$meta.op, "Inserted");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { abbreviateBlobs: true });
   });
 
@@ -1637,7 +1637,7 @@ describe("ECChangesetReader insert-partial", () => {
       "id", "className", "model", "lastMod", "codeSpec", "codeScope", "federationGuid", "$meta", "category",
     ].sort());
     assert.equal(elem!.$meta.op, "Inserted");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
   });
   it("should throw error if tried to fetch changeset metadata values before stepping", () => {
@@ -1844,7 +1844,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -1858,7 +1858,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -1902,7 +1902,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elemNew!.$meta.instanceKey);
     assert.equal(elemNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elemNew!.$meta.propFilter, "All");
+    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elemNew!.$meta.changeFetchedPropNames].sort(), [
       "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
       "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp",
@@ -1946,7 +1946,7 @@ describe("ECChangesetReader update-full", () => {
     assert.equal(elemOld!.$meta.op, "Updated");
     assert.equal(elemOld!.$meta.stage, "Old");
     assert.deepEqual([...elemOld!.$meta.tables].sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
-    assert.equal(elemOld!.$meta.propFilter, "All");
+    assert.equal(elemOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elemOld!.$meta.changeFetchedPropNames].sort(), [
       "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
       "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp",
@@ -1971,7 +1971,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -1986,7 +1986,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -2009,7 +2009,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elemNew!.$meta.instanceKey);
     assert.equal(elemNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elemNew!.$meta.propFilter, "BisCoreElement");
+    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.BisCoreElement);
 
     assert.deepEqual([...elemNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true });
@@ -2028,7 +2028,7 @@ describe("ECChangesetReader update-full", () => {
     assert.equal(elemOld!.$meta.op, "Updated");
     assert.equal(elemOld!.$meta.stage, "Old");
     assert.deepEqual([...elemOld!.$meta.tables].sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
-    assert.equal(elemOld!.$meta.propFilter, "BisCoreElement");
+    assert.equal(elemOld!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...elemOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(elemOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(elemOld!.$meta.isIndirectChange, false);
@@ -2047,7 +2047,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -2061,7 +2061,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -2082,7 +2082,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual([...elemNew!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elemNew!.$meta.instanceKey);
     assert.equal(elemNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elemNew!.$meta.propFilter, "InstanceKey");
+    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...elemNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(elemNew!.$meta.rowOptions, {});
     assert.equal(elemNew!.$meta.isIndirectChange, false);
@@ -2099,7 +2099,7 @@ describe("ECChangesetReader update-full", () => {
     assert.equal(elemOld!.$meta.op, "Updated");
     assert.equal(elemOld!.$meta.stage, "Old");
     assert.deepEqual([...elemOld!.$meta.tables].sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
-    assert.equal(elemOld!.$meta.propFilter, "InstanceKey");
+    assert.equal(elemOld!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...elemOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(elemOld!.$meta.rowOptions, {});
     assert.equal(elemOld!.$meta.isIndirectChange, false);
@@ -2131,7 +2131,7 @@ describe("ECChangesetReader update-full", () => {
     assert.deepEqual(elemNew!.pt3dProp, { x: 7, y: 6, z: 5 });
     assert.deepEqual(elemNew!.relatedElem, { id: partialElementId, relClassName: "TestDomain.Test2dUsesElement" });
     assert.equal(elemNew!.$meta.op, "Updated");
-    assert.equal(elemNew!.$meta.propFilter, "All");
+    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elemNew!.$meta.rowOptions, { useJsName: true });
     assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "binProp", "boolProp", "className",
       "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
@@ -2283,7 +2283,7 @@ describe("ECChangesetReader update-full", () => {
     assert.include(String(elemNew!.BinProp), "\"bytes\"");
     assert.deepEqual(elemNew!.RelatedElem, { Id: partialElementId, RelECClassId: "TestDomain.Test2dUsesElement" });
     assert.equal(elemNew!.$meta.op, "Updated");
-    assert.equal(elemNew!.$meta.propFilter, "All");
+    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true });
 
     assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "BinProp", "BoolProp",
@@ -2447,7 +2447,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -2463,7 +2463,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -2501,7 +2501,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ["BBoxHigh", "BBoxLow", "BinProp", "BoolProp",
       "Category.Id", "CodeScope.Id", "CodeSpec.Id", "CodeValue", "DblProp", "DtProp", "ECClassId", "ECInstanceId", "FederationGuid", "GeometryStream",
       "IntArrProp", "IntProp", "JsonProperties", "LastMod", "LongProp", "Model.Id", "Origin", "Parent", "Pt2dProp", "Pt3dProp", "RelatedElem", "Rotation", "StrArrProp", "StrProp",
@@ -2526,7 +2526,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -2542,7 +2542,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "BisCoreElement");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -2567,7 +2567,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "BisCoreElement");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.BisCoreElement);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ["CodeScope.Id", "CodeSpec.Id", "CodeValue", "ECClassId", "ECInstanceId",
       "FederationGuid", "JsonProperties", "LastMod", "Model.Id", "Parent", "UserLabel"].sort());
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
@@ -2587,7 +2587,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
-    assert.equal(modelNew!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -2601,7 +2601,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
-    assert.equal(modelOld!.$meta.propFilter, "InstanceKey");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -2622,7 +2622,7 @@ describe("ECChangesetReader delete-partial", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "InstanceKey");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.InstanceKey);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), ['ECClassId', 'ECInstanceId'].sort());
     assert.deepEqual(elem!.$meta.rowOptions, {});
     assert.equal(elem!.$meta.isIndirectChange, false);
@@ -2655,7 +2655,7 @@ describe("ECChangesetReader delete-partial", () => {
     ].sort());
     assert.equal(elem!.$meta.op, "Deleted");
     assert.equal(elem!.$meta.stage, "Old");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
   });
 
@@ -2689,7 +2689,7 @@ describe("ECChangesetReader delete-partial", () => {
     ].sort());
     assert.equal(elem!.$meta.op, "Deleted");
     assert.equal(elem!.$meta.stage, "Old");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { useJsName: true });
   });
 
@@ -2719,7 +2719,7 @@ describe("ECChangesetReader delete-partial", () => {
     ].sort());
     assert.equal(elem!.$meta.op, "Deleted");
     assert.equal(elem!.$meta.stage, "Old");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { abbreviateBlobs: true });
   });
 
@@ -2752,7 +2752,7 @@ describe("ECChangesetReader delete-partial", () => {
     ].sort());
     assert.equal(elem!.$meta.op, "Deleted");
     assert.equal(elem!.$meta.stage, "Old");
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
   });
   it("should throw error if tried to fetch changeset metadata values before stepping", () => {
@@ -2921,7 +2921,7 @@ describe("ECChangesetReader filters", () => {
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [1].sort());
     assert.isString(modelNew!.$meta.instanceKey);
     assert.equal(modelNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -2938,7 +2938,7 @@ describe("ECChangesetReader filters", () => {
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
     assert.deepEqual([...modelOld!.$meta.tables].sort(), ["bis_Model"].sort());
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -3007,7 +3007,7 @@ describe("ECChangesetReader filters", () => {
     assert.deepEqual([...elem!.$meta.changeIndexes].sort(), [1, 2].sort());
     assert.isString(elem!.$meta.instanceKey);
     assert.equal(elem!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(elem!.$meta.propFilter, "All");
+    assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
       'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
       'CodeSpec.Id', 'CodeValue', 'DblProp', 'DtProp', 'ECClassId', 'ECInstanceId',
@@ -3047,7 +3047,7 @@ describe("ECChangesetReader filters", () => {
     assert.deepEqual([...modelNew!.$meta.changeIndexes].sort(), [1].sort());
     assert.isString(modelNew!.$meta.instanceKey);
     assert.equal(modelNew!.$meta.instanceKey.split(`-`).length, 2);
-    assert.equal(modelNew!.$meta.propFilter, "All");
+    assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, {});
     assert.equal(modelNew!.$meta.isIndirectChange, true);
@@ -3064,7 +3064,7 @@ describe("ECChangesetReader filters", () => {
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
     assert.deepEqual([...modelOld!.$meta.tables].sort(), ["bis_Model"].sort());
-    assert.equal(modelOld!.$meta.propFilter, "All");
+    assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, {});
     assert.equal(modelOld!.$meta.isIndirectChange, true);
@@ -3164,7 +3164,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
       assert.equal(elemNew!.$meta.op, "Inserted");
       assert.equal(elemNew!.$meta.stage, "New");
       assert.deepEqual(elemNew!.$meta.tables.sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
-      assert.deepEqual(elemNew!.$meta.propFilter, "All");
+      assert.deepEqual(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(elemNew!.$meta.changeIndexes.sort(), [1, 2].sort());
       assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
       assert.equal(elemNew!.$meta.isIndirectChange, false);
@@ -3225,7 +3225,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
       expect(elemOld).to.exist;
       assert.equal(elemNew!.$meta.op, "Updated");
       assert.equal(elemNew!.$meta.stage, "New");
-      assert.equal(elemNew!.$meta.propFilter, "All");
+      assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "propFilter", "rowOptions", "changeFetchedPropNames", "instanceKey", "isIndirectChange"].sort());
       assert.equal(elemNew!.$meta.isIndirectChange, false);
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Origin",
@@ -3289,7 +3289,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
       assert.equal(elemNew!.$meta.op, "Inserted");
       assert.equal(elemNew!.$meta.stage, "New");
       assert.deepEqual(elemNew!.$meta.tables.sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
-      assert.deepEqual(elemNew!.$meta.propFilter, "All");
+      assert.deepEqual(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(elemNew!.$meta.changeIndexes.sort(), [1, 2].sort());
       assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Model", "CodeSpec",
@@ -3388,7 +3388,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.equal(elemNew!.$meta.op, "Inserted");
       assert.equal(elemNew!.$meta.stage, "New");
       assert.deepEqual(elemNew!.$meta.tables.sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
-      assert.deepEqual(elemNew!.$meta.propFilter, "All");
+      assert.deepEqual(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(elemNew!.$meta.changeIndexes.sort(), [1, 2].sort());
       assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
       assert.equal(elemNew!.$meta.isIndirectChange, false);
@@ -3441,7 +3441,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       expect(elemOld).to.exist;
       assert.equal(elemNew!.$meta.op, "Updated");
       assert.equal(elemNew!.$meta.stage, "New");
-      assert.equal(elemNew!.$meta.propFilter, "All");
+      assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "propFilter", "rowOptions", "changeFetchedPropNames", "instanceKey", "isIndirectChange"].sort());
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Origin",
         "Rotation", "BBoxLow", "BBoxHigh", "Pt3dProp", "BinProp", "GuidArrProp", "$meta", "LastMod"].sort());
@@ -3505,7 +3505,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.equal(elemNew!.$meta.op, "Inserted");
       assert.equal(elemNew!.$meta.stage, "New");
       assert.deepEqual(elemNew!.$meta.tables.sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
-      assert.deepEqual(elemNew!.$meta.propFilter, "All");
+      assert.deepEqual(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(elemNew!.$meta.changeIndexes.sort(), [1, 2].sort());
       assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Model", "CodeSpec",

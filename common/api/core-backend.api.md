@@ -927,7 +927,7 @@ export interface ChangeMeta {
     instanceKey: string;
     isIndirectChange: boolean;
     op: SqliteChangeOp;
-    propFilter: string;
+    propFilter: PropertyFilter;
     rowOptions?: RowFormatOptions;
     stage: SqliteValueStage;
     tables: string[];

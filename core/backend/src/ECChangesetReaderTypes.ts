@@ -73,7 +73,7 @@ export interface ChangeMeta {
    */
   instanceKey: string;
   /** Reader property filter that was active when this change row was captured. */
-  propFilter: string;
+  propFilter: PropertyFilter;
   /** EC property names fetched from the current row of changeset or transaction or any other change stream.
    For compound data properties like point2d, point3d or navigation properties,
   the full name of the property is returned in case all the components of the property are fetched from the change.

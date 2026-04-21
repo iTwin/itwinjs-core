@@ -110,18 +110,6 @@ export class ECChangesetReader implements Disposable, ChangeSource {
     };
   }
 
-  /** Convert a PropertyFilter enum value to its string name.
-   * @internal
-   */
-  private propFilterToString(): string {
-    switch (this._propFilter) {
-      case PropertyFilter.All: return "All";
-      case PropertyFilter.BisCoreElement: return "BisCoreElement";
-      case PropertyFilter.InstanceKey: return "InstanceKey";
-      default: throw new IModelError(IModelStatus.BadArg, `Invalid PropertyFilter value: ${this._propFilter}`);
-    }
-  }
-
   // ---------------------------------------------------------------------------
   // Static factory methods
   // ---------------------------------------------------------------------------
@@ -347,7 +335,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "New",
               instanceKey: rowValue.key,
-              propFilter: this.propFilterToString(),
+              propFilter: this._propFilter,
               changeFetchedPropNames: rowValue.changeFetchedPropNames,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,
@@ -367,7 +355,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
               changeIndexes: [this._changeIndex],
               stage: "Old",
               instanceKey: rowValue.key,
-              propFilter: this.propFilterToString(),
+              propFilter: this._propFilter,
               changeFetchedPropNames: rowValue.changeFetchedPropNames,
               rowOptions: this._rowOptions,
               isIndirectChange: this._isIndirectChange,

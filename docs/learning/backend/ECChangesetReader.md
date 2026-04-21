@@ -27,7 +27,7 @@ interface ChangeMeta {
   tables: string[];          // SQLite tables that contributed rows
   changeIndexes: number[];   // stream positions of those rows
   instanceKey: string;       // ECInstanceId-ECClassId key used for merging
-  propFilter: string;        // "All" | "BisCoreElement" | "InstanceKey"
+  propFilter: PropertyFilter; // PropertyFilter.All | PropertyFilter.BisCoreElement | PropertyFilter.InstanceKey
   changeFetchedPropNames: string[]; // property names actually read from the change binary
   rowOptions?: RowFormatOptions; // the rowOptions passed when opening the reader
   isIndirectChange: boolean; // true when the change was applied indirectly
@@ -152,10 +152,10 @@ All `open*` methods accept a `propFilter` argument that controls which propertie
 
 [[include:ECChangesetReader.ModeInstanceKey]]
 
-The active filter name is stored as a human-readable string in `instance.$meta.propFilter`:
+The active filter is stored as a `PropertyFilter` enum value in `instance.$meta.propFilter`:
 
 ```ts
-assert.equal(instance.$meta.propFilter, "InstanceKey");
+assert.strictEqual(instance.$meta.propFilter, PropertyFilter.InstanceKey);
 ```
 
 ---
