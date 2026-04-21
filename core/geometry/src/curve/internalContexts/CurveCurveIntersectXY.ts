@@ -718,6 +718,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       );
       const roots = univariateBezierB.roots(0.0, true);
       if (roots) {
+        const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
         for (const r of roots) {
           let bezierBFraction = r;
           bezierB.fractionToPoint4d(bezierBFraction, this._xyzwB);
@@ -739,7 +740,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               const pointA = bezierA.fractionToPoint(bezierAFraction, CurveCurveIntersectXY._workPointA0);
               const pointB = bezierB.fractionToPoint(bezierBFraction, CurveCurveIntersectXY._workPointB0);
               if (!converged) { // Newton may have found close points even if it didn't converge parametrically
-                const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
                 converged = pointA.isAlmostEqualXY(pointB, strictTolerance); // we can afford to be choosy
               }
               if (converged)
@@ -1328,6 +1328,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
     // NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH .
     // "easy" if both present BezierCurve3dH span loaders
+    // https://github.com/iTwin/itwinjs-backlog/issues/2021
     return undefined;
   }
 }

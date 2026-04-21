@@ -80,14 +80,17 @@ export abstract class AbstractNewtonIterator {
   /** Smallest iterate size difference in later iterations. */
   private _leastDelta: number = Number.MAX_VALUE;
   /**
-   * The current late iterate has the least delta encountered. Remember it. Implement along with [[restoreCandidate]].
-   * The cache ensures that even when Newton doesn't formally converge, the best approximation is returned, not the
-   * last (potentially diverged) iterate.
+   * The current late iterate has the least delta encountered. Remember it.
+   * * Implement this method along with [[restoreCandidate]].
    */
   protected cacheCandidate?(): void;
-  /** Set Newton result to the cached candidate. Implement along with [[cacheCandidate]]. */
+  /**
+   * Set Newton result to the cached candidate.
+   * * This is the best approximation to the root found during Newton iteration and may be useful to the caller
+   * even when Newton fails to converge.
+   * * Implement this method along with [[cacheCandidate]].
+   */
   protected restoreCandidate?(): void;
-
   /**
    * Test if a step is converged.
    * * Convergence is accepted with enough (_successiveConvergenceTarget) small steps (according to _stepSizeTolerance)
