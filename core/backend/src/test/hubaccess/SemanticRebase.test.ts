@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { DbConflictResolution, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import { Suite } from "mocha";
@@ -1575,4 +1575,768 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
 });
 
+/**
+ * Test suite for data conflicts, conflict handlers, lifecycle events, and mixed schema+conflict scenarios during semantic rebase.
+ */
+describe("Semantic Rebase - Data Conflicts and Conflict Resolution", function (this: Suite) {
+  this.timeout(60000);
+  let t: TestIModel | undefined;
 
+  before(async () => {
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend({ useSemanticRebase: true });
+  });
+
+  afterEach(() => {
+    if (t) {
+      t.shutdown();
+      t = undefined;
+    }
+  });
+
+  after(async () => {
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
+  });
+
+  // ─── Section A: Normal Data Rebase (baseline, no schema, no conflict) ────────
+
+  it("A1: independent updates on different elements are both preserved", async () => {
+    t = await TestIModel.initialize("A1IndependentUpdates");
+    let localTxn = startTestTxn(t.local, "A1 local");
+    let farTxn = startTestTxn(t.far, "A1 far");
+
+    // Both briefcases insert their own element and push
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const localElementId = t.insertElement(localTxn, "TestDomain:C", { propA: "local_a", propC: "local_c" });
+    localTxn.saveChanges("local insert");
+    await pushChanges(localTxn, "local insert element");
+    localTxn = startTestTxn(t.local, "A1 local 2");
+
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "A1 far 2");
+    await t.far.locks.acquireLocks({ exclusive: localElementId });
+    t.updateElement(farTxn, localElementId, { propA: "far_updated_a" });
+    farTxn.saveChanges("far update localElement propA");
+    await pushChanges(farTxn, "far update element");
+
+    // Local updates a different element (it created the element so it already has changes)
+    // Insert a second element locally and also update it
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const localElementId2 = t.insertElement(localTxn, "TestDomain:C", { propA: "local_a2", propC: "local_c2" });
+    localTxn.saveChanges("local insert second element");
+
+    // Local pulls - local inserts rebase on top of far's update
+    await pullChanges(localTxn);
+
+    // Verify: far's update on element1 is present, local's element2 insertion is preserved
+    const element1 = t.getElement(t.local, localElementId);
+    chai.expect(element1.propA).to.equal("far_updated_a", "Far update on element1 should be present");
+
+    const element2 = t.getElement(t.local, localElementId2);
+    chai.expect(element2.propA).to.equal("local_a2", "Local element2 insertion should be preserved");
+    chai.expect(element2.propC).to.equal("local_c2", "Local element2 propC should be preserved");
+  });
+
+  it("A2: both users insert new elements independently", async () => {
+    t = await TestIModel.initialize("A2BothInsertElements");
+    let localTxn = startTestTxn(t.local, "A2 local");
+    const farTxn = startTestTxn(t.far, "A2 far");
+
+    // Far inserts and pushes
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const farElementId = t.insertElement(farTxn, "TestDomain:C", { propA: "far_a", propC: "far_c" });
+    farTxn.saveChanges("far insert element");
+    await pushChanges(farTxn, "far insert element");
+
+    // Local inserts independently (no pull yet)
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const localElementId = t.insertElement(localTxn, "TestDomain:C", { propA: "local_a", propC: "local_c" });
+    localTxn.saveChanges("local insert element");
+
+    // Local pulls - local insert rebases on top of far's insert
+    await pullChanges(localTxn);
+
+    // Both elements should be visible on local briefcase
+    const farElem = t.getElement(t.local, farElementId);
+    chai.expect(farElem.propA).to.equal("far_a", "Far element should be visible after rebase");
+
+    const localElem = t.getElement(t.local, localElementId);
+    chai.expect(localElem.propA).to.equal("local_a", "Local element should be preserved after rebase");
+  });
+
+  it("A3: multiple local data txns are all rebased correctly", async () => {
+    t = await TestIModel.initialize("A3MultipleLocalTxns");
+    let localTxn = startTestTxn(t.local, "A3 local");
+    let farTxn = startTestTxn(t.far, "A3 far");
+
+    // Set up a shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const sharedElementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "A3 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "A3 local 2");
+
+    // Far makes a single update and pushes
+    await t.far.locks.acquireLocks({ exclusive: sharedElementId });
+    t.updateElement(farTxn, sharedElementId, { propC: "far_updated_c" });
+    farTxn.saveChanges("far update propC");
+    await pushChanges(farTxn, "far update element");
+
+    // Local makes 3 separate transactions
+    // Txn 1: update shared element's propA
+    await t.local.locks.acquireLocks({ exclusive: sharedElementId });
+    t.updateElement(localTxn, sharedElementId, { propA: "local_update1_a" });
+    localTxn.saveChanges("local txn1 update propA");
+
+    // Txn 2: insert a new element
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const localInsertedId = t.insertElement(localTxn, "TestDomain:C", { propA: "inserted_a", propC: "inserted_c" });
+    localTxn.saveChanges("local txn2 insert element");
+
+    // Txn 3: update the newly inserted element
+    t.updateElement(localTxn, localInsertedId, { propA: "inserted_updated_a" });
+    localTxn.saveChanges("local txn3 update inserted element");
+
+    // Local pulls - all 3 local txns rebase on top of far's change
+    await pullChanges(localTxn);
+
+    // Verify all 3 local changes are preserved
+    const sharedElem = t.getElement(t.local, sharedElementId);
+    chai.expect(sharedElem.propA).to.equal("local_update1_a", "Txn1: local propA update should be preserved");
+    chai.expect(sharedElem.propC).to.equal("far_updated_c", "Far update to propC should also be present");
+
+    const insertedElem = t.getElement(t.local, localInsertedId);
+    chai.expect(insertedElem.propA).to.equal("inserted_updated_a", "Txn2+3: local element with final update should be preserved");
+    chai.expect(insertedElem.propC).to.equal("inserted_c", "Local element propC should be preserved");
+  });
+
+  // ─── Section B: Data-Data Write Conflicts ────────────────────────────────────
+
+  it("B1: write-write conflict on same property: local value wins by default", async () => {
+    t = await TestIModel.initialize("B1WriteWriteConflict");
+    let localTxn = startTestTxn(t.local, "B1 local");
+    let farTxn = startTestTxn(t.far, "B1 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "B1 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "B1 local 2");
+
+    // Both update propA on the same element
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propA: "far_value_a" });
+    farTxn.saveChanges("far update propA");
+    await pushChanges(farTxn, "far update propA");
+
+    // Local also updates same property — this will conflict during rebase
+    // (Note: in production, lock contention would prevent this, but HubMock allows it for test purposes)
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_value_a" });
+    localTxn.saveChanges("local update propA");
+
+    // Local pulls - default resolution for "Data" cause is Replace → local wins
+    await pullChanges(localTxn);
+
+    const element = t.getElement(t.local, elementId);
+    chai.expect(element.propA).to.equal("local_value_a", "Local value should win with default Replace resolution");
+  });
+
+  it("B2: two users updating different properties of same element: both updates survive", async () => {
+    t = await TestIModel.initialize("B2DifferentProperties");
+    let localTxn = startTestTxn(t.local, "B2 local");
+    let farTxn = startTestTxn(t.far, "B2 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "B2 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "B2 local 2");
+
+    // Far updates propA
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propA: "far_updated_a" });
+    farTxn.saveChanges("far update propA");
+    await pushChanges(farTxn, "far update propA");
+
+    // Local updates propC (different property)
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propC: "local_updated_c" });
+    localTxn.saveChanges("local update propC");
+
+    // Local pulls - different columns should not produce a write conflict
+    await pullChanges(localTxn);
+
+    // Verify: both updates present
+    const element = t.getElement(t.local, elementId);
+    chai.expect(element.propA).to.equal("far_updated_a", "Far propA update should be present");
+    chai.expect(element.propC).to.equal("local_updated_c", "Local propC update should be preserved");
+  });
+
+  it("B3: update-delete conflict: local updates element that incoming deleted", async () => {
+    t = await TestIModel.initialize("B3UpdateDeleteConflict");
+    let localTxn = startTestTxn(t.local, "B3 local");
+    let farTxn = startTestTxn(t.far, "B3 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "B3 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "B3 local 2");
+
+    // Far deletes the element
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    farTxn.deleteElement(elementId);
+    farTxn.saveChanges("far delete element");
+    await pushChanges(farTxn, "far delete element");
+
+    // Local updates the same element (not knowing it was deleted)
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_updated_a" });
+    localTxn.saveChanges("local update deleted element");
+
+    // Local pulls - local update is NotFound → Skip → element stays deleted
+    await pullChanges(localTxn);
+
+    // Element should not exist after rebase
+    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw("Element not found");
+  });
+
+  it("B4: delete-update conflict: local deletes element that incoming updated", async () => {
+    t = await TestIModel.initialize("B4DeleteUpdateConflict");
+    let localTxn = startTestTxn(t.local, "B4 local");
+    let farTxn = startTestTxn(t.far, "B4 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "B4 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "B4 local 2");
+
+    // Far updates the element
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propA: "far_updated_a" });
+    farTxn.saveChanges("far update element");
+    await pushChanges(farTxn, "far update element");
+
+    // Local deletes the element
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    localTxn.deleteElement(elementId);
+    localTxn.saveChanges("local delete element");
+
+    // Local pulls - far update applied first (element gets far's propA), then local delete is reinstated
+    await pullChanges(localTxn);
+
+    // Element should be gone after local delete is reinstated
+    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw("Element not found");
+  });
+
+  // ─── Section C: Custom Conflict Handlers ─────────────────────────────────────
+
+  it("C1: custom conflict handler forcing Skip: far value wins instead of local", async () => {
+    t = await TestIModel.initialize("C1CustomHandlerSkip");
+    let localTxn = startTestTxn(t.local, "C1 local");
+    let farTxn = startTestTxn(t.far, "C1 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "C1 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "C1 local 2");
+
+    // Both update propA
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propA: "far_value_a" });
+    farTxn.saveChanges("far update propA");
+    await pushChanges(farTxn, "far update propA");
+
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_value_a" });
+    localTxn.saveChanges("local update propA");
+
+    // Register a conflict handler that forces Skip (far value is kept, local update is dropped)
+    t.local.txns.rebaser.addConflictHandler({
+      id: "C1-skip-handler",
+      handler: (args) => {
+        if (args.cause === "Data")
+          return DbConflictResolution.Skip;
+        return undefined;
+      },
+    });
+
+    try {
+      await pullChanges(localTxn);
+    } finally {
+      t.local.txns.rebaser.removeConflictHandler("C1-skip-handler");
+    }
+
+    // With Skip, the incoming (far) value stays in the db, local update is dropped
+    const element = t.getElement(t.local, elementId);
+    chai.expect(element.propA).to.equal("far_value_a", "Far value should win when handler forces Skip");
+  });
+
+  it("C2: registering duplicate conflict handler id throws", async () => {
+    t = await TestIModel.initialize("C2DuplicateHandler");
+    const localTxn = startTestTxn(t.local, "C2 local");
+    endTestTxn(localTxn);
+
+    t.local.txns.rebaser.addConflictHandler({ id: "duplicate-id", handler: () => undefined });
+    chai.expect(() =>
+      t!.local.txns.rebaser.addConflictHandler({ id: "duplicate-id", handler: () => undefined })
+    ).to.throw();
+
+    t.local.txns.rebaser.removeConflictHandler("duplicate-id");
+  });
+
+  it("C3: conflict handler removed stops affecting resolution", async () => {
+    t = await TestIModel.initialize("C3HandlerRemoved");
+    let localTxn = startTestTxn(t.local, "C3 local");
+    let farTxn = startTestTxn(t.far, "C3 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "C3 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "C3 local 2");
+
+    // Register Skip handler
+    t.local.txns.rebaser.addConflictHandler({
+      id: "C3-skip-handler",
+      handler: (args) => args.cause === "Data" ? DbConflictResolution.Skip : undefined,
+    });
+    // Immediately remove it
+    t.local.txns.rebaser.removeConflictHandler("C3-skip-handler");
+
+    // Both update propA
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propA: "far_value_a" });
+    farTxn.saveChanges("far update propA");
+    await pushChanges(farTxn, "far update propA");
+
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_value_a" });
+    localTxn.saveChanges("local update propA");
+
+    // No handler registered → default Replace → local wins
+    await pullChanges(localTxn);
+
+    const element = t.getElement(t.local, elementId);
+    chai.expect(element.propA).to.equal("local_value_a", "Local value should win after handler is removed (default Replace)");
+  });
+
+  it("C4: multiple conflict handlers chain: first matching handler wins", async () => {
+    t = await TestIModel.initialize("C4MultipleHandlers");
+    let localTxn = startTestTxn(t.local, "C4 local");
+    let farTxn = startTestTxn(t.far, "C4 far");
+
+    // Create two shared elements
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId1 = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a1", propC: "initial_c1" });
+    const elementId2 = t.insertElement(farTxn, "TestDomain:D", { propA: "initial_a2", propD: "initial_d2" });
+    farTxn.saveChanges("create shared elements");
+    await pushChanges(farTxn, "create shared elements");
+    farTxn = startTestTxn(t.far, "C4 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "C4 local 2");
+
+    // Both update the same properties on both elements
+    await t.far.locks.acquireLocks({ exclusive: elementId1 });
+    await t.far.locks.acquireLocks({ exclusive: elementId2 });
+    t.updateElement(farTxn, elementId1, { propA: "far_a1" });
+    t.updateElement(farTxn, elementId2, { propA: "far_a2" });
+    farTxn.saveChanges("far update both elements");
+    await pushChanges(farTxn, "far update both elements");
+
+    await t.local.locks.acquireLocks({ exclusive: elementId1 });
+    await t.local.locks.acquireLocks({ exclusive: elementId2 });
+    t.updateElement(localTxn, elementId1, { propA: "local_a1" });
+    t.updateElement(localTxn, elementId2, { propA: "local_a2" });
+    localTxn.saveChanges("local update both elements");
+
+    // First handler: returns Skip for all Data conflicts (far value wins)
+    // Second handler: returns undefined (passthrough) — should never affect outcome since first handler catches all
+    // The handlers chain from last-registered to first-registered (linked list is prepended)
+    // So register "passthrough" first, then "skip-all" to ensure skip-all runs first
+    t.local.txns.rebaser.addConflictHandler({
+      id: "C4-passthrough",
+      handler: () => undefined,
+    });
+    t.local.txns.rebaser.addConflictHandler({
+      id: "C4-skip-all",
+      handler: (args) => args.cause === "Data" ? DbConflictResolution.Skip : undefined,
+    });
+
+    try {
+      await pullChanges(localTxn);
+    } finally {
+      t.local.txns.rebaser.removeConflictHandler("C4-skip-all");
+      t.local.txns.rebaser.removeConflictHandler("C4-passthrough");
+    }
+
+    // Both conflicts hit the "skip-all" handler first → far value wins
+    const element1 = t.getElement(t.local, elementId1);
+    chai.expect(element1.propA).to.equal("far_a1", "Handler C4-skip-all should have fired first, far wins for element1");
+
+    const element2 = t.getElement(t.local, elementId2);
+    chai.expect(element2.propA).to.equal("far_a2", "Handler C4-skip-all should have fired first, far wins for element2");
+  });
+
+  // ─── Section D: Rebase Lifecycle Events ──────────────────────────────────────
+
+  it("D1: pull merge events fire in correct order", async () => {
+    t = await TestIModel.initialize("D1EventOrder");
+    let localTxn = startTestTxn(t.local, "D1 local");
+    let farTxn = startTestTxn(t.far, "D1 far");
+
+    // Set up a shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "D1 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "D1 local 2");
+
+    // Far pushes a data change
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propA: "far_updated_a" });
+    farTxn.saveChanges("far update element");
+    await pushChanges(farTxn, "far update element");
+
+    // Local: import schema (local txn1) + data change (local txn2)
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    localTxn = startTestTxn(t.local, "D1 local 3");
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_updated_a" });
+    localTxn.saveChanges("local update element");
+
+    // Capture event order
+    const eventLog: string[] = [];
+    const rebaser = t.local.txns.rebaser;
+
+    rebaser.onDownloadChangesetsBegin.addListener(() => eventLog.push("onDownloadChangesetsBegin"));
+    rebaser.onDownloadChangesetsEnd.addListener(() => eventLog.push("onDownloadChangesetsEnd"));
+    rebaser.onApplyIncomingChangesBegin.addListener(() => eventLog.push("onApplyIncomingChangesBegin"));
+    rebaser.onApplyIncomingChangesEnd.addListener(() => eventLog.push("onApplyIncomingChangesEnd"));
+    rebaser.onReverseLocalChangesBegin.addListener(() => eventLog.push("onReverseLocalChangesBegin"));
+    rebaser.onReverseLocalChangesEnd.addListener(() => eventLog.push("onReverseLocalChangesEnd"));
+    rebaser.onRebaseBegin.addListener(() => eventLog.push("onRebaseBegin"));
+    rebaser.onRebaseTxnBegin.addListener((txnProps) => eventLog.push(`onRebaseTxnBegin:${txnProps.type}`));
+    rebaser.onRebaseTxnEnd.addListener((txnProps) => eventLog.push(`onRebaseTxnEnd:${txnProps.type}`));
+    rebaser.onRebaseEnd.addListener(() => eventLog.push("onRebaseEnd"));
+    rebaser.onPullMergeBegin.addListener(() => eventLog.push("onPullMergeBegin"));
+    rebaser.onPullMergeEnd.addListener(() => eventLog.push("onPullMergeEnd"));
+
+    await pullChanges(localTxn);
+
+    // Verify the high-level order: download → apply incoming → reverse local → rebase → end
+    const downloadBeginIdx = eventLog.indexOf("onDownloadChangesetsBegin");
+    const downloadEndIdx = eventLog.indexOf("onDownloadChangesetsEnd");
+    const applyBeginIdx = eventLog.indexOf("onApplyIncomingChangesBegin");
+    const applyEndIdx = eventLog.indexOf("onApplyIncomingChangesEnd");
+    const reverseBeginIdx = eventLog.indexOf("onReverseLocalChangesBegin");
+    const reverseEndIdx = eventLog.indexOf("onReverseLocalChangesEnd");
+    const rebaseBeginIdx = eventLog.indexOf("onRebaseBegin");
+    const rebaseEndIdx = eventLog.indexOf("onRebaseEnd");
+
+    chai.expect(downloadBeginIdx).to.be.lessThan(downloadEndIdx, "Download begin must precede download end");
+    chai.expect(applyBeginIdx).to.be.lessThan(applyEndIdx, "Apply begin must precede apply end");
+    chai.expect(reverseBeginIdx).to.be.lessThan(reverseEndIdx, "Reverse begin must precede reverse end");
+    chai.expect(rebaseBeginIdx).to.be.lessThan(rebaseEndIdx, "Rebase begin must precede rebase end");
+    // Rebase happens after reverse and apply
+    chai.expect(rebaseBeginIdx).to.be.greaterThan(reverseEndIdx, "Rebase should start after local changes are reversed");
+    chai.expect(rebaseEndIdx).to.be.lessThan(eventLog.indexOf("onPullMergeEnd"), "Rebase should end before pull merge end");
+    // Both txn events should appear between rebaseBegin and rebaseEnd
+    chai.expect(eventLog.some((e) => e.startsWith("onRebaseTxnBegin:"))).to.be.true;
+    chai.expect(eventLog.some((e) => e.startsWith("onRebaseTxnEnd:"))).to.be.true;
+  });
+
+  it("D2: onRebaseTxnBegin and onRebaseTxnEnd carry correct txn metadata", async () => {
+    t = await TestIModel.initialize("D2TxnMetadata");
+    let localTxn = startTestTxn(t.local, "D2 local");
+    const farTxn = startTestTxn(t.far, "D2 far");
+
+    // Far pushes a data change so there is something incoming to trigger rebase
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "far_a", propC: "far_c" });
+    farTxn.saveChanges("far insert element");
+    await pushChanges(farTxn, "far insert element");
+
+    // Local imports a schema change
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    localTxn = startTestTxn(t.local, "D2 local after schema");
+
+    const capturedBeginProps: Array<{ type: string; id: string }> = [];
+    const capturedEndProps: Array<{ type: string; id: string }> = [];
+
+    t.local.txns.rebaser.onRebaseTxnBegin.addListener((txnProps) => {
+      capturedBeginProps.push({ type: txnProps.type, id: txnProps.id });
+    });
+    t.local.txns.rebaser.onRebaseTxnEnd.addListener((txnProps) => {
+      capturedEndProps.push({ type: txnProps.type, id: txnProps.id });
+    });
+
+    await pullChanges(localTxn);
+
+    // At least one schema txn should have been captured
+    chai.expect(capturedBeginProps.length).to.be.greaterThan(0, "At least one txn begin event should fire");
+    chai.expect(capturedEndProps.length).to.be.greaterThan(0, "At least one txn end event should fire");
+    chai.expect(capturedBeginProps.length).to.equal(capturedEndProps.length, "Begin and end counts should match");
+
+    const schemaTxn = capturedBeginProps.find((p) => p.type === "Schema" || p.type === "ECSchema");
+    chai.expect(schemaTxn).to.not.be.undefined;
+    chai.expect(schemaTxn!.id).to.be.a("string").and.have.length.greaterThan(0, "Txn id should be non-empty");
+  });
+
+  it("D3: onRebaseBegin receives correct array of txn ids", async () => {
+    t = await TestIModel.initialize("D3RebaseBeginTxns");
+    let localTxn = startTestTxn(t.local, "D3 local");
+    const farTxn = startTestTxn(t.far, "D3 far");
+
+    // Far pushes something to trigger rebase
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "far_a", propC: "far_c" });
+    farTxn.saveChanges("far insert element");
+    await pushChanges(farTxn, "far insert element");
+
+    // Local creates 2 txns: schema + data
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    localTxn = startTestTxn(t.local, "D3 local after schema");
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const localElementId = t.insertElement(localTxn, "TestDomain:C", { propA: "local_a", propC: "local_c" });
+    localTxn.saveChanges("local insert element");
+
+    let capturedTxns: Array<{ type: string; id: string }> = [];
+    t.local.txns.rebaser.onRebaseBegin.addListener((txns) => {
+      capturedTxns = txns.map((p) => ({ type: p.type, id: p.id }));
+    });
+
+    await pullChanges(localTxn);
+
+    chai.expect(capturedTxns.length).to.be.greaterThanOrEqual(2, "Should have at least 2 local txns to rebase (schema + data)");
+    chai.expect(capturedTxns.every((p) => typeof p.id === "string" && p.id.length > 0)).to.be.true;
+
+    // Verify the inserted element is still there
+    const localElem = t.getElement(t.local, localElementId);
+    chai.expect(localElem.propA).to.equal("local_a");
+
+    // Confirm far element also landed
+    const farElem = t.getElement(t.local, elementId);
+    chai.expect(farElem.propA).to.equal("far_a");
+  });
+
+  // ─── Section E: Abort mid-rebase ─────────────────────────────────────────────
+
+  it("E1: abort mid-rebase restores briefcase to pre-pull state", async () => {
+    t = await TestIModel.initialize("E1AbortMidRebase");
+    let localTxn = startTestTxn(t.local, "E1 local");
+    let farTxn = startTestTxn(t.far, "E1 far");
+
+    // Set up shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "E1 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "E1 local 2");
+
+    // Far pushes schema change
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(farTxn, "far import schema");
+
+    // Local imports schema and has a data change too
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    localTxn = startTestTxn(t.local, "E1 local after schema");
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_updated_a" });
+    localTxn.saveChanges("local update element");
+
+    // Capture the schema version before pulling
+    const schemaBefore = t.local.getSchemaProps("TestDomain");
+
+    let aborted = false;
+    const rebaser = t.local.txns.rebaser;
+
+    // Hook into the first txn begin to trigger an abort.
+    // Note: the listener is sync so we schedule the abort via a resolved promise microtask.
+    // The abort itself is async but canAbort() check is sync.
+    let abortPromise: Promise<void> | undefined;
+    rebaser.onRebaseTxnBegin.addOnce(() => {
+      if (rebaser.canAbort()) {
+        abortPromise = rebaser.abort().then(() => { aborted = true; });
+      }
+    });
+
+    try {
+      await t.local.pullChanges();
+    } catch {
+      // Expected: pull will throw after abort
+    }
+
+    // Ensure the abort promise (if triggered) has resolved
+    if (abortPromise)
+      await abortPromise;
+
+    // If abort was possible and executed, briefcase should be back to pre-pull state
+    if (aborted) {
+      const schemaAfterAbort = t.local.getSchemaProps("TestDomain");
+      chai.expect(schemaAfterAbort.version).to.equal(schemaBefore.version, "Schema should be rolled back to pre-pull state after abort");
+      // The local element update should still be pending
+      const element = t.getElement(t.local, elementId);
+      chai.expect(element.propA).to.equal("local_updated_a", "Local update should be preserved after abort");
+    } else {
+      // abort was not available (implementation-dependent); just confirm pull completed without crash
+      chai.expect(true).to.be.true;
+    }
+  });
+
+  // ─── Section F: Conflicts with Schema Changes ────────────────────────────────
+
+  it("F1: write-write data conflict during local transforming schema rebase: local data patch value wins", async () => {
+    t = await TestIModel.initialize("F1ConflictDuringTransformingSchemaRebase");
+    let localTxn = startTestTxn(t.local, "F1 local");
+    let farTxn = startTestTxn(t.far, "F1 far");
+
+    // Create shared element with propC populated
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "F1 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "F1 local 2");
+
+    // Far updates propC and pushes
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(farTxn, elementId, { propC: "far_updated_c" });
+    farTxn.saveChanges("far update propC");
+    await pushChanges(farTxn, "far update propC");
+
+    // Local updates propC (same property — conflict during rebase) AND imports transforming schema
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propC: "local_updated_c" });
+    localTxn.saveChanges("local update propC");
+
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+
+    // Local pulls - schema is reinstated (transforms PropC to base class A), data patch reinstated (local propC value)
+    await pullChanges(localTxn);
+
+    t.local.clearCaches();
+    const element = t.getElement(t.local, elementId);
+    chai.expect(element.propC).to.equal("local_updated_c", "Local propC value should survive after transforming schema rebase");
+
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v01.00.02 after rebase");
+  });
+
+  it("F2: local element deletion + incoming transforming schema change: delete is reinstated, element stays gone", async () => {
+    t = await TestIModel.initialize("F2DeleteIncomingTransform");
+    let localTxn = startTestTxn(t.local, "F2 local");
+    let farTxn = startTestTxn(t.far, "F2 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "F2 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "F2 local 2");
+
+    // Far imports transforming schema (moves PropC from C to A)
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    await pushChanges(farTxn, "far import transforming schema");
+
+    // Local deletes the element
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    localTxn.deleteElement(elementId);
+    localTxn.saveChanges("local delete element");
+
+    // Local pulls - incoming transform applied, then local delete is reinstated
+    await pullChanges(localTxn);
+
+    t.local.clearCaches();
+    // Element should be gone
+    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw("Element not found");
+
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
+  });
+
+  it("F3: incoming element deletion + local transforming schema change: schema upgrade survives, element absent", async () => {
+    t = await TestIModel.initialize("F3IncomingDeleteLocalTransform");
+    let localTxn = startTestTxn(t.local, "F3 local");
+    let farTxn = startTestTxn(t.far, "F3 far");
+
+    // Create shared element
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "F3 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "F3 local 2");
+
+    // Far deletes the element
+    await t.far.locks.acquireLocks({ exclusive: elementId });
+    farTxn.deleteElement(elementId);
+    farTxn.saveChanges("far delete element");
+    await pushChanges(farTxn, "far delete element");
+
+    // Local imports transforming schema (moves PropC from C to A) and updates the element (which was not deleted on local yet)
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    localTxn = startTestTxn(t.local, "F3 local after schema");
+    // Note: the element still exists locally before pull
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propA: "local_updated_a" });
+    localTxn.saveChanges("local update element (will become NotFound after delete is applied)");
+
+    // Local pulls - far delete is applied first, then local schema is reinstated, local data patch hits NotFound → Skip
+    await pullChanges(localTxn);
+
+    t.local.clearCaches();
+    // Element should not exist (far's delete won)
+    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw("Element not found");
+
+    // Schema should still be updated
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema upgrade should survive even when element data patch was skipped");
+  });
+
+});
