@@ -45,7 +45,7 @@ interface OutEdgesMap {
 }
 
 /** @internal */
-export class DirectedGraph<T> {
+export class UnitConversionGraph<T> {
   private _edgeKeyDelim = "\x01";
   private _label = "";
   private _nodeCount = 0;
@@ -62,7 +62,7 @@ export class DirectedGraph<T> {
     this._outEdges = {};
   }
 
-  public setGraph = (label: string): DirectedGraph<T> => {
+  public setGraph = (label: string): UnitConversionGraph<T> => {
     this._label = label;
     return this;
   };

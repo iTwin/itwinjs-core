@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { DirectedGraph } from "../../UnitConversion/Graph";
+import { UnitConversionGraph } from "../../UnitConversion/Graph";
 
-describe("DirectedGraph", () => {
+describe("UnitConversionGraph", () => {
   it("starts empty", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     expect(g.nodeCount()).toBe(0);
     expect(g.edgeCount()).toBe(0);
   });
 
   it("adds nodes", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     expect(g.nodeCount()).toBe(2);
@@ -23,7 +23,7 @@ describe("DirectedGraph", () => {
   });
 
   it("updates existing node value", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     g.setNode("a", "A1");
     g.setNode("a", "A2");
     expect(g.nodeCount()).toBe(1);
@@ -31,7 +31,7 @@ describe("DirectedGraph", () => {
   });
 
   it("adds edges", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     g.setEdge("a", "b", { exponent: 1 });
@@ -40,7 +40,7 @@ describe("DirectedGraph", () => {
   });
 
   it("accumulates exponents on duplicate edges", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     g.setEdge("a", "b", { exponent: 2 });
@@ -50,7 +50,7 @@ describe("DirectedGraph", () => {
   });
 
   it("lists outgoing edges", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     g.setNode("a", "A");
     g.setNode("b", "B");
     g.setNode("c", "C");
@@ -63,14 +63,14 @@ describe("DirectedGraph", () => {
   });
 
   it("lists all nodes", () => {
-    const g = new DirectedGraph<number>();
+    const g = new UnitConversionGraph<number>();
     g.setNode("x", 1);
     g.setNode("y", 2);
     expect(g.nodes().sort()).toEqual(["x", "y"]);
   });
 
   it("sets and gets graph label", () => {
-    const g = new DirectedGraph<string>();
+    const g = new UnitConversionGraph<string>();
     g.setGraph("test");
     expect(g.graph()).toBe("test");
   });

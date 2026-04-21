@@ -10,7 +10,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { SchemaItemType } from "../ECObjects";
-import { type DefinitionFragment, DirectedGraph, parseDefinition, UnitConversion } from "@itwin/core-quantity";
+import { type DefinitionFragment, parseDefinition, UnitConversion, UnitConversionGraph } from "@itwin/core-quantity";
 
 /** @internal */
 export class GraphUtils {
@@ -22,7 +22,7 @@ export class GraphUtils {
    * @param op Reducing function
    * @param initial Initial label
    */
-  public static dfsReduce<T>(_graph: DirectedGraph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, initial: T, baseUnitsMap: Map<string, number>, accumulatedExponent: number): T {
+  public static dfsReduce<T>(_graph: UnitConversionGraph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, initial: T, baseUnitsMap: Map<string, number>, accumulatedExponent: number): T {
     const outEdges = _graph.outEdges(key);
     let t = initial;
     if (outEdges.length > 0) {
@@ -49,7 +49,7 @@ export class GraphUtils {
 
 /** @internal */
 export class UnitGraph {
-  private _graph = new DirectedGraph<Unit | Constant>();
+  private _graph = new UnitConversionGraph<Unit | Constant>();
   private _unitsInProgress = new Map<string, Promise<void>>();
 
   constructor(private _context: SchemaContext) {

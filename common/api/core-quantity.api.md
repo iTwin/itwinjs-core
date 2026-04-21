@@ -267,45 +267,6 @@ export interface DefinitionFragment {
     name: string;
 }
 
-// @internal (undocumented)
-export class DirectedGraph<T> {
-    constructor();
-    // (undocumented)
-    edge: (v: string, w: string) => {
-        exponent: number;
-    };
-    // (undocumented)
-    edgeCount: () => number;
-    // (undocumented)
-    edges: () => {
-        v: string;
-        w: string;
-    }[];
-    // (undocumented)
-    graph: () => string;
-    // (undocumented)
-    hasNode: (nodeKey: string) => boolean;
-    // (undocumented)
-    node: (nodeKey: string) => T;
-    // (undocumented)
-    nodeCount: () => number;
-    // (undocumented)
-    nodes: () => string[];
-    // (undocumented)
-    outEdges: (v: string) => {
-        v: string;
-        w: string;
-    }[];
-    // (undocumented)
-    setEdge: (v: string, w: string, value: {
-        exponent: number;
-    }) => void;
-    // (undocumented)
-    setGraph: (label: string) => DirectedGraph<T>;
-    // (undocumented)
-    setNode: (nodeKey: string, nodeValue: T) => void;
-}
-
 // @beta
 export class Format extends BaseFormat {
     constructor(name: string);
@@ -939,6 +900,45 @@ export class UnitConversion {
     // (undocumented)
     readonly offset: number;
     raise(power: number): UnitConversion;
+}
+
+// @internal (undocumented)
+export class UnitConversionGraph<T> {
+    constructor();
+    // (undocumented)
+    edge: (v: string, w: string) => {
+        exponent: number;
+    };
+    // (undocumented)
+    edgeCount: () => number;
+    // (undocumented)
+    edges: () => {
+        v: string;
+        w: string;
+    }[];
+    // (undocumented)
+    graph: () => string;
+    // (undocumented)
+    hasNode: (nodeKey: string) => boolean;
+    // (undocumented)
+    node: (nodeKey: string) => T;
+    // (undocumented)
+    nodeCount: () => number;
+    // (undocumented)
+    nodes: () => string[];
+    // (undocumented)
+    outEdges: (v: string) => {
+        v: string;
+        w: string;
+    }[];
+    // (undocumented)
+    setEdge: (v: string, w: string, value: {
+        exponent: number;
+    }) => void;
+    // (undocumented)
+    setGraph: (label: string) => UnitConversionGraph<T>;
+    // (undocumented)
+    setNode: (nodeKey: string, nodeValue: T) => void;
 }
 
 // @beta
