@@ -6,7 +6,9 @@ import { UnitConversionInvert, type UnitConversionProps, type UnitProps, type Un
 import type { SerializedInvertedUnit, SerializedUnit, SerializedUnitSchema } from "./SerializedUnitSchema";
 import { type ResolvedUnit, UnitDefinitionResolver } from "./UnitConversion/UnitDefinitionResolver";
 import { BadUnit } from "./Unit";
-import schema from "./assets/Units.json";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const schema = require("./assets/Units.json");
 
 interface IndexedUnit {
   readonly props: UnitProps;
