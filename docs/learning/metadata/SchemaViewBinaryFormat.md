@@ -82,18 +82,19 @@ Record size: **38 bytes** fixed.
 
 Each schema record:
 
-| Type   | Field          | Description          |
-| ------ | -------------- | -------------------- |
-| uint32 | nameSid        | Schema name (SRef)   |
-| uint16 | versionRead    | Read version digit   |
-| uint16 | versionWrite   | Write version digit  |
-| uint16 | versionMinor   | Minor version digit  |
-| uint32 | aliasSid       | Schema alias (SRef)  |
-| uint32 | labelSid       | Display label (SRef) |
-| uint32 | descriptionSid | Description (SRef)   |
-| uint32 | ecInstanceId   | ec_Schema.Id         |
+| Type   | Field          | Description                                                                 |
+| ------ | -------------- | --------------------------------------------------------------------------- |
+| uint32 | nameSid        | Schema name (SRef)                                                          |
+| uint16 | versionRead    | Read version digit                                                          |
+| uint16 | versionWrite   | Write version digit                                                         |
+| uint16 | versionMinor   | Minor version digit                                                         |
+| uint32 | aliasSid       | Schema alias (SRef)                                                         |
+| uint32 | labelSid       | Display label (SRef)                                                        |
+| uint32 | descriptionSid | Description (SRef)                                                          |
+| uint32 | ecInstanceId   | ec_Schema.Id                                                                |
+| uint8  | isHidden       | 1 if the schema has HiddenSchema CA (with ShowClasses != true), 0 otherwise |
 
-Record size: **26 bytes** fixed.
+Record size: **27 bytes** fixed.
 
 ### EnumTable (tag 0x20)
 
@@ -183,8 +184,14 @@ Each class record:
 | uint8  | strength          | **(Relationship only)** 0=Referencing, 1=Holding, 2=Embedding          |
 | uint8  | strengthDirection | **(Relationship only)** 0=Forward, 1=Backward                          |
 | uint32 | ecInstanceId      | ec_Class.Id                                                            |
+| uint8  | isHidden          | Tri-state: 0 = undefined (no CA), 1 = hidden, 2 = explicitly shown     |
 
 The `strength` and `strengthDirection` fields are **only present when classType == 1** (Relationship). For all other class types they are omitted.
+
+The `isHidden` field encodes the class-level hidden state as a tri-state byte:
+- **0 (undefined)**: No `HiddenClass` CA on the class and the owning schema does not hide classes.
+- **1 (hidden)**: The class has `HiddenClass(Show != true)`, or the owning schema has `HiddenSchema(ShowClasses != true)` and the class has no explicit override.
+- **2 (explicitly shown)**: The class has `HiddenClass(Show = true)`. This overrides schema-level hiding and breaks the base-class inheritance chain for `isEffectivelyHidden`.
 
 #### Base Classes (inline, count-prefixed)
 

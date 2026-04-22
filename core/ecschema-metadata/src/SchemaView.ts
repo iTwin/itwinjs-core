@@ -561,8 +561,33 @@ export namespace SchemaView {
     public get isSealed(): boolean { return this._data.modifier === ClassModifier.Sealed; }
 
     /** Reflects the `HiddenClass` custom attribute from `CoreCustomAttributes`.
-     * Classes marked hidden are typically excluded from UI display but remain accessible programmatically. */
-    public get isHidden(): boolean { return this._data.isHidden; }
+     * Returns `true` when this class is directly hidden (via `HiddenClass(Show!=true)` or
+     * schema-level `HiddenSchema(ShowClasses!=true)`). Does NOT consider base class inheritance -
+     * use `isEffectivelyHidden` for that.
+     *
+     * Note: `false` means explicitly shown via `HiddenClass(Show=true)`. `undefined` means
+     * no `HiddenClass` CA and the schema does not hide its classes. Both are "not hidden" for
+     * this property, but `isEffectivelyHidden` distinguishes them when walking the hierarchy. */
+    public get isHidden(): boolean | undefined { return this._data.isHidden; }
+
+    /** Computed hidden status that walks the base class chain (not mixins).
+     *
+     * Returns `true` if this class is hidden or any ancestor in the base class chain is hidden,
+     * unless this class or an intermediate class explicitly breaks the chain with
+     * `HiddenClass(Show=true)` (i.e. `isHidden === false`).
+     *
+     * Mixins are intentionally excluded - a hidden mixin represents a hidden capability,
+     * not a hidden identity. */
+    public get isEffectivelyHidden(): boolean {
+      let data: ClassData | undefined = this._data;
+      while (data !== undefined) {
+        if (data.isHidden === false) return false; // explicit Show=true breaks the chain
+        if (data.isHidden === true) return true;
+        // undefined: walk to base class via internal array (avoids allocating Class objects)
+        data = data.baseClassIdx !== -1 ? this._ctx.classes[data.baseClassIdx] : undefined;
+      }
+      return false;
+    }
 
     // Hierarchy
 

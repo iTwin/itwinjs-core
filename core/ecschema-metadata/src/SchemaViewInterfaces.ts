@@ -114,7 +114,21 @@ export interface ClassData {
   readonly strengthDirection: StrengthDirection;
   readonly sourceConstraintIdx: number;
   readonly targetConstraintIdx: number;
-  readonly isHidden: boolean;
+  /** Tri-state hidden status from the `HiddenClass` / `HiddenSchema` custom attributes.
+   *
+   * This is the *direct* status of this class. It does NOT propagate through class
+   * inheritance. Use `SchemaView.Class.isEffectivelyHidden` for hierarchy-aware checks.
+   *
+   * - `true`: `HiddenClass(Show!=true)` is applied, OR the owning schema has
+   *   `HiddenSchema(ShowClasses!=true)` and this class does not override with `HiddenClass(Show=true)`.
+   * - `false`: `HiddenClass(Show=true)` is explicitly applied. This overrides schema-level
+   *   hiding and breaks the inheritance chain for `isEffectivelyHidden` on derived classes.
+   * - `undefined`: No `HiddenClass` CA and the schema does not hide its classes. Neutral -
+   *   `isEffectivelyHidden` will look up the base class chain to decide.
+   *
+   * Binary encoding: 0 = undefined, 1 = true, 2 = false.
+   */
+  readonly isHidden: boolean | undefined;
 }
 
 /** Shared, deduplicated property definition. Many properties may reference the same def.

@@ -94,7 +94,7 @@ interface PendingClass {
   propRefs: PendingPropRef[];
   constraints: PendingConstraint[];
   schemaName: string;
-  isHidden: boolean;
+  isHidden: boolean | undefined;
 }
 
 /** A property reference from the binary PropertyDefTable. During parsing, `preDefIdx` stores the
@@ -384,7 +384,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       relStrengthDir = reader.readU8() as StrengthDirection;
     }
     const cEcInstanceId = reader.readU32();
-    const cIsHidden = reader.readU8() !== 0;
+    // Tri-state hidden: 0=undefined (no CA, schema doesn't hide), 1=true (hidden), 2=false (explicitly shown)
+    const cHiddenByte = reader.readU8();
+    const cIsHidden: boolean | undefined = cHiddenByte === 1 ? true : cHiddenByte === 2 ? false : undefined;
 
     // Base classes (count-prefixed)
     const baseCount = reader.readU16();
