@@ -21,7 +21,7 @@ import {
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -3239,14 +3239,22 @@ export namespace IModelDb {
 
       const props = {} as ViewStateProps;
       props.viewDefinitionProps = loader.loadView();
-      props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);
-      props.displayStyleProps = loader.loadDisplayStyle(props.viewDefinitionProps.displayStyleId);
-      const modelSelectorId = (props.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      props.categorySelectorProps = loader.loadCategorySelector(resolveNavPropId(props.viewDefinitionProps.categorySelector, props.viewDefinitionProps.categorySelectorId));
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      props.displayStyleProps = loader.loadDisplayStyle(resolveNavPropId(props.viewDefinitionProps.displayStyle, props.viewDefinitionProps.displayStyleId));
+
+      const spatialViewDefinitionProps = (props.viewDefinitionProps as SpatialViewDefinitionProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const modelSelectorId = resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId);
       if (modelSelectorId !== undefined)
         props.modelSelectorProps = loader.loadModelSelector(modelSelectorId);
 
       const viewClass = iModel.getJsClass(props.viewDefinitionProps.classFullName);
-      const baseModelId = (props.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      const viewDefinitionProps = (props.viewDefinitionProps as ViewDefinition2dProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const baseModelId = resolveNavPropId(viewDefinitionProps.baseModel, viewDefinitionProps.baseModelId);
       if (viewClass.is(SheetViewDefinition)) {
         props.sheetProps = elements.getElementProps<SheetProps>(baseModelId);
         props.sheetAttachments = Array.from(iModel.queryEntityIds({
@@ -3271,7 +3279,9 @@ export namespace IModelDb {
     /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by ViewIdString. */
     public async getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps> {
       const viewStateData = this.loadViewData(viewDefinitionId, options);
-      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      const viewDefinition2dProps = (viewStateData.viewDefinitionProps as ViewDefinition2dProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const baseModelId = resolveNavPropId(viewDefinition2dProps.baseModel, viewDefinition2dProps.baseModelId);
       if (baseModelId) {
         const drawingExtents = await this._iModel.models.queryRange(baseModelId);
         if (!drawingExtents.isNull)
