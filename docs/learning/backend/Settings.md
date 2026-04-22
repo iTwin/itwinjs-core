@@ -24,7 +24,7 @@ A [SettingName]($backend) must be unique, 1 to 1024 characters long with no lead
   "landscapePro/hardinessRange"
 ```
 
-Each name begins with the "landscapePro" schema prefix followed by a forward slash. Forward slashes create logical groupings, similar to file paths.
+Forward slashes create logical groupings, similar to file paths.
 
 ## Settings schemas
 
