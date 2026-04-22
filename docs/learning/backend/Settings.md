@@ -1,12 +1,12 @@
 # Settings
 
-[Settings]($backend) are how administrators configure an iTwin.js application for end-users. A setting is a named value — a `string`, `number`, `boolean`, object, or array — that controls application behavior at run-time.
+[Settings]($backend) are how administrators configure an iTwin.js application for end-users. A setting is a named value — a `string`, `number`, `boolean`, object, or array — that controls application behavior at run-time. Settings can live at different levels of persistence — in-memory app defaults, cloud-backed iTwin settings, or iModel-specific overrides — and the runtime resolves them by priority so higher-priority values win.
 
 > **New to this topic?** Start with the [Workspaces and Settings overview](./WorkspacesAndSettings.md) to understand how [Settings]($backend), settings containers, and [WorkspaceDb]($backend) relate before diving in here.
 
 ## What is a setting?
 
-Be careful to avoid confusing **settings** with **user preferences**, which are configured by individual users. For example, an application might provide a check box to toggle "dark mode". Each individual user can make their own choice — it is a user preference, not a setting. But an administrator may define a setting that controls whether users can see that check box in the first place.
+A setting controls application behavior. For example, an application might provide a check box to toggle "dark mode"; whether users can see that check box in the first place could be controlled by a setting. Each individual's dark mode choice is a user preference, not a setting.
 
 A [Setting]($backend) is a name-value pair. The value can be:
 
@@ -64,6 +64,8 @@ IModelHost.onAfterStartup.addListener(() => {
 });
 ```
 
+For brevity, some of the extract snippets later in this article call `IModelHost.settingsSchemas.addGroup(...)` directly. In an application, register schemas during startup, usually in `IModelHost.onAfterStartup`.
+
 All schemas are unregistered when [IModelHost.shutdown]($backend) is invoked.
 
 ### Schema validation behavior
@@ -78,7 +80,7 @@ Because validation happens on retrieval, register your schemas early — ideally
 
 ## Settings dictionaries
 
-The values of [Setting]($backend)s are provided by [SettingsDictionary]($backend)s. The [Settings]($backend) for the current session can be accessed via the `settings` property of [IModelHost.appWorkspace]($backend).
+A [SettingsDictionary]($backend) supplies values for one or more [Setting]($backend)s. The [Settings]($backend) for the current session can be accessed via the `settings` property of [IModelHost.appWorkspace]($backend).
 
 > **Dictionary structure tips:** Prefix all setting names with the [schemaPrefix](#settings-schemas) of the schema that defines them to avoid collisions. Use forward-slash grouping (e.g., `"landscapePro/ui/"`, `"landscapePro/flora/"`) to organize related settings — prefer flat keys over deeply nested objects. Keep individual dictionary files focused on a single concern so administrators can override only what they need at a particular [SettingsPriority]($backend).
 
@@ -120,12 +122,12 @@ Specific values:
 
 - [SettingsPriority.defaults]($backend) (100) — settings loaded automatically at startup.
 - [SettingsPriority.application]($backend) (200) — settings supplied by the application to override or supplement defaults.
-- [SettingsPriority.organization]($backend) (300) — settings applying to all iTwins in an organization.
-- [SettingsPriority.iTwin]($backend) (400) — settings applying to a particular iTwin and all its iModels.
-- [SettingsPriority.branch]($backend) (500) — settings applying to all branches of a particular iModel.
-- [SettingsPriority.iModel]($backend) (600) — settings applying to one specific iModel.
+- [SettingsPriority.organization]($backend) (300) — settings applied to all iTwins in an organization.
+- [SettingsPriority.iTwin]($backend) (400) — settings applied to a particular iTwin and all its iModels.
+- [SettingsPriority.branch]($backend) (500) — settings applied to all branches of a particular iModel.
+- [SettingsPriority.iModel]($backend) (600) — settings applied to one specific iModel.
 
-[SettingsDictionary]($backend)s of `application` priority or lower reside in [IModelHost.appWorkspace]($backend). iTwin-scoped settings are loaded into the workspace returned by [IModelHost.getITwinWorkspace]($backend) — see [iTwin settings](#itwin-settings). Settings of even higher priority (branch and iModel) are stored in an [IModelDb.workspace]($backend) — see [iModel settings](#imodel-settings).
+A [SettingsDictionary]($backend) of `application` priority or lower resides in [IModelHost.appWorkspace]($backend). iTwin-scoped settings are loaded into the workspace returned by [IModelHost.getITwinWorkspace]($backend) — see [iTwin settings](#itwin-settings). Settings of even higher priority (branch and iModel) are stored in an [IModelDb.workspace]($backend) — see [iModel settings](#imodel-settings).
 
 In practice, an organization admin can set org-wide defaults at `organization` priority. An iTwin-level admin can selectively override settings for their iTwin at `iTwin` priority without affecting other iTwins. For example, to add a dictionary at iTwin priority:
 
@@ -206,6 +208,8 @@ iTwin settings are loaded with [SettingsPriority.iTwin]($backend) priority.
 ## iModel settings
 
 > **Note:** Storing settings directly in an iModel (via [EditTxn.saveSettingDictionary]($backend)) ties configuration to a single iModel file. Settings cannot be discovered without opening the iModel and cannot be versioned independently. For new projects, consider storing shared settings in a cloud-hosted settings container instead — it is discoverable by iTwinId, versioned independently, and does not require an iModel to be open.
+>
+> **Migrating older code?** Deprecated [IModelDb.saveSettingDictionary]($backend) and [IModelDb.deleteSettingDictionary]($backend) map to [EditTxn.saveSettingDictionary]($backend) and [EditTxn.deleteSettingDictionary]($backend), typically via `withEditTxn`.
 
 Each [IModelDb]($backend) has its own [Workspace]($backend), accessible via [IModelDb.workspace]($backend). This workspace inherits app-level settings (via [IModelHost.appWorkspace]($backend)) and layers on settings stored inside the iModel itself. iTwin-level settings are not loaded automatically — see [Referencing iTwin settings from an iModel](#referencing-itwin-settings-from-an-imodel) for how to include them. Because iModel-level dictionaries are loaded at [SettingsPriority.iModel]($backend) — the highest built-in priority — they override any lower-priority setting with the same name.
 

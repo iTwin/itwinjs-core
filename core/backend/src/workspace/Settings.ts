@@ -203,15 +203,16 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  * Like iModel-specific settings, any settings supplied by the iTwin will override those defined at the application level.
  *
  * Application settings are loaded into [[IModelHost.appWorkspace]] when the session begins (i.e., when [[IModelHost.startup]] is invoked), and unloaded when it ends (in [[IModelHost.shutdown]]).
- * They are read from [JSON5](https://json5.org/) files delivered with the application. The application should register any additional [[SettingsDictionary]]'s '(and their corresponding
- * [[SettingGroupSchema]]s) at this time.
+ * They are read from [JSON5](https://json5.org/) files delivered with the application. The application should register any additional [[SettingsDictionary]]s
+ * (and their corresponding [[SettingGroupSchema]]s) at this time.
  *
  * iModel-specific settings are stored in the iModel's property table and loaded into [[IModelDb.workspace]] when the iModel is first opened.
  * You can add and remove a [[SettingsDictionary]] from the property table using [[EditTxn.saveSettingDictionary]] and [[EditTxn.deleteSettingDictionary]].
+ * If you are migrating older code, [[IModelDb.saveSettingDictionary]] and [[IModelDb.deleteSettingDictionary]] are deprecated in favor of the [[EditTxn]] APIs.
  *
  * iTwin-specific settings are stored in a [[CloudSqliteContainer]] in the cloud.
  * When [[IModelHost.getITwinWorkspace]] is invoked, the container is accessed using the iTwinId and the settings are loaded into the returned [[Workspace]].
- * You can add and remove a [[SettingsDictionary]] from the container using [[Workspace.saveSettingsDictionary]] and [[Workspace.deleteSettingsDictionary]].
+ * You can add and remove a [[SettingsDictionary]] from the container using [[IModelHost.saveSettingDictionary]] and [[IModelHost.deleteSettingDictionary]].
  *
  * See the [learning article]($docs/learning/backend/Workspace) for a detailed overview and examples.
  *
