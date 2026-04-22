@@ -55,7 +55,7 @@ export interface ViewRealityModel {
   /** Display name of the reality model, if available. For persisted reality models this comes from the
    * [[ModelState]]; for context reality models, from the [[ContextRealityModelState]].
    */
-  readonly name: string | undefined;
+  readonly name: string;
   /** A description of the reality model suitable for display in a user interface, if available.
    * Only context reality models provide a description; for persisted reality models this is always `undefined`.
    */

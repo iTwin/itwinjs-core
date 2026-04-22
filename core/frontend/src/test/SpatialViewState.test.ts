@@ -168,13 +168,13 @@ describe("SpatialViewState", () => {
       const contextState = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/tileset.json", name: "Context Reality", description: "A context model" });
 
       const refs = collectRefs(view);
-      expect(refs).to.have.length(2);
-      expect(refs[0].treeRef).to.equal(contextState.treeRef);
-      expect(refs[0].name).to.equal("Context Reality");
-      expect(refs[0].description).to.equal("A context model");
-      expect(refs[1].treeRef).to.equal(persistedRef);
-      expect(refs[1].name).to.equal("Persisted Reality");
-      expect(refs[1].description).to.be.undefined;
+      expect(refs).toHaveLength(2);
+      expect(refs[0].treeRef).toBe(contextState.treeRef);
+      expect(refs[0].name).toBe("Context Reality");
+      expect(refs[0].description).toBe("A context model");
+      expect(refs[1].treeRef).toBe(persistedRef);
+      expect(refs[1].name).toBe("Persisted Reality");
+      expect(refs[1].description).toBeUndefined();
     });
 
     it("excludes invisible context reality models", () => {
@@ -183,7 +183,7 @@ describe("SpatialViewState", () => {
 
       const state = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/tileset.json" });
       state.invisible = true;
-      expect(collectRefs(view)).to.have.length(0);
+      expect(collectRefs(view)).toHaveLength(0);
     });
 
     it("yields only visible context models when some are invisible", () => {
@@ -196,18 +196,20 @@ describe("SpatialViewState", () => {
       const alsoVisible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/c.json", name: "Also Visible" });
 
       const refs = collectRefs(view);
-      expect(refs).to.have.length(2);
-      expect(refs[0].treeRef).to.equal(visible.treeRef);
-      expect(refs[0].name).to.equal("Visible");
-      expect(refs[1].treeRef).to.equal(alsoVisible.treeRef);
-      expect(refs[1].name).to.equal("Also Visible");
+      expect(refs).toHaveLength(2);
+      expect(refs[0].treeRef).toBe(visible.treeRef);
+      expect(refs[0].name).toBe("Visible");
+      expect(refs[0].description).toBe("");
+      expect(refs[1].treeRef).toBe(alsoVisible.treeRef);
+      expect(refs[1].name).toBe("Also Visible");
+      expect(refs[1].description).toBe("");
     });
 
     it("excludes refs whose tile trees have not loaded", () => {
       const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
       view.getModelTreeRefs = () => [new UnloadedTreeRef()];
 
-      expect(collectRefs(view)).to.have.length(0);
+      expect(collectRefs(view)).toHaveLength(0);
     });
 
     it("excludes persisted models whose model is not in cache", () => {
@@ -218,7 +220,7 @@ describe("SpatialViewState", () => {
 
       vi.spyOn(iModel.models, "getLoaded").mockReturnValue(undefined);
 
-      expect(collectRefs(view)).to.have.length(0);
+      expect(collectRefs(view)).toHaveLength(0);
     });
 
     it("excludes persisted models with no asSpatialModel", () => {
@@ -233,7 +235,7 @@ describe("SpatialViewState", () => {
         return undefined;
       });
 
-      expect(collectRefs(view)).to.have.length(0);
+      expect(collectRefs(view)).toHaveLength(0);
     });
   });
 });
