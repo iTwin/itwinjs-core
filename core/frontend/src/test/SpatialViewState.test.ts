@@ -10,6 +10,7 @@ import { SpatialViewState } from "../SpatialViewState";
 import type { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { RealityModelTileTree, TileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
+import type { ViewRealityModel } from "../ViewState";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("SpatialViewState", () => {
@@ -144,7 +145,7 @@ describe("SpatialViewState", () => {
       }
     }
 
-    function collectRefs(view: SpatialViewState): TileTreeReference[] {
+    function collectRefs(view: SpatialViewState): ViewRealityModel[] {
       return Array.from(view.getRealityModelTreeRefs());
     }
 
@@ -158,18 +159,22 @@ describe("SpatialViewState", () => {
 
       vi.spyOn(iModel.models, "getLoaded").mockImplementation((id) => {
         if (id === realityModelId)
-          return { asSpatialModel: { isRealityModel: true } } as any;
+          return { asSpatialModel: { isRealityModel: true }, name: "Persisted Reality" } as any;
         if (id === nonRealityModelId)
-          return { asSpatialModel: { isRealityModel: false } } as any;
+          return { asSpatialModel: { isRealityModel: false }, name: "Not Reality" } as any;
         return undefined;
       });
 
-      const contextState = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/tileset.json" });
+      const contextState = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/tileset.json", name: "Context Reality", description: "A context model" });
 
       const refs = collectRefs(view);
       expect(refs).to.have.length(2);
-      expect(refs[0]).to.equal(contextState.treeRef);
-      expect(refs[1]).to.equal(persistedRef);
+      expect(refs[0].treeRef).to.equal(contextState.treeRef);
+      expect(refs[0].name).to.equal("Context Reality");
+      expect(refs[0].description).to.equal("A context model");
+      expect(refs[1].treeRef).to.equal(persistedRef);
+      expect(refs[1].name).to.equal("Persisted Reality");
+      expect(refs[1].description).to.be.undefined;
     });
 
     it("excludes invisible context reality models", () => {
@@ -185,15 +190,17 @@ describe("SpatialViewState", () => {
       const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
       view.getModelTreeRefs = () => [];
 
-      const visible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/a.json" });
-      const invisible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/b.json" });
+      const visible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/a.json", name: "Visible" });
+      const invisible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/b.json", name: "Invisible" });
       invisible.invisible = true;
-      const alsoVisible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/c.json" });
+      const alsoVisible = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com/c.json", name: "Also Visible" });
 
       const refs = collectRefs(view);
       expect(refs).to.have.length(2);
-      expect(refs[0]).to.equal(visible.treeRef);
-      expect(refs[1]).to.equal(alsoVisible.treeRef);
+      expect(refs[0].treeRef).to.equal(visible.treeRef);
+      expect(refs[0].name).to.equal("Visible");
+      expect(refs[1].treeRef).to.equal(alsoVisible.treeRef);
+      expect(refs[1].name).to.equal("Also Visible");
     });
 
     it("excludes refs whose tile trees have not loaded", () => {
