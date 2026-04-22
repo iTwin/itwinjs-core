@@ -7,8 +7,7 @@ import type { SerializedInvertedUnit, SerializedUnit, SerializedUnitSchema } fro
 import { type ResolvedUnit, UnitDefinitionResolver } from "./UnitConversion/UnitDefinitionResolver";
 import { BadUnit } from "./Unit";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const schema = require("./assets/Units.json");
+import schema from "./assets/Units.json";
 
 interface IndexedUnit {
   readonly props: UnitProps;
