@@ -26,7 +26,7 @@ Example: A FormatSet with `name: "metric"` might have `label: "Metric"` in Engli
 
 ### unitSystem
 
-The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. Supported values:
+The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system preference group for the format set. Each key maps to one or more EC `UnitSystem` elements in priority order — see [Unit Systems and UnitSystemKey](./Units.md#unit-systems-and-unitsystemkey) for the full mapping. Supported values:
 
 - `"metric"` - International System of Units
 - `"imperial"` - Imperial units (UK system)

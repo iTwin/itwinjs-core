@@ -8,7 +8,7 @@
  */
 import { assert } from "@itwin/core-bentley";
 import { Range1d } from "../geometry3d/Range";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, HalfEdgeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
@@ -63,7 +63,7 @@ export class HalfEdgeGraphSearch {
   public static collectFaceAreaSummary(
     source: HalfEdgeGraph | HalfEdge[],
     collectAllNodes: boolean = false,
-    areaFunction: NodeToNumberFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node),
+    areaFunction: HalfEdgeToNumberFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node),
   ): SignedDataSummary<HalfEdge> {
     const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
     let allFaces: HalfEdge[];
@@ -84,7 +84,7 @@ export class HalfEdgeGraphSearch {
    * @returns node on the negative area face with largest absolute area, or `undefined` if no negative area face.
    */
   public static findMinimumAreaFace(
-    oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[], faceAreaFunction?: NodeToNumberFunction,
+    oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[], faceAreaFunction?: HalfEdgeToNumberFunction,
   ): HalfEdge | undefined {
     const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
     return summary.largestNegativeItem;
@@ -276,7 +276,7 @@ export class HalfEdgeGraphSearch {
     ignoreMask: HalfEdgeMask = HalfEdgeMask.EXTERIOR,
     maxFaceCount: number = Infinity,
     result?: HalfEdge[],
-  ): { faces: HalfEdge[], nextSeed: HalfEdge | undefined} {
+  ): { faces: HalfEdge[], nextSeed: HalfEdge | undefined } {
     if (maxFaceCount <= 0)
       maxFaceCount = Infinity;
     const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;

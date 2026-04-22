@@ -6,6 +6,12 @@
 
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUnorderedUiEvent } from '@itwin/core-bentley';
+
+// @beta
+export interface AddFormattingSpecArgs extends FormattingSpecArgs {
+    formatProps?: FormatProps;
+}
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -306,12 +312,31 @@ export interface FormatProps {
 // @beta
 export interface FormatsChangedArgs {
     formatsChanged: "all" | string[];
+    impliedUnitSystem?: UnitSystemKey;
+}
+
+// @beta
+export class FormatSpecHandle implements Disposable {
+    [Symbol.dispose](): void;
+    // @internal
+    constructor(args: FormatSpecHandleArgs);
+    format(value: number): string;
+    get formatterSpec(): FormatterSpec | undefined;
+    get koqName(): string;
+    get parserSpec(): ParserSpec | undefined;
+    get persistenceUnit(): string;
+    get system(): UnitSystemKey | undefined;
+}
+
+// @internal
+export interface FormatSpecHandleArgs extends FormattingSpecArgs {
+    provider: FormattingSpecProvider;
 }
 
 // @beta
 export interface FormatsProvider {
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
@@ -352,6 +377,35 @@ export class FormatterSpec {
     // (undocumented)
     protected _revolutionConversion?: UnitConversionProps;
     get unitConversions(): UnitConversionSpec[];
+}
+
+// @beta
+export class FormattingReadyCollector {
+    addPendingWork(work: Promise<void>): void;
+    // @internal
+    awaitAll(timeoutMs?: number): Promise<void>;
+}
+
+// @beta
+export interface FormattingSpecArgs {
+    name: string;
+    persistenceUnitName: string;
+    system?: UnitSystemKey;
+}
+
+// @beta
+export interface FormattingSpecEntry {
+    // (undocumented)
+    formatterSpec: FormatterSpec;
+    // (undocumented)
+    parserSpec: ParserSpec;
+}
+
+// @beta
+export interface FormattingSpecProvider {
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
 }
 
 // @beta (undocumented)
@@ -597,6 +651,12 @@ export class QuantityError extends BentleyError {
     constructor(errorNumber: number, message?: string);
     // (undocumented)
     readonly errorNumber: number;
+}
+
+// @beta
+export enum QuantityLoggerCategory {
+    Formatting = "core-quantity.Formatting",
+    Package = "core-quantity"
 }
 
 // @beta
