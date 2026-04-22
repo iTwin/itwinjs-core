@@ -12,10 +12,10 @@ At runtime, settings and resources are accessed through one of three workspace s
 | Workspace | Scope | Access |
 |---|---|---|
 | [IModelHost.appWorkspace]($backend) | Application-wide defaults and configuration | Available immediately after [IModelHost.startup]($backend) |
-| [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings shared across all iModels in an iTwin; falls back to `appWorkspace` | Requires an iTwinId; no iModel needed |
+| [IModelHost.getITwinWorkspace]($backend) | iTwin-scoped settings shared across all iModels in an iTwin; falls back to `appWorkspace` | Requires an iTwinId; discovers/loads settings only; no iModel needed |
 | [IModelDb.workspace]($backend) | iModel-specific overrides; falls back to `appWorkspace` for unresolved settings. Does **not** automatically include iTwin-scoped settings | Available when an iModel is open |
 
-All three scopes use the same [Settings priority stack](./Settings.md#settings-priorities) — iTwin-level and iModel-level settings both override application defaults. `getITwinWorkspace` is independent from `IModelDb.workspace` — its settings are only available to an iModel if explicitly referenced (see [Referencing iTwin settings from an iModel](./Settings.md#referencing-itwin-settings-from-an-imodel)). See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
+All three scopes use the same [Settings priority stack](./Settings.md#settings-priorities) — iTwin-level and iModel-level settings both override application defaults. `getITwinWorkspace` is independent from `IModelDb.workspace` — its settings are only available to an iModel if explicitly referenced (see [Referencing iTwin settings from an iModel](./Settings.md#referencing-itwin-settings-from-an-imodel)). `getITwinWorkspace` is also discovery-only: the first default iTwin settings container is created on first write via [IModelHost.saveSettingDictionary]($backend), not on read. See [Choosing the right workspace](./Workspace.md#choosing-the-right-workspace) for guidance on when to use each scope.
 
 ## Scope and priority
 

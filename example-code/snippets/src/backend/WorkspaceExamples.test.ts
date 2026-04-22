@@ -635,7 +635,12 @@ describe("Workspace Examples", () => {
       settingsEditor.close();
 
       // __PUBLISH_EXTRACT_START__ SettingsContainer.createLocal
-      // Create a new cloud container for settings, write initial values, and publish them.
+      // Advanced/admin workflow:
+      // create a settings container explicitly and manage it by container identity.
+      // Do not create an additional `containerType: "settings"` container for an iTwin
+      // that already relies on `IModelHost.saveSettingDictionary` +
+      // `IModelHost.getITwinWorkspace(iTwinId)`, because those convenience APIs
+      // auto-select only a single settings container per iTwin.
       const editor = WorkspaceEditor.construct();
       const container: EditableWorkspaceContainer = await editor.createNewCloudContainer({
         metadata: { label: "Project Settings", description: "Settings for this iTwin" },

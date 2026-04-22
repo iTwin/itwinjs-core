@@ -148,12 +148,13 @@ What about "landscapePro/ui/availableTools"? In the LandscapePro schema, the cor
 The sections below cover three progressively richer ways to work with settings:
 
 - **Session-only (in-memory):** [Settings.addDictionary]($backend) loads a dictionary for the current session. Good for testing, app defaults, and short-lived overrides.
-- **iTwin / iModel persisted:** [IModelHost.saveSettingDictionary]($backend) writes named dictionaries to cloud storage scoped to an iTwin or iModel. Changes persist across sessions and are shared with other users.
+- **iTwin persisted:** [IModelHost.saveSettingDictionary]($backend) writes named dictionaries to the iTwin's cloud-hosted settings container. Changes persist across sessions and are shared with other users.
+- **iModel persisted:** [EditTxn.saveSettingDictionary]($backend) writes named dictionaries directly into the iModel.
 - **Settings container (cloud-managed storage):** A settings container stores settings as key-value pairs in a dedicated cloud container with its own versioning and access control — see [Settings containers](#settings-containers).
 
 ## iTwin settings
 
-Each iTwin has its own workspace with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. These settings are stored as named [SettingsDictionary]($backend)s in a settings container (a [WorkspaceDb]($backend) tagged with `containerType: "settings"`) scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in the container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
+Each iTwin has its own workspace with its own [Settings]($backend) that can override and/or supplement the application workspace's settings. In the default iTwin-settings workflow, these settings are stored as named [SettingsDictionary]($backend)s in a single auto-discoverable cloud container tagged with `containerType: "settings"`, in its default `settings-db` [WorkspaceDb]($backend), scoped to that iTwin. Whenever [IModelHost.getITwinWorkspace]($backend) is called, all named dictionaries in that container are loaded into the returned [Workspace.settings]($backend) at [SettingsPriority.iTwin]($backend). An application working in the context of a particular iTwin should resolve setting values by asking [IModelHost.getITwinWorkspace]($backend), which will fall back to [IModelHost.appWorkspace]($backend) if the iTwin's setting dictionaries don't provide a value for the requested setting.
 
 Before using iTwin settings, ensure two services are configured:
 
@@ -169,6 +170,8 @@ With those in place, load the iTwin workspace scope:
 The returned [Workspace]($backend) gives you access to all settings and resources associated with the iTwin.
 
 > **Important:** The workspace returned by [IModelHost.getITwinWorkspace]($backend) is caller-owned. Call `close()` on it when you are finished to release cloud connections and cached data.
+>
+> [IModelHost.getITwinWorkspace]($backend) is discovery-only. If no settings container exists yet, it returns an empty workspace. The first default settings container is created on first write via [IModelHost.saveSettingDictionary]($backend).
 
 ### Saving iTwin settings
 
@@ -178,7 +181,9 @@ To save a named settings dictionary for an iTwin, call [IModelHost.saveSettingDi
 [[include:WorkspaceExamples.SaveITwinSettings]]
 ```
 
-If no settings container exists for the specified iTwin yet, one is created automatically. The dictionary name becomes the resource name in the container. Multiple named dictionaries can coexist in the same container.
+If no settings container exists for the specified iTwin yet, [IModelHost.saveSettingDictionary]($backend) creates the default one automatically on first write. The dictionary name becomes the resource name in that container. Multiple named dictionaries can coexist in the same container.
+
+This write path is typically used by setup/admin code. Ordinary read-only clients usually just call [IModelHost.getITwinWorkspace]($backend).
 
 ### Deleting iTwin settings
 
@@ -274,7 +279,7 @@ If you need to pin the iModel to a specific version of the iTwin settings — so
 
 ## Settings containers
 
-A settings container is a cloud-hosted [WorkspaceDb]($backend) whose container is tagged with `containerType: "settings"`. It stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values. Each iTwin has one settings container, discoverable by iTwinId through the [WorkspaceEditor]($backend) API without needing an iModel open.
+A settings container is a cloud container tagged with `containerType: "settings"` that stores settings in its default `settings-db` [WorkspaceDb]($backend). It stores settings as a flat JSON object — [SettingName]($backend) keys mapped to [Setting]($backend) values. The default auto-discovered iTwin-settings workflow assumes one settings container per iTwin; [IModelHost.getITwinWorkspace]($backend) can discover that single container by iTwinId without needing an iModel open.
 
 ```mermaid
 graph LR
@@ -294,7 +299,7 @@ When a settings container is loaded into the runtime via [Workspace.loadSettings
 
 ## Advanced: managing settings containers
 
-> Most applications do not need to manage settings containers directly — [IModelHost.getITwinWorkspace]($backend) handles discovery and creation automatically. The workflows below are for **administrators** who need fine-grained control: discovering containers, creating them explicitly, versioning, or updating individual settings.
+> Most applications do not need to manage settings containers directly — [IModelHost.getITwinWorkspace]($backend) handles discovery only, and the default iTwin settings container is created on first write via [IModelHost.saveSettingDictionary]($backend). The workflows below are for **administrators** who need fine-grained control: discovering containers, creating them explicitly, versioning, or updating individual settings.
 
 ### Discovering settings containers
 
@@ -304,7 +309,9 @@ You can find settings containers by using [WorkspaceEditor.queryContainers]($bac
 [[include:SettingsContainer.discoverContainers]]
 ```
 
-This is useful when building an admin UI that lets users choose which settings profile to load, without hardcoding container IDs.
+This is useful when building an admin UI that lets users inspect or choose settings containers explicitly, without hardcoding container IDs.
+
+If multiple settings containers exist for the same iTwin, these admin APIs can still return them — but the default convenience APIs ([IModelHost.getITwinWorkspace]($backend) and [IModelHost.saveSettingDictionary]($backend)) cannot automatically choose among them.
 
 To open matching containers for editing in a single call, use [WorkspaceEditor.findContainers]($backend). It queries the service, requests write tokens, and opens each matching container:
 
@@ -319,6 +326,8 @@ The example below creates a new cloud container, writes some initial settings, a
 ```ts
 [[include:SettingsContainer.createLocal]]
 ```
+
+This is an advanced admin workflow. Only use it when you intend to manage settings containers by explicit container identity. If an iTwin already relies on the default [IModelHost.saveSettingDictionary]($backend) + [IModelHost.getITwinWorkspace]($backend) flow, creating an additional `containerType: "settings"` container for the same iTwin will disable automatic container selection for both convenience APIs.
 
 The key steps are:
 

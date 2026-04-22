@@ -74,22 +74,22 @@ This is the **settings priority stack** at work. The full priority order, from l
 
 | Priority | Level | Typical use |
 |----------|-------|-------------|
-| 100 | [defaults]($backend) | Settings loaded at startup |
-| 200 | [application]($backend) | App-supplied overrides |
-| 300 | [organization]($backend) | Org-wide configuration |
-| 400 | [iTwin]($backend) | Per-iTwin configuration |
-| 500 | [branch]($backend) | Per-branch overrides |
-| 600 | [iModel]($backend) | Per-iModel overrides |
+| 100 | [SettingsPriority.defaults]($backend) | Settings loaded at startup |
+| 200 | [SettingsPriority.application]($backend) | App-supplied overrides |
+| 300 | [SettingsPriority.organization]($backend) | Org-wide configuration |
+| 400 | [SettingsPriority.iTwin]($backend) | Per-iTwin configuration |
+| 500 | [SettingsPriority.branch]($backend) | Per-branch overrides |
+| 600 | [SettingsPriority.iModel]($backend) | Per-iModel overrides |
 
 ## Step 4: Persist settings to an iTwin
 
-So far, our settings live only in memory. For production, administrators persist settings to the cloud so they're shared across sessions and users. LandscapePro can save settings scoped to an iTwin — any session that opens the iTwin workspace then sees the same configuration:
+So far, our settings live only in memory. For production, administrators persist settings to the cloud so they're shared across sessions and users. This is typically done by a setup/admin flow: LandscapePro can save settings scoped to an iTwin, and any session that opens the iTwin workspace then sees the same configuration:
 
 ```ts
 [[include:WorkspaceExamples.SaveLandscapeProToITwin]]
 ```
 
-[IModelHost.saveSettingDictionary]($backend) writes the dictionary to a cloud-hosted settings container associated with the iTwin. To read it back, open the iTwin workspace:
+[IModelHost.saveSettingDictionary]($backend) writes the dictionary to a cloud-hosted settings container associated with the iTwin. If no default settings container exists yet, this first write creates it. [IModelHost.getITwinWorkspace]($backend) is the read/discovery side only — it loads the iTwin workspace and returns an empty workspace if nothing has been written yet. To read the settings back, open the iTwin workspace:
 
 ```ts
 [[include:WorkspaceExamples.ReadLandscapeProFromITwin]]
