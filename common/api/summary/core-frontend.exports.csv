@@ -751,6 +751,7 @@ public;interface;ViewportGraphicBuilderOptions
 public;class;ViewPose
 public;class;ViewPose2d
 public;class;ViewPose3d
+beta;interface;ViewRealityModel
 public;class;ViewRect
 public;class;ViewRedoTool
 public;class;ViewState
