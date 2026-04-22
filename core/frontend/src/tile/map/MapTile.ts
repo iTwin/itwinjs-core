@@ -494,6 +494,41 @@ export class MapTile extends RealityTile {
     return this.isContentCulled(args);
   }
 
+  /** Non-planar (ECEF globe) tiles have axis-aligned bounding boxes (in local coordinates) that
+   * extend deep into the Earth's interior. The frustum containment test against these oversized
+   * boxes is geometrically unreliable — tiles whose visible surface IS within the frustum can be
+   * incorrectly culled because all box corners lie outside a frustum plane. This override adds a
+   * safety net: if the standard frustum test rejects a non-planar tile, we check whether the
+   * tile's range contains the project center. If it does, the tile likely covers the camera's
+   * ground position and must not be culled — it needs to be traversed so we can reach the
+   * correctly-culled planar tiles at deeper depths. The pixel size computation is also unreliable
+   * for ECEF bounding boxes, so surviving globe tiles return a fixed sub-1 value to force
+   * refinement into children.
+   * @internal
+   */
+  public override computeVisibilityFactor(args: TileDrawArgs): number {
+    if (this.isEmpty)
+      return -1;
+
+    if (!this.isPlanar) {
+      const baseResult = super.computeVisibilityFactor(args);
+      if (baseResult >= 0) {
+        // Standard test passed — but force refinement since pixel size from ECEF boxes is unreliable.
+        return (0 === this.maximumSize) ? 0 : 0.5;
+      }
+
+      // Standard frustum test rejected this tile. Check if the tile's range contains
+      // the project center — if so, override the cull because the tile covers the area
+      // under the camera and must be traversed to reach displayable planar children.
+      if (this.range.containsPoint(this.mapTree.iModel.projectExtents.center))
+        return (0 === this.maximumSize) ? 0 : 0.5;
+
+      return -1;
+    }
+
+    return super.computeVisibilityFactor(args);
+  }
+
   /** @internal */
   public override isContentCulled(args: TileDrawArgs): boolean {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));

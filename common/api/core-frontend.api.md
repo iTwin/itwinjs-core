@@ -6377,6 +6377,8 @@ export class MapTile extends RealityTile {
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
+    // @internal
+    computeVisibilityFactor(args: TileDrawArgs): number;
     // @internal (undocumented)
     protected _cornerRays?: Ray3d[];
     // @internal (undocumented)
