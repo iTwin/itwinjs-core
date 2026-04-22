@@ -13650,7 +13650,7 @@ export class ViewPose3d extends ViewPose {
 // @beta
 export interface ViewRealityModel {
     readonly description: string | undefined;
-    readonly name: string | undefined;
+    readonly name: string;
     readonly treeRef: TileTreeReference;
 }
 

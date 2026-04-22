@@ -52,12 +52,12 @@ import { _scheduleScriptReference } from "./common/internal/Symbols";
 export interface ViewRealityModel {
   /** The tile tree reference used for rendering, hit testing, and geometry collection. */
   readonly treeRef: TileTreeReference;
-  /** Display name of the reality model, if available. For persisted reality models this comes from the
+  /** Display name of the reality model, if available. For persistent reality models this comes from the
    * [[ModelState]]; for context reality models, from the [[ContextRealityModelState]].
    */
   readonly name: string;
   /** A description of the reality model suitable for display in a user interface, if available.
-   * Only context reality models provide a description; for persisted reality models this is always `undefined`.
+   * Only context reality models provide a description; for persistent reality models this is always `undefined`.
    */
   readonly description: string | undefined;
 }
@@ -562,10 +562,10 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Iterate the reality models in this view, including both context reality models attached to the
-   * [[DisplayStyleState]] and persisted reality models. Each yielded [[ViewRealityModel]] provides the
+   * [[DisplayStyleState]] and persistent reality models. Each yielded [[ViewRealityModel]] provides the
    * [[TileTreeReference]] along with a display name and description when available.
    *
-   * Context reality models that are marked invisible are excluded. Persisted reality models whose
+   * Context reality models that are marked invisible are excluded. Persistent reality models whose
    * tile trees have not yet loaded are also excluded.
    * @see [[DisplayStyleState.realityModels]] for context reality models only.
    * @see [[getTileTreeRefs]] for all tile tree references in this view.
@@ -578,7 +578,7 @@ export abstract class ViewState extends ElementState {
         yield { treeRef: model.treeRef, name: model.name, description: model.description };
     }
 
-    // Yield persisted reality models (e.g., ScalableMeshModel) from the model selector.
+    // Yield persistent reality models (e.g., ScalableMeshModel) from the model selector.
     for (const ref of this.getModelTreeRefs()) {
       const modelId = ref.treeOwner.tileTree?.modelId;
       if (modelId !== undefined) {

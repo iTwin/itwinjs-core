@@ -149,7 +149,7 @@ describe("SpatialViewState", () => {
       return Array.from(view.getRealityModelTreeRefs());
     }
 
-    it("yields visible context and persisted reality models", () => {
+    it("yields visible context and persistent reality models", () => {
       const realityModelId = "0x28";
       const nonRealityModelId = "0x30";
       const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
@@ -159,7 +159,7 @@ describe("SpatialViewState", () => {
 
       vi.spyOn(iModel.models, "getLoaded").mockImplementation((id) => {
         if (id === realityModelId)
-          return { asSpatialModel: { isRealityModel: true }, name: "Persisted Reality" } as any;
+          return { asSpatialModel: { isRealityModel: true }, name: "Persistent reality" } as any;
         if (id === nonRealityModelId)
           return { asSpatialModel: { isRealityModel: false }, name: "Not Reality" } as any;
         return undefined;
@@ -173,7 +173,7 @@ describe("SpatialViewState", () => {
       expect(refs[0].name).toBe("Context Reality");
       expect(refs[0].description).toBe("A context model");
       expect(refs[1].treeRef).toBe(persistedRef);
-      expect(refs[1].name).toBe("Persisted Reality");
+      expect(refs[1].name).toBe("Persistent reality");
       expect(refs[1].description).toBeUndefined();
     });
 
