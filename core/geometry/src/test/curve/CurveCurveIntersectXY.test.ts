@@ -2551,7 +2551,7 @@ describe("CurveCurveIntersectXY", () => {
       "WesternAustralian",
       "HalfCosine",
       "AustralianRailCorp",
-      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // TODO: enable below lines after issue 1693 is resolved
       // "Czech",
       // "Italian",
       // "MXCubicAlongArc",
@@ -2638,7 +2638,7 @@ describe("CurveCurveIntersectXY", () => {
       directSpirals[14],
       directSpirals[16],
       directSpirals[17],
-      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // TODO: enable below lines after issue 1693 is resolved
       // directSpirals[19],
       // directSpirals[20],
       // directSpirals[22],

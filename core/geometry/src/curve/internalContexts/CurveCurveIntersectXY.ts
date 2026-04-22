@@ -730,7 +730,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
             const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
-
             let converged = newtonSearcher.runIterations();
             bezierAFraction = newtonSearcher.getU();
             bezierBFraction = newtonSearcher.getV();
@@ -1020,144 +1019,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     );
   }
   /**
-   * Invoke dispatch on each child of `g` as "geometryA".
-   * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
-   */
-  public override handleChildren(g: GeometryQuery): any {
-    const children = g.children;
-    if (!children)
-      return;
-    const saveExtendA0 = this._extendA0;
-    const saveExtendA1 = this._extendA1;
-    for (let i = 0; i < children.length; i++) {
-      let extendA0 = saveExtendA0;
-      let extendA1 = saveExtendA1;
-      if (g instanceof Path && children.length > 1) {
-        if (i === 0)
-          extendA1 = false; // first child can only extend from start
-        else if (i === children.length - 1)
-          extendA0 = false; // last child can only extend from end
-        else
-          extendA0 = extendA1 = false; // middle children cannot extend
-      } else if (g instanceof Loop) {
-        extendA0 = extendA1 = false; // Loops cannot extend
-      }
-      this.resetGeometryA(extendA0, extendA1);
-      children[i].dispatchToGeometryHandler(this);
-    }
-    this.resetGeometryA(saveExtendA0, saveExtendA1);
-  }
-  /** Double dispatch handler for strongly typed segment. */
-  public override handleLineSegment3d(segmentA: LineSegment3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      const segmentB = this._geometryB;
-      this.dispatchSegmentSegment(
-        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
-        segmentB, this._extendB0, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB1,
-        false,
-      );
-    } else if (this._geometryB instanceof LineString3d) {
-      this.computeSegmentLineString(
-        segmentA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
-      );
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchSegmentArc(
-        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
-        this._geometryB, this._extendB0, this._extendB1, false,
-      );
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchSegmentBsplineCurve(
-        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
-        this._geometryB, this._extendB0, this._extendB1, false,
-      );
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(segmentA, this._extendA0, this._extendA1, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
-    }
-    return undefined;
-  }
-  /** Double dispatch handler for strongly typed linestring. */
-  public override handleLineString3d(lsA: LineString3d): any {
-    if (this._geometryB instanceof LineString3d) {
-      const lsB = this._geometryB;
-      this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, lsB, this._extendB0, this._extendB1, false);
-    } else if (this._geometryB instanceof LineSegment3d) {
-      this.computeSegmentLineString(
-        this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
-      );
-    } else if (this._geometryB instanceof Arc3d) {
-      this.computeArcLineString(
-        this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
-      );
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchLineStringBSplineCurve(
-        lsA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
-      );
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(lsA, this._extendA0, this._extendA1, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
-    }
-    return undefined;
-  }
-  /** Double dispatch handler for strongly typed arc. */
-  public override handleArc3d(arcA: Arc3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentArc(
-        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
-        arcA, this._extendA0, this._extendA1, true,
-      );
-    } else if (this._geometryB instanceof LineString3d) {
-      this.computeArcLineString(
-        arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
-      );
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcArc(arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchArcBsplineCurve3d(
-        arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
-      );
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(arcA, this._extendA0, this._extendA1, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(arcA, this.handleArc3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(arcA, this.handleArc3d.bind(this));
-    }
-    return undefined;
-  }
-  /** Double dispatch handler for strongly typed bspline curve. */
-  public override handleBSplineCurve3d(curveA: BSplineCurve3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentBsplineCurve(
-        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
-        curveA, this._extendA0, this._extendA1, true,
-      );
-    } else if (this._geometryB instanceof LineString3d) {
-      this.dispatchLineStringBSplineCurve(
-        this._geometryB, this._extendB0, this._extendB1, curveA, this._extendA0, this._extendA1, true,
-      );
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcBsplineCurve3d(
-        this._geometryB, this._extendB0, this._extendB1, curveA, this._extendA0, this._extendA1, true,
-      );
-    } else if (this._geometryB instanceof BSplineCurve3dBase) {
-      this.dispatchBSplineCurve3dBSplineCurve3d(curveA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(curveA, this._extendA0, this._extendA1, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(curveA, this.handleBSplineCurve3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
-    }
-    return undefined;
-  }
-  /**
    * Process tail of `this._results` for xy-intersections between the curve and spiral.
    * * Refine each result via Newton iteration. If it doesn't converge, remove it.
    * @param curveA The other curve primitive. May also be a transition spiral.
@@ -1307,6 +1168,144 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     this.appendDiscreteCloseApproachResults(cpA, cpB, maxError, reversed); // seeds for finding tangent intersections
     this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
   }
+   /**
+   * Invoke dispatch on each child of `g` as "geometryA".
+   * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
+   */
+  public override handleChildren(g: GeometryQuery): any {
+    const children = g.children;
+    if (!children)
+      return;
+    const saveExtendA0 = this._extendA0;
+    const saveExtendA1 = this._extendA1;
+    for (let i = 0; i < children.length; i++) {
+      let extendA0 = saveExtendA0;
+      let extendA1 = saveExtendA1;
+      if (g instanceof Path && children.length > 1) {
+        if (i === 0)
+          extendA1 = false; // first child can only extend from start
+        else if (i === children.length - 1)
+          extendA0 = false; // last child can only extend from end
+        else
+          extendA0 = extendA1 = false; // middle children cannot extend
+      } else if (g instanceof Loop) {
+        extendA0 = extendA1 = false; // Loops cannot extend
+      }
+      this.resetGeometryA(extendA0, extendA1);
+      children[i].dispatchToGeometryHandler(this);
+    }
+    this.resetGeometryA(saveExtendA0, saveExtendA1);
+  }
+  /** Double dispatch handler for strongly typed segment. */
+  public override handleLineSegment3d(segmentA: LineSegment3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      const segmentB = this._geometryB;
+      this.dispatchSegmentSegment(
+        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
+        segmentB, this._extendB0, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB1,
+        false,
+      );
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeSegmentLineString(
+        segmentA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+      );
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchSegmentArc(
+        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
+        this._geometryB, this._extendB0, this._extendB1, false,
+      );
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchSegmentBsplineCurve(
+        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
+        this._geometryB, this._extendB0, this._extendB1, false,
+      );
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiral(segmentA, this._extendA0, this._extendA1, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
+    }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed linestring. */
+  public override handleLineString3d(lsA: LineString3d): any {
+    if (this._geometryB instanceof LineString3d) {
+      const lsB = this._geometryB;
+      this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, lsB, this._extendB0, this._extendB1, false);
+    } else if (this._geometryB instanceof LineSegment3d) {
+      this.computeSegmentLineString(
+        this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
+      );
+    } else if (this._geometryB instanceof Arc3d) {
+      this.computeArcLineString(
+        this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
+      );
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchLineStringBSplineCurve(
+        lsA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+      );
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiral(lsA, this._extendA0, this._extendA1, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
+    }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed arc. */
+  public override handleArc3d(arcA: Arc3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      this.dispatchSegmentArc(
+        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
+        arcA, this._extendA0, this._extendA1, true,
+      );
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeArcLineString(
+        arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+      );
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchArcArc(arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false);
+    } else if (this._geometryB instanceof BSplineCurve3d) {
+      this.dispatchArcBsplineCurve3d(
+        arcA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+      );
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiral(arcA, this._extendA0, this._extendA1, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(arcA, this.handleArc3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(arcA, this.handleArc3d.bind(this));
+    }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed bspline curve. */
+  public override handleBSplineCurve3d(curveA: BSplineCurve3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      this.dispatchSegmentBsplineCurve(
+        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
+        curveA, this._extendA0, this._extendA1, true,
+      );
+    } else if (this._geometryB instanceof LineString3d) {
+      this.dispatchLineStringBSplineCurve(
+        this._geometryB, this._extendB0, this._extendB1, curveA, this._extendA0, this._extendA1, true,
+      );
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchArcBsplineCurve3d(
+        this._geometryB, this._extendB0, this._extendB1, curveA, this._extendA0, this._extendA1, true,
+      );
+    } else if (this._geometryB instanceof BSplineCurve3dBase) {
+      this.dispatchBSplineCurve3dBSplineCurve3d(curveA, this._geometryB, false);
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      this.dispatchCurveSpiral(curveA, this._extendA0, this._extendA1, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(curveA, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
+    }
+    return undefined;
+  }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
     if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1328,7 +1327,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
     // NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH .
     // "easy" if both present BezierCurve3dH span loaders
-    // https://github.com/iTwin/itwinjs-backlog/issues/2021
     return undefined;
   }
 }
