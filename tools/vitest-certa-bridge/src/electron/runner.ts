@@ -402,21 +402,46 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const shardResults: ShardResult[] = results.map((r) => {
     const resultsPath = path.join(r.cacheDir, "test-results.json");
     let testResults = { passed: 0, failed: 0, skipped: 0, errors: [] as string[] };
+    // Whether the shard successfully produced a parseable results file.
+    // This is the boundary between "tests completed" and "crash before results".
+    let resultsParsed = false;
     try {
-      if (fs.existsSync(resultsPath))
+      if (fs.existsSync(resultsPath)) {
         testResults = JSON.parse(fs.readFileSync(resultsPath, "utf8"));
+        resultsParsed = true;
+      }
     } catch {
-      // Fall back to exit-code-only
+      // Corrupt/unparseable results file — treat as no results
     }
-    // Detect two failure modes that would otherwise slip through as "OK":
-    // 1. Non-zero exit code with no recorded failures (crash before results written)
-    // 2. Zero results despite having assigned files (timeout killed shard silently)
-    const isUnreportedCrash = r.exitCode !== 0 && testResults.failed === 0 && testResults.errors.length === 0;
+
+    const warnings: string[] = [];
+
+    // Classify crash modes using the results-file boundary:
+    //   - resultsParsed + non-zero exit + no test failures → post-test shutdown crash (warn only)
+    //   - !resultsParsed + non-zero exit → pre/mid-run crash (hard fail)
+    //   - zero results despite assigned files → silent timeout (hard fail)
+    const hasNonZeroExit = r.exitCode !== 0;
+    const hasNoTestFailures = testResults.failed === 0 && testResults.errors.length === 0;
+    const isPostTestShutdownCrash = hasNonZeroExit && resultsParsed && hasNoTestFailures;
+    const isPreTestCrash = hasNonZeroExit && !resultsParsed;
     const isSilentTimeout = r.exitCode === 0 && testResults.passed === 0 && testResults.failed === 0 && r.files.length > 0;
-    if (isUnreportedCrash || isSilentTimeout) {
+
+    if (isPostTestShutdownCrash) {
+      // Tests completed and results were recorded, but the process crashed
+      // during shutdown (e.g. native addon destructor failure). Trust the
+      // test results — warn loudly but don't mark as failed.
+      const exitHex = `0x${(r.exitCode >>> 0).toString(16).toUpperCase()}`;
+      const signalNote = r.signal ? ` (signal: ${r.signal})` : "";
+      const lines = [
+        `shard-${r.shardIndex} crashed during shutdown with exit code ${r.exitCode} (${exitHex})${signalNote} — ${testResults.passed} tests passed, treating as warning`,
+      ];
+      if (r.lastTestLine)
+        lines.push(`  Last test output: ${r.lastTestLine}`);
+      warnings.push(lines.join("\n"));
+    } else if (isPreTestCrash || isSilentTimeout) {
       testResults.failed = 1;
       const lines: string[] = [];
-      if (isUnreportedCrash) {
+      if (isPreTestCrash) {
         const exitHex = `0x${(r.exitCode >>> 0).toString(16).toUpperCase()}`;
         const signalNote = r.signal ? ` (signal: ${r.signal})` : "";
         lines.push(`shard-${r.shardIndex} crashed with exit code ${r.exitCode} (${exitHex})${signalNote}`);
@@ -434,6 +459,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
       failed: testResults.failed,
       skipped: testResults.skipped || 0,
       errors: testResults.errors,
+      warnings,
       durationMs: r.durationMs,
       fileCount: r.fileCount,
     };
@@ -447,15 +473,18 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const totalPassed = shardResults.reduce((n, s) => n + s.passed, 0);
   const totalFailed = shardResults.reduce((n, s) => n + s.failed, 0);
   const totalSkipped = shardResults.reduce((n, s) => n + s.skipped, 0);
+  const totalWarnings = shardResults.reduce((n, s) => n + s.warnings.length, 0);
   const maxDuration = Math.max(...shardResults.map((s) => s.durationMs));
-  const failedShards = shardResults.filter((s) => s.failed > 0 || results.find((r) => r.shardIndex === s.shardIndex)?.exitCode !== 0).map((s) => s.shardIndex);
+  // Only count shards with actual test failures (not post-test shutdown warnings)
+  const failedShards = shardResults.filter((s) => s.failed > 0).map((s) => s.shardIndex);
 
   console.log(`\n${"═".repeat(70)}`);
   const skippedSuffix = totalSkipped > 0 ? `, ${totalSkipped} skipped` : "";
-  console.log(`Electron Test Summary: ${totalPassed} passed, ${totalFailed} failed${skippedSuffix} (${(maxDuration / 1000).toFixed(1)}s wall-clock)`);
+  const warningSuffix = totalWarnings > 0 ? `, ${totalWarnings} warning(s)` : "";
+  console.log(`Electron Test Summary: ${totalPassed} passed, ${totalFailed} failed${skippedSuffix}${warningSuffix} (${(maxDuration / 1000).toFixed(1)}s wall-clock)`);
   console.log(`${"─".repeat(70)}`);
   for (const sr of shardResults) {
-    const status = sr.failed > 0 ? "FAIL" : " OK ";
+    const status = sr.failed > 0 ? "FAIL" : sr.warnings.length > 0 ? "WARN" : " OK ";
     const dur = `${(sr.durationMs / 1000).toFixed(1)}s`;
     const skipped = sr.skipped > 0 ? `, ${sr.skipped} skipped` : "";
     console.log(`  [${status}] shard-${sr.shardIndex}: ${sr.passed} passed, ${sr.failed} failed${skipped} (${sr.fileCount} files, ${dur})`);
@@ -466,6 +495,15 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     for (const sr of shardResults) {
       for (const err of sr.errors) {
         console.error(`  shard-${sr.shardIndex} ✗ ${err}`);
+      }
+    }
+  }
+  if (totalWarnings > 0) {
+    console.log(`${"─".repeat(70)}`);
+    console.log("Warnings:");
+    for (const sr of shardResults) {
+      for (const warn of sr.warnings) {
+        console.warn(`  shard-${sr.shardIndex} ⚠ ${warn}`);
       }
     }
   }

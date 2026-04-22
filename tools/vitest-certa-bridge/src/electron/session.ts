@@ -127,7 +127,20 @@ async function main() {
       }
     }
 
-    app.exit(results.failed > 0 ? 1 : 0);
+    // Use app.quit() for graceful shutdown instead of app.exit() to allow
+    // Node.js cleanup handlers and native addon destructors to run without
+    // V8 being torn down underneath them. app.quit() fires before-quit/will-quit
+    // events and drains the event loop before exiting.
+    // Arm a fallback timer in case quit handlers hang.
+    const exitCode = results.failed > 0 ? 1 : 0;
+    process.exitCode = exitCode;
+    const SHUTDOWN_TIMEOUT_MS = 5000;
+    const fallback = setTimeout(() => {
+      console.warn(`[${shardId}] Graceful shutdown timed out after ${SHUTDOWN_TIMEOUT_MS}ms — forcing exit`);
+      app.exit(exitCode);
+    }, SHUTDOWN_TIMEOUT_MS);
+    fallback.unref(); // Don't let the timer keep the process alive if quit succeeds
+    app.quit();
   });
 
   const win = new BrowserWindow({

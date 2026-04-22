@@ -97,6 +97,8 @@ export interface ShardResult {
   failed: number;
   skipped: number;
   errors: string[];
+  /** Non-fatal warnings (e.g. post-test shutdown crash after all tests passed). */
+  warnings: string[];
   durationMs: number;
   fileCount: number;
 }
