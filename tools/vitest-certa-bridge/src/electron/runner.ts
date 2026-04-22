@@ -129,6 +129,8 @@ interface ShardExecOptions {
 
 interface ShardExecResult {
   exitCode: number;
+  /** Signal name (e.g. "SIGTERM", "SIGKILL") if the process was killed by a signal, otherwise undefined. */
+  signal: string | undefined;
   durationMs: number;
   peakRssKb: number;
   /** Last test suite/test name seen in stdout before exit (useful for crash diagnostics). */
@@ -191,10 +193,12 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
   });
 
   return new Promise((resolve) => {
-    electronProcess.on("exit", (status) => {
+    electronProcess.on("exit", (code, signal) => {
       const durationMs = Date.now() - start;
       const peakRssKb = poller ? poller.stop() : 0;
-      resolve({ exitCode: status || 0, durationMs, peakRssKb, lastTestLine });
+      // When killed by a signal, `code` is null — treat as failure (exit 1).
+      const exitCode = code ?? (signal ? 1 : 0);
+      resolve({ exitCode, signal: signal ?? undefined, durationMs, peakRssKb, lastTestLine });
     });
 
     // Catch spawn failures (e.g. Electron binary not found, permission errors)
@@ -203,7 +207,7 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
       console.error(`Failed to spawn Electron shard: ${err.message}`);
       const durationMs = Date.now() - start;
       const peakRssKb = poller ? poller.stop() : 0;
-      resolve({ exitCode: 1, durationMs, peakRssKb, lastTestLine });
+      resolve({ exitCode: 1, signal: undefined, durationMs, peakRssKb, lastTestLine });
     });
   });
 }
@@ -298,7 +302,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
 
   // Run all shards in parallel, with automatic retries for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
-  const results: { shardIndex: number; exitCode: number; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
+  const results: { shardIndex: number; exitCode: number; signal: string | undefined; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
 
   async function runShard(files: string[], index: number, extraElectronArgs?: string[]): Promise<typeof results[0]> {
     const shardId = `shard-${index}`;
@@ -318,7 +322,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
       });
       return { shardIndex: index, fileCount: files.length, cacheDir, files, ...result };
     } catch {
-      return { shardIndex: index, exitCode: 1, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir, lastTestLine: "", files };
+      return { shardIndex: index, exitCode: 1, signal: undefined, durationMs: 0, peakRssKb: 0, fileCount: files.length, cacheDir, lastTestLine: "", files };
     }
   }
 
@@ -343,9 +347,11 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   const producedResults = (r: { cacheDir: string }) =>
     fs.existsSync(path.join(r.cacheDir, "test-results.json"));
 
-  const describeFailure = (r: { exitCode: number; lastTestLine: string }) => {
+  const describeFailure = (r: { exitCode: number; signal: string | undefined; lastTestLine: string }) => {
     const reason = r.exitCode !== 0
-      ? `crashed (exit ${r.exitCode} / 0x${(r.exitCode >>> 0).toString(16).toUpperCase()})`
+      ? r.signal
+        ? `killed by ${r.signal}`
+        : `crashed (exit ${r.exitCode} / 0x${(r.exitCode >>> 0).toString(16).toUpperCase()})`
       : `exited cleanly but produced no test results`;
     const lastTest = r.lastTestLine ? ` | last test: ${r.lastTestLine}` : "";
     return `${reason}${lastTest}`;
@@ -412,7 +418,8 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
       const lines: string[] = [];
       if (isUnreportedCrash) {
         const exitHex = `0x${(r.exitCode >>> 0).toString(16).toUpperCase()}`;
-        lines.push(`shard-${r.shardIndex} crashed with exit code ${r.exitCode} (${exitHex})`);
+        const signalNote = r.signal ? ` (signal: ${r.signal})` : "";
+        lines.push(`shard-${r.shardIndex} crashed with exit code ${r.exitCode} (${exitHex})${signalNote}`);
       } else {
         lines.push(`shard-${r.shardIndex} produced 0 passed, 0 failed for ${r.files.length} files — likely timed out`);
       }
