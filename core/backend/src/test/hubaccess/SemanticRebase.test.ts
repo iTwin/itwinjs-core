@@ -4477,5 +4477,59 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     // chai.expect(ap3_D.size).to.equal(2, "After pull #3: 2 D elements");
     // chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema v02 (MovePropCToA) after pull #3");
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // R5: Two consecutive pulls where local never pushes.
+  //     Each round: local makes multiple data txns, far pushes a schema change.
+  //     Complete ECSql verification of all elements after all three pulls.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it("R5: two consecutive pulls each trigger rebase with local changes; ECInstanceId/className/props verified after each", async () => {
+    t = await TestIModel.initialize("R5TwoPullsEachRebase");
+    let farTxn = startTestTxn(t.far, "R5 far");
+    let localTxn = startTestTxn(t.local, "R5 local");
+
+    // ── Phase 0: create shared elements on far, both pull to sync ────────────
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const cElemId = t.insertElement(farTxn, "TestDomain:C", { propA: "c_a_init", propC: "c_c_init" });
+    farTxn.saveChanges("create shared elements");
+    await pushChanges(farTxn, "create shared elements");
+    farTxn = startTestTxn(t.far, "R5 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "R5 local 2");
+    await t.local.locks.acquireLocks({ exclusive: cElemId });
+    t.updateElement(localTxn, cElemId, { propC: "c_c_local" });
+    localTxn.saveChanges("local update to cElemId.propC");
+
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(farTxn, "far schema v01");
+    farTxn = startTestTxn(t.far, "R1 far 3");
+
+    await pullChanges(localTxn);
+    t.local.clearCaches({ instanceCachesOnly: true });
+
+    const elementAfterSecondPull = t.getElement(t.local, cElemId);
+
+    chai.expect(elementAfterSecondPull).to.not.be.undefined;
+    chai.expect(elementAfterSecondPull!.propC).to.equal("c_c_local", "Local update to cElemId.propC should survive first pull's rebase");
+    chai.expect(elementAfterSecondPull!.propA).to.equal("c_a_init", "Far's update to cElemId.propA should be applied after first pull");
+    chai.expect(elementAfterSecondPull!.propC2).to.be.undefined;
+
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    await pushChanges(farTxn, "far schema v02");
+    farTxn = startTestTxn(t.far, "R1 far 4");
+
+    await pullChanges(localTxn);
+    t.local.clearCaches({ instanceCachesOnly: true });
+
+    const elementAfterThirdPull = t.getElement(t.local, cElemId);
+    chai.expect(elementAfterThirdPull).to.not.be.undefined;
+    chai.expect(elementAfterThirdPull!.propC).to.equal("c_c_local", "Local update to cElemId.propC should survive second pull's rebase");
+    chai.expect(elementAfterThirdPull!.propA).to.equal("c_a_init", "Far's update to cElemId.propA should be applied after second pull");
+    chai.expect(elementAfterThirdPull!.propC2).to.be.undefined;
+
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema must be v02 after pull #3");
+  });
 });
 
