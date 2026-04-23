@@ -109,8 +109,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     if (undefined !== items)
       return items;
 
-    const suppliedItems = this.supplyDialogItems() ?? [];
-    this.loadItemsInternal(suppliedItems);
+    this.loadItemsInternal(this.supplyDialogItems());
     // If _items is undefined, the hook above failed to initialize it
     // Deemed more honest to use the non-null assertion than explicit cast
     return this._items!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
