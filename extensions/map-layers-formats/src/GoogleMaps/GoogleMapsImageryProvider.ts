@@ -6,7 +6,7 @@
  * @module MapLayersFormats
  */
 
-import { BentleyError, BentleyStatus, expectDefined, Logger } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, GoogleMapsDecorator, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsCreateSessionOptions, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
@@ -62,9 +62,15 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   protected createCreateSessionOptions(settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions {
-    const layerPropertyKeys = settings.properties ? Object.keys(settings.properties) : undefined;
-    if (layerPropertyKeys === undefined ||
-        !layerPropertyKeys.includes("mapType") ||
+    const requestedProperties = settings.properties;
+    if (requestedProperties === undefined) {
+      const msg = "Missing session options";
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+
+    const layerPropertyKeys = Object.keys(requestedProperties);
+    if (!layerPropertyKeys.includes("mapType") ||
         !layerPropertyKeys.includes("language") ||
         !layerPropertyKeys.includes("region")) {
       const msg = "Missing session options";
@@ -72,7 +78,6 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
-    const requestedProperties = expectDefined(settings.properties);
     const properties = this._settings.properties;
     if (properties === undefined) {
       const msg = "Missing session options";

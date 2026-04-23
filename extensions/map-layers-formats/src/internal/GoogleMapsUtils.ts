@@ -7,7 +7,7 @@ import { ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties }
 import { IModelApp } from "@itwin/core-frontend";
 import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
 import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors } from "../map-layers-formats.js";
-import { BentleyError, BentleyStatus, expectDefined, Logger } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
@@ -81,37 +81,41 @@ export const GoogleMapsUtils = {
   */
   getSessionOptionsFromMapLayer: (settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions  => {
     const properties = settings.properties;
-    const layerPropertyKeys = properties ? Object.keys(properties) : undefined;
-    if (layerPropertyKeys === undefined ||
-        !layerPropertyKeys.includes("mapType") ||
+    if (properties === undefined) {
+      const msg = "Missing session options";
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+
+    const layerPropertyKeys = Object.keys(properties);
+    if (!layerPropertyKeys.includes("mapType") ||
         !layerPropertyKeys.includes("language") ||
         !layerPropertyKeys.includes("region")) {
       const msg = "Missing session options";
       Logger.logError(loggerCategory, msg);
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
-    const requiredProperties = expectDefined(properties);
 
     const createSessionOptions: GoogleMapsCreateSessionOptions = {
-      mapType: requiredProperties.mapType as GoogleMapsMapTypes,
-      region: requiredProperties.region as string,
-      language: requiredProperties.language as string,
+      mapType: properties.mapType as GoogleMapsMapTypes,
+      region: properties.region as string,
+      language: properties.language as string,
     };
 
-    if (Array.isArray(requiredProperties.layerTypes) && requiredProperties.layerTypes.length > 0) {
-      createSessionOptions.layerTypes = requiredProperties.layerTypes as GoogleMapsLayerTypes[];
+    if (Array.isArray(properties.layerTypes) && properties.layerTypes.length > 0) {
+      createSessionOptions.layerTypes = properties.layerTypes as GoogleMapsLayerTypes[];
     }
 
-    if (requiredProperties.scale !== undefined) {
-      createSessionOptions.scale = requiredProperties.scale as GoogleMapsScaleFactors;
+    if (properties.scale !== undefined) {
+      createSessionOptions.scale = properties.scale as GoogleMapsScaleFactors;
     }
 
-    if (requiredProperties.overlay !== undefined) {
-      createSessionOptions.overlay = requiredProperties.overlay as boolean;
+    if (properties.overlay !== undefined) {
+      createSessionOptions.overlay = properties.overlay as boolean;
     }
 
-    if (requiredProperties.apiOptions !== undefined) {
-      createSessionOptions.apiOptions = requiredProperties.apiOptions as string[];
+    if (properties.apiOptions !== undefined) {
+      createSessionOptions.apiOptions = properties.apiOptions as string[];
     }
     return createSessionOptions;
   }

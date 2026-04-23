@@ -276,10 +276,9 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         tmpUrl = this.appendCustomParams(nextLink.href);
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
         json = await response.json();
-        if (json?.features) {
-          const featureData = expectDefined(data);
-          featureData.features = featureData.features ? [...featureData.features, ...json.features] : json.features;
-        } else
+        if (json?.features)
+          data.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
+        else
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
       }

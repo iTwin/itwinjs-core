@@ -40,6 +40,12 @@ export interface MapFeatureInfoToolData {
   mapInfo?: MapFeatureInfo;
 }
 
+type NonEmptyArray<T> = [T, ...T[]];
+
+function isNonEmptyArray<T>(arr?: T[]): arr is NonEmptyArray<T> {
+  return !!arr && arr.length > 0;
+}
+
 class ActiveMapLayerState {
   private _activeMapLayers: MapLayerInfoFromTileTree[]|undefined;
   public get activeMapLayers()  {return this._activeMapLayers;}
@@ -54,15 +60,18 @@ class ActiveMapLayerState {
   public isInRange: boolean = true;
   public existsInDisplayStyle: boolean = true;
 
-  public get hasMapLayers() { return (this.activeMapLayers && this.activeMapLayers.length > 0);}
+  public get hasMapLayers() { return this.hasActiveMapLayers(); }
+
+  public hasActiveMapLayers(): this is { activeMapLayers: NonEmptyArray<MapLayerInfoFromTileTree> } {
+    return isNonEmptyArray(this.activeMapLayers);
+  }
 
   public updateWithImagerySettings(imagery: MapImageryProps) {
     const result = {exists: false, hidden: false};
     this.existsInDisplayStyle = false;
     this.isVisible = false;
-    const activeMapLayers = this.activeMapLayers;
-    if (activeMapLayers && activeMapLayers.length > 0) {
-      const oldMls = activeMapLayers[0];    // consider only first layer for now
+    if (this.hasActiveMapLayers()) {
+      const oldMls = this.activeMapLayers[0];    // consider only first layer for now
 
       let newMls: MapLayerProps|undefined;
       if (oldMls.isBaseLayer) {
@@ -85,7 +94,7 @@ class ActiveMapLayerState {
       const newJson = tmpNewMls ? JSON.stringify(tmpNewMls) : "";
       const oldJson = JSON.stringify(oldMls.settings.toJSON());
 
-      if (newJson === oldJson ) {
+      if (newJson === oldJson) {
         // We consider newMls and OldMls to be the same mapLayer instance.
         this.existsInDisplayStyle = true;
         this.isVisible = expectDefined(newMls).visible ? true : false;
@@ -96,9 +105,8 @@ class ActiveMapLayerState {
   }
 
   public updateWithScaleRangeVisibility(layerIndexes: MapLayerScaleRangeVisibility[]) {
-    const activeMapLayers = this.activeMapLayers;
-    if (activeMapLayers && activeMapLayers.length > 0) {
-      const currentMls = activeMapLayers[0];    // consider only first layer for now
+    if (this.hasActiveMapLayers()) {
+      const currentMls = this.activeMapLayers[0];    // consider only first layer for now
       for (const scaleRangeVisibility of layerIndexes) {
         if (currentMls.index?.index === scaleRangeVisibility.index) {
           this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible || scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;

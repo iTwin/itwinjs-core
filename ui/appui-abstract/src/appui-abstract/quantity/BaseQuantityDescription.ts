@@ -28,12 +28,11 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     this.kindOfQuantityName = kindOfQuantityName;
     this.typename = StandardTypeNames.Number;
 
-    const editorParams: PropertyEditorParams[] = [];
-    editorParams.push({
+    const editorParams: PropertyEditorParams[] = [{
       type: PropertyEditorParamTypes.CustomFormattedNumber,
       formatFunction: this.format,
       parseFunction: this.parse,
-    } as CustomFormattedNumberParams);
+    } as CustomFormattedNumberParams];
 
     this.editor = {
       name: StandardEditorNames.NumberCustom,

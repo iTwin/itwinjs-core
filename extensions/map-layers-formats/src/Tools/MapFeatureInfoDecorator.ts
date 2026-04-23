@@ -104,8 +104,11 @@ class DrapedPrimitives {
   }
 
   public addMeshes(drapedMeshes: Polyface[]) {
-    const meshes = this._meshes ?? (this._meshes = []);
-    drapedMeshes.forEach((ds) => meshes.push(ds));
+    if (!this._meshes)
+      this._meshes = [];
+    for (const ds of drapedMeshes) {
+      this._meshes.push(ds);
+    }
   }
 }
 
