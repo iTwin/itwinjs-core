@@ -42,12 +42,18 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "5.2.1",
     "@types/benchmark": "^2.1.0",
+<<<<<<< HEAD
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
     "@types/sinon": "^17.0.2",
     "@xmldom/xmldom": "~0.8.12",
+=======
+    "@types/node": "~20.17.0",
+    "@vitest/coverage-v8": "^3.0.6",
+    "@xmldom/xmldom": "~0.8.13",
+>>>>>>> 38df51051d (Security: fix 4 high @xmldom/xmldom CVEs (GHSA-2v35-w6hq-6mfw) (#9219))
     "benchmark": "^2.1.4",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
