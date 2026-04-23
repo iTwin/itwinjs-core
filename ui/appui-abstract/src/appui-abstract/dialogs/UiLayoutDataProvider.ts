@@ -111,7 +111,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
 
     const suppliedItems = this.supplyDialogItems() ?? [];
     this.loadItemsInternal(suppliedItems);
-    return suppliedItems;
+    return this._items as ReadonlyArray<DialogItem>;
   }
 
   /** Called to inform listeners that new properties are ready for display in UI. */
