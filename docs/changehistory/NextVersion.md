@@ -275,7 +275,7 @@ Delete it:
 
 To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationClient]($backend) and [BlobContainer.service]($backend) so the backend can query and update the iTwin settings workspace container.
 
-See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
+See the [Settings documentation]($docs/learning/backend/Settings.md#itwin-settings) for full details on iTwin-scoped settings and the [Workspace documentation]($docs/learning/backend/Workspace.md) for workspace resources.
 
 ## Quantity Formatting
 
