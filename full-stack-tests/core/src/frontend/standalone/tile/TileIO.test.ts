@@ -6,10 +6,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  ModelProps, PackedFeatureTable, RelatedElementProps, TileContentSource, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
