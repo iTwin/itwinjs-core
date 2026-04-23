@@ -324,6 +324,7 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
+  private _disposed: boolean = false;
 
   /** Event raised before pull merge process begins.
    * @alpha
@@ -446,6 +447,30 @@ export class RebaseManager {
   }
 
   public constructor(private _iModel: BriefcaseDb) { }
+
+  /** Disposes of this RebaseManager, clearing all event listeners.
+   * Also calls [[RebaseHandler.dispose]] on the registered custom handler, if any.
+   * Subsequent calls are ignored.
+   * @alpha
+   */
+  public dispose(): void {
+    if (this._disposed)
+      return;
+    this._disposed = true;
+    this._customHandler?.dispose?.();
+    this.onPullMergeBegin.clear();
+    this.onRebaseBegin.clear();
+    this.onRebaseTxnBegin.clear();
+    this.onRebaseTxnEnd.clear();
+    this.onRebaseEnd.clear();
+    this.onPullMergeEnd.clear();
+    this.onApplyIncomingChangesBegin.clear();
+    this.onApplyIncomingChangesEnd.clear();
+    this.onReverseLocalChangesBegin.clear();
+    this.onReverseLocalChangesEnd.clear();
+    this.onDownloadChangesetsBegin.clear();
+    this.onDownloadChangesetsEnd.clear();
+  }
 
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
@@ -865,6 +890,7 @@ export class TxnManager {
     this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
+      this.rebaser.dispose();
     });
   }
 
@@ -1595,4 +1621,11 @@ export interface RebaseHandler {
    * @alpha
    */
   recompute(txn: TxnProps): Promise<void>;
+  /**
+   * Called when the owning [[RebaseManager]] is disposed (e.g. when the iModel is closed).
+   * Override this method to unsubscribe from events or release resources held by this handler.
+   *
+   * @alpha
+   */
+  dispose?(): void;
 }
