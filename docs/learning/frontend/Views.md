@@ -164,9 +164,10 @@ Auxiliary Coordinate Systems can be named and shared among many ViewDefinitions.
 
 ## Reality Data
 
-Reality Data (e.g. [ContextCapture](https://www.bentley.com/en/products/brands/contextcapture) models, point clouds, terrain, and maps) is typically stored external to iModels and visualized as a reality model at display time.
+Reality Data (e.g. [ContextCapture](https://www.bentley.com/en/products/brands/contextcapture) models, Point Cloud models, Maps, etc.) are stored external to iModels, and are accessed via Reality Data Servers. However, in an iModel
+you can create `RealityDataModel`s that hold the URL of the Reality Data.
 
-iTwin.js supports both persistent reality models stored as [SpatialModel]($backend) subclasses and context reality models attached directly to a [DisplayStyleState]($frontend). For the conceptual distinction and current guidance on when to use each approach, see [Reality models](../display/RealityModels.md).
+These models are subclasses of [SpatialModel]($backend), and can therefore be included in a `ModelSelector` and can easily be made visible in any SpatialView.
 
 ## View Thumbnails
 
