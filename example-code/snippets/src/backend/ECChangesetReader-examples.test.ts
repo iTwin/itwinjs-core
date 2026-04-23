@@ -567,7 +567,8 @@ describe("ECChangesetReader Examples — null-valued Point3d properties", () => 
       model: modelId,
       category: catId,
       code: Code.createEmpty(),
-      Position: { y: 2.5, z: 3.7 }, // X omitted — stored as NULL // eslint-disable-line @typescript-eslint/naming-convention
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      Position: { y: 2.5, z: 3.7 }, // X omitted — stored as NULL
     } as any);
     txn.saveChanges("insert marker");
     await db.pushChanges({ description: "insert marker", accessToken: adminToken2 });
@@ -598,7 +599,8 @@ describe("ECChangesetReader Examples — null-valued Point3d properties", () => 
     await db.locks.acquireLocks({ exclusive: markerId });
     txn.updateElement({
       ...db.elements.getElementProps(markerId),
-      Position: { x: 1.0, y: 9.9, z: 7.7 }, // all components provided — column becomes non-null // eslint-disable-line @typescript-eslint/naming-convention
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      Position: { x: 1.0, y: 9.9, z: 7.7 }, // all components provided — column becomes non-null
     });
     txn.saveChanges("update marker");
     await db.pushChanges({ description: "update marker", accessToken: adminToken2 });
@@ -621,7 +623,8 @@ describe("ECChangesetReader Examples — null-valued Point3d properties", () => 
 
       // New state: fully specified — Position IS a key.
       expect("Position" in markerNew!).to.be.true;    // true
-      expect(markerNew!.Position).to.deep.equal({ X: 1, Y: 9.9, Z: 7.7 }); // { X: 1, Y: 9.9, Z: 7.7 } // eslint-disable-line @typescript-eslint/naming-convention
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      expect(markerNew!.Position).to.deep.equal({ X: 1, Y: 9.9, Z: 7.7 }); // { X: 1, Y: 9.9, Z: 7.7 }
 
       // Old state: was NULL — Position is NOT a key.
       expect("Position" in markerOld!).to.be.false;    // false
