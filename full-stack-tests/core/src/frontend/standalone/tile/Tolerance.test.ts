@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-frontend";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
-import { fakeViewState } from "./TileIO.test";
+import { fakeViewState } from "./FakeViewState";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { IModelTile, IModelTileTree } from "@itwin/core-frontend/lib/cjs/tile/internal";
 

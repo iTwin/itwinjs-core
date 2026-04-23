@@ -66,17 +66,9 @@ export class FakeREProps implements RelatedElementProps {
   public constructor() { this.id = Id64.invalid; }
 }
 
-export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
-  return {
-    iModel,
-    is3d: () => true !== options?.is2d,
-    viewFlags: new ViewFlags({
-      renderMode: options?.renderMode ?? RenderMode.SmoothShade,
-      visibleEdges: options?.visibleEdges ?? false,
-    }),
-    displayStyle: {},
-  } as unknown as ViewState;
-}
+import { fakeViewState } from "./FakeViewState";
+// Re-export for any remaining consumers — other test files should import from "./FakeViewState" directly.
+export { fakeViewState } from "./FakeViewState";
 
 function delta(a: number, b: number): number {
   return Math.abs(a - b);
