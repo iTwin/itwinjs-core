@@ -4350,6 +4350,9 @@ describe("ECChangesetReader: invalid inputs", () => {
 
     using reader = ECChangesetReader.openFile({ db: iModel, fileName: txtFile });
     assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
+    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
+    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
+    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
   });
 
   // --- openGroup ---
