@@ -2328,6 +2328,8 @@ describe("ECChangesetReader update-full", () => {
     using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
     while (reader.step()) { }
     assert.equal(reader.step(), false);
+    assert.equal(reader.step(), false); // trying multiple steps past the end should still return false and not throw, but metadata access should throw
+    assert.equal(reader.step(), false);
     expect(() => reader.isECTable).to.throw();
     expect(() => reader.isIndirectChange).to.throw();
     expect(() => reader.tableName).to.throw();
@@ -2768,6 +2770,8 @@ describe("ECChangesetReader delete-partial", () => {
   it("should throw error if tried to fetch changeset metadata values after stepping past the end", () => {
     using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
     while (reader.step()) { }
+    assert.equal(reader.step(), false);
+    assert.equal(reader.step(), false); // try stepping again after already stepping past the end
     assert.equal(reader.step(), false);
     expect(() => reader.isECTable).to.throw();
     expect(() => reader.isIndirectChange).to.throw();
