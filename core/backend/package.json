@@ -79,10 +79,6 @@
     "@types/sinon": "^17.0.2",
     "@types/touch": "^3.1.2",
     "@types/ws": "^7.0.0",
-<<<<<<< HEAD
-=======
-    "@xmldom/xmldom": "~0.8.13",
->>>>>>> 38df51051d (Security: fix 4 high @xmldom/xmldom CVEs (GHSA-2v35-w6hq-6mfw) (#9219))
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
