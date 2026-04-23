@@ -242,6 +242,38 @@ describe("CurveCollection", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("Clone", () => {
+    const ck = new Checker();
+    const outerLoop = Loop.create(Arc3d.createUnitCircle());
+    const innerLoop = Loop.createPolygon([Point3d.createZero(), Point3d.create(0.5, -0.5), Point3d.create(0.5, 0.5)]);
+    innerLoop.isInner = true; // as of 4/2026, this property is only set by user code
+    const parityRegion = ParityRegion.createLoops([outerLoop, innerLoop]); // loop orientation doesn't matter
+    const clonedRegion = parityRegion.clone();
+    if (ck.testType(parityRegion, ParityRegion, "original region is a ParityRegion")) {
+      if (ck.testType(clonedRegion, ParityRegion, "cloned region is a ParityRegion")) {
+        ck.testExactNumber(parityRegion.children.length, clonedRegion.children.length, "regions have same number of children");
+        ck.testExactNumber(clonedRegion.children.length, 2, "regions have 2 children");
+        for (let i = 0; i < parityRegion.children.length; i++) {
+          const origChild = parityRegion.children[i];
+          const cloneChild = clonedRegion.children[i];
+          if (ck.testType(origChild, Loop, "origChild is Loop")) {
+            if (ck.testType(cloneChild, Loop, "cloneChild is Loop")) {
+              ck.testExactNumber(origChild.children.length, cloneChild.children.length, "child loops have same number of children");
+              ck.testExactNumber(origChild.children.length, 1, "child loops have only one child");
+              ck.testTrue(typeof origChild.children[0] === typeof cloneChild.children[0], "child loops' only children have the same type");
+              if (i === 0)
+                ck.testType(origChild.children[0], Arc3d, "regions' first child's only children are Arc3d");
+              else
+                ck.testType(origChild.children[0], LineString3d, "regions' second child's only children are LineString3d");
+              // As of 4/2026, Loops are the only CurveCollections with a spare property lying around. It wasn't always propagated by clone.
+              ck.testBoolean(origChild.isInner, cloneChild.isInner, "clone should preserve child isInner property");
+            }
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("ConsolidateAdjacentPrimitives", () => {
