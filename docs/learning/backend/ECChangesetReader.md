@@ -68,6 +68,24 @@ The names in `changeFetchedPropNames` follow these rules based on the property k
 
 > **Note:** `changeFetchedPropNames` always contains the **original EC property names** (e.g. `"LastMod"`, `"Model.Id"`, `"StructProp.X"`) regardless of how `rowOptions` are configured. Even with `useJsName: true`, `changeFetchedPropNames.includes("LastMod")` is correct — **not** `includes("lastMod")`.
 
+#### Null-valued properties — listed in `changeFetchedPropNames` but absent from the instance object
+
+A property name can appear in `changeFetchedPropNames` yet be **absent as a key** on the [ChangeInstance]($backend) object. This happens when the stored value of that property in the changeset binary was `null` (e.g. a column whose value was never set, or a compound property such as `Point3d` where all components were `null`).
+
+`changeFetchedPropNames` records every property that was **read from the binary** — regardless of whether the resulting value was null. The instance object, however, only carries keys for non-null values. The two are therefore complementary:
+
+- **`changeFetchedPropNames`** tells you which properties were part of the changeset delta (including those that changed to or from `null`).
+- **Presence as a key on the instance** tells you whether the resulting value was non-null.
+
+A concrete example arises with a `Point3d` property. Insert the Point3d property but only partially (e.g. Y and Z without X). A subsequent update that sets all three components will record a `NULL`-to-non-null transition in the changeset binary. Reading that update changeset:
+
+- The `"New"` instance **has** `Position`(Point3d property) as a key (non-null value).
+- The `"Old"` instance does **not** have `Position` as a key (was NULL), but `"Position"` **is** listed in `changeFetchedPropNames` for both stages because the binary recorded the full transition.
+
+[[include:ECChangesetReader.NullValuedPoint3d]]
+
+**Rule of thumb:** Use `changeFetchedPropNames` to determine *which* properties changed. Use `"propName" in instance` (or optional chaining) to distinguish "changed to/from a non-null value" from "changed to/from null".
+
 ---
 
 ## Disposal — always close the reader and unifier
@@ -335,6 +353,7 @@ reader.setClassNameFilters(new Set(["BisCore:Element"])); // full "SchemaName:Cl
 | Filtering API style | Fluent (`.acceptOp(...).acceptTable(...)`) | Setter methods with `Set<>` arguments |
 | `$meta` on instances | Optional (`disableMetaData` flag could suppress it) | Always present |
 | Changed property tracking | Not available | `$meta.changeFetchedPropNames` lists exactly which properties came from the changeset binary |
+| Null-valued properties | Null values were included as keys on instance objects (key present, value `null`) | Null values are **not** included as keys — a property absent from the instance object means its stored value was `null`; use `$meta.changeFetchedPropNames` to distinguish "not changed" from "changed to/from null" |
 
 ---
 

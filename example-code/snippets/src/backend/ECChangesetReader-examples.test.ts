@@ -525,3 +525,116 @@ describe("ECChangesetReader Examples — complete worked example", () => {
     // __PUBLISH_EXTRACT_END__
   });
 });
+
+describe("ECChangesetReader Examples — null-valued Point3d properties", () => {
+  before(() => HubMock.startup("ECChangesetReaderNullProp", KnownTestLocations.outputDir));
+  after(() => HubMock.shutdown());
+
+  it("Point3d stored as NULL when only partial components are given", async () => {
+    const adminToken2 = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "nullPropDemo", accessToken: adminToken2 });
+    const db = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken2 });
+    const txn = startTestTxn(db, "null-prop example");
+
+    // __PUBLISH_EXTRACT_START__ ECChangesetReader.NullValuedPoint3d
+    // A Point3d column is stored as NULL whenever any component of the value is not explicitly
+    // provided. In the example below, X is omitted, so the entire Position column remains NULL
+    // in the database — the insertion "did not happen" as far as Position is concerned.
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="NullPropDemo" alias="np" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+      <ECEntityClass typeName="Marker">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="Position" typeName="point3d"/>
+      </ECEntityClass>
+    </ECSchema>`;
+    await importSchemaStrings(txn, [schema]);
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await db.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [, modelId] = BackendTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+    const catId = DrawingCategory.insert(txn, IModel.dictionaryId, "MarkerCat",
+      new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,0,255)").toJSON() }));
+    txn.saveChanges("setup");
+    await db.pushChanges({ description: "setup", accessToken: adminToken2 });
+
+
+    await db.locks.acquireLocks({ shared: modelId });
+    const markerId: Id64String = txn.insertElement({
+      classFullName: "NullPropDemo:Marker",
+      model: modelId,
+      category: catId,
+      code: Code.createEmpty(),
+      Position: { y: 2.5, z: 3.7 }, // X omitted — stored as NULL // eslint-disable-line @typescript-eslint/naming-convention
+    } as any);
+    txn.saveChanges("insert marker");
+    await db.pushChanges({ description: "insert marker", accessToken: adminToken2 });
+
+    const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+    let changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+    const insertCs = changesets[1]; // [setup, insert]
+
+    // Reading the insert changeset:
+    //   "Position" appears in changeFetchedPropNames — it was read from the changeset binary.
+    //   But it is NOT a key on the instance because the stored value was NULL.
+    {
+      using reader = ECChangesetReader.openFile({ db, fileName: insertCs.pathname });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step()) pcu.appendFrom(reader);
+
+      const markerNew = Array.from(pcu.instances).find(
+        (i) => i.ECInstanceId === markerId && i.$meta.stage === "New",
+      );
+
+      expect(markerNew!.$meta.changeFetchedPropNames.includes("Position")).to.be.true; // true  — binary had the column
+      expect("Position" in markerNew!).to.be.false;                                     // false — value was NULL
+      expect(markerNew!.Position).to.be.undefined;                                      // undefined
+    }
+
+    // Update the element with all three components explicitly set.
+    // Now the column transitions from NULL to a fully-specified Point3d value.
+    await db.locks.acquireLocks({ exclusive: markerId });
+    txn.updateElement({
+      ...db.elements.getElementProps(markerId),
+      Position: { x: 1.0, y: 9.9, z: 7.7 }, // all components provided — column becomes non-null // eslint-disable-line @typescript-eslint/naming-convention
+    });
+    txn.saveChanges("update marker");
+    await db.pushChanges({ description: "update marker", accessToken: adminToken2 });
+
+    changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+    const updateCs = changesets[2]; // [setup, insert, update]
+
+    // Reading the update changeset:
+    //   markerNew — Position IS a key (new value is non-null: { X:1, Y:9.9, Z:7.7 })
+    //   markerOld — Position is NOT a key (old value was NULL), but IS in changeFetchedPropNames
+    //               because the changeset binary recorded the NULL-to-non-null transition.
+    {
+      using reader = ECChangesetReader.openFile({ db, fileName: updateCs.pathname });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step()) pcu.appendFrom(reader);
+
+      const instances = Array.from(pcu.instances);
+      const markerNew = instances.find((i) => i.ECInstanceId === markerId && i.$meta.stage === "New");
+      const markerOld = instances.find((i) => i.ECInstanceId === markerId && i.$meta.stage === "Old");
+
+      // New state: fully specified — Position IS a key.
+      expect("Position" in markerNew!).to.be.true;    // true
+      expect(markerNew!.Position).to.deep.equal({ X: 1, Y: 9.9, Z: 7.7 }); // { X: 1, Y: 9.9, Z: 7.7 } // eslint-disable-line @typescript-eslint/naming-convention
+
+      // Old state: was NULL — Position is NOT a key.
+      expect("Position" in markerOld!).to.be.false;    // false
+      expect(markerOld!.Position).to.be.undefined;    // undefined
+
+      // Both stages list "Position" in changeFetchedPropNames.
+      expect(markerNew!.$meta.changeFetchedPropNames.includes("Position")).to.be.true; // true
+      expect(markerOld!.$meta.changeFetchedPropNames.includes("Position")).to.be.true; // true
+      // → Position changed from null to {"X":1,"Y":9.9,"Z":7.7}
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    txn.end();
+    db.close();
+  });
+});

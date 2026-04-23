@@ -3179,6 +3179,7 @@ describe("ECChangesetReader — openFile + openGroup", () => {
       expect(elemNew!.LastMod).to.exist;
       expect(elemNew!.Model).to.exist;
       expect(elemNew!.FederationGuid).to.exist;
+      assert.isUndefined(elemNew!.Pt3dProp);
       assert.isNotNull(elemNew!.BinProp);
       assert.deepEqual(elemNew!.BinProp, new Uint8Array([1, 2, 3, 4]));
       assert.deepEqual(elemNew!.GuidArrProp, [
@@ -3255,8 +3256,8 @@ describe("ECChangesetReader — openFile + openGroup", () => {
         "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
       ]);
       assert.equal(elemOld!.$meta.isIndirectChange, false);
-      expect(elemNew!.LastMod).to.exist;
-      assert.deepEqual([...elemNew!.$meta.changeFetchedPropNames].sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
+      expect(elemOld!.LastMod).to.exist;
+      assert.deepEqual([...elemOld!.$meta.changeFetchedPropNames].sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
     }
 
     // === openGroup: insert + update as a single stream ===
@@ -3403,6 +3404,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       expect(elemNew!.LastMod).to.exist;
       expect(elemNew!.Model).to.exist;
       expect(elemNew!.FederationGuid).to.exist;
+      assert.isUndefined(elemNew!.Pt3dProp);
       assert.isNotNull(elemNew!.BinProp);
       assert.deepEqual(elemNew!.BinProp, new Uint8Array([1, 2, 3, 4]));
       assert.deepEqual(elemNew!.GuidArrProp, [
@@ -3458,7 +3460,7 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.deepEqual(elemNew!.Rotation, 0);
       expect(elemNew!.LastMod).to.exist;
       assert.deepEqual([...elemNew!.$meta.changeFetchedPropNames].sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
-      assert.equal(elemOld!.$meta.isIndirectChange, false);
+      assert.equal(elemNew!.$meta.isIndirectChange, false);
 
       assert.equal(elemOld!.$meta.op, "Updated");
       assert.equal(elemOld!.$meta.stage, "Old");
@@ -3470,9 +3472,9 @@ describe("ECChangesetReader — openLocalChanges + openInmemoryChanges", () => {
         "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
       ]);
-      expect(elemNew!.LastMod).to.exist;
+      expect(elemOld!.LastMod).to.exist;
       assert.equal(elemOld!.$meta.isIndirectChange, false);
-      assert.deepEqual([...elemNew!.$meta.changeFetchedPropNames].sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
+      assert.deepEqual([...elemOld!.$meta.changeFetchedPropNames].sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
     }
 
     // === openGroup: insert + update as a single stream ===
