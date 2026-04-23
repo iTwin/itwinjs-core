@@ -10,11 +10,24 @@ import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
+
+/** Argument for relationship dependency callbacks.
+ * @beta
+ */
+export interface OnDependencyArg {
+  /** The iModel for the relationship affected by this method. */
+  iModel: IModelDb;
+  /** The ElementDrivesElement relationship instance affected by this method. */
+  props: RelationshipProps;
+  /** The transaction for indirect processing. */
+  indirectEditTxn: EditTxn;
+}
 
 /** Base class for all link table ECRelationships
  * @public
@@ -56,25 +69,77 @@ export class Relationship extends Entity {
    * Callback invoked by saveChanges on an ElementDrivesElement relationship when its input has changed or is the output of some upstream relationship whose input has changed.
    * This callback is invoked after the input element has been processed by upstream relationships.
    * A subclass of ElementDrivesElement can re-implement this static method to take some action. onRootChanged may modify the output element only.
+   * @beta
+   */
+  public static onRootChangedArg(arg: OnDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onRootChanged(arg.props, arg.iModel);
+  }
+
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when its input has changed or is the output of some upstream relationship whose input has changed.
+   * This callback is invoked after the input element has been processed by upstream relationships.
+   * A subclass of ElementDrivesElement can re-implement this static method to take some action. onRootChanged may modify the output element only.
    * @param _props The ElementDrivesElement relationship instance.
    * @param _iModel The iModel
+   * @deprecated Use onRootChangedArg instead.
    */
   public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /**
    * Callback invoked by saveChanges on an ElementDrivesElement relationship when the relationship instance has been deleted.
    * A subclass of ElementDrivesElement can re-implement this static method to take some action.
+   * @beta
+   */
+  public static onDeletedDependencyArg(arg: OnDependencyArg): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.onDeletedDependency(arg.props, arg.iModel);
+  }
+
+  /**
+   * Callback invoked by saveChanges on an ElementDrivesElement relationship when the relationship instance has been deleted.
+   * A subclass of ElementDrivesElement can re-implement this static method to take some action.
    * @param _props The deleted ElementDrivesElement relationship instance.
    * @param _iModel The iModel
+   * @deprecated Use onDeletedDependencyArg instead.
    */
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
-  /** Insert this Relationship into the iModel. */
-  public insert(): Id64String { return this.id = this.iModel.relationships.insertInstance(this.toJSON()); }
-  /** Update this Relationship in the iModel. */
-  public update() { this.iModel.relationships.updateInstance(this.toJSON()); }
-  /** Delete this Relationship from the iModel. */
-  public delete() { this.iModel.relationships.deleteInstance(this.toJSON()); }
+  /**
+   * Insert this Relationship into the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public insert(txn: EditTxn): Id64String;
+  /**
+   * Insert this Relationship into the iModel.
+   * @deprecated Use Relationship.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public insert(): Id64String;
+  public insert(txn?: EditTxn): Id64String { return this.id = (txn ?? this.iModel[_implicitTxn]).insertRelationship(this.toJSON()); }
+
+  /**
+   * Update this Relationship in the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public update(txn: EditTxn): void;
+  /**
+   * Update this Relationship in the iModel.
+   * @deprecated Use Relationship.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public update(): void;
+  public update(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).updateRelationship(this.toJSON()); }
+
+  /**
+   * Delete this Relationship from the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public delete(txn: EditTxn): void;
+  /**
+   * Delete this Relationship from the iModel.
+   * @deprecated Use Relationship.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public delete(): void;
+  public delete(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).deleteRelationship(this.toJSON()); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 }
@@ -93,15 +158,27 @@ export class ElementRefersToElements extends Relationship {
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T {
     return iModel.relationships.createInstance({ sourceId, targetId, classFullName: this.classFullName }) as T;
   }
-  /** Insert a new instance of the Relationship.
-   * @param iModel The iModel that will contain the relationship
+
+  /** Insert a new instance of the Relationship using an explicit transaction.
+   * @param txn The EditTxn used to perform the insert.
    * @param sourceId The sourceId of the relationship, that is, the driver element
    * @param targetId The targetId of the relationship, that is, the driven element
    * @return The Id of the inserted Relationship.
+   * @beta
    */
-  public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
-    const relationship: T = this.create(iModel, sourceId, targetId);
-    return iModel.relationships.insertInstance(relationship.toJSON());
+  public static insert(txn: EditTxn, sourceId: Id64String, targetId: Id64String): Id64String;
+  /** Insert a new instance of the Relationship.
+   * @param iModel The iModel that will contain the relationship.
+   * @param sourceId The sourceId of the relationship, that is, the driver element.
+   * @param targetId The targetId of the relationship, that is, the driven element.
+   * @return The Id of the inserted Relationship.
+   * @deprecated Use ElementRefersToElements.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public static insert(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
+  public static insert(txnOrIModel: EditTxn | IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
+    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
+    const relationship = this.create(txn.iModel, sourceId, targetId);
+    return txn.insertRelationship(relationship.toJSON());
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -461,30 +538,34 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
+   * @deprecated Use EditTxn.insertRelationship instead.
    */
   public insertInstance(props: RelationshipProps): Id64String {
-    this.checkRelationshipClass(props.classFullName);
-    return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
+    return this._iModel[_implicitTxn].insertRelationship(props);
   }
 
   /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
+   * @deprecated Use EditTxn.updateRelationship instead.
    */
   public updateInstance(props: RelationshipProps): void {
-    this._iModel[_nativeDb].updateLinkTableRelationship(props);
+    this._iModel[_implicitTxn].updateRelationship(props);
   }
 
-  /** Delete an Relationship instance from this iModel. */
+  /** Delete an Relationship instance from this iModel.
+   * @deprecated Use EditTxn.deleteRelationship instead.
+   */
   public deleteInstance(props: RelationshipProps): void {
-    this._iModel[_nativeDb].deleteLinkTableRelationship(props);
+    this._iModel[_implicitTxn].deleteRelationship(props);
   }
 
   /** Delete multiple Relationship instances from this iModel.
    * @param props The properties of the relationship instances to delete.
    * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
+   * @deprecated Use EditTxn.deleteRelationships instead.
    */
   public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
-    this._iModel[_nativeDb].deleteLinkTableRelationships(props);
+    this._iModel[_implicitTxn].deleteRelationships(props);
   }
 
   /** Get the props of a Relationship instance

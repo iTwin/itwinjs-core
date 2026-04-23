@@ -10,7 +10,7 @@ import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RelatedElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ModelProps } from "./ModelProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
@@ -151,12 +151,44 @@ export interface ViewQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
 
+/**
+ * Helper to resolve navigation property ids represented as independent Id64Strings.
+ * @internal
+ *
+ * @note This function will be redundant once all deprecated fields are removed. All calls to this function will need to be removed as well.
+ */
+export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String {
+  return navProp?.id ?? deprecatedNavPropId;
+}
+
+/**
+ * Helper to resolve navigation properties represented as Id64Strings.
+ * @internal
+ *
+ * @note This function will be redundant once all deprecated fields are removed. All calls to this function will need to be removed as well.
+ */
+export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps {
+  return navProp ?? { id: deprecatedNavPropId };
+}
+
 /** Parameters used to construct a ViewDefinition
  * @public
  * @extensions
  */
 export interface ViewDefinitionProps extends DefinitionElementProps {
+  /** The [[CategorySelector]] for this view. */
+  categorySelector?: RelatedElementProps;
+
+  /** The [[DisplayStyle]] for this view. */
+  displayStyle?: RelatedElementProps;
+
+  /** The Id of the [[CategorySelector]] for this view.
+   * @deprecated in 5.9. Use `categorySelector` instead.
+   */
   categorySelectorId: ViewIdString;
+  /** The Id of the [[DisplayStyle]] for this view.
+   * @deprecated in 5.9. Use `displayStyle` instead.
+   */
   displayStyleId: ViewIdString;
   description?: string;
   jsonProperties?: {
@@ -191,6 +223,12 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
  * @extensions
  */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
+  /** The [[ModelSelector]] for this view. */
+  modelSelector?: RelatedElementProps;
+
+  /** The Id of the [[ModelSelector]] for this view.
+   * @deprecated in 5.9. Use `modelSelector` instead.
+   */
   modelSelectorId: ViewIdString;
 }
 
@@ -199,6 +237,12 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
  * @extensions
  */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
+  /** The base model displayed by this view. */
+  baseModel?: RelatedElementProps;
+
+  /** The Id of the base model displayed by this view.
+   * @deprecated in 5.9. Use `baseModel` instead.
+   */
   baseModelId: Id64String;
   origin: XYProps;
   delta: XYProps;
@@ -378,25 +422,25 @@ export namespace ViewStoreRpc {
 
     /**
      * The properties of a category selector for the new view.
-     * @note This value is only used, and should only be present if `viewDefinition.categorySelectorId` **not** a valid
-     * `IdString`. In that case, a new category selector will be created with these properties and its Id will be used.
-     * Otherwise, the categorySelectorId from the ViewDefinition is used. If it does not represent a valid category
+     * @note This value is only used, and should only be present if `viewDefinition.categorySelector.id` is **not** a valid `IdString`.
+     * In that case, a new category selector will be created with these properties and its Id will be used.
+     * Otherwise, the categorySelector from the ViewDefinition is used. If it does not represent a valid category
      * selector, an error is thrown.
      */
     readonly categorySelectorProps?: CategorySelectorProps;
 
     /** The properties of a model selector for the new view.
-     * @note This value is only used, and should only be present if `viewDefinition.modelSelectorId` **not** a valid
-     * `IdString`. In that case, a new model selector will be created with these properties and its Id will be used.
-     * Otherwise, the modelSelectorId from the ViewDefinition is used. If it does not represent a valid model selector,
+     * @note This value is only used, and should only be present if `viewDefinition.modelSelector.id` is **not** a valid `IdString`.
+     * In that case, a new model selector will be created with these properties and its Id will be used.
+     * Otherwise, the modelSelector from the ViewDefinition is used. If it does not represent a valid model selector,
      * an error is thrown.
      */
     readonly modelSelectorProps?: ModelSelectorProps;
 
     /** The properties of a display style for the new view.
-     * @note This value is only used, and should only be present if `viewDefinition.displayStyleId` **not** a valid
-     * `IdString`. In that case, a new display style will be created with these properties and its Id will be used.
-     * Otherwise, the displayStyleId from the ViewDefinition is used. If it does not represent a valid display style, an
+     * @note This value is only used, and should only be present if `viewDefinition.displayStyle.id` is **not** a valid `IdString`.
+     * In that case, a new display style will be created with these properties and its Id will be used.
+     * Otherwise, the displayStyle from the ViewDefinition is used. If it does not represent a valid display style, an
      * error is thrown.
      */
     readonly displayStyleProps?: DisplayStyleProps;

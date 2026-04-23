@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, afterEach, beforeAll, describe, expect, it} from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { EmptyLocalization } from "@itwin/core-common";
+import { UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
+import { BasicUnitsProvider } from "../quantity-formatting/BasicUnitsProvider";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
@@ -188,5 +191,67 @@ describe("IModelApp startup tests", () => {
     await IModelApp.startup();
     expect(IModelApp.publicPath).toBe("");
     await IModelApp.shutdown();
+  });
+});
+
+/**
+ * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
+ * but still delegates to BasicUnitsProvider for correct behaviour.
+ */
+class NonBasicUnitsProvider {
+  private readonly _delegate = new BasicUnitsProvider();
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
+  }
+  public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
+    return this._delegate.getUnitsByFamily(phenomenon);
+  }
+  public async findUnitByName(name: string): Promise<UnitProps> {
+    return this._delegate.findUnitByName(name);
+  }
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
+    return this._delegate.getConversion(fromUnit, toUnit);
+  }
+}
+
+describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("startPrimitiveTool does not emit activeToolChanged after toolAdmin.onShutDown clears _idleTool", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    // Simulate the race: onShutDown has cleared _idleTool but IModelApp is still initialised.
+    IModelApp.toolAdmin.onShutDown();
+
+    let toolChangedEmitted = false;
+    const removeListener = IModelApp.toolAdmin.activeToolChanged.addListener(() => { toolChangedEmitted = true; });
+
+    // Must not throw and must not fire activeToolChanged (no valid idle tool exists).
+    await IModelApp.toolAdmin.startPrimitiveTool(undefined);
+
+    expect(toolChangedEmitted).toBe(false);
+    removeListener();
+  });
+
+  it("setUnitsProvider does not call startDefaultTool after IModelApp.shutdown", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    const toolAdmin = IModelApp.toolAdmin;
+    const formatter = IModelApp.quantityFormatter;
+
+    // Install a non-default provider so resetToUseInternalUnitsProvider won't early-exit.
+    await formatter.setUnitsProvider(new NonBasicUnitsProvider());
+
+    await IModelApp.shutdown();
+
+    const startDefaultSpy = vi.spyOn(toolAdmin, "startDefaultTool");
+
+    // Simulates the race: async units-provider reset fires after IModelApp has shut down.
+    await formatter.resetToUseInternalUnitsProvider();
+
+    // startDefaultTool must NOT be called — IModelApp is no longer initialised.
+    expect(startDefaultSpy).not.toHaveBeenCalled();
   });
 });

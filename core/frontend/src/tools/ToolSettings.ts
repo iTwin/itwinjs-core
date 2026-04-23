@@ -82,4 +82,8 @@ export class ToolSettings {
    * @beta
    */
   public static enableVolumeSelection = false;
+  /** If true, pressing Escape key sets focus to Home to allow shortcuts to be used.
+   * @beta
+  */
+  public static escapeMovesFocusToHome = true;
 }

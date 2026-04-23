@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+beta;interface;AddFormattingSpecArgs
 internal;function;almostEqual
 internal;function;almostZero
 beta;interface;AlternateUnitLabelsProvider
@@ -16,10 +17,16 @@ beta;interface;FormatCompositeProps
 beta;interface;FormatDefinition
 beta;interface;FormatProps
 beta;interface;FormatsChangedArgs
+beta;class;FormatSpecHandle
+internal;interface;FormatSpecHandleArgs
 beta;interface;FormatsProvider
 internal;const;formatStringRgx
 beta;class;Formatter
 beta;class;FormatterSpec
+beta;class;FormattingReadyCollector
+beta;interface;FormattingSpecArgs
+beta;interface;FormattingSpecEntry
+beta;interface;FormattingSpecProvider
 beta;enum;FormatTraits
 beta;function;formatTraitsToArray
 beta;enum;FormatType
@@ -49,6 +56,7 @@ beta;interface;PotentialParseUnit
 beta;class;Quantity
 internal;class;QuantityConstants
 beta;class;QuantityError
+beta;enum;QuantityLoggerCategory
 beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus

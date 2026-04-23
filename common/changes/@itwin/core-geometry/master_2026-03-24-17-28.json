@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Fixed intersection of 2 tangent circles",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

@@ -2,6 +2,89 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.8.4",
+      "tag": "@itwin/core-backend_v5.8.4",
+      "date": "Thu, 23 Apr 2026 18:05:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.3",
+      "tag": "@itwin/core-backend_v5.8.3",
+      "date": "Thu, 23 Apr 2026 14:52:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.2",
+      "tag": "@itwin/core-backend_v5.8.2",
+      "date": "Thu, 16 Apr 2026 11:05:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.8.1",
+      "tag": "@itwin/core-backend_v5.8.1",
+      "date": "Fri, 10 Apr 2026 13:02:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.0",
+      "tag": "@itwin/core-backend_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "For StandaloneDb make sure to delete txns"
+          },
+          {
+            "comment": "Remove unnecessary warning when calling `IModelDb.saveChanges` with no unsaved changes."
+          },
+          {
+            "comment": "QueryBinder should not fail on bind empty array"
+          },
+          {
+            "comment": "Fix WorkspaceDb/SettingsDb instance caching, cloud version defaulting, and `getSetting` prototype-chain guard."
+          },
+          {
+            "comment": "Added SettingsDb and SettingsEditor APIs for dedicated JSON settings storage, separate from WorkspaceDb."
+          },
+          {
+            "comment": "Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler"
+          },
+          {
+            "comment": "Added withQueryReader to ECDb and iModel and also created ECSqlSyncReader to query imodels in true row by row fashion"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix operator precedence bug in WorkspaceImpl.getContainerAsync that silently discarded explicit access tokens"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.7.3",
+      "tag": "@itwin/core-backend_v5.7.3",
+      "date": "Tue, 24 Mar 2026 14:29:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.7.2",
+      "tag": "@itwin/core-backend_v5.7.2",
+      "date": "Thu, 12 Mar 2026 14:12:44 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.7.1",
+      "tag": "@itwin/core-backend_v5.7.1",
+      "date": "Mon, 09 Mar 2026 14:41:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.7.0",
       "tag": "@itwin/core-backend_v5.7.0",
       "date": "Tue, 03 Mar 2026 18:21:20 GMT",
@@ -36,6 +119,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "5.6.3",
+      "tag": "@itwin/core-backend_v5.6.3",
+      "date": "Mon, 09 Mar 2026 22:09:11 GMT",
+      "comments": {}
     },
     {
       "version": "5.6.2",

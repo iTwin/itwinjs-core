@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added ITwinSettingsError for iTwin settings container API error handling.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

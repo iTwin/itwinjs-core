@@ -5,7 +5,7 @@
 
 import { ChangesetECAdaptor, ChannelControl, DrawingCategory, ECChangeUnifierCache, IModelHost, PartialECChangeUnifier, SqliteChangesetReader } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { GuidString, Id64, StopWatch } from "@itwin/core-bentley";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
@@ -56,12 +56,11 @@ describe("ChangesetReaderAPI", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
-    rwIModel.saveChanges();
     await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
 
     // Create changesets with different number of inserts
@@ -82,14 +81,15 @@ describe("ChangesetReaderAPI", async () => {
 
     for (const testCase of testCases) {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-      for (let i = 0; i < testCase.numElements; i++) {
-        const elementProps = {
-          ...elementPropsTemplate,
-          name: `Element_${testCase.numElements}_${i}`,
-        };
-        assert.isTrue(Id64.isValidId64(rwIModel.elements.insertElement(elementProps)), `Failed to insert element ${elementProps.name}`);
-      }
-      rwIModel.saveChanges();
+      withEditTxn(rwIModel, (txn) => {
+        for (let i = 0; i < testCase.numElements; i++) {
+          const elementProps = {
+            ...elementPropsTemplate,
+            name: `Element_${testCase.numElements}_${i}`,
+          };
+          assert.isTrue(Id64.isValidId64(txn.insertElement(elementProps)), `Failed to insert element ${elementProps.name}`);
+        }
+      });
       await rwIModel.pushChanges({ description: `Changeset with ${testCase.numElements} inserts`, accessToken: adminToken });
     }
 
@@ -142,12 +142,11 @@ describe("ChangesetReaderAPI", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    const [, drawingModelId] = withEditTxn(rwIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+      drawingCategoryId = withEditTxn(rwIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
-    rwIModel.saveChanges();
     await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
 
     // Create changesets with different number of inserts
@@ -168,14 +167,15 @@ describe("ChangesetReaderAPI", async () => {
 
     for (const testCase of testCases) {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
-      for (let i = 0; i < testCase.numElements; i++) {
-        const elementProps = {
-          ...elementPropsTemplate,
-          name: `Element_${testCase.numElements}_${i}`,
-        };
-        assert.isTrue(Id64.isValidId64(rwIModel.elements.insertElement(elementProps)), `Failed to insert element ${elementProps.name}`);
-      }
-      rwIModel.saveChanges();
+      withEditTxn(rwIModel, (txn) => {
+        for (let i = 0; i < testCase.numElements; i++) {
+          const elementProps = {
+            ...elementPropsTemplate,
+            name: `Element_${testCase.numElements}_${i}`,
+          };
+          assert.isTrue(Id64.isValidId64(txn.insertElement(elementProps)), `Failed to insert element ${elementProps.name}`);
+        }
+      });
       await rwIModel.pushChanges({ description: `Changeset with ${testCase.numElements} inserts`, accessToken: adminToken });
     }
 
@@ -230,12 +230,10 @@ describe("ChangesetReaderAPI", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await firstBriefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(firstBriefcase, codeProps, true);
+    const [, drawingModelId] = withEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
-
-    firstBriefcase.saveChanges();
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
 
     await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
 
@@ -250,14 +248,15 @@ describe("ChangesetReaderAPI", async () => {
       code: Code.createEmpty(),
     };
     await firstBriefcase.locks.acquireLocks({ shared: drawingModelId });
-    for (let i = 0; i < numElements; i++) {
-      const elementProps = {
-        ...elementPropsTemplate,
-        name: `Element_${i}`,
-      };
-      assert.isTrue(Id64.isValidId64(firstBriefcase.elements.insertElement(elementProps)));
-    }
-    firstBriefcase.saveChanges();
+    withEditTxn(firstBriefcase, (txn) => {
+      for (let i = 0; i < numElements; i++) {
+        const elementProps = {
+          ...elementPropsTemplate,
+          name: `Element_${i}`,
+        };
+        assert.isTrue(Id64.isValidId64(txn.insertElement(elementProps)));
+      }
+    });
     await firstBriefcase.pushChanges({ description: `Large changeset with ${numElements} inserts`, accessToken: adminToken });
     await secondBriefcase.pullChanges({ accessToken: adminToken });
 

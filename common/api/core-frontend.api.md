@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { AddFormattingSpecArgs } from '@itwin/core-quantity';
 import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
 import { AnalysisStyle } from '@itwin/core-common';
@@ -32,7 +33,9 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
+import { BeUnorderedUiEvent } from '@itwin/core-bentley';
 import { BoundingSphere } from '@itwin/core-common';
+import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseDownloader } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { ByteStream } from '@itwin/core-bentley';
@@ -109,8 +112,13 @@ import { FontMap } from '@itwin/core-common';
 import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatSpecHandle } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
+import { FormattingReadyCollector } from '@itwin/core-quantity';
+import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormattingSpecEntry } from '@itwin/core-quantity';
+import { FormattingSpecProvider } from '@itwin/core-quantity';
 import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
@@ -166,6 +174,7 @@ import { LinePixels } from '@itwin/core-common';
 import { Listener } from '@itwin/core-bentley';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { Localization } from '@itwin/core-common';
+import { LockState } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
@@ -260,6 +269,7 @@ import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
 import { RealityDataStatus } from '@itwin/core-bentley';
 import { RealityModelDisplaySettings } from '@itwin/core-common';
+import { ReinstateTxnArgs } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -272,6 +282,7 @@ import { RenderTexture } from '@itwin/core-common';
 import { RenderTextureParams } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RenderType } from '@itwin/webgl-compatibility';
+import { ReverseTxnArgs } from '@itwin/core-common';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
@@ -1725,8 +1736,11 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
+    protected constructor(props: BriefcaseConnectionProps, openMode: OpenMode);
+    // @deprecated
     abandonChanges(): Promise<void>;
+    // @beta
+    readonly briefcaseId?: number;
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
     // @beta
@@ -1740,14 +1754,19 @@ export class BriefcaseConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
+    // @alpha
+    get locks(): LockService | undefined;
     // @internal
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
+    // @alpha
+    static openFile(briefcaseProps: OpenBriefcaseProps, lockServiceFactory?: LockServiceFactory): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
+    // @deprecated
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
@@ -1882,10 +1901,18 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @alpha
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     reinstateTxn(): Promise<IModelStatus>;
+    // @beta
+    reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
+    // @beta
+    reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseSingleTxn(): Promise<IModelStatus>;
+    // @beta
+    reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseTxns(numOperations: number): Promise<IModelStatus>;
+    // @beta
+    reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -2147,6 +2174,8 @@ export class ContextRealityModelState extends ContextRealityModel {
     // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     get classifiers(): SpatialClassifiersState;
+    // @internal (undocumented)
+    detachLayerListeners(): void;
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
@@ -3517,7 +3546,7 @@ export class FormatsProviderManager implements FormatsProvider {
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -3557,14 +3586,6 @@ export interface FormatterParserSpecsProvider {
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
     quantityType: QuantityTypeArg;
-}
-
-// @beta
-export interface FormattingSpecEntry {
-    // (undocumented)
-    formatterSpec: FormatterSpec;
-    // (undocumented)
-    parserSpec: ParserSpec;
 }
 
 // @public
@@ -4020,6 +4041,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
         };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
+        BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
     };
     indices?: GltfId;
     material?: GltfId;
@@ -4047,7 +4069,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean, lineStyle?: MaterialLineStyle): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
@@ -5643,6 +5665,8 @@ export class LayerTileTreeReferenceHandler {
     // (undocumented)
     clearLayers(): void;
     // (undocumented)
+    detachFromDisplayStyle(): void;
+    // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     initializeLayers(context: SceneContext): boolean;
@@ -5785,6 +5809,16 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
+
+// @alpha
+export interface LockService {
+    checkElementLockAvailability(elementId: Id64String, lock: LockState): Promise<boolean>;
+    getExclusiveForeignLocks(): Promise<Id64Set>;
+    getSharedForeignLocks(): Promise<Id64Set>;
+}
+
+// @alpha
+export type LockServiceFactory = (iModel: BriefcaseConnection) => Promise<LockService>;
 
 // @internal
 export class LogoDecoration implements CanvasDecoration {
@@ -7925,6 +7959,7 @@ export class PlanarGridTransparency {
 // @public
 export interface PolylineArgs {
     colors: ColorIndex;
+    cumulativeDistances?: Float32Array;
     features: FeatureIndex;
     flags: PolylineFlags;
     linePixels: LinePixels;
@@ -7968,6 +8003,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
     run(..._args: any[]): Promise<boolean>;
+    // @deprecated
     saveChanges(): Promise<void>;
     // (undocumented)
     targetIsLocked: boolean;
@@ -8052,7 +8088,7 @@ export interface QuantityFormatsChangedArgs {
 }
 
 // @public
-export class QuantityFormatter implements UnitsProvider {
+export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider {
     // (undocumented)
     [Symbol.dispose](): void;
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
@@ -8062,7 +8098,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
     // @beta
-    addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void>;
+    addFormattingSpecsToRegistry(args: AddFormattingSpecArgs): Promise<void>;
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     clearAllOverrideFormats(): Promise<void>;
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
@@ -8081,10 +8117,12 @@ export class QuantityFormatter implements UnitsProvider {
     }): Promise<string>;
     formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
     // @beta
-    protected _formatSpecsRegistry: Map<string, FormattingSpecEntry>;
+    protected _formatSpecsRegistry: Map<string, Map<string, Map<UnitSystemKey, FormattingSpecEntry>>>;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
+    // @beta
+    getFormatSpecHandle(koqName: string, persistenceUnit: string, system?: UnitSystemKey): FormatSpecHandle;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
@@ -8092,14 +8130,22 @@ export class QuantityFormatter implements UnitsProvider {
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): FormattingSpecEntry | undefined;
+    getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined;
+    // @beta
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
     protected initializeQuantityTypesRegistry(): Promise<void>;
+    // @beta
+    get isReady(): boolean;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
+    // @beta
+    readonly onBeforeFormattingReady: BeEvent<(collector: FormattingReadyCollector) => void>;
+    // @beta
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
@@ -8116,6 +8162,8 @@ export class QuantityFormatter implements UnitsProvider {
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     resetToUseInternalUnitsProvider(): Promise<void>;
+    // @internal
+    protected scheduleReload(intent: ReloadIntent): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
@@ -8124,6 +8172,8 @@ export class QuantityFormatter implements UnitsProvider {
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
+    // @beta
+    get whenInitialized(): Promise<void>;
 }
 
 // @public
@@ -8161,7 +8211,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -11838,6 +11888,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean;
     processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -12017,6 +12068,8 @@ export class ToolSettings {
     static enableVirtualCursorForLocate: boolean;
     // @beta
     static enableVolumeSelection: boolean;
+    // @beta
+    static escapeMovesFocusToHome: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
@@ -13594,6 +13647,13 @@ export class ViewPose3d extends ViewPose {
     get target(): Point3d;
 }
 
+// @beta
+export interface ViewRealityModel {
+    readonly description: string | undefined;
+    readonly name: string;
+    readonly treeRef: TileTreeReference;
+}
+
 // @public
 export class ViewRect {
     constructor(left?: number, top?: number, right?: number, bottom?: number);
@@ -13723,12 +13783,13 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     abstract getModelTreeRefs(): Iterable<TileTreeReference>;
     abstract getOrigin(): Point3d;
+    // @beta
+    getRealityModelTreeRefs(): Iterable<ViewRealityModel>;
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
     static getStandardViewMatrix(id: StandardViewId): Matrix3d;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getTargetPoint(result?: Point3d): Point3d;
-    // (undocumented)
     getTileTreeRefs(): Iterable<TileTreeReference>;
     getUpVector(point: Point3d): Vector3d;
     getViewClip(): ClipVector | undefined;

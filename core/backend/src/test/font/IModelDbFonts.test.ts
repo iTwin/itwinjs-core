@@ -5,20 +5,17 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as sinon from "sinon";
-import { BriefcaseDb, IModelDb } from "../../IModelDb";
+import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { FontFace, FontType, RscFontEncodingProps } from "@itwin/core-common";
 import { FontFile } from "../../FontFile";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { _faceProps, _getData } from "../../internal/Symbols";
 import { CodeService } from "../../CodeService";
-import { HubMock } from "../../internal/HubMock";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { BriefcaseManager } from "../../BriefcaseManager";
 import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";
 
 describe("IModelDbFonts", () => {
-  let db: IModelDb;
+  let db: StandaloneDb | undefined;
 
   class MockCodeService {
     public static enable = false;
@@ -49,21 +46,24 @@ describe("IModelDbFonts", () => {
 
   }
 
-  before(() => {
-    HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir);
-  });
-  after(() => HubMock.shutdown());
-
   beforeEach(async () => {
     CodeService.createForIModel = () => MockCodeService as any;
-    const iModelId = await HubMock.createNewIModel({ iModelName: "IModelDbFontsTest", iTwinId: HubMock.iTwinId });
-    const bcProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test", iTwinId: HubMock.iTwinId, iModelId });
-    db = await BriefcaseDb.open({ fileName: bcProps.fileName});
+    db = StandaloneDb.createEmpty(
+      IModelTestUtils.prepareOutputFile("IModelDbFonts", "IModelDbFontsTest.bim"),
+      { rootSubject: { name: "IModelDbFontsTest" }, enableTransactions: true }
+    );
+    (db as any)._codeService = await CodeService.createForIModel(db);
   });
 
   afterEach(() => {
-    db.abandonChanges();
-    db.close();
+    if (db) {
+      if (db.txns.hasLocalChanges)
+        db.txns.deleteAllTxns();
+
+      db.close();
+      db = undefined;
+    }
+
     MockCodeService.reset();
     CodeService.createForIModel = undefined;
   });
@@ -76,8 +76,16 @@ describe("IModelDbFonts", () => {
     return { familyName, faceName, type: FontType.TrueType, subId };
   }
 
+  function getDb(): StandaloneDb {
+    if (!db)
+      throw new Error("Test iModel was not initialized");
+
+    return db;
+  }
+
   function expectEmbeddedFontFiles(expected: Array<IModelJsNative.FontFaceProps[]>) {
-    const fonts = Array.from(db.fonts.queryEmbeddedFontFiles());
+    const iModel = getDb();
+    const fonts = Array.from(iModel.fonts.queryEmbeddedFontFiles());
     const actualFaceProps: Array<IModelJsNative.FontFaceProps[]> = fonts.map((x) => x[_faceProps]);
 
     expect(actualFaceProps).to.deep.equal(expected);
@@ -103,7 +111,8 @@ describe("IModelDbFonts", () => {
       const expectedFiles: Array<IModelJsNative.FontFaceProps[]> = [];
 
       async function embedAndTest(file: FontFile, expectedFaces: IModelJsNative.FontFaceProps[]): Promise<void> {
-        await db.fonts.embedFontFile({ file });
+        const iModel = getDb();
+        await iModel.fonts.embedFontFile({ file });
         expectedFiles.push(expectedFaces);
         expectEmbeddedFontFiles(expectedFiles);
       }
@@ -151,8 +160,9 @@ describe("IModelDbFonts", () => {
     });
 
     it("is a no-op if file is already embedded", async () => {
+      const iModel = getDb();
       expectEmbeddedFontFiles([]);
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
+      await iModel.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
       expectEmbeddedFontFiles([[
         createTTFace("Sitka Banner", "regular", 5),
         createTTFace("Sitka Display", "regular", 4),
@@ -162,7 +172,7 @@ describe("IModelDbFonts", () => {
         createTTFace("Sitka Text", "regular", 1),
       ]]);
 
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
+      await iModel.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
       expectEmbeddedFontFiles([[
         createTTFace("Sitka Banner", "regular", 5),
         createTTFace("Sitka Display", "regular", 4),
@@ -174,49 +184,54 @@ describe("IModelDbFonts", () => {
     });
 
     it("throws if font is not embeddable", async () => {
-      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
-      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
+      const iModel = getDb();
+      await expect(iModel.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
+      await expect(iModel.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
     });
 
     it("allocates font Ids unless otherwise specified", async () => {
-      await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf") });
-      expect(db.fonts.findId({ name: "DejaVu Sans", type: FontType.TrueType })).not.to.be.undefined;
+      const iModel = getDb();
+      await iModel.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf") });
+      expect(iModel.fonts.findId({ name: "DejaVu Sans", type: FontType.TrueType })).not.to.be.undefined;
 
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
+      await iModel.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
       const sitkaFamilies = ["Banner", "Display", "Heading", "Small", "Subheading", "Text"].map((x) => `Sitka ${x}`);
       for (const name of sitkaFamilies) {
-        expect(db.fonts.findId({ name, type: FontType.TrueType })).not.to.be.undefined;
+        expect(iModel.fonts.findId({ name, type: FontType.TrueType })).not.to.be.undefined;
       }
 
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
-      expect(db.fonts.findId({ name: "Karla", type: FontType.TrueType })).to.be.undefined;
+      await iModel.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
+      expect(iModel.fonts.findId({ name: "Karla", type: FontType.TrueType })).to.be.undefined;
     });
 
     it("requires schema lock if CodeService is not configured", async () => {
-      const spy = sinon.spy(db, "acquireSchemaLock");
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
+      const iModel = getDb();
+      const spy = sinon.spy(iModel, "acquireSchemaLock");
+      await iModel.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
       expect(spy.callCount).to.equal(1);
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
+      await iModel.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
       expect(spy.callCount).to.equal(2);
     });
 
     it("obtains face data Ids from CodeService if configured", async () => {
+      const iModel = getDb();
       MockCodeService.enable = true;
-      const spy = sinon.spy(db, "acquireSchemaLock");
+      const spy = sinon.spy(iModel, "acquireSchemaLock");
 
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
+      await iModel.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
 
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
+      await iModel.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
 
       expect(spy.callCount).to.equal(0);
       expect(MockCodeService.nextFaceDataId).to.equal(12);
     });
 
     it("round-trips font data", async () => {
+      const iModel = getDb();
       const inputData = fs.readFileSync(IModelTestUtils.resolveFontFile("Cdm.shx"));
-      await db.fonts.embedFontFile({ file: FontFile.createFromShxFontBlob({ blob: inputData, familyName: "Cdm" }) });
+      await iModel.fonts.embedFontFile({ file: FontFile.createFromShxFontBlob({ blob: inputData, familyName: "Cdm" }) });
 
-      const embeddedFiles = Array.from(db.fonts.queryEmbeddedFontFiles());
+      const embeddedFiles = Array.from(iModel.fonts.queryEmbeddedFontFiles());
       expect(embeddedFiles.length).to.equal(1);
       const embeddedFile = embeddedFiles[0];
 
@@ -227,61 +242,64 @@ describe("IModelDbFonts", () => {
 
   describe("acquireId", () => {
     it("assigns font Ids", async () => {
-      expect(db.fonts.findDescriptor(1)).to.be.undefined;
+      const iModel = getDb();
+      expect(iModel.fonts.findDescriptor(1)).to.be.undefined;
 
       const cdmShx = { name: "Cdm", type: FontType.Shx };
-      expect(db.fonts.findId(cdmShx)).to.be.undefined;
+      expect(iModel.fonts.findId(cdmShx)).to.be.undefined;
 
-      const cdmShxId = await db.fonts.acquireId(cdmShx);
+      const cdmShxId = await iModel.fonts.acquireId(cdmShx);
       expect(cdmShxId).to.equal(1);
 
-      const cdmShxId2 = await db.fonts.acquireId(cdmShx);
+      const cdmShxId2 = await iModel.fonts.acquireId(cdmShx);
       expect(cdmShxId2).to.equal(cdmShxId);
 
-      expect(db.fonts.findDescriptor(cdmShxId)).to.deep.equal(cdmShx);
-      expect(db.fonts.findId(cdmShx)).to.equal(cdmShxId);
+      expect(iModel.fonts.findDescriptor(cdmShxId)).to.deep.equal(cdmShx);
+      expect(iModel.fonts.findId(cdmShx)).to.equal(cdmShxId);
 
       const cdmRsc = { name: "Cdm", type: FontType.Rsc };
-      expect(db.fonts.findId(cdmRsc)).to.be.undefined;
+      expect(iModel.fonts.findId(cdmRsc)).to.be.undefined;
 
-      const cdmRscId = await db.fonts.acquireId(cdmRsc);
+      const cdmRscId = await iModel.fonts.acquireId(cdmRsc);
       expect(cdmRscId).to.equal(2);
 
-      expect(db.fonts.findId(cdmRsc)).to.equal(cdmRscId);
-      expect(db.fonts.findDescriptor(cdmRscId)).to.deep.equal(cdmRsc);
+      expect(iModel.fonts.findId(cdmRsc)).to.equal(cdmRscId);
+      expect(iModel.fonts.findDescriptor(cdmRscId)).to.deep.equal(cdmRsc);
 
       const arial = { name: "Arial", type: FontType.TrueType };
-      const arialId = await db.fonts.acquireId(arial);
+      const arialId = await iModel.fonts.acquireId(arial);
       expect(arialId).to.equal(3);
-      expect(db.fonts.findId(arial)).to.equal(arialId);
-      expect(db.fonts.findDescriptor(arialId)).to.deep.equal(arial);
+      expect(iModel.fonts.findId(arial)).to.equal(arialId);
+      expect(iModel.fonts.findDescriptor(arialId)).to.deep.equal(arial);
     });
 
     it("requires schema lock if CodeService is not configured", async () => {
-      const spy = sinon.spy(db, "acquireSchemaLock");
+      const iModel = getDb();
+      const spy = sinon.spy(iModel, "acquireSchemaLock");
       const cdmShx = { name: "Cdm", type: FontType.Shx };
-      await db.fonts.acquireId(cdmShx);
+      await iModel.fonts.acquireId(cdmShx);
       expect(spy.callCount).to.equal(1);
 
-      await db.fonts.acquireId(cdmShx);
+      await iModel.fonts.acquireId(cdmShx);
       expect(spy.callCount).to.equal(1);
 
-      await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
       expect(spy.callCount).to.equal(2);
     });
 
     it("acquires font Ids from CodeService if configured", async () => {
+      const iModel = getDb();
       MockCodeService.enable = true;
-      const spy = sinon.spy(db, "acquireSchemaLock");
+      const spy = sinon.spy(iModel, "acquireSchemaLock");
 
       const cdmShx = { name: "Cdm", type: FontType.Shx };
-      const cdmShxId = await db.fonts.acquireId(cdmShx);
+      const cdmShxId = await iModel.fonts.acquireId(cdmShx);
       expect(cdmShxId).to.equal(100);
 
-      const cdmShxId2 = await db.fonts.acquireId(cdmShx);
+      const cdmShxId2 = await iModel.fonts.acquireId(cdmShx);
       expect(cdmShxId2).to.equal(cdmShxId);
 
-      const arialId = await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      const arialId = await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
       expect(arialId).to.equal(101);
 
       expect(spy.callCount).to.equal(0);
@@ -290,34 +308,36 @@ describe("IModelDbFonts", () => {
 
   describe("findId", () => {
     it("finds exact match by name and type, or first match by type if only name is supplied", async () => {
-      const shx = await db.fonts.acquireId({ name: "Font", type: FontType.Shx });
-      expect(db.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
-      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.be.undefined;
-      expect(db.fonts.findId({ name: "Font", type: FontType.TrueType})).to.be.undefined;
-      expect(db.fonts.findId({ name: "Font" })).to.equal(shx);
+      const iModel = getDb();
+      const shx = await iModel.fonts.acquireId({ name: "Font", type: FontType.Shx });
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.Rsc })).to.be.undefined;
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.TrueType })).to.be.undefined;
+      expect(iModel.fonts.findId({ name: "Font" })).to.equal(shx);
 
-      const tt = await db.fonts.acquireId({ name: "Font", type: FontType.TrueType });
-      expect(db.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
-      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.be.undefined;
-      expect(db.fonts.findId({ name: "Font", type: FontType.Shx})).to.equal(shx);
-      expect(db.fonts.findId({ name: "Font" })).to.equal(tt);
+      const tt = await iModel.fonts.acquireId({ name: "Font", type: FontType.TrueType });
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.Rsc })).to.be.undefined;
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
+      expect(iModel.fonts.findId({ name: "Font" })).to.equal(tt);
 
-      const rsc = await db.fonts.acquireId({ name: "Font", type: FontType.Rsc });
-      expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.equal(rsc);
-      expect(db.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
-      expect(db.fonts.findId({ name: "Font", type: FontType.Shx})).to.equal(shx);
-      expect(db.fonts.findId({ name: "Font" })).to.equal(tt);
+      const rsc = await iModel.fonts.acquireId({ name: "Font", type: FontType.Rsc });
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.Rsc })).to.equal(rsc);
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
+      expect(iModel.fonts.findId({ name: "Font", type: FontType.Shx })).to.equal(shx);
+      expect(iModel.fonts.findId({ name: "Font" })).to.equal(tt);
     });
   });
 
   describe("queryMappedFamilies", () => {
     it("omits entries with no embedded face data by default", async () => {
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
-      await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf"), skipFontIdAllocation: true });
-      await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      const iModel = getDb();
+      await iModel.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
+      await iModel.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf"), skipFontIdAllocation: true });
+      await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
 
       function expectFamilies(expected: string[], args?: QueryMappedFamiliesArgs): void {
-        const actual = Array.from(db.fonts.queryMappedFamilies(args)).map((x) => x.name).sort();
+        const actual = Array.from(iModel.fonts.queryMappedFamilies(args)).map((x) => x.name).sort();
         expect(actual).to.deep.equal(expected.sort());
       }
 

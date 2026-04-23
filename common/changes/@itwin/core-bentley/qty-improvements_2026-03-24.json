@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add BeUnorderedEvent and BeUnorderedUiEvent — Set-backed event classes with safe concurrent modification during emit.",
+      "type": "minor",
+      "packageName": "@itwin/core-bentley"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

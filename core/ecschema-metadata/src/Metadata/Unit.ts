@@ -82,8 +82,8 @@ export class Unit extends SchemaItem {
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): SchemaItemUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.phenomenon = this.phenomenon!.fullName;
-    schemaJson.unitSystem = this.unitSystem!.fullName;
+    schemaJson.phenomenon = this.phenomenon?.fullName ?? "";
+    schemaJson.unitSystem = this.unitSystem?.fullName ?? "";
     schemaJson.definition = this.definition;
     if (this.hasNumerator)
       schemaJson.numerator = this.numerator;

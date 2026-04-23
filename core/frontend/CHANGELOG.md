@@ -1,6 +1,66 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 03 Mar 2026 18:22:47 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Apr 2026 18:06:53 GMT and should not be manually modified.
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:14 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Minor changes
+
+- Add support for the proposed BENTLEY_materials_line_style glTF extension, including line width and custom line-pattern rendering for glTF line primitives.
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Support geometry collection for reality meshes with glTF tiles
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- New LockService interface and new BriefcaseConnection.locks property
+- Update measure tool to fallback to QuantityType
+- Fix crash when QuantityFormatter.setUnitsProvider is called after IModelApp shutdown — ToolAdmin no longer emits activeToolChanged with an undefined tool.
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+- Add support for WMTS sparse tilesets
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+### Updates
+
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+### Updates
+
+- Add support for WMTS sparse tilesets
 
 ## 5.7.0
 Tue, 03 Mar 2026 18:21:20 GMT
@@ -15,6 +75,15 @@ Tue, 03 Mar 2026 18:21:20 GMT
 - Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.
 - Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
 - Refactored queryExtents API to optimize performance.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- Add support for WMTS sparse tilesets
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

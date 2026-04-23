@@ -249,11 +249,11 @@ export class SchemaItemId implements ISchemaItemIdentifier {
   public readonly schemaItemKey: SchemaItemKey;
 
   constructor(schemaItemType: SchemaItemType, schemaItemKeyOrName: SchemaItemKey | string, schemaKey?: SchemaKey) {
-    if (typeof(schemaItemKeyOrName) === "string") {
+    if (typeof (schemaItemKeyOrName) === "string") {
       if (!schemaKey)
         throw new Error("schemaKey if required if the specified schemaItem the name of the schema item.");
 
-      this.schemaKey = schemaKey!;
+      this.schemaKey = schemaKey;
       this.schemaItemKey = new SchemaItemKey(schemaItemKeyOrName, schemaKey);
     } else {
       this.schemaKey = schemaItemKeyOrName.schemaKey;
@@ -304,7 +304,7 @@ export class PropertyId implements IPropertyIdentifier {
  * An IEnumeratorIdentifier implementation to identify Enumerator instances.
  * @alpha
  */
-export class EnumeratorId implements IEnumeratorIdentifier{
+export class EnumeratorId implements IEnumeratorIdentifier {
   public readonly typeIdentifier = SchemaTypeIdentifiers.EnumeratorIdentifier;
   public readonly enumeration: SchemaItemKey;
   public readonly enumerationType: string;
@@ -314,9 +314,9 @@ export class EnumeratorId implements IEnumeratorIdentifier{
 
   constructor(enumerator: AnyEnumerator | string, enumeration: Enumeration) {
     this.enumeration = enumeration.key;
-    this.enumerationType = enumeration.type ? primitiveTypeToString(enumeration.type): "string";
+    this.enumerationType = enumeration.type ? primitiveTypeToString(enumeration.type) : "string";
     this.enumeratorType = getEnumeratorType(enumeration ?? PrimitiveType.String, enumerator);
-    this.name = typeof(enumerator) === "string" ? enumerator : enumerator.name;
+    this.name = typeof (enumerator) === "string" ? enumerator : enumerator.name;
     this.schemaKey = enumeration.schema.schemaKey;
   }
 }
@@ -376,7 +376,7 @@ export class SchemaEditingError extends Error {
   public constructor(public readonly errorNumber: ECEditingStatus, public readonly identifier: AnyIdentifier, public readonly innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
     super(message);
     this._ruleViolations = ruleViolations;
-    this._schemaKey = identifier.schemaKey,
+    this._schemaKey = identifier.schemaKey;
     this.generateMessage();
   }
 
@@ -477,7 +477,7 @@ export class SchemaEditingError extends Error {
     if (this.message)
       return;
 
-    switch(this.errorNumber) {
+    switch (this.errorNumber) {
       case ECEditingStatus.SchemaNotFound:
         this.message = `Schema Key ${this._schemaKey.toString(true)} could not be found in the context.`;
         return;
@@ -562,7 +562,7 @@ export class SchemaEditingError extends Error {
       case SchemaTypeIdentifiers.RelationshipConstraintIdentifier:
         return `Rule violations occurred from ${this._relationshipConstraintId.name} constraint of RelationshipClass ${this._relationshipConstraintId.relationshipKey.fullName}: ${violations}`;
       default:
-        throw new Error ("Invalid identifier.");
+        throw new Error("Invalid identifier.");
     }
   }
 
@@ -580,7 +580,7 @@ export class SchemaEditingError extends Error {
       case SchemaTypeIdentifiers.PropertyIdentifier:
         return `While performing task '${ECEditingStatus[this.errorNumber]}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.fullName}.`;
       default:
-        throw new Error ("Invalid identifier.");
+        throw new Error("Invalid identifier.");
     }
   }
 
@@ -594,9 +594,9 @@ export class SchemaEditingError extends Error {
 }
 
 function getEnumeratorType(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
-  if (typeof(enumerator) === "string") {
+  if (typeof (enumerator) === "string") {
     return enumeration.type ? primitiveTypeToString(enumeration.type) : "string";
   }
 
-  return typeof(enumerator.value) === "string" ? "string" : "int";
+  return typeof (enumerator.value) === "string" ? "string" : "int";
 }
