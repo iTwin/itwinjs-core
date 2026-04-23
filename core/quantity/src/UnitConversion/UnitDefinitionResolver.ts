@@ -30,17 +30,15 @@ export class UnitDefinitionResolver {
     this._schema = schema;
   }
 
-  /** Resolve all Unit items in the schema and return a map from qualified name to `ResolvedUnit`. */
+  /** Resolve all Unit items in the schema and return a map from item name to `ResolvedUnit`. */
   public resolveAll(): Map<string, ResolvedUnit> {
     const result = new Map<string, ResolvedUnit>();
-    const alias = this._schema.alias;
 
     for (const [name, item] of Object.entries(this._schema.items)) {
       if (item.schemaItemType === "Unit") {
-        const qualifiedName = `${alias}:${name}`;
         const conversion = this._resolveUnit(name, 0);
-        result.set(qualifiedName, {
-          name: qualifiedName,
+        result.set(name, {
+          name,
           label: item.label ?? name,
           phenomenon: item.phenomenon,
           unitSystem: item.unitSystem,

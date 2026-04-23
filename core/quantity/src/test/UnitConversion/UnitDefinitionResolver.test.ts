@@ -19,15 +19,15 @@ describe("UnitDefinitionResolver", () => {
   });
 
   it("base unit M resolves to identity", () => {
-    const m = resolved.get("u:M");
+    const m = resolved.get("M");
     expect(m).toBeDefined();
     expect(m!.conversion.factor).toBeCloseTo(1.0);
     expect(m!.conversion.offset).toBeCloseTo(0.0);
   });
 
   it("IN resolves correctly (1 IN = 0.0254 M)", () => {
-    const inch = resolved.get("u:IN");
-    const m = resolved.get("u:M");
+    const inch = resolved.get("IN");
+    const m = resolved.get("M");
     expect(inch).toBeDefined();
     expect(m).toBeDefined();
     // conversion maps base(M) → unit. So inch.conversion.evaluate(0.0254) should ≈ 1.
@@ -37,8 +37,8 @@ describe("UnitDefinitionResolver", () => {
   });
 
   it("FT resolves correctly (1 FT = 0.3048 M)", () => {
-    const ft = resolved.get("u:FT");
-    const m = resolved.get("u:M");
+    const ft = resolved.get("FT");
+    const m = resolved.get("M");
     expect(ft).toBeDefined();
     expect(m).toBeDefined();
     const ftToM = ft!.conversion.inverse().compose(m!.conversion);
@@ -46,8 +46,8 @@ describe("UnitDefinitionResolver", () => {
   });
 
   it("temperature conversions: CELSIUS to FAHRENHEIT", () => {
-    const celsius = resolved.get("u:CELSIUS");
-    const fahrenheit = resolved.get("u:FAHRENHEIT");
+    const celsius = resolved.get("CELSIUS");
+    const fahrenheit = resolved.get("FAHRENHEIT");
     expect(celsius).toBeDefined();
     expect(fahrenheit).toBeDefined();
 
@@ -61,8 +61,8 @@ describe("UnitDefinitionResolver", () => {
   });
 
   it("temperature conversions: KELVIN to CELSIUS", () => {
-    const k = resolved.get("u:K");
-    const celsius = resolved.get("u:CELSIUS");
+    const k = resolved.get("K");
+    const celsius = resolved.get("CELSIUS");
     expect(k).toBeDefined();
     expect(celsius).toBeDefined();
 
@@ -74,8 +74,8 @@ describe("UnitDefinitionResolver", () => {
   });
 
   it("compound unit: SQ_FT resolves correctly", () => {
-    const sqft = resolved.get("u:SQ_FT");
-    const sqm = resolved.get("u:SQ_M");
+    const sqft = resolved.get("SQ_FT");
+    const sqm = resolved.get("SQ_M");
     expect(sqft).toBeDefined();
     expect(sqm).toBeDefined();
 
@@ -85,8 +85,8 @@ describe("UnitDefinitionResolver", () => {
   });
 
   it("constant-based unit: ARC_DEG resolves correctly", () => {
-    const deg = resolved.get("u:ARC_DEG");
-    const rad = resolved.get("u:RAD");
+    const deg = resolved.get("ARC_DEG");
+    const rad = resolved.get("RAD");
     expect(deg).toBeDefined();
     expect(rad).toBeDefined();
 

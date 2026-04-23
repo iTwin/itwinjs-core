@@ -46,12 +46,12 @@ function resolveState(): ResolvedState {
   const resolver = new UnitDefinitionResolver(s);
   const resolved = resolver.resolveAll();
 
-  for (const [qualifiedName, entry] of resolved) {
-    const item = s.items[qualifiedName.split(":")[1]] as SerializedUnit;
+  for (const [name, entry] of resolved) {
+    const item = s.items[name] as SerializedUnit;
     const phenomenon = item.phenomenon;
     const unitSystem = item.unitSystem;
 
-    const fullName = `${s.name}.${qualifiedName.split(":")[1]}`;
+    const fullName = `${s.name}.${name}`;
     const props: UnitProps = {
       name: fullName,
       label: entry.label,
