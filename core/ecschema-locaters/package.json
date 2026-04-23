@@ -74,7 +74,7 @@
   "dependencies": {
     "glob": "^10.5.0",
     "fs-extra": "^8.1.0",
-    "@xmldom/xmldom": "~0.8.12"
+    "@xmldom/xmldom": "~0.8.13"
   },
   "peerDependencies": {
     "@itwin/ecschema-metadata": "workspace:*"
