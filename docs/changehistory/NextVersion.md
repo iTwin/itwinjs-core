@@ -17,7 +17,7 @@ publish: false
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Backend](#backend)
-    - [ChangesetReader — native EC-typed changeset reader](#ChangesetReader--native-changeset-reader)
+    - [ChangesetReader — native changeset reader](#ChangesetReader--native-changeset-reader)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
       - [What changed](#what-changed)
       - [Migration guidance](#migration-guidance)
@@ -190,7 +190,11 @@ The companion [PartialChangeUnifier]($backend) merges the per-table partial rows
 ```ts
 import { ChangesetReader, PartialChangeUnifier, ChangeUnifierCache } from "@itwin/core-backend";
 
-using reader = ChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
+using reader = ChangesetReader.openFile({
+  db: iModelDb,
+  fileName: changesetPathname,
+  rowOptions: { classIdsToClassNames: true },
+});
 using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
 while (reader.step()) {
@@ -199,7 +203,7 @@ while (reader.step()) {
 
 for (const instance of pcu.instances) {
   if (instance.$meta.op === "Inserted") {
-    console.log(instance.ECInstanceId, iModelDb.getClassNameFromId(instance.ECClassId));
+    console.log(instance.ECInstanceId, instance.ECClassId);
   }
 }
 ```
@@ -224,7 +228,7 @@ while (reader.step()) {
 
 When a row does not match an active filter it is skipped entirely — the reader automatically advances to the next row.
 
-[ChangesetReader.deleted]($backend) and [ChangesetReader.inserted]($backend) carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
+[ChangesetReader.deleted]($backend) and [ChangesetReader.inserted]($backend) carry a `$meta.changeFetchedPropNames` array that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
 
 For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ChangesetReader](../learning/backend/ChangesetReader.md).
 

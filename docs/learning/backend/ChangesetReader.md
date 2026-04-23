@@ -44,14 +44,7 @@ interface ChangeMeta {
 
 Each [ChangeInstance]($backend) carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
 
-```ts
-// Only trust props present in changeFetchedPropNames to reflect the changeset delta.
-// Other props on the instance may reflect the current live-iModel state.
-const changedProps = instance.$meta.changeFetchedPropNames;
-if (changedProps.includes("Category.Id")) {
-  console.log("Category changed →", instance.Category);
-}
-```
+[[include:ChangesetReader.ChangeFetchedPropNames]]
 
 #### Naming rules
 
