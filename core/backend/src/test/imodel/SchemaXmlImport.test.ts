@@ -9,7 +9,7 @@ import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { EntityClass, Format } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, EntityClass, Format } from "@itwin/ecschema-metadata";
 
 describe("Schema XML Import Tests", () => {
   before(() => {
@@ -126,5 +126,80 @@ describe("Schema XML Import Tests", () => {
     } finally {
       testIModel.close();
     }
+  });
+});
+
+describe("exportSchemaXmlString", () => {
+  const schemaXml32 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="1.0.23" alias="bis"/>
+
+      <ECEntityClass typeName="TestClass">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="Name" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`;
+
+  let imodel: SnapshotDb;
+
+  before(async () => {
+    const filePath = IModelTestUtils.prepareOutputFile("exportSchemaXmlString", "exportSchemaXmlString.bim");
+    imodel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "exportSchemaXmlStringTest" } });
+    await imodel.importSchemaStrings([schemaXml32]);
+  });
+
+  after(() => {
+    imodel.close();
+  });
+
+  it("default ECSpecVersion arg return an 3.2 XML", () => {
+    const xml = imodel.exportSchemaXmlString("TestSchema");
+    assert.isDefined(xml, "expected a non-undefined result for an existing schema");
+    assert.include(xml, "Bentley.ECXML.3.2", "expected EC 3.2 namespace when no version is supplied");
+    assert.include(xml, "TestSchema", "schema name should be present in output");
+  });
+
+  it("returns undefined for a schema that does not exist", () => {
+    const xml = imodel.exportSchemaXmlString("NonExistentSchema");
+    assert.isUndefined(xml, "expected undefined for an unknown schema name");
+  });
+
+  it("test returned XML contains the entity class", () => {
+    const xml = imodel.exportSchemaXmlString("TestSchema");
+    assert.isDefined(xml);
+    assert.match(xml!, /^<\?xml|^<ECSchema/, "output should start with an XML declaration or root element");
+    assert.include(xml, "TestClass", "ECEntityClass 'TestClass' should be present in serialised output");
+    assert.include(xml, "Name", "property 'Name' should be present in serialised output");
+  });
+
+  it("ECSpecVersion 3.2 version returns 3.2 XML", () => {
+    const version: ECSpecVersion = { readVersion: 3, writeVersion: 2 };
+    const xml = imodel.exportSchemaXmlString("TestSchema", version);
+    assert.isDefined(xml);
+    assert.include(xml, "Bentley.ECXML.3.2");
+    assert.include(xml, "TestSchema");
+  });
+
+  it("ECSpecVersion 3.1 version returns 3.1 XML", () => {
+    const version: ECSpecVersion = { readVersion: 3, writeVersion: 1 };
+    const xml = imodel.exportSchemaXmlString("TestSchema", version);
+    assert.isDefined(xml);
+    assert.include(xml, "Bentley.ECXML.3.1", "expected EC 3.1 namespace");
+    assert.notInclude(xml, "Bentley.ECXML.3.2", "should not contain 3.2 namespace when requesting 3.1");
+  });
+
+  it("ECSpecVersion 3.0 version returns 3.0 XML", () => {
+    const version: ECSpecVersion = { readVersion: 3, writeVersion: 0 };
+    const xml = imodel.exportSchemaXmlString("TestSchema", version);
+    assert.isDefined(xml);
+    assert.include(xml, "Bentley.ECXML.3.0", "expected EC 3.0 namespace");
+    assert.notInclude(xml, "Bentley.ECXML.3.2", "should not contain 3.2 namespace when requesting 3.0");
+  });
+
+  it("ECSpecVersion 2.0 version returns 2.0 XML", () => {
+    const version: ECSpecVersion = { readVersion: 2, writeVersion: 0 };
+    const xml = imodel.exportSchemaXmlString("TestSchema", version);
+    assert.isDefined(xml, "expected a result for EC 2.0 export");
+    assert.notInclude(xml, "Bentley.ECXML.3.", "EC 2.0 output should not contain an EC 3.x namespace URI");
   });
 });

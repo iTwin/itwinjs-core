@@ -8,6 +8,7 @@ publish: false
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
+    - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
       - [Why SettingsDb?](#why-settingsdb)
       - [New APIs](#new-apis)
@@ -15,6 +16,8 @@ publish: false
         - [Creating a local SettingsDb](#creating-a-local-settingsdb)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
+  - [@itwin/core-frontend](#itwincore-frontend-1)
+    - [Unified reality model iteration](#unified-reality-model-iteration)
   - [Backend](#backend)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
       - [What changed](#what-changed)
@@ -105,6 +108,31 @@ db.withQueryReader(query, (reader) => {
 });
 ```
 
+### Bulk element deletion with `deleteElements`
+
+[EditTxn.deleteElements]($backend) is a new `@beta` API that efficiently deletes many elements in a single native operation when removing trees of elements, partitions, or mixes of ordinary and definition elements.
+It is intended as the preferred replacement for [EditTxn.deleteElement]($backend)
+
+**What it does that `deleteElement` does not:**
+
+- Automatically cascades into the full parent-child subtree of every requested element — you only need to pass root IDs.
+- Cascades into sub-models: deleting a partition element also removes the entire sub-model and all elements inside it.
+- Handles intra set constraint violations without failing.
+- Handles `DefinitionElement` usage checks inline — no need to call `deleteDefinitionElements` separately.
+- Returns a `Id64Set` of IDs that **could not** be deleted due to constraint violations (e.g. code-scope dependencies held by elements outside the delete set), rather than throwing.
+- Better performance when deleting elements in bulk.
+
+**Basic usage:**
+
+```typescript
+const failed: Id64Set = txn.deleteElements([idA, idB, idC]);
+if (failed.size > 0) {
+  // These elements were blocked by an integrity constraint — inspect `failed` to decide how to proceed.
+}
+```
+
+See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full documentation including constraint violation details and lifecycle callback behavior.
+
 ### Dedicated SettingsDb for workspace settings
 
 A new [SettingsDb]($backend) type has been added to the workspace system, providing a dedicated database for storing JSON settings as key-value pairs, separate from general-purpose [WorkspaceDb]($backend) resource storage.
@@ -139,6 +167,26 @@ Settings containers are deliberately separate from workspace containers. Both ex
 - **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
 - **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
+
+## @itwin/core-frontend
+
+### Unified reality model iteration
+
+[ViewState.getRealityModelTreeRefs]($frontend) is a new `@beta` generator method that yields all reality models visible in a view as [ViewRealityModel]($frontend) objects. It unifies iteration over both context reality models (attached to the [DisplayStyleState]($frontend)) and persistent reality models (in the model selector), so callers no longer need to query each source separately.
+
+Each yielded [ViewRealityModel]($frontend) provides:
+
+- **`treeRef`** - The [TileTreeReference]($frontend).
+- **`name`** - Display name from [ContextRealityModelState]($frontend) or [ModelState]($frontend).
+- **`description`** - Description string for context reality models; `undefined` for persistent reality models.
+
+Context reality models marked invisible are excluded. Persistent reality models whose tile trees have not yet loaded are also excluded, because identifying a model as a reality model requires the loaded tile tree.
+
+```typescript
+for (const { treeRef, name, description } of view.getRealityModelTreeRefs()) {
+  console.log(`${name}: ${description}`);
+}
+```
 
 ## Backend
 
@@ -182,6 +230,7 @@ const element = MySpatialElement.create({ model: modelId, category, code }, iMod
 element.insert(txn);
 });
 ```
+
 A single [EditTxn]($backend) can create multiple saved transactions, because `txn.saveChanges` does not end the transaction:
 
 ```ts
@@ -222,7 +271,6 @@ Under the hood, that workspace uses a [SettingsDb]($backend), which is a setting
 
 Developers still read and write settings dictionaries by name, while container management, versioning, and cloud sync follow the standard workspace model.
 
-
 #### New APIs
 
 - [EditableWorkspaceContainer.withEditableDb]($backend): Acquire a write lock, get or create an editable tip WorkspaceDb, run an operation, then close and release. Automatically creates a new prerelease version if the tip is already published.
@@ -249,7 +297,7 @@ Delete it:
 
 To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationClient]($backend) and [BlobContainer.service]($backend) so the backend can query and update the iTwin settings workspace container.
 
-See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
+See the [Settings documentation]($docs/learning/backend/Settings.md#itwin-settings) for full details on iTwin-scoped settings and the [Workspace documentation]($docs/learning/backend/Workspace.md) for workspace resources.
 
 ## Quantity Formatting
 

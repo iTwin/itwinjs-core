@@ -7,7 +7,7 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, OpenMode } from "@itwin/core-bentley";
 import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
@@ -223,6 +223,38 @@ export class EditTxn {
         throw err;
       }
     });
+  }
+
+  /**
+   * Delete multiple elements from the iModel.
+   * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+   * @returns A set of ids for any elements that could not be deleted.
+   * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
+   * @beta
+   */
+  public deleteElements(ids: Id64Array): Id64Set {
+    this.verifyWriteable();
+    const invalidIds: Id64Set = new Set<Id64String>();
+    for (const id of ids) {
+      if (!Id64.isValidId64(id))
+        invalidIds.add(id);
+    }
+
+    if (invalidIds.size > 0) {
+      ITwinError.throwError({ message: `Invalid element ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
+    }
+
+    const failedToDelete = this.iModel[_nativeDb].deleteElements(ids);
+    const failedToDeleteSet = failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
+
+    for (const id of ids) {
+      if (!failedToDeleteSet.has(id)) {
+        this.iModel.elements[_cache].delete({ id });
+        this.iModel.elements[_instanceKeyCache].deleteById(id);
+      }
+    }
+
+    return failedToDeleteSet;
   }
 
   /** Insert a new aspect into the iModel.
