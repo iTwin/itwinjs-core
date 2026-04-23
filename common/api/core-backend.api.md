@@ -988,6 +988,51 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 // @beta
+export class ChangesetReader implements Disposable, ChangeSource {
+    [Symbol.dispose](): void;
+    clearClassNameFilters(): void;
+    clearOpCodeFilters(): void;
+    clearTableNameFilters(): void;
+    close(): void;
+    readonly db: AnyDb;
+    deleted?: ChangeInstance;
+    inserted?: ChangeInstance;
+    get isECTable(): boolean;
+    get isIndirectChange(): boolean;
+    get op(): SqliteChangeOp;
+    static openFile(args: {
+        readonly fileName: string;
+    } & ChangesetReaderArgs): ChangesetReader;
+    static openGroup(args: {
+        readonly changesetFiles: string[];
+    } & ChangesetReaderArgs): ChangesetReader;
+    static openInMemoryChanges(args: Omit<ChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+    }): ChangesetReader;
+    static openLocalChanges(args: Omit<ChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        includeInMemoryChanges?: boolean;
+    }): ChangesetReader;
+    static openTxn(args: Omit<ChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        txnId: Id64String;
+    }): ChangesetReader;
+    setClassNameFilters(classNames: Set<string>): void;
+    setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
+    setTableNameFilters(tableNames: Set<string>): void;
+    step(): boolean;
+    get tableName(): string;
+}
+
+// @beta
+export interface ChangesetReaderArgs {
+    readonly db: AnyDb;
+    readonly invert?: boolean;
+    readonly propFilter?: PropertyFilter;
+    readonly rowOptions?: RowFormatOptions;
+}
+
+// @beta
 export interface ChangeSource {
     readonly deleted?: ChangeInstance;
     readonly inserted?: ChangeInstance;
@@ -2286,51 +2331,6 @@ export abstract class DriverBundleElement extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-}
-
-// @beta
-export class ECChangesetReader implements Disposable, ChangeSource {
-    [Symbol.dispose](): void;
-    clearClassNameFilters(): void;
-    clearOpCodeFilters(): void;
-    clearTableNameFilters(): void;
-    close(): void;
-    readonly db: AnyDb;
-    deleted?: ChangeInstance;
-    inserted?: ChangeInstance;
-    get isECTable(): boolean;
-    get isIndirectChange(): boolean;
-    get op(): SqliteChangeOp;
-    static openFile(args: {
-        readonly fileName: string;
-    } & ECChangesetReaderArgs): ECChangesetReader;
-    static openGroup(args: {
-        readonly changesetFiles: string[];
-    } & ECChangesetReaderArgs): ECChangesetReader;
-    static openInMemoryChanges(args: Omit<ECChangesetReaderArgs, "db"> & {
-        db: IModelDb;
-    }): ECChangesetReader;
-    static openLocalChanges(args: Omit<ECChangesetReaderArgs, "db"> & {
-        db: IModelDb;
-        includeInMemoryChanges?: boolean;
-    }): ECChangesetReader;
-    static openTxn(args: Omit<ECChangesetReaderArgs, "db"> & {
-        db: IModelDb;
-        txnId: Id64String;
-    }): ECChangesetReader;
-    setClassNameFilters(classNames: Set<string>): void;
-    setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
-    setTableNameFilters(tableNames: Set<string>): void;
-    step(): boolean;
-    get tableName(): string;
-}
-
-// @beta
-export interface ECChangesetReaderArgs {
-    readonly db: AnyDb;
-    readonly invert?: boolean;
-    readonly propFilter?: PropertyFilter;
-    readonly rowOptions?: RowFormatOptions;
 }
 
 // @beta @deprecated

@@ -53,6 +53,8 @@ beta;class;ChangesetECAdaptor
 deprecated;class;ChangesetECAdaptor
 internal;interface;ChangesetIndexArg
 public;interface;ChangesetRangeArg
+beta;class;ChangesetReader
+beta;interface;ChangesetReaderArgs
 beta;interface;ChangeSource
 beta;interface;ChangeSummary
 beta;class;ChangeSummaryManager
@@ -177,8 +179,6 @@ preview;class;DrawingModel
 public;class;DrawingViewDefinition
 preview;class;DrawingViewDefinition
 beta;class;DriverBundleElement
-beta;class;ECChangesetReader
-beta;interface;ECChangesetReaderArgs
 beta;interface;ECChangeUnifierCache
 deprecated;interface;ECChangeUnifierCache
 beta;namespace;ECChangeUnifierCache
