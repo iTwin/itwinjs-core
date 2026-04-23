@@ -1117,6 +1117,36 @@ describe("ECChangesetReader insert-full", () => {
     assert.isUndefined(reader.deleted);
     reader.close();
   });
+
+  it("Checking non unified values", () => {
+    using reader = ECChangesetReader.openTxn({ db: rwIModel, txnId });
+
+    assert.isTrue(reader.step());
+    assert.isTrue(reader.isECTable);
+    assert.isFalse(reader.isIndirectChange);
+    assert.equal(reader.tableName, "bis_Element");
+    assert.equal(reader.op, "Inserted");
+    assert.isDefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+
+    assert.isTrue(reader.step());
+    assert.isTrue(reader.isECTable);
+    assert.isFalse(reader.isIndirectChange);
+    assert.equal(reader.tableName, "bis_GeometricElement2d");
+    assert.equal(reader.op, "Inserted");
+    assert.isDefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+
+    assert.isTrue(reader.step());
+    assert.isTrue(reader.isECTable);
+    assert.isTrue(reader.isIndirectChange);
+    assert.equal(reader.tableName, "bis_Model");
+    assert.equal(reader.op, "Updated");
+    assert.isDefined(reader.inserted);
+    assert.isDefined(reader.deleted);
+
+    assert.isFalse(reader.step());
+  });
 });
 
 describe("ECChangesetReader insert-partial", () => {
