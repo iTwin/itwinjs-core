@@ -170,8 +170,7 @@ export class MarkupApp {
   }
   /** @internal */
   public static getVpToScreenMtx(): Matrix {
-    const markup = expectDefined(this.markup);
-    const rect = markup.markupDiv.getBoundingClientRect();
+    const rect = expectDefined(this.markup).markupDiv.getBoundingClientRect();
     return (new Matrix()).translateO(rect.left, rect.top);
   }
 
