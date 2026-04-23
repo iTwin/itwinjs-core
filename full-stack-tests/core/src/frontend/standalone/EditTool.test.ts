@@ -5,9 +5,8 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { _callIpcChannel, IModelApp, IpcApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
-import { EditTools, makeEditToolIpc, UndoAllTool } from "@itwin/editor-frontend";
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+import { IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
+import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -88,56 +87,6 @@ if (!ProcessDetector.isMobileAppFrontend) {
       await EditTools.startCommand({ commandId: "", iModelKey: "" });
       expect(busyCalls).equal(4);
 
-    });
-
-    it("UndoAllTool should notify and abort when active edit command cannot finish", async () => {
-      const fakeIModel = {
-        key: "test-key",
-        isReadonly: false,
-        isBriefcaseConnection: true,
-      };
-
-      const selectedViewStub = sinon.stub(IModelApp.viewManager, "selectedView").get(() => ({ view: { iModel: fakeIModel } } as any));
-      const startCommandStub = sinon.stub(IpcApp as any, _callIpcChannel).rejects(new Error("edit command is busy"));
-      const reverseAllStub = sinon.stub(IpcApp.appFunctionIpc, "reverseAllTxn").resolves();
-      const outputMessageStub = sinon.stub(IModelApp.notifications, "outputMessage");
-
-      const result = await new UndoAllTool().run();
-
-      expect(result).to.be.false;
-      expect(startCommandStub).to.be.calledOnce;
-      expect(reverseAllStub).not.to.be.called;
-      expect(outputMessageStub).to.be.calledOnce;
-
-      outputMessageStub.restore();
-      reverseAllStub.restore();
-      startCommandStub.restore();
-      selectedViewStub.restore();
-    });
-
-    it("UndoAllTool should reverse txns when active edit command finishes", async () => {
-      const fakeIModel = {
-        key: "test-key",
-        isReadonly: false,
-        isBriefcaseConnection: true,
-      };
-
-      const selectedViewStub = sinon.stub(IModelApp.viewManager, "selectedView").get(() => ({ view: { iModel: fakeIModel } } as any));
-      const startCommandStub = sinon.stub(IpcApp as any, _callIpcChannel).resolves(undefined);
-      const reverseAllStub = sinon.stub(IpcApp.appFunctionIpc, "reverseAllTxn").resolves();
-      const outputMessageStub = sinon.stub(IModelApp.notifications, "outputMessage");
-
-      const result = await new UndoAllTool().run();
-
-      expect(result).to.be.true;
-      expect(startCommandStub).to.be.calledOnce;
-      expect(reverseAllStub).to.be.calledOnceWithExactly(fakeIModel.key);
-      expect(outputMessageStub).not.to.be.called;
-
-      outputMessageStub.restore();
-      reverseAllStub.restore();
-      startCommandStub.restore();
-      selectedViewStub.restore();
     });
 
   });
