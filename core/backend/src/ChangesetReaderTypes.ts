@@ -12,7 +12,7 @@ import { AnyDb, SqliteChangeOp, SqliteValueStage } from "./SqliteChangesetReader
 // ---------------------------------------------------------------------------
 
 /**
- * Controls which properties are included in the output of [ECChangesetReader]($backend).
+ * Controls which properties are included in the output of [ChangesetReader]($backend).
  * @beta
  */
 export enum PropertyFilter {
@@ -28,7 +28,7 @@ export enum PropertyFilter {
 }
 
 /**
- * Row-formatting options for [ECChangesetReader]($backend) factory methods.
+ * Row-formatting options for [ChangesetReader]($backend) factory methods.
  * Controls how EC property values are represented in the returned instances.
  * @beta
  */
@@ -90,7 +90,7 @@ export interface ChangeMeta {
 }
 
 /**
- * An EC instance produced by [ECChangesetReader]($backend) after each `step()`.
+ * An EC instance produced by [ChangesetReader]($backend) after each `step()`.
  * Contains the EC property bag plus mandatory `$meta` metadata.
  * @beta
  */
@@ -122,14 +122,14 @@ export interface ChangeSource {
 }
 
 // ---------------------------------------------------------------------------
-// ECChangesetReader args / options
+// ChangesetReader args / options
 // ---------------------------------------------------------------------------
 
 /**
- * Arguments common to all [ECChangesetReader]($backend) `open*` factory methods.
+ * Arguments common to all [ChangesetReader]($backend) `open*` factory methods.
  * @beta
  */
-export interface ECChangesetReaderArgs {
+export interface ChangesetReaderArgs {
   /** The db used to resolve EC schema. Must be at or ahead of the changeset being read. */
   readonly db: AnyDb;
   /** invert the changeset operations */

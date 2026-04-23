@@ -17,7 +17,7 @@ publish: false
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [Backend](#backend)
-    - [ECChangesetReader — native EC-typed changeset reader](#ecchangesetreader--native-ec-typed-changeset-reader)
+    - [ChangesetReader — native EC-typed changeset reader](#ChangesetReader--native-changeset-reader)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
       - [What changed](#what-changed)
       - [Migration guidance](#migration-guidance)
@@ -169,9 +169,9 @@ Settings containers are deliberately separate from workspace containers. Both ex
 
 ## Backend
 
-### [ECChangesetReader]($backend) — native EC-typed changeset reader
+### [ChangesetReader]($backend) — native changeset reader
 
-The new [ECChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ChangeInstance]($backend) per SQLite table row.
+The new [ChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ChangeInstance]($backend) per SQLite table row.
 
 The companion [PartialChangeUnifier]($backend) merges the per-table partial rows back into complete EC instances that span all tables mapped to a single EC entity.
 
@@ -179,18 +179,18 @@ The companion [PartialChangeUnifier]($backend) merges the per-table partial rows
 
 | Method | Description |
 | ------ | ----------- |
-| [ECChangesetReader.openFile]($backend) | Read a single pushed changeset file |
-| [ECChangesetReader.openGroup]($backend) | Read several changeset files as one logical stream |
-| [ECChangesetReader.openLocalChanges]($backend) | Read pending (not yet pushed) local changes |
-| [ECChangesetReader.openInMemoryChanges]($backend) | Read in-memory (not yet saved) changes |
-| [ECChangesetReader.openTxn]($backend) | Read a single saved transaction by id |
+| [ChangesetReader.openFile]($backend) | Read a single pushed changeset file |
+| [ChangesetReader.openGroup]($backend) | Read several changeset files as one logical stream |
+| [ChangesetReader.openLocalChanges]($backend) | Read pending (not yet pushed) local changes |
+| [ChangesetReader.openInMemoryChanges]($backend) | Read in-memory (not yet saved) changes |
+| [ChangesetReader.openTxn]($backend) | Read a single saved transaction by id |
 
 #### Example — inspect inserted elements from a changeset file
 
 ```ts
-import { ECChangesetReader, PartialChangeUnifier, ChangeUnifierCache } from "@itwin/core-backend";
+import { ChangesetReader, PartialChangeUnifier, ChangeUnifierCache } from "@itwin/core-backend";
 
-using reader = ECChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
+using reader = ChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
 using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
 while (reader.step()) {
@@ -207,7 +207,7 @@ for (const instance of pcu.instances) {
 #### Example — filter to a specific table and inspect raw per-row values
 
 ```ts
-using reader = ECChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
+using reader = ChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
 
 reader.setOpCodeFilters(new Set(["Updated"]));
 
@@ -224,9 +224,9 @@ while (reader.step()) {
 
 When a row does not match an active filter it is skipped entirely — the reader automatically advances to the next row.
 
-[ECChangesetReader.deleted]($backend) and [ECChangesetReader.inserted]($backend) carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
+[ChangesetReader.deleted]($backend) and [ChangesetReader.inserted]($backend) carry an `$meta.changeFetchedPropNames` set that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
 
-For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ECChangesetReader](../learning/backend/ECChangesetReader.md).
+For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ChangesetReader](../learning/backend/ChangesetReader.md).
 
 ### Explicit editing transactions with `EditTxn`
 

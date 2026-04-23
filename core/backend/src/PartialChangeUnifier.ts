@@ -8,7 +8,7 @@
 import { DbResult, Guid, OpenMode } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
 import { SqliteStatement } from "./SqliteStatement";
-import { ChangeInstance, ChangeSource } from "./ECChangesetReaderTypes";
+import { ChangeInstance, ChangeSource } from "./ChangesetReaderTypes";
 import { _nativeDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 
@@ -202,7 +202,7 @@ class SqliteBackedCache implements ChangeCache {
  *
  * **Usage:**
  * ```ts
- * using reader = ECChangesetReader.openFile({ fileName, db });
+ * using reader = ChangesetReader.openFile({ fileName, db });
  * using unifier = new PartialChangeUnifier();
  * while (reader.step()) {
  *   unifier.appendFrom(reader);

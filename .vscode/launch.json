@@ -627,7 +627,7 @@
       ]
     },
     {
-      "name": "[perftests] Changeset PerfTests (Offline)",
+      "name": "[perftests] Sqlite Changeset Reader and ChangesetECAdaptor PerfTests (Offline)",
       "presentation": {
         "group": "Perftests"
       },
@@ -637,14 +637,14 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "perftest:changesetPerformance"
+        "perftest:sqliteChangesetReaderAndChangesetECAdaptorPerformance"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
       ]
     },
     {
-      "name": "[perftests] ECChangesetReader PerfTests (Offline)",
+      "name": "[perftests] ChangesetReader PerfTests (Offline)",
       "presentation": {
         "group": "Perftests"
       },
@@ -654,7 +654,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "perftest:ecChangesetReaderPerformance"
+        "perftest:changesetReaderPerformance"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"

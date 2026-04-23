@@ -7,10 +7,10 @@ import { expect } from "chai";
 import * as path from "path";
 import {
   BriefcaseDb,
+  ChangesetReader,
   ChangeUnifierCache,
   ChannelControl,
   DrawingCategory,
-  ECChangesetReader,
   EditTxn,
   PartialChangeUnifier,
   PropertyFilter,
@@ -34,7 +34,7 @@ async function importSchemaStrings(txn: EditTxn, schemas: string[]): Promise<voi
   await txn.iModel.importSchemaStrings(schemas);
 }
 
-describe("ECChangesetReader Examples", () => {
+describe("ChangesetReader Examples", () => {
   let db: BriefcaseDb;
   let txn: EditTxn;
   let insertChangesetPath: string;
@@ -46,16 +46,16 @@ describe("ECChangesetReader Examples", () => {
   const adminToken = "super manager token";
 
   before(async () => {
-    HubMock.startup("ECChangesetReaderExamples", KnownTestLocations.outputDir);
+    HubMock.startup("ChangesetReaderExamples", KnownTestLocations.outputDir);
     const iTwinId = HubMock.iTwinId;
 
     const iModelId = await HubMock.createNewIModel({
       iTwinId,
-      iModelName: "ECChangesetReaderExamples",
+      iModelName: "ChangesetReaderExamples",
       accessToken: adminToken,
     });
     db = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
-    txn = startTestTxn(db, "ECChangesetReader examples setup");
+    txn = startTestTxn(db, "ChangesetReader examples setup");
     // Import a simple schema
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="ExSnippets" alias="es" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -114,8 +114,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("basic reader–unifier pipeline", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.BasicPipeline
-    using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.BasicPipeline
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
 
     while (reader.step()) {
@@ -132,11 +132,11 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("openGroup — multiple changesets as one stream", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenGroup
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenGroup
     // openGroup merges insert + update into a single logical stream.
     // An element inserted in the first changeset and updated in the second
     // surfaces as a single "Inserted" instance reflecting its final state.
-    using reader = ECChangesetReader.openGroup({
+    using reader = ChangesetReader.openGroup({
       db,
       changesetFiles: [insertChangesetPath, updateChangesetPath],
     });
@@ -157,8 +157,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("filter by table and op-code", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.FilterTable
-    using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.FilterTable
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
 
     reader.setTableNameFilters(new Set(["bis_Element"]));
     reader.setOpCodeFilters(new Set(["Inserted", "Updated"]));
@@ -177,12 +177,12 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("filter by EC class name", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.FilterClassNames
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.FilterClassNames
     // Restrict the stream to a known set of EC class names (full "SchemaName:ClassName" format).
     // Rows for any other class are skipped entirely.
     const classNames = new Set(["ExSnippets:Widget"]);
 
-    using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
     reader.setClassNameFilters(classNames);
 
     while (reader.step()) {
@@ -193,8 +193,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("rowOption classIdsToClassNames", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.RowOptionsClassNames
-    using reader = ECChangesetReader.openFile({
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.RowOptionsClassNames
+    using reader = ChangesetReader.openFile({
       db,
       fileName: insertChangesetPath,
       rowOptions: { classIdsToClassNames: true },
@@ -212,8 +212,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("rowOption useJsName and changeFetchedPropNames uses original EC names", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.UseJsNameAndChangeFetchedPropNames
-    using reader = ECChangesetReader.openFile({
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.UseJsNameAndChangeFetchedPropNames
+    using reader = ChangesetReader.openFile({
       db,
       fileName: insertChangesetPath,
       rowOptions: { useJsName: true }, // property keys are camelCase
@@ -237,8 +237,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("rowOption abbreviateBlobs false — full binary values", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.RowOptionsAbbreviateBlobs
-    using reader = ECChangesetReader.openFile({
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.RowOptionsAbbreviateBlobs
+    using reader = ChangesetReader.openFile({
       db,
       fileName: insertChangesetPath,
       rowOptions: { abbreviateBlobs: false }, // return full Uint8Array instead of { bytes: N }
@@ -255,8 +255,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("changeFetchedPropNames — trusting only what the changeset recorded", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.ChangeFetchedPropNames
-    using reader = ECChangesetReader.openFile({ db, fileName: updateChangesetPath });
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.ChangeFetchedPropNames
+    using reader = ChangesetReader.openFile({ db, fileName: updateChangesetPath });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
@@ -285,8 +285,8 @@ describe("ECChangesetReader Examples", () => {
     if (!txnProps) return; // no saved txns available in current db state
     const txnId = txnProps.id;
 
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenTxn
-    using reader = ECChangesetReader.openTxn({ db, txnId });
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenTxn
+    using reader = ChangesetReader.openTxn({ db, txnId });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
 
@@ -297,8 +297,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("useJsName row option", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.UseJsName
-    using reader = ECChangesetReader.openFile({
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.UseJsName
+    using reader = ChangesetReader.openFile({
       db,
       fileName: insertChangesetPath,
       rowOptions: { useJsName: true },
@@ -319,8 +319,8 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("Instance_Key mode — only ECInstanceId and ECClassId", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.ModeInstanceKey
-    using reader = ECChangesetReader.openFile({
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.ModeInstanceKey
+    using reader = ChangesetReader.openFile({
       db,
       fileName: insertChangesetPath,
       propFilter: PropertyFilter.InstanceKey,
@@ -339,10 +339,10 @@ describe("ECChangesetReader Examples", () => {
   });
 
   it("SQLite-backed cache for large changesets", () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.CacheStrategies
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.CacheStrategies
     using cache = ChangeUnifierCache.createSqliteBackedCache();
     using pcu = new PartialChangeUnifier(cache);
-    using reader = ECChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
     while (reader.step()) pcu.appendFrom(reader);
     for (const instance of pcu.instances) {
       expect(instance.ECInstanceId).to.exist;
@@ -362,8 +362,8 @@ describe("ECChangesetReader Examples", () => {
       Tags: ["alpha", "beta"], // eslint-disable-line @typescript-eslint/naming-convention
     } as any);
     txn.saveChanges("insert second widget");
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChanges
-    using reader = ECChangesetReader.openLocalChanges({ db });
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenLocalChanges
+    using reader = ChangesetReader.openLocalChanges({ db });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
     while (reader.step()) pcu.appendFrom(reader);
     for (const instance of pcu.instances) {
@@ -372,9 +372,9 @@ describe("ECChangesetReader Examples", () => {
     }
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenLocalChangesIncludeInMemory
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenLocalChangesIncludeInMemory
     // Pass includeInMemoryChanges: true to also include the in-memory (not yet saved) changes:
-    using reader2 = ECChangesetReader.openLocalChanges({ db, includeInMemoryChanges: true });
+    using reader2 = ChangesetReader.openLocalChanges({ db, includeInMemoryChanges: true });
     // __PUBLISH_EXTRACT_END__
     void reader2;
   });
@@ -389,27 +389,27 @@ describe("ECChangesetReader Examples", () => {
       Label: "third", // eslint-disable-line @typescript-eslint/naming-convention
       Tags: ["alpha", "beta"], // eslint-disable-line @typescript-eslint/naming-convention
     } as any);
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.OpenInMemoryChanges
-    using reader = ECChangesetReader.openInMemoryChanges({ db });
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenInMemoryChanges
+    using reader = ChangesetReader.openInMemoryChanges({ db });
     // __PUBLISH_EXTRACT_END__
     void reader;
   });
 });
 
-describe("ECChangesetReader Examples — complete worked example", () => {
+describe("ChangesetReader Examples — complete worked example", () => {
   const adminToken = "super manager token";
 
-  before(() => HubMock.startup("ECChangesetReaderWorkedEx", KnownTestLocations.outputDir));
+  before(() => HubMock.startup("ChangesetReaderWorkedExample", KnownTestLocations.outputDir));
   after(() => HubMock.shutdown());
 
   it("complete worked example", async () => {
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.WorkedExample
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.WorkedExample
     const iTwinId = HubMock.iTwinId;
 
     // 1. Create and open a briefcase
     const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "demo", accessToken: adminToken });
     const db = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
-    const txn = startTestTxn(db, "ECChangesetReader worked example setup");
+    const txn = startTestTxn(db, "ChangesetReader worked example setup");
 
     // 2. Import a schema with a binary and a string-array property
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
@@ -461,7 +461,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
 
     // 7. Read the insert changeset individually
     {
-      using reader = ECChangesetReader.openFile({
+      using reader = ChangesetReader.openFile({
         db,
         fileName: insertCs.pathname,
         rowOptions: { abbreviateBlobs: false },
@@ -482,7 +482,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
 
     // 8. Read the update changeset individually
     {
-      using reader = ECChangesetReader.openFile({
+      using reader = ChangesetReader.openFile({
         db,
         fileName: updateCs.pathname,
         rowOptions: { abbreviateBlobs: false },
@@ -502,7 +502,7 @@ describe("ECChangesetReader Examples — complete worked example", () => {
 
     // 9. Read both changesets as a group
     {
-      using reader = ECChangesetReader.openGroup({
+      using reader = ChangesetReader.openGroup({
         db,
         changesetFiles: [insertCs.pathname, updateCs.pathname],
         rowOptions: { abbreviateBlobs: false },
@@ -526,8 +526,8 @@ describe("ECChangesetReader Examples — complete worked example", () => {
   });
 });
 
-describe("ECChangesetReader Examples — null-valued Point3d properties", () => {
-  before(() => HubMock.startup("ECChangesetReaderNullProp", KnownTestLocations.outputDir));
+describe("ChangesetReader Examples — null-valued Point3d properties", () => {
+  before(() => HubMock.startup("ChangesetReaderNullProp", KnownTestLocations.outputDir));
   after(() => HubMock.shutdown());
 
   it("Point3d stored as NULL when only partial components are given", async () => {
@@ -538,7 +538,7 @@ describe("ECChangesetReader Examples — null-valued Point3d properties", () => 
     const db = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken2 });
     const txn = startTestTxn(db, "null-prop example");
 
-    // __PUBLISH_EXTRACT_START__ ECChangesetReader.NullValuedPoint3d
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.NullValuedPoint3d
     // A Point3d column is stored as NULL whenever any component of the value is not explicitly
     // provided. In the example below, X is omitted, so the entire Position column remains NULL
     // in the database — the insertion "did not happen" as far as Position is concerned.
@@ -581,7 +581,7 @@ describe("ECChangesetReader Examples — null-valued Point3d properties", () => 
     //   "Position" appears in changeFetchedPropNames — it was read from the changeset binary.
     //   But it is NOT a key on the instance because the stored value was NULL.
     {
-      using reader = ECChangesetReader.openFile({ db, fileName: insertCs.pathname });
+      using reader = ChangesetReader.openFile({ db, fileName: insertCs.pathname });
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
 
@@ -613,7 +613,7 @@ describe("ECChangesetReader Examples — null-valued Point3d properties", () => 
     //   markerOld — Position is NOT a key (old value was NULL), but IS in changeFetchedPropNames
     //               because the changeset binary recorded the NULL-to-non-null transition.
     {
-      using reader = ECChangesetReader.openFile({ db, fileName: updateCs.pathname });
+      using reader = ChangesetReader.openFile({ db, fileName: updateCs.pathname });
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
 

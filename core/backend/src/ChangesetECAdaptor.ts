@@ -354,7 +354,7 @@ class ECDbMap {
 /**
  * Record meta data for the change.
  * @beta
- * @deprecated Use [ChangeMeta]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangeMeta]($backend) with [ChangesetReader]($backend) instead.
  * */
 export interface ChangeMetaData {
   /** list of tables making up this EC change */
@@ -374,7 +374,7 @@ export interface ChangeMetaData {
 /**
  * Represent EC change derived from low level sqlite change
  * @beta
- * @deprecated Use [ChangeInstance]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangeInstance]($backend) with [ChangesetReader]($backend) instead.
  */
 export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -416,7 +416,7 @@ namespace DateTime {
 /**
  * Represents a cache for unifying EC changes.
  * @beta
- * @deprecated Use [ChangeCache]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangeCache]($backend) with [ChangesetReader]($backend) instead.
  */
 export interface ECChangeUnifierCache extends Disposable {
   /**
@@ -657,7 +657,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
  * Partial changes is per table and a single instance can
  * span multiple tables.
  * @beta
- * @deprecated Use [PartialChangeUnifier]($backend) with [ECChangesetReader]($backend) instead.
+ * @deprecated Use [PartialChangeUnifier]($backend) with [ChangesetReader]($backend) instead.
  */
 export class PartialECChangeUnifier implements Disposable {
   private _readonly = false;
@@ -825,7 +825,7 @@ export class PartialECChangeUnifier implements Disposable {
  * it is per table while a single instance can span multiple table.
  * @note PrimitiveArray and StructArray are not supported types.
  * @beta
- * @deprecated Use [ECChangesetReader]($backend) instead.
+ * @deprecated Use [ChangesetReader]($backend) instead.
  *
 */
 export class ChangesetECAdaptor implements Disposable {

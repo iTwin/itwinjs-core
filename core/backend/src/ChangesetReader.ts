@@ -11,12 +11,12 @@ import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ChangeInstance, ChangeSource, ECChangesetReaderArgs, PropertyFilter, RowFormatOptions } from "./ECChangesetReaderTypes";
+import { ChangeInstance, ChangesetReaderArgs, ChangeSource, PropertyFilter, RowFormatOptions } from "./ChangesetReaderTypes";
 import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
 
 
 // ---------------------------------------------------------------------------
-// ECChangesetReader
+// ChangesetReader
 // ---------------------------------------------------------------------------
 
 /**
@@ -34,7 +34,7 @@ import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
  * instances must be merged using [PartialChangeUnifier]($backend).
  * @beta
  */
-export class ECChangesetReader implements Disposable, ChangeSource {
+export class ChangesetReader implements Disposable, ChangeSource {
   private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private _rowOptions?: RowFormatOptions;
@@ -55,7 +55,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    */
   public get isECTable(): boolean {
     if (this._isECTable === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.isECTable is only valid after step() has positioned the reader on a current valid change.");
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader.isECTable is only valid after step() has positioned the reader on a current valid change.");
     return this._isECTable;
   }
 
@@ -66,7 +66,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    */
   public get tableName(): string {
     if (this._tableName === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.tableName is only valid after step() has positioned the reader on a current valid change.");
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader.tableName is only valid after step() has positioned the reader on a current valid change.");
     return this._tableName;
   }
 
@@ -77,7 +77,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    */
   public get isIndirectChange(): boolean {
     if (this._isIndirectChange === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.isIndirectChange is only valid after step() has positioned the reader on a current valid change.");
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader.isIndirectChange is only valid after step() has positioned the reader on a current valid change.");
     return this._isIndirectChange;
   }
 
@@ -123,8 +123,8 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
-  public static openFile(args: { readonly fileName: string } & ECChangesetReaderArgs): ECChangesetReader {
-    const reader = new ECChangesetReader(args.db);
+  public static openFile(args: { readonly fileName: string } & ChangesetReaderArgs): ChangesetReader {
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -146,10 +146,10 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @beta
    */
-  public static openGroup(args: { readonly changesetFiles: string[] } & ECChangesetReaderArgs): ECChangesetReader {
+  public static openGroup(args: { readonly changesetFiles: string[] } & ChangesetReaderArgs): ChangesetReader {
     if (args.changesetFiles.length === 0)
       throw new Error("changesetFiles must contain at least one file.");
-    const reader = new ECChangesetReader(args.db);
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -172,9 +172,9 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public static openLocalChanges(
-    args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean },
-  ): ECChangesetReader {
-    const reader = new ECChangesetReader(args.db);
+    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean },
+  ): ChangesetReader {
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -195,9 +195,9 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public static openInMemoryChanges(
-    args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb },
-  ): ECChangesetReader {
-    const reader = new ECChangesetReader(args.db);
+    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb },
+  ): ChangesetReader {
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -219,9 +219,9 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public static openTxn(
-    args: Omit<ECChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String },
-  ): ECChangesetReader {
-    const reader = new ECChangesetReader(args.db);
+    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String },
+  ): ChangesetReader {
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions ?? {};
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -377,7 +377,7 @@ export class ECChangesetReader implements Disposable, ChangeSource {
    */
   public get op(): SqliteChangeOp {
     if (this._op === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "ECChangesetReader.op is only valid after step() has positioned the reader on a current valid change.");
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader.op is only valid after step() has positioned the reader on a current valid change.");
     return this._op;
   }
 
