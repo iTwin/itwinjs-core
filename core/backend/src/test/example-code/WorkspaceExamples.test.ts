@@ -4,26 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 import {
   BlobContainer,
   EditableWorkspaceContainer, EditableWorkspaceDb,
   IModelHost, SettingGroupSchema, SettingsContainer, SettingsDictionaryProps,
-  SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceDbSettingsProps, WorkspaceEditor,
-} from "@itwin/core-backend";
+  SettingsPriority, SnapshotDb, StandaloneDb, withEditTxn, Workspace, WorkspaceDb, WorkspaceDbSettingsProps, WorkspaceEditor,
+} from "../../core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
-  let iModel: StandaloneDb;
+  let iModel: SnapshotDb | StandaloneDb;
+  const savedAuthorizationClient = IModelHost.authorizationClient;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "WorkspaceExamples.bim" });
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("WorkspaceExamples", "WorkspaceExamples.bim");
+    iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
   after(() => {
     iModel.close();
+    IModelHost.authorizationClient = savedAuthorizationClient;
   });
 
   it("Settings", async () => {

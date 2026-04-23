@@ -7,9 +7,9 @@ import { expect } from "chai";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "../../core-backend";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
