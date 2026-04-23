@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Improve IdSet virtual table performance",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
