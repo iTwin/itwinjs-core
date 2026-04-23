@@ -56,6 +56,11 @@ These packages provide the following functions to support backend operations:
   - [Change Summary Overview](../ChangeSummaries)
   - [ECChangesetReader — low-level changeset reading API](./ECChangesetReader.md)
 
+- Workspaces and Settings
+  - [Workspaces and Settings overview](./WorkspacesAndSettings.md)
+  - [Settings](./Settings.md)
+  - [Workspace resources](./Workspace.md)
+
 For services and app backends:
 
 - Exposing the operations of the backend as RpcInterfaces
