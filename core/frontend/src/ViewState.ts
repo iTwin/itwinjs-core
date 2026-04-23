@@ -44,6 +44,24 @@ import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _scheduleScriptReference } from "./common/internal/Symbols";
 
+/** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
+ * display metadata such as its name and description.
+ * @see [[ViewState.getRealityModelTreeRefs]]
+ * @beta
+ */
+export interface ViewRealityModel {
+  /** The tile tree reference used for rendering, hit testing, and geometry collection. */
+  readonly treeRef: TileTreeReference;
+  /** Display name of the reality model, if available. For persistent reality models this comes from the
+   * [[ModelState]]; for context reality models, from the [[ContextRealityModelState]].
+   */
+  readonly name: string;
+  /** A description of the reality model suitable for display in a user interface, if available.
+   * Only context reality models provide a description; for persistent reality models this is always `undefined`.
+   */
+  readonly description: string | undefined;
+}
+
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
  * @public
@@ -534,9 +552,41 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Iterate all [[TileTreeReference]]s associated with this view.
+   * This is a superset of [[getRealityModelTreeRefs]], it includes non-reality models as well.
+   * @see [[getRealityModelTreeRefs]] for only reality model tile tree references.
+   */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
     yield* this.getModelTreeRefs();
     yield* this.displayStyle.getTileTreeRefs();
+  }
+
+  /** Iterate the reality models in this view, including both context reality models attached to the
+   * [[DisplayStyleState]] and persistent reality models. Each yielded [[ViewRealityModel]] provides the
+   * [[TileTreeReference]] along with a display name and description when available.
+   *
+   * Context reality models that are marked invisible are excluded. Persistent reality models whose
+   * tile trees have not yet loaded are also excluded.
+   * @see [[DisplayStyleState.realityModels]] for context reality models only.
+   * @see [[getTileTreeRefs]] for all tile tree references in this view.
+   * @beta
+   */
+  public * getRealityModelTreeRefs(): Iterable<ViewRealityModel> {
+    // Yield visible context reality models from the display style.
+    for (const model of this.displayStyle.realityModels) {
+      if (!model.invisible)
+        yield { treeRef: model.treeRef, name: model.name, description: model.description };
+    }
+
+    // Yield persistent reality models (e.g., ScalableMeshModel) from the model selector.
+    for (const ref of this.getModelTreeRefs()) {
+      const modelId = ref.treeOwner.tileTree?.modelId;
+      if (modelId !== undefined) {
+        const loadedModel = this.iModel.models.getLoaded(modelId);
+        if (loadedModel?.asSpatialModel?.isRealityModel)
+          yield { treeRef: ref, name: loadedModel.name, description: undefined };
+      }
+    }
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.

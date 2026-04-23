@@ -16,6 +16,8 @@ publish: false
         - [Creating a local SettingsDb](#creating-a-local-settingsdb)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
+  - [@itwin/core-frontend](#itwincore-frontend-1)
+    - [Unified reality model iteration](#unified-reality-model-iteration)
   - [Backend](#backend)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
       - [What changed](#what-changed)
@@ -166,6 +168,26 @@ Settings containers are deliberately separate from workspace containers. Both ex
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
 - **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
 
+## @itwin/core-frontend
+
+### Unified reality model iteration
+
+[ViewState.getRealityModelTreeRefs]($frontend) is a new `@beta` generator method that yields all reality models visible in a view as [ViewRealityModel]($frontend) objects. It unifies iteration over both context reality models (attached to the [DisplayStyleState]($frontend)) and persistent reality models (in the model selector), so callers no longer need to query each source separately.
+
+Each yielded [ViewRealityModel]($frontend) provides:
+
+- **`treeRef`** - The [TileTreeReference]($frontend).
+- **`name`** - Display name from [ContextRealityModelState]($frontend) or [ModelState]($frontend).
+- **`description`** - Description string for context reality models; `undefined` for persistent reality models.
+
+Context reality models marked invisible are excluded. Persistent reality models whose tile trees have not yet loaded are also excluded, because identifying a model as a reality model requires the loaded tile tree.
+
+```typescript
+for (const { treeRef, name, description } of view.getRealityModelTreeRefs()) {
+  console.log(`${name}: ${description}`);
+}
+```
+
 ## Backend
 
 ### Explicit editing transactions with `EditTxn`
@@ -208,6 +230,7 @@ const element = MySpatialElement.create({ model: modelId, category, code }, iMod
 element.insert(txn);
 });
 ```
+
 A single [EditTxn]($backend) can create multiple saved transactions, because `txn.saveChanges` does not end the transaction:
 
 ```ts
@@ -247,7 +270,6 @@ Under the hood, that workspace uses a [SettingsDb]($backend), which is a setting
 - Resource value: JSON dictionary content
 
 Developers still read and write settings dictionaries by name, while container management, versioning, and cloud sync follow the standard workspace model.
-
 
 #### New APIs
 

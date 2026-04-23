@@ -2,6 +2,12 @@
   "name": "@itwin/hypermodeling-frontend",
   "entries": [
     {
+      "version": "5.8.3",
+      "tag": "@itwin/hypermodeling-frontend_v5.8.3",
+      "date": "Thu, 23 Apr 2026 14:52:42 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.8.2",
       "tag": "@itwin/hypermodeling-frontend_v5.8.2",
       "date": "Thu, 16 Apr 2026 11:05:01 GMT",
