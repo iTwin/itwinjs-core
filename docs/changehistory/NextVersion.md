@@ -7,6 +7,7 @@ publish: false
   - [@itwin/core-bentley](#itwincore-bentley)
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
+    - [IdSet virtual table performance improvements](#idset-virtual-table-performance-improvements)
     - [WithQueryReader API](#withqueryreader-api)
     - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
@@ -52,6 +53,20 @@ remove(); // O(1) removal
 This is intentional — it avoids a class of bugs where `removeListener()` silently fails to match due to inline closures or binding mismatches (e.g. `event.addListener(() => this.onFoo())` followed by `event.removeListener(() => this.onFoo())` removes nothing because the two arrow functions are different objects). Capturing the returned closure is a reliable unsubscription pattern and enables O(1) removal via `Set.delete`.
 
 ## @itwin/core-backend
+
+### IdSet virtual table performance improvements
+
+The `IdSet` virtual table now uses a sorted vector internally, enabling O(log n) point lookups (`id = ?`) and efficient single-pass `IN` filtering instead of full scans.
+
+```sql
+-- Point lookup — binary search, O(log n)
+SELECT i FROM aps.TestElement, IdSet('[1,2,3,4,5]') WHERE id = ECInstanceId AND id = 3
+
+-- IN filter — single Filter call for all values
+SELECT i FROM aps.TestElement, IdSet('[1,2,3,4,5,6,7,8,9,10]') WHERE id = ECInstanceId AND id IN (3, 5, 7)
+```
+
+Output is always returned sorted and deduplicated, regardless of input order.
 
 ### WithQueryReader API
 
