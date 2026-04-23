@@ -111,7 +111,9 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
 
     const suppliedItems = this.supplyDialogItems() ?? [];
     this.loadItemsInternal(suppliedItems);
-    return this._items as ReadonlyArray<DialogItem>;
+    // If _items is undefined, the hook above failed to initialize it
+    // Deemed more honest to use the non-null assertion than explicit cast
+    return this._items!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Called to inform listeners that new properties are ready for display in UI. */
