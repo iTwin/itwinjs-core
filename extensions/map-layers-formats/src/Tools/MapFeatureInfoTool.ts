@@ -6,7 +6,7 @@
  * @module MapLayersFormats
  */
 
-import { BeEvent } from "@itwin/core-bentley";
+import { BeEvent, expectDefined } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
 import {
   BeButtonEvent,
@@ -88,7 +88,7 @@ class ActiveMapLayerState {
       if (newJson === oldJson ) {
         // We consider newMls and OldMls to be the same mapLayer instance.
         this.existsInDisplayStyle = true;
-        this.isVisible = !!newMls?.visible;
+        this.isVisible = expectDefined(newMls).visible ? true : false;
       }
 
     }

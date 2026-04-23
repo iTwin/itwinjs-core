@@ -6,7 +6,7 @@
  * @module MarkupTools
  */
 
-import { assert, BeEvent } from "@itwin/core-bentley";
+import { assert, BeEvent, expectDefined } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
@@ -109,8 +109,7 @@ class StretchHandle extends ModifyHandle {
   public modify(ev: BeButtonEvent): void {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint); // get cursor location in viewbox coords
     const diff = this.startPos.vectorTo(this.vbToStartTrn.multiplyPoint2d(evPt)); // movement of cursor from start, in viewbox coords
-    const diag = this.startPos.vectorTo(this.opposite).normalize();
-    assert(undefined !== diag);
+    const diag = expectDefined(this.startPos.vectorTo(this.opposite).normalize());
     let diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
     if (diagVec === undefined)
       diagVec = Vector2d.createZero();
@@ -157,8 +156,7 @@ class RotateHandle extends ModifyHandle {
   public get anchorVb() { return this.handles.npcToVb({ x: .5, y: 0 }); }
   public setPosition(): void {
     const anchor = this.anchorVb;
-    const dir = this.centerVb.vectorTo(anchor).normalize();
-    assert(undefined !== dir);
+    const dir = expectDefined(this.centerVb.vectorTo(anchor).normalize());
     const loc = this.location = anchor.plusScaled(dir, MarkupApp.props.handles.size * 3);
     this._line.plot(anchor.x, anchor.y, loc.x, loc.y);
     this._circle.center(loc.x, loc.y);
@@ -329,16 +327,14 @@ export class Handles {
     if (this.active) {
       this.active.startDrag(ev);
       this.dragging = true;
-      const markup = MarkupApp.markup;
-      assert(undefined !== markup);
-      markup.disablePick();
+      expectDefined(MarkupApp.markup).disablePick();
       IModelApp.toolAdmin.setCursor(IModelApp.viewManager.dynamicsCursor);
     }
     return EventHandled.Yes;
   }
   public drag(ev: BeButtonEvent) {
-    if (this.dragging && this.active) {
-      this.active.modify(ev);
+    if (this.dragging) {
+      expectDefined(this.active).modify(ev);
       this.draw();
     }
   }
@@ -359,9 +355,7 @@ export class Handles {
     this.draw();
     this.dragging = false;
     this.active = undefined;
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.enablePick();
+    expectDefined(MarkupApp.markup).enablePick();
     return EventHandled.Yes;
   }
 
@@ -377,9 +371,7 @@ export class Handles {
     }
     this.draw();
     this.active = undefined;
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.enablePick();
+    expectDefined(MarkupApp.markup).enablePick();
   }
 }
 
@@ -419,9 +411,7 @@ export class MarkupSelected {
   public sizeChanged() {
     this.clearEditors();
     if (this.elements.size === 1) {
-      const handleElement = this.elements.values().next().value;
-      assert(undefined !== handleElement);
-      this.handles = new Handles(this, handleElement);
+      this.handles = new Handles(this, expectDefined(this.elements.values().next().value));
     }
     this.onChanged.raiseEvent(this);
   }
@@ -457,8 +447,7 @@ export class MarkupSelected {
   public groupAll(undo: UndoManager) {
     if (this.size < 2)
       return;
-    const first = this.elements.values().next().value;
-    assert(undefined !== first);
+    const first = expectDefined(this.elements.values().next().value);
     const parent = first.parent() as Container;
     const group = parent.group();
 
@@ -655,7 +644,7 @@ export class SelectTool extends MarkupTool {
 
   protected boxSelectInit(): void {
     this._isBoxSelect = false;
-    this.markup.svgDynamics?.clear();
+    expectDefined(this.markup.svgDynamics).clear();
   }
 
   protected boxSelectStart(ev: BeButtonEvent): boolean {
@@ -679,10 +668,8 @@ export class SelectTool extends MarkupTool {
     const rightToLeft = (start.x > end.x);
     const overlapMode = (ev.isShiftKey ? !rightToLeft : rightToLeft); // Shift inverts inside/overlap selection...
     const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
-    const svgDynamics = this.markup.svgDynamics;
-    const svgMarkup = this.markup.svgMarkup;
-    assert(undefined !== svgDynamics);
-    assert(undefined !== svgMarkup);
+    const svgDynamics = expectDefined(this.markup.svgDynamics);
+    const svgMarkup = expectDefined(this.markup.svgMarkup);
     svgDynamics.clear();
     svgDynamics.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "black", "stroke-opacity": 0.5, "fill": "lightBlue", "fill-opacity": 0.2 });
     const selectBox = svgDynamics.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": overlapMode ? "5" : "2", "fill": "none" });
@@ -785,8 +772,7 @@ export class SelectTool extends MarkupTool {
     // move or copy all of the elements in dragged set
     undo.performOperation(MarkupApp.getActionName("copy"), () => this._dragging.forEach((el) => {
       el.translate(delta.x, delta.y); // move to final location
-      const original = el.originalEl; // save original element
-      assert(undefined !== original);
+      const original = expectDefined(el.originalEl); // save original element
       el.originalEl = undefined; // clear original element
       if (ev.isShiftKey) {
         selected.add(el);

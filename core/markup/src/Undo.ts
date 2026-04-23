@@ -6,7 +6,7 @@
  * @module MarkupTools
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
@@ -32,9 +32,7 @@ class AddAction extends UndoAction {
   }
   public reinstate() { this._parent.add(this._elem, this._index); }
   public reverse() {
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.selected.drop(this._elem);
+    expectDefined(MarkupApp.markup).selected.drop(this._elem);
     this._elem.remove();
   }
 }
@@ -53,9 +51,7 @@ class DeleteAction extends UndoAction {
   }
   public reverse() { this._parent.add(this._elem, this._index); }
   public reinstate() {
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.selected.drop(this._elem);
+    expectDefined(MarkupApp.markup).selected.drop(this._elem);
     this._elem.remove();
   }
 }
@@ -79,11 +75,8 @@ class RepositionAction extends UndoAction {
 
   public reverse() {
     this._oldParent.add(this._elem, this._oldIndex);
-    if (this._elem.inSelection) {
-      const markup = MarkupApp.markup;
-      assert(undefined !== markup);
-      markup.selected.drop(this._elem);
-    }
+    if (this._elem.inSelection)
+      expectDefined(MarkupApp.markup).selected.drop(this._elem);
   }
 }
 
@@ -94,22 +87,16 @@ class ModifyAction extends UndoAction {
   constructor(cmdName: string, private _newElem: MarkupElement, private _oldElement: MarkupElement) {
     super(cmdName);
     assert(_newElem !== undefined && _oldElement !== undefined);
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.selected.replace(_oldElement, _newElem);
+    expectDefined(MarkupApp.markup).selected.replace(_oldElement, _newElem);
   }
   public reinstate() {
     this._oldElement.replace(this._newElem);
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.selected.replace(this._oldElement, this._newElem);
+    expectDefined(MarkupApp.markup).selected.replace(this._oldElement, this._newElem);
   }
 
   public reverse() {
     this._newElem.replace(this._oldElement);
-    const markup = MarkupApp.markup;
-    assert(undefined !== markup);
-    markup.selected.replace(this._newElem, this._oldElement);
+    expectDefined(MarkupApp.markup).selected.replace(this._newElem, this._oldElement);
   }
 }
 

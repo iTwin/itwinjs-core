@@ -6,7 +6,7 @@
  * @module MarkupTools
  */
 
-import { assert } from "@itwin/core-bentley";
+import { expectDefined } from "@itwin/core-bentley";
 import {
   BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
   ToolAssistanceInstruction, ToolAssistanceSection,
@@ -161,13 +161,12 @@ export class EditTextTool extends MarkupTool {
     if (!this.editDiv)
       return;
 
-    const text = this.text;
-    assert(text instanceof MarkupText);
+    const text = expectDefined(this.text) as MarkupText;
     const original = this.boxed ? this.boxed : text;
     const undo = this.markup.undo;
+    const editor = expectDefined(this.editor);
     undo.performOperation(this.keyin, () => {
-      assert(undefined !== this.editor);
-      const newVal = this.editor.value;
+      const newVal = editor.value;
       if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
         if (!this._fromPlaceTool)
           undo.onDelete(original);
@@ -190,8 +189,7 @@ export class EditTextTool extends MarkupTool {
     });
 
     const editSize = MarkupApp.props.text.edit.size;
-    assert(undefined !== this.editor);
-    const style = this.editor.style;
+    const style = editor.style;
     editSize.height = style.height;
     editSize.width = style.width;
     this.editDiv.remove();
