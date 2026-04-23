@@ -57,4 +57,4 @@ for (const { treeRef, name, description } of view.getRealityModelTreeRefs()) {
 - all visible context reality models attached to the display style; and
 - persistent reality models whose tile trees have already loaded.
 
-That loaded-tile-tree caveat applies only to persistent models; context reality models can be identified directly from the display style. Persistent tile trees are typically created on demand as the view starts drawing them, so code that needs a complete combined list should wait until those tile trees have loaded.
+That loaded-tile-tree caveat applies only to persistent models; context reality models can be identified directly from the display style.
