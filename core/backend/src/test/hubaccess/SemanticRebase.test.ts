@@ -505,6 +505,10 @@ class TestIModel {
     return briefcase.elements.getElement(elementId);
   }
 
+  public getModel(briefcase: BriefcaseDb, modelId: Id64String): any {
+    return briefcase.models.getModel(modelId);
+  }
+
   public checkIfFolderExists(briefcase: BriefcaseDb, txnId: string, isSchemaFolder: boolean): boolean {
     if (isSchemaFolder)
       return BriefcaseManager.semanticRebaseSchemaFolderExists(briefcase, txnId);
@@ -1943,6 +1947,49 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
 
     t.local.clearCaches();
     chai.expect(() => t!.getElement(t!.local, elementId)).to.throw(`Element=${elementId.toString()}`);
+
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
+  });
+
+  it("F3: local element deletion + incoming transforming schema change: delete is reinstated, element stays gone and checking GeometricGuid of Model [BUG]", async () => {
+    t = await TestIModel.initialize("F2DeleteIncomingTransform");
+    let localTxn = startTestTxn(t.local, "F2 local");
+    let farTxn = startTestTxn(t.far, "F2 far");
+
+    // Create shared element (shared model lock — no exclusive lock record on elementId)
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    farTxn.saveChanges("create shared element");
+    await pushChanges(farTxn, "create shared element");
+    farTxn = startTestTxn(t.far, "F2 far 2");
+
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "F2 local 2");
+
+    // Far imports transforming schema (moves PropC from C to A); no exclusive lock on elementId
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    await pushChanges(farTxn, "far import transforming schema");
+
+    // Local deletes the element — safe because far never exclusively locked elementId,
+    // so lastExclusiveReleaseChangesetIndex for elementId is still undefined.
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    localTxn.deleteElement(elementId);
+    localTxn.saveChanges("local delete element");
+
+    const drawingModel = t.getModel(t.local, t.drawingModelId);
+    const geometricGuidBefore = drawingModel.geometryGuid;
+
+    // Local pulls - incoming transforming schema applied, then local deletion reinstated
+    await pullChanges(localTxn);
+
+    t.local.clearCaches();
+    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw(`Element=${elementId.toString()}`);
+
+    const drawingModelAfter = t.getModel(t.local, t.drawingModelId);
+    const geometricGuidAfter = drawingModelAfter.geometryGuid;
+
+    chai.expect(geometricGuidAfter).to.not.equal(geometricGuidBefore, "GeometricGuid of the model should remain the same after rebase"); // BUG should exactly be same
 
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
