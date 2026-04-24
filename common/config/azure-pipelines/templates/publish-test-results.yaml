@@ -12,7 +12,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
-      testResultsFiles: "core/backend/lib/test/junit_results.xml"
+      testResultsFiles: "core/backend/lib/test/junit_results*.xml"
       testRunTitle: "Core - Backend Tests - $(Agent.OS) - ${{ parameters.nodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()

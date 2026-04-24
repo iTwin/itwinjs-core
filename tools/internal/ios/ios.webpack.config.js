@@ -10,11 +10,16 @@ const { globSync } = require("glob");
 //   "**/node_modules/ECSqlTestRunner.test.ts",
 // ];
 
+const testGlob = path.resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB));
+const ignoredTests = process.env.TESTS_IGNORE_GLOB
+  ? [path.resolve(__dirname, path.relative(__dirname, process.env.TESTS_IGNORE_GLOB))]
+  : undefined;
+
 module.exports = {
   mode: "development",
   entry: [
     path.resolve(__dirname, "scripts/configureMocha.js"),
-    ...globSync(path.resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB))/*, { ignore: ignoredTests }*/),
+    ...globSync(testGlob, ignoredTests ? { ignore: ignoredTests } : undefined),
     path.resolve(__dirname, "scripts/runMocha.js")
   ],
   output: {

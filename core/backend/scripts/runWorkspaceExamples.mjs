@@ -16,9 +16,19 @@ const require = createRequire(import.meta.url);
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(scriptDir, "..");
 const azuriteStorageDir = path.join(packageDir, "lib/cjs/test/azuriteStorage");
+const mochaReporter = require.resolve("@itwin/build-tools/mocha-reporter");
+const azuritePackageJson = require.resolve("azurite/package.json");
+const azuritePackage = require(azuritePackageJson);
+const azuriteEntryPoint = path.join(path.dirname(azuritePackageJson), azuritePackage.bin["azurite-blob"]);
 /** @type {string[]} */
 const mochaArgs = [
   require.resolve("mocha/bin/mocha.js"),
+  "--no-config",
+  "--check-leaks",
+  "--timeout", "30000",
+  "--require", "source-map-support/register",
+  "--reporter", mochaReporter,
+  "--reporter-options", "mochaFile=lib/test/junit_results_workspace_examples.xml",
   path.join(packageDir, "lib/cjs/test/TestUtils.js"),
   path.join(packageDir, "lib/cjs/test/example-code/AzuriteTest.js"),
   path.join(packageDir, "lib/cjs/test/example-code/WorkspaceExamples.test.js"),
@@ -122,8 +132,6 @@ async function stopProcess(child) {
 async function main() {
   mkdirSync(azuriteStorageDir, { recursive: true });
 
-  const azuritePackage = require.resolve("azurite/package.json");
-  const azuriteEntryPoint = path.join(path.dirname(azuritePackage), "dist/src/blob/main.js");
   const azurite = spawnNodeProcess(azuriteEntryPoint, [
     "--blobPort", "10001",
     "--silent",
