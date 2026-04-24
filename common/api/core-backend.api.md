@@ -4283,6 +4283,8 @@ export class IModelHost {
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
+    // @beta
+    static get maxGeomStreamVTabBytes(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     static readonly onWorkspaceStartup: BeEvent<() => void>;
@@ -4336,6 +4338,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultLogTileLoadTimeThreshold: number;
     // (undocumented)
     static defaultLogTileSizeThreshold: number;
+    // @beta
+    static defaultMaxGeomStreamVTabBytes: number;
     // @internal (undocumented)
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
@@ -4390,6 +4394,8 @@ export interface IModelHostOptions {
     logTileLoadTimeThreshold?: number;
     // @internal
     logTileSizeThreshold?: number;
+    // @beta
+    maxGeomStreamVTabBytes?: number;
     // @beta
     maxTileCacheDbSize?: number;
     // @beta
