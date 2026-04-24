@@ -9,11 +9,13 @@
 # For the main CI on self-hosted runners, see jobs/fast-ci.yaml (ADO, not yet ported).
 #
 # Runner tiers (controlled via workflow_dispatch input):
-#   larger (default): ubuntu-22.04-16core / windows-2022-16core / macos-latest
-#     Specs:    16 vCPU, 64 GB RAM, 600 GB SSD (Linux/Win); macOS stays standard
-#     Cost:     ~$0.042/min Linux, ~$0.082/min Windows (vs $0.008/$0.016 standard)
-#     Benefit:  `rush build -p max` is CPU-bound → more cores = faster; 600 GB disk
-#               eliminates pressure from node_modules + build artifacts accumulation
+#   8core (default): ubuntu-22.04-8core / windows-2022-8core / macos-latest
+#     Specs:    8 vCPU, 32 GB RAM, 300 GB SSD (Linux/Win); macOS stays standard
+#     Cost:     ~$0.022/min Linux, ~$0.042/min Windows (vs $0.008/$0.016 standard)
+#     Benefit:  doubles cores vs standard; 300 GB disk eliminates artifact pressure
+#   16core:    ubuntu-22.04-16core / windows-2022-16core / macos-latest
+#     Specs:    16 vCPU, 64 GB RAM, 600 GB SSD
+#     Cost:     ~$0.042/min Linux, ~$0.082/min Windows — step up if 8core still bottlenecks
 #   standard:  ubuntu-latest / windows-latest / macos-latest (free-tier, 4-core)
 #
 # ⚠ Prerequisites for the 'larger' tier (one-time org setup):
@@ -33,17 +35,18 @@ on:
   workflow_dispatch:
     inputs:
       runner-tier:
-        description: "Runner tier: larger = paid 16-core (default); standard = free 4-core"
+        description: "Runner tier: 8core = paid 8-core (default); 16core = paid 16-core; standard = free 4-core"
         required: false
-        default: "larger"
+        default: "8core"
         type: choice
         options:
-          - larger
+          - 8core
+          - 16core
           - standard
 
 # Include runner-tier in concurrency key so manual A/B comparisons don't cancel each other.
 concurrency:
-  group: ci-${{ github.ref }}-${{ inputs.runner-tier || 'larger' }}
+  group: ci-${{ github.ref }}-${{ inputs.runner-tier || '8core' }}
   cancel-in-progress: true
 
 jobs:
@@ -57,13 +60,16 @@ jobs:
       - id: pick
         shell: bash
         run: |
-          TIER="${{ inputs.runner-tier || 'larger' }}"
+          TIER="${{ inputs.runner-tier || '8core' }}"
           if [[ "$TIER" == "standard" ]]; then
             echo 'matrix={"include":[{"runner":"ubuntu-latest","name":"Linux"},{"runner":"windows-latest","name":"Windows"},{"runner":"macos-latest","name":"macOS"}]}' >> "$GITHUB_OUTPUT"
-          else
+          elif [[ "$TIER" == "16core" ]]; then
             # macOS larger runners cost $0.10–0.15/min — not justified for this workload.
-            # The build bottleneck is CPU + disk on Linux and Windows, not macOS.
             echo 'matrix={"include":[{"runner":"ubuntu-22.04-16core","name":"Linux"},{"runner":"windows-2022-16core","name":"Windows"},{"runner":"macos-latest","name":"macOS"}]}' >> "$GITHUB_OUTPUT"
+          else
+            # 8core default: 8 vCPU, 32 GB RAM, 300 GB SSD — good starting point for PoC
+            # macOS larger runners cost $0.10–0.15/min — not justified for this workload.
+            echo 'matrix={"include":[{"runner":"ubuntu-22.04-8core","name":"Linux"},{"runner":"windows-2022-8core","name":"Windows"},{"runner":"macos-latest","name":"macOS"}]}' >> "$GITHUB_OUTPUT"
           fi
 
   build:
