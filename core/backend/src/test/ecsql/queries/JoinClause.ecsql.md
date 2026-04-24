@@ -298,6 +298,7 @@ SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchema
 # CROSS JOIN with ON clause (single table filter)
 
 - dataset: AllProperties.bim
+- skip: Requires imodel-native with CROSS JOIN ON clause support (https://github.com/iTwin/imodel-native/pull/1394)
 
 ```sql
 SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchemaDef d ON d.Alias = 'aps' LIMIT 3;
@@ -317,6 +318,7 @@ SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchema
 # CROSS JOIN with ON clause as join condition
 
 - dataset: AllProperties.bim
+- skip: Requires imodel-native with CROSS JOIN ON clause support (https://github.com/iTwin/imodel-native/pull/1394)
 
 ```sql
 SELECT
