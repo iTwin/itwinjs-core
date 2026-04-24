@@ -648,7 +648,7 @@ export class BriefcaseManager {
     if (!reverse) {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
-        const reversedTxns = useSemanticRebase ? this.capturePatchInstances(briefcaseDb) : nativeDb.pullMergeReverseLocalChanges();
+        const reversedTxns = useSemanticRebase ? this.capturePatchInstancesAndReverseLocalChanges(briefcaseDb) : nativeDb.pullMergeReverseLocalChanges();
         if (useSemanticRebase) {
           nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
         }
@@ -896,7 +896,7 @@ export class BriefcaseManager {
    * @param txnType The type of the txn for which to capture the patch instances
    * @internal
    */
-  private static capturePatchInstances(db: BriefcaseDb): TxnIdString[] {
+  private static capturePatchInstancesAndReverseLocalChanges(db: BriefcaseDb): TxnIdString[] {
     const nativedb = db[_nativeDb];
     return nativedb.pullMergeReverseLocalChanges((txnId: TxnIdString, txnType: string) => {
       if (txnType !== "Data") return;
