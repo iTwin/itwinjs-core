@@ -7,8 +7,6 @@ import type { SerializedInvertedUnit, SerializedUnit, SerializedUnitSchema } fro
 import { type ResolvedUnit, UnitDefinitionResolver } from "./UnitConversion/UnitDefinitionResolver";
 import { BadUnit } from "./Unit";
 
-import schema from "./assets/Units.json";
-
 interface IndexedUnit {
   readonly props: UnitProps;
   readonly resolved: ResolvedUnit;
@@ -27,15 +25,19 @@ interface ResolvedState {
   readonly invertedUnits: Map<string, InvertedEntry>;
 }
 
-// Module-level cache: the unit data is derived deterministically from the static Units.json
-// import, so the resolved indexes are effectively an immutable constant. Caching at module
+// Module-level cache: the unit data is derived deterministically from the bundled Units.json
+// asset, so the resolved indexes are effectively an immutable constant. Caching at module
 // scope avoids redundant work when multiple BasicUnitsProvider instances are created (e.g.
 // in tests or when composed inside CompositeUnitsProvider).
+// The JSON is loaded lazily via dynamic import() on first use, keeping the module footprint
+// near-zero until a provider method is actually called.
 let cachedState: ResolvedState | undefined;
 
-function resolveState(): ResolvedState {
+async function resolveState(): Promise<ResolvedState> {
   if (cachedState)
     return cachedState;
+
+  const { default: schema } = await import("./assets/Units.json");
 
   const nameMap = new Map<string, IndexedUnit>();
   const labelMap = new Map<string, IndexedUnit[]>();
@@ -120,8 +122,9 @@ function resolveState(): ResolvedState {
 /**
  * A `UnitsProvider` backed by the full BIS `Units.ecschema.json` bundled as a JSON asset.
  *
- * Unit data is resolved lazily on first use and cached at module scope — construction is
- * essentially free, and multiple instances share the same immutable lookup indexes.
+ * The ~90 KB bundled JSON is loaded lazily via dynamic `import()` on the first provider method
+ * call and cached at module scope — construction is essentially free, and multiple instances
+ * share the same immutable lookup indexes.
  *
  * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
  * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.
@@ -130,18 +133,6 @@ function resolveState(): ResolvedState {
  * @beta
  */
 export class BasicUnitsProvider implements UnitsProvider {
-  private readonly _nameMap: Map<string, IndexedUnit>;
-  private readonly _labelMap: Map<string, IndexedUnit[]>;
-  private readonly _phenomenonMap: Map<string, IndexedUnit[]>;
-  private readonly _invertedUnits: Map<string, InvertedEntry>;
-
-  constructor() {
-    const state = resolveState();
-    this._nameMap = state.nameMap;
-    this._labelMap = state.labelMap;
-    this._phenomenonMap = state.phenomenonMap;
-    this._invertedUnits = state.invertedUnits;
-  }
 
   // ── UnitsProvider implementation ─────────────────────────────────────
 
@@ -156,7 +147,8 @@ export class BasicUnitsProvider implements UnitsProvider {
     if (schemaName && schemaName !== "Units")
       return new BadUnit();
 
-    const candidates = this._labelMap.get(unitLabel.toLowerCase());
+    const state = await resolveState();
+    const candidates = state.labelMap.get(unitLabel.toLowerCase());
     if (!candidates || candidates.length === 0)
       return new BadUnit();
 
@@ -176,7 +168,8 @@ export class BasicUnitsProvider implements UnitsProvider {
    * @returns An array of matching `UnitProps`, or an empty array if none.
    */
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
-    const entries = this._phenomenonMap.get(phenomenon);
+    const state = await resolveState();
+    const entries = state.phenomenonMap.get(phenomenon);
     return entries ? entries.map((e) => e.props) : [];
   }
 
@@ -185,7 +178,8 @@ export class BasicUnitsProvider implements UnitsProvider {
    * @returns The matching `UnitProps`, or a `BadUnit` if not found.
    */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
-    const entry = this._nameMap.get(unitName);
+    const state = await resolveState();
+    const entry = state.nameMap.get(unitName);
     return entry ? entry.props : new BadUnit();
   }
 
@@ -196,27 +190,28 @@ export class BasicUnitsProvider implements UnitsProvider {
    * @returns A `UnitConversionProps` with `factor`, `offset`, and optionally `inversion` and `error`.
    */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    const from = this._nameMap.get(fromUnit.name);
-    const to = this._nameMap.get(toUnit.name);
+    const state = await resolveState();
+    const from = state.nameMap.get(fromUnit.name);
+    const to = state.nameMap.get(toUnit.name);
 
     if (!from || !to)
       return { factor: 1.0, offset: 0.0, error: true };
 
-    const fromInverted = this._invertedUnits.get(fromUnit.name);
-    const toInverted = this._invertedUnits.get(toUnit.name);
+    const fromInverted = state.invertedUnits.get(fromUnit.name);
+    const toInverted = state.invertedUnits.get(toUnit.name);
 
     const fromPhenomenon = fromInverted
-      ? this._nameMap.get(fromInverted.invertsUnitName)?.props.phenomenon
+      ? state.nameMap.get(fromInverted.invertsUnitName)?.props.phenomenon
       : from.props.phenomenon;
     const toPhenomenon = toInverted
-      ? this._nameMap.get(toInverted.invertsUnitName)?.props.phenomenon
+      ? state.nameMap.get(toInverted.invertsUnitName)?.props.phenomenon
       : to.props.phenomenon;
     if (fromPhenomenon !== toPhenomenon)
       return { factor: 1.0, offset: 0.0, error: true };
 
     if (fromInverted && toInverted) {
-      const innerFrom = this._nameMap.get(fromInverted.invertsUnitName);
-      const innerTo = this._nameMap.get(toInverted.invertsUnitName);
+      const innerFrom = state.nameMap.get(fromInverted.invertsUnitName);
+      const innerTo = state.nameMap.get(toInverted.invertsUnitName);
       if (innerFrom && innerTo) {
         const c = innerFrom.resolved.conversion.inverse().compose(innerTo.resolved.conversion);
         return { factor: c.factor, offset: c.offset };
@@ -224,7 +219,7 @@ export class BasicUnitsProvider implements UnitsProvider {
     }
 
     if (fromInverted) {
-      const innerFrom = this._nameMap.get(fromInverted.invertsUnitName);
+      const innerFrom = state.nameMap.get(fromInverted.invertsUnitName);
       if (innerFrom) {
         const c = innerFrom.resolved.conversion.inverse().compose(to.resolved.conversion);
         return { factor: c.factor, offset: c.offset, inversion: UnitConversionInvert.InvertPreConversion };
@@ -232,7 +227,7 @@ export class BasicUnitsProvider implements UnitsProvider {
     }
 
     if (toInverted) {
-      const innerTo = this._nameMap.get(toInverted.invertsUnitName);
+      const innerTo = state.nameMap.get(toInverted.invertsUnitName);
       if (innerTo) {
         const c = from.resolved.conversion.inverse().compose(innerTo.resolved.conversion);
         return { factor: c.factor, offset: c.offset, inversion: UnitConversionInvert.InvertPostConversion };
