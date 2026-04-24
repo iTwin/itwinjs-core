@@ -192,21 +192,21 @@ for (const { treeRef, name, description } of view.getRealityModelTreeRefs()) {
 
 ### Lightweight briefcases for server and agent workflows (`LiteBriefcaseDb`)
 
-The backend now supports opening a V2 checkpoint as a lightweight, writable briefcase via the new [LiteBriefcaseDb]($backend) class and [OpenLiteBriefcaseArgs]($backend) interface. Unlike a traditional `BriefcaseDb`, a lite briefcase **never downloads the full iModel** to disk — blocks are streamed on demand from the cloud container. This makes it ideal for short-lived edit sessions in server and agent workflows where only a small number of targeted changes are needed and full disk space is not available or practical.
+The backend now supports opening a V2 checkpoint as a lightweight, writable briefcase via the new [LiteBriefcaseDb]($backend) class and [LiteBriefcaseOpenArgs]($backend) interface. Unlike a traditional `BriefcaseDb`, a lite briefcase **never downloads the full iModel** to disk — blocks are streamed on demand from the cloud container. This makes it ideal for short-lived edit sessions in server and agent workflows where only a small number of targeted changes are needed and full disk space is not available or practical.
 
 #### What's new
 
 - **`LiteBriefcaseDb`** (`@alpha`): a new `BriefcaseDb` subclass designed for lightweight, agent-friendly edit sessions. The full iModel is never downloaded; blocks stream from a V2 checkpoint container on demand. Local writes stay in a small local cache and are never uploaded back to the checkpoint container. Changesets can be pushed to iModelHub normally.
-- **`LiteBriefcaseDb.openCloud(args)`** (`@alpha`): static factory method that attaches the checkpoint container, acquires (or reuses) a briefcase ID, opens the database in read-write mode against the cloud container, and sets up SAS token refresh.
-- **`OpenLiteBriefcaseArgs`** (`@alpha`): arguments interface for `openCloud`, accepting a `CheckpointProps` and an optional pre-acquired `briefcaseId`.
-- **`CloudSqlite.hasLocalChanges(container)`** (`@alpha`): helper to check whether a cloud container has uncommitted local changes that have not been uploaded.
+- **`LiteBriefcaseDb.openFromCheckpoint(args)`** (`@alpha`): static factory method that attaches the checkpoint container, acquires (or reuses) a briefcase ID, opens the database in read-write mode against the cloud container, and sets up SAS token refresh.
+- **`LiteBriefcaseOpenArgs`** (`@alpha`): arguments interface for `openFromCheckpoint`, accepting a `CheckpointProps` and an optional pre-acquired `briefcaseId`.
+- **`CloudSqlite.hasLocalChanges(container)`** (`@alpha`): helper to check whether a cloud container has uncommitted local changes that have not been published as a changeset.
 - **`V2CheckpointManager.attachForBriefcase(checkpoint)`** (`@alpha`): attaches a V2 checkpoint and returns both the `dbName` and the live `CloudContainer`, throwing if a mock container is used (mocks do not support lite briefcase mode).
 
 #### Key characteristics
 
 - **No full download**: only the blocks actually read during your edits are fetched from the cloud.
 - **Minimal disk footprint**: local storage is limited to changed blocks and the local cache — suitable for ephemeral server/agent environments.
-- **Short-lived sessions**: designed for targeted edits (seconds to minutes), not long-running or full-file access workflows.
+- **Intended for short-lived sessions**: designed for targeted edits (seconds to minutes), not long-running or full-file access workflows.
 - **Agent/server friendly**: no BCV daemon required; blocks are fetched directly from Azure Blob Storage.
 
 #### Constraints
@@ -221,7 +221,7 @@ The backend now supports opening a V2 checkpoint as a lightweight, writable brie
 ```ts
 import { LiteBriefcaseDb, withEditTxn } from "@itwin/core-backend";
 
-const db = await LiteBriefcaseDb.openCloud({
+const db = await LiteBriefcaseDb.openFromCheckpoint({
   accessToken,
   checkpoint: {
     accessToken,

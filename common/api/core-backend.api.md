@@ -1127,24 +1127,6 @@ export interface CloseIModelArgs {
     optimize?: boolean;
 }
 
-// @alpha
-export class LiteBriefcaseDb extends BriefcaseDb {
-    protected constructor(args: {
-        nativeDb: IModelJsNative.DgnDb;
-        key: string;
-        openMode: OpenMode;
-        briefcaseId: number;
-        container: CloudSqlite.CloudContainer;
-    });
-    close(options?: CloseIModelArgs): void;
-    // @internal (undocumented)
-    get cloudContainer(): CloudSqlite.CloudContainer;
-    get isLiteBriefcase(): boolean;
-    static openCloud(args: OpenLiteBriefcaseArgs): Promise<LiteBriefcaseDb>;
-    // @internal
-    refreshContainerToken(accessToken?: AccessToken): Promise<void>;
-}
-
 // @public
 export interface CloudContainerArgs {
     // @internal (undocumented)
@@ -4941,6 +4923,30 @@ export class LinkPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
+// @alpha
+export class LiteBriefcaseDb extends BriefcaseDb {
+    protected constructor(args: {
+        nativeDb: IModelJsNative.DgnDb;
+        key: string;
+        openMode: OpenMode;
+        briefcaseId: number;
+        container: CloudSqlite.CloudContainer;
+    });
+    close(options?: CloseIModelArgs): void;
+    // @internal (undocumented)
+    get cloudContainer(): CloudSqlite.CloudContainer;
+    get isLiteBriefcase(): boolean;
+    static openFromCheckpoint(args: LiteBriefcaseOpenArgs): Promise<LiteBriefcaseDb>;
+    // @internal
+    refreshContainerToken(accessToken?: AccessToken): Promise<void>;
+}
+
+// @alpha
+export interface LiteBriefcaseOpenArgs extends TokenArg {
+    readonly briefcaseId?: BriefcaseId;
+    readonly checkpoint: CheckpointProps;
+}
+
 // @internal (undocumented)
 export class LocalhostIpcHost {
     // (undocumented)
@@ -5425,12 +5431,6 @@ export interface OnSubModelPropsArg extends OnElementArg {
 
 // @public
 export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
-
-// @alpha
-export interface OpenLiteBriefcaseArgs extends TokenArg {
-    readonly briefcaseId?: BriefcaseId;
-    readonly checkpoint: CheckpointProps;
-}
 
 // @public @preview
 export class OrthographicViewDefinition extends SpatialViewDefinition {

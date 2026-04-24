@@ -923,8 +923,8 @@ export namespace CloudSqlite {
   }
 
   /**
-   * Check whether a cloud container has local uncommitted changes that have not been uploaded.
-   * This is useful for cloud briefcases to verify state before closing.
+   * Check whether a cloud container has local uncommitted changes that have not been published as a changeset.
+   * This is useful for lite briefcases to verify state before closing.
    * @alpha
    */
   export function hasLocalChanges(container: CloudContainer): boolean {

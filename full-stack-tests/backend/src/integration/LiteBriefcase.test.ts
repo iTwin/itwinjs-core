@@ -23,7 +23,7 @@
  */
 
 import { expect } from "chai";
-import { BriefcaseDb, BriefcaseManager, LiteBriefcaseDb, IModelHost, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, LiteBriefcaseDb, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
@@ -66,7 +66,7 @@ describe("LiteBriefcaseDb", function () {
 
     // BriefcaseManager.pushChanges calls IModelHost.getAccessToken() (ignoring arg.accessToken),
     // so we configure authorizationClient so push operations use the regular user's token.
-    IModelHost.authorizationClient = { getAccessToken: () => TestUtility.getAccessToken(TestUsers.regular) };
+    IModelHost.authorizationClient = { getAccessToken: async () => TestUtility.getAccessToken(TestUsers.regular) };
 
     // Resolve the iTwin by name (reuses the same project as other integration tests).
     iTwinId = await HubUtility.getTestITwinId(accessToken);
@@ -115,7 +115,7 @@ describe("LiteBriefcaseDb", function () {
 
     // -- Open lite briefcase at the current tip (streams blocks on demand) ---
     const latestChangeset = await IModelHost[_hubAccess].getLatestChangeset({ accessToken, iModelId });
-    const liteDb = await LiteBriefcaseDb.openCloud({
+    const liteDb = await LiteBriefcaseDb.openFromCheckpoint({
       accessToken,
       checkpoint: {
         accessToken,
@@ -190,7 +190,7 @@ describe("LiteBriefcaseDb", function () {
       ? changesets[pushedIndex - 1]
       : { id: "", index: 0 };
 
-    const liteDb = await LiteBriefcaseDb.openCloud({
+    const liteDb = await LiteBriefcaseDb.openFromCheckpoint({
       accessToken,
       checkpoint: {
         accessToken,

@@ -61,7 +61,6 @@ public;interface;CheckpointProps
 public;class;ClassRegistry
 beta;interface;ClearCachesOptions
 public;interface;CloseIModelArgs
-alpha;class;LiteBriefcaseDb
 public;interface;CloudContainerArgs
 beta;namespace;CloudSqlite
 internal;interface;BcvHttpLog
@@ -396,6 +395,8 @@ public;class;LinkModel
 preview;class;LinkModel
 public;class;LinkPartition
 preview;class;LinkPartition
+alpha;class;LiteBriefcaseDb
+alpha;interface;LiteBriefcaseOpenArgs
 internal;class;LocalhostIpcHost
 internal;interface;LocalhostIpcHostOpts
 internal;class;LocalHub
@@ -438,7 +439,6 @@ beta;interface;OnModelPropsArg
 beta;interface;OnSubModelIdArg
 beta;interface;OnSubModelPropsArg
 public;type;OpenBriefcaseArgs
-alpha;interface;OpenLiteBriefcaseArgs
 public;class;OrthographicViewDefinition
 preview;class;OrthographicViewDefinition
 internal;function;parseTextAnnotationData

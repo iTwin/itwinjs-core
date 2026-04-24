@@ -4117,7 +4117,7 @@ class RefreshV2CheckpointSas {
  * Arguments to open a lite briefcase from a V2 checkpoint.
  * @alpha
  */
-export interface OpenLiteBriefcaseArgs extends TokenArg {
+export interface LiteBriefcaseOpenArgs extends TokenArg {
   /** The checkpoint to attach to */
   readonly checkpoint: CheckpointProps;
   /** Optional pre-acquired briefcaseId. If not provided, one is acquired from iModelHub. */
@@ -4180,7 +4180,7 @@ export class LiteBriefcaseDb extends BriefcaseDb {
    * @throws IModelError if the checkpoint cannot be attached or if a briefcaseId cannot be acquired
    * @alpha
    */
-  public static async openCloud(args: OpenLiteBriefcaseArgs): Promise<LiteBriefcaseDb> {
+  public static async openFromCheckpoint(args: LiteBriefcaseOpenArgs): Promise<LiteBriefcaseDb> {
     const { checkpoint } = args;
 
     // Acquire a briefcaseId if not provided. Track whether we acquired it so we can
@@ -4277,7 +4277,11 @@ export class LiteBriefcaseDb extends BriefcaseDb {
     }
   }
 
-  /** Override close to warn if there are unpushed local changes. */
+  /** Override close to warn if there are unpushed local changes.
+   * LiteBriefcaseDb is designed for server/agent tasks where throwing an exception on close
+   * would cause more problems than it solves — the caller may not be able to recover at that point.
+   * Instead, we log a warning so operators can detect lost changes via telemetry.
+   */
   public override close(options?: CloseIModelArgs) {
     if (this.isOpen && this[_nativeDb].hasPendingTxns()) {
       Logger.logWarning(loggerCategory, "Closing LiteBriefcaseDb with unpushed local changes. These changes will be lost.");
