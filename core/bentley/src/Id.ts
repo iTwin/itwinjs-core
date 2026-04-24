@@ -366,9 +366,7 @@ export namespace Id64 {
    * ```
    */
   export function iterable(ids: Id64Arg): Iterable<Id64String> {
-    return {
-      [Symbol.iterator]: () => iterator(ids),
-    };
+    return typeof ids === "string" ? [ids] : ids;
   }
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */
