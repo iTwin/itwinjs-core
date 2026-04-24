@@ -35,7 +35,7 @@ import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
  * @beta
  */
 export class ChangesetReader implements Disposable, ChangeSource {
-  private readonly _nativeReader: IModelJsNative.ECChangesetReader = new IModelNative.platform.ECChangesetReader();
+  private readonly _nativeReader: IModelJsNative.ChangesetReader = new IModelNative.platform.ChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private _rowOptions?: RowFormatOptions;
   private _propFilter: PropertyFilter = PropertyFilter.All;
