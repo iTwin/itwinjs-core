@@ -60,13 +60,19 @@ The `IdSet` virtual table now uses a sorted vector internally, enabling O(log n)
 
 ```sql
 -- Point lookup — binary search, O(log n)
-SELECT i FROM aps.TestElement, IdSet('[1,2,3,4,5]') WHERE id = ECInstanceId AND id = 3
+SELECT id FROM IdSet('[1,2,3,4,5]') WHERE id = 3
+-- returns: 0x3
 
 -- IN filter — single Filter call for all values
-SELECT i FROM aps.TestElement, IdSet('[1,2,3,4,5,6,7,8,9,10]') WHERE id = ECInstanceId AND id IN (3, 5, 7)
+SELECT id FROM IdSet('[1,2,3,4,5,6,7,8,9,10]') WHERE id IN (3, 5, 7)
+-- returns: 0x3, 0x5, 0x7
+
+-- Sorted deduplication — unsorted input with duplicates
+SELECT id FROM IdSet('[50,10,30,20,40,10]')
+-- returns: 0xa, 0x14, 0x1e, 0x28, 0x32
 ```
 
-Output is always returned sorted and deduplicated, regardless of input order.
+Output is always returned in ascending ID order and deduplicated, regardless of input order. This is a behavioral change — previously, output order was unspecified.
 
 ### WithQueryReader API
 
