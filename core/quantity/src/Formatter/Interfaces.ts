@@ -6,9 +6,11 @@
  * @module Quantity
  */
 
-import { BeEvent } from "@itwin/core-bentley";
-import { UnitProps } from "../Interfaces";
+import { BeEvent, BeUnorderedUiEvent } from "@itwin/core-bentley";
+import { UnitProps, UnitSystemKey } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
+import type { FormatterSpec } from "./FormatterSpec";
+import type { ParserSpec } from "../ParserSpec";
 
 /** Defines a unit specification with a name and optional label override.
  * Used in composite formats and ratio unit specifications.
@@ -188,6 +190,13 @@ export interface FormatsChangedArgs {
    * If array, the array items list the names of formats that were changed or removed.
    */
   formatsChanged: "all" | string[];
+  /** If set, indicates that the format set implies a particular unit system. The consumer
+   * (e.g., QuantityFormatter) will synchronize the active unit system to match.
+   * If `undefined`, the format change does not imply a unit system switch — the active
+   * unit system remains unchanged.
+   * @beta
+   */
+  impliedUnitSystem?: UnitSystemKey;
 }
 
 /** This interface is implemented by a class that would provide formats for use in formatting quantities.
@@ -197,7 +206,7 @@ export interface FormatsProvider {
   /**
    * @param name The full name of the Format or KindOfQuantity.
    */
-  getFormat(name: string): Promise<FormatDefinition | undefined>;
+  getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
 
   /**
    * Fired when formats are added, removed, or changed.
@@ -220,3 +229,47 @@ export interface MutableFormatsProvider extends FormatsProvider {
    */
   removeFormat(name: string): Promise<void>;
 }
+
+/** Entries returned when looking up specs from the format registry.
+ * @beta
+ */
+export interface FormattingSpecEntry {
+  formatterSpec: FormatterSpec;
+  parserSpec: ParserSpec;
+}
+
+/** Arguments for looking up a formatting spec entry.
+ * @beta
+ */
+export interface FormattingSpecArgs {
+  /** The KoQ name to look up. */
+  name: string;
+  /** The persistence unit name (e.g., `"Units.M"`). */
+  persistenceUnitName: string;
+  /** Optional unit system override. When omitted, the active system is used. */
+  system?: UnitSystemKey;
+}
+
+/** Arguments for registering a formatting spec entry.
+ * @beta
+ */
+export interface AddFormattingSpecArgs extends FormattingSpecArgs {
+  /** Format properties to use. When omitted, the provider resolves them from the KoQ schema. */
+  formatProps?: FormatProps;
+}
+
+/** Minimal contract required by [[FormatSpecHandle]] to look up specs and subscribe to reloads.
+ * Implemented by [[QuantityFormatter]] in `@itwin/core-frontend`.
+ * @beta
+ */
+export interface FormattingSpecProvider {
+  /** Look up a formatting spec entry by KoQ name and persistence unit. */
+  getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
+  /** Format a numeric value using the given formatter spec. */
+  formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+  /** Event raised after the provider has finished reloading its caches.
+   * Uses Set-backed event for safe concurrent add/remove during emit.
+   */
+  readonly onFormattingReady: BeUnorderedUiEvent<void>;
+}
+

@@ -401,7 +401,84 @@ describe("iModelDb integrityCheck Tests", () => {
     });
   });
 
-  it("should call integrityCheck on an iModel with corrupt foreignKey Ids and return results", async () => {
+  it("should report corrupt foreignKey Ids", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const [element1Id, element2Id] = withEditTxn(iModel, (txn) => ([
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+      }),
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+      }),
+    ]));
+
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = withEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
+    assert.isTrue(Id64.isValidId64(relationshipId));
+
+    // Delete one element without deleting the relationship to corrupt the iModel
+    withEditTxn(iModel, () => {
+      const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+      expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    });
+
+     // Run integrity check specifically for linktable foreign key Ids
+    const results = await iModel.integrityCheck({
+      quickCheck: true,
+      specificChecks: {
+        checkLinktableForeignKeyClassIds: true,
+        checkLinktableForeignKeyIds: true,
+      },
+    });
+
+    // Run integrity check with default options — quickCheck only, no specific checks
+    const justQuickCheck = await iModel.integrityCheck();
+
+    expect(justQuickCheck).to.have.lengthOf(1);
+    expect(justQuickCheck[0]).to.have.property("check").that.equals("Quick Check");
+    expect(justQuickCheck[0]).to.have.property("passed").that.equals(false);
+    expect(justQuickCheck[0].results.length).to.equal(9);
+    const foreignKeyCheck = justQuickCheck[0].results.find((row) => (row as QuickIntegrityCheckResultRow).check === "Check Link Table Foreign Key Ids");
+    assert.isDefined(foreignKeyCheck, "Check Link Table Foreign Key Ids sub-check should be present in quickCheck results");
+    expect((foreignKeyCheck as QuickIntegrityCheckResultRow).passed).to.equal(false, "Check Link Table Foreign Key Ids should report failure");
+
+    // Verify that the checkLinktableForeignKeyIds check reports the corruption
+    expect(results).to.have.lengthOf(3);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(false);
+    expect(results[0]).to.have.property("results").that.is.an("array");
+    expect(results[0].results.length).to.equal(9);
+    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
+    expect(results[1]).to.have.property("passed").that.equals(true);
+    expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
+    expect(results[2]).to.have.property("passed").that.equals(false);
+    expect(results[2].results).to.have.lengthOf(1);
+    expect(results[2].results[0]).to.deep.include({
+      sno: 1,
+      id: relationshipId,
+      relationship: "BisCore:ElementRefersToElements",
+      property: "TargetECInstanceId",
+      keyId: element2Id,
+      primaryClass: "BisCore:Element",
+    });
+  });
+
+  it("should report corrupt foreignKey Ids after calling clearCaches", async () => {
     // Insert two elements
     iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
@@ -452,19 +529,175 @@ describe("iModelDb integrityCheck Tests", () => {
     expect(results[0]).to.have.property("passed").that.equals(false);
     expect(results[0]).to.have.property("results").that.is.an("array");
     expect(results[0].results.length).to.equal(9);
-    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quickcheck should report failed specific check");
+    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
     expect(results[1]).to.have.property("passed").that.equals(true);
     expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
     expect(results[2]).to.have.property("passed").that.equals(false);
     expect(results[2].results).to.have.lengthOf(1);
     expect(results[2].results[0]).to.deep.include({
       sno: 1,
-      id: "0x20000000001",
+      id: relationshipId,
       relationship: "BisCore:ElementRefersToElements",
       property: "TargetECInstanceId",
-      keyId: "0x20000000002",
+      keyId: element2Id,
+      primaryClass: "BisCore:Element",
+    });
+
+    // Clear caches
+    iModel.clearCaches();
+
+    // Run integrity check again after clearing cache
+    const resultsAfterClearCache = await iModel.integrityCheck({
+      quickCheck: true,
+      specificChecks: {
+        checkLinktableForeignKeyClassIds: true,
+        checkLinktableForeignKeyIds: true,
+      },
+    });
+
+    // Verify that the checkLinktableForeignKeyIds check still reports the corruption after clearing cache
+    expect(resultsAfterClearCache).to.have.lengthOf(3);
+    expect(resultsAfterClearCache[0]).to.have.property("check").that.equals("Quick Check");
+    expect(resultsAfterClearCache[0]).to.have.property("passed").that.equals(false);
+    expect(resultsAfterClearCache[0]).to.have.property("results").that.is.an("array");
+    expect(resultsAfterClearCache[0].results.length).to.equal(9);
+    assert(resultsAfterClearCache[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
+    expect(resultsAfterClearCache[1]).to.have.property("passed").that.equals(true);
+    expect(resultsAfterClearCache[1]).to.have.property("results").that.is.an("array").that.is.empty;
+    expect(resultsAfterClearCache[2]).to.have.property("passed").that.equals(false);
+    expect(resultsAfterClearCache[2].results).to.have.lengthOf(1);
+    expect(resultsAfterClearCache[2].results[0]).to.deep.include({
+      sno: 1,
+      id: relationshipId,
+      relationship: "BisCore:ElementRefersToElements",
+      property: "TargetECInstanceId",
+      keyId: element2Id,
       primaryClass: "BisCore:Element",
     });
   });
 
+  it("should report corrupt foreignKey Ids on an iModel with unsaved changes", async () => {
+    // Insert two elements
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const [element1Id, element2Id] = withEditTxn(iModel, (txn) => ([
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+      }),
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+      }),
+    ]));
+
+    // Create a relationship between them
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = withEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
+    assert.isTrue(Id64.isValidId64(relationshipId));
+
+    // Delete one element without deleting the relationship to corrupt the iModel - don't save it
+    const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element2Id}`);
+    expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+
+    // Run integrity check specifically for linktable foreign key Ids
+    const results = await iModel.integrityCheck({
+      quickCheck: true,
+      specificChecks: {
+        checkLinktableForeignKeyClassIds: true,
+        checkLinktableForeignKeyIds: true,
+      },
+    });
+
+    await iModel.discardChanges();
+
+    // Verify that the checkLinktableForeignKeyIds check reports the corruption
+    expect(results).to.have.lengthOf(3);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(false);
+    expect(results[0]).to.have.property("results").that.is.an("array");
+    expect(results[0].results.length).to.equal(9);
+    assert(results[0].results.findIndex((row) => (row as QuickIntegrityCheckResultRow).passed === false) !== -1, "Quick check should report failed specific check");
+    expect(results[1]).to.have.property("passed").that.equals(true);
+    expect(results[1]).to.have.property("results").that.is.an("array").that.is.empty;
+    expect(results[2]).to.have.property("passed").that.equals(false);
+    expect(results[2].results).to.have.lengthOf(1);
+    expect(results[2].results[0]).to.deep.include({
+      sno: 1,
+      id: relationshipId,
+      relationship: "BisCore:ElementRefersToElements",
+      property: "TargetECInstanceId",
+      keyId: element2Id,
+      primaryClass: "BisCore:Element",
+    });
+  });
+
+  it("should report corrupt source-side foreignKey Ids", async () => {
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    const [element1Id, element2Id] = withEditTxn(iModel, (txn) => ([
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject1"),
+      }),
+      txn.insertElement({
+        classFullName: Subject.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+        code: Subject.createCode(iModel, IModel.rootSubjectId, "Subject2"),
+      }),
+    ]));
+
+    await iModel.locks.acquireLocks({ exclusive: Id64.toIdSet([element1Id, element2Id]) });
+    const relationship = iModel.relationships.createInstance({
+      classFullName: "BisCore:SubjectRefersToSubject",
+      sourceId: element1Id,
+      targetId: element2Id,
+    });
+    const relationshipId = withEditTxn(iModel, (txn) => txn.insertRelationship(relationship.toJSON()));
+    assert.isTrue(Id64.isValidId64(relationshipId));
+
+    // Delete the SOURCE element to create a source-side FK orphan
+    withEditTxn(iModel, () => {
+      const deleteResult = iModel[_nativeDb].executeSql(`DELETE FROM bis_Element WHERE Id=${element1Id}`);
+      expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
+    });
+
+    const results = await iModel.integrityCheck({
+      quickCheck: true,
+      specificChecks: {
+        checkLinktableForeignKeyIds: true,
+      },
+    });
+
+    // Quick Check + specific Check Link Table Foreign Key Ids
+    expect(results).to.have.lengthOf(2);
+    expect(results[0]).to.have.property("check").that.equals("Quick Check");
+    expect(results[0]).to.have.property("passed").that.equals(false);
+
+    // Specific check should find the source-side orphan
+    expect(results[1]).to.have.property("check").that.equals("Check Link Table Foreign Key Ids");
+    expect(results[1]).to.have.property("passed").that.equals(false);
+    expect(results[1].results).to.have.length.greaterThanOrEqual(1);
+    expect(results[1].results[0]).to.deep.include({
+      id: relationshipId,
+      relationship: "BisCore:ElementRefersToElements",
+      property: "SourceECInstanceId",
+      keyId: element1Id,
+      primaryClass: "BisCore:Element",
+    });
+  });
 });

@@ -75,6 +75,7 @@ import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
+import { ECSpecVersion } from '@itwin/ecschema-metadata';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlReaderBase } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
@@ -2630,6 +2631,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
+    deleteElements(ids: Id64Array): Id64Set;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
@@ -3934,6 +3936,8 @@ export abstract class IModelDb extends IModel {
     exportSchema(args: ExportSchemaArgs): void;
     // @beta
     exportSchemas(outputDirectory: LocalFileName): void;
+    // @beta
+    exportSchemaXmlString(schemaName: string, ecSpecVersion?: ECSpecVersion): string | undefined;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // @deprecated (undocumented)
@@ -5738,6 +5742,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 
 // @alpha
 export interface RebaseHandler {
+    dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
@@ -5751,6 +5756,7 @@ export class RebaseManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     canAbort(): boolean;
+    dispose(): void;
     inProgress(): boolean;
     get isAborting(): boolean;
     get isMerging(): boolean;
@@ -6684,7 +6690,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @deprecated (undocumented)
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
-    modelSelectorId: Id64String;
+    modelSelector: RelatedElementProps;
+    get modelSelectorId(): Id64String;
+    set modelSelectorId(id: Id64String);
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
@@ -7644,7 +7652,9 @@ export class ViewAttachmentLabel extends DetailingSymbol {
 // @public @preview
 export abstract class ViewDefinition extends DefinitionElement {
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
-    categorySelectorId: Id64String;
+    categorySelector: RelatedElementProps;
+    get categorySelectorId(): Id64String;
+    set categorySelectorId(id: Id64String);
     // (undocumented)
     static get className(): string;
     // (undocumented)
@@ -7655,7 +7665,9 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): ViewDefinitionProps;
     abstract get details(): ViewDetails;
-    displayStyleId: Id64String;
+    displayStyle: RelatedElementProps;
+    get displayStyleId(): Id64String;
+    set displayStyleId(id: Id64String);
     getAuxiliaryCoordinateSystemId(): Id64String;
     isDrawingView(): this is DrawingViewDefinition;
     isSpatialView(): this is SpatialViewDefinition;
@@ -7680,7 +7692,9 @@ export abstract class ViewDefinition extends DefinitionElement {
 export class ViewDefinition2d extends ViewDefinition {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
-    baseModelId: Id64String;
+    baseModel: RelatedElementProps;
+    get baseModelId(): Id64String;
+    set baseModelId(id: Id64String);
     // (undocumented)
     static get className(): string;
     // (undocumented)

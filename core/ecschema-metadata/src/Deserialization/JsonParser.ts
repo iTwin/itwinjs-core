@@ -103,7 +103,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public *getReferences(): Iterable<SchemaReferenceProps> {
     if (undefined !== this._rawSchema.references) {
       if (!Array.isArray(this._rawSchema.references))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._rawSchema.name} has an invalid 'references' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${String(this._rawSchema.name)} has an invalid 'references' attribute. It should be of type 'object[]'.`);
 
       for (const ref of this._rawSchema.references) {
         yield this.checkSchemaReference(ref);
@@ -266,7 +266,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
     return {
       ...jsonObj,
-      originalECSpecMajorVersion : this._ecSpecVersion?.readVersion,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
       originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
     } as unknown as EntityClassProps;
   }
@@ -717,7 +717,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    * @returns PropertyProps
    */
   private checkPropertyProps(jsonObj: UnknownObject): PropertyProps {
-    const propName = jsonObj.name;
+    const propName = String(jsonObj.name);
 
     if (undefined !== jsonObj.label && typeof (jsonObj.label) !== "string")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'label' attribute. It should be of type 'string'.`);
@@ -746,7 +746,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   private checkPropertyTypename(jsonObj: UnknownObject): void {
-    const propName = jsonObj.name;
+    const propName = String(jsonObj.name);
     if (undefined === jsonObj.typeName)
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} is missing the required 'typeName' attribute.`);
     if (typeof (jsonObj.typeName) !== "string")
@@ -754,7 +754,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   private checkPropertyMinAndMaxOccurs(jsonObj: UnknownObject): void {
-    const propName = jsonObj.name;
+    const propName = String(jsonObj.name);
     if (undefined !== jsonObj.minOccurs && typeof (jsonObj.minOccurs) !== "number")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minOccurs' attribute. It should be of type 'number'.`);
     if (undefined !== jsonObj.maxOccurs && typeof (jsonObj.maxOccurs) !== "number")
@@ -769,7 +769,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private checkPrimitiveOrEnumPropertyBaseProps(jsonObj: UnknownObject): PrimitiveOrEnumPropertyBaseProps {
     this.checkPropertyProps(jsonObj);
     this.checkPropertyTypename(jsonObj);
-    const propName = jsonObj.name;
+    const propName = String(jsonObj.name);
 
     if (undefined !== jsonObj.minLength && typeof (jsonObj.minLength) !== "number")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minLength' attribute. It should be of type 'number'.`);
@@ -839,7 +839,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    */
   public parseNavigationProperty(jsonObj: UnknownObject): NavigationPropertyProps {
     this.checkPropertyProps(jsonObj);
-    const fullname = `${this._currentItemFullName}.${jsonObj.name}`;
+    const fullname = `${this._currentItemFullName}.${String(jsonObj.name)}`;
 
     if (undefined === jsonObj.relationshipName)
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Navigation Property ${fullname} is missing the required 'relationshipName' property.`);
@@ -863,7 +863,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   public getPropertyCustomAttributeProviders(jsonObj: UnknownObject): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(jsonObj, "ECProperty", `${this._currentItemFullName}.${jsonObj.name}`);
+    return this.getCustomAttributeProviders(jsonObj, "ECProperty", `${this._currentItemFullName}.${String(jsonObj.name)}`);
   }
 
   public getRelationshipConstraintCustomAttributeProviders(jsonObj: UnknownObject): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */] {

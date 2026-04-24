@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Quantity Formatter: readiness events, serialized reload queue, multi-system caching, composite-keyed registry, FormatSpecHandle, listener leak fix.",
+      "type": "minor",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
