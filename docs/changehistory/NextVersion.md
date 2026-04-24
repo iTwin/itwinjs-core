@@ -7,6 +7,7 @@ publish: false
   - [@itwin/core-bentley](#itwincore-bentley)
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
+    - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
     - [WithQueryReader API](#withqueryreader-api)
     - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
@@ -52,6 +53,21 @@ remove(); // O(1) removal
 This is intentional — it avoids a class of bugs where `removeListener()` silently fails to match due to inline closures or binding mismatches (e.g. `event.addListener(() => this.onFoo())` followed by `event.removeListener(() => this.onFoo())` removes nothing because the two arrow functions are different objects). Capturing the returned closure is a reliable unsubscription pattern and enables O(1) removal via `Set.delete`.
 
 ## @itwin/core-backend
+
+### ECSQL CROSS JOIN now supports optional ON clause
+
+`CROSS JOIN` in ECSQL now accepts an optional `ON` condition, matching standard SQL and SQLite behavior. Previously, `CROSS JOIN` only produced an unfiltered Cartesian product between two classes.
+
+The key benefit of using `CROSS JOIN` with an `ON` clause — rather than `INNER JOIN` — is optimizer control: SQLite's [special CROSS JOIN handling](https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_) prevents the query planner from reordering the joined tables, giving applications explicit control over the join order and query execution plan.
+
+**Example** — filter the Cartesian product while locking join order:
+
+```sql
+-- Returns only matching Person/Identifier pairs, but forces Person to be the outer table
+SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonId
+```
+
+This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
 
 ### WithQueryReader API
 
