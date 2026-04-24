@@ -221,17 +221,20 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       return;
     }
 
-
+    let changed = false;
     for (const modelId of Id64.iterable(modelIds)) {
       const modelEntry = this._map.get(modelId);
       if (!modelEntry) {
         continue;
       }
+      changed = true;
       for (const overrideEntry of modelEntry.values()) {
         this._set.delete(overrideEntry);
       }
-      this._vp.setViewedCategoriesPerModelChanged();
       this._map.delete(modelId);
+    }
+    if (changed) {
+      this._vp.setViewedCategoriesPerModelChanged();
     }
   }
 
