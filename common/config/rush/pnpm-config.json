@@ -37,5 +37,13 @@
         ]
       }
     }
-  }
+  },
+  "globalOnlyBuiltDependencies": [
+    "@bentley/imodeljs-native",
+    "@itwin/oidc-signin-tool",
+    "electron",
+    "esbuild",
+    "msw",
+    "protobufjs"
+  ]
 }

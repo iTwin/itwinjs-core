@@ -79,12 +79,12 @@ export enum HalfEdgeMask {
  * Function signature for function of one node with no return type restrictions.
  * @internal
  */
-export type NodeFunction = (node: HalfEdge) => any;
+export type HalfEdgeFunction = (node: HalfEdge) => any;
 /**
  * Function signature for function of one node, returning a number.
  * @internal
  */
-export type NodeToNumberFunction = (node: HalfEdge) => number;
+export type HalfEdgeToNumberFunction = (node: HalfEdge) => number;
 /**
  * Function signature for function of one node, returning a boolean.
  * @internal
@@ -99,7 +99,7 @@ export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMa
  * Function signature for function of a graph and a node, returning a boolean.
  * @internal
  */
-export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
+export type GraphHalfEdgeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 /**
  * Non-topological data members in a half edge.
  * These are not part of adjacency and masking logic.
@@ -1056,7 +1056,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * Announce edges in the face loop, starting with the instance and proceeding in a `faceSuccessor` traversal.
    * @param announceEdge function to call at each edge
    */
-  public announceEdgesInFace(announceEdge: NodeFunction): void {
+  public announceEdgesInFace(announceEdge: HalfEdgeFunction): void {
     let node: HalfEdge = this;
     do {
       announceEdge(node);
@@ -1072,7 +1072,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @return whether a super face was found, or `false` if the traversal fails to return to the instance vertex.
    */
   public announceEdgesInSuperFace(
-    skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction,
+    skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: HalfEdgeFunction, announceSkipped?: HalfEdgeFunction,
   ): boolean {
     const maxIter = 10000; // safeguard against infinite loops
     let iter = 0;
@@ -1105,7 +1105,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param f optional node function. If `undefined`, collect the nodes themselves.
    * @returns the array of function values.
    */
-  public collectAroundFace(f?: NodeFunction): any[] {
+  public collectAroundFace(f?: HalfEdgeFunction): any[] {
     const nodes = [];
     let node: HalfEdge = this;
     do {
@@ -1141,7 +1141,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param f optional node function. If `undefined`, collect the nodes themselves.
    * @returns the array of function values.
    */
-  public collectAroundVertex(f?: NodeFunction): any[] {
+  public collectAroundVertex(f?: HalfEdgeFunction): any[] {
     const nodes = [];
     let node: HalfEdge = this;
     do {
@@ -1154,7 +1154,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * Announce edges in the vertex loop, starting with the instance and proceeding in a `vertexSuccessor` traversal.
    * @param announceEdge function to call at each edge
    */
-  public announceEdgesAroundVertex(announceEdge: NodeFunction): void {
+  public announceEdgesAroundVertex(announceEdge: HalfEdgeFunction): void {
     let node: HalfEdge = this;
     do {
       announceEdge(node);
@@ -1166,7 +1166,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param f node to number function.
    * @returns the sum of function values.
    */
-  public sumAroundFace(f: NodeToNumberFunction): number {
+  public sumAroundFace(f: HalfEdgeToNumberFunction): number {
     let node: HalfEdge = this;
     let sum = 0;
     do {
@@ -1180,7 +1180,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param f node to number function.
    * @returns the sum of function values.
    */
-  public sumAroundVertex(f: NodeToNumberFunction): number {
+  public sumAroundVertex(f: HalfEdgeToNumberFunction): number {
     let node: HalfEdge = this;
     let sum = 0;
     do {
@@ -1429,7 +1429,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param bridgeMask mask preset on bridge edges (default is [[HalfEdgeMask.BRIDGE_EDGE]]).
    */
   public isSplitWasherFace(bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE): boolean {
-    if (!this.countMaskAroundFace(HalfEdgeMask.BRIDGE_EDGE))
+    if (!this.countMaskAroundFace(bridgeMask))
       return false;
     const bridges = new OrderedSet<HalfEdge>((a: HalfEdge, b: HalfEdge) => a.id - b.id);
     let node: HalfEdge = this;
@@ -1727,7 +1727,7 @@ export class HalfEdgeGraph {
    * * Terminate search if `announceVertex(graph, node)` returns `false`.
    * @param announceVertex function to apply at one node of each vertex.
    */
-  public announceVertexLoops(announceVertex: GraphNodeFunction): void {
+  public announceVertexLoops(announceVertex: GraphHalfEdgeFunction): void {
     this.clearMask(HalfEdgeMask.VISITED);
     for (const node of this.allHalfEdges) {
       if (node.getMask(HalfEdgeMask.VISITED))
@@ -1744,7 +1744,7 @@ export class HalfEdgeGraph {
    * * Terminate search if `announceFace(graph, node)` returns `false`.
    * @param announceFace function to apply at one node of each face.
    */
-  public announceFaceLoops(announceFace: GraphNodeFunction): void {
+  public announceFaceLoops(announceFace: GraphHalfEdgeFunction): void {
     this.clearMask(HalfEdgeMask.VISITED);
     for (const node of this.allHalfEdges) {
       if (node.getMask(HalfEdgeMask.VISITED))
@@ -1762,7 +1762,7 @@ export class HalfEdgeGraph {
    * * Terminate search if `announceEdge(graph, node)` returns `false`.
    * @param announceEdge function to apply at one node of each edge.
    */
-  public announceEdges(announceEdge: GraphNodeFunction): void {
+  public announceEdges(announceEdge: GraphHalfEdgeFunction): void {
     this.clearMask(HalfEdgeMask.VISITED);
     for (const node of this.allHalfEdges) {
       if (node.getMask(HalfEdgeMask.VISITED))
@@ -1781,7 +1781,7 @@ export class HalfEdgeGraph {
    * * Terminate search if `announceNode(graph, node)` returns `false`.
    * @param announceNode function to apply at each node.
    */
-  public announceNodes(announceNode: GraphNodeFunction): void {
+  public announceNodes(announceNode: GraphHalfEdgeFunction): void {
     for (const node of this.allHalfEdges) {
       if (!announceNode(this, node))
         break;
@@ -1802,7 +1802,7 @@ export class HalfEdgeGraph {
    * @param deleteThisNode returns true to delete the corresponding node. Should act symmetrically on the edgeMate.
    * @returns the number of nodes deleted (twice the number of deleted edges).
    */
-  public yankAndDeleteEdges(deleteThisNode: NodeFunction): number {
+  public yankAndDeleteEdges(deleteThisNode: HalfEdgeFunction): number {
     const numTotal = this.allHalfEdges.length;
     let numAccepted = 0;
     for (let i = 0; i < numTotal; i++) {

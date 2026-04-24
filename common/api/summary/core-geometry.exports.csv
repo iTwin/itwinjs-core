@@ -292,6 +292,7 @@ public;class;TriangleLocationDetail
 public;class;TriangularFacetLocationDetail
 internal;class;TriDiagonalSystem
 public;interface;TrigValues
+public;class;UniformStrokeCollector
 public;class;UnionOfConvexClipPlaneSets
 public;type;UnionOfConvexClipPlaneSetsProps
 public;class;UnionRegion

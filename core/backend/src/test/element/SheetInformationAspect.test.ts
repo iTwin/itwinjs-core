@@ -9,16 +9,17 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
 import { DocumentPartition, Sheet } from "../../Element";
 import { DocumentListModel, SheetModel } from "../../Model";
-import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
+import { EditTxnError, GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   const documentListName = "SheetList";
   let documentListModelId: string | undefined;
 
   // Attempt to find an existing document partition and document list model
-  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'`});
+  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'` });
   if (ids.size === 1) {
     documentListModelId = ids.values().next().value;
   }
@@ -29,7 +30,7 @@ async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
     await iModel.locks.acquireLocks({
       shared: subjectId,
     });
-    documentListModelId = DocumentListModel.insert(iModel, subjectId, documentListName);
+    documentListModelId = withEditTxn(iModel, (txn) => DocumentListModel.insert(txn, subjectId, documentListName));
   }
 
   return documentListModelId;
@@ -54,15 +55,14 @@ async function insertSheet(iModel: IModelDb): Promise<Id64String> {
     code: Sheet.createCode(iModel, modelId, sheetName),
     model: modelId,
   };
-  const sheetElementId = iModel.elements.insertElement(sheetElementProps);
-
-  const sheetModelProps: GeometricModel2dProps = {
-    classFullName: SheetModel.classFullName,
-    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
-  };
-  const sheetModelId = iModel.models.insertModel(sheetModelProps);
-
-  return sheetModelId;
+  return withEditTxn(iModel, (txn) => {
+    const sheetElementId = txn.insertElement(sheetElementProps);
+    const sheetModelProps: GeometricModel2dProps = {
+      classFullName: SheetModel.classFullName,
+      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+    };
+    return txn.insertModel(sheetModelProps);
+  });
 };
 
 describe("SheetInformationAspect", () => {
@@ -88,7 +88,7 @@ describe("SheetInformationAspect", () => {
     describe("setSheetInformation", () => {
       it("throws", () => {
         expect(
-          () => SheetInformationAspect.setSheetInformation({ designedBy: "me" }, sheetId, db)
+          () => withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformation(txn, { designedBy: "me" }, sheetId))
         ).to.throw("SheetInformationAspect requires BisCore v01.00.25 or newer");
       });
     });
@@ -113,7 +113,7 @@ describe("SheetInformationAspect", () => {
     }
 
     function setSheetInfo(elemId: string, info: SheetInformation | undefined): void {
-      SheetInformationAspect.setSheetInformation(info, elemId, db);
+      withEditTxn(db, (txn) => SheetInformationAspect.setSheetInformation(txn, info, elemId));
     }
 
     describe("getSheetInformation", () => {
@@ -199,6 +199,42 @@ describe("SheetInformationAspect", () => {
       it("throws if element is not a Sheet", () => {
         const info = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
         expect(() => setSheetInfo(IModel.rootSubjectId, info)).to.throw("SheetInformationAspect can only be applied to a Sheet element");
+      });
+
+      it("supports deprecated setSheetInformation overload when implicit writes are allowed", async () => {
+        const previousEnforcement = EditTxn.implicitWriteEnforcement;
+        EditTxn.implicitWriteEnforcement = "allow";
+
+        try {
+          const sheetId = await insertSheet(db);
+          const info = { designedBy: "legacy", checkedBy: "legacy-check", designedDate, drawnBy: "legacy-draw" };
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          SheetInformationAspect.setSheetInformation(info, sheetId, db);
+          expect(getSheetInfo(sheetId)).to.deep.equal(info);
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          SheetInformationAspect.setSheetInformation(undefined, sheetId, db);
+          expect(getSheetInfo(sheetId)).to.be.undefined;
+        } finally {
+          EditTxn.implicitWriteEnforcement = previousEnforcement;
+        }
+      });
+
+      it("rejects deprecated setSheetInformation overload when implicit writes are disallowed", async () => {
+        const previousEnforcement = EditTxn.implicitWriteEnforcement;
+        EditTxn.implicitWriteEnforcement = "throw";
+
+        try {
+          const sheetId = await insertSheet(db);
+          const info = { designedBy: "legacy", checkedBy: "legacy-check", designedDate, drawnBy: "legacy-draw" };
+
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          expect(() => SheetInformationAspect.setSheetInformation(info, sheetId, db)).to.throw().that.satisfies((error: unknown) =>
+            EditTxnError.isError(error, "implicit-txn-write-disallowed"));
+        } finally {
+          EditTxn.implicitWriteEnforcement = previousEnforcement;
+        }
       });
 
       it("creates SheetOwnsSheetInformationAspect relationships", async () => {

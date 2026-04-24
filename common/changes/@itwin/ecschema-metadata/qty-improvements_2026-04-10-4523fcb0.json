@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/ecschema-metadata"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}

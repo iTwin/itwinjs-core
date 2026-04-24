@@ -8,7 +8,7 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { IModel, IModelError, LockState } from "@itwin/core-common";
+import { IModel, IModelError, LockState, ServerBasedLocksError } from "@itwin/core-common";
 import { LockMap } from "../BackendHubAccess";
 import { BriefcaseDb } from "../IModelDb";
 import { LockControl } from "../LockControl";
@@ -39,20 +39,55 @@ export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
+  private _removeOnCommitListener: () => void;
+  private readonly _unsavedChangesTxnId = "0x7FFFFFFFFFFFFFFF"; // a placeholder txn id for locks acquired in the current unsaved Txn
 
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
     const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-locks`;
+
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch {
       this.lockDb.createDb(dbName);
-      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
-      this.lockDb.saveChanges();
     }
+
+    // Tracks the locks that are actively held.
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
+    // Tracks the locks that are required by each Txn. They may or may not currently be held.
+    this.lockDb.executeSQL(`
+      CREATE TABLE IF NOT EXISTS txn_locks(
+        txnId INTEGER NOT NULL,
+        elementId INTEGER NOT NULL,
+        state INTEGER NOT NULL,
+        origin INTEGER NOT NULL,
+        abandoned BOOLEAN NOT NULL,
+        PRIMARY KEY (txnId, elementId))`);
+    this.lockDb.saveChanges();
+
+    this._removeOnCommitListener = this.briefcase.txns.onCommit.addListener(() => {
+      const committedTxnId = this.briefcase.txns.queryPreviousTxnId(this.briefcase.txns.getCurrentTxnId())
+
+      // With this commit, any reversed txns with the committed txn's ID or greater are no longer reinstatable,
+      // so clear out the record of their locks. If the locks are still held, sorry, it's too late!
+      this.clearTxnLockRecords(committedTxnId);
+
+      // All of the "current" changes are now part of a real txn, so update the txn id accordingly.
+      this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET txnId=? WHERE txnId=?", (stmt) => {
+        stmt.bindId(1, committedTxnId);
+        stmt.bindId(2, this._unsavedChangesTxnId);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          ServerBasedLocksError.throwError("lock-database-problem", `can't update locks database with txn ID of unsaved changes txn upon saving (error code ${rc})`);
+      });
+
+      this.lockDb.saveChanges();
+    });
   }
 
   public [_close]() {
+    this._removeOnCommitListener();
+
     if (this.lockDb.isOpen)
       this.lockDb.closeDb();
   }
@@ -80,6 +115,7 @@ export class ServerBasedLocks implements LockControl {
    */
   private clearAllLocks() {
     this.lockDb.executeSQL("DELETE FROM locks");
+    this.lockDb.executeSQL("DELETE FROM txn_locks");
     this.lockDb.saveChanges();
   }
 
@@ -99,10 +135,30 @@ export class ServerBasedLocks implements LockControl {
 
   public async releaseAllLocks(): Promise<void> {
     if (this.briefcase.txns.hasLocalChanges) {
-      throw new Error("Locks cannot be released while the briefcase contains local changes");
+      ServerBasedLocksError.throwError("has-unsaved-changes", "Locks cannot be released while the briefcase contains local changes");
     }
 
     return this[_releaseAllLocks]();
+  }
+
+  public async abandonAllLocks(): Promise<void> {
+    if (this.briefcase.txns.hasLocalChanges) {
+      ServerBasedLocksError.throwError("has-unsaved-changes", "Locks cannot be abandoned while the briefcase contains local changes");
+    }
+
+    if (IModelHost[_hubAccess].abandonAllLocks === undefined) {
+      // If the IModelHub doesn't support an explicit abandon, call release with a blank changeset to indicate
+      // that locks should be released without updating the changeset associated with the locks.
+      await IModelHost[_hubAccess].releaseAllLocks({
+        iModelId: this.briefcase.iModelId,
+        briefcaseId: this.briefcase.briefcaseId,
+        changeset: { id: "", index: 0 }
+      });
+    } else {
+      await IModelHost[_hubAccess].abandonAllLocks(this.briefcase);
+    }
+
+    this.clearAllLocks();
   }
 
   private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
@@ -114,7 +170,31 @@ export class ServerBasedLocks implements LockControl {
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert lock into database");
     });
+
     return true;
+  }
+
+  private insertTxnLockRecord(id: Id64String, state: LockState, origin: LockOrigin): void {
+    // Locks are always acquired in the current txn, which isn't a real txn until it's committed.
+    // So use a placeholder txn id for now, and we'll update to the real txn id on commit.
+    // This is important to distinguish new locks acquired in the current txn from locks acquired in previous reversed txns, which will only
+    // be cleared (no longer reinstateable) on commit.
+    this.lockDb.withPreparedSqliteStatement(`
+      INSERT INTO txn_locks(txnId,elementId,state,origin,abandoned)
+      VALUES (?,?,?,?,FALSE)
+      ON CONFLICT(txnId,elementId)
+        DO UPDATE SET
+          state=excluded.state,
+          origin=excluded.origin,
+          abandoned=excluded.abandoned`, (stmt) => {
+      stmt.bindId(1, this._unsavedChangesTxnId);
+      stmt.bindId(2, id);
+      stmt.bindInteger(3, state);
+      stmt.bindInteger(4, origin);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        ServerBasedLocksError.throwError("lock-database-problem", `can't insert txn lock record into database (error code ${rc})`);
+    });
   }
 
   private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
@@ -178,8 +258,10 @@ export class ServerBasedLocks implements LockControl {
     }
 
     await IModelHost[_hubAccess].acquireLocks(this.briefcase, locks); // throws if unsuccessful
-    for (const lock of locks)
+    for (const lock of locks) {
       this.insertLock(lock[0], lock[1], LockOrigin.Acquired);
+      this.insertTxnLockRecord(lock[0], lock[1], LockOrigin.Acquired);
+    }
     this.lockDb.saveChanges();
   }
 
@@ -200,10 +282,255 @@ export class ServerBasedLocks implements LockControl {
     return this.acquireAllLocks(locks);
   }
 
+  private async abandonLocks(locks: LockMap): Promise<void> {
+    if (IModelHost[_hubAccess].abandonLocks === undefined) {
+      // If the IModelHub doesn't support an explicit abandon, call acquireLocks with a blank changeset to indicate
+      // that locks should be released without updating the changeset associated with the locks.
+      await IModelHost[_hubAccess].acquireLocks({
+        iModelId: this.briefcase.iModelId,
+        briefcaseId: this.briefcase.briefcaseId,
+        changeset: { id: "", index: 0 }
+      }, locks);
+    } else {
+      await IModelHost[_hubAccess].abandonLocks(this.briefcase, locks);
+    }
+  }
+
+  public async abandonLocksForCurrentUnsavedTxn(): Promise<boolean> {
+    return this.abandonLocksForReversedTxn(this._unsavedChangesTxnId);
+  }
+
+  public async abandonLocksForReversedTxn(txnId: Id64String): Promise<boolean> {
+    if (this.briefcase.txns.hasUnsavedChanges)
+      ServerBasedLocksError.throwError("has-unsaved-changes", `cannot abandon locks for txn ${txnId} because the current txn has unsaved changes`);
+
+    const txnProps = this.briefcase.txns.getTxnProps(txnId);
+    if (txnProps === undefined) {
+      // The current txn commonly won't exist on the TxnManager yet. It's often just a placeholder for not-yet-saved changes.
+      // (Sometimes it will exist and refer to a reversed Txn).
+      // The unsavedChangesTxnId won't exist on the TxnManager either, of course.
+      // But all other txn ids must be known to the TxnManager or it is an error.
+      if (txnId !== this.briefcase.txns.getCurrentTxnId() && txnId !== this._unsavedChangesTxnId)
+        ServerBasedLocksError.throwError("txn-id-not-found", `cannot abandon locks for txn ${txnId} because it does not exist`);
+    } else {
+      // If the txn id is known to the TxnManager, then we require that it has already been reversed.
+      if (!txnProps.reversed)
+        ServerBasedLocksError.throwError("txn-not-reversed", `cannot abandon locks for txn ${txnId} because it has not been reversed`);
+    }
+
+    let locksReleased = false;
+
+    // Abandon locks for unsaved (and now abandoned) changes.
+    if (txnId !== this._unsavedChangesTxnId) {
+      locksReleased = await this.abandonLocksForCurrentUnsavedTxn();
+    }
+
+    // At this point, we know:
+    // 1. There are no unsaved changes, and the associated locks have been abandoned.
+    // 2. The given txn ID has been reversed, which means any later txns are sure to have been reversed, too.
+
+    // So we simply have to find all non-abandoned locks associated with the given txn or later, abandon them (or restore
+    // them to their previous state), and mark them as abandoned in txn_locks.
+
+    // Find all locks associated with the given txnId or later.
+    // For each elementId, find the previous state of the lock before this Txn (if any), or None otherwise.
+    // This is the state that we will restore the element's lock to. The reason we do this is to account for
+    // lock upgrades. If an earlier Txn acquired a Shared lock on this element, and this Txn acquired an
+    // Exclusive lock, we should restore the Shared lock.
+    const allTxnLocks = new Map<Id64String, LockState>();
+    const locksToRelease = new Map<Id64String, LockState>();
+    this.lockDb.withPreparedSqliteStatement(
+      `
+        SELECT
+          current.elementId,
+          current.origin,
+          IFNULL(
+            (SELECT previous.state
+              FROM txn_locks previous
+              WHERE previous.elementId = current.elementId
+                AND previous.txnId < ?2
+                AND previous.abandoned=FALSE
+              ORDER BY previous.txnId DESC
+              LIMIT 1
+            ),
+            ?1
+          ) AS previousState
+        FROM txn_locks current
+        WHERE current.txnId>=?2
+          AND current.abandoned=FALSE
+        ORDER BY current.txnId DESC
+      `,
+      (stmt) => {
+        stmt.bindInteger(1, LockState.None);
+        stmt.bindId(2, txnId);
+
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const elementId = stmt.getValueId(0);
+          const origin = stmt.getValueInteger(1);
+          const previousState = stmt.getValueInteger(2);
+          allTxnLocks.set(elementId, previousState);
+          if (origin !== LockOrigin.NewElement)
+            locksToRelease.set(elementId, previousState);
+        }
+      });
+
+    // Release the locks on the server.
+    if (locksToRelease.size > 0)
+      await this.abandonLocks(locksToRelease);
+
+    // Mark the txn locks as abandoned.
+    if (txnId === this._unsavedChangesTxnId) {
+      // After abandoning locks held for the "unsaved" txn, we clear them completely because they are not reinstateable.
+      this.lockDb.withPreparedSqliteStatement("DELETE FROM txn_locks WHERE txnId=?", (stmt) => {
+        stmt.bindId(1, this._unsavedChangesTxnId);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          ServerBasedLocksError.throwError("lock-database-problem", `can't delete txn locks for unsaved changes in database (error code ${rc})`);
+      });
+    } else {
+      this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET abandoned=TRUE WHERE txnId>=?", (stmt) => {
+        stmt.bindId(1, txnId);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          ServerBasedLocksError.throwError("lock-database-problem", `can't mark txn locks as abandoned in database (error code ${rc})`);
+      });
+    }
+
+    // Restore each lock to its previous state (if any) in the local cache. Usually this means deleting it.
+    for (const [elementId, previousState] of allTxnLocks) {
+      if (previousState === LockState.None) {
+        this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE id=?", (stmt) => {
+          stmt.bindId(1, elementId);
+          const rc = stmt.step();
+          if (DbResult.BE_SQLITE_DONE !== rc)
+            ServerBasedLocksError.throwError("lock-database-problem", `can't delete lock from database (error code ${rc})`);
+        });
+      } else {
+        this.lockDb.withPreparedSqliteStatement("UPDATE locks SET state=? WHERE id=?", (stmt) => {
+          stmt.bindInteger(1, previousState);
+          stmt.bindId(2, elementId);
+          const rc = stmt.step();
+          if (DbResult.BE_SQLITE_DONE !== rc)
+            ServerBasedLocksError.throwError("lock-database-problem", `can't update lock in database (error code ${rc})`);
+        });
+      }
+    }
+
+    // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
+    // Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Clearing them all will have no impact on correctness and a minimal impact on performance.
+    this.clearDiscoveredLocks();
+
+    this.lockDb.saveChanges();
+
+    return locksReleased || allTxnLocks.size > 0;
+  }
+
+  private getAbandonedLocksForTxn(txnId: Id64String): {
+    newElementLocks: Map<Id64String, LockState>,
+    locksToAcquire: Map<Id64String, LockState>
+  } {
+    const newElementLocks = new Map<Id64String, LockState>();
+    const locksToAcquire = new Map<Id64String, LockState>();
+    this.lockDb.withPreparedSqliteStatement(
+      "SELECT elementId, state, origin FROM txn_locks WHERE txnId<=? AND abandoned=TRUE",
+      (stmt) => {
+        stmt.bindId(1, txnId);
+
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const elementId = stmt.getValueId(0);
+          const state = stmt.getValueInteger(1);
+          const origin = stmt.getValueInteger(2);
+          if (origin === LockOrigin.NewElement)
+            newElementLocks.set(elementId, state);
+          else
+            locksToAcquire.set(elementId, state);
+        }
+      });
+
+    return { newElementLocks, locksToAcquire };
+  }
+
+  public async acquireLocksForReinstatingTxn(txnId: Id64String): Promise<boolean> {
+    if (this.briefcase.txns.hasUnsavedChanges)
+      ServerBasedLocksError.throwError("has-unsaved-changes", `cannot acquire locks for reinstating txn ${txnId} because the current txn has unsaved changes`);
+
+    // If the Txn is known to the TxnManager, we can proceed. We don't need to check if it is currently
+    // reversed, because if it isn't, then abandonLocksForReversedTxn couldn't have been called, and so the
+    // locks are still held. Proceeding with this method will be a no-op, but it will be harmless.
+    // However, if the Txn Id is unknown, it may have been canceled or refer to the current Txn
+    // whose unsaved changes were just abandoned. Or it's just plain-old invalid. In any case, we can't
+    // re-acquire the associated locks.
+    const txnProps = this.briefcase.txns.getTxnProps(txnId);
+    if (txnProps === undefined) {
+      ServerBasedLocksError.throwError("txn-id-not-found", `cannot acquire locks for txn ${txnId} because it does not exist or has not been saved`);
+    }
+
+    // Find all locks associated with the given txnId.
+    const { newElementLocks, locksToAcquire } = this.getAbandonedLocksForTxn(txnId);
+
+    // Attempt to acquire the locks on the server. This may fail if the locks are no longer available!
+    if (locksToAcquire.size > 0)
+      await IModelHost[_hubAccess].acquireLocks(this.briefcase, locksToAcquire); // throws if unsuccessful
+
+    // Mark the txn locks as no longer abandoned.
+    this.lockDb.withPreparedSqliteStatement("UPDATE txn_locks SET abandoned=FALSE WHERE txnId<=?", (stmt) => {
+      stmt.bindId(1, txnId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        ServerBasedLocksError.throwError("lock-database-problem", `can't mark txn locks as no longer abandoned in database (error code ${rc})`);
+    });
+
+    // Insert the newly-acquired locks in the local cache. Note that we don't need to insert entries in the txn_locks table,
+    // because these locks are already associated with the Txn.
+    for (const [elementId, state] of locksToAcquire) {
+      this.insertLock(elementId, state, LockOrigin.Acquired);
+    }
+    for (const [elementId, state] of newElementLocks) {
+      this.insertLock(elementId, state, LockOrigin.NewElement);
+    }
+
+    // Ideally we'd only invalidate "Discovered" locks that are related to this Txn's Shared and
+    // Exclusive locks. But that is a lot of added complexity for little benefit.
+    // Clearing them all will have no impact on correctness and a minimal impact on performance.
+    this.clearDiscoveredLocks();
+
+    this.lockDb.saveChanges();
+
+    return locksToAcquire.size > 0 || newElementLocks.size > 0;
+  }
+
+  public holdsNecessaryLocksForReinstatingTxn(txnId: Id64String): boolean {
+    const locks = this.getAbandonedLocksForTxn(txnId);
+    return locks.locksToAcquire.size === 0 && locks.newElementLocks.size === 0;
+  }
+
+  public clearTxnLockRecords(txnId: Id64String) {
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM txn_locks WHERE txnId!=? AND txnId>=?", (stmt) => {
+      stmt.bindId(1, this._unsavedChangesTxnId);
+      stmt.bindId(2, txnId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        ServerBasedLocksError.throwError("lock-database-problem", `can't delete txn lock records from database (error code ${rc})`);
+    });
+
+    this.lockDb.saveChanges();
+  }
+
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
   public [_elementWasCreated](id: Id64String) {
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
+    this.insertTxnLockRecord(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();
+  }
+
+  private clearDiscoveredLocks() {
+    this.lockDb.withPreparedSqliteStatement("DELETE FROM locks WHERE origin=?", (stmt) => {
+      stmt.bindInteger(1, LockOrigin.Discovered);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        ServerBasedLocksError.throwError("lock-database-problem", `can't delete discovered locks from database (error code ${rc})`);
+    });
   }
 
   /** locks are not necessary during change propagation. */

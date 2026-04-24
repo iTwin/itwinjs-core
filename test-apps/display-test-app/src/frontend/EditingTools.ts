@@ -206,7 +206,7 @@ export class PlaceLineStringTool extends CreateElementWithDynamicsTool {
   protected override async doCreateElement(props: GeometricElementProps): Promise<void> {
     this._startedCmd = await this.startCommand();
     await basicManipulationIpc.insertGeometricElement(props);
-    return this.saveChanges();
+    return basicManipulationIpc.saveChanges(this.flyover);
   }
 
   protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {
@@ -269,7 +269,7 @@ export class MoveElementTool extends Tool {
     const elementIds = elementId ? [elementId] : Array.from(imodel.selectionSet.elements);
     if (imodel.isBriefcaseConnection()) {
       await transformElements(imodel, elementIds, Transform.createTranslationXYZ(x, y, z));
-      await imodel.saveChanges();
+      await basicManipulationIpc.saveChanges(MoveElementTool.toolId);
     }
 
     return true;

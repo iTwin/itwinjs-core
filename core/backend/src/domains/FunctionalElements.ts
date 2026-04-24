@@ -15,6 +15,8 @@ import { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";
+import { EditTxn } from "../EditTxn";
+import { _implicitTxn } from "../internal/Symbols";
 
 /** A FunctionalPartition element is a key part of the iModel information hierarchy and is always parented
  * to a Subject and broken down by a FunctionalModel.
@@ -38,22 +40,26 @@ export class FunctionalModel extends RoleModel {
     super(props, iModel);
   }
 
-  /** Insert a FunctionalPartition and a FunctionalModel that breaks it down.
-   * @param iModelDb Insert into this iModel
+  /** Insert a FunctionalPartition and a FunctionalModel that breaks it down using an explicit transaction.
+  * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The FunctionalPartition will be inserted as a child of this Subject element.
    * @param name The name of the FunctionalPartition that the new FunctionalModel will break down.
    * @returns The Id of the newly inserted FunctionalPartition and FunctionalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  /** @deprecated Use FunctionalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const partitionId = txn.insertElement({
       classFullName: FunctionalPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: FunctionalPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+      code: FunctionalPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });

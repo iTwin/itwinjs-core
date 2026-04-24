@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Fix content traverser (`createContentTraverser`) creating invalid fields hierarchy when array properties are nested under `NestedContentField`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

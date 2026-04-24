@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added a beta api to allow schema xml serialization to any ECSpecVersion.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

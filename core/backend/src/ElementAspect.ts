@@ -11,10 +11,11 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { assert, DbResult, Id64String } from "@itwin/core-bentley";
-import { _verifyChannel } from "./internal/Symbols";
+import { _implicitTxn, _verifyChannel } from "./internal/Symbols";
 import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
 import { Sheet } from "./Element";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { EditTxn } from "./EditTxn";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -137,7 +138,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
-    iModel.elements.insertAspect(props);
+    iModel[_implicitTxn].insertAspect(props);
   }
 }
 
@@ -149,7 +150,7 @@ const minimumBisCoreVersion = new ECVersion(1, 0, 25);
  */
 export class SheetInformationAspect extends ElementUniqueAspect {
   public static override get className() { return "SheetInformationAspect"; }
-  
+
   /** The sheet's metadata. */
   public sheetInformation: SheetInformation;
 
@@ -217,14 +218,39 @@ export class SheetInformationAspect extends ElementUniqueAspect {
    * If `information` is `undefined`, any existing aspect will be deleted.
    * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
    * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   * @deprecated Use SheetInformationAspect.setSheetInformation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
-  public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void {
-    iModel.requireMinimumSchemaVersion("BisCore", minimumBisCoreVersion, "SheetInformationAspect");
+  public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
 
-    const aspect = this.findForSheet(sheetId, iModel);
+  /** Sets the `information` for the [[Sheet]] element specified by `sheetId`, using an explicit EditTxn.
+   * If `information` is `undefined`, any existing aspect will be deleted.
+   * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   * @throws EditTxnError if the EditTxn is not active.
+   * @beta
+   */
+  public static setSheetInformation(txn: EditTxn, information: SheetInformation | undefined, sheetId: Id64String): void;
+  public static setSheetInformation(arg1: EditTxn | SheetInformation | undefined, arg2: SheetInformation | Id64String | undefined, arg3: Id64String | IModelDb): void {
+    let txn: EditTxn;
+    let information: SheetInformation | undefined;
+    let sheetId: Id64String;
+
+    if (arg1 instanceof EditTxn) {
+      txn = arg1;
+      information = arg2 as SheetInformation | undefined;
+      sheetId = arg3 as Id64String;
+    } else {
+      txn = (arg3 as IModelDb)[_implicitTxn];
+      information = arg1;
+      sheetId = arg2 as Id64String;
+    }
+
+    txn.iModel.requireMinimumSchemaVersion("BisCore", minimumBisCoreVersion, "SheetInformationAspect");
+
+    const aspect = this.findForSheet(sheetId, txn.iModel);
     if (!information) {
       if (aspect) {
-        iModel.elements.deleteAspect(aspect.id);
+        txn.deleteAspect(aspect.id);
       }
 
       return;
@@ -232,7 +258,7 @@ export class SheetInformationAspect extends ElementUniqueAspect {
 
     if (aspect) {
       aspect.sheetInformation = { ...information };
-      iModel.elements.updateAspect(aspect.toJSON());
+      txn.updateAspect(aspect.toJSON());
     } else {
       const info = { ...information } as any;
       for (const key of Object.keys(info)) {
@@ -254,7 +280,7 @@ export class SheetInformationAspect extends ElementUniqueAspect {
         ...info,
       };
 
-      iModel.elements.insertAspect(props);
+      txn.insertAspect(props);
     }
   }
 }

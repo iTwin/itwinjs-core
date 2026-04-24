@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix event listener leak in LayerTileTreeReferenceHandler",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, Mar
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
+  RenderTimelineProps, resolveNavPropId, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -1070,12 +1070,26 @@ export namespace ViewStore {
 
     private makeViewDefinitionProps(viewDefinition: ViewDefinitionProps) {
       const viewDef = cloneProps(viewDefinition); // don't modify input
-      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelectorId);
-      this.verifyRowId(tableName.displayStyles, viewDef.displayStyleId);
-      if ((viewDef as SpatialViewDefinitionProps).modelSelectorId)
-        this.verifyRowId(tableName.modelSelectors, (viewDef as SpatialViewDefinitionProps).modelSelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      this.verifyRowId(tableName.categorySelectors, resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId));
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      this.verifyRowId(tableName.displayStyles, resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId));
 
-      this.toGuidRowMember(viewDef, "baseModelId");
+      const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const effectiveModelSelectorId = resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId);
+      if (effectiveModelSelectorId) {
+        this.verifyRowId(tableName.modelSelectors, effectiveModelSelectorId);
+      }
+
+      const viewDef2d = (viewDef as ViewDefinition2dProps);
+      if (viewDef2d.baseModel) {
+        this.toGuidRowMember(viewDef2d.baseModel, "id");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        viewDef2d.baseModelId = viewDef2d.baseModel.id;  // keep deprecated field in sync
+      } else {
+        this.toGuidRowMember(viewDef, "baseModelId");
+      }
       this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
       const props = viewDef as Partial<ViewDefinitionProps>;
       delete props.id;
@@ -1095,6 +1109,7 @@ export namespace ViewStore {
       const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
 
       try {
+        const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
         return this.addViewRow({
           name,
           className: viewDef.classFullName,
@@ -1102,9 +1117,12 @@ export namespace ViewStore {
           groupId,
           isPrivate: args.isPrivate,
           json: JSON.stringify(viewDef),
-          modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
-          categorySel: toRowId(viewDef.categorySelectorId),
-          displayStyle: toRowId(viewDef.displayStyleId),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          modelSel: maybeRow(resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId)),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          categorySel: toRowId(resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId)),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          displayStyle: toRowId(resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId)),
         });
       } catch (e) {
         const err = e as SqliteStatement.DbError;
@@ -1117,12 +1135,15 @@ export namespace ViewStore {
     public async updateViewDefinition(args: { viewId: RowIdOrString, viewDefinition: ViewDefinitionProps }): Promise<void> {
       const maybeRow = (rowString: RowString) => rowString ? toRowId(rowString) : undefined;
       const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
-
+      const spatialViewDefinitionProps = (viewDef as SpatialViewDefinitionProps);
       this.withSqliteStatement(`UPDATE ${tableName.views} SET json=?,modelSel=?,categorySel=?,displayStyle=? WHERE Id=?`, (stmt) => {
         stmt.bindString(1, JSON.stringify(viewDef));
-        stmt.maybeBindInteger(2, maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId));
-        stmt.bindInteger(3, toRowId(viewDef.categorySelectorId));
-        stmt.bindInteger(4, toRowId(viewDef.displayStyleId));
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        stmt.maybeBindInteger(2, maybeRow(resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId)));
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        stmt.bindInteger(3, toRowId(resolveNavPropId(viewDef.categorySelector, viewDef.categorySelectorId)));
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        stmt.bindInteger(4, toRowId(resolveNavPropId(viewDef.displayStyle, viewDef.displayStyleId)));
         stmt.bindInteger(5, toRowId(args.viewId));
         stmt.stepForWrite();
       });
@@ -1135,7 +1156,14 @@ export namespace ViewStore {
         ViewStoreError.throwError("not-found", { message: "View not found" });
 
       const props = blankElementProps(JSON.parse(row.json), row.className, viewId, row.name) as ViewDefinitionProps;
-      this.fromGuidRowMember(props, "baseModelId");
+      const props2d = (props as ViewDefinition2dProps);
+      if (props2d.baseModel) {
+        this.fromGuidRowMember(props2d.baseModel, "id");
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        props2d.baseModelId = props2d.baseModel.id;  // keep deprecated field in sync
+      } else {
+        this.fromGuidRowMember(props, "baseModelId");
+      }
       this.fromGuidRowMember(props.jsonProperties?.viewDetails, "acs");
       return props;
     }
@@ -1309,27 +1337,42 @@ export namespace ViewStore {
 
     public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString> {
       const owner = args.owner;
-      if (ViewStoreRpc.isViewStoreId(args.viewDefinition.categorySelectorId)) {
-        this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const categorySelectorId = resolveNavPropId(args.viewDefinition.categorySelector, args.viewDefinition.categorySelectorId);
+      if (ViewStoreRpc.isViewStoreId(categorySelectorId)) {
+        this.verifyRowId(tableName.categorySelectors, categorySelectorId);
       } else {
         if (args.categorySelectorProps === undefined)
           ViewStoreError.throwError("not-found", { message: "Must supply categorySelector" });
-        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner });
+        args.viewDefinition.categorySelector = { id: await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner }) };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        args.viewDefinition.categorySelectorId = args.viewDefinition.categorySelector.id; // for backward compatibility
       }
+
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
-      if (ViewStoreRpc.isViewStoreId(spatialDef.modelSelectorId)) {
-        this.verifyRowId(tableName.modelSelectors, spatialDef.modelSelectorId);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const modelSelectorId = resolveNavPropId(spatialDef.modelSelector, spatialDef.modelSelectorId);
+      if (ViewStoreRpc.isViewStoreId(modelSelectorId)) {
+        this.verifyRowId(tableName.modelSelectors, modelSelectorId);
       } else if (args.modelSelectorProps) {
-        spatialDef.modelSelectorId = await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner });
+        spatialDef.modelSelector = { id: await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner }) };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        spatialDef.modelSelectorId = spatialDef.modelSelector.id; // for backward compatibility
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
         ViewStoreError.throwError("not-found", { message: "Must supply modelSelector for Spatial views" });
       }
-      if (ViewStoreRpc.isViewStoreId(spatialDef.displayStyleId)) {
-        this.verifyRowId(tableName.displayStyles, spatialDef.displayStyleId);
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const displayStyleId = resolveNavPropId(spatialDef.displayStyle, spatialDef.displayStyleId);
+      if (ViewStoreRpc.isViewStoreId(displayStyleId)) {
+        this.verifyRowId(tableName.displayStyles, displayStyleId);
       } else {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
           ViewStoreError.throwError("not-found", { message: "Must supply valid displayStyle" });
-        spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
+        spatialDef.displayStyle = { id: await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner }) };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        spatialDef.displayStyleId = spatialDef.displayStyle.id; // for backward compatibility
       }
       const viewId = this.addViewDefinition(args);
       if (args.tags)

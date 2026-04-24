@@ -11,8 +11,9 @@ import { LabelDefinition } from "../LabelDefinition.js";
 import { CategoryDescription } from "./Category.js";
 import { Content } from "./Content.js";
 import { Descriptor } from "./Descriptor.js";
-import { Field, NestedContentField } from "./Fields.js";
+import { ArrayPropertiesField, Field, NestedContentField, PropertiesField, StructPropertiesField } from "./Fields.js";
 import { Item } from "./Item.js";
+import { Property } from "./Property.js";
 import { PropertyValueFormat, TypeDescription } from "./TypeDescription.js";
 import {
   DisplayValue,
@@ -410,9 +411,12 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
   try {
     const rootToThisField = createFieldPath(fieldHierarchy.field);
     let parentFieldName: string | undefined;
-    const pathUpToField = rootToThisField.slice(undefined, -1);
+    const pathUpToField: NestedContentField[] = rootToThisField.slice(undefined, -1).map((f) => {
+      assert(f.isNestedContentField());
+      return f;
+    });
     for (let i = 0; i < pathUpToField.length; ++i) {
-      const parentField = pathUpToField[i] as NestedContentField;
+      const parentField = pathUpToField[i];
       const nextField = rootToThisField[i + 1];
 
       if (item.isFieldMerged(parentField.name)) {
@@ -434,6 +438,7 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
       return;
     }
 
+    let valuesAccessor = fieldHierarchy.field.name;
     if (fieldHierarchy.field.isNestedContentField()) {
       fieldHierarchy = convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy, parentFieldName);
       const { emptyNestedItem, convertedItem } = convertNestedContentFieldHierarchyItemToStructArrayItem(item, fieldHierarchy);
@@ -441,18 +446,11 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
         return;
       }
       item = convertedItem;
+      valuesAccessor = fieldHierarchy.field.name;
     } else if (pathUpToField.length > 0) {
       fieldHierarchy = {
         ...fieldHierarchy,
-        field: (function () {
-          const clone = fieldHierarchy.field.clone();
-          clone.type = {
-            valueFormat: PropertyValueFormat.Array,
-            typeName: `${fieldHierarchy.field.type.typeName}[]`,
-            memberType: fieldHierarchy.field.type,
-          };
-          return clone;
-        })(),
+        field: new NestedContentArrayPropertiesField(fieldHierarchy.field, pathUpToField[pathUpToField.length - 1]),
       };
     }
 
@@ -462,8 +460,8 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
       item.mergedFieldNames,
       fieldHierarchy.field.type,
       parentFieldName,
-      item.values[fieldHierarchy.field.name],
-      item.displayValues[fieldHierarchy.field.name],
+      item.values[valuesAccessor],
+      item.displayValues[valuesAccessor],
     );
   } finally {
     visitor.finishField();
@@ -744,7 +742,13 @@ export const FIELD_NAMES_SEPARATOR = "$";
  * @public
  */
 export function combineFieldNames(fieldName: string, parentFieldName?: string) {
-  return parentFieldName ? `${parentFieldName}${FIELD_NAMES_SEPARATOR}${fieldName}` : fieldName;
+  if (parentFieldName) {
+    if (fieldName) {
+      return `${parentFieldName}${FIELD_NAMES_SEPARATOR}${fieldName}`;
+    }
+    return parentFieldName;
+  }
+  return fieldName;
 }
 /**
  * Parses given combined field names string, constructed using [[combineFieldNames]], into a list of individual field names.
@@ -875,4 +879,51 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
     mergedFieldNames: converted.mergedFieldNames,
   });
   return { emptyNestedItem: false, convertedItem };
+}
+
+/**
+ * A synthetic field that extends `NestedContentField` and adds `ArrayPropertiesField` /
+ * `PropertiesField` surface so that consumers who narrow via `isNestedContentField()`,
+ * `isPropertiesField()`, and `isArrayPropertiesField()` get a genuine object.
+ *
+ * It's needed to properly propagate properties of nested content fields when they're converted
+ * into struct/array fields, so that consumers can use those properties when processing values.
+ */
+class NestedContentArrayPropertiesField extends NestedContentField {
+  public readonly properties: Property[];
+  public readonly itemsField: Field;
+
+  public constructor(sourceItemsField: Field, parentNestedField: NestedContentField) {
+    super({
+      ...parentNestedField,
+      ...sourceItemsField,
+      name: "",
+      type: {
+        valueFormat: PropertyValueFormat.Array,
+        typeName: `${sourceItemsField.type.typeName}[]`,
+        memberType: sourceItemsField.type,
+      },
+    });
+    this.properties = sourceItemsField.isPropertiesField() ? sourceItemsField.properties : [];
+    this.itemsField = sourceItemsField.clone();
+    this.itemsField.resetParentship();
+  }
+
+  public override isPropertiesField(): this is PropertiesField {
+    return true;
+  }
+
+  public isArrayPropertiesField(): this is ArrayPropertiesField {
+    return true;
+  }
+
+  public isStructPropertiesField(): this is StructPropertiesField {
+    return false;
+  }
+
+  public override clone() {
+    const clone = new NestedContentArrayPropertiesField(this.itemsField.clone(), this);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
 }
