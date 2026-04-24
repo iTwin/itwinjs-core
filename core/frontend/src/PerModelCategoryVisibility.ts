@@ -81,12 +81,7 @@ export namespace PerModelCategoryVisibility {
 type Writeable<T extends object> = { -readonly [P in keyof T]: T[P] };
 type WriteableOverrideEntry = Writeable<PerModelCategoryVisibility.OverrideEntry>;
 
-interface CategoryEntry {
-  visible: boolean;
-  referenceInSet: WriteableOverrideEntry;
-}
-
-type ModelEntry = Map<Id64String, CategoryEntry>;
+type ModelEntry = Map<Id64String, WriteableOverrideEntry>;
 
 /**
  * The Viewport-specific implementation of PerModelCategoryVisibility.Overrides.
@@ -116,7 +111,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       return PerModelCategoryVisibility.Override.None;
   }
 
-  private getModelEntry(modelId: Id64String, override: PerModelCategoryVisibility.Override): { modelEntry: ModelEntry | undefined; hasChanged: boolean } {
+  private getModelEntry({ modelId, override }: { modelId: Id64String; override: PerModelCategoryVisibility.Override }): { modelEntry: ModelEntry | undefined; hasChanged: boolean } {
     let modelEntry = this._map.get(modelId);
     if (modelEntry) {
       return { modelEntry, hasChanged: false };
@@ -124,45 +119,44 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
     if (override === PerModelCategoryVisibility.Override.None) {
       return { modelEntry: undefined, hasChanged: false };
     }
-    modelEntry = new Map<Id64String, CategoryEntry>();
+    modelEntry = new Map<Id64String, WriteableOverrideEntry>();
     this._map.set(modelId, modelEntry);
     return { modelEntry, hasChanged: true };
   }
 
-  private addOrRemoveCategoryEntry(modelEntry: ModelEntry, categoryId: Id64String, modelId: Id64String, override: PerModelCategoryVisibility.Override): boolean {
-    const categoryEntry = modelEntry.get(categoryId);
+  private addOrRemoveOverrideEntry({ modelEntry, categoryId, modelId, override }: { modelEntry: ModelEntry; categoryId: Id64String; modelId: Id64String; override: PerModelCategoryVisibility.Override }): boolean {
+    const overrideEntry = modelEntry.get(categoryId);
     if (override === PerModelCategoryVisibility.Override.None) {
-      if (categoryEntry === undefined) {
+      if (overrideEntry === undefined) {
         return false;
       }
 
-      this._set.delete(categoryEntry.referenceInSet);
+      this._set.delete(overrideEntry);
       modelEntry.delete(categoryId);
       return true;
     }
     const visible = override === PerModelCategoryVisibility.Override.Show;
-    if (categoryEntry === undefined) {
+    if (overrideEntry === undefined) {
       const ovr: WriteableOverrideEntry = { modelId, categoryId, visible };
-      modelEntry.set(categoryId, { visible, referenceInSet: ovr });
+      modelEntry.set(categoryId, ovr);
       this._set.add(ovr);
       return true;
     }
-    if (categoryEntry.visible !== visible) {
-      categoryEntry.visible = visible;
-      categoryEntry.referenceInSet.visible = visible;
+    if (overrideEntry.visible !== visible) {
+      overrideEntry.visible = visible;
       return true;
     }
     return false;
   }
 
   private applyOverride(modelId: Id64String, categoryIds: Iterable<Id64String>, override: PerModelCategoryVisibility.Override, catIdsToLoad?: string[]): boolean {
-    const { modelEntry, hasChanged } = this.getModelEntry(modelId, override);
+    const { modelEntry, hasChanged } = this.getModelEntry({ modelId, override });
     let changed = hasChanged;
     if (!modelEntry)
       return changed;
 
     for (const categoryId of categoryIds) {
-      if (this.addOrRemoveCategoryEntry(modelEntry, categoryId, modelId, override)) {
+      if (this.addOrRemoveOverrideEntry({ modelEntry, categoryId, modelId, override })) {
         changed = true;
         if (catIdsToLoad && override !== PerModelCategoryVisibility.Override.None)
           catIdsToLoad.push(categoryId);
@@ -233,8 +227,8 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       if (!modelEntry) {
         continue;
       }
-      for (const { referenceInSet } of modelEntry.values()) {
-        this._set.delete(referenceInSet);
+      for (const overrideEntry of modelEntry.values()) {
+        this._set.delete(overrideEntry);
       }
       this._vp.setViewedCategoriesPerModelChanged();
       this._map.delete(modelId);
