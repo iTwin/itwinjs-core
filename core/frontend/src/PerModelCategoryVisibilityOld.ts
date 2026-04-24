@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/core-bentley";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
@@ -78,80 +78,47 @@ export namespace PerModelCategoryVisibility {
     return new PerModelCategoryVisibilityOverrides(viewport);
   }
 }
-type Writeable<T extends object> = { -readonly [P in keyof T]: T[P] };
-type WriteableOverrideEntry = Writeable<PerModelCategoryVisibility.OverrideEntry>;
 
-interface CategoryEntry {
-  visible: boolean;
-  referenceInSet: WriteableOverrideEntry;
+class PerModelCategoryVisibilityOverride {
+  public modelId: Id64String;
+  public categoryId: Id64String;
+  public visible: boolean;
+
+  public constructor(modelId: Id64String, categoryId: Id64String, visible: boolean) {
+    this.modelId = modelId;
+    this.categoryId = categoryId;
+    this.visible = visible;
+  }
+
+  public reset(modelId: Id64String, categoryId: Id64String, visible: boolean): void {
+    this.modelId = modelId;
+    this.categoryId = categoryId;
+    this.visible = visible;
+  }
 }
 
-type ModelEntry = Map<Id64String, CategoryEntry>;
+function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: PerModelCategoryVisibilityOverride): number {
+  const cmp = compareStrings(lhs.modelId, rhs.modelId);
+  return 0 === cmp ? compareStrings(lhs.categoryId, rhs.categoryId) : cmp;
+}
 
-/**
- * The Viewport-specific implementation of PerModelCategoryVisibility.Overrides.
- *
- * This class extends `Set`  type, so it has [Symbol.iterator] by default.
- */
-class PerModelCategoryVisibilityOverrides extends Set<PerModelCategoryVisibility.OverrideEntry> implements PerModelCategoryVisibility.Overrides {
-  private readonly _map = new Map<Id64String, ModelEntry>();
-  /**
-   * Create a reference to the set itself, so when it is clear when it is accessed.
-   * Instead of this.add() and this.delete() we will use this._set.add() and this._set.delete() to make it clear that the set is being modified.
-   */
-  private readonly _set: Set<WriteableOverrideEntry>;
+/** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides. */
+class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
+  private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0", false);
   private readonly _vp: Viewport;
 
   public constructor(vp: Viewport) {
-    super();
-    this._set = this;
+    super(compareCategoryOverrides);
     this._vp = vp;
   }
 
   public getOverride(modelId: Id64String, categoryId: Id64String): PerModelCategoryVisibility.Override {
-    const ovr = this._map.get(modelId)?.get(categoryId);
+    this._scratch.reset(modelId, categoryId, false);
+    const ovr = this.findEqual(this._scratch);
     if (undefined !== ovr)
       return ovr.visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
     else
       return PerModelCategoryVisibility.Override.None;
-  }
-
-  private getModelEntry(modelId: Id64String, isNoneOverride: boolean): { modelEntry: ModelEntry | undefined; hasChanged: boolean } {
-    let modelEntry = this._map.get(modelId);
-    if (modelEntry) {
-      return { modelEntry, hasChanged: false };
-    }
-    if (isNoneOverride) {
-      return { modelEntry: undefined, hasChanged: false };
-    }
-    modelEntry = new Map<Id64String, CategoryEntry>();
-    this._map.set(modelId, modelEntry);
-    return { modelEntry, hasChanged: true };
-  }
-
-  private addOrRemoveCategoryEntry(modelEntry: ModelEntry, categoryId: Id64String, modelId: Id64String, isNoneOverride: boolean, isVisibleOverride: boolean): boolean {
-    const categoryEntry = modelEntry.get(categoryId);
-    if (isNoneOverride) {
-      if (categoryEntry === undefined) {
-        return false;
-      }
-
-      this._set.delete(categoryEntry.referenceInSet);
-      modelEntry.delete(categoryId);
-      return true;
-    }
-    if (categoryEntry === undefined) {
-      const ovr: WriteableOverrideEntry = { modelId, categoryId, visible: isVisibleOverride };
-      modelEntry.set(categoryId, { visible: isVisibleOverride, referenceInSet: ovr });
-      this._set.add(ovr);
-      return true;
-    }
-    if (categoryEntry.visible !== isVisibleOverride) {
-      categoryEntry.visible = isVisibleOverride;
-      categoryEntry.referenceInSet.visible = isVisibleOverride;
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -172,17 +139,11 @@ class PerModelCategoryVisibilityOverrides extends Set<PerModelCategoryVisibility
       // The caller may pass a single categoryId as a string, if we don't convert this to an array we will iterate
       // over each individual character of that string, which is not the desired behavior.
       const categoryIds = typeof override.categoryIds === "string" ? [override.categoryIds] : override.categoryIds;
-      const isNone = override.visOverride === PerModelCategoryVisibility.Override.None;
-      const isVisible = override.visOverride === PerModelCategoryVisibility.Override.Show;
-      const { modelEntry, hasChanged } = this.getModelEntry(modelId, isNone) ?? {};
-      anyChanged ||= hasChanged;
-      if (!modelEntry) {
-        continue;
-      }
+      const visOverride = override.visOverride;
       for (const categoryId of categoryIds) {
-        if (this.addOrRemoveCategoryEntry(modelEntry, categoryId, modelId, isNone, isVisible)) {
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
           anyChanged = true;
-          if (!isNone) {
+          if (PerModelCategoryVisibility.Override.None !== visOverride) {
             catIdsToLoad.push(categoryId);
           }
         }
@@ -197,28 +158,43 @@ class PerModelCategoryVisibilityOverrides extends Set<PerModelCategoryVisibility
     return;
   }
 
+  /** Find and update the override in the array of overrides. If override not found, adds it to the array.
+   *  If the array was changed, returns true. */
+  private findAndUpdateOverrideInArray(modelId: Id64String, categoryId: Id64String, override: PerModelCategoryVisibility.Override): boolean {
+    const ovr = this._scratch;
+    ovr.reset(modelId, categoryId, false);
+    let changed = false;
+    const index = this.indexOf(ovr);
+    if (-1 === index) {
+      if (PerModelCategoryVisibility.Override.None !== override) {
+        this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
+        changed = true;
+      }
+    } else {
+      if (PerModelCategoryVisibility.Override.None === override) {
+        this._array.splice(index, 1);
+        changed = true;
+      } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
+        this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+        changed = true;
+      }
+    }
+    return changed;
+  }
 
   public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
     let changed = false;
-    const isNone = override === PerModelCategoryVisibility.Override.None;
-    const isVisible = override === PerModelCategoryVisibility.Override.Show;
     for (const modelId of Id64.iterable(modelIds)) {
-      const { modelEntry, hasChanged } = this.getModelEntry(modelId, isNone);
-      changed ||= hasChanged;
-      if (!modelEntry) {
-        continue;
-      }
       for (const categoryId of Id64.iterable(categoryIds)) {
-        if (this.addOrRemoveCategoryEntry(modelEntry, categoryId, modelId, isNone, isVisible)) {
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, override))
           changed = true;
-        }
       }
     }
 
     if (changed) {
       this._vp.setViewedCategoriesPerModelChanged();
 
-      if (!isNone) {
+      if (PerModelCategoryVisibility.Override.None !== override) {
         // Ensure subcategories loaded.
         this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
       }
@@ -227,29 +203,35 @@ class PerModelCategoryVisibilityOverrides extends Set<PerModelCategoryVisibility
 
   public clearOverrides(modelIds?: Id64Arg): void {
     if (undefined === modelIds) {
-      if (this._map.size > 0) {
-        this._map.clear();
-        this._set.clear();
+      if (0 < this.length) {
+        this.clear();
         this._vp.setViewedCategoriesPerModelChanged();
       }
+
       return;
     }
 
-    for (const modelId of Id64.iterable(modelIds)) {
-      for (const entry of this) {
-        if (entry.modelId === modelId) {
-          this._set.delete(entry);
+    for (let i = 0; i < this.length;) {
+      const ovr = this._array[i];
+      let removed = false;
+      for (const modelId of Id64.iterable(modelIds)) {
+        if (modelId === ovr.modelId) {
+          this._array.splice(i, 1);
           this._vp.setViewedCategoriesPerModelChanged();
+          removed = true;
+          break;
         }
       }
-      this._map.delete(modelId)
+
+      if (!removed)
+        ++i;
     }
   }
 
   public addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
     const cache = this._vp.iModel.subcategories;
 
-    for (const ovr of this._set) {
+    for (const ovr of this._array) {
       const subcats = cache.getSubCategories(ovr.categoryId);
       if (undefined === subcats)
         continue;
