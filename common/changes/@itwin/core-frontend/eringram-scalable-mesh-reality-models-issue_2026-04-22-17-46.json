@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add new ViewState.getRealityModelTreeRefs method",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
