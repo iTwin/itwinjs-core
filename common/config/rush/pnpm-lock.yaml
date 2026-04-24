@@ -121,8 +121,8 @@ importers:
         specifier: ^7.0.0
         version: 7.2.0
       '@xmldom/xmldom':
-        specifier: ~0.8.12
-        version: 0.8.12
+        specifier: ~0.8.13
+        version: 0.8.13
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -308,8 +308,8 @@ importers:
         specifier: ^17.0.2
         version: 17.0.2
       '@xmldom/xmldom':
-        specifier: ~0.8.12
-        version: 0.8.12
+        specifier: ~0.8.13
+        version: 0.8.13
       benchmark:
         specifier: ^2.1.4
         version: 2.1.4
@@ -344,8 +344,8 @@ importers:
   ../../core/ecschema-locaters:
     dependencies:
       '@xmldom/xmldom':
-        specifier: ~0.8.12
-        version: 0.8.12
+        specifier: ~0.8.13
+        version: 0.8.13
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -501,8 +501,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       '@xmldom/xmldom':
-        specifier: ~0.8.12
-        version: 0.8.12
+        specifier: ~0.8.13
+        version: 0.8.13
       benchmark:
         specifier: ^2.1.4
         version: 2.1.4
@@ -1821,8 +1821,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@xmldom/xmldom':
-        specifier: ~0.8.12
-        version: 0.8.12
+        specifier: ~0.8.13
+        version: 0.8.13
       azurite:
         specifier: ^3.35.0
         version: 3.35.0(@azure/core-client@1.10.1)(@types/node@20.17.0)
@@ -4280,8 +4280,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
       '@xmldom/xmldom':
-        specifier: ~0.8.12
-        version: 0.8.12
+        specifier: ~0.8.13
+        version: 0.8.13
       chai-string:
         specifier: ^1.5.0
         version: 1.5.0(chai@4.3.10)
@@ -6302,8 +6302,8 @@ packages:
       webpack-dev-server:
         optional: true
 
-  '@xmldom/xmldom@0.8.12':
-    resolution: {integrity: sha512-9k/gHF6n/pAi/9tqr3m3aqkuiNosYTurLLUtc7xQ9sxB/wm7WPygCv8GYa6mS0fLJEHhqMC1ATYhz++U/lRHqg==}
+  '@xmldom/xmldom@0.8.13':
+    resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
     engines: {node: '>=10.0.0'}
 
   '@xtuc/ieee754@1.2.0':
@@ -13062,7 +13062,7 @@ snapshots:
       webpack: 5.97.1(webpack-cli@5.0.1)
       webpack-cli: 5.0.1(webpack@5.97.1)
 
-  '@xmldom/xmldom@0.8.12': {}
+  '@xmldom/xmldom@0.8.13': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
