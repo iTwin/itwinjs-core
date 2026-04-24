@@ -871,7 +871,7 @@ describe("iModel", () => {
 
     const spatialViewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition") as SpatialViewDefinitionProps[]; // limit query to SpatialViewDefinitions
     assert.isAtLeast(spatialViewDefinitionProps.length, 3);
-    assert.exists(spatialViewDefinitionProps[2].modelSelectorId);
+    assert.exists(spatialViewDefinitionProps[2].modelSelector?.id);
   });
 
   it("should iterate ViewDefinitions", () => {
