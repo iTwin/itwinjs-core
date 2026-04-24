@@ -31,6 +31,7 @@ import { StashManager, StashProps } from "./StashManager";
 import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
 import { ECSqlRow } from "./Entity";
 import { SqliteChangesetReader } from "./SqliteChangesetReader";
+import { TxnIdString } from "./TxnManager";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -646,11 +647,8 @@ export class BriefcaseManager {
 
     if (!reverse) {
       if (briefcaseDb) {
-        if (useSemanticRebase) {
-          this.capturePatchInstances(briefcaseDb);
-        }
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
-        const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+        const reversedTxns = useSemanticRebase ? this.capturePatchInstances(briefcaseDb) : nativeDb.pullMergeReverseLocalChanges();
         if (useSemanticRebase) {
           nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
         }
@@ -893,20 +891,21 @@ export class BriefcaseManager {
   private static readonly DATA_FILE_NAME = "data.json";
 
   /**
-   * Captures the changed instances as patch instances from each data txn in the briefcase db for semantic rebase
-   * @param db The {@link BriefcaseDb} instance for which to capture the changed instances as patch instances for all data txns
+   * CapturePatch instances and reverse local changes on the go.
+   * @param txnId The txn id for which to capture the patch instances
+   * @param txnType The type of the txn for which to capture the patch instances
    * @internal
    */
-  private static capturePatchInstances(db: BriefcaseDb): void {
-    const txns = Array.from(db.txns.queryTxns());
-    txns.forEach((txn) => {
-      if (txn.type !== "Data") return;
+  private static capturePatchInstances(db: BriefcaseDb): TxnIdString[] {
+    const nativedb = db[_nativeDb];
+    return nativedb.pullMergeReverseLocalChanges((txnId: TxnIdString, txnType: string) => {
+      if (txnType !== "Data") return;
       // already captured(This actually shows that first rebase operation is already done but during that while reinstating this txns,
       // some error happened so the folder still exists so we don't want to capture again)
-      if (this.semanticRebaseDataFolderExists(db, txn.id)) return;
-      const changedInstances = this.captureChangedInstancesAsJSON(db, txn.id);
+      if (this.semanticRebaseDataFolderExists(db, txnId)) return;
+      const changedInstances = this.captureChangedInstancesAsJSON(db, txnId);
       const instancePatches = this.constructPatchInstances(db, changedInstances);
-      this.storeChangedInstancesForSemanticRebase(db, txn.id, instancePatches);
+      this.storeChangedInstancesForSemanticRebase(db, txnId, instancePatches);
     });
   }
 
