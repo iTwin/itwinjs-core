@@ -256,7 +256,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-  /** Default maximum uncompressed GeometryStream size (50 MB) for the `dgn_geom_stream` virtual table.
+  /** Default maximum uncompressed GeometryStream size (50 MB) for the `imodel_geom_stream` virtual table.
    * @beta
    */
   public static defaultMaxGeomStreamVTabBytes = 50 * 1024 * 1024;

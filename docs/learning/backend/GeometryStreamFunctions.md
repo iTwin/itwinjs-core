@@ -70,7 +70,7 @@ function inspectGeometryStream(iModel: IModelDb, elementId: string) {
     ecsql,
     (reader: ECSqlSyncReader) => {
       for (const row of reader) {
-        console.log(`[${row[0]}] opCode=${row[1]} isGeometry=${row[4]}`);
+        console.log(`[${row.entryIndex}] opCode=${row.opCode} isGeometry=${row.isGeometry}`);
       }
     },
     new QueryBinder().bindId(1, elementId),
