@@ -48,6 +48,7 @@ These packages provide the following functions to support backend operations:
   - [Executing ECSQL statements](./ExecutingECSQL.md)
   - [Code Examples](./ECSQLCodeExamples.md)
   - [Frequently used ECSQL queries](./ECSQL-queries.md)
+  - [Geometry Stream ECSQL Functions](./GeometryStreamFunctions.md)
 
 - Dealing with Codes
   - [Reserve Codes](./ReserveCodes.md)
