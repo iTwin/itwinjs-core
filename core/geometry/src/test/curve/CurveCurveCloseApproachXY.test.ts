@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { compareSimpleArrays, Dictionary } from "@itwin/core-bentley";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves } from "../../curve/CurveCollection";
@@ -240,7 +240,7 @@ function captureCloseApproaches(
     for (const ap of approaches) {
       const start = ap.detailA.point;
       const end = ap.detailB.point;
-      if (start.isAlmostEqual(end)) // intersection between geometries
+      if (start.isAlmostEqualXY(end)) // intersection between geometries
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start, 5, dx, dy, dz);
       else { // close approach between geometries
         const approachSegment = LineSegment3d.create(start, end);
@@ -250,17 +250,13 @@ function captureCloseApproaches(
   }
 }
 
-function visualizeAndTestSpiralCloseApproaches(
+function visualizeAndTestSpiralOrBsplineCloseApproaches(
   ck: Checker, allGeometry: GeometryQuery[], testIndex: number,
   curve0: AnyCurve, curve1: AnyCurve, maxDistance: number,
   numExpected: number, dx: number, dy: number,
 ) {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve0, dx, dy);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1, dx, dy);
-  if (curve0 instanceof TransitionSpiral3d)
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve0.activeStrokes, dx, dy);
-  if (curve1 instanceof TransitionSpiral3d)
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1.activeStrokes, dx, dy);
 
   const testSpiralIntersection = (intersections: CurveLocationDetailPair[], lift: boolean = false): void => {
     captureCloseApproaches(allGeometry, intersections, dx, dy, lift ? 20 : 0);
@@ -273,18 +269,19 @@ function visualizeAndTestSpiralCloseApproaches(
     );
   };
 
+  // test both paths
   const closeApproachesAB = CurveCurve.closeApproachProjectedXYPairs(curve0, curve1, maxDistance);
   testSpiralIntersection(closeApproachesAB);
   const closeApproachesBA = CurveCurve.closeApproachProjectedXYPairs(curve1, curve0, maxDistance);
   testSpiralIntersection(closeApproachesBA, true);
 
-  if (ck.testExactNumber(closeApproachesAB.length, closeApproachesBA.length, "close approach count should be the same regardless of order")) {
+  if (ck.testExactNumber(closeApproachesAB.length, closeApproachesBA.length, `test #${testIndex}: close approach count should be the same regardless of order`)) {
     closeApproachesAB.sort(CurveLocationDetailPair.comparePairsByPoints(undefined, true));
     closeApproachesBA.forEach((pair) => pair.swapDetails());
     closeApproachesBA.sort(CurveLocationDetailPair.comparePairsByPoints(undefined, true));
     for (let i = 0; i < closeApproachesAB.length; i++) {
-      ck.testPoint3d(closeApproachesAB[i].detailA.point, closeApproachesBA[i].detailA.point, "detailA points are the same");
-      ck.testPoint3d(closeApproachesAB[i].detailB.point, closeApproachesBA[i].detailB.point, "detailB points are the same");
+      ck.testPoint3d(closeApproachesAB[i].detailA.point, closeApproachesBA[i].detailA.point, "detailA points should be the same");
+      ck.testPoint3d(closeApproachesAB[i].detailB.point, closeApproachesBA[i].detailB.point, "detailB points should be the same");
     }
   }
 }
@@ -1611,7 +1608,7 @@ describe("CurveCurveCloseApproachXY", () => {
       "WesternAustralian",
       "HalfCosine",
       "AustralianRailCorp",
-      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // TODO: enable below lines after issue 1693 is resolved
       // "Czech",
       // "Italian",
       // "MXCubicAlongArc",
@@ -1653,6 +1650,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ],
       3,
     )!;
+
     // curve collection (path-loop), curve chain, and bag of curves
     const lineString1 = LineString3d.create(Point3d.create(50, -30.95), Point3d.create(50, 10), Point3d.create(37.58770483, 6.31919427));
     const arc2 = Arc3d.create(
@@ -1742,7 +1740,7 @@ describe("CurveCurveCloseApproachXY", () => {
         for (let j = 0; j < curves.length; j++) {
           const numExpected = data.get([i, j]);
           if (ck.testDefined(numExpected, "found data for spiral-curve pair"))
-            visualizeAndTestSpiralCloseApproaches(ck, allGeometry, testIndex++, spirals[i], curves[j], maxDistance, numExpected, dx, dy);
+            visualizeAndTestSpiralOrBsplineCloseApproaches(ck, allGeometry, testIndex++, spirals[i], curves[j], maxDistance, numExpected, dx, dy);
           dy += 200;
         }
         dy = 0;
@@ -1755,26 +1753,38 @@ describe("CurveCurveCloseApproachXY", () => {
 
     dx = 0;
     dy = 7000;
+    const numExpectedCloseApproaches = 13;
     for (const pair of [[curveChain0, curveChain1], [path0, path1], [curveChain0, path1], [curveChain1, path0]]) {
-      visualizeAndTestSpiralCloseApproaches(ck, allGeometry, testIndex++, pair[0], pair[1], maxDistance, 13, dx, dy);
-      dy += 200;
+      visualizeAndTestSpiralOrBsplineCloseApproaches(ck, allGeometry, testIndex++, pair[0], pair[1], maxDistance, numExpectedCloseApproaches, dx, dy);
+      dx += 300;
     }
 
     // make sure closest approach can find spiral tangency intersections
-    const testTangencyAtSpiralInterior = (spiral: TransitionSpiral3d) => {
+    const testTangencyAtSpiralInterior = (spiral: TransitionSpiral3d, dx0: number, dy0: number) => {
       const ray = spiral.fractionToPointAndDerivative(0.55); // stroked spiral has a vertex at 0.5, so move slightly off to make Newton work harder
       const seg = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
       const tangency = CurveCurve.closestApproachProjectedXYPair(spiral, seg);
       if (ck.testDefined(tangency, `found closest points between the ${spiral.spiralType} spiral and the line`)) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, dx0, dy0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0, dy0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangency.detailA.point, 5, dx0, dy0);
         ck.testSmallRelative(tangency.detailA.a, `${spiral.spiralType} closest point is an intersection`);
         // spiral math is not exact, so we expect more slop than usual
         ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `${spiral.spiralType} closest point is at the tangency`);
       }
     };
-    for (const spiral of integratedSpirals)
-      testTangencyAtSpiralInterior(spiral);
-    for (const spiral of directSpirals)
-      testTangencyAtSpiralInterior(spiral);
+    dx = 0;
+    dy = 7500;
+    for (const spiral of integratedSpirals) {
+      testTangencyAtSpiralInterior(spiral, dx, dy);
+      dx += 200;
+    }
+    dx = 0;
+    dy = 7700;
+    for (const spiral of directSpirals) {
+      testTangencyAtSpiralInterior(spiral, dx, dy);
+      dx += 200;
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
@@ -1805,6 +1815,235 @@ describe("CurveCurveCloseApproachXY", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralKnownCloseApproach");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("BsplineCloseApproach", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const rotationTransform0 = Transform.createFixedPointAndMatrix(
+      Point3d.create(70, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(180))!,
+    );
+    const rotationTransform1 = Transform.createFixedPointAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, 0), Angle.createDegrees(45))!,
+    );
+    const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
+    const compositeTransform = Transform.createZero();
+    compositeTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
+    compositeTransform.setMultiplyTransformTransform(rotationTransform1, compositeTransform);
+
+    const bspline0 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(0, -20, 0),
+        Point3d.create(20, -20, 0),
+        Point3d.create(50, -10, 0),
+        Point3d.create(80, 0, 0),
+        Point3d.create(100, 0, 0),
+      ],
+      3,
+    )!;
+    const bspline1 = bspline0.cloneTransformed(rotationTransform0);
+    const bspline2 = bspline0.cloneTransformed(rotationTransform1);
+    const bspline3 = bspline0.cloneTransformed(moveTransform);
+    const bspline4 = bspline0.cloneTransformed(compositeTransform);
+    const bsplines = [bspline0, bspline1, bspline2, bspline3, bspline4];
+
+    // curve primitives
+    const integratedSpirals = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      const spiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+        Segment1d.create(r0, r1),
+        AngleSweep.createStartEndDegrees(0, 120),
+        activeInterval,
+        rotationTransform0,
+        integratedSpiralType,
+      ) as TransitionSpiral3d;
+      if (ck.testDefined(spiral, "successfully created integrated spiral"))
+        integratedSpirals.push(spiral);
+    }
+    const directSpirals = [];
+    const length = 100;
+    for (const directSpiralType of [
+      "Arema",
+      "JapaneseCubic",
+      "ChineseCubic",
+      "WesternAustralian",
+      "HalfCosine",
+      "AustralianRailCorp",
+      // TODO: enable below lines after issus 1693 is resolved
+      // "Czech",
+      // "Italian",
+      // "MXCubicAlongArc",
+      // "Polish",
+    ]) {
+      const spiral = DirectSpiral3d.createFromLengthAndRadius(
+        directSpiralType, r0, r1, undefined, undefined, length, activeInterval, rotationTransform0,
+      ) as TransitionSpiral3d;
+      if (ck.testDefined(spiral, "successfully created direct spiral"))
+        directSpirals.push(spiral);
+    }
+    const lineSegment0 = LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30));
+    const lineSegment1 = LineSegment3d.create(Point3d.create(20, -40), Point3d.create(130, 30));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-20, 0), Point3d.create(100, 0));
+    const lineString0 = LineString3d.create(
+      Point3d.create(10, -80), Point3d.create(40, -20), Point3d.create(100, -5),
+      Point3d.create(80, 10), Point3d.create(150, -10),
+    );
+    const arc0 = Arc3d.createXY(Point3d.create(50, 40), 25);
+    const arc1 = Arc3d.createXY(Point3d.create(0, -30), 30);
+
+    // curve collection (path-loop), curve chain, and bag of curves
+    const lineString1 = LineString3d.create(Point3d.create(40, -33.333333333), Point3d.create(50, 5), Point3d.create(37.58770483, 6.31919427));
+    const arc2 = Arc3d.create(
+      Point3d.create(0, 20), Vector3d.create(40, 0), Vector3d.create(0, 40), AngleSweep.createStartEndDegrees(340, 0),
+    );
+    const arc3 = Arc3d.create(
+      Point3d.create(70, -40), Vector3d.create(20, 0), Vector3d.create(0, 20), AngleSweep.createStartEndDegrees(0, -180),
+    );
+    const lineString3 = LineString3d.create(
+      Point3d.create(50, -40), Point3d.create(-10, -40), Point3d.create(10, 0), Point3d.create(140, 0)
+    );
+    const lineString2 = LineString3d.create(Point3d.create(40, 20), Point3d.create(50, 20), Point3d.create(58, 26));
+    const lineSegment3 = LineSegment3d.create(Point3d.create(58, 26), Point3d.create(140, 0));
+    const lineSegment4 = LineSegment3d.create(Point3d.create(60, -50), Point3d.create(90, -40));
+    const path0 = Path.create(arc2, lineString2, lineSegment3, directSpirals[1]);
+    const path1 = Path.create(lineSegment4, arc3, lineString3, integratedSpirals[0]);
+    const loop = Loop.create(lineString1, arc2, lineString2, lineSegment3, directSpirals[1]);
+    const curveChain0 = CurveChainWithDistanceIndex.createCapture(path0);
+    const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
+    const bagOfCurves = BagOfCurves.create(path0, arc0, lineString0);
+
+    const curves: AnyCurve[] = [
+      path0,
+      loop,
+      curveChain0,
+      bagOfCurves,
+      lineSegment0,
+      lineSegment1,
+      lineSegment2,
+      lineString0,
+      arc0,
+      arc1,
+      bspline0,
+      ...integratedSpirals,
+      ...directSpirals,
+    ];
+
+    // each bspline-curve close approach test has its own expected # close approaches. One size does not fit all.
+    const maxDistance = 23;
+    // in data triples, the first two numbers are indices and the third number is
+    // the expected number of close approaches between the curve at those indices.
+    const bsplineData = new Dictionary<[number, number], number>(compareSimpleArrays);
+    for (const triple of [
+      [0, 0, 5], [0, 1, 7], [0, 2, 5], [0, 3, 12], [0, 4, 1], [0, 5, 3], [0, 6, 2], [0, 7, 6], [0, 8, 1], [0, 9, 2], [0, 10, 12],
+      [0, 11, 4], [0, 12, 6], [0, 13, 6], [0, 14, 6], [0, 15, 6], [0, 16, 2], [0, 17, 2], [0, 18, 2], [0, 19, 2], [0, 20, 2],
+      [0, 21, 2],
+      [1, 0, 8], [1, 1, 11], [1, 2, 8], [1, 3, 17], [1, 4, 1], [1, 5, 3], [1, 6, 2], [1, 7, 7], [1, 8, 2], [1, 9, 1], [1, 10, 3],
+      [1, 11, 3], [1, 12, 3], [1, 13, 3], [1, 14, 3], [1, 15, 3], [1, 16, 2], [1, 17, 2], [1, 18, 2], [1, 19, 2], [1, 20, 3],
+      [1, 21, 4],
+      [2, 0, 5], [2, 1, 8], [2, 2, 5], [2, 3, 11], [2, 4, 2], [2, 5, 2], [2, 6, 2], [2, 7, 4], [2, 8, 2], [2, 9, 2], [2, 10, 4 /* double intersection */],
+      [2, 11, 4], [2, 12, 4], [2, 13, 6], [2, 14, 6], [2, 15, 4], [2, 16, 1], [2, 17, 1], [2, 18, 1], [2, 19, 1], [2, 20, 2],
+      [2, 21, 2],
+      [3, 0, 5], [3, 1, 7], [3, 2, 5], [3, 3, 12], [3, 4, 1], [3, 5, 3], [3, 6, 2], [3, 7, 6], [3, 8, 1], [3, 9, 2], [3, 10, 12],
+      [3, 11, 4], [3, 12, 6], [3, 13, 6], [3, 14, 6], [3, 15, 6], [3, 16, 2], [3, 17, 2], [3, 18, 2], [3, 19, 2], [3, 20, 2],
+      [3, 21, 2],
+      [4, 0, 11], [4, 1, 14], [4, 2, 11], [4, 3, 18], [4, 4, 2], [4, 5, 1], [4, 6, 3], [4, 7, 5], [4, 8, 2], [4, 9, 1], [4, 10, 4],
+      [4, 11, 4], [4, 12, 4], [4, 13, 4], [4, 14, 4], [4, 15, 4], [4, 16, 3], [4, 17, 3], [4, 18, 3], [4, 19, 3], [4, 20, 3],
+      [4, 21, 4],
+    ])
+      bsplineData.set([triple[0], triple[1]], triple[2]);
+    ck.testCoordinate(bsplines.length * curves.length, bsplineData.size, "matching integrated arrays");
+
+    let testIndex = 0;
+    const testCloseApproachBsplineCurve = (bsplineCurves: BSplineCurve3dBase[], data: Dictionary<[number, number], number>) => {
+      for (let i = 0; i < bsplineCurves.length; i++) {
+        for (let j = 0; j < curves.length; j++) {
+          const numExpected = data.get([i, j]);
+          if (ck.testDefined(numExpected, "found data for bspline-curve pair"))
+            visualizeAndTestSpiralOrBsplineCloseApproaches(ck, allGeometry, testIndex++, bsplineCurves[i], curves[j], maxDistance, numExpected, dx, dy);
+          dy += 200;
+        }
+        dy = 0;
+        dx += 200;
+      }
+    };
+    testCloseApproachBsplineCurve(bsplines, bsplineData);
+
+    dx = 0;
+    dy = 5000;
+    const numExpectedCloseApproaches = 15;
+    for (const pair of [[curveChain0, curveChain1], [path0, path1], [curveChain0, path1], [curveChain1, path0]]) {
+      visualizeAndTestSpiralOrBsplineCloseApproaches(ck, allGeometry, testIndex++, pair[0], pair[1], maxDistance, numExpectedCloseApproaches, dx, dy);
+      dx += 300;
+    }
+
+    // make sure closest approach can find bspline tangency intersections
+    const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number, dy0: number) => {
+      const ray = bspline.fractionToPointAndDerivative(0.2);
+      const seg = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
+      const tangency = CurveCurve.closestApproachProjectedXYPair(bspline, seg);
+      if (ck.testDefined(tangency, `found closest points between the bspline${index} and the line`)) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx0, dy0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0, dy0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangency.detailA.point, 5, dx0, dy0);
+        ck.testSmallRelative(tangency.detailA.a, `bspline${index}  closest point is an intersection`);
+        ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `bspline${index}  closest point is at the tangency`);
+      }
+    };
+    dx = 0;
+    dy = 5500;
+    for (let i = 0; i < bsplines.length; i++) {
+      if (i === 1) // Newton does not converge due to near-degenerate tangency
+        continue;
+      testTangencyAtBsplineInterior(bsplines[i], i, dx, dy);
+      dx += 200;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineCloseApproach");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("BsplineKnownCloseApproach", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    let x0 = 0;
+    const seg = LineSegment3d.create(Point3d.create(0, -50), Point3d.create(130, 30));
+    const bspline0 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(0, -20, 0),
+        Point3d.create(20, -30, 0),
+        Point3d.create(50, -10, 0),
+        Point3d.create(80, 20, 0),
+        Point3d.create(100, 40, 0),
+      ],
+      3,
+    )!;
+    if (ck.testDefined(bspline0, "created spiral")) {
+      const transforms = [Transform.createIdentity(), Transform.createTranslationXYZ(0, -15)];
+      const numMinima = [1, 2];
+      const minDist = [7.184502210148587, 0]; // test against known minima
+      const maxDist = [10, 2];
+      const numTests = Math.min(transforms.length, numMinima.length, minDist.length, maxDist.length);
+      for (let i = 0; i < numTests; ++i) {
+        const spiral = bspline0.cloneTransformed(transforms[i]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [seg, spiral], x0);
+        const approaches = CurveCurve.closeApproachProjectedXYPairs(spiral, seg, maxDist[i]);
+        captureCloseApproaches(allGeometry, approaches, x0);
+        ck.testExactNumber(numMinima[i], approaches.length, "returned expected unique close approaches <= maxLength");
+        for (const approach of approaches)
+          ck.testCoordinate(minDist[i], approach.detailA.a, "all close approaches converged on the expected distance");
+        x0 += 1.1 * spiral.curveLength();
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineKnownCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
