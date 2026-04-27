@@ -270,7 +270,7 @@ describe("Undo/redo edit command cleanup", () => {
     toolAdmin.setEditCommandHandler({ finishCommand });
 
     const reverseSingleTxnAsync = vi.fn(async () => { });
-    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined as any);
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
     const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
       view: {
         iModel: {
@@ -298,7 +298,7 @@ describe("Undo/redo edit command cleanup", () => {
     toolAdmin.setEditCommandHandler({ finishCommand });
 
     const reinstateTxnAsync = vi.fn(async () => { });
-    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined as any);
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
     const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
       view: {
         iModel: {
