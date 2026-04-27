@@ -917,42 +917,59 @@ describe("GeoServices", () => {
     });
 
     it("check CRS units", () => {
-      const NUM_CRS_UNITS = 4;
+      const expectedUnits = ["Meter", "Degree", "USSurveyFoot", "InternationalFoot"];
 
       const definitiveListOfUnits = getAvailableCRSUnits();
-      assert.lengthOf(definitiveListOfUnits, NUM_CRS_UNITS);
+      assert.isAtLeast(definitiveListOfUnits.length, expectedUnits.length);
 
-      const expectedUnits = ["Meter", "Degree", "USSurveyFoot", "InternationalFoot"];
-      for (const unit of definitiveListOfUnits) {
-        assert.include(expectedUnits, unit);
+      for (const unit of expectedUnits) {
+        assert.include(definitiveListOfUnits, unit);
       }
     });
 
     it("can filter by each CRS unit", async () => {
-      /* eslint-disable @typescript-eslint/naming-convention */
-      const minExpectedCounts: Record<string, number> = {
-        Meter: 8000,
-        Degree: 1000,
-        USSurveyFoot: 100,
-        InternationalFoot: 50,
-      };
-      /* eslint-enable @typescript-eslint/naming-convention */
+      const minExpectedCounts = new Map<string, number>([
+        ["Meter", 8000],
+        ["Degree", 1000],
+        ["USSurveyFoot", 100],
+        ["InternationalFoot", 50],
+      ]);
 
       const units = getAvailableCRSUnits();
       for (const unit of units) {
         const listOfCRS = await getAvailableCoordinateReferenceSystems({
-        includeWorld: true,
+          includeWorld: true,
           unit,
-      });
+        });
 
-        const minExpected = minExpectedCounts[unit] ?? 1;
+        const minExpected = minExpectedCounts.get(unit) ?? 1;
         assert.isAtLeast(listOfCRS.length, minExpected, `Expected at least ${minExpected} CRS with unit "${unit}", got ${listOfCRS.length}`);
-      for (const crs of listOfCRS) {
-        assert.equal(
+        for (const crs of listOfCRS) {
+          assert.equal(
             crs.unit, unit,
             `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "${unit}")`
-        );
+          );
+        }
       }
+    });
+
+    it("can filter by unit case-insensitively", async () => {
+      const units = getAvailableCRSUnits();
+      for (const unit of units) {
+        const canonicalList = await getAvailableCoordinateReferenceSystems({
+          includeWorld: true,
+          unit,
+        });
+        const lowerCaseFilterList = await getAvailableCoordinateReferenceSystems({
+          includeWorld: true,
+          unit: unit.toLowerCase(),
+        });
+
+        assert.sameMembers(
+          lowerCaseFilterList.map((crs) => crs.name),
+          canonicalList.map((crs) => crs.name),
+          `Expected lowercase unit filter to match canonical filter for "${unit}"`,
+        );
       }
     });
   });

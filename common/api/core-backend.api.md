@@ -431,8 +431,7 @@ export interface AvailableCoordinateReferenceSystemProps {
     deprecated: boolean;
     description: string;
     name: string;
-    // (undocumented)
-    unit: string;
+    unit?: string;
 }
 
 // @beta (undocumented)

@@ -29,7 +29,10 @@ export interface AvailableCoordinateReferenceSystemProps {
    *  Maximum longitude and latitude correspond to crsExtent.high.x and crsExtent.high.y, respectively.
    */
   crsExtent: Range2dProps;
-  unit: string;
+  /** The name of the linear unit used by the coordinate reference system.
+   *  When returned by [[getAvailableCoordinateReferenceSystems]], the value uses the canonical casing returned by [[getAvailableCRSUnits]].
+   */
+  unit?: string;
 }
 
 /** Arguments supplied to [[getAvailableCoordinateReferenceSystems]].
@@ -46,7 +49,8 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
   includeWorld?: boolean;
   /**
    * If provided, filter coordinate reference systems by unit name.
-   * Use [[getAvailableCRSUnits]] to get a list of valid unit names.
+   * Matching is case-insensitive.
+   * Use [[getAvailableCRSUnits]] to get a list of canonical unit names.
    */
   unit?: string;
 }
@@ -68,9 +72,10 @@ export async function getAvailableCoordinateReferenceSystems(
 }
 
 /** Get a list of units used by Geographic Coordinate Reference Systems in iTwin.js.
- * @returns An array of unit names.
+ * @returns An array of canonical unit names.
  * @beta
  */
 export function getAvailableCRSUnits(): string[] {
+  GeoCoordConfig.loadDefaultDatabases();
   return IModelNative.platform.GeoServices.getAvailableUnitNames();
 }
