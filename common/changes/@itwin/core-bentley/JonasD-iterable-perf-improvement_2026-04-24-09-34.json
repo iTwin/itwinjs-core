@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Improved `Id64.iterable` performance >10x.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
