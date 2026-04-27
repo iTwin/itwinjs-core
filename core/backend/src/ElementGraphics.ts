@@ -12,7 +12,7 @@ import { _nativeDb } from "./internal/Symbols";
  * @internal
  */
 export async function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined> {
-  const result = await iModel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
+  const result = await iModel[_nativeDb].generateElementGraphics(request); // ###TODO update package versions in addon
 
   let error: string | undefined;
   switch (result.status) {

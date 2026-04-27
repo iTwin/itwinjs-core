@@ -511,7 +511,7 @@ describe("RegionBoolean", () => {
       saveShiftedLoops(allGeometry, regions, x0, y0 + dy, dy, positiveLoopOffset, false);
       x0 += 300.0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas, x0, y0);
-      const regionsB = RegionOps.constructAllXYRegionLoops((closedAreas as unknown) as AnyRegion[]);
+      const regionsB = RegionOps.constructAllXYRegionLoops(closedAreas);
       saveShiftedLoops(allGeometry, regionsB, x0, y0 + dy, dy, positiveLoopOffset, false);
       x0 = 0;
       y0 += 100.0;

@@ -46,7 +46,7 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   /** @internal */
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
-    this._class = ecClass as AnyClass;
+    this._class = ecClass;
     this._name = new ECName(name);
     this._type = type;
   }

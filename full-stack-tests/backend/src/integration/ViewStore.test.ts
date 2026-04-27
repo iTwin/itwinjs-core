@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-backend";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AuxCoordSystem2dProps, Camera, Code, CodeScopeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyle3dProps, DisplayStyle3dSettingsProps,
+  AuxCoordSystem2dProps, Camera, Code, CodeScopeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyle3dSettingsProps,
   Environment, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, LocalFileName, PlanProjectionSettings, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, ViewDefinition2dProps, ViewDefinitionProps,
 } from "@itwin/core-common";
@@ -267,7 +267,7 @@ describe("ViewStore", function (this: Suite) {
     };
 
     const dsEl = DisplayStyle3d.create(iModel, IModel.dictionaryId, "test style 1", displayStyleProps);
-    const styleProps = dsEl.toJSON() as DisplayStyle3dProps;
+    const styleProps = dsEl.toJSON();
     const dsId = withEditTxn(iModel, (txn) => txn.insertElement(styleProps));
     const ds1Row = await vs1locker.addDisplayStyle({ className: dsEl.classFullName, name: dsEl.code.value, settings: styleProps.jsonProperties!.styles! });
     expect(ds1Row).equals("@1");

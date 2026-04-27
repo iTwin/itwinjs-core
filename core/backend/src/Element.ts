@@ -837,7 +837,7 @@ export abstract class GeometricElement3d extends GeometricElement {
 
     if (props.geom) {
       const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
-        geom: props.geom as any,
+        geom: props.geom,
         is2d: false,
         placement: props.placement,
         categoryId: props.category,
@@ -998,7 +998,7 @@ export abstract class GeometricElement2d extends GeometricElement {
 
     if (props.geom) {
       const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
-        geom: props.geom as any,
+        geom: props.geom,
         is2d: true,
         placement: props.placement,
         categoryId: props.category,
@@ -1151,7 +1151,7 @@ export class Subject extends InformationReferenceElement {
   }
 
   public override toJSON(): SubjectProps { // This override only specializes the return type
-    return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
@@ -1823,7 +1823,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   }
 
   public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
-    return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
 
   /** Create a code that can be used for any subclass of InformationPartitionElement.
@@ -2104,7 +2104,7 @@ export class GeometryPart extends DefinitionElement {
 
     if (undefined !== props.geom) {
       const source = inst.geometryStream = iModel[_nativeDb].convertOrUpdateGeometryPart({
-        geom: props.geom as any,
+        geom: props.geom,
         is2d: false,
         bbox: props.bbox,
       }, "BinaryStream", {});

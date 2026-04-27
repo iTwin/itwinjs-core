@@ -54,6 +54,12 @@ common/autoinstallers/*/.npmrc
 .env.local
 .env.*.local
 
+# Claude Code - personal/local overrides (do not commit)
+CLAUDE.local.md
+**/CLAUDE.local.md
+.claude/settings.local.json
+.claude/*.local.md
+
 common/api/summary/summary.exports.csv
 
 *.log

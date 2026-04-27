@@ -8,7 +8,9 @@ publish: false
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+    - [IdSet virtual table performance improvements](#idset-virtual-table-performance-improvements)
     - [WithQueryReader API](#withqueryreader-api)
+    - [CRS unit metadata and filtering](#crs-unit-metadata-and-filtering)
     - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
       - [Why SettingsDb?](#why-settingsdb)
@@ -70,6 +72,26 @@ SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonI
 
 This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
 
+### IdSet virtual table performance improvements
+
+The `IdSet` virtual table now uses a sorted vector internally, enabling O(log n) point lookups (`id = ?`) and efficient single-pass `IN` filtering instead of full scans.
+
+```sql
+-- Point lookup — binary search, O(log n)
+SELECT id FROM IdSet('[1,2,3,4,5]') WHERE id = 3
+-- returns: 0x3
+
+-- IN filter — single Filter call for all values
+SELECT id FROM IdSet('[1,2,3,4,5,6,7,8,9,10]') WHERE id IN (3, 5, 7)
+-- returns: 0x3, 0x5, 0x7
+
+-- Sorted deduplication — unsorted input with duplicates
+SELECT id FROM IdSet('[50,10,30,20,40,10]')
+-- returns: 0xa, 0x14, 0x1e, 0x28, 0x32
+```
+
+Output is always returned in ascending ID order and deduplicated, regardless of input order. This is a behavioral change — previously, output order was unspecified.
+
 ### WithQueryReader API
 
 A new [withQueryReader]($docs/learning/backend/WithQueryReaderCodeExamples.md) method has been added to both [ECDb]($backend) and [IModelDb]($backend), providing true row-by-row behavior for ECSQL queries with synchronous execution. This API introduces a new [ECSqlSyncReader]($backend) through the [ECSqlRowExecutor]($backend) and supports configuration via [SynchronousQueryOptions]($backend).
@@ -123,6 +145,25 @@ db.withQueryReader(query, (reader) => {
     processRow(row);
   }
 });
+```
+
+### CRS unit metadata and filtering
+
+[getAvailableCoordinateReferenceSystems]($backend) now returns the linear unit used by each available coordinate reference system in its `unit` property. The same API also accepts an optional `unit` filter, letting applications narrow the returned CRS list by unit name without applying client-side filtering after the fact.
+
+Unit filtering is case-insensitive. Use the new [getAvailableCRSUnits]($backend) helper to retrieve the canonical unit names recognized by the backend.
+
+```typescript
+const units = getAvailableCRSUnits();
+
+const usFootSystems = await getAvailableCoordinateReferenceSystems({
+  includeWorld: true,
+  unit: "ussurveyfoot",
+});
+
+for (const crs of usFootSystems) {
+  console.log(`${crs.name}: ${crs.unit}`);
+}
 ```
 
 ### Bulk element deletion with `deleteElements`

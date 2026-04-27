@@ -361,7 +361,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
     }
   });
 
-  return containerType as CustomAttributeContainerType;
+  return containerType;
 }
 
 /**

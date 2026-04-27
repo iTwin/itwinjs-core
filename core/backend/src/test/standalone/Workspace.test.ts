@@ -109,9 +109,9 @@ describe("WorkspaceFile", () => {
   });
 
   it("WorkspaceDb version fallback", () => {
-    expect(CloudSqlite.validateDbVersion("" as CloudSqlite.DbVersion)).equals("0.0.0");
-    expect(CloudSqlite.makeSemverName("db1", "" as CloudSqlite.DbVersion)).equals("db1:0.0.0");
-    expect(() => CloudSqlite.validateDbVersion(" " as CloudSqlite.DbVersion)).to.throw("invalid version specification");
+    expect(CloudSqlite.validateDbVersion("")).equals("0.0.0");
+    expect(CloudSqlite.makeSemverName("db1", "")).equals("db1:0.0.0");
+    expect(() => CloudSqlite.validateDbVersion(" ")).to.throw("invalid version specification");
   });
 
   it("create new WorkspaceDb", async () => {

@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { BriefcaseDb, BriefcaseManager, IModelDb, IpcHost, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock.js";
 import { IModelStatus } from "@itwin/core-bentley";
-import { IModel, IpcSocketBackend } from "@itwin/core-common";
+import { IModel } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { KeySet } from "@itwin/presentation-common";
 import { PresentationIpcEvents } from "@itwin/presentation-common/internal";
@@ -35,7 +35,7 @@ describe("Reacting to IModel data changes", () => {
     };
     await IpcHost.startup({
       ipcHost: {
-        socket: socketStub as IpcSocketBackend,
+        socket: socketStub,
       },
       iModelHost: {
         cacheDir: cachesDirectory,
