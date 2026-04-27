@@ -8,6 +8,7 @@ publish: false
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
     - [WithQueryReader API](#withqueryreader-api)
+    - [CRS unit metadata and filtering](#crs-unit-metadata-and-filtering)
     - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
       - [Why SettingsDb?](#why-settingsdb)
@@ -107,6 +108,25 @@ db.withQueryReader(query, (reader) => {
     processRow(row);
   }
 });
+```
+
+### CRS unit metadata and filtering
+
+[getAvailableCoordinateReferenceSystems]($backend) now returns the linear unit used by each available coordinate reference system in its `unit` property. The same API also accepts an optional `unit` filter, letting applications narrow the returned CRS list by unit name without applying client-side filtering after the fact.
+
+Unit filtering is case-insensitive. Use the new [getAvailableCRSUnits]($backend) helper to retrieve the canonical unit names recognized by the backend.
+
+```typescript
+const units = getAvailableCRSUnits();
+
+const usFootSystems = await getAvailableCoordinateReferenceSystems({
+  includeWorld: true,
+  unit: "ussurveyfoot",
+});
+
+for (const crs of usFootSystems) {
+  console.log(`${crs.name}: ${crs.unit}`);
+}
 ```
 
 ### Bulk element deletion with `deleteElements`
