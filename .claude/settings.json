@@ -19,13 +19,13 @@
       "Bash(rush clean)",
       "Bash(rush cover)",
       "Bash(rush test)",
-      "Bash(npx vitest *)",
-      "Bash(npx tsc *)",
-      "Bash(npx mocha *)",
-      "Bash(npx eslint *)",
+      "Bash(rush audit)",
+      "Bash(pnpmx vitest *)",
+      "Bash(pnpmx tsc *)",
+      "Bash(pnpmx mocha *)",
+      "Bash(pnpmx eslint *)",
       "Bash(npm view *)",
-      "Bash(pnpm why *)",
-      "Bash(pnpm audit)"
+      "Bash(pnpm why *)"
     ]
   }
 }
