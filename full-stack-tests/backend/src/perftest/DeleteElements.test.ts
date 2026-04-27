@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { Id64Array } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, EditTxn, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
+import { BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
@@ -14,7 +14,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
   const outDir = `${KnownTestLocations.outputDir}/DeleteElements`;
   const reporter = new Reporter();
 
-  const elementCounts = [1, 5, 10, 50, 100, 1000, 10000, 100000];
+  const elementCounts = [25, 50, 250, 1000, 10000, 100000, 1000000, 1700000];
 
   before(async () => {
     await IModelHost.startup();
@@ -123,7 +123,7 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         txn.start();
 
         const startTime = performance.now();
-        txn.deleteElements(ids);
+        assert.equal(txn.deleteElements(ids, { skipFKConstraintValidations: true }).status, BulkDeleteElementsStatus.Success);
         const elapsed = performance.now() - startTime;
 
         txn.saveChanges();
@@ -177,12 +177,13 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         txn.start();
 
         const startTime = performance.now();
-        const failedToDelete = txn.deleteElements(allIds);
+        const deletionResult = txn.deleteElements(allIds);
+        assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
         const elapsed = performance.now() - startTime;
 
         txn.saveChanges();
 
-        assert.equal(failedToDelete.size, usedCategoryIds.length, "only in-use categories should fail to delete");
+        assert.equal(deletionResult.failedIds.size, usedCategoryIds.length, "only in-use categories should fail to delete");
         for (const id of unusedCategoryIds)
           assert.isUndefined(db.elements.tryGetElement(id), `unused category ${id} should be deleted`);
         for (const id of usedCategoryIds)

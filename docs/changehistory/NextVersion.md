@@ -110,26 +110,61 @@ db.withQueryReader(query, (reader) => {
 
 ### Bulk element deletion with `deleteElements`
 
-[EditTxn.deleteElements]($backend) is a new `@beta` API that efficiently deletes many elements in a single native operation when removing trees of elements, partitions, or mixes of ordinary and definition elements.
-It is intended as the preferred replacement for [EditTxn.deleteElement]($backend)
+[EditTxn.deleteElements]($backend) is a `@beta` API that efficiently deletes many elements in a single native operation when removing trees of elements, partitions, or mixes of ordinary and definition elements.
+It is intended as the preferred replacement for [EditTxn.deleteElement]($backend).
 
 **What it does that `deleteElement` does not:**
 
 - Automatically cascades into the full parent-child subtree of every requested element — you only need to pass root IDs.
 - Cascades into sub-models: deleting a partition element also removes the entire sub-model and all elements inside it.
-- Handles intra set constraint violations without failing.
+- Handles intra-set constraint violations without failing.
 - Handles `DefinitionElement` usage checks inline — no need to call `deleteDefinitionElements` separately.
-- Returns a `Id64Set` of IDs that **could not** be deleted due to constraint violations (e.g. code-scope dependencies held by elements outside the delete set), rather than throwing.
+- Returns a structured [BulkDeleteElementsResult]($backend) describing which IDs **could not** be deleted due to constraint violations (e.g. code-scope dependencies held by elements outside the delete set), rather than throwing.
 - Better performance when deleting elements in bulk.
+
+**Return type — `BulkDeleteElementsResult`**
+
+The return value is a [BulkDeleteElementsResult]($backend) with three fields:
+
+| Field | Description |
+|---|---|
+| `status` | [BulkDeleteElementsStatus]($backend): `Success`, `PartialSuccess`, or `DeletionFailed` |
+| `failedIds` | `Id64Set` of element IDs that could not be deleted |
+| `sqlDeleteStatus` | Raw `DbResult` from the underlying SQL DELETE statement |
 
 **Basic usage:**
 
 ```typescript
-const failed: Id64Set = txn.deleteElements([idA, idB, idC]);
-if (failed.size > 0) {
-  // These elements were blocked by an integrity constraint — inspect `failed` to decide how to proceed.
+const result: BulkDeleteElementsResult = txn.deleteElements([idA, idB, idC]);
+if (result.status === BulkDeleteElementsStatus.Success) {
+  // All elements were deleted.
+} else {
+  // Some or all elements could not be deleted — inspect result.failedIds.
 }
 ```
+
+**Performance option — `skipFKConstraintValidations`**
+
+Pass `{ skipFKConstraintValidations: true }` via [BulkDeleteElementsArgs]($backend) to skip the pre-deletion `On Delete No-Action` foreign-key constraint validation pass. This can significantly improve throughput for very large deletions where you know the supplied IDs are self-consistent and free of external FK dependencies:
+
+```typescript
+// Only safe when you are certain no element in the batch is referenced from outside the batch.
+const result = txn.deleteElements(ids, { skipFKConstraintValidations: true });
+```
+
+> If any element in the batch `is` externally referenced the SQL DELETE will fail entirely (`DeletionFailed`) and all changes will need to be rolled back.
+
+**Bulk element deletion lifecycle callbacks**
+
+To avoid firing one notification per element (which dominated runtime for large deletions), three new batch-scoped `@beta` callbacks have been added:
+
+| Callback | Fires on |
+|---|---|
+| [Element.onBulkDeleted]($backend) (`OnBulkDeletedBatchArg`) | Once per Element ECClass, after all elements of that class have been deleted |
+| [Element.onBulkChildDeleted]($backend) (`OnBulkChildDeletedBatchArg`) | Once per parent ECClass, for children whose parent was *not* itself deleted |
+| [Model.onBulkModelEvents]($backend) (`OnBulkModelEventsArg`) | Once per Model ECClass, combining sub-model deletions and per-model element deletions |
+
+The default implementations of all three fall back to the existing single-element callbacks (`onDeleted`, `onChildDeleted`, `onDeletedElement`, …) so existing overrides continue to work without modification.
 
 See [Bulk Element Deletion]($docs/learning/backend/BulkElementDeletion.md) for full documentation including constraint violation details and lifecycle callback behavior.
 

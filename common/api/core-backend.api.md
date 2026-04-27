@@ -733,6 +733,25 @@ export class BriefcaseManager {
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
+// @beta
+export interface BulkDeleteElementsArgs {
+    skipFKConstraintValidations?: boolean;
+}
+
+// @beta
+export interface BulkDeleteElementsResult {
+    failedIds: Id64Set;
+    sqlDeleteStatus: DbResult;
+    status: BulkDeleteElementsStatus;
+}
+
+// @beta
+export enum BulkDeleteElementsStatus {
+    DeletionFailed = 2,
+    PartialSuccess = 1,
+    Success = 0
+}
+
 // @public
 export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -2611,7 +2630,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
-    deleteElements(ids: Id64Array): Id64Set;
+    deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
@@ -2686,6 +2705,10 @@ class Element_2 extends Entity {
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta
     protected static onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void;
+    // @beta
+    protected static onBulkChildDeleted(arg: OnBulkChildDeletedBatchArg): void;
+    // @beta
+    protected static onBulkDeleted(arg: OnBulkDeletedBatchArg): void;
     // @beta
     protected static onChildAdd(_arg: OnChildElementPropsArg): void;
     // @beta
@@ -5179,6 +5202,8 @@ export class Model extends Entity {
     // (undocumented)
     readonly name: string;
     // @beta
+    protected static onBulkModelEvents(arg: OnBulkModelEventsArg): void;
+    // @beta
     protected static onDelete(arg: OnModelIdArg): void;
     // @beta
     protected static onDeleted(arg: OnModelIdArg): void;
@@ -5320,6 +5345,43 @@ export interface OnAspectIdArg extends OnAspectArg {
 // @beta
 export interface OnAspectPropsArg extends OnAspectArg {
     props: Readonly<ElementAspectProps>;
+}
+
+// @beta
+export interface OnBulkChildDeleteArg {
+    childId: Id64String;
+    parentId: Id64String;
+}
+
+// @beta
+export interface OnBulkChildDeletedBatchArg {
+    elements: OnBulkChildDeleteArg[];
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnBulkDeleteArg {
+    federationGuid?: GuidString;
+    id: Id64String;
+    model: Id64String;
+    subModelId?: Id64String;
+}
+
+// @beta
+export interface OnBulkDeletedBatchArg {
+    elements: OnBulkDeleteArg[];
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnBulkDeletedElementsArg extends OnModelIdArg {
+    elementIds: Id64String[];
+}
+
+// @beta
+export interface OnBulkModelEventsArg extends OnModelArg {
+    deletedElementsByModel?: OnBulkDeletedElementsArg[];
+    deletedModelIds?: Id64String[];
 }
 
 // @beta
