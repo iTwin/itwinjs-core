@@ -107,17 +107,17 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       return PerModelCategoryVisibility.Override.None;
   }
 
-  private getModelEntry({ modelId, override }: { modelId: Id64String; override: PerModelCategoryVisibility.Override }): { modelEntry: ModelEntry | undefined; hasChanged: boolean } {
+  private getModelEntry({ modelId, override }: { modelId: Id64String; override: PerModelCategoryVisibility.Override }): ModelEntry | undefined {
     let modelEntry = this._map.get(modelId);
     if (modelEntry) {
-      return { modelEntry, hasChanged: false };
+      return modelEntry;
     }
     if (override === PerModelCategoryVisibility.Override.None) {
-      return { modelEntry: undefined, hasChanged: false };
+      return undefined;
     }
     modelEntry = new Map<Id64String, WriteableOverrideEntry>();
     this._map.set(modelId, modelEntry);
-    return { modelEntry, hasChanged: true };
+    return modelEntry;
   }
 
   private addOrRemoveOverrideEntry({ modelEntry, categoryId, modelId, override }: { modelEntry: ModelEntry; categoryId: Id64String; modelId: Id64String; override: PerModelCategoryVisibility.Override }): boolean {
@@ -146,8 +146,8 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
   }
 
   private applyOverride(modelId: Id64String, categoryIds: Iterable<Id64String>, override: PerModelCategoryVisibility.Override, catIdsToLoad?: string[]): boolean {
-    const { modelEntry, hasChanged } = this.getModelEntry({ modelId, override });
-    let changed = hasChanged;
+    const modelEntry = this.getModelEntry({ modelId, override });
+    let changed = false;
     if (!modelEntry)
       return changed;
 

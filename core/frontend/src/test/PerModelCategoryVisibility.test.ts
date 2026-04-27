@@ -138,10 +138,31 @@ describe("PerModelCategoryVisibility", () => {
       expect(collectEntries(ovrs).size).toBe(0);
     });
 
-    it("fires no notification when setting None on a non-existent entry", () => {
+    it("does not fire notification when setting None on a non-existent entry", () => {
       const { ovrs, vp } = createOverrides();
       ovrs.setOverride("0x1", "0x10", PerModelCategoryVisibility.Override.None);
       expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
+    });
+
+    it("does not fire notification when setting override with an empty category array", () => {
+      const { ovrs, vp } = createOverrides();
+      ovrs.setOverride("0x1", [], PerModelCategoryVisibility.Override.Show);
+      expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
+      expect(collectEntries(ovrs).size).toBe(0);
+    });
+
+    it("does not fire notification when setting override with an empty category Set", () => {
+      const { ovrs, vp } = createOverrides();
+      ovrs.setOverride("0x1", new Set<string>(), PerModelCategoryVisibility.Override.Hide);
+      expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
+      expect(collectEntries(ovrs).size).toBe(0);
+    });
+
+    it("does not fire notification when setting override with multiple models but empty categories", () => {
+      const { ovrs, vp } = createOverrides();
+      ovrs.setOverride(["0x1", "0x2", "0x3"], [], PerModelCategoryVisibility.Override.Show);
+      expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
+      expect(collectEntries(ovrs).size).toBe(0);
     });
 
     it("does not fire additional notification when duplicate `setOverride` calls are made", () => {
@@ -232,6 +253,14 @@ describe("PerModelCategoryVisibility", () => {
       await ovrs.setOverrides(props);
       expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(countBefore);
     });
+
+    it("does not fire notification when setOverrides is called with empty categoryIds", async () => {
+      const { ovrs, vp } = createOverrides();
+      const props: PerModelCategoryVisibility.Props[] = [{ modelId: "0x1", categoryIds: [], visOverride: PerModelCategoryVisibility.Override.Show }];
+      await ovrs.setOverrides(props);
+      expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
+      expect(collectEntries(ovrs).size).toBe(0);
+    });
   });
 
   describe("clearOverrides", () => {
@@ -245,7 +274,7 @@ describe("PerModelCategoryVisibility", () => {
       expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length - before).toBe(1);
     });
 
-    it("fires no notification when called on empty overrides", () => {
+    it("does not fire notification when called on empty overrides", () => {
       const { ovrs, vp } = createOverrides();
       ovrs.clearOverrides();
       expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
@@ -268,7 +297,7 @@ describe("PerModelCategoryVisibility", () => {
       expect(ovrs.getOverride("0x3", "0x10")).toBe(PerModelCategoryVisibility.Override.None);
     });
 
-    it("fires no notification when the specified model does not exist", () => {
+    it("does not fire notification when the specified model does not exist", () => {
       const { ovrs, vp } = createOverrides();
       ovrs.clearOverrides("0x999");
       expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
