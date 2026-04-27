@@ -20,6 +20,7 @@ publish: false
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
   - [@itwin/core-frontend](#itwincore-frontend-1)
     - [Unified reality model iteration](#unified-reality-model-iteration)
+    - [PerModelCategoryVisibility performance improvement](#permodelcategoryvisibility-performance-improvement)
   - [Backend](#backend)
     - [ChangesetReader — native changeset reader](#ChangesetReader--native-changeset-reader)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
@@ -229,6 +230,12 @@ for (const { treeRef, name, description } of view.getRealityModelTreeRefs()) {
   console.log(`${name}: ${description}`);
 }
 ```
+
+### PerModelCategoryVisibility performance improvement
+
+The internal data structure backing [PerModelCategoryVisibility.Overrides]($frontend) has been changed from a `SortedArray` to a nested `Map` + `Set`, improving performance in some cases more than 10x.
+
+The `[Symbol.iterator]` on `PerModelCategoryVisibility.Overrides` now yields entries in insertion order instead of sorted by `(modelId, categoryId)`. The set of yielded entries is identical - only the order has changed.
 
 ## Backend
 
