@@ -155,6 +155,13 @@ export interface IModelHostOptions {
    */
   maxTileCacheDbSize?: number;
 
+  /** The process-wide maximum uncompressed GeometryStream size in bytes that the `dgn_geom_stream` virtual table will decompose.
+   * Blobs exceeding this limit are silently skipped (the vtab returns zero rows for them).
+   * Defaults to 50 MB. Minimum enforced by native layer: 4 KB.
+   * @beta
+   */
+  maxGeomStreamVTabBytes?: number;
+
   /** Whether to restrict tile cache URLs by client IP address (if available).
    * @beta
    */
@@ -249,6 +256,10 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
+  /** Default maximum uncompressed GeometryStream size (50 MB) for the `imodel_geom_stream` virtual table.
+   * @beta
+   */
+  public static defaultMaxGeomStreamVTabBytes = 50 * 1024 * 1024;
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -669,6 +680,7 @@ export class IModelHost {
 
     this.configuration = otherOptions;
     this.setupTileCache();
+    IModelNative.platform.setMaxGeomStreamVTabBytes(otherOptions.maxGeomStreamVTabBytes ?? IModelHostConfiguration.defaultMaxGeomStreamVTabBytes);
 
     process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
@@ -796,6 +808,16 @@ export class IModelHost {
    */
   public static get useSemanticRebase(): boolean {
     return undefined !== IModelHost.configuration && (IModelHost.configuration.useSemanticRebase ? true : false);
+  }
+
+  /**
+   * The current process-wide maximum uncompressed GeometryStream size in bytes that the `dgn_geom_stream`
+   * virtual table will decompose. Blobs exceeding this limit are silently skipped.
+   * @see [[IModelHostOptions.maxGeomStreamVTabBytes]]
+   * @beta
+   */
+  public static get maxGeomStreamVTabBytes(): number {
+    return IModelNative.platform.getMaxGeomStreamVTabBytes();
   }
 
   private static setupTileCache() {

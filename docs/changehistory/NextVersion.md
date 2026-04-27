@@ -108,6 +108,49 @@ db.withQueryReader(query, (reader) => {
 });
 ```
 
+### Geometry stream ECSQL functions
+
+Five new built-in ECSQL functions make it possible to inspect, count, classify, and convert element geometry streams entirely inside an ECSQL query — without loading the element into TypeScript or round-tripping through the geometry API.
+
+> **Backend only.** These functions call into the iModel native layer and must be executed via [IModelDb.withQueryReader]($backend) or [ECDb.withQueryReader]($backend) — the synchronous, backend-only reader. They are **not available** through the async `createQueryReader` / [IModelConnection.createQueryReader]($frontend) path.
+
+> **50 MB limit — silent skip.** By default, geometry streams larger than **50 MB** (uncompressed) are silently skipped — the function returns zero rows or `NULL` for that element. This is not an error. You can raise the limit via [IModelHostConfiguration.maxGeomStreamVTabBytes]($backend).
+
+| Function | What it does |
+|---|---|
+| `imodel_geom_stream(blob)` | Virtual table — yields one row per geometry entry in the stream |
+| `imodel_geom_json(blob)` | Converts a single geometry blob from the vtab into iTwin.js JSON; returns `NULL` for BRep |
+| `imodel_geom_entry_count(blob)` | Returns the total number of geometry primitives in a stream |
+| `imodel_geom_has_brep(blob)` | Returns `1` if the stream contains any BRep geometry, `0` otherwise |
+| `imodel_geom_part_ids(blob)` | Returns a JSON array of all `GeometryPart` IDs referenced by the stream, or `NULL` |
+
+```typescript
+// Count geometry primitives per element (no vtab join needed)
+iModel.withQueryReader(
+  `SELECT e.ECInstanceId, imodel_geom_entry_count(e.GeometryStream) AS cnt
+   FROM BisCore.GeometricElement3d e WHERE cnt > 1`,
+  (reader) => {
+    while (reader.step())
+      console.log(reader.current.ecInstanceId, reader.current.cnt);
+  },
+);
+
+// Decompose a stream into per-entry rows (requires ENABLE_EXPERIMENTAL_FEATURES)
+iModel.withQueryReader(
+  `SELECT gs.EntryIndex, gs.OpCode, gs.IsGeometry, imodel_geom_json(gs.GeometryBlob) AS json
+   FROM BisCore.GeometricElement3d e, imodel_geom_stream(e.GeometryStream) gs
+   WHERE e.ECInstanceId = ? AND gs.IsGeometry = 1
+   ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
+  (reader) => {
+    for (const row of reader)
+      console.log(row[0], row[1], row[3]);
+  },
+  new QueryBinder().bindId(1, elementId),
+);
+```
+
+See [Geometry Stream ECSQL Functions]($docs/learning/backend/GeometryStreamFunctions.md) for the full column reference, all five functions, and detailed examples.
+
 ### Bulk element deletion with `deleteElements`
 
 [EditTxn.deleteElements]($backend) is a new `@beta` API that efficiently deletes many elements in a single native operation when removing trees of elements, partitions, or mixes of ordinary and definition elements.

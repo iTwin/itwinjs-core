@@ -14,6 +14,7 @@ See also:
 - [Backend ECSQL Code Examples](./ECSQLCodeExamples.md) — `withPreparedStatement` usage
 - [Executing ECSQL in the Backend](./ExecutingECSQL.md)
 - [ECSQL Row Formats](../ECSQLRowFormat.md)
+- [Geometry Stream ECSQL Functions](./GeometryStreamFunctions.md) — `imodel_geom_stream` and companion scalar functions (require `withQueryReader`)
 
 ---
 
