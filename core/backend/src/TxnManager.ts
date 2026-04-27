@@ -21,6 +21,8 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { ChangesetReader } from "./ChangesetReader";
+import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -955,6 +957,21 @@ export class TxnManager {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
     // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
+  }
+
+  /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
+   * @internal */
+  protected _captureInstanceChanges(id: TxnIdString) {
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id });
+    using directPcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    using indirectPcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    while (reader.step()) {
+      if (reader.isIndirectChange)
+        indirectPcu.appendFrom(reader);
+      else
+        directPcu.appendFrom(reader);
+    }
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, directPcu.instances, indirectPcu.instances);
   }
 
   /** @internal */

@@ -32,6 +32,7 @@ import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECC
 import { ECSqlRow } from "./Entity";
 import { SqliteChangesetReader } from "./SqliteChangesetReader";
 import { TxnIdString } from "./TxnManager";
+import { ChangeInstance } from "./ChangesetReaderTypes";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -979,12 +980,12 @@ export class BriefcaseManager {
 
   /**
    * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure
-   * @param db The {@link BriefcaseDb} instance for storing the changed instances against a txn
+   * @param db The [[BriefcaseDb]] instance for storing the changed instances against a txn
    * @param txnId The txn id for which we are storing the changed instances
-   * @param instancePatches The {@link InstancePatch} instance patches to be stored
+   * @param instancePatches The [[ChangeInstance]] instance patches to be stored
    * @internal
    */
-  private static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: InstancePatch[]): void {
+  public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, directInstancePatches: IterableIterator<ChangeInstance>, indirectInstancePatches: IterableIterator<ChangeInstance>): void {
     const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
     const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
     const filePath = path.join(targetDir, this.DATA_FILE_NAME);
@@ -993,7 +994,15 @@ export class BriefcaseManager {
       IModelJsFs.removeSync(targetDir);
 
     IModelJsFs.recursiveMkDirSync(targetDir);
-    IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatches, undefined, 2));
+    for (const instancePatch of directInstancePatches) {
+      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue; // we will not take the old stage of updated instances
+      IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatch, undefined, 2));
+    }
+
+    for (const instancePatch of indirectInstancePatches) {
+      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue; // we will not take the old stage of updated instances
+      IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatch, undefined, 2));
+    }
   }
 
   /**
