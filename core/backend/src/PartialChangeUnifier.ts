@@ -267,7 +267,7 @@ export class PartialChangeUnifier implements Disposable {
     const lhs = this._cache.get(key);
     if (lhs) {
       // Merge data fields — rhs wins for any overlapping columns.
-      const { $meta: _rhsMeta, ...rhsData } = rhs as any;
+      const { $meta: _rhsMeta, ...rhsData } = rhs;
       Object.assign(lhs, rhsData);
       // Accumulate per-table metadata lists.
       lhs.$meta.tables = [...lhs.$meta.tables, ...rhs.$meta.tables];
