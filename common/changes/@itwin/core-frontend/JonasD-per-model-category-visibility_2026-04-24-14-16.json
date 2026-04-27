@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improved `PerModelCategoryVisibility` performance in some cases more than 10x.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

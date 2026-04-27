@@ -7,7 +7,7 @@ import * as path from "path";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
@@ -640,7 +640,7 @@ describe("PerformanceElementGetMetadata", () => {
           classFullName: `PerfTestElementMetaData:${className}`,
           userLabel: `PerfTestElementMetaData:${className}`,
           ...propsTemplate,
-        } as ElementProps);
+        });
         const id = txn.insertElement(element.toJSON());
         assert.isTrue(Id64.isValidId64(id), "insert successful");
         idSet.push(id);

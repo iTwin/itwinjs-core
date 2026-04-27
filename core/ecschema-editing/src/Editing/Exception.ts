@@ -387,7 +387,7 @@ export class SchemaEditingError extends Error {
   private get _schemaId(): SchemaId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.SchemaIdentifier)
       throw new Error("identifier is not a SchemaId.");
-    return this.identifier as SchemaId;
+    return this.identifier;
   }
 
   /**
@@ -427,7 +427,7 @@ export class SchemaEditingError extends Error {
   private get _enumeratorId(): EnumeratorId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumeratorIdentifier)
       throw new Error("identifier is not a EnumerationId.");
-    return this.identifier as EnumeratorId;
+    return this.identifier;
   }
 
   /**

@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import {
-  Camera, Code, CodeProps, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, RelatedElement, SpatialViewDefinitionProps,
+  Camera, Code, CodeProps, ColorByName, ColorDef, ElementProps, IModel, IModelError, PlanProjectionSettings, RelatedElement, SpatialViewDefinitionProps,
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Matrix3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -247,7 +247,7 @@ describe("ViewDefinition", () => {
       ds1.settings.setPlanProjectionSettings("0x1", PlanProjectionSettings.fromJSON({ elevation: 1 }));
       ds1.settings.setPlanProjectionSettings("0x2", PlanProjectionSettings.fromJSON({ elevation: 2 }));
 
-      const styles = (ds1.toJSON() as DisplayStyle3dProps).jsonProperties!.styles!;
+      const styles = (ds1.toJSON()).jsonProperties!.styles!;
       styles.subCategoryOvr =
         [{
           subCategory: spatialCategoryId,

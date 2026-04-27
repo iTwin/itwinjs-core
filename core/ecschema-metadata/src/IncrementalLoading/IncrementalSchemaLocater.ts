@@ -179,7 +179,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @returns The SchemaProps object.
    */
   protected async createSchemaProps(schemaKey: SchemaKey, schemaContext: SchemaContext): Promise<SchemaProps> {
-    const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest) as IncrementalSchemaInfo | undefined;
+    const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest) as IncrementalSchemaInfo | undefined; // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
     if (!schemaInfo)
       throw new Error(`Schema ${schemaKey.name} could not be found.`);
 

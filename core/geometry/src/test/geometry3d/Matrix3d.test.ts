@@ -575,7 +575,7 @@ describe("AxisOrder.ShiftAxis", () => {
       const axis2 = Geometry.axisOrderToAxis(axisOrder, 2);
       // shift = 1 for AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY
       // shift = 2 for AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX
-      const shift = axisOrder as number <= 2 ? 1 : 2;
+      const shift = axisOrder <= 2 ? 1 : 2;
       ck.testExactNumber(axis1, Geometry.cyclic3dAxis(axis0 + shift));
       ck.testExactNumber(axis2, Geometry.cyclic3dAxis(axis1 + shift));
       ck.testExactNumber(axis0, Geometry.cyclic3dAxis(axis2 + shift));

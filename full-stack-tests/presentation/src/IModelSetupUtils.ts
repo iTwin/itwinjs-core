@@ -232,7 +232,7 @@ export function insertPhysicalElementTxn<TAdditionalProps extends object>(
       }
       : undefined),
     ...elementProps,
-  } as PhysicalElementProps);
+  });
   return { className, id };
 }
 
@@ -259,7 +259,7 @@ export function insertElementAspectTxn<TAdditionalProps extends object>(
       id: elementId,
     },
     ...aspectProps,
-  } as ElementAspectProps);
+  });
   return { className, id };
 }
 

@@ -8,7 +8,7 @@ import {
   assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
-  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+  BackgroundMapType, BaseMapLayerSettings, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
@@ -524,7 +524,7 @@ export class TestRunner {
     if (config.displayStyle) {
       const styleProps = await imodel.elements.queryProps({ from: DisplayStyleState.classFullName, where: `CodeValue='${config.displayStyle}'` });
       if (styleProps.length >= 1) {
-        const style = new DisplayStyle3dState(styleProps[0] as DisplayStyleProps, imodel);
+        const style = new DisplayStyle3dState(styleProps[0], imodel);
         await style.load();
         viewport.view.setDisplayStyle(style);
       }
