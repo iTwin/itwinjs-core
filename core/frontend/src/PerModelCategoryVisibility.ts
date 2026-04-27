@@ -83,11 +83,7 @@ type WriteableOverrideEntry = Writeable<PerModelCategoryVisibility.OverrideEntry
 
 type ModelEntry = Map<Id64String, WriteableOverrideEntry>;
 
-/**
- * The Viewport-specific implementation of PerModelCategoryVisibility.Overrides.
- *
- * This class extends `Set`  type, so it has [Symbol.iterator] by default.
- */
+/** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides. */
 class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.Overrides {
   private readonly _map = new Map<Id64String, ModelEntry>();
   /** Flat set of all override entries, providing O(1) iteration via [Symbol.iterator]. Kept in sync with `_map`. */
@@ -161,6 +157,9 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
         if (catIdsToLoad && override !== PerModelCategoryVisibility.Override.None)
           catIdsToLoad.push(categoryId);
       }
+    }
+    if (modelEntry.size === 0) {
+      this._map.delete(modelId);
     }
     return changed;
   }

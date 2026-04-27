@@ -144,7 +144,7 @@ describe("PerModelCategoryVisibility", () => {
       expect((vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
     });
 
-    it("does not fire additional notification additional when duplicate `setOverride` calls are made", () => {
+    it("does not fire additional notification when duplicate `setOverride` calls are made", () => {
       const { ovrs, vp } = createOverrides();
       ovrs.setOverride("0x1", "0x10", PerModelCategoryVisibility.Override.Show);
       const countBefore = (vp.setViewedCategoriesPerModelChanged as ReturnType<typeof vi.fn>).mock.calls.length;
@@ -223,7 +223,7 @@ describe("PerModelCategoryVisibility", () => {
       expect(pushCalls[0][0]).toBe((vp as any).iModel.subcategories);
     });
 
-    it("does not fire additional notification additional when duplicate `setOverrides` calls are made", async () => {
+    it("does not fire additional notification when duplicate `setOverrides` calls are made", async () => {
       const { ovrs, vp } = createOverrides();
       const props: PerModelCategoryVisibility.Props[] = [{ modelId: "0x1", categoryIds: ["0x10"], visOverride: PerModelCategoryVisibility.Override.Show }];
       await ovrs.setOverrides(props);
@@ -293,11 +293,11 @@ describe("PerModelCategoryVisibility", () => {
       ovrs.setOverride("0x1", "0x10", PerModelCategoryVisibility.Override.Show);
       ovrs.setOverride("0x2", "0x20", PerModelCategoryVisibility.Override.Hide);
 
-      expect(collectEntries(ovrs)).toEqual(new Set([
+      expect(collectEntriesOrdered(ovrs)).toEqual([
         "0x3:0x30:true",
         "0x1:0x10:true",
         "0x2:0x20:false",
-      ]));
+      ]);
     });
 
     it("yields all category entries when multiple categories are set for the same model", () => {
