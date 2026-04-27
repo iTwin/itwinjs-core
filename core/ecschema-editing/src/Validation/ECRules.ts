@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
-  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
+  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
@@ -587,7 +587,7 @@ function propertyTypesMatch(propertyA: Property, propertyB: Property) {
 
 function getPrimitiveType(property: Property): PrimitiveType | undefined {
   if (property.isPrimitive())
-    return (property as PrimitiveProperty).primitiveType;
+    return (property).primitiveType;
 
   return undefined;
 }

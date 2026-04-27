@@ -125,7 +125,7 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x123" },
         (response) => expect(response).toEqual(SnapStatus.NoSnapPossible),
         modes,
-        (vp) => vp.mapLayerFromHit = () => { return [] as any; },
+        (vp) => vp.mapLayerFromHit = () => { return []; },
       );
     });
 

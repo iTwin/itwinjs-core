@@ -2520,7 +2520,7 @@ describe("CurveCurveIntersectXY", () => {
     nonPlanarTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
     nonPlanarTransform.setMultiplyTransformTransform(rotationTransform1, nonPlanarTransform);
     // integrated spirals
-    const integratedSpirals = [];
+    const integratedSpirals: TransitionSpiral3d[] = [];
     const r0 = 0;
     const r1 = 50;
     const activeInterval = Segment1d.create(0, 1);
@@ -2542,7 +2542,7 @@ describe("CurveCurveIntersectXY", () => {
       }
     }
     // direct spirals
-    const directSpirals = [];
+    const directSpirals: TransitionSpiral3d[] = [];
     const length = 100;
     for (const directSpiralType of [
       "Arema",

@@ -104,7 +104,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * Gets the [[ECSqlSchemaLocaterOptions]] used by this locater.
    */
   protected override get options(): ECSqlSchemaLocaterOptions {
-    return super.options as ECSqlSchemaLocaterOptions;
+    return super.options;
   }
 
   /**
