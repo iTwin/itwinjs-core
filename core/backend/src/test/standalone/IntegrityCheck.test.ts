@@ -286,7 +286,7 @@ describe("iModelDb integrityCheck Tests", () => {
   let iModel: BriefcaseDb;
 
   before(() => {
-    HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
+    HubMock.startup("IntegrityCheckTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
 
@@ -437,7 +437,7 @@ describe("iModelDb integrityCheck Tests", () => {
       expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
     });
 
-     // Run integrity check specifically for linktable foreign key Ids
+    // Run integrity check specifically for linktable foreign key Ids
     const results = await iModel.integrityCheck({
       quickCheck: true,
       specificChecks: {

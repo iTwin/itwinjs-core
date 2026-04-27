@@ -1139,7 +1139,7 @@ for (const enableSemanticRebase of [false, true]) {
         },
         recompute: async (txn: TxnProps): Promise<void> => {
           const reader = SqliteChangesetReader.openTxn({ txnId: txn.id, db: b2, disableSchemaCheck: true });
-          const adaptor = new ChangesetECAdaptor(reader);
+          const adaptor = new ChangesetECAdaptor(reader); // eslint-disable-line @typescript-eslint/no-deprecated
           adaptor.acceptClass("TestDomain:a1");
           const ids = new Set<Id64String>();
           while (adaptor.step()) {
