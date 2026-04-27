@@ -65,7 +65,7 @@ export enum FormatTraits {
   ExponentOnlyNegative = 1 << 9,
 }
 
-/** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.
+/** Precision for Fractional formatted value types. Values must be powers of 2, ranging from Whole (1/1) through 1/256.
  * @beta */
 export enum FractionalPrecision {
   One = 1,
@@ -189,7 +189,7 @@ export function parseRatioType(ratioType: string, formatName: string): RatioType
     if (RatioType.hasOwnProperty(key)) {
       const enumValue = RatioType[key as keyof typeof RatioType];
       if (enumValue.toLowerCase() === normalizedValue) {
-        return enumValue as RatioType;
+        return enumValue;
       }
     }
   }
@@ -203,7 +203,7 @@ export function parseRatioFormatType(ratioFormatType: string, formatName: string
     if (RatioFormatType.hasOwnProperty(key)) {
       const enumValue = RatioFormatType[key as keyof typeof RatioFormatType];
       if (enumValue.toLowerCase() === normalizedValue)
-        return enumValue as RatioFormatType;
+        return enumValue;
     }
   }
   throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioFormatType' attribute.`);

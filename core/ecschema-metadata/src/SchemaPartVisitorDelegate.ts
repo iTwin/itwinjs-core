@@ -370,7 +370,7 @@ export class SchemaPartVisitorDelegate {
       await this._visitor.visitSchemaItem(schemaItem);
 
     if (ECClass.isECClass(schemaItem) && this._visitor.visitClass)
-      await this._visitor.visitClass(schemaItem as AnyClass);
+      await this._visitor.visitClass(schemaItem);
 
     switch (schemaItem.schemaItemType) {
       case SchemaItemType.Constant:
@@ -427,7 +427,7 @@ export class SchemaPartVisitorDelegate {
         break;
       case SchemaItemType.UnitSystem:
         if (this._visitor.visitUnitSystem)
-          await this._visitor.visitUnitSystem(schemaItem as UnitSystem);
+          await this._visitor.visitUnitSystem(schemaItem);
         break;
     }
   }
@@ -437,7 +437,7 @@ export class SchemaPartVisitorDelegate {
       this._visitor.visitSchemaItemSync(schemaItem);
 
     if (ECClass.isECClass(schemaItem) && this._visitor.visitClassSync)
-      this._visitor.visitClassSync(schemaItem as AnyClass);
+      this._visitor.visitClassSync(schemaItem);
 
     switch (schemaItem.schemaItemType) {
       case SchemaItemType.Constant:
@@ -494,7 +494,7 @@ export class SchemaPartVisitorDelegate {
         break;
       case SchemaItemType.UnitSystem:
         if (this._visitor.visitUnitSystemSync)
-          this._visitor.visitUnitSystemSync(schemaItem as UnitSystem);
+          this._visitor.visitUnitSystemSync(schemaItem);
         break;
     }
   }

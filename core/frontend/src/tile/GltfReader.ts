@@ -22,7 +22,7 @@ import { IModelApp } from "../IModelApp";
 import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { Triangle } from "../common/internal/render/Primitives";
+import { Triangle, TriangleList } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal";
@@ -31,12 +31,12 @@ import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
-import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
+import { MeshPointList, MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
-  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
+  GltfImage, GltfMaterial, GltfMaterialLineStyleExtension, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
@@ -258,7 +258,7 @@ export class GltfReaderProps {
 
 /** The GltfMeshData contains the raw GLTF mesh data. If the data is suitable to create a [[RealityMesh]] directly, basically in the quantized format produced by
   * ContextCapture, then a RealityMesh is created directly from this data. Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
-  * is generated. The MeshPrimitve path is much less efficient but should be rarely used.
+  * is generated. The MeshPrimitive path is much less efficient but should be rarely used.
   *
   * @internal
   */
@@ -272,6 +272,7 @@ export class GltfMeshData {
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
   public indices?: Uint8Array | Uint16Array | Uint32Array;
+  public cumulativeDistances?: Float32Array;
   public readonly type = "mesh" as const;
 
   public constructor(props: Mesh) {
@@ -292,6 +293,28 @@ type GltfPrimitiveData = GltfMeshData | GltfPointCloud;
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
 const emptyDict = { };
+
+interface MaterialLineStyle {
+  width?: number;
+  linePixels?: LinePixels;
+}
+
+function linePixelsFromGltfPattern(pattern: number | undefined): LinePixels | undefined {
+  if (undefined === pattern)
+    return undefined;
+
+  const normalized = pattern >>> 0;
+  if (0 === normalized)
+    return undefined;
+
+  if (normalized <= 0xffff) {
+    const mask16 = normalized & 0xffff;
+    const repeated = ((mask16 << 16) | mask16) >>> 0;
+    return repeated;
+  }
+
+  return normalized;
+}
 
 function colorFromJson(values: number[]): ColorDef {
   return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
@@ -664,7 +687,8 @@ export abstract class GltfReader {
     };
   }
 
-  public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
+  public async readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): Promise<RealityTileGeometry> {
+    await this.resolveResources();
     const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
     const polyfaces: IndexedPolyface[] = [];
     for (const nodeKey of this._sceneNodes) {
@@ -702,6 +726,8 @@ export abstract class GltfReader {
     const pointCount = gltfMesh.points.length / 3;
     assert(mesh.points instanceof QPoint3dList);
     mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
+    if (gltfMesh.cumulativeDistances)
+      mesh.cumulativeDistances = gltfMesh.cumulativeDistances;
     if (mesh.triangles && gltfMesh.indices)
       mesh.triangles.addFromTypedArray(gltfMesh.indices);
 
@@ -949,11 +975,31 @@ export abstract class GltfReader {
   }
 
   private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): IndexedPolyface | undefined {
-    if (!mesh.pointQParams || !mesh.points || !mesh.indices)
+    if (mesh.pointQParams && mesh.points && mesh.indices)
+      return this.polyfaceFromQuantizedData(mesh.pointQParams, mesh.points, mesh.indices, mesh.normals, mesh.uvQParams, mesh.uvs, transform, needNormals, needParams);
+
+    const meshPrim = mesh.primitive;
+    const triangles = meshPrim.triangles;
+    const points = meshPrim.points;
+    if (!triangles || triangles.isEmpty || points.length === 0)
       return undefined;
 
-    const { points, pointQParams, normals, uvs, uvQParams, indices } = mesh;
+    // This will likely only be the case for Draco-compressed meshes-- see where readDracoMeshPrimitive is called within readMeshPrimitive
+    // That is the only case where mesh.primitive is populated but mesh.pointQParams, mesh.points, & mesh.indices are not
+    return this.polyfaceFromMeshPrimitive(triangles, points, meshPrim.normals, meshPrim.uvParams, transform, needNormals, needParams);
+  }
 
+  private polyfaceFromQuantizedData(
+    pointQParams: QParams3d,
+    points: Uint16Array,
+    indices: Uint8Array | Uint16Array | Uint32Array,
+    normals: Uint16Array | undefined,
+    uvQParams: QParams2d | undefined,
+    uvs: Uint16Array | undefined,
+    transform: Transform | undefined,
+    needNormals: boolean,
+    needParams: boolean
+  ): IndexedPolyface {
     const includeNormals = needNormals && undefined !== normals;
     const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
 
@@ -974,6 +1020,62 @@ export abstract class GltfReader {
       for (let i = 0; i < uvs.length; )
         polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
 
+    let j = 0;
+    for (const index of indices) {
+      polyface.addPointIndex(index);
+      if (includeNormals)
+        polyface.addNormalIndex(index);
+
+      if (includeParams)
+        polyface.addParamIndex(index);
+
+      if (0 === (++j % 3))
+        polyface.terminateFacet();
+    }
+
+    return polyface;
+  }
+
+  private polyfaceFromMeshPrimitive(
+    triangles: TriangleList,
+    points: MeshPointList,
+    normals: OctEncodedNormal[],
+    uvParams: Point2d[],
+    transform: Transform | undefined,
+    needNormals: boolean,
+    needParams: boolean
+  ): IndexedPolyface {
+    const includeNormals = needNormals && normals.length > 0;
+    const includeParams = needParams && uvParams.length > 0;
+
+    const polyface = IndexedPolyface.create(includeNormals, includeParams);
+
+    if (points instanceof QPoint3dList) {
+      for (let i = 0; i < points.length; i++) {
+        const point = points.unquantize(i);
+        if (transform)
+          transform.multiplyPoint3d(point, point);
+        polyface.addPoint(point);
+      }
+    } else {
+      const center = points.range.center;
+      for (const pt of points) {
+        const point = pt.plus(center);
+        if (transform)
+          transform.multiplyPoint3d(point, point);
+        polyface.addPoint(point);
+      }
+    }
+
+    if (includeNormals)
+      for (const normal of normals)
+        polyface.addNormal(OctEncodedNormal.decodeValue(normal.value));
+
+    if (includeParams)
+      for (const uv of uvParams)
+        polyface.addParam(uv);
+
+    const indices = triangles.indices;
     let j = 0;
     for (const index of indices) {
       polyface.addPointIndex(index);
@@ -1175,7 +1277,83 @@ export abstract class GltfReader {
     }
   }
 
-  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false): DisplayParams | undefined {
+  private getMaterialLineStyle(material: GltfMaterial): MaterialLineStyle | undefined {
+    const ext = material.extensions?.BENTLEY_materials_line_style as GltfMaterialLineStyleExtension | undefined;
+    if (!ext)
+      return undefined;
+
+    let width = JsonUtils.asInt(ext.width);
+    if (undefined !== width)
+      width = Math.max(1, width);
+
+    const patternValue = JsonUtils.asInt(ext.pattern);
+    const linePixels = linePixelsFromGltfPattern(patternValue);
+
+    if (undefined === width && undefined === linePixels)
+      return undefined;
+
+    return { width, linePixels };
+  }
+
+  private readCumulativeDistances(mesh: GltfMeshData, primitive: GltfMeshPrimitive): void {
+    const positionView = this.getBufferView(primitive.attributes, "POSITION");
+    const pointCount = positionView?.count ?? 0;
+
+    const semantic = "BENTLEY_materials_line_style:CUMULATIVE_DISTANCE";
+    const attrView = this.getBufferView(primitive.attributes, semantic);
+    if (attrView) {
+      if ("SCALAR" !== attrView.accessor.type || (0 !== pointCount && attrView.count !== pointCount)) {
+        mesh.cumulativeDistances = new Float32Array(0);
+        return;
+      }
+
+      if (GltfDataType.Float === attrView.type) {
+        const data = attrView.toBufferData(GltfDataType.Float);
+        if (!data || !(data.buffer instanceof Float32Array)) {
+          mesh.cumulativeDistances = new Float32Array(0);
+          return;
+        }
+
+        mesh.cumulativeDistances = data.buffer.subarray(0, data.count);
+        return;
+      }
+
+      if (attrView.accessor.normalized) {
+        const maxDistance = Array.isArray(attrView.accessor.max) && attrView.accessor.max.length > 0 ? attrView.accessor.max[0] : 1.0;
+        const count = attrView.count;
+        let data: GltfBufferData | undefined;
+        let denom = 1;
+        if (GltfDataType.UnsignedShort === attrView.type) {
+          data = attrView.toBufferData(GltfDataType.UnsignedShort);
+          denom = 65535;
+        } else if (GltfDataType.UnsignedByte === attrView.type) {
+          data = attrView.toBufferData(GltfDataType.UnsignedByte);
+          denom = 255;
+        }
+
+        if (!data || !data.buffer) {
+          mesh.cumulativeDistances = new Float32Array(0);
+          return;
+        }
+
+        const out = new Float32Array(count);
+        const scale = maxDistance / denom;
+        const src = data.buffer as Uint16Array | Uint8Array;
+        for (let i = 0; i < count; i++)
+          out[i] = src[i] * scale;
+
+        mesh.cumulativeDistances = out;
+        return;
+      }
+
+      mesh.cumulativeDistances = new Float32Array(0);
+      return;
+    }
+
+    mesh.cumulativeDistances = new Float32Array(0);
+  }
+
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive = false, lineStyle?: MaterialLineStyle): DisplayParams | undefined {
     let constantLodParamProps: TextureMapping.ConstantLodParamProps | undefined;
     let normalMapUseConstantLod = false;
     if (!isGltf1Material(material)) {
@@ -1194,7 +1372,6 @@ export abstract class GltfReader {
       // Normal map only uses constant LOD if both the base texture and normal texture have the extension
       normalMapUseConstantLod = extConstantLod !== undefined && material.normalTexture?.extensions?.EXT_textureInfo_constant_lod !== undefined;
     }
-
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
     const normalMapId = this.extractNormalMapId(material);
@@ -1226,14 +1403,15 @@ export abstract class GltfReader {
       textureMapping = undefined;
     }
 
-    let width = 1;
-    if (isPointPrimitive && !isGltf1Material(material)) {
-      const pointStyle = material.extensions?.BENTLEY_materials_point_style;
-      if (pointStyle && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter) {
+    const overrides = lineStyle ?? this.getMaterialLineStyle(material);
+    let width = overrides?.width ?? 1;
+    if (undefined === overrides?.width && isPointPrimitive && !isGltf1Material(material)) {
+      const pointStyle = material.extensions?.BENTLEY_materials_point_style as { diameter?: number } | undefined;
+      if (pointStyle?.diameter && pointStyle.diameter > 0 && Math.floor(pointStyle.diameter) === pointStyle.diameter)
         width = pointStyle.diameter;
-      }
     }
 
+    const linePixels = overrides?.linePixels ?? LinePixels.Solid;
     // Process BENTLEY_materials_planar_fill extension
     let fillFlags = FillFlags.None;
     if (!isGltf1Material(material)) {
@@ -1259,7 +1437,7 @@ export abstract class GltfReader {
       }
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, fillFlags, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, linePixels, fillFlags, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -1312,7 +1490,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
-    if (meshMode === GltfMeshMode.Points /* && !this._vertexTableRequired */) {
+    if (meshMode === GltfMeshMode.Points && !this._vertexTableRequired) {
       const pointCloud = this.readPointCloud2(primitive, undefined !== featureTable);
       if (pointCloud)
         return pointCloud;
@@ -1322,6 +1500,8 @@ export abstract class GltfReader {
     const material = 0 < materialName.length ? this._materials[materialName] : { };
     if (!material)
       return undefined;
+
+    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
 
     let primitiveType: number = -1;
     switch (meshMode) {
@@ -1342,8 +1522,11 @@ export abstract class GltfReader {
         return undefined;
     }
 
-    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
-    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting, MeshPrimitiveType.Point === primitiveType) : undefined;
+    // Only extract line style for line primitives or meshes with edges
+    const hasEdges = primitive.extensions?.EXT_mesh_primitive_edge_visibility || primitive.extensions?.CESIUM_primitive_outline;
+    const lineStyle = (primitiveType === MeshPrimitiveType.Polyline || hasEdges) ? this.getMaterialLineStyle(material) : undefined;
+
+    const displayParams = this.createDisplayParams(material, hasBakedLighting, primitiveType === MeshPrimitiveType.Point, lineStyle);
     if (!displayParams)
       return undefined;
 
@@ -1432,6 +1615,7 @@ export abstract class GltfReader {
       case MeshPrimitiveType.Polyline:
       case MeshPrimitiveType.Point: {
         assert(meshMode === GltfMeshMode.Points || meshMode === GltfMeshMode.Lines || meshMode === GltfMeshMode.LineStrip);
+        this.readCumulativeDistances(mesh, primitive);
         if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", meshMode))
           return undefined;
         break;
@@ -1525,12 +1709,21 @@ export abstract class GltfReader {
 
   private getEdgeAppearance(materialId: GltfId | undefined): EdgeAppearanceOverrides | undefined {
     const material = undefined !== materialId ? this._materials[materialId] : undefined;
-    const displayParams = material ? this.createDisplayParams(material, false) : undefined;
-    if (displayParams) {
-      return { color: displayParams.lineColor };
-    }
+    if (!material)
+      return undefined;
 
-    return undefined;
+    const lineStyle = this.getMaterialLineStyle(material);
+    const displayParams = this.createDisplayParams(material, false, false, lineStyle);
+    if (!displayParams)
+      return undefined;
+
+    const appearance = {
+      color: displayParams.lineColor,
+      width: lineStyle?.width,
+      linePixels: lineStyle?.linePixels,
+    };
+
+    return appearance;
   }
 
   private readPointCloud2(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {
@@ -2202,7 +2395,7 @@ export abstract class GltfReader {
       await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
-      Logger.logException(FrontendLoggerCategory.Render, err);
+      Logger.logError(FrontendLoggerCategory.Render, err);
     }
   }
 

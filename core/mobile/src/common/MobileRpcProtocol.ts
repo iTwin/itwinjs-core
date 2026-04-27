@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
+import { BentleyStatus, expectDefined } from "@itwin/core-bentley";
 import {
   IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
   SerializedRpcRequest,
@@ -186,7 +186,7 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     while (this._capacity !== 0 && this._pending.length) {
       --this._capacity;
-      const next = this._pending.shift()!;
+      const next = expectDefined(this._pending.shift(), "Expected pending RPC chunk after queue length check.");
       for (const chunk of next) {
         this.socket.send(chunk);
       }

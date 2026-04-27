@@ -128,6 +128,20 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
+// @beta
+export class BeUnorderedEvent<T extends Listener> {
+    addListener(listener: T, scope?: any): () => void;
+    addOnce(listener: T, scope?: any): () => void;
+    clear(): void;
+    get numberOfListeners(): number;
+    raiseEvent(...args: Parameters<T>): void;
+}
+
+// @beta
+export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
+    emit(args: TEventArgs): void;
+}
+
 // @public
 export enum BriefcaseStatus {
     // (undocumented)
@@ -1251,8 +1265,10 @@ export class Logger {
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+    static logError(category: string, error: unknown, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logError: LogFunction | undefined;
+    // @deprecated
     static logException(category: string, err: any, log?: LogFunction): void;
     static logExceptionCallstacks: boolean;
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1385,9 +1401,13 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
+    addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
+    deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;
+    readonly onBatchAdded: BeEvent<() => void>;
+    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
@@ -1810,6 +1830,9 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
+
+// @beta
+export function wrapTimerCallback(timerPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
 
 // @public
 export class YieldManager {

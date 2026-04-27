@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BeTimePoint, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -483,6 +483,18 @@ export class ToolAdmin {
       ToolAdmin.addEvent(ev);
   };
 
+  /** Handler for modifier key transitions captured before focused UI elements can stop propagation. */
+  private static _keyEventCaptureHandler = async (event: Event): Promise<void> => {
+    const ev = event as KeyboardEvent;
+    if (!ev.repeat) {
+      try {
+        await IModelApp.toolAdmin.onKeyTransitionCaptured(ev);
+      } catch (err) {
+        await ToolAdmin.exceptionHandler(err);
+      }
+    }
+  };
+
   /** @internal */
   public onInitialized() {
     if (typeof document === "undefined")
@@ -491,6 +503,9 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
     ["keydown", "keyup"].forEach((type) => {
+      document.addEventListener(type, ToolAdmin._keyEventCaptureHandler, true);
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventCaptureHandler, true));
+
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
       ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
     });
@@ -1431,6 +1446,17 @@ export class ToolAdmin {
     }
   }
 
+  private get _isFocusHome(): boolean {
+    return (document.body === document.activeElement);
+  }
+
+  private _setFocusHome(): void {
+    const element = document.activeElement as HTMLElement;
+    if (element && element !== document.body)
+      element.blur();
+    document.body.focus();
+  }
+
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
       case "Alt": return BeModifierKeys.Alt;
@@ -1465,20 +1491,48 @@ export class ToolAdmin {
     return { handled, result };
   }
 
-  /** Process shortcut key events */
+  /** Sub-classes should override to process shortcut key events.
+   * @return true if handled and no further processing of event should occur.
+   */
   public async processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean> {
     return false;
+  }
+
+  /** Event for every key down and up transition.
+   * @note Called before processShortcutKey.
+   * @return true if handled and no further processing of event should occur.
+   */
+  protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
+    if (this._isFocusHome || undefined !== IModelApp.accuDraw.getFocusItem())
+      return false; // Focus is Home or AccuDraw, allow shortcuts...
+
+    // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
+    // Escape is the only practical choice with its default behavior that can cancel/close/blur.
+    // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
+    // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
+    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome && !keyEvent.defaultPrevented && !keyEvent.isComposing)
+      this._setFocusHome();
+
+    return true;
+  }
+
+  /** Need to check for modifier changes on capture phase as a ui element that calls stopPropagation
+   * prevents onKeyTransition from being called when bubbling.
+   */
+  private async onKeyTransitionCaptured(keyEvent: KeyboardEvent): Promise<void> {
+    this.currentInputState.setKeyQualifiers(keyEvent);
+    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+
+    if (BeModifierKeys.None !== modifierKey)
+      return this.onModifierKeyTransition("keydown" === keyEvent.type, modifierKey, keyEvent);
   }
 
   /** Event for every key down and up transition. */
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
-    this.currentInputState.setKeyQualifiers(keyEvent);
 
-    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-
-    if (BeModifierKeys.None !== modifierKey)
-      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
+    if (this.processKeyboardEvent(keyEvent, wentDown))
+      return EventHandled.Yes;
 
     if (wentDown && keyEvent.ctrlKey) {
       const { handled, result } = await this.onCtrlKeyPressed(keyEvent);
@@ -1511,7 +1565,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    return (IModelStatus.Success === await imodel.txns.reverseSingleTxn() ? true : false);
+    return imodel.txns.reverseSingleTxnAsync().then(() => true).catch(() => false);
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1527,7 +1581,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    return (IModelStatus.Success === await imodel.txns.reinstateTxn() ? true : false);
+    return imodel.txns.reinstateTxnAsync().then(() => true).catch(() => false);
   }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
@@ -1669,33 +1723,54 @@ export class ToolAdmin {
     this._primitiveTool = newTool;
   }
 
+  // serialize concurrent starts to avoid two tools installing simultaneously.
+  private _primitiveToolStarting?: Promise<void>;
+
   /** @internal */
   public async startPrimitiveTool(newTool?: PrimitiveTool) {
-    IModelApp.notifications.outputPrompt("");
-    await this.exitViewTool();
+    // If another start is in progress wait for it to finish before proceeding.
+    while (undefined !== this._primitiveToolStarting)
+      await this._primitiveToolStarting;
 
-    if (undefined !== this._primitiveTool)
-      await this.setPrimitiveTool(undefined);
+    let resolveStarting: (() => void) | undefined;
+    this._primitiveToolStarting = new Promise<void>((r) => { resolveStarting = r; });
 
-    // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
-    await this.exitInputCollector();
+    try {
+      IModelApp.notifications.outputPrompt("");
+      await this.exitViewTool();
 
-    IModelApp.viewManager.endDynamicsMode();
-    this.setIncompatibleViewportCursor(true); // Don't restore this
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+      if (undefined !== this._primitiveTool)
+        await this.setPrimitiveTool(undefined);
 
-    this.toolState.coordLockOvr = CoordinateLockOverrides.None;
-    this.toolState.locateCircleOn = false;
+      // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
+      await this.exitInputCollector();
 
-    IModelApp.accuDraw.onPrimitiveToolInstall();
-    IModelApp.accuSnap.onStartTool();
+      IModelApp.viewManager.endDynamicsMode();
+      this.setIncompatibleViewportCursor(true); // Don't restore this
+      IModelApp.viewManager.invalidateDecorationsAllViews();
 
-    if (undefined !== newTool) {
-      this.setCursor(IModelApp.viewManager.crossHairCursor);
-      await this.setPrimitiveTool(newTool);
+      this.toolState.coordLockOvr = CoordinateLockOverrides.None;
+      this.toolState.locateCircleOn = false;
+
+      IModelApp.accuDraw.onPrimitiveToolInstall();
+      IModelApp.accuSnap.onStartTool();
+
+      if (undefined !== newTool) {
+        this.setCursor(IModelApp.viewManager.crossHairCursor);
+        await this.setPrimitiveTool(newTool);
+      }
+      // it is important to raise event after setPrimitiveTool is called
+      const activeTool = newTool ?? this._idleTool;
+      // _idleTool is cleared during onShutDown(); skip the event if shutdown has already run
+      // to avoid emitting activeToolChanged with an undefined tool.
+      if (undefined === activeTool)
+        return;
+      this.onActiveToolChanged(activeTool, StartOrResume.Start);
+    } finally {
+      if (resolveStarting)
+        resolveStarting();
+      this._primitiveToolStarting = undefined;
     }
-    // it is important to raise event after setPrimitiveTool is called
-    this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.

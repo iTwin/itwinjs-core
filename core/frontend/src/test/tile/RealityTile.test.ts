@@ -5,14 +5,14 @@
 
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
-import { TileFormat } from "@itwin/core-common";
-import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
+import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
+import { Angle, Matrix3d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
+  B3dmReader, GltfGraphicsReader, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
   Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
@@ -98,7 +98,7 @@ class TestRealityTree extends RealityTileTree {
   public readonly contentSize: number;
   protected override readonly _rootTile: TestRealityTile;
 
-  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform) {
+  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform, iModelTransform?: Transform) {
     super({
       loader,
       rootTile: {
@@ -108,7 +108,7 @@ class TestRealityTree extends RealityTileTree {
       },
       id: (++TestRealityTree._nextId).toString(),
       modelId: "0",
-      location: Transform.createTranslationXYZ(2, 2, 2),
+      location: iModelTransform ?? Transform.createIdentity(),
       priority: TileLoadPriority.Primary,
       iModel,
       gcsConverterAvailable: false,
@@ -119,8 +119,7 @@ class TestRealityTree extends RealityTileTree {
     this.treeId = TestRealityTree._nextId;
     this.contentSize = contentSize;
 
-    const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
+    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform);
   }
 
   public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -153,7 +152,7 @@ class TestRealityTree extends RealityTileTree {
 }
 
 class TestB3dmReader extends B3dmReader {
-  public override readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): RealityTileGeometry {
+  public override async readGltfAndCreateGeometry(transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): Promise<RealityTileGeometry> {
     // Create mock geometry data with a simple polyface
     const options = StrokeOptions.createForFacets();
     const polyBuilder = PolyfaceBuilder.create(options);
@@ -162,10 +161,33 @@ class TestB3dmReader extends B3dmReader {
       Point3d.create(1, 0, 0),
       Point3d.create(1, 1, 0)
     ]);
-    const originalPolyface = polyBuilder.claimPolyface();
+    let originalPolyface = polyBuilder.claimPolyface();
+    if (transformToRoot) {
+      originalPolyface = originalPolyface.cloneTransformed(transformToRoot);
+    }
     const mockGeometry = { polyfaces: [originalPolyface] };
     return mockGeometry;
   }
+}
+
+/** Creates a minimal valid GLB (binary glTF) for testing. */
+function createMinimalGlb(): Uint8Array {
+  const json = JSON.stringify({ asset: { version: "2.0" }, meshes: [] });
+  const jsonBytes = new TextEncoder().encode(json.padEnd(Math.ceil(json.length / 4) * 4));
+  const numBytes = 12 + 8 + jsonBytes.length; // header + JSON chunk header + JSON data
+
+  const glb = new Uint8Array(numBytes);
+  const view = new DataView(glb.buffer);
+
+  view.setUint32(0, TileFormat.Gltf, true);
+  view.setUint32(4, GltfVersions.Version2, true);
+  view.setUint32(8, numBytes, true);
+
+  view.setUint32(12, jsonBytes.length, true);
+  view.setUint32(16, GltfV2ChunkTypes.JSON, true);
+  glb.set(jsonBytes, 20);
+
+  return glb;
 }
 
 function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
@@ -296,8 +318,9 @@ describe("RealityTile", () => {
 
 describe("RealityTileLoader", () => {
   it("when loading geometry should apply both tile tree's iModelTransform and tile's transformToRoot", async () => {
-    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, Transform.createTranslationXYZ(2, 2, 2));
     const tile = tree.rootTile;
+    tile.transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
 
     const expectedTransform = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
     await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
@@ -309,7 +332,7 @@ describe("RealityTileLoader", () => {
   });
 
   it("when loading geometry should use only iModelTransform when transformToRoot is undefined", async () => {
-    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, Transform.createTranslationXYZ(2, 2, 2));
     const tile = tree.rootTile;
     tile.transformToRoot = undefined;
 
@@ -320,5 +343,121 @@ describe("RealityTileLoader", () => {
 
     const geometryTransform = createGeometrySpy.mock.calls[0][0];
     expect(geometryTransform).toEqual(expectedTransform);
+  });
+
+  it("should apply reprojection transform correctly when tile tree's CRS differs from iModel CRS", async () => {
+    // iModelTransform: 90 degree rotation around Z, scale by 2, translate by (10, 20, 30)
+    const rotation = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(90));
+    const rotationAndScale = rotation.scale(2);
+    const iModelTransform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 30), rotationAndScale);
+
+    // Reprojection transform: translation of (1, 0, 0) in root tile CRS
+    const reprojectTransform = Transform.createTranslationXYZ(1, 0, 0);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, iModelTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // Step 1: readGltfAndCreateGeometry applies iModelTransform to original points
+      // 90 degree rotation around Z + scale 2: (x,y,z) → (-2y, 2x, 2z) + origin (10,20,30)
+      // (0,0,0) → (10,20,30), (1,0,0) → (10,22,30), (1,1,0) → (8,22,30)
+      //
+      // Step 2: Conjugated reprojection: iModelTransform * xForm * iModelTransform.inverse()
+      // xForm Translation(1,0,0) in root tile CRS → (0,2,0) in iModel CRS after conjugation
+      // Final: (10,22,30), (10,24,30), (8,24,30)
+      expectPointToEqual(points[0], 10, 22, 30);
+      expectPointToEqual(points[1], 10, 24, 30);
+      expectPointToEqual(points[2], 8, 24, 30);
+    }
+  });
+
+  it("should apply reprojection transform correctly when tile tree's iModelTransform is identity", async () => {
+    const iModelTransform = Transform.createIdentity();
+
+    // Reprojection transform is a translation
+    const reprojectTransform = Transform.createTranslationXYZ(3, 4, 5);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, iModelTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // With identity iModelTransform, conjugation has no effect - xForm is applied directly
+      // Original points: (0,0,0), (1,0,0), (1,1,0)
+      // After reprojection: shift by (3,4,5)
+      expectPointToEqual(points[0], 3, 4, 5);
+      expectPointToEqual(points[1], 4, 4, 5);
+      expectPointToEqual(points[2], 4, 5, 5);
+    }
+  });
+
+  it("should skip reprojection when tile tree's iModelTransform is not invertible", async () => {
+    // Create a singular (non-invertible) transform by scaling X to 0
+    const singularMatrix = Matrix3d.createScale(0, 1, 1);
+    const nonInvertibleTransform = Transform.createOriginAndMatrix(Point3d.createZero(), singularMatrix);
+
+    // Reprojection transform that would shift points if applied
+    const reprojectTransform = Transform.createTranslationXYZ(100, 100, 100);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, nonInvertibleTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // iModelTransform scales X to 0, so all X coordinates become 0
+      // Since iModelTransform.inverse() returns undefined, reprojection is skipped
+      // Original points: (0,0,0), (1,0,0), (1,1,0)
+      // After non-invertible iModelTransform: (0,0,0), (0,0,0), (0,1,0)
+      // Reprojection NOT applied (would have added 100,100,100)
+      expectPointToEqual(points[0], 0, 0, 0);
+      expectPointToEqual(points[1], 0, 0, 0);
+      expectPointToEqual(points[2], 0, 1, 0);
+    }
+  });
+
+  it("should load geometry from tiles in glTF format", async () => {
+    const gltfStreamBuffer = ByteStream.fromUint8Array(createMinimalGlb());
+
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockResolvedValue({ polyfaces: [mockPolyface] });
+
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tile = tree.rootTile;
+
+    const result = await reader.loadGeometryFromStream(tile, gltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+  });
+
+  it("should return empty content for unsupported tile format", async () => {
+    const buffer = new Uint8Array(16);
+    const view = new DataView(buffer.buffer);
+    view.setUint32(0, 0x12345678, true);
+    const invalidStreamBuffer = ByteStream.fromUint8Array(buffer);
+
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tile = tree.rootTile;
+
+    const result = await reader.loadGeometryFromStream(tile, invalidStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.be.undefined;
   });
 });

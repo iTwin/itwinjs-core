@@ -26,10 +26,10 @@ LIMIT
 | ----- |
 | First |
 
-# Simple case Expression without alias for ConcurrentQuery
+# Simple case Expression without alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT

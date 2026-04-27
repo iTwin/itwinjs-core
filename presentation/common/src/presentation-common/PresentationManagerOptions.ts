@@ -8,7 +8,7 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Descriptor, SelectionInfo } from "./content/Descriptor.js";
+import { Descriptor, DescriptorFieldsSelector, SelectionInfo } from "./content/Descriptor.js";
 import { FieldDescriptor } from "./content/Fields.js";
 import { Item } from "./content/Item.js";
 import { InstanceKey } from "./EC.js";
@@ -220,8 +220,15 @@ export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedConten
   contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 
   /**
+   * A callback that allows specifying which fields should be included or excluded in the result based on the given content descriptor. This
+   * is useful when requesting properties of multiple elements, where the result set can be very large and it may be desirable to only get a
+   * subset of all available fields.
+   */
+  fieldsSelector?: (descriptor: Descriptor) => DescriptorFieldsSelector | undefined;
+
+  /**
    * The properties of multiple elements are going to be retrieved and returned in batches. Depending on the batch
-   * size load on CPU vs MEMORY load may vary, so changing this attribute allows to fine tune the performance.
+   * size load on CPU vs MEMORY load may vary, so changing this attribute allows fine tuning the performance.
    * Defaults to `1000`.
    */
   batchSize?: number;

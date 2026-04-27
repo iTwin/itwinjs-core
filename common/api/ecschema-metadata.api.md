@@ -463,7 +463,7 @@ export enum ECSchemaStatus {
     UnableToLocateSchema = 35071
 }
 
-// @internal
+// @beta
 export interface ECSpecVersion {
     // (undocumented)
     readVersion: number;
@@ -820,7 +820,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     });
     addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
-    getFormat(input: string): Promise<FormatDefinition | undefined>;
+    getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     removeFormat(name: string): Promise<void>;
@@ -1948,15 +1948,15 @@ export class SchemaContext {
 
 // @beta
 export class SchemaFormatsProvider implements FormatsProvider {
-    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
+    constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
-    get unitSystem(): UnitSystemKey;
-    set unitSystem(unitSystem: UnitSystemKey);
+    get unitSystem(): UnitSystemKey | undefined;
+    set unitSystem(unitSystem: UnitSystemKey | undefined);
 }
 
 // @internal

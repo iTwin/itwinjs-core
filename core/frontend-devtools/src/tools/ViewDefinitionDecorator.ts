@@ -43,7 +43,7 @@ class ViewDefinitionDecoration {
       const frustum = vp.getFrustum();
       this._preloadedFrustum.push(frustum.transformBy(transform));
 
-    }).catch((err: unknown) => { Logger.logException("FrontendDevTools", err)});
+    }).catch((err: unknown) => { Logger.logError("FrontendDevTools", err)});
   }
 
   public preload(viewport: Viewport) {

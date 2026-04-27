@@ -9,7 +9,6 @@ import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import {
   ChildNodeSpecificationTypes,
-  Descriptor,
   InstanceKey,
   PropertyValueFormat,
   RelationshipDirection,
@@ -85,7 +84,7 @@ describe("Hierarchies", () => {
             type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
           },
         ],
-      } as Partial<Descriptor>);
+      });
     });
 
     it("creates descriptor for child hierarchy level", async function () {
@@ -156,7 +155,7 @@ describe("Hierarchies", () => {
             type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
           },
         ],
-      } as Partial<Descriptor>);
+      });
     });
 
     it("creates descriptor for hierarchy level that uses `parent` ECExpression symbol in instance filter", async function () {
@@ -281,7 +280,7 @@ describe("Hierarchies", () => {
             },
           ],
         },
-      } as Partial<Descriptor>);
+      });
     });
 
     it("throws when attempting to get descriptor non-filterable hierarchy level", async function () {

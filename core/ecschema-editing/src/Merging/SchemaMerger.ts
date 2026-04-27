@@ -9,7 +9,7 @@
 import { Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
 import { SchemaMergingWalker } from "./SchemaMergingWalker";
 import { SchemaEdits } from "./Edits/SchemaEdits";
@@ -29,6 +29,175 @@ export interface SchemaMergeContext {
 }
 
 /**
+ * Represents a single merge operation that was executed.
+ * @internal
+ */
+export interface SchemaMergeOperation {
+  readonly change: AnySchemaDifference;
+  readonly durationMs: number;
+}
+
+/**
+ * Represents a merge operation that failed with an error.
+ * @internal
+ */
+export interface SchemaMergeFailure extends SchemaMergeOperation {
+  readonly error: string;
+}
+
+/**
+ * Report of a schema merge operation containing success/failure details.
+ * @internal
+ */
+export interface SchemaMergeReport {
+  /** Source schema identifier */
+  readonly sourceSchemaKey: SchemaKey;
+  /** Target schema identifier */
+  readonly targetSchemaKey: SchemaKey;
+  /** Array of successfully merged differences */
+  readonly successfulOperations: SchemaMergeOperation[];
+  /** Array of failed merge operations with their errors */
+  readonly failedOperations: SchemaMergeFailure[];
+  /** Summary statistics of the merge operation */
+  readonly mergeStatistics: {
+    readonly total: number;
+    readonly succeeded: number;
+    readonly failed: number;
+  };
+
+  /** Performance metrics of the merge operation */
+  readonly performanceMetrics: {
+    readonly totalDurationMs: number;
+    readonly schemaDifferenceDurationMs: number;
+    readonly mergeDurationMs: number;
+    readonly averageMergeOpDurationMs: number;
+  };
+  /** Returns true if all operations succeeded */
+  readonly success: boolean;
+}
+
+/**
+ * @internal
+ */
+export class SchemaMergeReporter implements SchemaMergeReport {
+  private readonly _succeeded: SchemaMergeOperation[] = [];
+  private readonly _failed: SchemaMergeFailure[] = [];
+  private readonly _sourceSchemaKey: SchemaKey;
+  private readonly _targetSchemaKey: SchemaKey;
+  private readonly _totalDifferences: number;
+  private _totalDurationMs: number = 0;
+  private _schemaDifferenceDurationMs: number = 0;
+  private _mergeDurationMs: number = 0;
+  private _averageMergeOpDurationMs: number = 0;
+
+  constructor(
+    sourceSchemaKey: SchemaKey,
+    targetSchemaKey: SchemaKey,
+    totalDifferences: number,
+  ) {
+    this._sourceSchemaKey = sourceSchemaKey;
+    this._targetSchemaKey = targetSchemaKey;
+    this._totalDifferences = totalDifferences;
+  }
+
+  public get sourceSchemaKey(): SchemaKey {
+    return this._sourceSchemaKey;
+  }
+
+  public get targetSchemaKey(): SchemaKey {
+    return this._targetSchemaKey;
+  }
+
+  public get successfulOperations(): SchemaMergeOperation[] {
+    return [...this._succeeded];
+  }
+
+  public get failedOperations(): SchemaMergeFailure[] {
+    return [...this._failed];
+  }
+
+  public get mergeStatistics() {
+    return {
+      total: this._totalDifferences,
+      succeeded: this._succeeded.length,
+      failed: this._failed.length,
+    };
+  }
+
+  public get performanceMetrics() {
+    return {
+      totalDurationMs: this._totalDurationMs,
+      schemaDifferenceDurationMs: this._schemaDifferenceDurationMs,
+      mergeDurationMs: this._mergeDurationMs,
+      averageMergeOpDurationMs: this._averageMergeOpDurationMs,
+    };
+  }
+
+  public get success(): boolean {
+    return this._failed.length === 0;
+  }
+
+  /**
+   * Sets the performance metrics for the merge operation.
+   * @internal
+   */
+  public setPerformanceMetrics(metrics: {
+    totalDurationMs: number;
+    schemaDifferenceDurationMs: number;
+    mergeDurationMs: number;
+    averageMergeOpDurationMs: number;
+  }): void {
+    this._totalDurationMs = metrics.totalDurationMs;
+    this._schemaDifferenceDurationMs = metrics.schemaDifferenceDurationMs;
+    this._mergeDurationMs = metrics.mergeDurationMs;
+    this._averageMergeOpDurationMs = metrics.averageMergeOpDurationMs;
+  }
+
+  /**
+   * Records a successful merge operation.
+   * @internal
+   */
+  public recordSuccess(change: AnySchemaDifference, durationMs: number): void {
+    this._succeeded.push({ change, durationMs });
+  }
+
+  /**
+   * Records a failed merge operation.
+   * @internal
+   */
+  public recordFailure(change: AnySchemaDifference, durationMs: number, error: Error): void {
+    this._failed.push({ change, durationMs, error: error.message });
+  }
+
+  /**
+   * Returns the merge report.
+   * @internal
+   */
+  public getMergeReport(): SchemaMergeReport {
+    return {
+      sourceSchemaKey: this._sourceSchemaKey,
+      targetSchemaKey: this._targetSchemaKey,
+      successfulOperations: [...this._succeeded],
+      failedOperations: [...this._failed],
+      mergeStatistics: {
+        total: this._totalDifferences,
+        succeeded: this._succeeded.length,
+        failed: this._failed.length,
+      },
+      performanceMetrics: {
+        totalDurationMs: this._totalDurationMs,
+        schemaDifferenceDurationMs: this._schemaDifferenceDurationMs,
+        mergeDurationMs: this._mergeDurationMs,
+        averageMergeOpDurationMs: this._averageMergeOpDurationMs,
+      },
+      get success() {
+        return this.failedOperations.length === 0;
+      },
+    };
+  }
+}
+
+/**
  * Class to merge two schemas together.
  * @see [[merge]] or [[mergeSchemas]] to merge two schemas together.
  * @beta
@@ -36,6 +205,8 @@ export interface SchemaMergeContext {
 export class SchemaMerger {
 
   private readonly _editingContext: SchemaContext;
+  private _mergeReporter: SchemaMergeReporter | undefined;
+  private _differenceStartTime: number = 0;
 
   /**
    * Constructs a new instance of the SchemaMerger object.
@@ -54,6 +225,7 @@ export class SchemaMerger {
    * @alpha
    */
   public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema> {
+    this._differenceStartTime = performance.now();
     return this.merge(await getSchemaDifferences(targetSchema, sourceSchema, edits), edits);
   }
 
@@ -64,6 +236,8 @@ export class SchemaMerger {
    * @alpha
    */
   public async merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema> {
+    const mergeStartTime = performance.now();
+
     const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
 
@@ -104,11 +278,38 @@ export class SchemaMerger {
       nameMapping,
     });
 
+    // Initialize the merge reporter
+    this._mergeReporter = new SchemaMergeReporter(sourceSchemaKey, targetSchemaKey, differenceResult.differences.length);
+    visitor.setReporter(this._mergeReporter);
+
     const walker = new SchemaMergingWalker(visitor);
     await walker.traverse(differenceResult.differences, "add");
     await walker.traverse(differenceResult.differences, "modify");
 
+    const mergeEndTime = performance.now();
+
+    // Calculate performance metrics
+    const effectiveStartTime = this._differenceStartTime === 0 ? mergeStartTime : this._differenceStartTime;
+    const schemaDifferenceDurationMs = mergeStartTime - effectiveStartTime;
+    const mergeDurationMs = mergeEndTime - mergeStartTime;
+    const totalDurationMs = mergeEndTime - effectiveStartTime;
+
+    this._mergeReporter.setPerformanceMetrics({
+      totalDurationMs,
+      schemaDifferenceDurationMs,
+      mergeDurationMs,
+      averageMergeOpDurationMs: this._mergeReporter.mergeStatistics.total > 0 ? mergeDurationMs / this._mergeReporter.mergeStatistics.total : 0,
+    });
+
     return schema;
+  }
+
+  /**
+   * Gets the merge report for the last merge operation.
+   * @alpha
+   */
+  public getMergeReport(): SchemaMergeReport | undefined {
+    return this._mergeReporter?.getMergeReport();
   }
 }
 
@@ -144,11 +345,11 @@ class MergingSchemaContext extends SchemaContext {
       schemaItemKey = schemaNameOrKey;
 
     const mappedKey = this._nameMappings.resolveItemKey(schemaItemKey);
-    if(mappedKey !== undefined) {
+    if (mappedKey !== undefined) {
       schemaItemKey = mappedKey as SchemaItemKey;
     }
 
-    if(itemConstructor === undefined)
+    if (itemConstructor === undefined)
       return this._internalContext.getSchemaItem(schemaItemKey);
 
     return this._internalContext.getSchemaItem(schemaItemKey, itemConstructor);

@@ -65,6 +65,9 @@ export class IModelJsFs {
   /** Read file */
   public static readFileSync(pathname: string): string | Buffer { return fs.readFileSync(pathname); }
 
+  /** Read file with encoding */
+  public static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string { return fs.readFileSync(pathname, { encoding }); }
+
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(pathname: string): boolean {
     try {

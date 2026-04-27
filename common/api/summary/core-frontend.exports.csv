@@ -195,7 +195,6 @@ internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
 beta;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
-beta;interface;FormattingSpecEntry
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
 internal;interface;FrameCameraFrustumData
@@ -352,6 +351,8 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+alpha;interface;LockService
+alpha;type;LockServiceFactory
 internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
@@ -750,6 +751,7 @@ public;interface;ViewportGraphicBuilderOptions
 public;class;ViewPose
 public;class;ViewPose2d
 public;class;ViewPose3d
+beta;interface;ViewRealityModel
 public;class;ViewRect
 public;class;ViewRedoTool
 public;class;ViewState

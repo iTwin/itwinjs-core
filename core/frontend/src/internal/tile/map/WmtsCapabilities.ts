@@ -326,7 +326,7 @@ export namespace WmtsCapability {
 
       const tileMatrixLimitsRoot = elem.getElementsByTagName("TileMatrixSetLimits");
       if (tileMatrixLimitsRoot.length > 0) {
-        const tileMatrixLimits = tileMatrixLimitsRoot[0].getElementsByTagName("TileMatrixSetLimits");
+        const tileMatrixLimits = tileMatrixLimitsRoot[0].getElementsByTagName("TileMatrixLimits");
         for (const tmsl of tileMatrixLimits) {
           this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tmsl));
         }

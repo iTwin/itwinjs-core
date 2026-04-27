@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
+import { Localization } from "@itwin/core-common";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { PresentationError } from "@itwin/presentation-common";
+import { createStorage } from "@itwin/unified-selection";
 import { Presentation } from "../presentation-frontend.js";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
 import { NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
 import { PresentationManager } from "../presentation-frontend/PresentationManager.js";
 import * as selection from "../presentation-frontend/selection/SelectionManager.js";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager.js";
-import { createStorage } from "@itwin/unified-selection";
 
 describe("Presentation", () => {
   const shutdownIModelApp = async () => {
@@ -21,8 +21,10 @@ describe("Presentation", () => {
   };
 
   const mockI18N = (languages: string[] = ["en"]) => {
-    const mock = moq.Mock.ofInstance(IModelApp.localization);
-    mock.setup((x) => x.getLanguageList()).returns(() => languages);
+    const mock = {
+      registerNamespace: sinon.stub(),
+      getLanguageList: sinon.stub().returns(languages),
+    };
     return mock;
   };
 
@@ -66,7 +68,7 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
       const i18nMock = mockI18N(["test-locale"]);
-      sinon.replaceGetter(Presentation, "localization", () => i18nMock.object);
+      sinon.replaceGetter(Presentation, "localization", () => i18nMock as unknown as Localization);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize();
       expect(constructorSpy).to.be.calledWith({
@@ -76,7 +78,7 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager with i18 locale if no activeLocale set in props", async () => {
       const i18nMock = mockI18N(["test-locale"]);
-      sinon.replaceGetter(Presentation, "localization", () => i18nMock.object);
+      sinon.replaceGetter(Presentation, "localization", () => i18nMock as unknown as Localization);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
@@ -86,7 +88,7 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager with undefined locale if i18n.getLanguageList() returns empty array", async () => {
       const i18nMock = mockI18N([]);
-      sinon.replaceGetter(Presentation, "localization", () => i18nMock.object);
+      sinon.replaceGetter(Presentation, "localization", () => i18nMock as unknown as Localization);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
@@ -109,7 +111,7 @@ describe("Presentation", () => {
 
     /* eslint-disable @typescript-eslint/no-deprecated */
     it("initializes SelectionManager with given props", async () => {
-      const scopes = moq.Mock.ofType<SelectionScopesManager>().object;
+      const scopes = {} as SelectionScopesManager;
       const selectionStorage = createStorage();
       await Presentation.initialize({ selection: { scopes, selectionStorage } });
       expect(Presentation.selection.scopes).to.eq(scopes);

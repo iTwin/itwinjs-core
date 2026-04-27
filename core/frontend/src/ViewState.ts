@@ -15,7 +15,7 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
   HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
-  ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
+  ModelClipGroups, Npc, RenderSchedule, resolveNavPropId, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -43,6 +43,24 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _scheduleScriptReference } from "./common/internal/Symbols";
+
+/** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
+ * display metadata such as its name and description.
+ * @see [[ViewState.getRealityModelTreeRefs]]
+ * @beta
+ */
+export interface ViewRealityModel {
+  /** The tile tree reference used for rendering, hit testing, and geometry collection. */
+  readonly treeRef: TileTreeReference;
+  /** Display name of the reality model, if available. For persistent reality models this comes from the
+   * [[ModelState]]; for context reality models, from the [[ContextRealityModelState]].
+   */
+  readonly name: string;
+  /** A description of the reality model suitable for display in a user interface, if available.
+   * Only context reality models provide a description; for persistent reality models this is always `undefined`.
+   */
+  readonly description: string | undefined;
+}
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -351,8 +369,15 @@ export abstract class ViewState extends ElementState {
   /** Convert to JSON representation. */
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
-    json.categorySelectorId = this.categorySelector.id;
-    json.displayStyleId = this.displayStyle.id;
+
+    json.categorySelector = { id: this.categorySelector.id };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.categorySelectorId = this.categorySelector.id; // for backward compatibility
+
+    json.displayStyle = { id: this.displayStyle.id };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.displayStyleId = this.displayStyle.id; // for backward compatibility
+
     json.isPrivate = this.isPrivate;
     json.description = this.description;
     return json;
@@ -411,7 +436,7 @@ export abstract class ViewState extends ElementState {
       }
     }
 
-  return true;
+    return true;
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
@@ -527,9 +552,41 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Iterate all [[TileTreeReference]]s associated with this view.
+   * This is a superset of [[getRealityModelTreeRefs]], it includes non-reality models as well.
+   * @see [[getRealityModelTreeRefs]] for only reality model tile tree references.
+   */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.getModelTreeRefs();
-    yield * this.displayStyle.getTileTreeRefs();
+    yield* this.getModelTreeRefs();
+    yield* this.displayStyle.getTileTreeRefs();
+  }
+
+  /** Iterate the reality models in this view, including both context reality models attached to the
+   * [[DisplayStyleState]] and persistent reality models. Each yielded [[ViewRealityModel]] provides the
+   * [[TileTreeReference]] along with a display name and description when available.
+   *
+   * Context reality models that are marked invisible are excluded. Persistent reality models whose
+   * tile trees have not yet loaded are also excluded.
+   * @see [[DisplayStyleState.realityModels]] for context reality models only.
+   * @see [[getTileTreeRefs]] for all tile tree references in this view.
+   * @beta
+   */
+  public * getRealityModelTreeRefs(): Iterable<ViewRealityModel> {
+    // Yield visible context reality models from the display style.
+    for (const model of this.displayStyle.realityModels) {
+      if (!model.invisible)
+        yield { treeRef: model.treeRef, name: model.name, description: model.description };
+    }
+
+    // Yield persistent reality models (e.g., ScalableMeshModel) from the model selector.
+    for (const ref of this.getModelTreeRefs()) {
+      const modelId = ref.treeOwner.tileTree?.modelId;
+      if (modelId !== undefined) {
+        const loadedModel = this.iModel.models.getLoaded(modelId);
+        if (loadedModel?.asSpatialModel?.isRealityModel)
+          yield { treeRef: ref, name: loadedModel.name, description: undefined };
+      }
+    }
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -1357,6 +1414,8 @@ export abstract class ViewState extends ElementState {
     this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
     this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
     this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onBatchAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onBatchDeleted.addListener(event));
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
@@ -2342,7 +2401,10 @@ export abstract class ViewState2d extends ViewState {
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    this._baseModelId = Id64.fromJSON(props.baseModelId);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
+
     this._details = new ViewDetails(this.jsonProperties);
   }
 
@@ -2351,7 +2413,11 @@ export abstract class ViewState2d extends ViewState {
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
-    val.baseModelId = this.baseModelId;
+    val.baseModel = { id: this.baseModelId };
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    val.baseModelId = this.baseModelId; // for backward compatibility
+
     return val;
   }
 

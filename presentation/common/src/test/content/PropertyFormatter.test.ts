@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { KoqPropertyValueFormatter, LabelDefinition, PropertyValueFormat, TypeDescription } from "../../presentation-common.js";
+import { LabelDefinition, PropertyValueFormat, TypeDescription } from "../../presentation-common.js";
 import { Content } from "../../presentation-common/content/Content.js";
 import { ContentFormatterImpl, ContentPropertyValueFormatter, createContentFormatter } from "../../presentation-common/content/PropertyValueFormatter.js";
 import { DisplayValuesArray, DisplayValuesMap, NavigationPropertyValue, NestedContentValue } from "../../presentation-common/content/Value.js";
@@ -290,7 +290,7 @@ describe("ContentPropertyValueFormatter", () => {
   const formatMock = sinon.stub();
 
   beforeEach(() => {
-    formatter = new ContentPropertyValueFormatter({ format: formatMock } as unknown as KoqPropertyValueFormatter);
+    formatter = new ContentPropertyValueFormatter({ format: formatMock });
   });
 
   afterEach(() => {

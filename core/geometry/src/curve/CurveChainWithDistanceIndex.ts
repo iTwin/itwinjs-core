@@ -747,23 +747,16 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     return a;
   }
-  /**
-   * Search for the curve point that is closest to the spacePoint.
-   * * The CurveChainWithDistanceIndex invokes the base class CurvePrimitive method, which (via a handler)
-   * determines a CurveLocation detail among the children.
-   * * The returned detail directly identifies fractional position along the CurveChainWithDistanceIndex and
-   * has pointer to an additional detail for the child curve.
-   * @param spacePoint point in space
-   * @param extend true to extend the curve
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point
-   */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined {
+  private computeClosestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, xyOnly: boolean = false,
+  ): CurveLocationDetail | undefined {
     let childDetail: CurveLocationDetail | undefined;
     let aMin = Number.MAX_VALUE;
     const numChildren = this.path.children.length;
     if (numChildren === 1) {
-      childDetail = this.path.children[0].closestPoint(spacePoint, extend);
+      childDetail = xyOnly ?
+        this.path.children[0].closestPointXY(spacePoint, extend) :
+        this.path.children[0].closestPoint(spacePoint, extend);
     } else {
       const sortedFragments = PathFragment.collectSortedQuickMinDistances(this._fragments, spacePoint);
       const extend0 = [
@@ -786,9 +779,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
           break;
         CurveChainWithDistanceIndex._numTested++;
         const child = sortedFragment.childCurve;
-        detailA = child.closestPoint(
-          spacePoint, sortedFragment === fragment0 ? extend0 : sortedFragment === fragment1 ? extend1 : false, detailA,
-        );
+        extend = child === fragment0.childCurve ? extend0 : (child === fragment1.childCurve ? extend1 : false);
+        detailA = xyOnly ? child.closestPointXY(spacePoint, extend, detailA) : child.closestPoint(spacePoint, extend, detailA);
         if (detailA && detailA.a < aMin) {
           aMin = detailA.a;
           childDetail = detailA.clone(childDetail);
@@ -799,6 +791,38 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     if (!childDetail)
       return undefined;
     return this.computeChainDetail(childDetail, result);
+  }
+  /**
+   * Search for the curve point that is closest to the spacePoint.
+   * * The CurveChainWithDistanceIndex invokes the base class CurvePrimitive method, which (via a handler)
+   * determines a CurveLocation detail among the children.
+   * * The returned detail directly identifies fractional position along the CurveChainWithDistanceIndex and
+   * has pointer to an additional detail for the child curve.
+   * @param spacePoint point in space.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public override closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    return this.computeClosestPoint(spacePoint, extend, result);
+  }
+  /**
+   * Search for the curve point that is closest to the spacePoint as viewed in the xy-plane (ignoring z).
+   * * The CurveChainWithDistanceIndex invokes the base class CurvePrimitive method, which (via a handler)
+   * determines a CurveLocation detail among the children.
+   * * The returned detail directly identifies fractional position along the CurveChainWithDistanceIndex and
+   * has pointer to an additional detail for the child curve.
+   * @param spacePoint point in space.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public override closestPointXY(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    return this.computeClosestPoint(spacePoint, extend, result, true);
   }
   /**
    * Construct an offset of each child as viewed in the xy-plane (ignoring z).
@@ -855,16 +879,41 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return undefined;
   }
   /**
+   * Given a parent chain, convert the corresponding child detail in the specified pair.
+   * * Converted details refer to the chain's global parameterization instead of the child's.
+   * * It is assumed that `pair.detailA.curve` is a child of chainA (similarly for chainB).
+   * @param pair detail pair to convert in place
+   * @param chainA convert pair.detailA to the global parameterization of chainA
+   * @param chainB convert pair.detailB to the global parameterization of chainB
+   * @return the converted pair
+   */
+  public static convertChildDetailToChainDetailSingle(
+    pair: CurveLocationDetailPair,
+    chainA?: CurveChainWithDistanceIndex,
+    chainB?: CurveChainWithDistanceIndex,
+  ): CurveLocationDetailPair {
+    if (chainA) {
+      const chainDetail = chainA.computeChainDetail(pair.detailA);
+      if (chainDetail)
+        pair.detailA = chainDetail;
+    }
+    if (chainB) {
+      const chainDetail = chainB.computeChainDetail(pair.detailB);
+      if (chainDetail)
+        pair.detailB = chainDetail;
+    }
+    return pair;
+  }
+  /**
    * Given a parent chain, convert the corresponding child details in the specified pairs.
    * * Converted details refer to the chain's global parameterization instead of the child's.
    * * It is assumed that for all i >= index0, `pairs[i].detailA.curve` is a child of chainA (similarly for chainB).
-   * @param pairs array to mutate
+   * @param pairs array of pairs to convert in place
    * @param index0 convert details of pairs in the tail of the array, starting at index0
    * @param chainA convert each specified detailA to the global parameterization of chainA
    * @param chainB convert each specified detailB to the global parameterization of chainB
    * @param compressAdjacent whether to remove adjacent duplicate pairs after conversion
    * @return the converted array
-   * @internal
    */
   public static convertChildDetailToChainDetail(
     pairs: CurveLocationDetailPair[],
@@ -873,19 +922,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainB?: CurveChainWithDistanceIndex,
     compressAdjacent?: boolean,
   ): CurveLocationDetailPair[] {
-    for (let i = index0; i < pairs.length; ++i) {
-      const childDetailPair = pairs[i];
-      if (chainA) {
-        const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
-        if (chainDetail)
-          childDetailPair.detailA = chainDetail;
-      }
-      if (chainB) {
-        const chainDetail = chainB.computeChainDetail(childDetailPair.detailB);
-        if (chainDetail)
-          childDetailPair.detailB = chainDetail;
-      }
-    }
+    for (let i = index0; i < pairs.length; ++i)
+      pairs[i] = this.convertChildDetailToChainDetailSingle(pairs[i], chainA, chainB);
     if (compressAdjacent)
       pairs = CurveLocationDetailPair.removeAdjacentDuplicates(pairs, index0);
     return pairs;

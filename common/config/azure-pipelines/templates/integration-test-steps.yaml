@@ -34,6 +34,30 @@ steps:
       node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
 
+  # Starting Ubuntu 24.04, unprivileged user namespaces are restricted by default via AppArmor.
+  # Electron's sandbox requires user namespaces, so we create an AppArmor profile that grants the 'userns' permission to the Electron binary.
+  # See: https://discourse.ubuntu.com/t/ubuntu-24-04-lts-noble-numbat-release-notes/39890#p-99950-unprivileged-user-namespace-restrictions-15
+  - script: |
+      ELECTRON_PATH=$(find $PWD/common/temp/node_modules/.pnpm -path "*/electron@*/node_modules/electron/dist/electron" -type f 2>/dev/null | head -n 1)
+      if [ -x "$ELECTRON_PATH" ]; then
+        PROFILE_NAME="electron-test"
+        PROFILE_PATH="/etc/apparmor.d/${PROFILE_NAME}"
+        sudo tee "$PROFILE_PATH" > /dev/null <<EOF
+      abi <abi/4.0>,
+      include <tunables/global>
+
+      profile ${PROFILE_NAME} ${ELECTRON_PATH} flags=(unconfined) {
+        userns,
+      }
+      EOF
+        sudo apparmor_parser -r "$PROFILE_PATH"
+        echo "Loaded AppArmor profile for $ELECTRON_PATH"
+      else
+        echo "##vso[task.logissue type=warning]Unable to find Electron binary for AppArmor profile"
+      fi
+    displayName: "Setup AppArmor profile for Electron"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/backend"
     env:

@@ -23,6 +23,7 @@ import {
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -778,14 +779,21 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
    * @param display Whether or not elements on the specified categories should be displayed in the viewport.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
+   * @param batchNotify If true, a single batch event is raised instead of one event per category. This is more efficient when changing many categories at once.
    */
-  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
+  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false, batchNotify: boolean = false): void {
     if (!display) {
-      this.view.categorySelector.dropCategories(categories);
+      if (batchNotify)
+        this.view.categorySelector.dropCategoriesBatched(categories);
+      else
+        this.view.categorySelector.dropCategories(categories);
       return;
     }
 
-    this.view.categorySelector.addCategories(categories);
+    if (batchNotify)
+      this.view.categorySelector.addCategoriesBatched(categories);
+    else
+      this.view.categorySelector.addCategories(categories);
     const categoryIds = Id64.toIdSet(categories);
 
     this.updateSubCategories(categoryIds, enableAllSubCategories);
@@ -1277,7 +1285,12 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
-    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener((previousModel, _newModel) => {
+      displayStyleChanged();
+      // When a reality model is removed or replaced, detach its layer listeners to prevent leaks.
+      if (previousModel instanceof ContextRealityModelState)
+        previousModel.detachLayerListeners();
+    }));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
@@ -1392,6 +1405,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private detachFromDisplayStyle(): void {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
+
+    // Detach layer listeners from reality model tree refs to prevent leaks.
+    if (this._view) {
+      for (const model of this.displayStyle.settings.contextRealityModels.models) {
+        if (model instanceof ContextRealityModelState)
+          model.detachLayerListeners();
+      }
+    }
 
     if (this._mapTiledGraphicsProvider) {
       this._mapTiledGraphicsProvider.detachFromDisplayStyle();

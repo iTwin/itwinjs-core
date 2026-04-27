@@ -84,7 +84,7 @@ export interface SqliteChange {
  * @beta
  */
 export class SqliteChangesetReader implements Disposable {
-  private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
+  private readonly _nativeReader = new IModelNative.platform.SqliteChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
@@ -240,7 +240,7 @@ export class SqliteChangesetReader implements Disposable {
    * @beta
    */
   public getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType;
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
 
   /**
@@ -317,7 +317,7 @@ export class SqliteChangesetReader implements Disposable {
    * @beta
    */
   public getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType | undefined;
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
 
   /**

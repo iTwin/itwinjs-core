@@ -11,9 +11,11 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -205,16 +207,24 @@ export class RenderMaterialElement extends DefinitionElement {
 
   /**
    * Insert a new RenderMaterial into a model.
-   * @param iModelDb Insert into this iModel
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new Texture into this DefinitionModel
    * @param materialName The name/CodeValue of the RenderMaterial
    * @param params Parameters object which describes how to construct the RenderMaterial
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
-    const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
-    return iModelDb.elements.insertElement(renderMaterial.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
+  /**
+   * Insert a new RenderMaterial into a model.
+   * @deprecated Use RenderMaterialElement.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const renderMaterial = this.create(txn.iModel, definitionModelId, materialName, params);
+    return renderMaterial.insert(txn);
   }
 
   /** @beta */

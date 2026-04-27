@@ -104,10 +104,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "ChildNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ChildNodes"
-          ],
           "type": "string"
         },
         "specifications": {
@@ -166,10 +164,8 @@
           "type": "boolean"
         },
         "specType": {
+          "const": "Class",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Class"
-          ],
           "type": "string"
         }
       },
@@ -262,10 +258,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "ContentInstancesOfSpecificClasses",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentInstancesOfSpecificClasses"
-          ],
           "type": "string"
         }
       },
@@ -331,10 +325,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "ContentModifier",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentModifier"
-          ],
           "type": "string"
         }
       },
@@ -402,10 +394,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "ContentRelatedInstances",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentRelatedInstances"
-          ],
           "type": "string"
         }
       },
@@ -439,10 +429,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "Content",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Content"
-          ],
           "type": "string"
         },
         "specifications": {
@@ -535,10 +523,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "CustomNode",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CustomNode"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -621,10 +607,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "CustomQueryInstanceNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CustomQueryInstanceNodes"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -694,10 +678,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "DefaultPropertyCategoryOverride",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "DefaultPropertyCategoryOverride"
-          ],
           "type": "string"
         },
         "specification": {
@@ -743,10 +725,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "DisabledSorting",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "DisabledSorting"
-          ],
           "type": "string"
         }
       },
@@ -769,10 +749,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "ECPropertyValue",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ECPropertyValue"
-          ],
           "type": "string"
         }
       },
@@ -814,10 +792,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "ExtendedData",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ExtendedData"
-          ],
           "type": "string"
         }
       },
@@ -863,10 +839,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "Grouping",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Grouping"
-          ],
           "type": "string"
         }
       },
@@ -905,10 +879,8 @@
           "type": "boolean"
         },
         "type": {
+          "const": "Id",
           "description": "Type of the identifier",
-          "enum": [
-            "Id"
-          ],
           "type": "string"
         }
       },
@@ -942,10 +914,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "InstanceLabelOverride",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "InstanceLabelOverride"
-          ],
           "type": "string"
         },
         "values": {
@@ -968,10 +938,8 @@
       "description": "Specification returns ECInstance's briefcase ID in base36 format.",
       "properties": {
         "specType": {
+          "const": "BriefcaseId",
           "description": "Type of the specification",
-          "enum": [
-            "BriefcaseId"
-          ],
           "type": "string"
         }
       },
@@ -985,10 +953,8 @@
       "description": "Specification uses ECClass display label as the label content.",
       "properties": {
         "specType": {
+          "const": "ClassLabel",
           "description": "Type of the specification",
-          "enum": [
-            "ClassLabel"
-          ],
           "type": "string"
         }
       },
@@ -1006,10 +972,8 @@
           "type": "boolean"
         },
         "specType": {
+          "const": "ClassName",
           "description": "Type of the specification",
-          "enum": [
-            "ClassName"
-          ],
           "type": "string"
         }
       },
@@ -1046,10 +1010,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "Composite",
           "description": "Type of the specification",
-          "enum": [
-            "Composite"
-          ],
           "type": "string"
         }
       },
@@ -1064,10 +1026,8 @@
       "description": "Specification returns ECInstance's local ID in base36 format.",
       "properties": {
         "specType": {
+          "const": "LocalId",
           "description": "Type of the specification",
-          "enum": [
-            "LocalId"
-          ],
           "type": "string"
         }
       },
@@ -1099,10 +1059,8 @@
           "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the property. If omitted, `InstanceLabelOverride.class` is used as property class."
         },
         "specType": {
+          "const": "Property",
           "description": "Type of the specification",
-          "enum": [
-            "Property"
-          ],
           "type": "string"
         }
       },
@@ -1121,10 +1079,8 @@
           "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the related instance."
         },
         "specType": {
+          "const": "RelatedInstanceLabel",
           "description": "Type of the specification",
-          "enum": [
-            "RelatedInstanceLabel"
-          ],
           "type": "string"
         }
       },
@@ -1139,10 +1095,8 @@
       "description": "Specification uses the specified value as the label content.",
       "properties": {
         "specType": {
+          "const": "String",
           "description": "Type of the specification",
-          "enum": [
-            "String"
-          ],
           "type": "string"
         },
         "value": {
@@ -1274,10 +1228,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "InstanceNodesOfSpecificClasses",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "InstanceNodesOfSpecificClasses"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -1323,10 +1275,8 @@
       "description": "Identifier for no category. Used to make category displayed at root level by using\nthis identifier for `PropertyCategorySpecification.parentId`.",
       "properties": {
         "type": {
+          "const": "None",
           "description": "Type of the identifier",
-          "enum": [
-            "None"
-          ],
           "type": "string"
         }
       },
@@ -1367,10 +1317,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "NodeArtifacts",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "NodeArtifacts"
-          ],
           "type": "string"
         }
       },
@@ -1385,10 +1333,8 @@
       "description": "Identifier of the default parent category.\n\nFor direct properties it's the default category. See `DefaultPropertyCategoryOverride` for overriding the default category.\n\nFor related properties it's the category made up from the related ECClass defined by the last\n`RelatedPropertiesSpecification` with `RelationshipMeaning.RelatedInstance`. If there's no such specification,\nthe default category is used.",
       "properties": {
         "type": {
+          "const": "DefaultParent",
           "description": "Type of the identifier",
-          "enum": [
-            "DefaultParent"
-          ],
           "type": "string"
         }
       },
@@ -1463,10 +1409,8 @@
           "description": "Arbitrary JSON that can be handled by a property editor"
         },
         "paramsType": {
+          "const": "Json",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Json"
-          ],
           "type": "string"
         }
       },
@@ -1486,10 +1430,8 @@
           "type": "integer"
         },
         "paramsType": {
+          "const": "Multiline",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Multiline"
-          ],
           "type": "string"
         }
       },
@@ -1528,10 +1470,8 @@
           "type": "number"
         },
         "paramsType": {
+          "const": "Range",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Range"
-          ],
           "type": "string"
         }
       },
@@ -1562,10 +1502,8 @@
           "type": "number"
         },
         "paramsType": {
+          "const": "Slider",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Slider"
-          ],
           "type": "string"
         }
       },
@@ -1629,10 +1567,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "Property",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Property"
-          ],
           "type": "string"
         }
       },
@@ -1712,10 +1648,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "PropertySorting",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "PropertySorting"
-          ],
           "type": "string"
         },
         "sortAscending": {
@@ -1944,10 +1878,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "RelatedInstanceNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "RelatedInstanceNodes"
-          ],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -2133,9 +2065,7 @@
         "count": {
           "anyOf": [
             {
-              "enum": [
-                "*"
-              ],
+              "const": "*",
               "type": "string"
             },
             {
@@ -2196,10 +2126,8 @@
       "description": "Identifier of the root category.\n\nFor direct properties it's the default category. See `DefaultPropertyCategoryOverride` for overriding the default category.\n\nFor related properties it's the category made up from the related ECClass defined by the first\n`RelatedPropertiesSpecification` with `RelationshipMeaning.RelatedInstance`. If there's no such specification,\nthe default category is used.",
       "properties": {
         "type": {
+          "const": "Root",
           "description": "Type of the identifier",
-          "enum": [
-            "Root"
-          ],
           "type": "string"
         }
       },
@@ -2244,10 +2172,8 @@
           "type": "array"
         },
         "ruleType": {
+          "const": "RootNodes",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "RootNodes"
-          ],
           "type": "string"
         },
         "specifications": {
@@ -2326,10 +2252,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "SameLabelInstance",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "SameLabelInstance"
-          ],
           "type": "string"
         }
       },
@@ -2347,10 +2271,8 @@
           "type": "string"
         },
         "type": {
+          "const": "SchemaCategory",
           "description": "Type of the identifier",
-          "enum": [
-            "SchemaCategory"
-          ],
           "type": "string"
         }
       },
@@ -2424,10 +2346,8 @@
           "type": "array"
         },
         "specType": {
+          "const": "SelectedNodeInstances",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "SelectedNodeInstances"
-          ],
           "type": "string"
         }
       },
@@ -2471,10 +2391,8 @@
           "type": "string"
         },
         "specType": {
+          "const": "String",
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "String"
-          ],
           "type": "string"
         }
       },

@@ -154,7 +154,7 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
       }
 
       if (geomReader && opts.geomRenderer) {
-        await geomReader.readGeometry(responseFeature.geometry as any);
+        await geomReader.readGeometry(responseFeature.geometry);
         const graphics = opts.geomRenderer.moveGraphics();
         feature.geometries = graphics.map((graphic: GraphicPrimitive) => {
           return {graphic};

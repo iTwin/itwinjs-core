@@ -26,7 +26,7 @@ const loggerCategory = "SchemaFormatsProvider";
  */
 export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
-  private _unitSystem: UnitSystemKey;
+  private _unitSystem?: UnitSystemKey;
   private _formatsRetrieved: Set<string> = new Set();
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
   /**
@@ -34,9 +34,10 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
    * class implements the ISchemaLocater interface. If the provided locater is not a SchemaContext instance a new SchemaContext will be
    * created and the locater will be added.
-   * @param unitSystem Used to lookup a default format through a schema specific algorithm, when the format retrieved is associated with a KindOfQuantity.
+   * @param unitSystem Optional unit system used to lookup a default format through a schema specific algorithm, when the format retrieved is associated with a KindOfQuantity.
+   * If not provided, the default presentation format will be used directly without matching unit systems.
    */
-  constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey) {
+  constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey) {
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
@@ -49,7 +50,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
   public get context() { return this._context; }
   public get unitSystem() { return this._unitSystem; }
 
-  public set unitSystem(unitSystem: UnitSystemKey) {
+  public set unitSystem(unitSystem: UnitSystemKey | undefined) {
     this._unitSystem = unitSystem;
     this.clear();
   }
@@ -76,7 +77,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<FormatDefinition | undefined> {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, systemOverride?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     let kindOfQuantity: KindOfQuantity | undefined;
     try {
       kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
@@ -89,41 +90,48 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return undefined;
     }
 
-    // Find the first presentation format that matches the provided unit system.
-    const unitSystemMatchers = getUnitSystemGroupMatchers(this._unitSystem);
-    const presentationFormats = kindOfQuantity.presentationFormats;
-    for (const matcher of unitSystemMatchers) {
-      for (const lazyFormat of presentationFormats) {
-        const format = await lazyFormat;
-        const unit = await (format.units && format.units[0][0]);
-        if (!unit) {
-          continue;
+    // If a unit system is provided, find the first presentation format that matches it.
+    const effectiveSystem = systemOverride ?? this._unitSystem;
+    if (effectiveSystem) {
+      const unitSystemMatchers = getUnitSystemGroupMatchers(effectiveSystem);
+      const presentationFormats = kindOfQuantity.presentationFormats;
+      for (const matcher of unitSystemMatchers) {
+        for (const lazyFormat of presentationFormats) {
+          const format = await lazyFormat;
+          const unit = await (format.units && format.units[0][0]);
+          if (!unit) {
+            continue;
+          }
+          const currentUnitSystem = await unit.unitSystem;
+          if (currentUnitSystem && matcher(currentUnitSystem)) {
+            this._formatsRetrieved.add(itemKey.fullName);
+            const props = getFormatProps(format);
+            return this.convertToFormatDefinition(props, kindOfQuantity);
+          }
         }
-        const currentUnitSystem = await unit.unitSystem;
-        if (currentUnitSystem && matcher(currentUnitSystem)) {
-          this._formatsRetrieved.add(itemKey.fullName);
-          const props = getFormatProps(format);
-          return this.convertToFormatDefinition(props, kindOfQuantity);
-        }
+      }
+
+      // If no matching presentation format was found, fall back to persistence unit format
+      // only if it matches the requested unit system.
+      const persistenceUnit = await kindOfQuantity.persistenceUnit;
+      const persistenceUnitSystem = await persistenceUnit?.unitSystem;
+      if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
+        this._formatsRetrieved.add(itemKey.fullName);
+        const props = getPersistenceUnitFormatProps(persistenceUnit);
+        return this.convertToFormatDefinition(props, kindOfQuantity);
       }
     }
 
-    // If no matching presentation format was found, use persistence unit format if it matches unit system.
-    const persistenceUnit = await kindOfQuantity.persistenceUnit;
-    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
-    if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
+    // If no unit system was provided, or no matching format was found, use the default presentation format.
+    // Unit conversion from persistence unit to presentation unit will be handled by FormatterSpec.
+    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
+    if (defaultFormat) {
       this._formatsRetrieved.add(itemKey.fullName);
-      const props = getPersistenceUnitFormatProps(persistenceUnit);
-      return this.convertToFormatDefinition(props, kindOfQuantity);
+      const defaultProps = getFormatProps(await defaultFormat);
+      return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
     }
 
-    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
-    if (!defaultFormat) {
-      return undefined;
-    }
-    this._formatsRetrieved.add(itemKey.fullName);
-    const defaultProps = getFormatProps(await defaultFormat);
-    return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
+    return undefined;
   }
 
 
@@ -134,7 +142,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
-  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+  public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     const schemaKey = new SchemaKey(schemaName);
     let schema: Schema | undefined;
@@ -162,7 +170,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
       }
       return format.toJSON(true);
     }
-    return this.getKindOfQuantityFormatFromSchema(itemKey);
+    return this.getKindOfQuantityFormatFromSchema(itemKey, system);
   }
 }
 
