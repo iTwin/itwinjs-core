@@ -20,10 +20,6 @@
       "Bash(rush cover)",
       "Bash(rush test)",
       "Bash(rush audit)",
-      "Bash(pnpmx vitest *)",
-      "Bash(pnpmx tsc *)",
-      "Bash(pnpmx mocha *)",
-      "Bash(pnpmx eslint *)",
       "Bash(npm view *)",
       "Bash(pnpm why *)"
     ]
