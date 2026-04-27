@@ -1,5 +1,8 @@
 {
   "permissions": {
+    "deny": [
+      "Bash(npm install *)"
+    ],
     "allow": [
       "Bash(rushx build *)",
       "Bash(rushx test *)",
