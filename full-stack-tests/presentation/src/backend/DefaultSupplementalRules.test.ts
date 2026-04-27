@@ -484,7 +484,7 @@ describe("Default supplemental rules", async () => {
                 classFullName: "BisCore:ExternalSourceGroup",
                 model: IModel.dictionaryId,
                 code: Code.createEmpty(),
-              } as ElementProps);
+              });
               txn.insertRelationship({
                 classFullName: "BisCore:ExternalSourceGroupGroupsSources",
                 sourceId: externalSourceGroupId,

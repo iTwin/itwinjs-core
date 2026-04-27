@@ -75,7 +75,7 @@ describe("AnalysisStyle", () => {
 
   it("accepts legacy JSON representation", () => {
     function roundTrip(props: LegacyAnalysisStyleProps, expected: AnalysisStyleProps): void {
-      const style = AnalysisStyle.fromJSON(props as AnalysisStyleProps);
+      const style = AnalysisStyle.fromJSON(props);
       const actual = style.toJSON();
       expect(actual).to.deep.equal(expected);
     }

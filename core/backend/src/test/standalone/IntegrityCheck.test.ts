@@ -69,7 +69,7 @@ describe("Integrity Check Tests", () => {
 
       iModelStub.createQueryReader.returns(asyncIterator() as any);
 
-      const results = await performQuickIntegrityCheck(iModelStub as any);
+      const results = await performQuickIntegrityCheck(iModelStub);
 
       expect(results).to.have.lengthOf(2);
       expect(results[0]).to.deep.include({ check: "Check Data Columns", passed: true, elapsedSeconds: "0.5" });
@@ -80,7 +80,7 @@ describe("Integrity Check Tests", () => {
       const asyncIterator = async function* () { };
       iModelStub.createQueryReader.returns(asyncIterator() as any);
 
-      const results = await performQuickIntegrityCheck(iModelStub as any);
+      const results = await performQuickIntegrityCheck(iModelStub);
 
       expect(results).to.be.an("array").that.is.empty;
     });
@@ -286,7 +286,7 @@ describe("iModelDb integrityCheck Tests", () => {
   let iModel: BriefcaseDb;
 
   before(() => {
-    HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
+    HubMock.startup("IntegrityCheckTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
 
@@ -437,7 +437,7 @@ describe("iModelDb integrityCheck Tests", () => {
       expect(deleteResult).to.equal(DbResult.BE_SQLITE_OK);
     });
 
-     // Run integrity check specifically for linktable foreign key Ids
+    // Run integrity check specifically for linktable foreign key Ids
     const results = await iModel.integrityCheck({
       quickCheck: true,
       specificChecks: {

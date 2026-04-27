@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeScopeSpec, CodeSpec, EditTxnError, RelatedElement, SheetProps } from "@itwin/core-common";
+import { BisCodeSpec, CodeScopeSpec, CodeSpec, EditTxnError, SheetProps } from "@itwin/core-common";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 
 import { SnapshotDb } from "../../IModelDb";
@@ -38,7 +38,7 @@ const insertSheet = (txn: EditTxn, sheetName: string): Id64String => {
   const sheetElementId = txn.insertElement(sheetElementProps);
   return txn.insertModel({
     classFullName: SheetModel.classFullName,
-    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" },
   });
 };
 

@@ -40,7 +40,7 @@ export class ExternalSource extends InformationReferenceElement {
   }
 
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
-    return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
   /** Ensure the [[CodeSpec]] for ExternalSource elements exists, using an explicit transaction.
    * @param txn The active EditTxn.
@@ -110,7 +110,7 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   }
 
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type
-    return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
   /** Ensure the [[CodeSpec]] for ExternalSourceAttachment elements exists, using an explicit transaction.
    * @param txn The active EditTxn.
@@ -168,7 +168,7 @@ export class SynchronizationConfigLink extends UrlLink {
   }
 
   public override toJSON(): SynchronizationConfigLinkProps { // This override only specializes the return type
-    return super.toJSON() as SynchronizationConfigLinkProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
 }
 
