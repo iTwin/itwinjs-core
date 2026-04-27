@@ -7,7 +7,9 @@ publish: false
   - [@itwin/core-bentley](#itwincore-bentley)
     - [BeUnorderedEvent](#beunorderedevent)
   - [@itwin/core-backend](#itwincore-backend)
+    - [IdSet virtual table performance improvements](#idset-virtual-table-performance-improvements)
     - [WithQueryReader API](#withqueryreader-api)
+    - [CRS unit metadata and filtering](#crs-unit-metadata-and-filtering)
     - [Bulk element deletion with `deleteElements`](#bulk-element-deletion-with-deleteelements)
     - [Dedicated SettingsDb for workspace settings](#dedicated-settingsdb-for-workspace-settings)
       - [Why SettingsDb?](#why-settingsdb)
@@ -19,6 +21,7 @@ publish: false
   - [@itwin/core-frontend](#itwincore-frontend-1)
     - [Unified reality model iteration](#unified-reality-model-iteration)
   - [Backend](#backend)
+    - [ChangesetReader — native changeset reader](#ChangesetReader--native-changeset-reader)
     - [Explicit editing transactions with `EditTxn`](#explicit-editing-transactions-with-edittxn)
       - [What changed](#what-changed)
       - [Migration guidance](#migration-guidance)
@@ -52,6 +55,26 @@ remove(); // O(1) removal
 This is intentional — it avoids a class of bugs where `removeListener()` silently fails to match due to inline closures or binding mismatches (e.g. `event.addListener(() => this.onFoo())` followed by `event.removeListener(() => this.onFoo())` removes nothing because the two arrow functions are different objects). Capturing the returned closure is a reliable unsubscription pattern and enables O(1) removal via `Set.delete`.
 
 ## @itwin/core-backend
+
+### IdSet virtual table performance improvements
+
+The `IdSet` virtual table now uses a sorted vector internally, enabling O(log n) point lookups (`id = ?`) and efficient single-pass `IN` filtering instead of full scans.
+
+```sql
+-- Point lookup — binary search, O(log n)
+SELECT id FROM IdSet('[1,2,3,4,5]') WHERE id = 3
+-- returns: 0x3
+
+-- IN filter — single Filter call for all values
+SELECT id FROM IdSet('[1,2,3,4,5,6,7,8,9,10]') WHERE id IN (3, 5, 7)
+-- returns: 0x3, 0x5, 0x7
+
+-- Sorted deduplication — unsorted input with duplicates
+SELECT id FROM IdSet('[50,10,30,20,40,10]')
+-- returns: 0xa, 0x14, 0x1e, 0x28, 0x32
+```
+
+Output is always returned in ascending ID order and deduplicated, regardless of input order. This is a behavioral change — previously, output order was unspecified.
 
 ### WithQueryReader API
 
@@ -106,6 +129,25 @@ db.withQueryReader(query, (reader) => {
     processRow(row);
   }
 });
+```
+
+### CRS unit metadata and filtering
+
+[getAvailableCoordinateReferenceSystems]($backend) now returns the linear unit used by each available coordinate reference system in its `unit` property. The same API also accepts an optional `unit` filter, letting applications narrow the returned CRS list by unit name without applying client-side filtering after the fact.
+
+Unit filtering is case-insensitive. Use the new [getAvailableCRSUnits]($backend) helper to retrieve the canonical unit names recognized by the backend.
+
+```typescript
+const units = getAvailableCRSUnits();
+
+const usFootSystems = await getAvailableCoordinateReferenceSystems({
+  includeWorld: true,
+  unit: "ussurveyfoot",
+});
+
+for (const crs of usFootSystems) {
+  console.log(`${crs.name}: ${crs.unit}`);
+}
 ```
 
 ### Bulk element deletion with `deleteElements`
@@ -224,6 +266,163 @@ for (const { treeRef, name, description } of view.getRealityModelTreeRefs()) {
 ```
 
 ## Backend
+
+### [ChangesetReader]($backend) — native changeset reader
+
+The new [ChangesetReader]($backend) (`@beta`) provides a lower-level, higher-fidelity replacement for the deprecated `ChangesetECAdaptor` / `SqliteChangesetReader` stack. It reads EC-typed change data natively from a changeset file, a group of changeset files, a saved transaction, or local un-pushed changes, and emits one typed [ChangeInstance]($backend) per SQLite table row.
+
+The companion [PartialChangeUnifier]($backend) merges the per-table partial rows back into complete EC instances that span all tables mapped to a single EC entity.
+
+#### Reader factory methods
+
+| Method | Description |
+| ------ | ----------- |
+| [ChangesetReader.openFile]($backend) | Read a single pushed changeset file |
+| [ChangesetReader.openGroup]($backend) | Read several changeset files as one logical stream |
+| [ChangesetReader.openLocalChanges]($backend) | Read pending (not yet pushed) local changes |
+| [ChangesetReader.openInMemoryChanges]($backend) | Read in-memory (not yet saved) changes |
+| [ChangesetReader.openTxn]($backend) | Read a single saved transaction by id |
+
+#### Example — inspect inserted elements from a changeset file
+
+```ts
+import { ChangesetReader, PartialChangeUnifier, ChangeUnifierCache } from "@itwin/core-backend";
+
+using reader = ChangesetReader.openFile({
+  db: iModelDb,
+  fileName: changesetPathname,
+  rowOptions: { classIdsToClassNames: true },
+});
+using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+
+while (reader.step()) {
+  pcu.appendFrom(reader);
+}
+
+for (const instance of pcu.instances) {
+  if (instance.$meta.op === "Inserted") {
+    console.log(instance.ECInstanceId, instance.ECClassId);
+  }
+}
+```
+
+#### Example — filter to a specific table and inspect raw per-row values
+
+```ts
+using reader = ChangesetReader.openFile({ db: iModelDb, fileName: changesetPathname });
+
+reader.setOpCodeFilters(new Set(["Updated"]));
+
+while (reader.step()) {
+  if (reader.tableName !== "bis_Element")
+    continue;
+  const before = reader.deleted; // pre-change snapshot
+  const after  = reader.inserted; // post-change snapshot
+  if (before && after) {
+    console.log(`Element ${after.ECInstanceId}: model changed from ${before.Model?.Id} → ${after.Model?.Id}`);
+  }
+}
+```
+
+When a row does not match an active filter it is skipped entirely — the reader automatically advances to the next row.
+
+[ChangesetReader.deleted]($backend) and [ChangesetReader.inserted]($backend) carry a `$meta.changeFetchedPropNames` array that lists exactly which properties were read directly from the changeset binary (vs. resolved from the live iModel), making it straightforward to determine what actually changed.
+
+For a full explanation of the reader–unifier pipeline, modes, row options, and filtering APIs, see [ChangesetReader](../learning/backend/ChangesetReader.md).
+
+#### Migrating from `ChangesetECAdaptor`
+
+The deprecated `ChangesetECAdaptor` / `PartialECChangeUnifier` stack is replaced by [ChangesetReader]($backend) + [PartialChangeUnifier]($backend).
+
+##### Basic pipeline — read and merge a changeset file
+
+**Before (deprecated)**
+
+```ts
+// SqliteChangesetReader requires disableSchemaCheck: true for use with ChangesetECAdaptor
+const reader = SqliteChangesetReader.openFile({ db: iModelDb, fileName, disableSchemaCheck: true });
+const adaptor = new ChangesetECAdaptor(reader);
+const unifier = new PartialECChangeUnifier(iModelDb);
+
+while (adaptor.step())
+  unifier.appendFrom(adaptor);
+
+for (const instance of unifier.instances) {
+  if (instance.$meta?.op === "Inserted")
+    console.log(instance.ECInstanceId);
+}
+
+unifier[Symbol.dispose]();
+adaptor[Symbol.dispose](); // also closes the underlying SqliteChangesetReader
+```
+
+**After (new API)**
+
+```ts
+using reader = ChangesetReader.openFile({ db: iModelDb, fileName });
+using pcu = new PartialChangeUnifier();
+
+while (reader.step())
+  pcu.appendFrom(reader);
+
+for (const instance of pcu.instances) {
+  if (instance.$meta.op === "Inserted")
+    console.log(instance.ECInstanceId);
+}
+```
+
+##### SQLite-backed cache for large changesets
+
+**Before (deprecated)**
+
+```ts
+// The old SQLite cache reused the live iModel's connection and wrote to a [temp] table on it
+using cache = ECChangeUnifierCache.createSqliteBackedCache(iModelDb);
+const unifier = new PartialECChangeUnifier(iModelDb, cache);
+```
+
+**After (new API)**
+
+```ts
+// The new cache opens its own private temporary SQLite database — no live iModel connection needed
+using cache = ChangeUnifierCache.createSqliteBackedCache();
+using pcu = new PartialChangeUnifier(cache);
+```
+
+##### Filtering
+
+**Before (deprecated)** — fluent, class-name-based
+
+```ts
+adaptor
+  .acceptOp("Inserted")
+  .acceptTable("bis_Element")
+  .acceptClass("BisCore:Element"); // expands to all derived class ids internally
+```
+
+**After (new API)** — `Set`-based, class-id-based
+
+```ts
+reader.setOpCodeFilters(new Set(["Inserted"]));
+reader.setTableNameFilters(new Set(["bis_Element"]));
+reader.setClassNameFilters(new Set(["BisCore:Element"])); // full "SchemaName:ClassName" format, doesnot expand to any derived classes
+```
+
+##### Key differences
+
+| Concern | Old (`ChangesetECAdaptor`) | New ([ChangesetReader]($backend)) |
+|---|---|---|
+| Opening | `SqliteChangesetReader.openFile` + `new ChangesetECAdaptor(reader)` | `ChangesetReader.openFile` directly |
+| `disableSchemaCheck` flag | Required (`true`) on `SqliteChangesetReader` | Not needed — schema check is built in |
+| Merging multi-table entities | `new PartialECChangeUnifier(db)` + `unifier.appendFrom(adaptor)` | `new PartialChangeUnifier()` + `pcu.appendFrom(reader)` |
+| `PartialECChangeUnifier` db arg | Required (uses live iModel connection for temp table) | Not needed (new unifier owns its temp db) |
+| SQLite cache db arg | `ECChangeUnifierCache.createSqliteBackedCache(db)` — reuses iModel connection | `ChangeUnifierCache.createSqliteBackedCache()` — self-contained |
+| Resource management | Manual `[Symbol.dispose]()` on each object | `using` declaration handles everything |
+| Filtering by class | `acceptClass(fullName)` — automatically expands to all derived class ids, so a single class name filters the entire hierarchy | `setClassNameFilters(Set<string>)` — exact match only; does **not** expand to derived classes; pass each class name explicitly in `"SchemaName:ClassName"` format |
+| Filtering API style | Fluent (`.acceptOp(...).acceptTable(...)`) | Setter methods with `Set<>` arguments |
+| `$meta` on instances | Optional (`disableMetaData` flag could suppress it) | Always present |
+| Changed property tracking | Not available | `$meta.changeFetchedPropNames` lists exactly which properties came from the changeset binary |
+| Null-valued properties | Null values were included as keys on instance objects (key present, value `null`) | Null values are **not** included as keys — a property absent from the instance object means its stored value was `null`; use `$meta.changeFetchedPropNames` to distinguish "not changed" from "changed to/from null" |
 
 ### Explicit editing transactions with `EditTxn`
 

@@ -567,7 +567,7 @@ interface EditCloudContainer extends WorkspaceCloudContainer {
 
 class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWorkspaceContainer {
   public override get cloudContainer(): EditCloudContainer | undefined {
-    return super.cloudContainer as EditCloudContainer | undefined;
+    return super.cloudContainer;
   }
 
   public get cloudProps(): WorkspaceContainerProps | undefined {

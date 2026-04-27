@@ -19,7 +19,6 @@ vi.mock("../decorations/PrimitiveConverterFactory.js", () => {
 import { Material, type PointPrimitive, type PointPrimitiveCollection, type Polyline, type PolylineCollection } from "@cesium/engine";
 import { ColorDef } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
-import type { RenderGraphic } from "@itwin/core-frontend";
 import type { RenderGraphicWithCoordinates } from "../decorations/PrimitiveConverter.js";
 import { PointPrimitiveConverter } from "../decorations/PointPrimitiveConverter.js";
 import { LineStringPrimitiveConverter } from "../decorations/LineStringPrimitiveConverter.js";
@@ -91,7 +90,7 @@ describe("PointPrimitiveConverter", () => {
       },
     ];
 
-    converter.convertDecorations([graphic as unknown as RenderGraphic], "world", scene);
+    converter.convertDecorations([graphic], "world", scene);
 
     expect(collection.add).toHaveBeenCalledOnce();
     expect(collection.items).toHaveLength(1);
@@ -130,7 +129,7 @@ describe("PointPrimitiveConverter", () => {
       },
     ];
 
-    converter.convertDecorations([graphic as unknown as RenderGraphic], "worldOverlay", scene);
+    converter.convertDecorations([graphic], "worldOverlay", scene);
 
     const added = collection.items[0];
     expect(added.disableDepthTestDistance).toBe(Number.POSITIVE_INFINITY);
@@ -166,7 +165,7 @@ describe("LineStringPrimitiveConverter", () => {
       },
     ];
 
-    converter.convertDecorations([graphic as unknown as RenderGraphic], "worldOverlay", scene);
+    converter.convertDecorations([graphic], "worldOverlay", scene);
 
     expect(materialSpy).toHaveBeenCalledOnce();
     expect(collection.add).toHaveBeenCalledOnce();
@@ -200,7 +199,7 @@ describe("LineStringPrimitiveConverter", () => {
       },
     ];
 
-    converter.convertDecorations([graphic as unknown as RenderGraphic], "world", scene);
+    converter.convertDecorations([graphic], "world", scene);
 
     expect(collection.add).not.toHaveBeenCalled();
     expect(collection.items).toHaveLength(0);
