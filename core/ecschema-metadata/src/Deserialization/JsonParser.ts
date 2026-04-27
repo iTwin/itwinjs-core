@@ -268,7 +268,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       ...jsonObj,
       originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
       originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
-    } as unknown as EntityClassProps;
+    };
   }
 
   /**
@@ -313,12 +313,12 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       ...jsonObj,
       originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
       originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
-    } as unknown as StructClassProps;
+    };
   }
 
   public parseUnitSystem(jsonObj: UnknownObject): UnitSystemProps {
     this.checkSchemaItemProps(jsonObj);
-    return jsonObj as UnitSystemProps;
+    return jsonObj;
   }
 
   /**

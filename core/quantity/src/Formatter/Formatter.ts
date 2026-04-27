@@ -28,7 +28,7 @@ class FractionalNumeric {
   private _textParts: string[] = [];
 
   constructor(value: number, precision: FractionalPrecision, reduce: boolean) {
-    this.calculate(value, precision as number);
+    this.calculate(value, precision);
     this.formTextParts(reduce);
   }
 

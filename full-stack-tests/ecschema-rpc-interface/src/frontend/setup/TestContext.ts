@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+  getAccessTokenFromBackend, TestFrontendAuthorizationClient,
 } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
@@ -58,12 +58,12 @@ export class TestContext {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
         email: this.settings.users[0].email,
         password: this.settings.users[0].password,
-      } as TestUserCredentials, {
+      }, {
         clientId: this.settings.oidcClientId,
         redirectUri: this.settings.oidcRedirect,
         scope: this.settings.oidcScopes,
         authority: this.settings.oidcAuthority,
-      } as TestBrowserAuthorizationClientConfiguration);
+      });
     }
 
     const iModelData = this.settings.iModel;

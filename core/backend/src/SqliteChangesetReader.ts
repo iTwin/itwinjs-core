@@ -240,7 +240,7 @@ export class SqliteChangesetReader implements Disposable {
    * @beta
    */
   public getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType;
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
 
   /**
@@ -317,7 +317,7 @@ export class SqliteChangesetReader implements Disposable {
    * @beta
    */
   public getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType | undefined;
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
 
   /**

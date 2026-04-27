@@ -10,7 +10,7 @@ import { ECClass, StructClass } from "../Metadata/Class";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { Enumeration } from "../Metadata/Enumeration";
-import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property";
+import { Property, StructArrayProperty } from "../Metadata/Property";
 import { ECName } from "../ECName";
 import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
@@ -1055,7 +1055,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private addCAPropertyValues(caClass: CustomAttributeClass, propertyElements: Element[]): CustomAttribute {
-    const instance = { className: caClass.fullName } as CustomAttribute;
+    const instance: CustomAttribute = { className: caClass.fullName };
     for (const propertyElement of propertyElements) {
       const value = this.readPropertyValue(propertyElement, caClass);
       if (value !== undefined)
@@ -1092,7 +1092,7 @@ export class XmlParser extends AbstractParser<Element> {
 
   private readArrayPropertyValue(propElement: Element, propertyClass: Property): PrimitiveArray | undefined {
     if (propertyClass.isPrimitive())
-      return this.readPrimitiveArrayValues(propElement, (propertyClass as PrimitiveProperty).primitiveType);
+      return this.readPrimitiveArrayValues(propElement, propertyClass.primitiveType);
 
     if (propertyClass.isStruct())
       return this.readStructArrayValues(propElement, propertyClass as StructArrayProperty);
