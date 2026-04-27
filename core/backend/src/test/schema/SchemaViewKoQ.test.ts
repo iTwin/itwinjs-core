@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelHost, SnapshotDb } from "../../core-backend";
-import { Format, KindOfQuantity, type SchemaView, SchemaUnitProvider, Unit } from "@itwin/ecschema-metadata";
+import { Format, KindOfQuantity, SchemaUnitProvider, type SchemaView, Unit } from "@itwin/ecschema-metadata";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as path from "path";
