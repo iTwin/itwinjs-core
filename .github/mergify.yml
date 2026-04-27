@@ -38,7 +38,7 @@ pull_request_rules:
     actions:
       backport:
         branches:
-          - &current_minor "release/5.8.x"
-          - &previous_minor "release/5.7.x"
+          - &current_minor "release/5.9.x"
+          - &previous_minor "release/5.8.x"
           - &previous_major "release/4.11.x"
 
