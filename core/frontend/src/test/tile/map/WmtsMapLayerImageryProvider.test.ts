@@ -148,7 +148,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     vi.spyOn(WmtsMapLayerImageryProvider.prototype, "getDisplayedTileMatrixSetAndLimits" as any).mockImplementation(() => {
       return {
         tileMatrixSet,
-        limits: [limitsLevel1 as WmtsCapability.TileMatrixSetLimits],
+        limits: [limitsLevel1],
       };
     });
 

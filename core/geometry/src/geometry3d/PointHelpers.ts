@@ -451,9 +451,8 @@ export class Point4dArray {
    * @return packed weighted point array
    */
   public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined {
-    let points: Point3d[] | Float64Array | number[];
     if (Array.isArray(data) && data[0] instanceof Point3d) {
-      points = data as Point3d[];
+      const points = data as Point3d[];
       if (points.length !== weights.length)
         return undefined;
       const numValues = 4 * points.length;
@@ -467,18 +466,18 @@ export class Point4dArray {
       }
       return result;
     }
-    points = data as (Float64Array | number[]);
+    const numericData = data as (Float64Array | number[]);
     const numPoints = weights.length;
-    if (points.length !== 3 * numPoints)
+    if (numericData.length !== 3 * numPoints)
       return undefined;
     const numValues1 = 4 * numPoints;
     if (!result || result.length < numValues1)
       result = new Float64Array(numValues1);
     for (let i = 0, k = 0; k < numPoints; k++) {
       const k0 = 3 * k;
-      result[i++] = points[k0];
-      result[i++] = points[k0 + 1];
-      result[i++] = points[k0 + 2];
+      result[i++] = numericData[k0];
+      result[i++] = numericData[k0 + 1];
+      result[i++] = numericData[k0 + 2];
       result[i++] = weights[k];
     }
     return result;

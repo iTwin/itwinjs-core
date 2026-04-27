@@ -116,7 +116,7 @@ describe("SelectionHandler", () => {
           source: "different source",
           level: 0,
           timestamp: new Date(),
-        } as SelectionChangeEventArgs,
+        },
         selectionManager,
       );
       expect(selectionManagerMock.addToSelection).to.not.have.been.called;
@@ -141,7 +141,7 @@ describe("SelectionHandler", () => {
           source: "different source",
           level: 0,
           timestamp: new Date(),
-        } as SelectionChangeEventArgs,
+        },
         selectionManager,
       );
       expect(selectionManagerMock.removeFromSelection).to.not.have.been.called;
@@ -166,7 +166,7 @@ describe("SelectionHandler", () => {
           source: "different source",
           level: 0,
           timestamp: new Date(),
-        } as SelectionChangeEventArgs,
+        },
         selectionManager,
       );
       expect(selectionManagerMock.replaceSelection).to.not.have.been.called;
