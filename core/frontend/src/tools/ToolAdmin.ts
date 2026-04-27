@@ -503,8 +503,8 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
     ["keydown", "keyup"].forEach((type) => {
-      document.addEventListener(type, ToolAdmin._keyEventCaptureHandler as EventListener, true);
-      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventCaptureHandler as EventListener, true));
+      document.addEventListener(type, ToolAdmin._keyEventCaptureHandler, true);
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventCaptureHandler, true));
 
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
       ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));

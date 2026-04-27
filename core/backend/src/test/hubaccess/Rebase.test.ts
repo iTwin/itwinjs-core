@@ -178,11 +178,11 @@ class TestIModel {
     let id: Id64String = "";
     if (args?.markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        id = txn.insertElement(props as any);
+        id = txn.insertElement(props);
       });
       return id;
     }
-    return txn.insertElement(props as any);
+    return txn.insertElement(props);
   }
   public async updateElement(txn: EditTxn, id: Id64String, markAsIndirect?: true, updateGeom?: boolean) {
     const b = txn.iModel as BriefcaseDb;
@@ -2036,7 +2036,7 @@ for (const enableSemanticRebase of [false, true]) {
         classFullName: ElementGroupsMembers.classFullName,
         sourceId: e1,
         targetId: e2
-      } as RelationshipProps);
+      });
 
       b1Txn.saveChanges();
       await b1.pushChanges({ description: `deleted relationship` });

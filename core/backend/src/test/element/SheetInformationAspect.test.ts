@@ -9,7 +9,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
 import { DocumentPartition, Sheet } from "../../Element";
 import { DocumentListModel, SheetModel } from "../../Model";
-import { EditTxnError, GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
+import { EditTxnError, GeometricModel2dProps, IModel, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
 import { EditTxn, withEditTxn } from "../../EditTxn";
@@ -59,7 +59,7 @@ async function insertSheet(iModel: IModelDb): Promise<Id64String> {
     const sheetElementId = txn.insertElement(sheetElementProps);
     const sheetModelProps: GeometricModel2dProps = {
       classFullName: SheetModel.classFullName,
-      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" },
     };
     return txn.insertModel(sheetModelProps);
   });

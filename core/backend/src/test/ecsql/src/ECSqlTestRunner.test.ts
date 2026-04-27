@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlRowArg, ECSqlStatement, ECSqlSyncReader, SnapshotDb, SynchronousQueryOptions } from "../../../core-backend";
+import { ECSqlRowArg, ECSqlStatement, ECSqlSyncReader, SnapshotDb } from "../../../core-backend";
 import { KnownTestLocations } from "../../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
@@ -464,7 +464,7 @@ async function runECSqlSyncReaderTest(test: ECDbTestProps, dataset: TestDataset)
   try {
     imodel.withQueryReader(test.sql, reader => {
       runAssertionsOnSyncReader(test, reader, "ECSqlSyncReader");
-    }, params, queryOptions as SynchronousQueryOptions);
+    }, params, queryOptions);
   } catch (error: any) {
     if (test.errorDuringPrepare)
       return;

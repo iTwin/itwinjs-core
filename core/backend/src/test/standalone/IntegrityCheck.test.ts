@@ -69,7 +69,7 @@ describe("Integrity Check Tests", () => {
 
       iModelStub.createQueryReader.returns(asyncIterator() as any);
 
-      const results = await performQuickIntegrityCheck(iModelStub as any);
+      const results = await performQuickIntegrityCheck(iModelStub);
 
       expect(results).to.have.lengthOf(2);
       expect(results[0]).to.deep.include({ check: "Check Data Columns", passed: true, elapsedSeconds: "0.5" });
@@ -80,7 +80,7 @@ describe("Integrity Check Tests", () => {
       const asyncIterator = async function* () { };
       iModelStub.createQueryReader.returns(asyncIterator() as any);
 
-      const results = await performQuickIntegrityCheck(iModelStub as any);
+      const results = await performQuickIntegrityCheck(iModelStub);
 
       expect(results).to.be.an("array").that.is.empty;
     });
