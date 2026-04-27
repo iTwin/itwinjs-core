@@ -188,7 +188,6 @@ export class BasicUnit implements UnitProps {
 
 // @beta
 export class BasicUnitsProvider implements UnitsProvider {
-    constructor();
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
