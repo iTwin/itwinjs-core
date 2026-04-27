@@ -7,9 +7,7 @@
  * @module Editing
  */
 
-import { IModelApp, IpcApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
-
-import { EditTools } from "./EditTool";
+import { IModelApp, IpcApp, Tool } from "@itwin/core-frontend";
 
 /** Undo all element changes
  * @beta
@@ -21,13 +19,8 @@ export class UndoAllTool extends Tool {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return true;
 
-    try {
-      await EditTools.finishCommand();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : IModelApp.localization.getLocalizedString("iModelJs:Errors.UnableToFinishActiveEditCommand");
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, message));
+    if (!await IModelApp.toolAdmin.finishEditCommandForTxnOperation())
       return false;
-    }
 
     return IpcApp.appFunctionIpc.reverseAllTxn(imodel.key).then(() => true).catch(() => false);
   }

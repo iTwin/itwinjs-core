@@ -1552,7 +1552,10 @@ export class ToolAdmin {
     return EventHandled.No;
   }
 
-  private async finishEditCommandForTxnOperation(): Promise<boolean> {
+  /** Finish the active edit command before performing a transaction operation like undo/redo.
+   * @internal
+   */
+  public async finishEditCommandForTxnOperation(): Promise<boolean> {
     // NOTE: Because restartPrimitiveTool is called after an undo/redo the active tool won't be left in an invalid state...
     if (undefined === this._editCommandHandler)
       return true;
