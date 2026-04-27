@@ -764,7 +764,7 @@ describe("CurveClips", () => {
     const dx = 400;
     let dy = 0;
 
-    const integratedSpirals = [];
+    const integratedSpirals: TransitionSpiral3d[] = [];
     const r0 = 0;
     const r1 = 50;
     const activeInterval = Segment1d.create(0, 1);
