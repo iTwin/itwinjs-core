@@ -84,7 +84,7 @@ export interface SqliteChange {
  * @beta
  */
 export class SqliteChangesetReader implements Disposable {
-  private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
+  private readonly _nativeReader = new IModelNative.platform.SqliteChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
