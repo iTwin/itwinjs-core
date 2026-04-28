@@ -5,6 +5,7 @@
 import type { SerializedConstant, SerializedUnit, SerializedUnitSchema } from "../SerializedUnitSchema";
 import { UnitConversion } from "./UnitConversion";
 import { parseDefinition } from "./Parser";
+import { stripAliasPrefix } from "./nameUtils";
 
 const MAX_RESOLUTION_DEPTH = 30;
 
@@ -113,7 +114,7 @@ export class UnitDefinitionResolver {
 
     for (const [, fragment] of fragments) {
       // Strip alias prefix if present (definitions in the schema use unqualified names)
-      const fragName = fragment.name.includes(":") ? fragment.name.split(":")[1] : fragment.name;
+      const fragName = stripAliasPrefix(fragment.name);
       const fragConv = this._resolveUnit(fragName, depth + 1);
       const raised = fragConv.raise(fragment.exponent);
       result = result ? result.multiply(raised) : raised;

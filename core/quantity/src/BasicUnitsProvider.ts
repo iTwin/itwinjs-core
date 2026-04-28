@@ -5,6 +5,7 @@
 import { UnitConversionInvert, type UnitConversionProps, type UnitProps, type UnitsProvider } from "./Interfaces";
 import type { SerializedInvertedUnit, SerializedUnit, SerializedUnitSchema } from "./SerializedUnitSchema";
 import { type ResolvedUnit, UnitDefinitionResolver } from "./UnitConversion/UnitDefinitionResolver";
+import { qualifyItemName } from "./UnitConversion/nameUtils";
 import { BadUnit } from "./Unit";
 
 interface IndexedUnit {
@@ -83,7 +84,7 @@ async function _buildState(): Promise<ResolvedState> {
       continue;
     const inv: SerializedInvertedUnit = item;
     const fullName = `${s.name}.${name}`;
-    const invertsName = inv.invertsUnit.includes(".") ? inv.invertsUnit : `${s.name}.${inv.invertsUnit.includes(":") ? inv.invertsUnit.split(":")[1] : inv.invertsUnit}`;
+    const invertsName = qualifyItemName(inv.invertsUnit, s.name);
     const unitSystem = inv.unitSystem;
 
     const invertedSource = nameMap.get(invertsName);
@@ -145,10 +146,9 @@ export class BasicUnitsProvider implements UnitsProvider {
    * @returns The matching `UnitProps`, or a `BadUnit` if no match is found.
    */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    if (schemaName && schemaName !== "Units")
-      return new BadUnit();
-
     const state = await resolveState();
+    if (schemaName && schemaName !== state.schemaName)
+      return new BadUnit();
     const candidates = state.labelMap.get(unitLabel.toLowerCase());
     if (!candidates || candidates.length === 0)
       return new BadUnit();
