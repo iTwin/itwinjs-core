@@ -53,6 +53,28 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
   elementProps: Readonly<ElementProps>;
 }
 
+/** Per-model element deletion data used inside [[OnBulkModelEventsArg]].
+ * @beta
+ */
+export interface OnBulkDeletedElementsArg extends OnModelIdArg {
+  /** The Ids of all Elements that were bulk-deleted from this Model instance. */
+  elementIds: Id64String[];
+}
+
+/** Argument for the `Model.onBulkModelEvents` static method.
+ * Passed once per distinct Model ECClass, combining both deleted sub-models and
+ * deleted-elements-by-model into a single callback.
+ * @beta
+ */
+export interface OnBulkModelEventsArg extends OnModelArg {
+  /** Ids of Models of this class that were deleted as sub-models. Present only if any sub-models
+   * of this class were deleted. */
+  deletedModelIds?: Id64String[];
+  /** Per-model lists of element Ids deleted from instances of this Model class. Present only if
+   * any elements were deleted from models of this class. */
+  deletedElementsByModel?: OnBulkDeletedElementsArg[];
+}
+
 /** Argument for the `Model.onXxxElement` static methods that supply the Id of an Element for a Model.
  * @beta
  */
@@ -202,6 +224,32 @@ export class Model extends Entity {
   protected static onDeleted(arg: OnModelIdArg): void {
     arg.iModel.models[_cache].delete(arg.id);
     arg.iModel.elements[_cache].deleteWithModel(arg.id);
+  }
+
+  /** Called once per distinct Model ECClass after a bulk element delete operation, combining
+   * both sub-model deletions and element-deletions-by-model into a single callback.
+   *
+   * `arg.deletedModelIds` — present when models of this class were deleted as sub-model roots.
+   * The default implementation calls [[onDeleted]] for each.
+   *
+   * `arg.deletedElementsByModel` — present when elements were deleted from models of this class.
+   * The default implementation calls [[onDeleteElement]] and [[onDeletedElement]] for each element.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the Model class dispatched on.
+   * @beta
+   */
+  protected static onBulkModelEvents(arg: OnBulkModelEventsArg): void {
+    if (arg.deletedModelIds !== undefined)
+      for (const id of arg.deletedModelIds)
+        this.onDeleted({ iModel: arg.iModel, id });
+
+    if (arg.deletedElementsByModel !== undefined)
+      for (const entry of arg.deletedElementsByModel)
+        for (const elementId of entry.elementIds) {
+          this.onDeleteElement({ iModel: arg.iModel, id: entry.id, elementId });
+          this.onDeletedElement({ iModel: arg.iModel, id: entry.id, elementId });
+        }
   }
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.

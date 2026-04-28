@@ -66,7 +66,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
     */
   public async getSchemaInfo(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    return this.getSchemaSync(key, matchType, context) as SchemaInfo;
+    return this.getSchemaSync(key, matchType, context);
   }
 
   /**

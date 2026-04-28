@@ -150,7 +150,7 @@ export class DevTools {
 
   private static evaluateMemoryUsage() {
     // Create a clone
-    const memUsage = { ...process.memoryUsage() } as NodeJS.MemoryUsage;
+    const memUsage = { ...process.memoryUsage() };
     const memUsageObj = (memUsage as any) as StringIndexedObject<number>;
     // Evaluate memory usage as mega bytes
     for (const type of Object.keys(memUsageObj)) {
@@ -165,7 +165,7 @@ export class DevTools {
       pid: process.pid,
       ppid: process.ppid,
       memoryUsage: this.evaluateMemoryUsage(),
-    } as DevToolsProcessStats;
+    };
   }
 
   private static evaluateOsStats(): DevToolsOsStats {
@@ -177,7 +177,7 @@ export class DevTools {
       uptime: os.uptime(),
       cpus: this.evaluateCpus(),
       cpuUsage: this.evaluateCpuUsage(),
-    } as DevToolsOsStats;
+    };
   }
 
   /** Returns JSON object with backend statistics */
@@ -186,7 +186,7 @@ export class DevTools {
       const stats = {
         os: this.evaluateOsStats(),
         process: this.evaluateProcessStats(),
-      } as DevToolsStats;
+      };
       return stats;
     } catch (error) {
       Logger.logError(loggerCategory, "Could not fetch stats at backend");

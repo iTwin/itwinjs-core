@@ -166,7 +166,7 @@ function createElemWithNavProp(className: string, _iModelName: IModelDb, modId: 
       id: elementId,
       relClassName: "AllProperties:TestFeatureUsesElement",
     }
-  } as TestElementWithNavProps;
+  };
 }
 
 export class ECSqlDatasets {

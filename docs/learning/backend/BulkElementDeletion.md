@@ -4,17 +4,37 @@
 
 ## Basic usage
 
-Pass an array of element IDs to delete. The method returns a set of IDs that could **not** be deleted because they would violate an integrity constraint (see [Constraint violations](#constraint-violations) below).
+Pass an array of element IDs to delete. The method returns a [BulkDeleteElementsResult]($backend) that describes the outcome: which elements were deleted, which could not be deleted due to integrity constraints, and the overall status.
 
 ```typescript
-const failed: Id64Set = txn.deleteElements([idA, idB, idC]);
-if (failed.size > 0) {
-  // Some elements could not be deleted; inspect `failed` to see which ones.
+const result: BulkDeleteElementsResult = txn.deleteElements([idA, idB, idC]);
+
+switch (result.status) {
+  case BulkDeleteElementsStatus.Success:
+    // All requested elements were deleted.
+    break;
+  case BulkDeleteElementsStatus.PartialSuccess:
+    // Some elements were deleted, but others were blocked — inspect result.failedIds.
+    for (const id of result.failedIds)
+      console.log(`Could not delete: ${id}`);
+    break;
+  case BulkDeleteElementsStatus.DeletionFailed:
+    // The entire SQL DELETE statement failed (e.g. FK constraint violation when using
+    // skipFKConstraintValidations). No elements were deleted. Roll back and investigate.
+    break;
 }
 ```
 
-You do **not** need to call [EditTxn.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and it performs the same usage checks for definitions.
-The only behavioral difference is that `deleteDefinitionElements` silently ignores non-definition elements in the input, whereas deleteElements will attempt to delete everything it can.
+The `result` object has three fields:
+
+| Field | Description |
+|---|---|
+| `status` | [BulkDeleteElementsStatus]($backend): `Success`, `PartialSuccess`, or `DeletionFailed` |
+| `failedIds` | `Id64Set` of element IDs that could not be deleted |
+| `sqlDeleteStatus` | Raw `DbResult` from the underlying SQL DELETE statement |
+
+You do **not** need to call [EditTxn.deleteDefinitionElements]($backend) for DefinitionElements. `deleteElements` handles both ordinary elements and DefinitionElements and performs the same usage checks for definitions.
+The only behavioral difference is that `deleteDefinitionElements` silently ignores non-definition elements in the input, whereas `deleteElements` will attempt to delete everything it can.
 
 ## What gets deleted
 
@@ -57,12 +77,15 @@ An element is a _constraint violator_ and will **not** be deleted (neither will 
 | A `GeometricElement3d` or `GeometricElement2d` outside the set uses this element as its **Category** | The category element (and its subtree root) |
 | A `DefinitionElement` outside the set has a tracked **usage** reference to this element (e.g. a geometry part in a geometry stream) | The definition element (and its subtree root) |
 
-All constraint violators, together with their entire subtrees (descendants and sub-model contents), are removed from the delete set and are returned in the failed `Id64Set`.
+All constraint violators, together with their entire subtrees (descendants and sub-model contents), are removed from the delete set and are reported in the returned `BulkDeleteElementsResult` via `result.failedIds`.
 
-## Non-constraint references - automatic NULLing
+> Such blocking constraints are of the `On Delete No Action` Foreign key constraints. Such constraints need to be handled explicitly if one or more elements in the delete set are referenced by elements outside the set.
 
-Some references are not enforced as database constraints and therefore do not block deletion. `deleteElements` patches these automatically before removing the elements:
+### Other constraint references
 
+The other constraints such as `On Delete Cascade` and `On Delete Set NULL` are clearly defined and are hence handled by the API internally. `deleteElements` patches these automatically before removing the elements. For example,
+
+- **`bis_ElementUniqueAspect`** entries are deleted from the database before the element it references.
 - **`TypeDefinitionId`** on `GeometricElement3d` and `GeometricElement2d` rows - set to `NULL` when the referenced type element is being deleted and the geometric element itself is **not** in the delete set.
 
 ## Link-table relationship cleanup
@@ -75,23 +98,40 @@ Some references are not enforced as database constraints and therefore do not bl
 
 No manual cleanup of these tables is required.
 
-## Lifecycle callbacks
+### Lifecycle batched callbacks
 
-`deleteElements` fires the standard lifecycle callbacks for every element in the final delete set (after constraint violators have been pruned):
+For large deletions, firing one notification per element adds significant overhead. Three batch-scoped callbacks allow subclasses to handle an entire group at once:
 
-- `Element.onDelete` - fired for every element that was originally in the input array.
-- `Element.onDeleted` - fired for every element that will be deleted including child elements and sub-model elements.
-- `Element.onChildDelete` / `Element.onChildDeleted` - fired on the **parent** element when a child is deleted and that parent is **not** itself being deleted.
-- `Element.onSubModelDelete` / `Element.onSubModelDeleted` - fired on the modeled element when its sub-model is deleted.
-- `Model.onDelete` / `Model.onDeleted` - fired on the sub-model being deleted when the modeled element is deleted.
+| Callback | Arg type | Fires |
+|---|---|---|
+| `Element.onBulkDeleted` | `OnBulkDeletedBatchArg` | Once per Element ECClass after all elements of that class are deleted; `arg.elements` lists every deleted element |
+| `Element.onBulkChildDeleted` | `OnBulkChildDeletedBatchArg` | Once per parent ECClass for children whose parent was *not* itself deleted; `arg.elements` pairs each `childId` with its `parentId` |
+| `Model.onBulkModelEvents` | `OnBulkModelEventsArg` | Once per Model ECClass, supplying both `deletedModelIds` (sub-models removed) and `deletedElementsByModel` (per-model element lists) |
+
+The **default implementations** of all three callbacks delegate to the existing single-element callbacks (`onDeleted`, `onChildDeleted`, `onDeletedElement`, …) so existing overrides continue to work without modification. Override a batch callback only when you need to replace the per-element loop with something more efficient.
 
 > **Note:** Callbacks cannot veto a deletion in `deleteElements`. Any veto attempt from a callback is ignored. If you need per-element veto semantics, use [EditTxn.deleteElement]($backend) on individual elements instead.
+
+## Performance option — `skipFKConstraintValidations`
+
+By default, `deleteElements` runs a pre-deletion pass that validates all `ON DELETE NO ACTION` foreign-key constraints and prunes any elements that would violate them (returning them in `failedIds`). For very large deletions this validation pass can itself become a bottleneck.
+
+If you are certain that none of the elements in the batch are referenced by elements **outside** the batch, you can skip this pass:
+
+```typescript
+const result = txn.deleteElements(ids, { skipFKConstraintValidations: true });
+```
+
+> **Warning:** When this option is enabled and an external FK dependency exists, the underlying SQL `DELETE` will fail, `status` will be `DeletionFailed`, and **no elements will be deleted**. You must roll back the transaction. Only use this option when the safety of the input is guaranteed.
+
+## When to use `deleteElements` vs `deleteElement`
 
 Use `deleteElements` when:
 
 - Deleting a tree of elements (parent + all descendants).
 - Deleting partitions/modeled elements (so their sub-models are cleaned up too).
 - Deleting a mix of ordinary and definition elements.
+- Deleting large numbers of elements where per-element overhead matters.
 
 Use `deleteElement` when:
 - You want a hard failure on any constraint violation rather than silent exclusion and a returned failed set.

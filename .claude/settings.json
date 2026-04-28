@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(npm install *)"
+    ],
+    "allow": [
+      "Bash(rushx build *)",
+      "Bash(rushx test *)",
+      "Bash(rushx lint *)",
+      "Bash(rushx docs *)",
+      "Bash(rushx extract-api)",
+      "Bash(rushx clean)",
+      "Bash(rushx cover)",
+      "Bash(rush build)",
+      "Bash(rush install)",
+      "Bash(rush extract-api)",
+      "Bash(rush lint)",
+      "Bash(rush change)",
+      "Bash(rush clean)",
+      "Bash(rush cover)",
+      "Bash(rush test)",
+      "Bash(rush audit)",
+      "Bash(npm view *)",
+      "Bash(pnpm why *)"
+    ]
+  }
+}
