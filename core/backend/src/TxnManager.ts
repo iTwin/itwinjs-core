@@ -963,6 +963,8 @@ export class TxnManager {
   /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
    * @internal */
   protected _captureInstanceChanges(id: TxnIdString) {
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
+
     using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true } });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
     while (reader.step()) {
