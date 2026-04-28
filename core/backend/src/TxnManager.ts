@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -684,18 +684,24 @@ export class RebaseManager {
         if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
         const options = { forceUseId: true, useJsNames: true };
-        nativeDb.insertInstance(props, options);
+        const id = nativeDb.insertInstance(props, options);
+        if (!Id64.isValidId64(id))
+          throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.id}`);
         break;
       }
       case "Updated": {
         if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
-        nativeDb.updateInstance(props, { useJsNames: true });
+        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
         break;
       }
       case "Deleted": {
         const key = { id: props.id, classFullName: props.className };
-        nativeDb.deleteInstance(key, { useJsNames: true });
+        const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
         break;
       }
       default:
