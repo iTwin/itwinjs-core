@@ -31,7 +31,6 @@ import { StashManager, StashProps } from "./StashManager";
 import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
 import { ECSqlRow } from "./Entity";
 import { SqliteChangesetReader } from "./SqliteChangesetReader";
-import { TxnIdString } from "./TxnManager";
 import { ChangeInstance } from "./ChangesetReaderTypes";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
