@@ -84,7 +84,8 @@ async function _buildState(): Promise<ResolvedState> {
     phenomenonMap.set(phenomenon, byPhen);
   }
 
-  // Handle InvertedUnit items
+  // Handle InvertedUnit items — must run after nameMap is fully populated above because
+  // invertedSource lookup requires the inverted unit's target to already be in nameMap.
   for (const [name, item] of Object.entries(s.items)) {
     if (item.schemaItemType !== "InvertedUnit")
       continue;

@@ -84,8 +84,9 @@ class CompositeUnitsProvider implements UnitsProvider {
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
     const seen = new Set<string>();
     const out: UnitProps[] = [];
-    for (const p of this._providers) {
-      const units = await tryList(async () => p.getUnitsByFamily(phenomenon));
+    // Query all providers in parallel; process results in declaration order to honour precedence.
+    const results = await Promise.all(this._providers.map(async (p) => tryList(async () => p.getUnitsByFamily(phenomenon))));
+    for (const units of results) {
       for (const u of units) {
         if (!seen.has(u.name)) {
           seen.add(u.name);
