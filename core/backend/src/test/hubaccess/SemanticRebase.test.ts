@@ -2068,10 +2068,8 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     localTxn.deleteElement(e1Id);
     localTxn.saveChanges("local delete E1 (txn3)");
 
-    // Local pulls:
-    //   Semantic Rebase fails because when we try to read the instance from the db it is not there, it is already deleted
-    // Instead while reversing txns during semantic rebase we should reverse txns one by one ane before reversing we should construct the patches one by one.
-    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith(`Failed to read instance`);
+    await pullChanges(localTxn);
+    chai.expect(() => t!.getElement(t!.local, e1Id)).to.throw(`Element=${e1Id.toString()}`);
   });
 
   it("F6: local inserts elements of three different classes across separate data txns; incoming trivial schema; ECInstanceIds and classNames preserved", async () => {
@@ -3488,18 +3486,15 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     localTxn.saveChanges("local txn3 delete temp element");
 
     // Local pulls: three local txns (insert+update+delete) rebased on top of schema transform
-    // We capture instances of all txns before reverting, and then we revert the txns all at once
-    // It causes this bug because when we capture instances the instance is already gone (deleted).
-    // Instead we should capture instances of the last txn, revert it, then move to the second last and so on.
-    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("Failed to read instance");
-    // t.local.clearCaches();
+    await pullChanges(localTxn);
+    t.local.clearCaches();
 
-    // // Element should be gone (last operation was delete)
-    // chai.expect(() => t!.getElement(t!.local, tempElementId)).to.throw("Element not found");
+    // Element should be gone (last operation was delete)
+    chai.expect(() => t!.getElement(t!.local, tempElementId)).to.throw(`Element=${tempElementId.toString()}`, "Element should be deleted after rebase");
 
-    // // Schema should be at v02
-    // const schema = t.local.getSchemaProps("TestDomain");
-    // chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v02 after rebase");
+    // Schema should be at v02
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v02 after rebase");
   });
 
   it("O2: local insert + delete of one element, plus insert + update of another → incoming schema → both correct [BUG]", async () => {
@@ -3526,22 +3521,19 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     localTxn.saveChanges("local txn3 delete temp element");
 
     // Local pulls: all three txns rebased on top of far's trivial schema
-    // We capture instances of all txns before reverting, and then we revert the txns all at once
-    // It causes this bug because when we capture instances the instance is already gone (deleted).
-    // Instead we should capture instances of the last txn, revert it, then move to the second last and so on.
-    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("Failed to read instance");
-    // t.local.clearCaches();
+    await pullChanges(localTxn);
+    t.local.clearCaches();
 
-    // // Temp element should be gone
-    // chai.expect(() => t!.getElement(t!.local, tempId)).to.throw("Element not found");
+    // Temp element should be gone
+    chai.expect(() => t!.getElement(t!.local, tempId)).to.throw(`Element=${tempId.toString()}`, "Element should be deleted after rebase");
 
-    // // Persist element should have the update
-    // const persistElem = t.getElement(t.local, persistId);
-    // chai.expect(persistElem.propA).to.equal("persist_updated_a", "Persist element propA should be updated");
-    // chai.expect(persistElem.propD).to.equal("persist_d", "Persist element propD should be preserved");
+    // Persist element should have the update
+    const persistElem = t.getElement(t.local, persistId);
+    chai.expect(persistElem.propA).to.equal("persist_updated_a", "Persist element propA should be updated");
+    chai.expect(persistElem.propD).to.equal("persist_d", "Persist element propD should be preserved");
 
-    // const schema = t.local.getSchemaProps("TestDomain");
-    // chai.expect(schema.version).to.equal("01.00.01", "Schema should be at v01");
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.01", "Schema should be at v01");
   });
 
   it("O3: schema txn sandwiched between data txns; incoming data change → all local operations preserved in correct order", async () => {
@@ -3854,7 +3846,7 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
   });
 });
 
-describe.only("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
+describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -4104,7 +4096,7 @@ describe.only("Semantic Rebase - Multi-Pull Verification", function (this: Suite
   //     ECSqlReader (ECInstanceId, className, domain props).
   // ──────────────────────────────────────────────────────────────────────────
 
-  it("R3: two pulls with insert/update/delete across rounds; element lifecycle verified via ECSqlReader [BUG]", async () => {
+  it("R3: two pulls with insert/update/delete across rounds; element lifecycle verified [BUG]", async () => {
     t = await TestIModel.initialize("R3MultiPullInsertUpdateDelete");
     let farTxn = startTestTxn(t.far, "R3 far");
     let localTxn = startTestTxn(t.local, "R3 local");
@@ -4143,7 +4135,18 @@ describe.only("Semantic Rebase - Multi-Pull Verification", function (this: Suite
     localTxn.saveChanges("local r1 delete ephemeral");
 
     // Pull #1: rebase insert-persistD + delete-ephemeral txns onto incoming schema v01 + sharedC update
-    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("Failed to read instance"); // BUG because the instance is deleted when read for capturing patch
+    await pullChanges(localTxn);
+    chai.expect(() => t!.getElement(t!.local, ephemeralId)).to.throw(`Element=${ephemeralId.toString()}`, "Ephemeral element should be deleted after pull #1");
+    const elementProps = t.getElement(t.local, persistDId);
+    chai.expect(elementProps.propA).to.equal("pd_a_init", "Persistent D propA should be preserved after pull #1");
+    chai.expect(elementProps.propD).to.equal("pd_d_init", "Persistent D propD should be preserved after pull #1");
+    const sharedCAfter1 = t.getElement(t.local, sharedC);
+    chai.expect(sharedCAfter1.propA).to.equal("sc_a_r1", "sharedC propA should be updated by far after pull #1");
+    chai.expect(sharedCAfter1.propC).to.equal("sc_c_init", "sharedC propC should be unchanged after pull #1");
+    chai.expect(sharedCAfter1.propC2).to.be.undefined;
+    const sharedDAfter1 = t.getElement(t.local, sharedD);
+    chai.expect(sharedDAfter1.propA).to.equal("sd_a_init", "sharedD propA should be unchanged after pull #1");
+    chai.expect(sharedDAfter1.propD).to.equal("sd_d_init", "sharedD propD should be unchanged after pull #1");
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -4152,7 +4155,7 @@ describe.only("Semantic Rebase - Multi-Pull Verification", function (this: Suite
   //     Complete ECSql verification of all elements after all three pulls.
   // ──────────────────────────────────────────────────────────────────────────
 
-  it("R4: three pulls without push; local accumulates txns; all elements verified via ECSqlReader after each [BUG]", async () => {
+  it("R4: three pulls without push; local accumulates txns; all elements verified after each [BUG]", async () => {
     t = await TestIModel.initialize("R4ThreePullsNoPush");
     let farTxn = startTestTxn(t.far, "R4 far");
     let localTxn = startTestTxn(t.local, "R4 local");
@@ -4271,7 +4274,29 @@ describe.only("Semantic Rebase - Multi-Pull Verification", function (this: Suite
     localTxn.saveChanges("local r3 delete localC1");
 
     // Pull #3 — transforming schema rebase
-    await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("Failed to read instance"); // BUG because localC1 is deleted when read for capturing patch
+    await pullChanges(localTxn);
+
+    // baseC1: propA from round 1 unchanged
+    const bc1After3 = t.getElement(t.local, baseC1);
+    chai.expect(bc1After3.propA).to.equal("bc1_a_loc_r1", "baseC1 propA should remain from round 1 after pull #3");
+    chai.expect(bc1After3.propC).to.equal("bc1_c", "baseC1 propC should be unchanged after pull #3");
+
+    // baseC2: propA updated by far in round 3; PropC moved to A but still accessible via propC query
+    const bc2After3 = t.getElement(t.local, baseC2);
+    chai.expect(bc2After3.propA).to.equal("bc2_a_r3", "baseC2 propA should be changed after pull #3");
+    chai.expect(bc2After3.propC).to.equal("bc2_c", "baseC2 propC should be unchanged after pull #3");
+
+    // localC1: must be deleted
+    chai.expect(() => t!.getElement(t!.local, localC1)).to.throw(`Element=${localC1.toString()}`, "localC1 should be deleted after pull #3");
+    // baseD1: far's propA update applied
+    const bd1After3 = t.getElement(t.local, baseD1);
+    chai.expect(bd1After3.propA).to.equal("bd1_a_r2", "baseD1 propA should be updated by far after pull #3");
+    // localD1: insert preserved
+    const ld1After3 = t.getElement(t.local, localD1);
+    chai.expect(ld1After3.propA).to.equal("ld1_a_r2", "localD1 propA should be preserved after pull #3 rebase");
+    chai.expect(ld1After3.propD).to.equal("ld1_d_r2", "localD1 propD should be preserved after pull #3 rebase");
+    chai.expect(ld1After2.id).to.equal(localD1, "localD1 ECInstanceId must be stable after pull #3");
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.03", "Schema v02 after pull #3");
   });
 
   // ──────────────────────────────────────────────────────────────────────────

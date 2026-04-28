@@ -678,7 +678,7 @@ export class RebaseManager {
    */
   private applyInstancePatch(instance: ChangeInstance) {
     const nativeDb = this._iModel[_nativeDb];
-    const { props, $meta } = instance;
+    const { $meta, ...props } = instance;
     switch ($meta.op) {
       case "Inserted": {
         if (!props)
@@ -694,7 +694,7 @@ export class RebaseManager {
         break;
       }
       case "Deleted": {
-        const key = { id: instance.id, classFullName: instance.classFullName };
+        const key = { id: props.id, classFullName: props.className };
         nativeDb.deleteInstance(key, { useJsNames: true });
         break;
       }
@@ -963,7 +963,7 @@ export class TxnManager {
   /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
    * @internal */
   protected _captureInstanceChanges(id: TxnIdString) {
-    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id });
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true } });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
     while (reader.step()) {
       pcu.appendFrom(reader);

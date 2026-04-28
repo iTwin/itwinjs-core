@@ -649,7 +649,7 @@ export class BriefcaseManager {
     if (!reverse) {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
-        const reversedTxns = useSemanticRebase ? this.capturePatchInstancesAndReverseLocalChanges(briefcaseDb) : nativeDb.pullMergeReverseLocalChanges();
+        const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
         if (useSemanticRebase) {
           nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
         }
@@ -657,7 +657,7 @@ export class BriefcaseManager {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
         Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
       } else {
-        nativeDb.pullMergeReverseLocalChanges();
+        nativeDb.pullMergeReverseLocalChanges(false);
       }
     }
 
@@ -890,93 +890,6 @@ export class BriefcaseManager {
   private static readonly SCHEMAS_FOLDER = "schemas";
   private static readonly DATA_FOLDER = "data";
   private static readonly DATA_FILE_NAME = "data.json";
-
-  /**
-   * CapturePatch instances and reverse local changes on the go.
-   * @param txnId The txn id for which to capture the patch instances
-   * @param txnType The type of the txn for which to capture the patch instances
-   * @internal
-   */
-  private static capturePatchInstancesAndReverseLocalChanges(db: BriefcaseDb): TxnIdString[] {
-    const nativedb = db[_nativeDb];
-    return nativedb.pullMergeReverseLocalChanges((txnId: TxnIdString, txnType: string) => {
-      if (txnType !== "Data") return;
-      // already captured(This actually shows that first rebase operation is already done but during that while reinstating this txns,
-      // some error happened so the folder still exists so we don't want to capture again)
-      if (this.semanticRebaseDataFolderExists(db, txnId)) return;
-      const changedInstances = this.captureChangedInstancesAsJSON(db, txnId);
-      const instancePatches = this.constructPatchInstances(db, changedInstances);
-      this.storeChangedInstancesForSemanticRebase(db, txnId, instancePatches);
-    });
-  }
-
-  /**
-   * Captures changed instances from a txn as JSON
-   * @param txnId The txn id for which to capture changed instances
-   * @param db The {@link BriefcaseDb} instance from which to capture changed instances as json
-   * @returns changed instances for semantic rebase
-   * @internal
-   */
-  private static captureChangedInstancesAsJSON(db: BriefcaseDb, txnId: string): ChangedInstanceForSemanticRebase[] {
-    const reader = SqliteChangesetReader.openTxn({
-      txnId, db, disableSchemaCheck: true
-    });
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const adaptor = new ChangesetECAdaptor(reader);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    using indirectUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    using directUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
-    while (adaptor.step()) {
-      if (adaptor.reader.isIndirect)
-        indirectUnifier.appendFrom(adaptor); // eslint-disable-line @typescript-eslint/no-deprecated
-      else
-        directUnifier.appendFrom(adaptor); // eslint-disable-line @typescript-eslint/no-deprecated
-    }
-    return [...Array.from(directUnifier.instances).map((instance) => ({ isIndirect: false, instance })), ...Array.from(indirectUnifier.instances).map((instance) => ({ isIndirect: true, instance }))]; // eslint-disable-line @typescript-eslint/no-deprecated
-  }
-
-  /**
-   * Constructs patch instances from changed instances
-   * @param changedInstances The changed instances from which to construct the patch instances
-   * @param db The {@link BriefcaseDb} instance for which to construct the patch instances
-   * @returns  The {@link InstancePatch} instance patches for semantic rebase
-   * @internal
-   */
-  private static constructPatchInstances(db: BriefcaseDb, changedInstances: ChangedInstanceForSemanticRebase[]): InstancePatch[] {
-    return changedInstances
-      .filter((changedInstance) => !(changedInstance.instance.$meta?.op === "Updated" && changedInstance.instance.$meta.stage === "Old")) // we will not take the old stage of updated instances
-      .map((changedInstance) => this.constructPatchInstance(db, changedInstance));
-  }
-
-  /**
-   * Constructs a single patch instance from changed instance
-   * @param changedInstance The changed instance from which to construct the patch instance
-   * @param db The {@link BriefcaseDb} instance for which to construct the single patch instance
-   * @returns a single instance patch {@link InstancePatch}
-   * @throws IModelError If cannot determine classId or unknown operation encountered
-   */
-  private static constructPatchInstance(db: BriefcaseDb, changedInstance: ChangedInstanceForSemanticRebase): InstancePatch {
-    const className =
-      (changedInstance.instance.ECClassId && db.getClassNameFromId(changedInstance.instance.ECClassId))
-      ?? changedInstance.instance.$meta?.classFullName
-      ?? (changedInstance.instance.$meta?.fallbackClassId && db.getClassNameFromId(changedInstance.instance.$meta.fallbackClassId));
-
-    if (!className)
-      throw new IModelError(IModelStatus.BadArg, "Cannot determine classId of changed instance");
-
-    const instanceKey: PatchInstanceKey = { id: changedInstance.instance.ECInstanceId, classFullName: className };
-    const op = changedInstance.instance.$meta?.op;
-    if (op !== "Inserted" && op !== "Updated" && op !== "Deleted")
-      throw new IModelError(IModelStatus.BadArg, `Unknown operation: ${op}`);
-
-    return {
-      key: instanceKey,
-      op,
-      isIndirect: changedInstance.isIndirect,
-      props: op !== "Deleted" ? db[_nativeDb].readInstance(instanceKey, { useJsNames: true }) : undefined,
-    };
-  }
 
   /**
    * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure

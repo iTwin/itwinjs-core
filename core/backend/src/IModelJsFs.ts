@@ -10,7 +10,7 @@
 // cspell: ignore wflag
 
 import * as fs from "fs-extra";
-import * as readline from "node:readline";
+import * as readline from "readline";
 import * as path from "path";
 
 /* TODO: define File Mode Constants: S_IWUSR, et al. */
