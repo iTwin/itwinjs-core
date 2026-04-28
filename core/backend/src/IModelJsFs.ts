@@ -71,9 +71,15 @@ export class IModelJsFs {
 
   /** Reads a file line by line as an async iterable, without loading the entire file into memory. */
   public static async *readLines(pathname: string): AsyncGenerator<string> {
-    const rl = readline.createInterface({ input: fs.createReadStream(pathname), crlfDelay: Infinity });
-    for await (const line of rl)
-      yield line;
+    const stream = fs.createReadStream(pathname);
+    const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+    try {
+      for await (const line of rl)
+        yield line;
+    } finally {
+      rl.close();
+      stream.destroy();
+    }
   }
 
   /** Test if the current user has permission to write to a file. */

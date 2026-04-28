@@ -971,7 +971,7 @@ export class TxnManager {
   protected _captureInstanceChanges(id: TxnIdString) {
     if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
 
-    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true } });
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
     while (reader.step()) {
       pcu.appendFrom(reader);

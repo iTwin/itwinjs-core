@@ -410,6 +410,43 @@ class TestIModel {
         <BaseClass>A</BaseClass>
       </ECEntityClass>
     </ECSchema>`,
+    /** v01x00x01 - Adds a binary property (PropCBin) to class C */
+    v01x00x01WithBinaryProp: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropCBin" typeName="binary"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
+    /** v01x00x02 - Extends v01x00x01WithBinaryProp with PropD2 on class D (trivial additive change) */
+    v01x00x02WithBinaryPropAndPropD2: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+        <ECProperty propertyName="PropCBin" typeName="binary"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+        <ECProperty propertyName="PropD2" typeName="string"/>
+      </ECEntityClass>
+    </ECSchema>`,
   };
 
   /**
@@ -2368,7 +2405,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
 
     // Aspect should still exist with correct value
     const aspect = t.getAspect(t.local, elementId, "TestDomain:CUniqueAspect");
-    chai.expect(aspect).to.not.be.undefined, "Aspect should exist after rebase";
+    chai.expect(aspect, "Aspect should exist after rebase").to.not.be.undefined;
     chai.expect(aspect.aspectProp).to.equal("local_aspect_value", "AspectProp should be preserved after rebase");
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -2506,7 +2543,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
 
     // The element should still exist but have no aspect
     const element = t.getElementProps(t.local, elementId);
-    chai.expect(element).to.not.be.undefined, "Element should still exist after rebase";
+    chai.expect(element, "Element should still exist after rebase").to.not.be.undefined;
 
     const aspects = t.local.elements.getAspects(elementId, "TestDomain:CUniqueAspect");
     chai.expect(aspects.length).to.equal(0, "Aspect should be gone after deletion is reinstated");
@@ -2729,6 +2766,63 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
     // propC was never set so it should still be absent or null after the transform
     chai.expect(element.propC === undefined || element.propC === null || element.propC === "").to.be.true,
       "PropC should remain absent/null after rebase when it was never set";
+  });
+
+  it("I4: binary (UInt8Array) property values preserved through insert and update during trivial schema rebase", async () => {
+    // Schema v01 adds a binary property (PropCBin) to class C.
+    // Local inserts an element with a Uint8Array value, then updates it to a different Uint8Array.
+    // Far imports v02 (adds PropD2 — trivial, unrelated change) to trigger semantic rebase.
+    // After rebase: the updated binary value should survive as a Uint8Array with the correct bytes.
+    t = await TestIModel.initialize("I4BinaryPropRebase");
+    let farTxn = startTestTxn(t.far, "I4 far");
+    let localTxn = startTestTxn(t.local, "I4 local");
+
+    // Both sides get the binary-prop schema (v01)
+    await importSchemaStrings(farTxn, [TestIModel.extendedSchemas.v01x00x01WithBinaryProp]);
+    await pushChanges(farTxn, "import binary-prop schema v01");
+    farTxn = startTestTxn(t.far, "I4 far 2");
+    await pullChanges(localTxn);
+    localTxn = startTestTxn(t.local, "I4 local 2");
+
+    // Local inserts an element with an initial binary value, pushes so both sides are in sync
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const initialBin = new Uint8Array([0xDE, 0xAD, 0xBE, 0xEF]);
+    const elementId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "binary_test",
+      propC: "some_string",
+      propCBin: initialBin,
+    });
+    localTxn.saveChanges("local insert element with binary prop");
+    await pushChanges(localTxn, "create element with binary prop");
+    localTxn = startTestTxn(t.local, "I4 local 3");
+
+    // Far imports v02 (adds PropD2 — trivial change), pushes to trigger rebase on local's next pull
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "I4 far 3");
+    await importSchemaStrings(farTxn, [TestIModel.extendedSchemas.v01x00x02WithBinaryPropAndPropD2]);
+    await pushChanges(farTxn, "far import v02 with PropD2");
+
+    // Local updates the binary property to a new Uint8Array value (NOT pushed yet)
+    const updatedBin = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05]);
+    await t.local.locks.acquireLocks({ exclusive: elementId });
+    t.updateElement(localTxn, elementId, { propCBin: updatedBin });
+    localTxn.saveChanges("local update binary prop");
+
+    // Local pulls: semantic rebase should reinstate the binary property update
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    const element = t.getElementProps(t.local, elementId);
+    chai.expect(element.propCBin).to.be.instanceOf(Uint8Array, "Binary property should be returned as a Uint8Array");
+    chai.expect(Array.from(element.propCBin as Uint8Array)).to.deep.equal(
+      Array.from(updatedBin),
+      "Updated binary value should be preserved byte-for-byte after semantic rebase",
+    );
+    chai.expect(element.propC).to.equal("some_string", "String property should be unchanged");
+    chai.expect(element.propA).to.equal("binary_test", "PropA should be unchanged");
+
+    const schema = t.local.getSchemaProps("TestDomain");
+    chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v02 after rebase");
   });
 });
 
@@ -3285,10 +3379,10 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
     // (BriefcaseManager should have rolled back the failed rebase)
     const schemaAfterFailure = t.local.getSchemaProps("TestDomain");
     // Schema version is unclear after abort, but the DB should still be functional
-    chai.expect(schemaAfterFailure).to.not.be.undefined, "Schema query should succeed after failed rebase";
+    chai.expect(schemaAfterFailure, "Schema query should succeed after failed rebase").to.not.be.undefined;
 
     // The briefcase is still open and the DB is usable
-    chai.expect(t.local.isOpen).to.be.true, "Briefcase should still be open after failed rebase";
+    chai.expect(t.local.isOpen, "Briefcase should still be open after failed rebase").to.be.true;
   });
 
   it("P4: local schema import is rejected when called while semantic rebase has already captured state", async () => {

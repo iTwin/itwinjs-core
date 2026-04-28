@@ -14,6 +14,7 @@ import {
   AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
+  Base64EncodedString,
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
   TxnProps,
@@ -879,7 +880,7 @@ export class BriefcaseManager {
     let isFirst = true;
     for (const instancePatch of instancePatches) {
       if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue; // we will not take the old stage of updated instances
-      IModelJsFs.appendFileSync(filePath, `${isFirst ? "" : ","}\n${JSON.stringify(instancePatch)}`);
+      IModelJsFs.appendFileSync(filePath, `${isFirst ? "" : ","}\n${JSON.stringify(instancePatch, Base64EncodedString.replacer)}`);
       isFirst = false;
     }
     IModelJsFs.appendFileSync(filePath, "\n]");
@@ -953,7 +954,7 @@ export class BriefcaseManager {
     for await (const line of IModelJsFs.readLines(filePath)) {
       if (line === "[" || line === "]" || line === "") continue;
       const trimmedLine = line.trim().endsWith(",") ? line.trim().slice(0, -1) : line.trim(); // remove trailing comma if exists
-      yield JSON.parse(trimmedLine) as ChangeInstance;
+      yield JSON.parse(trimmedLine, Base64EncodedString.reviver) as ChangeInstance;
     }
   }
 
