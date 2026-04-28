@@ -650,7 +650,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       const detailA = reversed ? seed.detailB : seed.detailA;
       const detailB = reversed ? seed.detailA : seed.detailB;
       assert(detailB.curve instanceof LineString3d, "Caller has discretized the curve");
-      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use the linestring fraction as initial curveB fraction (ASSUME it's close enough)
+      newtonSearcher.setUV(detailA.fraction, detailB.fraction);
       if (newtonSearcher.runIterations()) {
         const fractionA = newtonSearcher.getU();
         const fractionB = newtonSearcher.getV();
@@ -690,6 +690,34 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     saveResults.forEach((pair: CurveLocationDetailPair) => this._results.insert(pair)); // restore current results
     return discreteResults;
   }
+  /** Project seed points (from a discretized close-approach search) onto the original curves. */
+  private projectSeedsToCurves(
+    seeds: CurveLocationDetailPair[],
+    curveA: CurvePrimitive,
+    curveB: CurvePrimitive,
+    curveANeedsStroking: boolean,
+    reversed: boolean,
+  ): CurveLocationDetailPair[] {
+    const projectedSeeds: CurveLocationDetailPair[] = [];
+    for (const seed of seeds) {
+      const curveADetail = reversed ? seed.detailB : seed.detailA;
+      const curveBDetail = reversed ? seed.detailA : seed.detailB;
+      let projA: CurveLocationDetail | undefined = curveADetail;
+      if (curveANeedsStroking) {
+        projA = curveA.closestPointXY(curveADetail.point);
+        if (!projA)
+          continue;
+      }
+      const projB = curveB.closestPointXY(curveBDetail.point);
+      if (!projB)
+        continue;
+      const pair = reversed
+        ? CurveLocationDetailPair.createCapture(projB, projA)
+        : CurveLocationDetailPair.createCapture(projA, projB);
+      projectedSeeds.push(pair);
+    }
+    return projectedSeeds;
+  }
   /**
    * Compute the XY close approach of a curve and another curve to be stroked.
    * @param curveA curve to find its XY close approach with curveB.
@@ -703,11 +731,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.testAndRecordPair(intersection, reversed);
     // append seeds computed by solving the discretized spiral close approach problem, then refine the seeds via Newton
     let cpA = curveA;
-    if (this.needsStroking(curveA))
+    const curveANeedsStroking = this.needsStroking(curveA);
+    if (curveANeedsStroking)
       cpA = this.strokeCurve(curveA);
     const cpB = this.strokeCurve(curveB);
     const seeds = this.computeDiscreteCloseApproachResults(cpA, cpB, reversed);
-    this.refineStrokedResultsByNewton(seeds, curveA, curveB, reversed);
+    const projectedSeeds = this.projectSeedsToCurves(seeds, curveA, curveB, curveANeedsStroking, reversed);
+    this.refineStrokedResultsByNewton(projectedSeeds, curveA, curveB, reversed);
     if (curveA instanceof LineString3d) { // explicitly test corners (where Newton converges too slowly)
       const fStep = Geometry.safeDivideFraction(1.0, curveA.numEdges(), 0);
       const v0 = CurveCurveCloseApproachXY._workPointBB0;
