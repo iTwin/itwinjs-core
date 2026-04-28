@@ -985,7 +985,7 @@ export class BriefcaseManager {
    * @param instancePatches The [[ChangeInstance]] instance patches to be stored
    * @internal
    */
-  public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, directInstancePatches: IterableIterator<ChangeInstance>, indirectInstancePatches: IterableIterator<ChangeInstance>): void {
+  public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void {
     const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
     const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
     const filePath = path.join(targetDir, this.DATA_FILE_NAME);
@@ -994,15 +994,14 @@ export class BriefcaseManager {
       IModelJsFs.removeSync(targetDir);
 
     IModelJsFs.recursiveMkDirSync(targetDir);
-    for (const instancePatch of directInstancePatches) {
+    IModelJsFs.writeFileSync(filePath, "[");
+    let isFirst = true;
+    for (const instancePatch of instancePatches) {
       if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue; // we will not take the old stage of updated instances
-      IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatch, undefined, 2));
+      IModelJsFs.appendFileSync(filePath, `${isFirst ? "" : ","}\n${JSON.stringify(instancePatch)}`);
+      isFirst = false;
     }
-
-    for (const instancePatch of indirectInstancePatches) {
-      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue; // we will not take the old stage of updated instances
-      IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatch, undefined, 2));
-    }
+    IModelJsFs.appendFileSync(filePath, "\n]");
   }
 
   /**
@@ -1066,12 +1065,15 @@ export class BriefcaseManager {
    * @returns Instance patches
    * @internal
    */
-  public static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[] {
+  public static async *getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<ChangeInstance> {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
     const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
-    const fileContents = IModelJsFs.readFileWithEncodingSync(filePath, "utf-8");
-    return JSON.parse(fileContents) as InstancePatch[];
+    for await (const line of IModelJsFs.readLines(filePath)) {
+      if (line === "[" || line === "]" || line === "") continue;
+      const trimmedLine = line.trim().endsWith(",") ? line.trim().slice(0, -1) : line.trim(); // remove trailing comma if exists
+      yield JSON.parse(trimmedLine) as ChangeInstance;
+    }
   }
 
   /**

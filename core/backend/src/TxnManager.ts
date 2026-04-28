@@ -23,6 +23,7 @@ import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesetReader } from "./ChangesetReader";
 import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
+import { ChangeInstance } from "./ChangesetReaderTypes";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -653,16 +654,15 @@ export class RebaseManager {
         throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
-      const changedInstances = BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id);
-      changedInstances.forEach((instance: InstancePatch) => {
-        if (instance.isIndirect) {
+      for await (const instance of BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id)) {
+        if (instance.$meta.isIndirectChange) {
           this._iModel.txns.withIndirectTxnMode(() => {
             this.applyInstancePatch(instance);
           });
-          return;
+          continue;
         }
         this.applyInstancePatch(instance);
-      });
+      }
 
       BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
     }
@@ -676,29 +676,30 @@ export class RebaseManager {
    * @param instance
    * @internal
    */
-  private applyInstancePatch(instance: InstancePatch) {
+  private applyInstancePatch(instance: ChangeInstance) {
     const nativeDb = this._iModel[_nativeDb];
-    switch (instance.op) {
+    const { props, $meta } = instance;
+    switch ($meta.op) {
       case "Inserted": {
-        if (!instance.props)
+        if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
         const options = { forceUseId: true, useJsNames: true };
-        nativeDb.insertInstance(instance.props, options);
+        nativeDb.insertInstance(props, options);
         break;
       }
       case "Updated": {
-        if (!instance.props)
+        if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
-        nativeDb.updateInstance(instance.props, { useJsNames: true });
+        nativeDb.updateInstance(props, { useJsNames: true });
         break;
       }
       case "Deleted": {
-        const key = { id: instance.key.id, classFullName: instance.key.classFullName };
+        const key = { id: instance.id, classFullName: instance.classFullName };
         nativeDb.deleteInstance(key, { useJsNames: true });
         break;
       }
       default:
-        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${instance.op as string}'`);
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
     }
   }
 
@@ -963,15 +964,11 @@ export class TxnManager {
    * @internal */
   protected _captureInstanceChanges(id: TxnIdString) {
     using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id });
-    using directPcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
-    using indirectPcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
     while (reader.step()) {
-      if (reader.isIndirectChange)
-        indirectPcu.appendFrom(reader);
-      else
-        directPcu.appendFrom(reader);
+      pcu.appendFrom(reader);
     }
-    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, directPcu.instances, indirectPcu.instances);
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
