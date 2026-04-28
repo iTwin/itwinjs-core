@@ -3385,8 +3385,8 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
     chai.expect(t.local.isOpen, "Briefcase should still be open after failed rebase").to.be.true;
   });
 
-  it("P4: local schema import is rejected when called while semantic rebase has already captured state", async () => {
-    // Tests the guard: hasPendingTxns check combined with semantic rebase state.
+  it("P4: a second local schema import succeeds even when semantic rebase state folders already exist", async () => {
+    // Tests that semantic rebase state folders do not block further local schema imports.
     // After a schema import + pull that creates rebase folders, a second schema import on local
     // must still go through cleanly (the semantic rebase folders should NOT block a new import).
     t = await TestIModel.initialize("P4SecondImportAfterRebaseState");
