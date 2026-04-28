@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-locaters",
+      "comment": "Added documentation to cover the schemas published with core-backend package and updated PublishedSchemaXmlFileLocater class to reference it.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-locaters"
+}
