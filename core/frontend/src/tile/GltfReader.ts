@@ -310,10 +310,10 @@ function linePixelsFromGltfPattern(pattern: number | undefined): LinePixels | un
   if (normalized <= 0xffff) {
     const mask16 = normalized & 0xffff;
     const repeated = ((mask16 << 16) | mask16) >>> 0;
-    return repeated as LinePixels;
+    return repeated;
   }
 
-  return normalized as LinePixels;
+  return normalized;
 }
 
 function colorFromJson(values: number[]): ColorDef {

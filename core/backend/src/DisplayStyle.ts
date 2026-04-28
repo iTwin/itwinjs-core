@@ -33,7 +33,7 @@ export abstract class DisplayStyle extends DefinitionElement {
 
   /** @beta */
   public static override deserialize(props: DeserializeEntityArgs): DisplayStyleProps {
-    const elProps = super.deserialize(props) as DisplayStyleProps;
+    const elProps = super.deserialize(props);
     const displayOptions = props.options?.element?.displayStyle;
     // Uncompress excludedElements if they are compressed
     if (!displayOptions?.compressExcludedElementIds && elProps.jsonProperties?.styles?.excludedElements) {

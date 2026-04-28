@@ -467,7 +467,7 @@ describe("Cloud workspace containers", () => {
       const nestedVersion = (await nestedContainer.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
       const nestedDb = nestedContainer.getEditableDb(nestedVersion);
       nestedDb.open();
-      nestedDb.updateSettingsResource({ "app1/nestedValue": 42 } as SettingsContainer);
+      nestedDb.updateSettingsResource({ "app1/nestedValue": 42 });
       nestedDb.close();
       nestedContainer.releaseWriteLock();
 

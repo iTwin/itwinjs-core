@@ -11855,6 +11855,8 @@ export class ToolAdmin {
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
     protected filterViewport(vp: ScreenViewport): boolean;
     // @internal
+    finishEditCommandForTxnOperation(): Promise<boolean>;
+    // @internal
     forgetViewport(vp: ScreenViewport): void;
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;

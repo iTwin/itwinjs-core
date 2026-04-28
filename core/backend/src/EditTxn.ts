@@ -16,6 +16,54 @@ import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IMode
 import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 
+/** Options for bulk deleting elements from an iModelDb.
+ * @beta
+ */
+export interface BulkDeleteElementsArgs {
+  /**
+   * Skips pre-deletion **NO ACTION** foreign key constraint validation checks, which may improve performance for large deletions.
+   * This will improve performance, but if the user supplies elements which have FK constraint violations, it will result in the delete failing and an eventual rollback.
+   */
+  skipFKConstraintValidations?: boolean;
+}
+
+/**
+ * Result of a bulk element delete operation.
+ * @beta
+ */
+export interface BulkDeleteElementsResult {
+  /**
+   * Overall status of the bulk delete operation.
+   * - `Success`: All elements were deleted successfully. `failedIds` will be empty.
+   * - `PartialSuccess`: Some elements were deleted, but others failed. `failedIds` contains the ids that could not be deleted.
+   * - `DeletionFailed`: The delete operation failed entirely (e.g. due to an FK constraint violation). `failedIds` contains the ids that could not be deleted.
+   */
+  status: BulkDeleteElementsStatus;
+  /**
+   * The raw SQLite result code from the underlying SQL DELETE statement.
+   * `DbResult.BE_SQLITE_OK` on success; a non-OK code indicates a database-level error such as a constraint violation.
+   */
+  sqlDeleteStatus: DbResult;
+  /**
+   * The set of element ids that could not be deleted.
+   * Empty when `status` is `Success`. Non-empty when `status` is `PartialSuccess` or `DeletionFailed`.
+   */
+  failedIds: Id64Set;
+}
+
+/**
+ * Status of a bulk element delete operation, mirroring the C++ `BulkDeleteStatus` enum.
+ * @beta
+ */
+export enum BulkDeleteElementsStatus {
+  /** All supplied elements were deleted successfully. */
+  Success = 0,
+  /** Some elements were deleted but others could not be, typically due to foreign key constraints on the elements not being deleted. */
+  PartialSuccess = 1,
+  /** No elements were deleted. This occurs when the SQL DELETE statement itself fails, e.g. due to a FK constraint violation that prevents the entire batch from being processed. */
+  DeletionFailed = 2,
+}
+
 /**
  * Represents an explicit editing transaction for an iModel.
  *
@@ -228,11 +276,12 @@ export class EditTxn {
   /**
    * Delete multiple elements from the iModel.
    * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
-   * @returns A set of ids for any elements that could not be deleted.
+   * @param deleteOptions Options for the delete operation.
+   * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @beta
    */
-  public deleteElements(ids: Id64Array): Id64Set {
+  public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
     this.verifyWriteable();
     const invalidIds: Id64Set = new Set<Id64String>();
     for (const id of ids) {
@@ -240,21 +289,23 @@ export class EditTxn {
         invalidIds.add(id);
     }
 
-    if (invalidIds.size > 0) {
+    if (invalidIds.size > 0)
       ITwinError.throwError({ message: `Invalid element ids: ${Array.from(invalidIds).join(", ")}`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
-    }
 
-    const failedToDelete = this.iModel[_nativeDb].deleteElements(ids);
-    const failedToDeleteSet = failedToDelete ? Id64.toIdSet(failedToDelete) : new Set<Id64String>();
+    const bulkDeletionResult = this.iModel[_nativeDb].deleteElements(ids, deleteOptions);
+    const finalResult = { ...bulkDeletionResult, failedIds: Id64.toIdSet(bulkDeletionResult.failedIds) };
+
+    if (finalResult.status === BulkDeleteElementsStatus.DeletionFailed)
+      return finalResult;
 
     for (const id of ids) {
-      if (!failedToDeleteSet.has(id)) {
+      if (!finalResult.failedIds.has(id)) {
         this.iModel.elements[_cache].delete({ id });
         this.iModel.elements[_instanceKeyCache].deleteById(id);
       }
     }
 
-    return failedToDeleteSet;
+    return finalResult;
   }
 
   /** Insert a new aspect into the iModel.

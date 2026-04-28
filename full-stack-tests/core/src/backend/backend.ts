@@ -194,7 +194,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
       const sheetModelProps: GeometricModel2dProps = {
         classFullName: SheetModel.classFullName,
-        modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+        modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" },
       };
       return txn.insertModel(sheetModelProps);
     };
