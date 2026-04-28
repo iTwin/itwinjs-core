@@ -2414,12 +2414,12 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
 
     // Aspect should still exist
     const aspect = t.getAspect(t.local, elementId, "TestDomain:CUniqueAspect");
-    chai.expect(aspect).to.not.be.undefined, "Aspect should exist after transforming schema rebase";
-    chai.expect(aspect.aspectProp).to.equal("aspect_before_transform", "AspectProp value should be preserved");
+    chai.expect(aspect, "Aspect should exist after transforming schema rebase").to.not.be.undefined;
+    chai.expect(aspect.aspectProp, "AspectProp value should be preserved").to.equal("aspect_before_transform");
 
     // Element itself should also be intact
     const element = t.getElementProps(t.local, elementId);
-    chai.expect(element.propA).to.equal("elem_a", "Element propA should be preserved");
+    chai.expect(element.propA, "Element propA should be preserved").to.equal("elem_a");
   });
 
   it("H3: local updates UniqueAspect property; incoming trivial schema change → aspect update preserved", async () => {
