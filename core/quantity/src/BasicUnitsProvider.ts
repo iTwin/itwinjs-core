@@ -23,6 +23,7 @@ interface ResolvedState {
   readonly labelMap: Map<string, IndexedUnit[]>;
   readonly phenomenonMap: Map<string, IndexedUnit[]>;
   readonly invertedUnits: Map<string, InvertedEntry>;
+  readonly schemaName: string;
 }
 
 // Module-level cache: the unit data is derived deterministically from the bundled Units.json
@@ -31,12 +32,13 @@ interface ResolvedState {
 // in tests or when composed inside CompositeUnitsProvider).
 // The JSON is loaded lazily via dynamic import() on first use, keeping the module footprint
 // near-zero until a provider method is actually called.
-let cachedState: ResolvedState | undefined;
+let _resolvePromise: Promise<ResolvedState> | undefined;
 
-async function resolveState(): Promise<ResolvedState> {
-  if (cachedState)
-    return cachedState;
+function resolveState(): Promise<ResolvedState> {
+  return (_resolvePromise ??= _buildState());
+}
 
+async function _buildState(): Promise<ResolvedState> {
   const { default: schema } = await import("./assets/Units.json");
 
   const nameMap = new Map<string, IndexedUnit>();
@@ -115,8 +117,7 @@ async function resolveState(): Promise<ResolvedState> {
     }
   }
 
-  cachedState = { nameMap, labelMap, phenomenonMap, invertedUnits };
-  return cachedState;
+  return { nameMap, labelMap, phenomenonMap, invertedUnits, schemaName: s.name };
 }
 
 /**
