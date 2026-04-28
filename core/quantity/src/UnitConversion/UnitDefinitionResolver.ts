@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SerializedConstant, SerializedUnit, SerializedUnitSchema } from "../SerializedUnitSchema";
-import { SERIALIZED_UNIT_SCHEMA_VERSION } from "../SerializedUnitSchema";
+import { SERIALIZED_UNIT_SCHEMA_VERSION, type SerializedConstant, type SerializedUnit, type SerializedUnitSchema } from "../SerializedUnitSchema";
 import { UnitConversion } from "./UnitConversion";
 import { parseDefinition } from "./Parser";
 import { stripAliasPrefix } from "./nameUtils";

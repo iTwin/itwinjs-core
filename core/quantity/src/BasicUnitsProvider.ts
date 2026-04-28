@@ -35,7 +35,7 @@ interface ResolvedState {
 // near-zero until a provider method is actually called.
 let _resolvePromise: Promise<ResolvedState> | undefined;
 
-function resolveState(): Promise<ResolvedState> {
+async function resolveState(): Promise<ResolvedState> {
   if (!_resolvePromise) {
     _resolvePromise = _buildState().catch((err) => {
       _resolvePromise = undefined;
