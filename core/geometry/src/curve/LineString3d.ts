@@ -1252,8 +1252,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLineString3d(this);
   }
-  // HARD TO TEST -- tests that get to announceClipInterval for arc, bspline do NOT get here with
-  // linestring because the controller has special case loops through segments?
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper.
    * @param clipper clip structure (e.g. clip planes).

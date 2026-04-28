@@ -8,11 +8,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -443,44 +441,24 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
       alpha, beta, gamma, undefined, undefined, intersectionRadians,
     );
   }
-  private static _clipArcFractionArray = new GrowableFloat64Array();
-  /**
-   * Announce fractional intervals of arc clip.
-   * * Each call to `announce(fraction0, fraction1, arc)` announces one interval that is inside the clip plane.
-   */
+  private static _clipFractionArray = new GrowableFloat64Array();
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ClipPlane._clipArcFractionArray;
+    const breaks = ClipPlane._clipFractionArray;
     breaks.clear();
     this.appendIntersectionRadians(arc, breaks);
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
   }
-  private announceClippedBsplineOrSpiralIntervals(
-    bsplineOrSpiral: BSplineCurve3d | TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive,
-  ): boolean {
-    const breaks = ClipPlane._clipArcFractionArray;
+  /** Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const breaks = ClipPlane._clipFractionArray;
     breaks.clear();
     const results: CurveLocationDetail[] = [];
-    const numIntersections = bsplineOrSpiral.appendPlaneIntersectionPoints(this, results);
-    if (numIntersections > 0) {
-      for (const r of results)
-        breaks.push(r.fraction);
-    }
-    return ClipUtilities.selectIntervals01(bsplineOrSpiral, breaks, this, announce);
-  }
-  /**
-   * Announce fractional intervals of B-Spline clip.
-   * * Each call to `announce(fraction0, fraction1, arc)` announces one interval that is inside the clip plane.
-   */
-  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    return this.announceClippedBsplineOrSpiralIntervals(bspline, announce);
-  }
-  /**
-   * Announce fractional intervals of spiral clip.
-   * * Each call to `announce(fraction0, fraction1, arc)` announces one interval that is inside the clip plane.
-   */
-  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    return this.announceClippedBsplineOrSpiralIntervals(spiral, announce);
+    curve.appendPlaneIntersectionPoints(this, results);
+    for (const r of results)
+      breaks.push(r.fraction);
+    return ClipUtilities.selectIntervals01(curve, breaks, this, announce);
   }
   /**
    * Compute intersection of (unbounded) segment with the plane.
@@ -582,9 +560,9 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     this.setPlane4d(plane);
     return true;
   }
-  /** Announce the interval (if any) where a line is within the clip plane half space. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     if (f1 < f0)
       return false;

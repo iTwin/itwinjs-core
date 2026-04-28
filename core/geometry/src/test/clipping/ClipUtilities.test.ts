@@ -518,8 +518,8 @@ describe("ClipAnyCurve", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx, dy + 100);
       for (const range of ranges)
         GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy + 100);
-      if (clipper.announceClippedBsplineIntervals)
-        clipper.announceClippedBsplineIntervals(bspline,
+      if (clipper.announceClippedCurveIntervals)
+        clipper.announceClippedCurveIntervals(bspline,
           (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
             const point0 = bspline.fractionToPoint(fraction0);
             const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
@@ -610,8 +610,8 @@ describe("ClipAnyCurve", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx, dy + 400);
       for (const range of ranges)
         GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy + 400);
-      if (clipper.announceClippedSpiralIntervals)
-        clipper.announceClippedSpiralIntervals(spiral,
+      if (clipper.announceClippedCurveIntervals)
+        clipper.announceClippedCurveIntervals(spiral,
           (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
             const point0 = spiral.fractionToPoint(fraction0);
             const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));

@@ -740,7 +740,7 @@ describe("CurveClips", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls);
 
-    plane.announceClippedBsplineIntervals(bspline,
+    plane.announceClippedCurveIntervals(bspline,
       (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
         const point0 = bspline.fractionToPoint(fraction0);
         const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
@@ -788,7 +788,7 @@ describe("CurveClips", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, 0, dy);
 
-      plane.announceClippedSpiralIntervals(spiral,
+      plane.announceClippedCurveIntervals(spiral,
         (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
           const point0 = spiral.fractionToPoint(fraction0);
           const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));

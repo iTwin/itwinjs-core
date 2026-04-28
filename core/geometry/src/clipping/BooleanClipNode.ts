@@ -7,10 +7,9 @@
  * @module CartesianGeometry
  */
 
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -164,7 +163,7 @@ export abstract class BooleanClipNode implements Clipper {
     const q = this.isPointOnOrInsideChildren(point);
     return this._keepInside ? q : !q;
   }
-  /** Announce "in" portions of a line segment. See `Clipper.announceClippedSegmentIntervals`. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
@@ -192,7 +191,7 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return this.announcePartsNN(this._keepInside, this._intervalsA, f0, f1, announce);
   }
-  /** Announce "in" portions of an arc. See `Clipper.announceClippedArcIntervals`. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this._intervalsA.length = 0;
     const announceIntervalB = (a0: number, a1: number) => {
@@ -212,25 +211,16 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, arc, announce);
   }
-  private announceClippedBsplineOrSpiralIntervals(
-    bsplineOrSpiral: BSplineCurve3d | TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive,
-  ): boolean {
+  /* Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this._intervalsA.length = 0;
-    const announceIntervalB = (a0: number, a1: number) => {
+    const announceIntervalB = (a0: number, a1: number, _cp: CurvePrimitive) => {
       this._intervalsB.push(Range1d.createXX(a0, a1));
     };
     let i = 0;
     for (const c of this._clippers) {
       this._intervalsB.length = 0;
-      if (bsplineOrSpiral instanceof BSplineCurve3d) {
-        if (!c.announceClippedBsplineIntervals)
-          return false;
-        c.announceClippedBsplineIntervals(bsplineOrSpiral, announceIntervalB);
-      } else {
-        if (!c.announceClippedSpiralIntervals)
-          return false;
-        c.announceClippedSpiralIntervals(bsplineOrSpiral, announceIntervalB);
-      }
+      c.announceClippedCurveIntervals?.(curve, announceIntervalB) ?? assert(false, () => `Expect ${c.constructor.name} to implement announceClippedCurveIntervals`);
       Range1dArray.simplifySortUnion(this._intervalsB);
       if (i === 0) {
         this.swapAB();
@@ -239,15 +229,7 @@ export abstract class BooleanClipNode implements Clipper {
       }
       i++;
     }
-    return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, bsplineOrSpiral, announce);
-  }
-  /** Announce "in" portions of a B-Spline. See `Clipper.announceClippedBsplineIntervals`. */
-  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    return this.announceClippedBsplineOrSpiralIntervals(bspline, announce);
-  }
-  /** Announce "in" portions of a Spiral. See `Clipper.announceClippedSpiralIntervals`. */
-  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    return this.announceClippedBsplineOrSpiralIntervals(spiral, announce);
+    return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, curve, announce);
   }
 }
 

@@ -7,13 +7,11 @@
  * @module CartesianGeometry
  */
 
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Order3Bezier } from "../numerics/BezierPolynomials";
@@ -695,7 +693,7 @@ export class Ellipsoid implements Clipper {
       return localPoint.magnitude() <= 1.0;
     return false;
   }
-  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedSegmentIntervals]]. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
     const localA = this._transform.multiplyInversePoint3d(pointA, this._workPointA);
     const localB = this._transform.multiplyInversePoint3d(pointB, this._workPointB);
@@ -733,7 +731,7 @@ export class Ellipsoid implements Clipper {
     }
     return false;
   }
-  /** Announce "in" portions of an arc. Implementation of [[Clipper.announceClippedArcIntervals]] */
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const arcData = arc.toVectors();
     let numAnnounce = 0;
@@ -779,16 +777,8 @@ export class Ellipsoid implements Clipper {
     }
     return numAnnounce > 0;
   }
-  /** Announce "in" portions of a B-Spline. Implementation of [[Clipper.announceClippedBsplineIntervals]]. */
-  public announceClippedBsplineIntervals(_bspline: BSplineCurve3d, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    // TODO: implement ellipsoid clipping for bspline
-    return false;
-  }
-  /** Announce "in" portions of a spiral. Implementation of [[Clipper.announceClippedSpiralIntervals]]. */
-  public announceClippedSpiralIntervals(_spiral: TransitionSpiral3d, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    // TODO: implement ellipsoid clipping for spiral
-    return false;
-  }
+
+  // TODO: implement Clipper.announceClippedCurveIntervals
 }
 /**
  * * An `EllipsoidPatch` is

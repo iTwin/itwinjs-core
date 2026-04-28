@@ -8,10 +8,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -211,7 +209,7 @@ export class ClipPrimitive implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as dispatch to clip volume as supplied by derived class.
    */
   public announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
@@ -224,7 +222,7 @@ export class ClipPrimitive implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as dispatch to clip volume as supplied by derived class.
    */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this.ensurePlaneSets();
@@ -235,24 +233,13 @@ export class ClipPrimitive implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as dispatch to clip volume as supplied by derived class.
    */
-  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this.ensurePlaneSets();
     let hasInsideParts = false;
     if (this._clipPlanes)
-      hasInsideParts = this._clipPlanes.announceClippedBsplineIntervals(bspline, announce);
-    return hasInsideParts;
-  }
-  /**
-   * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
-   */
-  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    this.ensurePlaneSets();
-    let hasInsideParts = false;
-    if (this._clipPlanes)
-      hasInsideParts = this._clipPlanes.announceClippedSpiralIntervals(spiral, announce);
+      hasInsideParts = this._clipPlanes.announceClippedCurveIntervals(curve, announce);
     return hasInsideParts;
   }
   /**

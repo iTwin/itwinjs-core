@@ -8,11 +8,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -157,7 +155,7 @@ export class ClipVector implements Clipper {
     }
     return true;
   }
-  // Proxy object to implement line and arc clip.
+  // Proxy object to implement curve clipping.
   private _clipNodeProxy?: BooleanClipNodeIntersection;
   private ensureProxyClipNode(): boolean {
     if (this._clipNodeProxy)
@@ -175,7 +173,7 @@ export class ClipVector implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as intersection of child clippers.
    */
   public announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
@@ -187,7 +185,7 @@ export class ClipVector implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as intersection of child clippers.
    */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this.ensureProxyClipNode();
@@ -197,22 +195,12 @@ export class ClipVector implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as intersection of child clippers.
    */
-  public announceClippedBsplineIntervals(bspline: BSplineCurve3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this.ensureProxyClipNode();
     if (this._clipNodeProxy)
-      return this._clipNodeProxy.announceClippedBsplineIntervals(bspline, announce);
-    return false;
-  }
-  /**
-   * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
-   */
-  public announceClippedSpiralIntervals(spiral: TransitionSpiral3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    this.ensureProxyClipNode();
-    if (this._clipNodeProxy)
-      return this._clipNodeProxy.announceClippedSpiralIntervals(spiral, announce);
+      return this._clipNodeProxy.announceClippedCurveIntervals(curve, announce);
     return false;
   }
   /** Execute polygon clip as intersection of the child primitives. */
