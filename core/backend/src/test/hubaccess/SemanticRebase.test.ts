@@ -3349,9 +3349,9 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
     chai.expect(importErrorDuringRebase?.message ?? "").to.include("rebasing", "Error message should mention rebasing");
   });
 
-  it("P3: after a failed rebase, briefcase is not stuck — another pull can succeed", async () => {
-    // If a rebase fails (e.g., incompatible schema), the briefcase should be recoverable.
-    // A subsequent pull (after fixing the root cause) should succeed.
+  it("P3: after a failed rebase, briefcase is not stuck and remains usable", async () => {
+    // If a rebase fails (e.g., incompatible schema), the briefcase should remain recoverable.
+    // This test verifies the briefcase stays open and queryable after the failed pull.
     t = await TestIModel.initialize("P3RecoveryAfterFailedRebase");
     let farTxn = startTestTxn(t.far, "P3 far");
     let localTxn = startTestTxn(t.local, "P3 local");
