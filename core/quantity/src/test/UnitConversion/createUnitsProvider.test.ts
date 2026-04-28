@@ -48,7 +48,7 @@ describe("createUnitsProvider", () => {
     });
   });
 
-  describe("primary wins (default, preferBasic: false)", () => {
+  describe("primary wins (default, bisUnitsPolicy: preferSchema)", () => {
     it("returns primary's unit when primary resolves", async () => {
       const provider = createUnitsProvider({
         primary: makePrimaryStub({ findUnitByName: async () => VALID_UNIT }),
@@ -127,12 +127,12 @@ describe("createUnitsProvider", () => {
     });
   });
 
-  describe("preferBasic: true", () => {
+  describe("bisUnitsPolicy: preferBundled", () => {
     it("basic wins when both providers define the unit", async () => {
       const primaryUnit: UnitProps = { name: "Units.M", label: "custom-m", phenomenon: "Units.LENGTH", isValid: true, system: "Units.SI" };
       const provider = createUnitsProvider({
         primary: makePrimaryStub({ findUnitByName: async () => primaryUnit }),
-        preferBasic: true,
+        bisUnitsPolicy: "preferBundled",
       });
       // basic units consulted first; basic has Units.M so basic's version wins
       const unit = await provider.findUnitByName("Units.M");
@@ -142,7 +142,7 @@ describe("createUnitsProvider", () => {
     it("primary is consulted when basic can't answer", async () => {
       const provider = createUnitsProvider({
         primary: makePrimaryStub({ findUnitByName: async () => VALID_UNIT }),
-        preferBasic: true,
+        bisUnitsPolicy: "preferBundled",
       });
       // "Custom.M" is not in BasicUnitsProvider, so it falls back to primary
       const unit = await provider.findUnitByName("Custom.M");
@@ -153,7 +153,7 @@ describe("createUnitsProvider", () => {
       // Basic returns error:true for cross-phenomenon; primary can handle it
       const provider = createUnitsProvider({
         primary: makePrimaryStub({ getConversion: async () => PRIMARY_CONVERSION }),
-        preferBasic: true,
+        bisUnitsPolicy: "preferBundled",
       });
       // Units from different phenomena — basic will return { error: true }
       const m = await provider.findUnitByName("Units.M");
@@ -184,11 +184,11 @@ describe("createUnitsProvider", () => {
       expect(units.some((u) => u.name === "Units.FT")).toBe(true);
     });
 
-    it("with preferBasic, basic's version of duplicate wins", async () => {
+    it("with bisUnitsPolicy: preferBundled, basic's version of duplicate wins", async () => {
       const primaryUnit: UnitProps = { name: "Units.M", label: "custom-m", phenomenon: "Units.LENGTH", isValid: true, system: "Units.SI" };
       const provider = createUnitsProvider({
         primary: makePrimaryStub({ getUnitsByFamily: async () => [primaryUnit] }),
-        preferBasic: true,
+        bisUnitsPolicy: "preferBundled",
       });
 
       const units = await provider.getUnitsByFamily("Units.LENGTH");

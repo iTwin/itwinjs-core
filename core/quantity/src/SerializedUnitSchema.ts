@@ -107,6 +107,6 @@ export interface SerializedUnitSchema {
   readonly name: string;
   readonly alias: string;
   /** EC schema version of the source BIS Units schema this data was derived from (e.g. `"01.00.09"`). */
-  readonly sourceEcSchemaVersion?: string;
+  readonly sourceEcSchemaVersion: string;
   readonly items: { readonly [name: string]: SerializedUnitItem };
 }

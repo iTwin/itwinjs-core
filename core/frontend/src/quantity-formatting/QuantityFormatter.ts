@@ -928,6 +928,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
    */
   public async resetToUseInternalUnitsProvider() {
+    // Coupled to createUnitsProvider() returning BasicUnitsProvider directly when no primary is set.
     if (this._unitsProvider instanceof BasicUnitsProvider)
       return;
 

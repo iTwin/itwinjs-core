@@ -50,6 +50,9 @@ export interface CreateUnitsProviderOptions {
 export function createUnitsProvider(options: CreateUnitsProviderOptions = {}): UnitsProvider {
   const basic = new BasicUnitsProvider();
   const primary = options.primary;
+  // NOTE: returns BasicUnitsProvider directly when no primary is provided.
+  // QuantityFormatter.resetToUseInternalUnitsProvider uses instanceof BasicUnitsProvider to detect this.
+  // If this fast-path is ever wrapped (e.g. for telemetry), that guard must be updated.
   if (!primary)
     return basic;
 
@@ -79,12 +82,10 @@ class CompositeUnitsProvider implements UnitsProvider {
   }
 
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
-    const results = await Promise.all(
-      this._providers.map(async (p) => tryList(async () => p.getUnitsByFamily(phenomenon))),
-    );
     const seen = new Set<string>();
     const out: UnitProps[] = [];
-    for (const units of results) {
+    for (const p of this._providers) {
+      const units = await tryList(async () => p.getUnitsByFamily(phenomenon));
       for (const u of units) {
         if (!seen.has(u.name)) {
           seen.add(u.name);

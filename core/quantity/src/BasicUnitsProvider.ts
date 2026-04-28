@@ -36,7 +36,13 @@ interface ResolvedState {
 let _resolvePromise: Promise<ResolvedState> | undefined;
 
 function resolveState(): Promise<ResolvedState> {
-  return (_resolvePromise ??= _buildState());
+  if (!_resolvePromise) {
+    _resolvePromise = _buildState().catch((err) => {
+      _resolvePromise = undefined;
+      throw err;
+    });
+  }
+  return _resolvePromise;
 }
 
 async function _buildState(): Promise<ResolvedState> {
