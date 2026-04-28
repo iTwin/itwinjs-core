@@ -3349,9 +3349,9 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
     chai.expect(importErrorDuringRebase?.message ?? "").to.include("rebasing", "Error message should mention rebasing");
   });
 
-  it("P3: after a failed rebase, briefcase is not stuck — another pull can succeed", async () => {
-    // If a rebase fails (e.g., incompatible schema), the briefcase should be recoverable.
-    // A subsequent pull (after fixing the root cause) should succeed.
+  it("P3: after a failed rebase, briefcase is not stuck and remains usable", async () => {
+    // If a rebase fails (e.g., incompatible schema), the briefcase should remain recoverable.
+    // This test verifies the briefcase stays open and queryable after the failed pull.
     t = await TestIModel.initialize("P3RecoveryAfterFailedRebase");
     let farTxn = startTestTxn(t.far, "P3 far");
     let localTxn = startTestTxn(t.local, "P3 local");
@@ -3385,8 +3385,8 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
     chai.expect(t.local.isOpen, "Briefcase should still be open after failed rebase").to.be.true;
   });
 
-  it("P4: local schema import is rejected when called while semantic rebase has already captured state", async () => {
-    // Tests the guard: hasPendingTxns check combined with semantic rebase state.
+  it("P4: a second local schema import succeeds even when semantic rebase state folders already exist", async () => {
+    // Tests that semantic rebase state folders do not block further local schema imports.
     // After a schema import + pull that creates rebase folders, a second schema import on local
     // must still go through cleanly (the semantic rebase folders should NOT block a new import).
     t = await TestIModel.initialize("P4SecondImportAfterRebaseState");
