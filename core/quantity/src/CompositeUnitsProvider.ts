@@ -18,14 +18,16 @@ export interface CreateUnitsProviderOptions {
   primary?: UnitsProvider;
 
   /**
-   * When `true`, the basic BIS units win on conflict; `primary` is only consulted when the
-   * basic provider can't answer. Defaults to `false` (primary wins).
+   * Controls which provider is consulted first and wins ties.
+   * - `"preferSchema"` (default): `primary` is authoritative; bundled BIS units are fallback.
+   * - `"preferBundled"`: bundled BIS units win; `primary` is consulted only for units not in
+   *   the bundled set. Use when the iModel's schema may be stale.
    *
-   * Only affects `findUnit`, `findUnitByName`, and `getConversion`. `getUnitsByFamily` always
-   * merges results from both providers, deduplicated by fully-qualified unit name, with the
-   * first-consulted provider winning ties.
+   * Affects `findUnit`, `findUnitByName`, and `getConversion` (first-consulted wins or
+   * falls through). `getUnitsByFamily` always merges both providers — the first-consulted
+   * provider wins name collisions.
    */
-  preferBasic?: boolean;
+  bisUnitsPolicy?: "preferSchema" | "preferBundled";
 }
 
 /**
@@ -34,9 +36,9 @@ export interface CreateUnitsProviderOptions {
  * defaults from `@itwin/core-quantity`.
  *
  * Precedence rules:
- * - When `primary` is supplied and `preferBasic` is `false` (the default): `primary` wins;
+ * - When `primary` is supplied and `bisUnitsPolicy` is `"preferSchema"` (the default): `primary` wins;
  *   basic BIS units fill any gaps where `primary` returns an invalid unit or throws.
- * - When `preferBasic` is `true`: basic BIS units win; `primary` is consulted only when the
+ * - When `bisUnitsPolicy` is `"preferBundled"`: basic BIS units win; `primary` is consulted only when the
  *   basic provider can't answer.
  * - `getUnitsByFamily` always merges results from both providers, deduplicated by
  *   `UnitProps.name` (fully-qualified). The first-consulted provider wins ties.
@@ -51,7 +53,7 @@ export function createUnitsProvider(options: CreateUnitsProviderOptions = {}): U
   if (!primary)
     return basic;
 
-  const providers = options.preferBasic ? [basic, primary] : [primary, basic];
+  const providers = options.bisUnitsPolicy === "preferBundled" ? [basic, primary] : [primary, basic];
   return new CompositeUnitsProvider(providers);
 }
 
