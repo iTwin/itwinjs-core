@@ -1,17 +1,13 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module iModels
  */
 
 import { GuidString } from "@itwin/core-bentley";
-import {
-  ChangesetIdWithIndex,
-  ChangesetIndexOrId,
-  LocalFileName,
-} from "./ChangesetProps";
+import { ChangesetIdWithIndex, ChangesetIndexOrId, LocalFileName } from "./ChangesetProps";
 import { OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
