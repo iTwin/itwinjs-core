@@ -216,7 +216,7 @@ export function createUnitsProvider(options?: CreateUnitsProviderOptions): Units
 
 // @beta
 export interface CreateUnitsProviderOptions {
-    preferBasic?: boolean;
+    bisUnitsPolicy?: "preferSchema" | "preferBundled";
     primary?: UnitsProvider;
 }
 
@@ -787,7 +787,7 @@ export enum ScientificType {
 export function scientificTypeToString(scientificType: ScientificType): string;
 
 // @internal
-export const SERIALIZED_UNIT_SCHEMA_VERSION = "1.0.0";
+export const SERIALIZED_UNIT_SCHEMA_VERSION = "01.00.00";
 
 // @internal
 export interface SerializedConstant {
@@ -859,7 +859,7 @@ export interface SerializedUnitSchema {
     };
     // (undocumented)
     readonly name: string;
-    readonly sourceEcSchemaVersion?: string;
+    readonly sourceEcSchemaVersion: string;
     readonly version: string;
 }
 
