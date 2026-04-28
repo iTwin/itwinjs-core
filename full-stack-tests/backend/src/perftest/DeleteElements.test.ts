@@ -4,17 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64Array } from "@itwin/core-bentley";
-import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, EditTxn, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { Code, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { BulkDeleteElementsStatus, ChannelControl, EditTxn, GeometryPart, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
+import { Point3d } from "@itwin/core-geometry";
 
 describe("PerformanceTest: Bulk Element Deletion", () => {
   const outDir = `${KnownTestLocations.outputDir}/DeleteElements`;
   const reporter = new Reporter();
 
-  const elementCounts = [1, 5, 10, 50, 100, 1000, 10000, 100000];
+  const elementCounts = [25, 50, 250, 1000, 10000, 100000];
+
+  const includeLargeElementCounts = process.env.ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS === "1" || process.env.ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS?.toLowerCase() === "true";
+  if (includeLargeElementCounts) {
+    elementCounts.push(1000000);
+    elementCounts.push(1700000);
+  }
 
   before(async () => {
     await IModelHost.startup();
@@ -60,36 +67,67 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
 
   function createIModelWithDefinitionElements(fileName: string, count: number): {
     db: StandaloneDb;
-    usedCategoryIds: Id64Array;
-    unusedCategoryIds: Id64Array;
+    usedPartIds: Id64Array;
+    unusedPartIds: Id64Array;
+    externallyBlockedPartIds: Set<Id64String>;
   } {
     const db = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "DeleteDefinitionElementsPerfTest" } });
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    const usedCategoryIds: Id64Array = [];
-    const unusedCategoryIds: Id64Array = [];
+    const usedPartIds: Id64Array = [];
+    const unusedPartIds: Id64Array = [];
+    let categoryId = "";
 
     withEditTxn(db, "create definition elements", (editTxn) => {
       const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(editTxn, Code.createEmpty(), true);
 
+      let cat = SpatialCategory.queryCategoryIdByName(db, IModel.dictionaryId, "TestCategory");
+      if (undefined === cat)
+        cat = SpatialCategory.insert(editTxn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+      categoryId = cat;
+
       for (let i = 0; i < count; i++) {
-        const categoryId = SpatialCategory.insert(editTxn, IModel.dictionaryId, `Category_${i}`, new SubCategoryAppearance());
+        const partId = editTxn.insertElement({
+          classFullName: GeometryPart.classFullName,
+          model: IModel.dictionaryId,
+          code: GeometryPart.createCode(db, IModel.dictionaryId, `Part_${i}`),
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        } as GeometryPartProps);
+
         if (i % 2 === 0) {
-          // Mark as "used" by inserting a PhysicalObject that references it.
-          const props: GeometricElementProps = {
+          const builder = new GeometryStreamBuilder();
+          builder.appendGeometryPart3d(partId);
+          editTxn.insertElement({
             classFullName: "Generic:PhysicalObject",
             model: modelId,
-            category: categoryId,
+            category: cat,
             code: Code.createEmpty(),
-          };
-          editTxn.insertElement(props);
-          usedCategoryIds.push(categoryId);
+            geom: builder.geometryStream,
+          } as GeometricElementProps);
+          usedPartIds.push(partId);
         } else {
-          unusedCategoryIds.push(categoryId);
+          unusedPartIds.push(partId);
         }
       }
     });
-    return { db, usedCategoryIds, unusedCategoryIds };
+
+    const externallyBlockedPartIds = new Set(unusedPartIds.slice(0, Math.max(1, Math.floor(unusedPartIds.length / 10))));
+    withEditTxn(db, "add external geometry-stream references", (editTxn) => {
+      const [, externalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(editTxn, Code.createEmpty(), true);
+      for (const partId of externallyBlockedPartIds) {
+        const builder = new GeometryStreamBuilder();
+        builder.appendGeometryPart3d(partId);
+        editTxn.insertElement({
+          classFullName: "Generic:PhysicalObject",
+          model: externalModelId,
+          category: categoryId,
+          code: Code.createEmpty(),
+          geom: builder.geometryStream,
+        } as GeometricElementProps);
+      }
+    });
+
+    return { db, usedPartIds, unusedPartIds, externallyBlockedPartIds };
   }
 
   it("deleteElement (loop) vs deleteElements (bulk)", () => {
@@ -123,8 +161,10 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
         txn.start();
 
         const startTime = performance.now();
-        txn.deleteElements(ids);
+        const deletionResult = txn.deleteElements(ids, { skipFKConstraintValidations: true });
         const elapsed = performance.now() - startTime;
+
+        assert.equal(deletionResult.status, BulkDeleteElementsStatus.Success);
 
         txn.saveChanges();
         for (const id of ids) {
@@ -144,8 +184,9 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
     for (const count of elementCounts) {
       {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteDefinitionElements_${count}.bim`);
-        const { db, unusedCategoryIds, usedCategoryIds } = createIModelWithDefinitionElements(fileName, count);
-        const allIds: Id64Array = [...unusedCategoryIds, ...usedCategoryIds];
+        const { db, usedPartIds, unusedPartIds, externallyBlockedPartIds } = createIModelWithDefinitionElements(fileName, count);
+        const allIds: Id64Array = [...unusedPartIds, ...usedPartIds];
+
         const txn = new EditTxn(db, "deleteDefinitionElements perf test");
         txn.start();
 
@@ -155,12 +196,16 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
 
         txn.saveChanges();
 
-        // Unused categories must have been deleted; used ones must remain.
-        assert.equal(failedToDelete.size, usedCategoryIds.length, "only in-use categories should fail to delete");
-        for (const id of unusedCategoryIds)
-          assert.isUndefined(db.elements.tryGetElement(id), `unused category ${id} should be deleted`);
-        for (const id of usedCategoryIds)
-          assert.isDefined(db.elements.tryGetElement(id), `used category ${id} should be retained`);
+        const expectedFailed = usedPartIds.length + externallyBlockedPartIds.size;
+        assert.equal(failedToDelete.size, expectedFailed, "in-use and externally-blocked parts should fail to delete");
+        for (const id of unusedPartIds) {
+          if (externallyBlockedPartIds.has(id))
+            assert.isDefined(db.elements.tryGetElement(id), `externally-blocked part ${id} should be retained`);
+          else
+            assert.isUndefined(db.elements.tryGetElement(id), `unused part ${id} should be deleted`);
+        }
+        for (const id of usedPartIds)
+          assert.isDefined(db.elements.tryGetElement(id), `in-use part ${id} should be retained`);
 
         txn.end();
         db.close();
@@ -171,22 +216,30 @@ describe("PerformanceTest: Bulk Element Deletion", () => {
 
       {
         const fileName = IModelTestUtils.prepareOutputFile("DeleteElements", `deleteElements_${count}.bim`);
-        const { db, unusedCategoryIds, usedCategoryIds } = createIModelWithDefinitionElements(fileName, count);
-        const allIds: Id64Array = [...unusedCategoryIds, ...usedCategoryIds];
+        const { db, usedPartIds, unusedPartIds, externallyBlockedPartIds } = createIModelWithDefinitionElements(fileName, count);
+        const allIds: Id64Array = [...unusedPartIds, ...usedPartIds];
+
         const txn = new EditTxn(db, "deleteElements perf test");
         txn.start();
 
         const startTime = performance.now();
-        const failedToDelete = txn.deleteElements(allIds);
+        const deletionResult = txn.deleteElements(allIds);
         const elapsed = performance.now() - startTime;
+
+        assert.equal(deletionResult.status, BulkDeleteElementsStatus.PartialSuccess, "Some in-use definition elements should have been pruned");
 
         txn.saveChanges();
 
-        assert.equal(failedToDelete.size, usedCategoryIds.length, "only in-use categories should fail to delete");
-        for (const id of unusedCategoryIds)
-          assert.isUndefined(db.elements.tryGetElement(id), `unused category ${id} should be deleted`);
-        for (const id of usedCategoryIds)
-          assert.isDefined(db.elements.tryGetElement(id), `used category ${id} should be retained`);
+        const expectedFailedCount = usedPartIds.length + externallyBlockedPartIds.size;
+        assert.equal(deletionResult.failedIds.size, expectedFailedCount, "in-use and externally-blocked parts should fail to delete");
+        for (const id of unusedPartIds) {
+          if (externallyBlockedPartIds.has(id))
+            assert.isDefined(db.elements.tryGetElement(id), `externally-blocked part ${id} should be retained`);
+          else
+            assert.isUndefined(db.elements.tryGetElement(id), `unused part ${id} should be deleted`);
+        }
+        for (const id of usedPartIds)
+          assert.isDefined(db.elements.tryGetElement(id), `in-use part ${id} should be retained`);
 
         txn.end();
         db.close();

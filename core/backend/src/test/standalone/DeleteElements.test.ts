@@ -1,7 +1,7 @@
 import { assert } from "chai";
-import { Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
+import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
@@ -71,8 +71,13 @@ describe("deleteElements (native bulk delete API)", () => {
 
   // Run deleteElements, then verify the returned failed set, check each id in `deleted` is gone and each id in `retained` is still present.
   const executeTestCase = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
-    const failed: Id64Set = txn.deleteElements(idsToDelete);
-    assert.sameMembers(Array.from(failed), expectedFailed, `[${label}] failed set mismatch`);
+    const resultStatus: BulkDeleteElementsResult = txn.deleteElements(idsToDelete);
+    if (expectedFailed.length === 0)
+      assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
+    else
+      assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
+
+    assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
 
     for (const id of deleted)
       assertDeleted(id, `[${label}] ${id} should have been deleted`);
@@ -149,7 +154,7 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootB = insertElement();
 
       // rootA appears twice - should not throw and should be deleted exactly once.
-      txn.deleteElements([rootA, rootA, rootB]);
+      assert.equal(txn.deleteElements([rootA, rootA, rootB]).status, BulkDeleteElementsStatus.Success);
       assertDeleted(rootA, "rootA should be deleted");
       assertDeleted(rootB, "rootB should be deleted");
     });
@@ -295,6 +300,17 @@ describe("deleteElements (native bulk delete API)", () => {
         [rootD],
         [rootA, rootB, rootC],
         [rootA]);
+    });
+
+    it("scope chain delete with skipping constraint validation should fail", () => {
+      const rootA = insertElement();
+      const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
+      const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
+      const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
+
+      const resultStatus: BulkDeleteElementsResult = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
+      assert.equal(resultStatus.status, BulkDeleteElementsStatus.DeletionFailed);
+      assert.equal(resultStatus.sqlDeleteStatus, DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY);
     });
 
     it("two elements using the same scope", () => {
@@ -599,7 +615,9 @@ describe("deleteElements (native bulk delete API)", () => {
       const elem2 = insertElementInModel(partitionId);
       const unrelated = insertElement();
 
-      txn.deleteElements([partitionId]);
+      const result = txn.deleteElements([partitionId]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
+      assert.isEmpty(result.failedIds);
       assertDeleted(partitionId, "partition element should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(elem1, "elem1 inside sub-model should be deleted");
@@ -622,7 +640,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const unrelated = insertElement();
 
       // Deleting subjectA cascades (parent-child) to childPartitionId, which then cascades (modeled-element) into elem1.
-      txn.deleteElements([subjectA]);
+      const result = txn.deleteElements([subjectA]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertDeleted(subjectA, "subject should be deleted");
       assertDeleted(childPartitionId, "child partition element should be deleted");
       assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
@@ -648,7 +667,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const elem2 = insertElementInModel(partitionId);
       const unrelated = insertElement();
 
-      txn.deleteElements([partitionId]);
+      const result = txn.deleteElements([partitionId]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(elem1, "elem1 should be deleted");
@@ -676,7 +696,8 @@ describe("deleteElements (native bulk delete API)", () => {
 
       // `external` is NOT in the delete set and uses scopingElem as its code scope -> the
       // entire partition subtree (including the sub-model) must be ignored from the delete set.
-      txn.deleteElements([partitionId, unrelated]);
+      const result = txn.deleteElements([partitionId, unrelated]);
+      assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
       assertExists(partitionId, "partition should be ignored (retained)");
       assertModelExists(partitionId, "sub-model should be retained");
       assertExists(scopingElem, "scopingElem should be retained");
@@ -708,7 +729,8 @@ describe("deleteElements (native bulk delete API)", () => {
         placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
       } as PhysicalElementProps);
 
-      txn.deleteElements([p1, p2]);
+      const result = txn.deleteElements([p1, p2]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertDeleted(p1, "p1 should be deleted");
       assertModelDeleted(p1, "sub-model of p1 should be deleted");
       assertDeleted(scopingElem, "scopingElem should be deleted");
@@ -736,7 +758,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const innerElem2 = insertElementInModel(grandchildPartitionId);
       const unrelated = insertElement();
 
-      txn.deleteElements([grandparentSubjectId]);
+      const result = txn.deleteElements([grandparentSubjectId]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertDeleted(grandparentSubjectId, "grandparent subject should be deleted");
       assertDeleted(childSubjectId, "child subject should be deleted");
       assertDeleted(grandchildPartitionId, "grandchild partition should be deleted");
@@ -756,7 +779,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const partitionId = insertSubModel();
       const unrelated = insertElement();
 
-      txn.deleteElements([partitionId]);
+      const result = txn.deleteElements([partitionId]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "empty sub-model should be deleted");
       assertExists(unrelated, "unrelated should be retained");
@@ -780,7 +804,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const subElem2 = insertElementInModel(partitionChild);
       const unrelated = insertElement();
 
-      txn.deleteElements([subjectA]);
+      const result = txn.deleteElements([subjectA]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertDeleted(subjectA, "subjectA should be deleted");
       assertDeleted(partitionChild, "partition child should be deleted");
       assertModelDeleted(partitionChild, "sub-model of partition child should be deleted");
@@ -807,7 +832,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const subElem2 = insertElementInModel(partitionId);
 
       // Only pass subjectP - grandparent must survive, everything below subjectP must go.
-      txn.deleteElements([subjectP]);
+      const result = txn.deleteElements([subjectP]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertExists(subjectGP, "grandparent should survive");
       assertDeleted(subjectP, "parent should be deleted");
       assertDeleted(partitionId, "partition should be deleted");
@@ -822,7 +848,8 @@ describe("deleteElements (native bulk delete API)", () => {
       const subElem1 = insertElementInModel(partitionId);
       const subElem2 = insertElementInModel(partitionId);
 
-      txn.deleteElements([partitionId]);
+      const result = txn.deleteElements([partitionId]);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success);
       assertExists(subjectA, "subject (regular parent) should survive");
       assertDeleted(partitionId, "partition should be deleted");
       assertModelDeleted(partitionId, "sub-model should be deleted");

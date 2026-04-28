@@ -16,7 +16,7 @@ import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
-import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
+import { MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
@@ -1552,6 +1552,24 @@ export class ToolAdmin {
     return EventHandled.No;
   }
 
+  /** Finish the active edit command before performing a transaction operation like undo/redo.
+   * @internal
+   */
+  public async finishEditCommandForTxnOperation(): Promise<boolean> {
+    // NOTE: Because restartPrimitiveTool is called after an undo/redo the active tool won't be left in an invalid state...
+    if (undefined === this._editCommandHandler)
+      return true;
+
+    try {
+      await this._editCommandHandler.finishCommand();
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : IModelApp.localization.getLocalizedString("iModelJs:Errors.UnableToFinishActiveEditCommand");
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, message));
+      return false;
+    }
+  }
+
   /** Called to undo previous data button for primitive tools or undo last write operation. */
   public async doUndoOperation(): Promise<boolean> {
     const activeTool = this.activeTool;
@@ -1563,6 +1581,9 @@ export class ToolAdmin {
 
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
+      return false;
+
+    if (!await this.finishEditCommandForTxnOperation())
       return false;
 
     return imodel.txns.reverseSingleTxnAsync().then(() => true).catch(() => false);
@@ -1579,6 +1600,9 @@ export class ToolAdmin {
 
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
+      return false;
+
+    if (!await this.finishEditCommandForTxnOperation())
       return false;
 
     return imodel.txns.reinstateTxnAsync().then(() => true).catch(() => false);
