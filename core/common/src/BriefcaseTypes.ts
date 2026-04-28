@@ -1,13 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module iModels
  */
 
 import { GuidString } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexOrId, LocalFileName } from "./ChangesetProps";
+import {
+  ChangesetIdWithIndex,
+  ChangesetIndexOrId,
+  LocalFileName,
+} from "./ChangesetProps";
 import { OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
@@ -57,7 +61,7 @@ export enum SyncMode {
   FixedVersion = 1,
   /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
   PullAndPush = 2,
-  /** use [BriefcaseIdValue.Unassigned](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
+  /** use [BriefcaseIdValue.Unassigned]($backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
   PullOnly = 3,
 }
 
