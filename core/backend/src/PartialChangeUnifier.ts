@@ -82,10 +82,8 @@ class InMemoryCache implements ChangeCache {
   }
 
   public *all(): IterableIterator<ChangeInstance> {
-    for (const key of Array.from(this._cache.keys()).sort()) {
-      const instance = this._cache.get(key);
-      if (instance)
-        yield instance;
+    for (const instance of this._cache.values()) {
+      yield instance;
     }
   }
 
@@ -156,7 +154,7 @@ class SqliteBackedCache implements ChangeCache {
       SELECT JSON_GROUP_ARRAY(JSON([value]))
       FROM (
         SELECT [value],
-               SUM(LENGTH([value])) OVER (ORDER BY [key] ROWS UNBOUNDED PRECEDING) / ${this.bufferedReadInstanceSizeInBytes} AS [bucket]
+               SUM(LENGTH([value])) OVER (ORDER BY rowid ROWS UNBOUNDED PRECEDING) / ${this.bufferedReadInstanceSizeInBytes} AS [bucket]
         FROM ${this._cacheTable}
       )
       GROUP BY [bucket]`;

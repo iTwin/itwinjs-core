@@ -496,17 +496,17 @@ class TestIModel {
 
   public updateElement(txn: EditTxn, elementId: Id64String, updates: Record<string, any>): void {
     const briefcase = txn.iModel as BriefcaseDb;
-    const element = briefcase.elements.getElement(elementId);
+    const element = briefcase.elements.getElementProps(elementId);
     Object.assign(element, updates);
-    txn.updateElement(element.toJSON());
+    txn.updateElement(element);
   }
 
-  public getElement(briefcase: BriefcaseDb, elementId: Id64String): any {
-    return briefcase.elements.getElement(elementId);
+  public getElementProps(briefcase: BriefcaseDb, elementId: Id64String): any {
+    return briefcase.elements.getElementProps(elementId);
   }
 
-  public getModel(briefcase: BriefcaseDb, modelId: Id64String): any {
-    return briefcase.models.getModel(modelId);
+  public getModelProps(briefcase: BriefcaseDb, modelId: Id64String): any {
+    return briefcase.models.tryGetModelProps(modelId);
   }
 
   public checkIfFolderExists(briefcase: BriefcaseDb, txnId: string, isSchemaFolder: boolean): boolean {
@@ -681,7 +681,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await pullChanges(localTxn);
 
     // Verify: local changes preserved, schema updated
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("local_update_a", "Local property update should be preserved");
     chai.expect(element.propC).to.equal("value_c", "Original propC should be preserved");
 
@@ -731,7 +731,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkIfFolderExists(t.local, txnProps!.id, true)).to.be.true; // after rebase the folder should be there until push is called
 
     // Verify: incoming data changes applied, local schema preserved
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("far_update_a", "Incoming property update should be applied");
     chai.expect(element.propC).to.equal("value_c", "Original propC should be preserved");
 
@@ -783,11 +783,11 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // its data changes on both sides semantic rebase is not used
 
     // Verify: both changes applied to their respective elements
-    const element1 = t.getElement(t.local, elementId1);
+    const element1 = t.getElementProps(t.local, elementId1);
     chai.expect(element1.propA).to.equal("value_a1", "Element 1 propA should be unchanged");
     chai.expect(element1.propC).to.equal("far_update_c", "Element 1 incoming update should be applied");
 
-    const element2 = t.getElement(t.local, elementId2);
+    const element2 = t.getElementProps(t.local, elementId2);
     chai.expect(element2.propA).to.equal("local_update_a", "Element 2 local update should be preserved");
     chai.expect(element2.propC).to.equal("value_c2", "Element 2 propC should be unchanged");
   });
@@ -959,12 +959,12 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
 
     // Verify: both elements exist with their original properties
-    const farElement = t.getElement(t.local, farElementId);
+    const farElement = t.getElementProps(t.local, farElementId);
     chai.expect(farElement.propA).to.equal("far_value_a", "Far element propA should be preserved");
     chai.expect(farElement.propC).to.equal("far_value_c", "Far element propC should be preserved");
     chai.expect(farElement.propC2).to.equal("far_value_c2", "Far element propC2 should be preserved");
 
-    const localElement = t.getElement(t.local, localElementId);
+    const localElement = t.getElementProps(t.local, localElementId);
     chai.expect(localElement.propA).to.equal("local_value_a", "Local element propA should be preserved");
     chai.expect(localElement.propC).to.equal("local_value_c", "Local element propC should be preserved");
     chai.expect(localElement.propC2).to.equal("local_value_c2", "Local element propC2 should be preserved");
@@ -1115,11 +1115,11 @@ describe("Semantic Rebase", function (this: Suite) {
 
     // Verify: both elements have PropC intact, schema transformed locally
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
-    const farElement = t.getElement(t.local, farElementId);
+    const farElement = t.getElementProps(t.local, farElementId);
     chai.expect(farElement.propA).to.equal("far_value_a", "Far element propA should be preserved");
     chai.expect(farElement.propC).to.equal("far_value_c", "Far element propC should be preserved after transform");
 
-    const localElement = t.getElement(t.local, localElementId);
+    const localElement = t.getElementProps(t.local, localElementId);
     chai.expect(localElement.propA).to.equal("local_value_a", "Local element propA should be preserved");
     chai.expect(localElement.propC).to.equal("local_value_c", "Local element propC should be preserved after transform");
   });
@@ -1162,11 +1162,11 @@ describe("Semantic Rebase", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
     // Verify: both elements have PropC intact after incoming transform
-    const farElement = t.getElement(t.local, farElementId);
+    const farElement = t.getElementProps(t.local, farElementId);
     chai.expect(farElement.propA).to.equal("far_value_a", "Far element propA should be preserved");
     chai.expect(farElement.propC).to.equal("far_value_c", "Far element propC should be preserved after incoming transform");
 
-    const localElement = t.getElement(t.local, localElementId);
+    const localElement = t.getElementProps(t.local, localElementId);
     chai.expect(localElement.propA).to.equal("local_value_a", "Local element propA should be preserved");
     chai.expect(localElement.propC).to.equal("local_value_c", "Local element propC should be preserved after incoming transform");
   });
@@ -1228,19 +1228,19 @@ describe("Semantic Rebase", function (this: Suite) {
     t.far.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
     // Verify: all elements have both PropC and PropD intact
-    const farElemC = t.getElement(t.local, farElementC);
+    const farElemC = t.getElementProps(t.local, farElementC);
     chai.expect(farElemC.propA).to.equal("far_value_a_c", "Far element C propA should be preserved");
     chai.expect(farElemC.propC).to.equal("far_value_c", "Far element C propC should be preserved after both transforms");
 
-    const farElemD = t.getElement(t.local, farElementD);
+    const farElemD = t.getElementProps(t.local, farElementD);
     chai.expect(farElemD.propA).to.equal("far_value_a_d", "Far element D propA should be preserved");
     chai.expect(farElemD.propD).to.equal("far_value_d", "Far element D propD should be preserved after both transforms");
 
-    const localElemC = t.getElement(t.local, localElementC);
+    const localElemC = t.getElementProps(t.local, localElementC);
     chai.expect(localElemC.propA).to.equal("local_value_a_c", "Local element C propA should be preserved");
     chai.expect(localElemC.propC).to.equal("local_value_c", "Local element C propC should be preserved after both transforms");
 
-    const localElemD = t.getElement(t.local, localElementD);
+    const localElemD = t.getElementProps(t.local, localElementD);
     chai.expect(localElemD.propA).to.equal("local_value_a_d", "Local element D propA should be preserved");
     chai.expect(localElemD.propD).to.equal("local_value_d", "Local element D propD should be preserved after both transforms");
   });
@@ -1280,7 +1280,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await t.local.locks.acquireLocks({ exclusive: elementId });
     t.updateElement(localTxn, elementId, { propC: "local_modified_c" });
     localTxn.saveChanges("local update propC");
-    let element = t.getElement(t.local, elementId);
+    let element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("initial_value_a", "PropA should be unchanged");
     chai.expect(element.propC).to.equal("local_modified_c", "PropC should have the local modified value before incoming transform");
 
@@ -1295,7 +1295,7 @@ describe("Semantic Rebase", function (this: Suite) {
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
     // Verify: PropC has the modified local value after the transform
-    element = t.getElement(t.local, elementId);
+    element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("initial_value_a", "PropA should be unchanged");
     chai.expect(element.propC).to.equal("local_modified_c", "PropC should have the local modified value after incoming transform");
 
@@ -1339,11 +1339,11 @@ describe("Semantic Rebase", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
 
@@ -1407,11 +1407,11 @@ describe("Semantic Rebase", function (this: Suite) {
     t.local.clearCaches();
 
     // Verify: both local data changes preserved after incoming transform
-    const element1 = t.getElement(t.local, elementId1);
+    const element1 = t.getElementProps(t.local, elementId1);
     chai.expect(element1.propA).to.equal("first_update_a", "First element propA update should be preserved");
     chai.expect(element1.propC).to.equal("initial_c", "First element propC should be preserved after transform");
 
-    const element2 = t.getElement(t.local, elementId2);
+    const element2 = t.getElementProps(t.local, elementId2);
     chai.expect(element2.propA).to.equal("second_element_a", "Second element propA should be preserved");
     chai.expect(element2.propC).to.equal("second_element_c", "Second element propC should be preserved after transform");
 
@@ -1459,11 +1459,11 @@ describe("Semantic Rebase", function (this: Suite) {
     t.local.clearCaches();
 
     // Verify: both incoming data changes applied, local schema transformation preserved
-    const element1 = t.getElement(t.local, elementId1);
+    const element1 = t.getElementProps(t.local, elementId1);
     chai.expect(element1.propA).to.equal("far_first_update_a", "First element incoming update should be applied");
     chai.expect(element1.propC).to.equal("initial_c", "First element propC should be preserved after transform");
 
-    const element2 = t.getElement(t.local, elementId2);
+    const element2 = t.getElementProps(t.local, elementId2);
     chai.expect(element2.propA).to.equal("far_second_element_a", "Second element should exist with correct propA");
     chai.expect(element2.propC).to.equal("far_second_element_c", "Second element propC should be preserved after transform");
 
@@ -1551,11 +1551,11 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
   });
@@ -1602,11 +1602,11 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
 
@@ -1660,11 +1660,11 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
 
@@ -1712,11 +1712,11 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
 
@@ -1772,11 +1772,11 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
 
@@ -1828,11 +1828,11 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 
     t.local.clearCaches(); // Clear caches to ensure we read transformed properties from iModel
 
-    const elementFar = t.getElement(t.local, elementIdFar);
+    const elementFar = t.getElementProps(t.local, elementIdFar);
     chai.expect(elementFar.propA).to.equal("far_value_a", "PropA should be unchanged");
     chai.expect(elementFar.propC).to.equal("far_value_c", "PropC should be unchanged");
 
-    const elementLocal = t.getElement(t.local, elementIdLocal);
+    const elementLocal = t.getElementProps(t.local, elementIdLocal);
     chai.expect(elementLocal.propA).to.equal("local_value_a", "PropA should be unchanged");
     chai.expect(elementLocal.propC).to.equal("local_value_c", "PropC should be unchanged");
 
@@ -1868,8 +1868,6 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
 
   // ─── Section F: Conflicts with Schema Changes ────────────────────────────────
   // Every test below verifies ELEMENT DATA CORRECTNESS after semantic rebase.
-  // No test in this suite is concerned with event ordering or rebase metadata —
-  // those are implementation-detail checks that do not expose data bugs.
 
   it("F1: local data patch on element survives transforming schema rebase: propC value preserved after column migration", async () => {
     t = await TestIModel.initialize("F1ConflictDuringTransformingSchemaRebase");
@@ -1910,7 +1908,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     await pullChanges(localTxn);
 
     t.local.clearCaches();
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propC).to.equal("local_updated_c", "Local propC value should survive after transforming schema rebase");
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -1946,7 +1944,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     await pullChanges(localTxn);
 
     t.local.clearCaches();
-    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw(`Element=${elementId.toString()}`);
+    chai.expect(() => t!.getElementProps(t!.local, elementId)).to.throw(`element not found`);
 
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
@@ -1977,19 +1975,22 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     localTxn.deleteElement(elementId);
     localTxn.saveChanges("local delete element");
 
-    const drawingModel = t.getModel(t.local, t.drawingModelId);
+    const drawingModel = t.getModelProps(t.local, t.drawingModelId);
     const geometricGuidBefore = drawingModel.geometryGuid;
+    const lastModBefore = drawingModel.lastMod;
 
     // Local pulls - incoming transforming schema applied, then local deletion reinstated
     await pullChanges(localTxn);
 
     t.local.clearCaches();
-    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw(`Element=${elementId.toString()}`);
+    chai.expect(() => t!.getElementProps(t!.local, elementId)).to.throw(`element not found`);
 
-    const drawingModelAfter = t.getModel(t.local, t.drawingModelId);
+    const drawingModelAfter = t.getModelProps(t.local, t.drawingModelId);
     const geometricGuidAfter = drawingModelAfter.geometryGuid;
+    const lastModAfter = drawingModelAfter.lastMod;
 
-    chai.expect(geometricGuidAfter).to.not.equal(geometricGuidBefore, "GeometricGuid of the model should remain the same after rebase"); // BUG should exactly be same
+    chai.expect(geometricGuidAfter).to.not.equal(geometricGuidBefore, "GeometricGuid of the model should not remain the same after rebase"); // BUG should exactly be same
+    chai.expect(lastModAfter).to.equal(lastModBefore, "LastMod of the model should remain the same after rebase");
 
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
@@ -2031,14 +2032,14 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
 
     t.local.clearCaches();
     // Element is gone (deleted by incoming changeset)
-    chai.expect(() => t!.getElement(t!.local, elementId)).to.throw(`Element=${elementId.toString()}`);
+    chai.expect(() => t!.getElementProps(t!.local, elementId)).to.throw(`element not found`);
 
     // Schema was upgraded successfully despite the element deletion
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema upgrade should survive when incoming changeset deleted an element");
   });
 
-  it("F5: insert → update → delete of same element across three sequential local data txns; incoming schema → element absent and no stale ECInstanceId [BUG]", async () => {
+  it("F5: insert → update → delete of same element across three sequential local data txns; incoming schema → element absent and no stale ECInstanceId", async () => {
     // This test probes the ordering of sequential data patches.
     // If patches are applied out of order the update will hit NotFound (element not yet inserted)
     // or the delete will resurrect a value that the update produced.
@@ -2069,7 +2070,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     localTxn.saveChanges("local delete E1 (txn3)");
 
     await pullChanges(localTxn);
-    chai.expect(() => t!.getElement(t!.local, e1Id)).to.throw(`Element=${e1Id.toString()}`);
+    chai.expect(() => t!.getElementProps(t!.local, e1Id)).to.throw(`element not found`);
   });
 
   it("F6: local inserts elements of three different classes across separate data txns; incoming trivial schema; ECInstanceIds and classNames preserved", async () => {
@@ -2110,18 +2111,18 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     t.local.clearCaches();
 
     // Verify each element: ECInstanceId preserved, classFullName correct, props intact
-    const aElem = t.getElement(t.local, prePullIds.aId);
+    const aElem = t.getElementProps(t.local, prePullIds.aId);
     chai.expect(aElem.id).to.equal(prePullIds.aId, "Class A ECInstanceId must be preserved (forceUseId)");
     chai.expect(aElem.classFullName).to.equal("TestDomain:A", "Class A classFullName must be correct");
     chai.expect(aElem.propA).to.equal("local_a_only");
 
-    const cElem = t.getElement(t.local, prePullIds.cId);
+    const cElem = t.getElementProps(t.local, prePullIds.cId);
     chai.expect(cElem.id).to.equal(prePullIds.cId, "Class C ECInstanceId must be preserved (forceUseId)");
     chai.expect(cElem.classFullName).to.equal("TestDomain:C", "Class C classFullName must be correct");
     chai.expect(cElem.propA).to.equal("local_c_a");
     chai.expect(cElem.propC).to.equal("local_c_val");
 
-    const dElem = t.getElement(t.local, prePullIds.dId);
+    const dElem = t.getElementProps(t.local, prePullIds.dId);
     chai.expect(dElem.id).to.equal(prePullIds.dId, "Class D ECInstanceId must be preserved (forceUseId)");
     chai.expect(dElem.classFullName).to.equal("TestDomain:D", "Class D classFullName must be correct");
     chai.expect(dElem.propA).to.equal("local_d_a");
@@ -2143,7 +2144,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
       "ECSqlReader className for D element must include 'D'");
 
     // Far's element must also be present and unmodified
-    const farElem = t.getElement(t.local, farElemId);
+    const farElem = t.getElementProps(t.local, farElemId);
     chai.expect(farElem.propA).to.equal("far_a");
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -2251,7 +2252,7 @@ describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: S
     // Local pulls: both far schema changesets are incoming data, local data rebase on top
     await pullChanges(localTxn);
 
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("local_updated_a", "Local data change should be preserved after two incoming schema changesets");
     chai.expect(element.propC).to.equal("initial_c", "propC should be unchanged");
 
@@ -2312,15 +2313,15 @@ describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: S
     t.local.clearCaches();
 
     // sharedId1 should have far's update
-    const elem1 = t.getElement(t.local, sharedId1);
+    const elem1 = t.getElementProps(t.local, sharedId1);
     chai.expect(elem1.propA).to.equal("far_updated_a1", "Far update to sharedId1 should be applied");
 
     // sharedId2 should have local's update
-    const elem2 = t.getElement(t.local, sharedId2);
+    const elem2 = t.getElementProps(t.local, sharedId2);
     chai.expect(elem2.propA).to.equal("local_updated_a2", "Local update to sharedId2 should be preserved");
 
     // New locally-inserted element with PropC2 should exist
-    const newElem = t.getElement(t.local, localNewId);
+    const newElem = t.getElementProps(t.local, localNewId);
     chai.expect(newElem.propA).to.equal("new_local_a", "Locally-inserted element should be preserved");
     chai.expect(newElem.propC2).to.equal("new_local_c2", "PropC2 from local element should be preserved");
 
@@ -2371,7 +2372,7 @@ describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: S
     t.local.clearCaches();
 
     // Local data change should survive all three schema transforms
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("local_updated_a", "Local propA should be preserved after three schema increments");
     chai.expect(element.propC).to.equal("local_updated_c", "Local propC should be preserved after three schema increments");
 
@@ -2494,7 +2495,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
     chai.expect(aspect.aspectProp).to.equal("aspect_before_transform", "AspectProp value should be preserved");
 
     // Element itself should also be intact
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("elem_a", "Element propA should be preserved");
   });
 
@@ -2581,7 +2582,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
     t.local.clearCaches();
 
     // The element should still exist but have no aspect
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element).to.not.be.undefined, "Element should still exist after rebase";
 
     const aspects = t.local.elements.getAspects(elementId, "TestDomain:CUniqueAspect");
@@ -2707,7 +2708,7 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
     await pullChanges(localTxn);
     t.local.clearCaches();
 
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propCInt).to.equal(100, "Int property update should be preserved");
     chai.expect(element.propCDouble).to.equal(3.14159, "Double property should remain from original insert");
     chai.expect(element.propCBool).to.equal(false, "Boolean property update should be preserved");
@@ -2761,7 +2762,7 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
     await pullChanges(localTxn);
     t.local.clearCaches();
 
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propCInt).to.equal(99, "Int property should be preserved after transforming schema rebase");
     chai.expect(element.propCDouble).to.closeTo(1.414, 0.0001, "Double property should be preserved");
     chai.expect(element.propCBool).to.equal(false, "Boolean property should be preserved");
@@ -2800,7 +2801,7 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
     await pullChanges(localTxn);
     t.local.clearCaches();
 
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("updated_a", "PropA update should be preserved");
     // propC was never set so it should still be absent or null after the transform
     chai.expect(element.propC === undefined || element.propC === null || element.propC === "").to.be.true,
@@ -2867,10 +2868,10 @@ describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Sui
     t.local.clearCaches();
 
     // Deleted element should be gone
-    chai.expect(() => t!.getElement(t!.local, deletedElementId)).to.throw(`Element=${deletedElementId.toString()}`, "Deleted element should not be found after rebase");
+    chai.expect(() => t!.getElementProps(t!.local, deletedElementId)).to.throw(`element not found`, "Deleted element should not be found after rebase");
 
     // Kept element should have local's update
-    const keepElement = t.getElement(t.local, keepElementId);
+    const keepElement = t.getElementProps(t.local, keepElementId);
     chai.expect(keepElement.propA).to.equal("local_updated_keep_a", "Keep element's local update should be preserved");
 
     // Schema should be at v01
@@ -2943,12 +2944,12 @@ describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
     t.local.clearCaches();
 
     // Far's element should be visible
-    const farElement = t.getElement(t.local, farElementId);
+    const farElement = t.getElementProps(t.local, farElementId);
     chai.expect(farElement.propA).to.equal("far_a", "Far element should be visible after rebase");
     chai.expect(farElement.propC2).to.equal("far_c2", "Far element PropC2 should be preserved");
 
     // Local's element should also be preserved
-    const localElement = t.getElement(t.local, localElementId);
+    const localElement = t.getElementProps(t.local, localElementId);
     chai.expect(localElement.propA).to.equal("local_a", "Local element should be preserved after rebase");
     chai.expect(localElement.propC).to.equal("local_c", "Local element propC should be preserved");
 
@@ -3004,7 +3005,7 @@ describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
     await pullChanges(localTxn2);
     t.local.clearCaches();
 
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("local_updated_a", "Local data change should be preserved after two schema changesets from different sources");
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -3087,7 +3088,7 @@ describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite)
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema should be v02 after second pull without push");
 
     // Both far data changes should be present
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propC).to.equal("far_c_update_2", "Far data round 2 should be applied");
   });
 
@@ -3163,12 +3164,12 @@ describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite
     t.local.clearCaches();
 
     // Far's element E should be visible on local
-    const elemE = t.getElement(t.local, farElementE);
+    const elemE = t.getElementProps(t.local, farElementE);
     chai.expect(elemE.propA).to.equal("far_e_a", "Far element E should be visible after rebase");
     chai.expect(elemE.propE).to.equal("far_e", "PropE of element E should be correct");
 
     // Local's element C should be preserved
-    const elemC = t.getElement(t.local, localElementC);
+    const elemC = t.getElementProps(t.local, localElementC);
     chai.expect(elemC.propA).to.equal("local_c_a", "Local element C should be preserved after rebase");
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -3262,12 +3263,12 @@ describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite
     chai.expect(schema.version).to.equal("01.00.02", "Far's schema v02 should win over local's v01");
 
     // Local E element should exist
-    const elemE = t.getElement(t.local, localElemE);
+    const elemE = t.getElementProps(t.local, localElemE);
     chai.expect(elemE.propA).to.equal("local_e_a", "Local element E should be preserved");
     chai.expect(elemE.propE).to.equal("local_e", "PropE should be preserved");
 
     // C element should have local's PropC update (PropC is now on class A in v02)
-    const elemC = t.getElement(t.local, cElementId);
+    const elemC = t.getElementProps(t.local, cElementId);
     chai.expect(elemC.propC).to.equal("local_updated_c", "Local PropC update should be preserved after schema transform");
   });
 });
@@ -3460,7 +3461,7 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     await TestUtils.startBackend();
   });
 
-  it("O1: local insert → update → delete of same element in three txns; incoming transforming schema → element stays deleted [BUG]", async () => {
+  it("O1: local insert → update → delete of same element in three txns; incoming transforming schema → element stays deleted", async () => {
     // Sequence: local inserts elem, updates it, then deletes it — all before pulling.
     // Incoming: transforming schema change.
     // Expected: element remains deleted (all three local txns reinstated correctly).
@@ -3490,14 +3491,14 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     t.local.clearCaches();
 
     // Element should be gone (last operation was delete)
-    chai.expect(() => t!.getElement(t!.local, tempElementId)).to.throw(`Element=${tempElementId.toString()}`, "Element should be deleted after rebase");
+    chai.expect(() => t!.getElementProps(t!.local, tempElementId)).to.throw(`element not found`, "Element should be deleted after rebase");
 
     // Schema should be at v02
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v02 after rebase");
   });
 
-  it("O2: local insert + delete of one element, plus insert + update of another → incoming schema → both correct [BUG]", async () => {
+  it("O2: local insert + delete of one element, plus insert + update of another → incoming schema → both correct", async () => {
     t = await TestIModel.initialize("O2InsertDeleteInsertUpdate");
     let farTxn = startTestTxn(t.far, "O2 far");
     let localTxn = startTestTxn(t.local, "O2 local");
@@ -3525,10 +3526,10 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     t.local.clearCaches();
 
     // Temp element should be gone
-    chai.expect(() => t!.getElement(t!.local, tempId)).to.throw(`Element=${tempId.toString()}`, "Element should be deleted after rebase");
+    chai.expect(() => t!.getElementProps(t!.local, tempId)).to.throw(`element not found`, "Element should be deleted after rebase");
 
     // Persist element should have the update
-    const persistElem = t.getElement(t.local, persistId);
+    const persistElem = t.getElementProps(t.local, persistId);
     chai.expect(persistElem.propA).to.equal("persist_updated_a", "Persist element propA should be updated");
     chai.expect(persistElem.propD).to.equal("persist_d", "Persist element propD should be preserved");
 
@@ -3578,16 +3579,16 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     t.local.clearCaches();
 
     // Shared element should have far's propC update
-    const sharedElem = t.getElement(t.local, sharedId);
+    const sharedElem = t.getElementProps(t.local, sharedId);
     chai.expect(sharedElem.propA).to.equal("shared_a", "Initial propA update should be preserved");
     chai.expect(sharedElem.propC).to.equal("far_updated_c", "Far propC update should be applied");
 
     // Two New element with PropC2 should exist
-    const newElem1 = t.getElement(t.local, newId1);
+    const newElem1 = t.getElementProps(t.local, newId1);
     chai.expect(newElem1.propA).to.equal("new_a", "New element propA should be preserved");
     chai.expect(newElem1.propC).to.equal("new_c", "New element propC should be preserved through schema rebase");
 
-    const newElem2 = t.getElement(t.local, newId2);
+    const newElem2 = t.getElementProps(t.local, newId2);
     chai.expect(newElem2.propA).to.equal("new_a", "New element propA should be preserved");
     chai.expect(newElem2.propC2).to.equal("new_c2_value", "New element PropC2 should be preserved through schema rebase");
 
@@ -3631,7 +3632,7 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
 
     // All five elements should have their local updates preserved
     for (let i = 0; i < 5; i++) {
-      const elem = t.getElement(t.local, ids[i]);
+      const elem = t.getElementProps(t.local, ids[i]);
       chai.expect(elem.propA).to.equal(`local_updated_a_${i}`, `Element ${i} propA should be preserved`);
       chai.expect(elem.propC).to.equal(`local_updated_c_${i}`, `Element ${i} propC should be preserved after transform`);
     }
@@ -3748,10 +3749,10 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
 
     // Both changes visible
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("far_a");
 
-    const localElem = t.getElement(t.local, localId);
+    const localElem = t.getElementProps(t.local, localId);
     chai.expect(localElem.propD).to.equal("local_d");
   });
 
@@ -3796,7 +3797,7 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // data folder removed after rebase
 
     t.local.clearCaches();
-    const cycle2Elem = t.getElement(t.local, cycle2ElemId);
+    const cycle2Elem = t.getElementProps(t.local, cycle2ElemId);
     chai.expect(cycle2Elem.propA).to.equal("cycle2_a", "Cycle 2 element should be preserved");
 
     const schema = t.local.getSchemaProps("TestDomain");
@@ -3840,7 +3841,7 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
 
     t.local.clearCaches();
-    const element = t.getElement(t.local, elementId);
+    const element = t.getElementProps(t.local, elementId);
     chai.expect(element.propA).to.equal("local_updated_a", "Local propA should survive transforming schema rebase");
     chai.expect(element.propC).to.equal("local_updated_c", "Local propC should survive transforming schema rebase");
   });
@@ -3907,16 +3908,16 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // cElemId: far's propA update applied; propC unchanged
-    const cAfter1 = t.getElement(t.local, cElemId);
+    const cAfter1 = t.getElementProps(t.local, cElemId);
     chai.expect(cAfter1.propA).to.equal("c_a_far_r1", "cElemId propA should be updated by far after pull #1");
     chai.expect(cAfter1.propC).to.equal("c_c_init", "cElemId propC should be unchanged after pull #1");
     // localElem: insert reinstated with original props and same ECInstanceId
-    const localAfter1 = t.getElement(t.local, localElemId);
+    const localAfter1 = t.getElementProps(t.local, localElemId);
     chai.expect(localAfter1.propA).to.equal("local_a_r1", "localElem propA should be preserved after pull #1 rebase");
     chai.expect(localAfter1.propC).to.equal("local_c_r1", "localElem propC should be preserved after pull #1 rebase");
     chai.expect(localAfter1.id).to.equal(localElemId, "localElemId ECInstanceId must be stable across rebase");
     // D element: unchanged
-    const dAfter1 = t.getElement(t.local, dElemId);
+    const dAfter1 = t.getElementProps(t.local, dElemId);
     chai.expect(dAfter1.propA).to.equal("d_a_init", "dElemId propA should be unchanged after pull #1");
     chai.expect(dAfter1.propD).to.equal("d_d_init", "dElemId propD should be unchanged after pull #1");
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01", "Schema must be v01 after pull #1");
@@ -3940,16 +3941,16 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // cElemId: propA from pull #1 unchanged; no further far change this round
-    const cAfter2 = t.getElement(t.local, cElemId);
+    const cAfter2 = t.getElementProps(t.local, cElemId);
     chai.expect(cAfter2.propA).to.equal("c_a_far_r1", "cElemId propA should remain from pull #1 after pull #2");
     chai.expect(cAfter2.propC).to.equal("c_c_init", "cElemId propC should be unchanged after pull #2");
     // localElem: propA update must survive
-    const localAfter2 = t.getElement(t.local, localElemId);
+    const localAfter2 = t.getElementProps(t.local, localElemId);
     chai.expect(localAfter2.propA).to.equal("local_a_r2", "localElem propA update should survive pull #2 rebase");
     chai.expect(localAfter2.propC).to.equal("local_c_r1", "localElem propC should be unchanged after pull #2 rebase");
     chai.expect(localAfter2.id).to.equal(localElemId, "localElemId ECInstanceId must be stable after pull #2");
     // dElemId: far's propA update applied
-    const dAfter2 = t.getElement(t.local, dElemId);
+    const dAfter2 = t.getElementProps(t.local, dElemId);
     chai.expect(dAfter2.propA).to.equal("d_a_far_r2", "dElemId propA should be updated by far after pull #2");
     chai.expect(dAfter2.propD).to.equal("d_d_init", "dElemId propD should be unchanged after pull #2");
     chai.expect(dAfter2.id).to.equal(dElemId, "dElemId ECInstanceId must be stable after pull #2");
@@ -3997,20 +3998,20 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // c1: far's propA update applied; propC unchanged
-    const c1After1 = t.getElement(t.local, c1Id);
+    const c1After1 = t.getElementProps(t.local, c1Id);
     chai.expect(c1After1.propA).to.equal("c1_a_r1", "c1 propA should be updated by far after pull #1");
     chai.expect(c1After1.propC).to.equal("c1_c_init", "c1 propC should be unchanged after pull #1");
     // c2: unchanged
-    const c2After1 = t.getElement(t.local, c2Id);
+    const c2After1 = t.getElementProps(t.local, c2Id);
     chai.expect(c2After1.propA).to.equal("c2_a_init", "c2 propA should be unchanged after pull #1");
     chai.expect(c2After1.propC).to.equal("c2_c_init", "c2 propC should be unchanged after pull #1");
     // r1Elem: insert preserved with same ECInstanceId
-    const r1After1 = t.getElement(t.local, r1ElemId);
+    const r1After1 = t.getElementProps(t.local, r1ElemId);
     chai.expect(r1After1.propA).to.equal("r1_a", "r1Elem propA should be preserved after pull #1 rebase");
     chai.expect(r1After1.propC).to.equal("r1_c", "r1Elem propC should be preserved after pull #1 rebase");
     chai.expect(r1After1.id).to.equal(r1ElemId, "r1ElemId ECInstanceId must be stable after pull #1");
     // d1: unchanged
-    const d1After1 = t.getElement(t.local, d1Id);
+    const d1After1 = t.getElementProps(t.local, d1Id);
     chai.expect(d1After1.propA).to.equal("d1_a_init", "d1 propA should be unchanged after pull #1");
     chai.expect(d1After1.propD).to.equal("d1_d_init", "d1 propD should be unchanged after pull #1");
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01", "Schema v01 after pull #1");
@@ -4033,19 +4034,19 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // c1: propA from pull #1; unchanged this round
-    const c1After2 = t.getElement(t.local, c1Id);
+    const c1After2 = t.getElementProps(t.local, c1Id);
     chai.expect(c1After2.propA).to.equal("c1_a_r1", "c1 propA should remain from pull #1 after pull #2");
     chai.expect(c1After2.propC).to.equal("c1_c_init", "c1 propC should be unchanged after pull #2");
     // c2: unchanged
-    const c2After2 = t.getElement(t.local, c2Id);
+    const c2After2 = t.getElementProps(t.local, c2Id);
     chai.expect(c2After2.propA).to.equal("c2_a_init", "c2 propA should be unchanged after pull #2");
     // r1Elem: propA update must survive rebase
-    const r1After2 = t.getElement(t.local, r1ElemId);
+    const r1After2 = t.getElementProps(t.local, r1ElemId);
     chai.expect(r1After2.propA).to.equal("r1_a_updated", "r1Elem propA update should survive pull #2 rebase");
     chai.expect(r1After2.propC).to.equal("r1_c", "r1Elem propC should be unchanged after pull #2 rebase");
     chai.expect(r1After2.id).to.equal(r1ElemId, "r1ElemId ECInstanceId must be stable after pull #2");
     // d1: far's propA update applied
-    const d1After2 = t.getElement(t.local, d1Id);
+    const d1After2 = t.getElementProps(t.local, d1Id);
     chai.expect(d1After2.propA).to.equal("d1_a_r2", "d1 propA should be updated by far after pull #2");
     chai.expect(d1After2.propD).to.equal("d1_d_init", "d1 propD should be unchanged after pull #2");
     chai.expect(d1After2.id).to.equal(d1Id, "d1Id ECInstanceId must be stable after pull #2");
@@ -4069,21 +4070,21 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // c1: propA from pull #1; PropC moved to A so query it as propC still accessible via A
-    const c1After3 = t.getElement(t.local, c1Id);
+    const c1After3 = t.getElementProps(t.local, c1Id);
     chai.expect(c1After3.propA).to.equal("c1_a_r1", "c1 propA should remain from pull #1 after pull #3");
     // c2: far's propA update from round 3
-    const c2After3 = t.getElement(t.local, c2Id);
+    const c2After3 = t.getElementProps(t.local, c2Id);
     chai.expect(c2After3.propA).to.equal("c2_a_r3", "c2 propA should be updated by far after pull #3");
     // r1Elem: propA update from round 2 must survive transforming rebase
-    const r1After3 = t.getElement(t.local, r1ElemId);
+    const r1After3 = t.getElementProps(t.local, r1ElemId);
     chai.expect(r1After3.propA).to.equal("r1_a_updated", "r1Elem propA update should survive transforming pull #3 rebase");
     chai.expect(r1After3.id).to.equal(r1ElemId, "r1ElemId ECInstanceId must be stable after pull #3");
     // d1: propA from round 2
-    const d1After3 = t.getElement(t.local, d1Id);
+    const d1After3 = t.getElementProps(t.local, d1Id);
     chai.expect(d1After3.propA).to.equal("d1_a_r2", "d1 propA should remain from pull #2 after pull #3");
     chai.expect(d1After3.id).to.equal(d1Id, "d1Id ECInstanceId must be stable after pull #3");
     // r3Elem: local insert preserved
-    const r3After3 = t.getElement(t.local, r3ElemId);
+    const r3After3 = t.getElementProps(t.local, r3ElemId);
     chai.expect(r3After3.propA).to.equal("r3_a", "r3Elem propA should be preserved after pull #3 rebase");
     chai.expect(r3After3.id).to.equal(r3ElemId, "r3ElemId ECInstanceId must be stable after pull #3");
 
@@ -4096,7 +4097,7 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
   //     ECSqlReader (ECInstanceId, className, domain props).
   // ──────────────────────────────────────────────────────────────────────────
 
-  it("R3: two pulls with insert/update/delete across rounds; element lifecycle verified [BUG]", async () => {
+  it("R3: two pulls with insert/update/delete across rounds; element lifecycle verified", async () => {
     t = await TestIModel.initialize("R3MultiPullInsertUpdateDelete");
     let farTxn = startTestTxn(t.far, "R3 far");
     let localTxn = startTestTxn(t.local, "R3 local");
@@ -4136,15 +4137,15 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
 
     // Pull #1: rebase insert-persistD + delete-ephemeral txns onto incoming schema v01 + sharedC update
     await pullChanges(localTxn);
-    chai.expect(() => t!.getElement(t!.local, ephemeralId)).to.throw(`Element=${ephemeralId.toString()}`, "Ephemeral element should be deleted after pull #1");
-    const elementProps = t.getElement(t.local, persistDId);
+    chai.expect(() => t!.getElementProps(t!.local, ephemeralId)).to.throw(`element not found`, "Ephemeral element should be deleted after pull #1");
+    const elementProps = t.getElementProps(t.local, persistDId);
     chai.expect(elementProps.propA).to.equal("pd_a_init", "Persistent D propA should be preserved after pull #1");
     chai.expect(elementProps.propD).to.equal("pd_d_init", "Persistent D propD should be preserved after pull #1");
-    const sharedCAfter1 = t.getElement(t.local, sharedC);
+    const sharedCAfter1 = t.getElementProps(t.local, sharedC);
     chai.expect(sharedCAfter1.propA).to.equal("sc_a_r1", "sharedC propA should be updated by far after pull #1");
     chai.expect(sharedCAfter1.propC).to.equal("sc_c_init", "sharedC propC should be unchanged after pull #1");
     chai.expect(sharedCAfter1.propC2).to.be.undefined;
-    const sharedDAfter1 = t.getElement(t.local, sharedD);
+    const sharedDAfter1 = t.getElementProps(t.local, sharedD);
     chai.expect(sharedDAfter1.propA).to.equal("sd_a_init", "sharedD propA should be unchanged after pull #1");
     chai.expect(sharedDAfter1.propD).to.equal("sd_d_init", "sharedD propD should be unchanged after pull #1");
   });
@@ -4155,7 +4156,7 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
   //     Complete ECSql verification of all elements after all three pulls.
   // ──────────────────────────────────────────────────────────────────────────
 
-  it("R4: three pulls without push; local accumulates txns; all elements verified after each [BUG]", async () => {
+  it("R4: three pulls without push; local accumulates txns; all elements verified after each", async () => {
     t = await TestIModel.initialize("R4ThreePullsNoPush");
     let farTxn = startTestTxn(t.far, "R4 far");
     let localTxn = startTestTxn(t.local, "R4 local");
@@ -4193,20 +4194,20 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // baseC1: local propA update preserved
-    const bc1After1 = t.getElement(t.local, baseC1);
+    const bc1After1 = t.getElementProps(t.local, baseC1);
     chai.expect(bc1After1.propA).to.equal("bc1_a_loc_r1", "baseC1 propA update should survive pull #1 rebase");
     chai.expect(bc1After1.propC).to.equal("bc1_c", "baseC1 propC should be unchanged after pull #1");
     // baseC2: unchanged
-    const bc2After1 = t.getElement(t.local, baseC2);
+    const bc2After1 = t.getElementProps(t.local, baseC2);
     chai.expect(bc2After1.propA).to.equal("bc2_a", "baseC2 propA should be unchanged after pull #1");
     chai.expect(bc2After1.propC).to.equal("bc2_c", "baseC2 propC should be unchanged after pull #1");
     // localC1: insert preserved with same ECInstanceId
-    const lc1After1 = t.getElement(t.local, localC1);
+    const lc1After1 = t.getElementProps(t.local, localC1);
     chai.expect(lc1After1.propA).to.equal("lc1_a_r1", "localC1 propA should be preserved after pull #1 rebase");
     chai.expect(lc1After1.propC).to.equal("lc1_c_r1", "localC1 propC should be preserved after pull #1 rebase");
     chai.expect(lc1After1.id).to.equal(localC1, "localC1 ECInstanceId must be stable after pull #1");
     // baseD1: unchanged
-    const bd1After1 = t.getElement(t.local, baseD1);
+    const bd1After1 = t.getElementProps(t.local, baseD1);
     chai.expect(bd1After1.propA).to.equal("bd1_a", "baseD1 propA should be unchanged after pull #1");
     chai.expect(bd1After1.propD).to.equal("bd1_d", "baseD1 propD should be unchanged after pull #1");
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01", "Schema v01 after pull #1");
@@ -4234,19 +4235,19 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     t.local.clearCaches({ instanceCachesOnly: true });
 
     // baseC1: propA from round 1 unchanged
-    const bc1After2 = t.getElement(t.local, baseC1);
+    const bc1After2 = t.getElementProps(t.local, baseC1);
     chai.expect(bc1After2.propA).to.equal("bc1_a_loc_r1", "baseC1 propA should remain from round 1 after pull #2");
     chai.expect(bc1After2.propC).to.equal("bc1_c", "baseC1 propC should be unchanged after pull #2");
     // localC1: propA update must survive
-    const lc1After2 = t.getElement(t.local, localC1);
+    const lc1After2 = t.getElementProps(t.local, localC1);
     chai.expect(lc1After2.propA).to.equal("lc1_a_r2_upd", "localC1 propA update should survive pull #2 rebase");
     chai.expect(lc1After2.propC).to.equal("lc1_c_r1", "localC1 propC should be unchanged after pull #2 rebase");
     chai.expect(lc1After2.id).to.equal(localC1, "localC1 ECInstanceId must be stable after pull #2");
     // baseD1: far's propA update applied
-    const bd1After2 = t.getElement(t.local, baseD1);
+    const bd1After2 = t.getElementProps(t.local, baseD1);
     chai.expect(bd1After2.propA).to.equal("bd1_a_r2", "baseD1 propA should be updated by far after pull #2");
     // localD1: insert preserved
-    const ld1After2 = t.getElement(t.local, localD1);
+    const ld1After2 = t.getElementProps(t.local, localD1);
     chai.expect(ld1After2.propA).to.equal("ld1_a_r2", "localD1 propA should be preserved after pull #2 rebase");
     chai.expect(ld1After2.propD).to.equal("ld1_d_r2", "localD1 propD should be preserved after pull #2 rebase");
     chai.expect(ld1After2.id).to.equal(localD1, "localD1 ECInstanceId must be stable after pull #2");
@@ -4277,22 +4278,22 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     await pullChanges(localTxn);
 
     // baseC1: propA from round 1 unchanged
-    const bc1After3 = t.getElement(t.local, baseC1);
+    const bc1After3 = t.getElementProps(t.local, baseC1);
     chai.expect(bc1After3.propA).to.equal("bc1_a_loc_r1", "baseC1 propA should remain from round 1 after pull #3");
     chai.expect(bc1After3.propC).to.equal("bc1_c", "baseC1 propC should be unchanged after pull #3");
 
     // baseC2: propA updated by far in round 3; PropC moved to A but still accessible via propC query
-    const bc2After3 = t.getElement(t.local, baseC2);
+    const bc2After3 = t.getElementProps(t.local, baseC2);
     chai.expect(bc2After3.propA).to.equal("bc2_a_r3", "baseC2 propA should be changed after pull #3");
     chai.expect(bc2After3.propC).to.equal("bc2_c", "baseC2 propC should be unchanged after pull #3");
 
     // localC1: must be deleted
-    chai.expect(() => t!.getElement(t!.local, localC1)).to.throw(`Element=${localC1.toString()}`, "localC1 should be deleted after pull #3");
+    chai.expect(() => t!.getElementProps(t!.local, localC1)).to.throw(`element not found`, "localC1 should be deleted after pull #3");
     // baseD1: far's propA update applied
-    const bd1After3 = t.getElement(t.local, baseD1);
+    const bd1After3 = t.getElementProps(t.local, baseD1);
     chai.expect(bd1After3.propA).to.equal("bd1_a_r2", "baseD1 propA should be updated by far after pull #3");
     // localD1: insert preserved
-    const ld1After3 = t.getElement(t.local, localD1);
+    const ld1After3 = t.getElementProps(t.local, localD1);
     chai.expect(ld1After3.propA).to.equal("ld1_a_r2", "localD1 propA should be preserved after pull #3 rebase");
     chai.expect(ld1After3.propD).to.equal("ld1_d_r2", "localD1 propD should be preserved after pull #3 rebase");
     chai.expect(ld1After2.id).to.equal(localD1, "localD1 ECInstanceId must be stable after pull #3");
@@ -4330,7 +4331,7 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     await pullChanges(localTxn);
     t.local.clearCaches({ instanceCachesOnly: true });
 
-    const elementAfterSecondPull = t.getElement(t.local, cElemId);
+    const elementAfterSecondPull = t.getElementProps(t.local, cElemId);
 
     chai.expect(elementAfterSecondPull).to.not.be.undefined;
     chai.expect(elementAfterSecondPull!.propC).to.equal("c_c_local", "Local update to cElemId.propC should survive first pull's rebase");
@@ -4344,7 +4345,7 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
     await pullChanges(localTxn);
     t.local.clearCaches({ instanceCachesOnly: true });
 
-    const elementAfterThirdPull = t.getElement(t.local, cElemId);
+    const elementAfterThirdPull = t.getElementProps(t.local, cElemId);
     chai.expect(elementAfterThirdPull).to.not.be.undefined;
     chai.expect(elementAfterThirdPull!.propC).to.equal("c_c_local", "Local update to cElemId.propC should survive second pull's rebase");
     chai.expect(elementAfterThirdPull!.propA).to.equal("c_a_init", "Far's update to cElemId.propA should be applied after second pull");
