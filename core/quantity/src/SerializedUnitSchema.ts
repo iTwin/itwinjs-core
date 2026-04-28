@@ -24,7 +24,7 @@
  *
  * @internal
  */
-export const SERIALIZED_UNIT_SCHEMA_VERSION = "1.0.0";
+export const SERIALIZED_UNIT_SCHEMA_VERSION = "01.00.00";
 
 /** A serialized constant definition (e.g. `PI`, `MILLI`).
  * @internal

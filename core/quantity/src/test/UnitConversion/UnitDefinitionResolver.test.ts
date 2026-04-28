@@ -14,8 +14,11 @@ describe("UnitDefinitionResolver", () => {
   const resolver = new UnitDefinitionResolver(unitsSchema);
   const resolved = resolver.resolveAll();
 
-  it("resolves all 492 units", () => {
-    expect(resolved.size).toBe(492);
+  // BIS Units schema v01.00.09 — update this constant when sourceEcSchemaVersion in Units.json changes
+  const EXPECTED_UNIT_COUNT = 492;
+
+  it(`resolves all ${EXPECTED_UNIT_COUNT} units`, () => {
+    expect(resolved.size).toBe(EXPECTED_UNIT_COUNT);
   });
 
   it("base unit M resolves to identity", () => {

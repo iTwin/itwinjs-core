@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import type { SerializedConstant, SerializedUnit, SerializedUnitSchema } from "../SerializedUnitSchema";
+import { SERIALIZED_UNIT_SCHEMA_VERSION } from "../SerializedUnitSchema";
 import { UnitConversion } from "./UnitConversion";
 import { parseDefinition } from "./Parser";
 import { stripAliasPrefix } from "./nameUtils";
@@ -28,6 +29,8 @@ export class UnitDefinitionResolver {
   private readonly _cache = new Map<string, UnitConversion>();
 
   constructor(schema: SerializedUnitSchema) {
+    if (schema.version !== SERIALIZED_UNIT_SCHEMA_VERSION)
+      throw new Error(`Unsupported Units.json version "${schema.version}". Expected "${SERIALIZED_UNIT_SCHEMA_VERSION}".`);
     this._schema = schema;
   }
 
