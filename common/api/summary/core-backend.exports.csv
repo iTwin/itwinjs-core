@@ -29,6 +29,9 @@ public;interface;BriefcaseDbArg
 public;interface;BriefcaseIdArg
 internal;enum;BriefcaseLocalValue
 public;class;BriefcaseManager
+beta;interface;BulkDeleteElementsArgs
+beta;interface;BulkDeleteElementsResult
+beta;enum;BulkDeleteElementsStatus
 public;class;Callout
 beta;interface;CatalogDb
 beta;namespace;CatalogDb
@@ -433,6 +436,12 @@ public;interface;NativeHostOpts
 beta;interface;OnAspectArg
 beta;interface;OnAspectIdArg
 beta;interface;OnAspectPropsArg
+beta;interface;OnBulkChildDeleteArg
+beta;interface;OnBulkChildDeletedBatchArg
+beta;interface;OnBulkDeleteArg
+beta;interface;OnBulkDeletedBatchArg
+beta;interface;OnBulkDeletedElementsArg
+beta;interface;OnBulkModelEventsArg
 beta;interface;OnChildElementArg
 beta;interface;OnChildElementIdArg
 beta;interface;OnChildElementPropsArg
