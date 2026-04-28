@@ -547,7 +547,7 @@ class TestIModel {
     chai.expect(aspects.length).to.be.greaterThan(0, "Expected at least one aspect to update");
     const aspect = aspects[0];
     Object.assign(aspect, updates);
-    txn.updateAspect(aspect.toJSON() as ElementAspectProps);
+    txn.updateAspect(aspect.toJSON());
   }
 
   /**
@@ -1967,12 +1967,12 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     // If patches are applied out of order the update will hit NotFound (element not yet inserted)
     // or the delete will resurrect a value that the update produced.
     t = await TestIModel.initialize("F5InsertUpdateDeleteChain");
-    let localTxn = startTestTxn(t.local, "F5 local");
+    const localTxn = startTestTxn(t.local, "F5 local");
     const farTxn = startTestTxn(t.far, "F5 far");
 
     // Far pushes a data change to create an incoming changeset
     await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    const farElemId = t.insertElement(farTxn, "TestDomain:C", { propA: "far_a", propC: "far_c" });
+    t.insertElement(farTxn, "TestDomain:C", { propA: "far_a", propC: "far_c" });
     farTxn.saveChanges("far insert element");
     await pushChanges(farTxn, "far create element");
 
@@ -2001,7 +2001,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     // ECClassId / $meta.classFullName / $meta.fallbackClassId) for multiple BIS subclasses.
     // If class resolution is wrong, insertInstance will fail or create elements under the wrong class.
     t = await TestIModel.initialize("F6ThreeClassInserts");
-    let localTxn = startTestTxn(t.local, "F6 local");
+    const localTxn = startTestTxn(t.local, "F6 local");
     const farTxn = startTestTxn(t.far, "F6 far");
 
     // Far pushes an incoming data change
@@ -3068,8 +3068,8 @@ describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite
 
   it("N1: far adds new class E to schema; local creates instances of existing class A + pulls → both visible", async () => {
     t = await TestIModel.initialize("N1FarAddsNewClassLocalCreatesData");
-    let farTxn = startTestTxn(t.far, "N1 far");
-    let localTxn = startTestTxn(t.local, "N1 local");
+    const farTxn = startTestTxn(t.far, "N1 far");
+    const localTxn = startTestTxn(t.local, "N1 local");
 
     // Far imports schema with new class E, creates an element of class E, pushes
     await importSchemaStrings(farTxn, [TestIModel.extendedSchemas.v01x00x01AddClassE]);
@@ -3223,8 +3223,8 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
 
   it("P1: importing schema during active rebase (via onRebaseTxnBegin hook) throws 'Cannot import schemas while rebasing'", async () => {
     t = await TestIModel.initialize("P1ImportSchemaWhileRebasing");
-    let farTxn = startTestTxn(t.far, "P1 far");
-    let localTxn = startTestTxn(t.local, "P1 local");
+    const farTxn = startTestTxn(t.far, "P1 far");
+    const localTxn = startTestTxn(t.local, "P1 local");
 
     // Far imports schema and pushes (triggers semantic rebase path on local)
     await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
@@ -3264,7 +3264,7 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
 
     // Create shared element, push
     await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
+    t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
     farTxn.saveChanges("create element");
     await pushChanges(farTxn, "create element");
     farTxn = startTestTxn(t.far, "P3 far 2");
@@ -3369,8 +3369,8 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
     // Incoming: transforming schema change.
     // Expected: element remains deleted (all three local txns reinstated correctly).
     t = await TestIModel.initialize("O1InsertUpdateDeleteSequence");
-    let farTxn = startTestTxn(t.far, "O1 far");
-    let localTxn = startTestTxn(t.local, "O1 local");
+    const farTxn = startTestTxn(t.far, "O1 far");
+    const localTxn = startTestTxn(t.local, "O1 local");
 
     // Far imports transforming schema and pushes
     await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
@@ -3403,8 +3403,8 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
 
   it("O2: local insert + delete of one element, plus insert + update of another → incoming schema → both correct", async () => {
     t = await TestIModel.initialize("O2InsertDeleteInsertUpdate");
-    let farTxn = startTestTxn(t.far, "O2 far");
-    let localTxn = startTestTxn(t.local, "O2 local");
+    const farTxn = startTestTxn(t.far, "O2 far");
+    const localTxn = startTestTxn(t.local, "O2 local");
 
     // Far imports trivial schema, pushes
     await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);

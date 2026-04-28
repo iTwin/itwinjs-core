@@ -11,7 +11,7 @@
 import * as path from "node:path";
 import * as os from "node:os";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
+  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -28,40 +28,9 @@ import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
-import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
-import { ECSqlRow } from "./Entity";
-import { SqliteChangesetReader } from "./SqliteChangesetReader";
 import { ChangeInstance } from "./ChangesetReaderTypes";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
-
-/**
- * The argument for identifying an Patch Instance Key
- * @internal
- */
-interface PatchInstanceKey {
-  id: Id64String;
-  classFullName: string;
-}
-
-/**
- * Wrapper around ChangedECInstance to indicate if the change was indirect or direct
- * @internal
- */
-interface ChangedInstanceForSemanticRebase {
-  isIndirect: boolean;
-  instance: ChangedECInstance; // eslint-disable-line @typescript-eslint/no-deprecated
-}
-
-/** The argument for patch instances during high level rebase application
- * @internal
-*/
-export interface InstancePatch {
-  key: PatchInstanceKey;
-  op: "Inserted" | "Updated" | "Deleted";
-  isIndirect: boolean;
-  props?: ECSqlRow
-}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
@@ -892,9 +861,9 @@ export class BriefcaseManager {
 
   /**
    * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure
-   * @param db The [[BriefcaseDb]] instance for storing the changed instances against a txn
+   * @param db The [BriefcaseDb]($backend) instance for storing the changed instances against a txn
    * @param txnId The txn id for which we are storing the changed instances
-   * @param instancePatches The [[ChangeInstance]] instance patches to be stored
+   * @param instancePatches The [ChangeInstance]($backend) instance patches to be stored
    * @internal
    */
   public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void {
@@ -928,7 +897,7 @@ export class BriefcaseManager {
 
   /**
    * Stores schemas for semantic rebase locally in appropriate folder structure
-   * @param db The {@link BriefcaseDb} instance for storing the schemas against a txn
+   * @param db The [BriefcaseDb]($backend) instance for storing the schemas against a txn
    * @param txnId The txn id for which we are storing the schemas
    * @param schemaFileNames The schema file paths or schema xml strings to be stored
    * @internal
@@ -959,7 +928,7 @@ export class BriefcaseManager {
 
   /**
    * Gets schemas for semantic rebase for a txn
-   * @param db The {@link BriefcaseDb} instance for getting the locally stored schemas against a txn
+   * @param db The [BriefcaseDb]($backend) instance for getting the locally stored schemas against a txn
    * @param txnId The txn id for which we are getting the schemas
    * @returns the schema file paths
    * @internal
@@ -972,7 +941,7 @@ export class BriefcaseManager {
 
   /**
    * Get the changed instances data for semantic rebase for a txn
-   * @param db - The {@link BriefcaseDb} instance for getting the locally stored changed instances against a txn
+   * @param db - The [BriefcaseDb]($backend) instance for getting the locally stored changed instances against a txn
    * @param txnId - The txn id for which we are getting the changed instances
    * @returns Instance patches
    * @internal
@@ -990,7 +959,7 @@ export class BriefcaseManager {
 
   /**
    * Checks if schema folder exists for semantic rebase for a txn
-   * @param db - The {@link BriefcaseDb} instance for which TO check the schema folder
+   * @param db - The [BriefcaseDb]($backend) instance for which TO check the schema folder
    * @param txnId - The txn id for which we are check the schema folder
    * @returns true if exists, false otherwise
    * @internal
@@ -1003,7 +972,7 @@ export class BriefcaseManager {
 
   /**
    * Checks if data folder exists for semantic rebase for a txn
-   * @param db The {@link BriefcaseDb} instance for which to check the data folder.
+   * @param db The [BriefcaseDb]($backend) instance for which to check the data folder.
    * @param txnId The txn id for which to check the data folder
    * @returns true if exists, false otherwise
    * @internal
@@ -1016,7 +985,7 @@ export class BriefcaseManager {
 
   /**
    * Deletes the schema folder for semantic rebase for a txn
-   * @param db The {@link BriefcaseDb} instance for which to delete the schema folder.
+   * @param db The [BriefcaseDb]($backend) instance for which to delete the schema folder.
    * @param txnId The txn id for which to delete the schema folder
    * @internal
    */
@@ -1035,7 +1004,7 @@ export class BriefcaseManager {
 
   /**
   * Deletes the data folder for semantic rebase for a txn
-  * @param db The {@link BriefcaseDb} instance for which to delete the data folder.
+  * @param db The [BriefcaseDb]($backend) instance for which to delete the data folder.
   * @param txnId The txn id for which to delete the data folder
   * @internal
   */
@@ -1054,7 +1023,7 @@ export class BriefcaseManager {
 
   /**
    * Deletes rebase folders for semantic rebase
-   * @param db The {@link BriefcaseDb} instance for which to delete the rebase folders.
+   * @param db The [BriefcaseDb]($backend) instance for which to delete the rebase folders.
    * @param checkIfEmpty If true, only deletes the base folder if it is empty, default is false
    * @internal
    */

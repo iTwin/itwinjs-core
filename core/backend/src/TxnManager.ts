@@ -19,7 +19,7 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
-import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesetReader } from "./ChangesetReader";
 import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
