@@ -1310,7 +1310,13 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    return this._unitsProvider.getConversion(fromUnit, toUnit);
+    const result = await this._unitsProvider.getConversion(fromUnit, toUnit);
+    if (result.error)
+      Logger.logWarning(
+        `${FrontendLoggerCategory.Package}.quantityFormatter`,
+        `Unit conversion from "${fromUnit.name}" to "${toUnit.name}" could not be resolved.`,
+      );
+    return result;
   }
 
   /**
