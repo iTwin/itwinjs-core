@@ -276,7 +276,8 @@ export class EditTxn {
   /**
    * Delete multiple elements from the iModel.
    * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
-   * @returns A set of ids for any elements that could not be deleted.
+   * @param deleteOptions Options for the delete operation.
+   * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
    * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
    * @beta
    */

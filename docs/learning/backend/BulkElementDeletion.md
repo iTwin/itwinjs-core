@@ -77,13 +77,13 @@ An element is a _constraint violator_ and will **not** be deleted (neither will 
 | A `GeometricElement3d` or `GeometricElement2d` outside the set uses this element as its **Category** | The category element (and its subtree root) |
 | A `DefinitionElement` outside the set has a tracked **usage** reference to this element (e.g. a geometry part in a geometry stream) | The definition element (and its subtree root) |
 
-All constraint violators, together with their entire subtrees (descendants and sub-model contents), are removed from the delete set and are returned in the failed `Id64Set`.
+All constraint violators, together with their entire subtrees (descendants and sub-model contents), are removed from the delete set and are reported in the returned `BulkDeleteElementsResult` via `result.failedIds`.
 
-> Such blocking contraints are of the `On Delete No Action` Foreign key constraints. Such constraints need to be handled explicitly if one or more elements in the delete set are referenced by elements outside the set.
+> Such blocking constraints are of the `On Delete No Action` Foreign key constraints. Such constraints need to be handled explicitly if one or more elements in the delete set are referenced by elements outside the set.
 
 ### Other constraint references
 
-The other constraints such as `On Delete Cascade` and `On Delete Set NULL` are clearly defined and are hence handled by the api internally. `deleteElements` patches these automatically before removing the elements. For example,
+The other constraints such as `On Delete Cascade` and `On Delete Set NULL` are clearly defined and are hence handled by the API internally. `deleteElements` patches these automatically before removing the elements. For example,
 
 - **`bis_ElementUniqueAspect`** entries are deleted from the database before the element it references.
 - **`TypeDefinitionId`** on `GeometricElement3d` and `GeometricElement2d` rows - set to `NULL` when the referenced type element is being deleted and the geometric element itself is **not** in the delete set.

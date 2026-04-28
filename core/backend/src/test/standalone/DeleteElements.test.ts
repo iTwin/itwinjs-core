@@ -1,11 +1,10 @@
 import { assert } from "chai";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsResult, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
+import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
-import { BulkDeleteElementsStatus } from "@bentley/imodeljs-native";
 
 describe("deleteElements (native bulk delete API)", () => {
   let seedDb: SnapshotDb;

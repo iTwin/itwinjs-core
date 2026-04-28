@@ -351,7 +351,7 @@ export class Element extends Entity {
     }
   }
 
-  /** Called after a batch of child Elements of this class's instances were deleted in a bulkdelete operation.
+  /** Called after a batch of child Elements of this class's instances were deleted in a bulk delete operation.
    *
    * The default implementation calls [[onChildDelete]] and [[onChildDeleted]] for every entry in the batch.
    *
