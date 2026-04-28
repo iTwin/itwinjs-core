@@ -54,6 +54,57 @@ export interface OnElementIdArg extends OnElementArg {
   federationGuid: GuidString;
 }
 
+/**
+ * Per-element argument supplied to the [[Element.onBulkDeleted]] static method.
+ * @beta
+ */
+export interface OnBulkDeleteArg {
+  /** The Id of the element that was deleted. */
+  id: Id64String;
+  /** The ModelId of the element that was deleted. */
+  model: Id64String;
+  /** The federationGuid of the element that was deleted. Absent when the element had no federation GUID. */
+  federationGuid?: GuidString;
+  /** The Id of the sub-model that was deleted along with this element. Present only when this
+   * element was a sub-model root (i.e. modeled by a [[Model]] that is also being deleted).
+   * When set, [[Element.onSubModelDelete]] and [[Element.onSubModelDeleted]] are called for this entry. */
+  subModelId?: Id64String;
+}
+
+/**
+ * Batch argument for the [[Element.onBulkDeleted]] static method.
+ * @beta
+ */
+export interface OnBulkDeletedBatchArg {
+  /** The iModelDb on which the bulk delete is being performed. */
+  iModel: IModelDb;
+  /** The elements that were deleted. */
+  elements: OnBulkDeleteArg[];
+}
+
+/**
+ * Per-element argument supplied to the [[Element.onBulkChildDeleted]] static method.
+ * Supplied once per deleted child whose parent element was *not* itself deleted in the same operation.
+ * @beta
+ */
+export interface OnBulkChildDeleteArg {
+  /** The Id of the parent element whose child was deleted. */
+  parentId: Id64String;
+  /** The Id of the child element that was deleted. */
+  childId: Id64String;
+}
+
+/**
+ * Batch argument for the [[Element.onBulkChildDeleted]] static method.
+ * @beta
+ */
+export interface OnBulkChildDeletedBatchArg {
+  /** The iModelDb on which the bulk delete is being performed. */
+  iModel: IModelDb;
+  /** The deleted child elements whose parent ECClass matches this class, grouped in this batch. */
+  elements: OnBulkChildDeleteArg[];
+}
+
 /** Argument for the `Element.onChildXxx` static methods
  * @beta
  */
@@ -274,6 +325,45 @@ export class Element extends Entity {
   protected static onDeleted(arg: OnElementIdArg): void {
     arg.iModel.elements[_cache].delete(arg);
     arg.iModel.models[_cache].delete(arg.model);
+  }
+
+  /** Called after a batch of Elements of this class were deleted in a bulk delete operation.
+   *
+   * The default implementation fires all JS notifications that would normally be fired
+   * per-element in the single-element delete path:
+   * 1. **[[onDeleted]]** — for every element; preserves any user overrides.
+   * 2. **[[onSubModelDelete]] + [[onSubModelDeleted]]** — for sub-model root elements
+   *    (`subModelId` is set), matching the order of the single-element path.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Elements that were deleted.
+   * @beta
+   */
+  protected static onBulkDeleted(arg: OnBulkDeletedBatchArg): void {
+    for (const el of arg.elements) {
+      this.onDelete({ iModel: arg.iModel, id: el.id, model: el.model, federationGuid: el.federationGuid ?? "" });
+      this.onDeleted({ iModel: arg.iModel, id: el.id, model: el.model, federationGuid: el.federationGuid ?? "" });
+
+      if (el.subModelId !== undefined) {
+        this.onSubModelDelete({ iModel: arg.iModel, subModelId: el.subModelId });
+        this.onSubModelDeleted({ iModel: arg.iModel, subModelId: el.subModelId });
+      }
+    }
+  }
+
+  /** Called after a batch of child Elements of this class's instances were deleted in a bulk delete operation.
+   *
+   * The default implementation calls [[onChildDelete]] and [[onChildDeleted]] for every entry in the batch.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the *parent* Element whose children were deleted.
+   * @beta
+   */
+  protected static onBulkChildDeleted(arg: OnBulkChildDeletedBatchArg): void {
+    for (const el of arg.elements) {
+      this.onChildDelete({ iModel: arg.iModel, parentId: el.parentId, childId: el.childId });
+      this.onChildDeleted({ iModel: arg.iModel, parentId: el.parentId, childId: el.childId });
+    }
   }
 
   /** Called when an element with an instance of this class as its parent is about to be deleted.
