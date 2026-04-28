@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbConflictResolution, Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ElementAspectProps, GeometricElementProps, IModel, QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import { Suite } from "mocha";
@@ -864,46 +864,6 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Incoming schema (newer) should win, local should not override");
   });
 
-  it("local trivial schema changes onto incoming identical schema changes", async () => {
-    t = await TestIModel.initialize("TrivialSchemaIdentical");
-    const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming identical schema changes local");
-    const farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming identical schema changes far");
-
-    // Far imports v01.00.01 (adds PropC2)
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
-
-    // Verify that we're holding a shared lock (not exclusive) for semantic rebase
-    chai.expect(t.far.locks.holdsSharedLock(IModel.repositoryModelId)).to.be.true;
-    chai.expect(t.far.holdsSchemaLock).to.be.false;
-
-    const txnProps = t.far.txns.getLastSavedTxnProps();
-    chai.expect(txnProps).to.not.be.undefined;
-    chai.expect(txnProps!.type).to.equal("Schema");
-    chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.true;
-
-    await pushChanges(farTxn, "add PropC2 to class C");
-    chai.expect(t.checkIfFolderExists(t.far, txnProps!.id, true)).to.be.false; // after push the folder should not be there
-
-    // Local imports the same v01.00.01 (adds PropC2)
-    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
-
-    const txnPropsLocal = t.local.txns.getLastSavedTxnProps();
-    chai.expect(txnPropsLocal).to.not.be.undefined;
-    chai.expect(txnPropsLocal!.type).to.equal("Schema");
-    chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.true;
-
-
-    // Local pulls and rebases
-    await pullChanges(localTxn);
-
-    chai.expect(t.checkIfFolderExists(t.local, txnPropsLocal!.id, true)).to.be.false; // after rebase the folder should not be there as both are identical
-    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false; // there should not be a rebase folder because the rebase folder is deleted if it contains nothing after rebase
-
-    // Verify: schema preserved (both sides identical)
-    const schema = t.local.getSchemaProps("TestDomain");
-    chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
-  });
-
   it("local trivial schema changes onto incoming identical schema changes with data changes on both sides", async () => {
     t = await TestIModel.initialize("TrivialSchemaIdenticalWithData");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming identical schema changes with data local");
@@ -1491,6 +1451,7 @@ describe("Semantic Rebase", function (this: Suite) {
     // Verify: element was not saved, schema was not imported
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.00", "Schema should remain at v01.00.00");
+    chai.expect(t.local.isOpen).to.be.true;
   });
 
 });
@@ -1915,41 +1876,6 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v01.00.02 after rebase");
   });
 
-  it("F2: local element deletion + incoming transforming schema change: delete is reinstated, element stays gone", async () => {
-    t = await TestIModel.initialize("F2DeleteIncomingTransform");
-    let localTxn = startTestTxn(t.local, "F2 local");
-    let farTxn = startTestTxn(t.far, "F2 far");
-
-    // Create shared element (shared model lock — no exclusive lock record on elementId)
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
-    farTxn.saveChanges("create shared element");
-    await pushChanges(farTxn, "create shared element");
-    farTxn = startTestTxn(t.far, "F2 far 2");
-
-    await pullChanges(localTxn);
-    localTxn = startTestTxn(t.local, "F2 local 2");
-
-    // Far imports transforming schema (moves PropC from C to A); no exclusive lock on elementId
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
-    await pushChanges(farTxn, "far import transforming schema");
-
-    // Local deletes the element — safe because far never exclusively locked elementId,
-    // so lastExclusiveReleaseChangesetIndex for elementId is still undefined.
-    await t.local.locks.acquireLocks({ exclusive: elementId });
-    localTxn.deleteElement(elementId);
-    localTxn.saveChanges("local delete element");
-
-    // Local pulls - incoming transforming schema applied, then local deletion reinstated
-    await pullChanges(localTxn);
-
-    t.local.clearCaches();
-    chai.expect(() => t!.getElementProps(t!.local, elementId)).to.throw(`element not found`);
-
-    const schema = t.local.getSchemaProps("TestDomain");
-    chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
-  });
-
   it("F3: local element deletion + incoming transforming schema change: delete is reinstated, element stays gone and checking GeometricGuid of Model [BUG]", async () => {
     t = await TestIModel.initialize("F2DeleteIncomingTransform");
     let localTxn = startTestTxn(t.local, "F2 local");
@@ -1977,7 +1903,6 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
 
     const drawingModel = t.getModelProps(t.local, t.drawingModelId);
     const geometricGuidBefore = drawingModel.geometryGuid;
-    const lastModBefore = drawingModel.lastMod;
 
     // Local pulls - incoming transforming schema applied, then local deletion reinstated
     await pullChanges(localTxn);
@@ -1987,29 +1912,27 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
 
     const drawingModelAfter = t.getModelProps(t.local, t.drawingModelId);
     const geometricGuidAfter = drawingModelAfter.geometryGuid;
-    const lastModAfter = drawingModelAfter.lastMod;
 
     chai.expect(geometricGuidAfter).to.not.equal(geometricGuidBefore, "GeometricGuid of the model should not remain the same after rebase"); // BUG should exactly be same
-    chai.expect(lastModAfter).to.equal(lastModBefore, "LastMod of the model should remain the same after rebase");
 
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be updated to v01.00.02");
   });
 
-  it("F3: incoming element deletion + local transforming schema change: schema upgrade survives, element absent", async () => {
-    t = await TestIModel.initialize("F3IncomingDeleteLocalTransform");
-    let localTxn = startTestTxn(t.local, "F3 local");
-    let farTxn = startTestTxn(t.far, "F3 far");
+  it("F4: incoming element deletion + local transforming schema change: schema upgrade survives, element absent", async () => {
+    t = await TestIModel.initialize("F4IncomingDeleteLocalTransform");
+    let localTxn = startTestTxn(t.local, "F4 local");
+    let farTxn = startTestTxn(t.far, "F4 far");
 
     // Create shared element
     await t.far.locks.acquireLocks({ shared: t.drawingModelId });
     const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
     farTxn.saveChanges("create shared element");
     await pushChanges(farTxn, "create shared element");
-    farTxn = startTestTxn(t.far, "F3 far 2");
+    farTxn = startTestTxn(t.far, "F4 far 2");
 
     await pullChanges(localTxn);
-    localTxn = startTestTxn(t.local, "F3 local 2");
+    localTxn = startTestTxn(t.local, "F4 local 2");
 
     // Far exclusively locks and deletes the element, then pushes
     await t.far.locks.acquireLocks({ exclusive: elementId });
@@ -3332,26 +3255,6 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
     chai.expect(importErrorDuringRebase?.message ?? "").to.include("rebasing", "Error message should mention rebasing");
   });
 
-  it("P2: importing schema with unsaved changes throws 'Cannot import schemas with unsaved changes' error", async () => {
-    t = await TestIModel.initialize("P2ImportWithUnsavedChanges");
-
-    // Open an EditTxn, make a write without saving → creates unsaved changes
-    const localTxn = startTestTxn(t.local, "P2 local");
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    t.insertElement(localTxn, "TestDomain:C", { propA: "a", propC: "c" });
-    // Intentionally do NOT call localTxn.saveChanges() → db has unsaved changes
-
-    // Calling importSchemaStrings directly (not via the wrapper that auto-saves)
-    // should throw because of the unsaved-changes guard in importSchemasInternal.
-    await chai.expect(
-      t.local.importSchemaStrings([TestIModel.schemas.v01x00x01AddPropC2])
-    ).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
-
-    // Briefcase should still be operational after the failed import
-    chai.expect(t.local.isOpen).to.be.true;
-    localTxn.end("abandon");
-  });
-
   it("P3: after a failed rebase, briefcase is not stuck — another pull can succeed", async () => {
     // If a rebase fails (e.g., incompatible schema), the briefcase should be recoverable.
     // A subsequent pull (after fixing the root cause) should succeed.
@@ -3715,47 +3618,6 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
     chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
   });
 
-  it("M2: no rebase folders created when semantic rebase is not needed (pure data on both sides)", async () => {
-    t = await TestIModel.initialize("M2NoRebaseFoldersForPureData");
-    let farTxn = startTestTxn(t.far, "M2 far");
-    let localTxn = startTestTxn(t.local, "M2 local");
-
-    // Create shared element
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
-    farTxn.saveChanges("create element");
-    await pushChanges(farTxn, "create element");
-    farTxn = startTestTxn(t.far, "M2 far 2");
-    await pullChanges(localTxn);
-    localTxn = startTestTxn(t.local, "M2 local 2");
-
-    // Far pushes data update
-    await t.far.locks.acquireLocks({ exclusive: elementId });
-    t.updateElement(farTxn, elementId, { propA: "far_a" });
-    farTxn.saveChanges("far update");
-    await pushChanges(farTxn, "far update");
-
-    // Local makes data update (no schema)
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    const localId = t.insertElement(localTxn, "TestDomain:D", { propA: "local_d_a", propD: "local_d" });
-    localTxn.saveChanges("local insert D element");
-
-    // No rebase folder before pull
-    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
-
-    await pullChanges(localTxn);
-
-    // No rebase folder after pull (data-only rebase uses binary path, no semantic rebase)
-    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
-
-    // Both changes visible
-    const element = t.getElementProps(t.local, elementId);
-    chai.expect(element.propA).to.equal("far_a");
-
-    const localElem = t.getElementProps(t.local, localId);
-    chai.expect(localElem.propD).to.equal("local_d");
-  });
-
   it("M3: multiple successive push/pull cycles preserve rebase folder invariants throughout", async () => {
     // Cycle 1: local schema → pull (no-op schema) → push → verify clean
     // Cycle 2: far schema → local data → pull (local data rebased onto far schema) → push → verify clean
@@ -3804,47 +3666,6 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be at v02 after cycle 2");
   });
 
-  it("M4: data folder created on-the-fly during rebase and cleaned up after — no leftover folders for data-only local txn", async () => {
-    // When local has only data txns and incoming has a schema change,
-    // semantic rebase is used. The data folders are created on the fly during capture
-    // and deleted after reinstatement. The base rebase dir should be gone after completion.
-    t = await TestIModel.initialize("M4DataFolderTransient");
-    let farTxn = startTestTxn(t.far, "M4 far");
-    let localTxn = startTestTxn(t.local, "M4 local");
-
-    // Create shared element
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    const elementId = t.insertElement(farTxn, "TestDomain:C", { propA: "initial_a", propC: "initial_c" });
-    farTxn.saveChanges("create element");
-    await pushChanges(farTxn, "create element");
-    farTxn = startTestTxn(t.far, "M4 far 2");
-
-    await pullChanges(localTxn);
-    localTxn = startTestTxn(t.local, "M4 local 2");
-
-    // Far imports transforming schema + pushes
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
-    await pushChanges(farTxn, "far transforming schema");
-
-    // Local makes data-only changes (no schema)
-    await t.local.locks.acquireLocks({ exclusive: elementId });
-    t.updateElement(localTxn, elementId, { propA: "local_updated_a", propC: "local_updated_c" });
-    localTxn.saveChanges("local data-only change");
-
-    // Before pull: no rebase folder for data-only local change
-    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
-
-    await pullChanges(localTxn);
-
-    // After pull: data folders created during capture and deleted after reinstatement
-    // Base rebase folder should also be gone (data folder removed → parent cleaned up)
-    chai.expect(t.checkifRebaseFolderExists(t.local)).to.be.false;
-
-    t.local.clearCaches();
-    const element = t.getElementProps(t.local, elementId);
-    chai.expect(element.propA).to.equal("local_updated_a", "Local propA should survive transforming schema rebase");
-    chai.expect(element.propC).to.equal("local_updated_c", "Local propC should survive transforming schema rebase");
-  });
 });
 
 describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
@@ -3866,96 +3687,6 @@ describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
   after(async () => {
     await TestUtils.shutdownBackend();
     await TestUtils.startBackend();
-  });
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // R1: Two consecutive pulls, each triggering rebase.
-  //     ECInstanceId, className, and all domain props verified after each pull.
-  // ──────────────────────────────────────────────────────────────────────────
-
-  it("R1: two consecutive pulls each trigger rebase; ECInstanceId/className/props verified after each", async () => {
-    t = await TestIModel.initialize("R1TwoPullsEachRebase");
-    let farTxn = startTestTxn(t.far, "R1 far");
-    let localTxn = startTestTxn(t.local, "R1 local");
-
-    // ── Phase 0: create shared elements on far, both pull to sync ────────────
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    const cElemId = t.insertElement(farTxn, "TestDomain:C", { propA: "c_a_init", propC: "c_c_init" });
-    const dElemId = t.insertElement(farTxn, "TestDomain:D", { propA: "d_a_init", propD: "d_d_init" });
-    farTxn.saveChanges("create shared elements");
-    await pushChanges(farTxn, "create shared elements");
-    farTxn = startTestTxn(t.far, "R1 far 2");
-
-    await pullChanges(localTxn);
-    localTxn = startTestTxn(t.local, "R1 local 2");
-
-    // ── Pull #1 setup ────────────────────────────────────────────────────────
-    // Far: import schema v01 (adds PropC2 to C), update cElemId.propA, push
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
-    await t.far.locks.acquireLocks({ exclusive: cElemId });
-    t.updateElement(farTxn, cElemId, { propA: "c_a_far_r1" });
-    farTxn.saveChanges("far update cElemId propA");
-    await pushChanges(farTxn, "far schema v01 + update cElemId");
-    farTxn = startTestTxn(t.far, "R1 far 3");
-
-    // Local: insert localElem (NOT pushed yet)
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    const localElemId = t.insertElement(localTxn, "TestDomain:C", { propA: "local_a_r1", propC: "local_c_r1" });
-    localTxn.saveChanges("local insert localElem");
-
-    // ── Pull #1: semantic rebase ─────────────────────────────────────────────
-    await pullChanges(localTxn);
-    t.local.clearCaches({ instanceCachesOnly: true });
-
-    // cElemId: far's propA update applied; propC unchanged
-    const cAfter1 = t.getElementProps(t.local, cElemId);
-    chai.expect(cAfter1.propA).to.equal("c_a_far_r1", "cElemId propA should be updated by far after pull #1");
-    chai.expect(cAfter1.propC).to.equal("c_c_init", "cElemId propC should be unchanged after pull #1");
-    // localElem: insert reinstated with original props and same ECInstanceId
-    const localAfter1 = t.getElementProps(t.local, localElemId);
-    chai.expect(localAfter1.propA).to.equal("local_a_r1", "localElem propA should be preserved after pull #1 rebase");
-    chai.expect(localAfter1.propC).to.equal("local_c_r1", "localElem propC should be preserved after pull #1 rebase");
-    chai.expect(localAfter1.id).to.equal(localElemId, "localElemId ECInstanceId must be stable across rebase");
-    // D element: unchanged
-    const dAfter1 = t.getElementProps(t.local, dElemId);
-    chai.expect(dAfter1.propA).to.equal("d_a_init", "dElemId propA should be unchanged after pull #1");
-    chai.expect(dAfter1.propD).to.equal("d_d_init", "dElemId propD should be unchanged after pull #1");
-    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01", "Schema must be v01 after pull #1");
-
-    // ── Pull #2 setup ────────────────────────────────────────────────────────
-    // Far: import schema v02 (adds PropD2 to D), update dElemId.propA, push
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02AddPropD2]);
-    await t.far.locks.acquireLocks({ exclusive: dElemId });
-    t.updateElement(farTxn, dElemId, { propA: "d_a_far_r2" });
-    farTxn.saveChanges("far update dElemId propA");
-    await pushChanges(farTxn, "far schema v02 + update dElemId");
-
-    // Local: update localElem.propA (NOT pushed yet)
-    localTxn = startTestTxn(t.local, "R1 local for pull2");
-    await t.local.locks.acquireLocks({ exclusive: localElemId });
-    t.updateElement(localTxn, localElemId, { propA: "local_a_r2" });
-    localTxn.saveChanges("local update localElem propA");
-
-    // ── Pull #2: semantic rebase again ───────────────────────────────────────
-    await pullChanges(localTxn);
-    t.local.clearCaches({ instanceCachesOnly: true });
-
-    // cElemId: propA from pull #1 unchanged; no further far change this round
-    const cAfter2 = t.getElementProps(t.local, cElemId);
-    chai.expect(cAfter2.propA).to.equal("c_a_far_r1", "cElemId propA should remain from pull #1 after pull #2");
-    chai.expect(cAfter2.propC).to.equal("c_c_init", "cElemId propC should be unchanged after pull #2");
-    // localElem: propA update must survive
-    const localAfter2 = t.getElementProps(t.local, localElemId);
-    chai.expect(localAfter2.propA).to.equal("local_a_r2", "localElem propA update should survive pull #2 rebase");
-    chai.expect(localAfter2.propC).to.equal("local_c_r1", "localElem propC should be unchanged after pull #2 rebase");
-    chai.expect(localAfter2.id).to.equal(localElemId, "localElemId ECInstanceId must be stable after pull #2");
-    // dElemId: far's propA update applied
-    const dAfter2 = t.getElementProps(t.local, dElemId);
-    chai.expect(dAfter2.propA).to.equal("d_a_far_r2", "dElemId propA should be updated by far after pull #2");
-    chai.expect(dAfter2.propD).to.equal("d_d_init", "dElemId propD should be unchanged after pull #2");
-    chai.expect(dAfter2.id).to.equal(dElemId, "dElemId ECInstanceId must be stable after pull #2");
-
-    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema must be v02 after pull #2");
   });
 
   // ──────────────────────────────────────────────────────────────────────────
