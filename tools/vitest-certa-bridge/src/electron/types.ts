@@ -3,7 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-/** Options for the Electron test orchestrator. */
+import type { GrepMode } from "../types.js";
+
+/**
+ * Options for the Electron test orchestrator.
+ * @beta
+ */
 export interface ElectronTestRunnerOptions {
   /** Absolute path to the backend init module (loaded in each Electron main process). */
   backendInitModule: string;
@@ -17,8 +22,8 @@ export interface ElectronTestRunnerOptions {
   shardCount?: number;
   /** Regex pattern to filter test names. */
   grepPattern?: string;
-  /** Invert the grep pattern (exclude matching tests). */
-  invertGrep?: boolean;
+  /** Whether to include or exclude tests matching grepPattern (default: "exclude"). */
+  grepMode?: GrepMode;
   /** Absolute path to a .env file to load before spawning Electron processes. */
   envFile?: string;
   /** Per-shard timeout in milliseconds (default: 600000). */
@@ -79,7 +84,10 @@ export interface ElectronTestRunnerOptions {
   rendererSetup?: string;
 }
 
-/** Aggregate results from all Electron shards. */
+/**
+ * Aggregate results from all Electron shards.
+ * @beta
+ */
 export interface ElectronTestResults {
   passed: number;
   failed: number;
@@ -90,7 +98,10 @@ export interface ElectronTestResults {
   shardResults: ShardResult[];
 }
 
-/** Per-shard result details. */
+/**
+ * Per-shard result details.
+ * @beta
+ */
 export interface ShardResult {
   shardIndex: number;
   passed: number;
@@ -103,15 +114,22 @@ export interface ShardResult {
   fileCount: number;
 }
 
-/** IPC payload sent from renderer to main process with test results. */
+/**
+ * IPC payload sent from renderer to main process with test results.
+ * @internal
+ */
 export interface RendererTestResults {
   passed: number;
   failed: number;
   skipped: number;
   errors: string[];
+  suppressedRejections?: number;
 }
 
-/** Options for building the renderer harness script. */
+/**
+ * Options for building the renderer harness script.
+ * @internal
+ */
 export interface RendererHarnessOptions {
   /** Bridge token for IPC callback authentication. */
   bridgeToken: string;

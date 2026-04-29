@@ -4,4 +4,5 @@
  *--------------------------------------------------------------------------------------------*/
 
 export { runElectronTests } from "./runner.js";
-export type { ElectronTestRunnerOptions, ElectronTestResults, RendererTestResults, ShardResult } from "./types.js";
+export type { ElectronTestRunnerOptions, ElectronTestResults, ShardResult } from "./types.js";
+export type { GrepMode } from "../types.js";

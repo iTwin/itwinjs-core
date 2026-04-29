@@ -38,12 +38,14 @@ function buildIpcBridge(token: string): string {
     // Catch renderer-side errors and unhandled rejections so they are logged
     // instead of crashing with cryptic "Uncaught (in promise)" messages.
     // Common source: stale IPC responses arriving after ElectronApp.shutdown().
+    var suppressedRejections = 0;
     window.onerror = function(_message, _source, _lineno, _colno, error) {
       console.error("[renderer-error]", error && error.message, error && error.stack);
     };
     window.onunhandledrejection = function(event) {
       var reason = event.reason || {};
       console.error("[unhandled-rejection]", reason.message || String(reason));
+      suppressedRejections++;
     };
 
     window._CertaSendToBackend = async function(name, args) {
@@ -279,6 +281,8 @@ function buildTestRunnerGlobals(grepPattern?: string, testTimeout?: number, hook
         try {
           for (const fn of suite.afterAlls) await withTimeout(fn, HOOK_TIMEOUT_MS, suitePath + " [after all]");
         } catch (err) {
+          pendingResults.failed++;
+          pendingResults.errors.push(suitePath + " [after all]: " + (err.message || err));
           console.error(suitePath + " [after all]: " + err.message);
         }
       }
@@ -343,7 +347,13 @@ function buildRunAllTests(setupFile: string, testFiles: string[], importRewriteP
       };
 
       // Load setup file (registers RPC init, custom matchers, error handling)
-      require(${JSON.stringify(setupFile)});
+      try { require(${JSON.stringify(setupFile)}); }
+      catch (err) {
+        pendingResults.failed++;
+        pendingResults.errors.push("Setup file failed to load: " + (err.message || err));
+        ipcRenderer.send("electron-test-results", Object.assign({}, pendingResults, { suppressedRejections: suppressedRejections }));
+        return;
+      }
 
       // Load all test files (registers describe/it at module scope)
       const testFiles = ${JSON.stringify(testFiles)};
@@ -367,13 +377,13 @@ ${rendererSetup.split("\n").map((line) => `        ${line}`).join("\n")}
         await runSuite(suite, "", [], []);
       }
 
-      ipcRenderer.send("electron-test-results", pendingResults);
+      ipcRenderer.send("electron-test-results", Object.assign({}, pendingResults, { suppressedRejections: suppressedRejections }));
     }
 
     // Yield once to the event loop so module-level side effects complete
     _realSetTimeout(() => runAllTests().catch(err => {
       console.error("Test runner error:", err);
-      ipcRenderer.send("electron-test-results", { passed: 0, failed: 1, errors: [err.message] });
+      ipcRenderer.send("electron-test-results", { passed: 0, failed: 1, errors: [err.message], suppressedRejections: suppressedRejections });
     }), 0);
   `;
 }

@@ -14,26 +14,12 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import * as fs from "fs";
 import * as path from "path";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { BackendTestAssetResolver, FullStackTestIpcHandler, setElectronAuth } from "./BackendServer";
-
-/** Loads the provided `.env` file into process.env */
-function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
-
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const envResult = dotenv.config({ path: envFile });
-  if (envResult.error)
-    throw envResult.error;
-
-  dotenvExpand(envResult);
-}
+import { loadEnv } from "./loadEnv";
 
 // Electron-only backend init. Retained for Certa Electron mode and future Vitest Electron mode.
 // Chrome/web mode now uses BackendServer.ts (separate process).

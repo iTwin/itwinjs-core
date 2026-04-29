@@ -8,7 +8,7 @@
   "typesVersions": {
     "*": {
       "client": ["lib/cjs/client.d.ts"],
-      "callbackRegistry": ["lib/cjs/callbackRegistry.d.ts"],
+      "callbackRegistry": ["lib/cjs/callbackRegistryPublic.d.ts"],
       "electron-main": ["lib/cjs/electron-main.d.ts"],
       "electron": ["lib/cjs/electron/index.d.ts"]
     }
@@ -25,9 +25,9 @@
       "types": "./lib/cjs/client.d.ts"
     },
     "./callbackRegistry": {
-      "import": "./lib/esm/callbackRegistry.js",
-      "require": "./lib/cjs/callbackRegistry.js",
-      "types": "./lib/cjs/callbackRegistry.d.ts"
+      "import": "./lib/esm/callbackRegistryPublic.js",
+      "require": "./lib/cjs/callbackRegistryPublic.js",
+      "types": "./lib/cjs/callbackRegistryPublic.d.ts"
     },
     "./electron-main": {
       "import": "./lib/esm/electron-main.js",
@@ -35,7 +35,6 @@
       "types": "./lib/cjs/electron-main.d.ts"
     },
     "./electron": {
-      "import": "./lib/esm/electron/index.js",
       "require": "./lib/cjs/electron/index.js",
       "types": "./lib/cjs/electron/index.d.ts"
     }

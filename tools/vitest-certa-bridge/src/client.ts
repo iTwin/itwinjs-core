@@ -5,14 +5,20 @@
 
 import type { BridgeResponse } from "./types.js";
 
+// Memoize transport detection so the check runs once at first call.
+let _resolvedTransport: "electron" | "http" | undefined;
+function getBridgeTransport(): "electron" | "http" {
+  return (_resolvedTransport ??= typeof (globalThis as any)._CertaSendToBackend === "function" ? "electron" : "http");
+}
+
 /**
  * Browser-side function that calls a named backend callback.
  * Uses IPC via `_CertaSendToBackend` when available (Electron), otherwise falls back to
  * HTTP via the Vite dev server `/__certa_bridge` middleware (Chrome/Playwright).
+ * @beta
  */
 export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
-  // Electron mode: _CertaSendToBackend is set by the renderer shim (async IPC to main process)
-  if (typeof (globalThis as any)._CertaSendToBackend === "function")
+  if (getBridgeTransport() === "electron")
     return (globalThis as any)._CertaSendToBackend(name, args);
 
   // Chrome/Vitest browser mode: HTTP fetch to Vite dev server middleware

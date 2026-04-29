@@ -8,15 +8,16 @@
 
 import { describe, it } from "vitest";
 import { runElectronTests } from "@itwin/vitest-certa-bridge/electron";
+import type { GrepMode } from "@itwin/vitest-certa-bridge/electron";
 import * as path from "path";
 
 // By default, exclude cloud/auth-dependent integration and performance tests.
 // Override by setting VITEST_ELECTRON_GREP and VITEST_ELECTRON_INVERT=false.
 const DEFAULT_EXCLUDE = "#integration|#performance";
 const grepPattern = process.env.VITEST_ELECTRON_GREP ?? DEFAULT_EXCLUDE;
-const invertGrep = process.env.VITEST_ELECTRON_INVERT !== undefined
-  ? process.env.VITEST_ELECTRON_INVERT === "true"
-  : true; // default: invert (exclude matching)
+const grepMode = (process.env.VITEST_ELECTRON_INVERT !== undefined
+  ? process.env.VITEST_ELECTRON_INVERT === "false" ? "include" : "exclude"
+  : "exclude") as GrepMode;
 
 // Shard count policy:
 //   linux CI:    2 shards — software GL (SwiftShader) handles concurrent contexts.
@@ -35,7 +36,7 @@ const shardCount = process.env.VITEST_ELECTRON_SHARD_COUNT
 // When running integration tests (grep="#integration", invert=false), rendering
 // tests like PlanarClipMask need more time under CI SwiftShader. Default 240s
 // is too tight — tiles decode on main thread (no web worker in Electron).
-const isIntegration = grepPattern === "#integration" && !invertGrep;
+const isIntegration = grepPattern === "#integration" && grepMode === "include";
 const testTimeout = isIntegration ? 480_000 : undefined;
 // Session timeout must exceed the sum of all test timeouts in a shard.
 // With 480s per-test and multiple rendering tests, 600s (default) isn't enough.
@@ -101,7 +102,7 @@ describe("Full-Stack Tests (Electron Renderer)", () => {
       envFile: path.resolve(process.cwd(), ".env"),
       shardCount,
       grepPattern,
-      invertGrep,
+      grepMode,
       testTimeout,
       timeout: sessionTimeout,
       importRewritePatterns: ["@itwin/core-electron/[^\"']+"],

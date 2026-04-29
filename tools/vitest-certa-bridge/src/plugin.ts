@@ -7,13 +7,17 @@ import type { Plugin } from "vite";
 import { randomUUID } from "crypto";
 import { pathToFileURL } from "url";
 import { resolve } from "path";
-import { executeRegisteredCallback } from "./callbackRegistry.js";
+import { dispatchCallback } from "./callbackRegistry.js";
 import type { BridgeRequest, BridgeResponse, CertaBridgeOptions } from "./types.js";
 
-/** Creates a Vite plugin that bridges browser-side test code to Node.js backend callbacks. */
+/**
+ * Creates a Vite plugin that bridges browser-side test code to Node.js backend callbacks.
+ * @beta
+ */
 export function certaBridgePlugin(opts: CertaBridgeOptions = {}): Plugin {
   let cleanupFn: (() => Promise<void>) | undefined;
-  let backendReady: Promise<void>;
+  // Initialize to resolved promise so awaiting backendReady before backend init is safe.
+  let backendReady: Promise<void> = Promise.resolve();
 
   // Per-session token prevents unauthorized callers from invoking backend callbacks.
   const bridgeToken = randomUUID();
@@ -21,19 +25,24 @@ export function certaBridgePlugin(opts: CertaBridgeOptions = {}): Plugin {
   return {
     name: "vitest-certa-bridge",
 
-    // Auto-configure resolve.dedupe and optimizeDeps.exclude for workspace packages.
+    // Auto-configure resolve.dedupe, optimizeDeps.exclude, and /ipc proxy here
+    // (in config()) so changes take effect before Vite resolves its config.
+    // Mutations made in configureServer() are post-resolution and are silently ignored
+    // by Vite 5 for server.proxy.
     config() {
-      if (!opts.workspacePackages?.length)
-        return;
+      const patch: any = {};
 
-      return {
-        resolve: {
-          dedupe: opts.workspacePackages,
-        },
-        optimizeDeps: {
-          exclude: opts.workspacePackages,
-        },
-      };
+      if (opts.workspacePackages?.length) {
+        patch.resolve = { dedupe: opts.workspacePackages };
+        patch.optimizeDeps = { exclude: opts.workspacePackages };
+      }
+
+      if (opts.backendPort) {
+        const target = `ws://127.0.0.1:${opts.backendPort}`;
+        patch.server = { proxy: { "/ipc": { target, ws: true } } };
+      }
+
+      return Object.keys(patch).length ? patch : undefined;
     },
 
     // Inject the bridge token and window._CertaSendToBackend so external packages that still
@@ -50,6 +59,7 @@ window._CertaSendToBackend = async function(name, args) {
     headers: { "Content-Type": "application/json", "x-certa-bridge-token": "${bridgeToken}" },
     body: JSON.stringify({ name, args }),
   });
+  if (!res.ok) throw new Error("Bridge request failed with status " + res.status);
   const data = await res.json();
   if (data.error) { const e = new Error(data.error.message); e.stack = data.error.stack; throw e; }
   return data.result;
@@ -76,9 +86,7 @@ window._CertaSendToBackend = async function(name, args) {
             }
           }
         })();
-        backendReady.catch(() => {}); // suppress unhandled rejection — error propagates when middleware awaits
-      } else {
-        backendReady = Promise.resolve();
+        backendReady.catch((err) => { console.error("[vitest-certa-bridge] Backend init failed:", err); });
       }
 
       // Register teardown
@@ -86,17 +94,6 @@ window._CertaSendToBackend = async function(name, args) {
         if (cleanupFn)
           await cleanupFn();
       });
-
-      // Auto-configure /ipc WebSocket proxy when backendPort is specified.
-      // Tests using LocalhostIpcApp connect to ws://<host>/ipc from the browser;
-      // this proxy forwards that traffic to the backend running on a separate port.
-      if (opts.backendPort) {
-        const target = `ws://127.0.0.1:${opts.backendPort}`;
-        server.config.server.proxy = {
-          ...server.config.server.proxy,
-          "/ipc": { target, ws: true },
-        };
-      }
 
       // Add bridge middleware
       server.middlewares.use("/__certa_bridge", async (req, res) => {
@@ -122,10 +119,10 @@ window._CertaSendToBackend = async function(name, args) {
           // Wait for backend to be ready
           await backendReady;
 
-          // Execute callback
+          // Execute callback (token already validated above)
           const response: BridgeResponse = {};
           try {
-            response.result = await executeRegisteredCallback(body.name, body.args);
+            response.result = await dispatchCallback(body.name, body.args, bridgeToken, bridgeToken);
           } catch (err: any) {
             response.error = { message: err.message, stack: err.stack };
           }

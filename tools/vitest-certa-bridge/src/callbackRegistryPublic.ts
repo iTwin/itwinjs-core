@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { certaBridgePlugin as certaBridge } from "./plugin.js";
+// Public-only barrel for the ./callbackRegistry subpath export.
+// Exposes only the consumer-facing API; internal helpers (executeRegisteredCallback,
+// clearCallbacks, dispatchCallback) are intentionally omitted.
 export { registerBackendCallback, getCallbacksRegisteredOnBackend } from "./callbackRegistry.js";
-export { nullLoader } from "./nullLoader.js";
-export { preferEsm } from "./preferEsm.js";
-export type { CertaBridgeOptions, CertaBackendCallback, GrepMode } from "./types.js";

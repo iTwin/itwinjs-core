@@ -30,22 +30,9 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
+import { loadEnv } from "./loadEnv";
 
 /* eslint-disable no-console */
-
-/** Loads the provided `.env` file into process.env */
-function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
-
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const envResult = dotenv.config({ path: envFile });
-  if (envResult.error)
-    throw envResult.error;
-
-  dotenvExpand(envResult);
-}
 
 export class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
