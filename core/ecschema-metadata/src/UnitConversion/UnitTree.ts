@@ -185,6 +185,8 @@ export class UnitGraph {
         const emap = map.raise(exponent);
         return pm ? pm.multiply(emap) : emap;
       }, undefined);
+      // EC Constant nodes have no offset property → UnitConversionSource.offset is undefined → 0.
+      // Matches the prior explicit 0.0 branch before UnitConversion moved to core-quantity.
       const thisMap = this._graph.node(unitFullName) ? UnitConversion.from(this._graph.node(unitFullName)) : UnitConversion.identity;
       const other = cmap || UnitConversion.identity;
       const result = other.compose(thisMap);

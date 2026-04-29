@@ -25,9 +25,15 @@ if (currentVersion === schema.version) {
   process.exit(0);
 }
 
-// version: "01.00.00" is the SerializedUnitSchema format version — bump only if the interface changes structurally.
+// Read the serialization format version from source to stay in sync with SERIALIZED_UNIT_SCHEMA_VERSION.
+// Cannot require() the compiled constant — this script runs before tsc.
+const schemaTsSrc = readFileSync(join(__dirname, "../src/SerializedUnitSchema.ts"), "utf8");
+const versionMatch = schemaTsSrc.match(/SERIALIZED_UNIT_SCHEMA_VERSION\s*=\s*"([^"]+)"/);
+if (!versionMatch)
+  throw new Error("Cannot find SERIALIZED_UNIT_SCHEMA_VERSION in SerializedUnitSchema.ts");
+
 const output = {
-  version: "01.00.00",
+  version: versionMatch[1],
   sourceEcSchemaVersion: schema.version,
   name: schema.name,
   alias: schema.alias,

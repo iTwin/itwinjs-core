@@ -686,7 +686,8 @@ export class QuantityError extends BentleyError {
 // @beta
 export enum QuantityLoggerCategory {
     Formatting = "core-quantity.Formatting",
-    Package = "core-quantity"
+    Package = "core-quantity",
+    Parsing = "core-quantity.Parsing"
 }
 
 // @beta
@@ -1002,7 +1003,6 @@ export interface UnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
-    // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
