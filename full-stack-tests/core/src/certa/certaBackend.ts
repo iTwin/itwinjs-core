@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { registerBackendCallback } from "@itwin/vitest-certa-bridge/callbackRegistry";
-import { getTokenCallbackName, legacyGetTokenCallbackName } from "./certaCommon";
+import { getTokenCallbackName } from "./certaCommon";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { TestUtility as OidcTestUtility } from "@itwin/oidc-signin-tool/lib/cjs/TestUtility";
@@ -25,6 +25,4 @@ async function getAccessToken(user: any, oidcConfig?: any): Promise<AccessToken>
 
 export function exposeBackendCallbacks(){
   registerBackendCallback(getTokenCallbackName, getAccessToken);
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  registerBackendCallback(legacyGetTokenCallbackName, getAccessToken);
 }

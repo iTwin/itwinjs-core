@@ -9,9 +9,6 @@ import { AccessToken } from "@itwin/core-bentley";
 // Shared by both the frontend and backend side of the tests
 export const getTokenCallbackName = "setBackendAccessToken";
 
-/** @deprecated Use getTokenCallbackName instead. */
-export const legacyGetTokenCallbackName = "getToken";
-
 export type SerializedAccessToken = [string, any];
 
 export async function setBackendAccessToken(user: TestUserCredentials): Promise<AccessToken> {
