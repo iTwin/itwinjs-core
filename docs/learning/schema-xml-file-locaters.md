@@ -1,10 +1,10 @@
-﻿# Loading ECSchemas from XML Files
+# Loading ECSchemas from XML Files
 
 To load [EC Schemas](https://www.itwinjs.org/reference/ecschema-metadata/metadata/schema) from XML files, you need to locate these files on the file system. The Bentley package [@itwin/ecschema-locaters](https://www.itwinjs.org/reference/ecschema-locaters) provides locater classes that implement [ISchemaLocater](https://www.itwinjs.org/reference/ecschema-metadata/context/ischemalocater) to locate schemas in a given [SchemaContext](https://www.itwinjs.org/reference/ecschema-metadata/context/schemacontext).
 
 ## Schemas included with core-backend
 
-The [@itwin/core-backend](https://www.itwinjs.org/reference/core-backend) package ships a set of standard EC schemas as part of its native assets, accessible via [KnownLocations.nativeAssetsDir](https://www.itwinjs.org/reference/core-backend/imodelhost/knownlocations). These schemas are organized into four subdirectories under `ECSchemas/`:
+The [@itwin/core-backend](https://www.itwinjs.org/reference/core-backend) package ships a set of standard EC schemas as part of its native assets, accessible via [KnownLocations.nativeAssetsDir](https://www.itwinjs.org/reference/core-backend/imodelhost/knownlocations). These schemas are organized into subdirectories under `ECSchemas/` (currently: `Standard`, `Dgn`, `Domain`, and `ECDb`):
 
 ### Standard schemas (`ECSchemas/Standard`)
 
@@ -66,7 +66,7 @@ While the [SchemaXmlFileLocater](https://www.itwinjs.org/reference/ecschema-loca
 
 The `PublishedSchemaXmlFileLocater` class takes a single argument: the native assets directory path of the backend package. This directory path can be accessed using the [KnownLocations.nativeAssetsDir](https://www.itwinjs.org/reference/core-backend/imodelhost/knownlocations) getter provided by the core-backend package.
 
-The constructor automatically registers search paths for all four schema subdirectories (`Standard`, `Dgn`, `Domain`, and `ECDb`), so all schemas listed above are immediately available without any additional configuration.
+The constructor automatically registers search paths for all schema subdirectories found under `ECSchemas/` in that native assets directory. In current core-backend assets, this includes folders such as `Standard`, `Dgn`, `Domain`, and `ECDb`, making the schemas listed above available without any additional configuration.
 
 ### Usage
 
@@ -147,7 +147,7 @@ const context = new SchemaContext();
 
 // Custom BisCore override lives in this directory.
 const overrideLocater = new SchemaXmlFileLocater();
-overrideLocater.addSchemaSearchPath("/CustomSchemas/BisCoreOVerride");
+overrideLocater.addSchemaSearchPath("/CustomSchemas/BisCoreOverride");
 context.addLocater(overrideLocater);
 
 // All other standard schemas are still resolved from the published set.
