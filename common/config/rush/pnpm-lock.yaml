@@ -661,9 +661,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../backend
