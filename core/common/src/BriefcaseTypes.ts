@@ -57,7 +57,7 @@ export enum SyncMode {
   FixedVersion = 1,
   /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
   PullAndPush = 2,
-  /** use [BriefcaseIdValue.Unassigned](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
+  /** use [[BriefcaseIdValue.Unassigned]]. This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
   PullOnly = 3,
 }
 

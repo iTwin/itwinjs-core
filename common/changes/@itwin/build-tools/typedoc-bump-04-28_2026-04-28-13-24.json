@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/build-tools",
-      "comment": "",
+      "comment": "Bumped `typedoc` version",
       "type": "none"
     }
   ],
