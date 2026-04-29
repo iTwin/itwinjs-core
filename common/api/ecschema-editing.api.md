@@ -1937,13 +1937,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [OverrideFormat | Format] | undefined;
+            messageArgs?: [Format | OverrideFormat] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;

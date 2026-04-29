@@ -20,7 +20,9 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import { RssPoller } from "./rss.js";
+import { loadEnvFile } from "../loadEnv.js";
 import type { ElectronTestResults, ElectronTestRunnerOptions, ShardResult } from "./types.js";
+import type { GrepMode } from "../types.js";
 
 const DEFAULT_SHARD_COUNT = 4;
 
@@ -139,7 +141,7 @@ interface ShardExecResult {
 
 /** Spawn a single Electron shard process and wait for it to exit. */
 async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
-  const command = require("electron/index.js");  
+  const command = require("electron/index.js");
 
   const env: Record<string, string> = {
     ...options.baseEnv,
@@ -226,6 +228,7 @@ async function spawnShard(options: ShardExecOptions): Promise<ShardExecResult> {
  *   envFile: path.resolve(__dirname, "../../.env"),
  * });
  * ```
+ * @beta
  */
 export async function runElectronTests(options: ElectronTestRunnerOptions): Promise<ElectronTestResults> {
   const {
@@ -235,7 +238,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     testGlob = "**/*.test.js",
     shardCount = DEFAULT_SHARD_COUNT,
     grepPattern,
-    invertGrep = false,
+    grepMode = "exclude" as GrepMode,
     envFile,
     timeout,
     testTimeout,
@@ -245,6 +248,15 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     electronArgs,
     env: extraEnv,
   } = options;
+
+  // Load .env before building baseEnv so all spawned shards inherit the vars.
+  if (envFile) {
+    try {
+      loadEnvFile(envFile);
+    } catch {
+      console.warn(`Warning: failed to load env file ${envFile} — continuing without it`);
+    }
+  }
 
   // Build base env for all spawned Electron processes
   const baseEnv: Record<string, string> = {
@@ -260,36 +272,22 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
 
   // Pass configurable timeouts to shard processes
   if (testTimeout !== undefined)
-    baseEnv.ELECTRON_TEST_TIMEOUT = String(testTimeout);  
+    baseEnv.ELECTRON_TEST_TIMEOUT = String(testTimeout);
   if (hookTimeout !== undefined)
-    baseEnv.ELECTRON_HOOK_TIMEOUT = String(hookTimeout);  
+    baseEnv.ELECTRON_HOOK_TIMEOUT = String(hookTimeout);
 
   // Pass import rewrite patterns as JSON array for session to deserialize
   if (importRewritePatterns?.length)
-    baseEnv.ELECTRON_IMPORT_REWRITE_PATTERNS = JSON.stringify(importRewritePatterns);  
+    baseEnv.ELECTRON_IMPORT_REWRITE_PATTERNS = JSON.stringify(importRewritePatterns);
 
   // Pass renderer setup JS as a base64-encoded string to avoid shell quoting issues
   if (rendererSetup)
-    baseEnv.ELECTRON_RENDERER_SETUP = Buffer.from(rendererSetup, "utf8").toString("base64");  
-
-  // Load .env into the base env so all shards inherit it
-  if (envFile && fs.existsSync(envFile)) {
-    try {
-      const dotenv = require("dotenv");  
-      const dotenvExpand = require("dotenv-expand");  
-      const envResult = dotenv.config({ path: envFile });
-      if (!envResult.error)
-        dotenvExpand(envResult);
-      Object.assign(baseEnv, envResult.parsed ?? {});
-    } catch {
-      console.warn(`Warning: dotenv not available — cannot load ${envFile}. Install dotenv as a dependency.`);
-    }
-  }
+    baseEnv.ELECTRON_RENDERER_SETUP = Buffer.from(rendererSetup, "utf8").toString("base64");
 
   // Compute effective grep pattern
   let effectiveGrep: string | undefined;
   if (grepPattern) {
-    effectiveGrep = invertGrep ? `^((?!${grepPattern}).)*$` : grepPattern;
+    effectiveGrep = grepMode === "exclude" ? `^((?!${grepPattern}).)*$` : grepPattern;
   }
 
   // Discover and shard test files
@@ -302,9 +300,10 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
 
   // Run all shards in parallel, with automatic retries for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
-  const results: { shardIndex: number; exitCode: number; signal: string | undefined; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }[] = [];
 
-  async function runShard(files: string[], index: number, extraElectronArgs?: string[]): Promise<typeof results[0]> {
+  interface ShardRawResult { shardIndex: number; exitCode: number; signal: string | undefined; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }
+
+  async function runShard(files: string[], index: number, extraElectronArgs?: string[]): Promise<ShardRawResult> {
     const shardId = `shard-${index}`;
     const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `electron-test-cache-${shardId}-`));
     const manifestPath = path.join(cacheDir, "test-manifest.txt");
@@ -357,7 +356,9 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     return `${reason}${lastTest}`;
   };
 
-  const promises = shards.map(async (files, index) => {
+  // Each closure returns its result(s) instead of pushing into a shared array,
+  // so parallel execution cannot produce non-deterministic ordering.
+  const flatResults: ShardRawResult[] = (await Promise.all(shards.map(async (files, index) => {
     let result = await runShard(files, index, electronArgs);
 
     // Step 1: plain retry with --disable-gpu for transient startup / GPU-init failures.
@@ -388,26 +389,22 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
         runShard(halfA, subIndexA, crashRecoveryArgs),
         runShard(halfB, subIndexB, crashRecoveryArgs),
       ]);
-      results.push(resultA);
-      results.push(resultB);
-      return;
+      return [resultA, resultB];
     }
 
-    results.push(result);
-  });
-
-  await Promise.all(promises);
+    return [result];
+  }))).flat();
 
   // Read per-shard structured results (written by session.ts)
-  const shardResults: ShardResult[] = results.map((r) => {
+  const shardResults: ShardResult[] = flatResults.map((r) => {
     const resultsPath = path.join(r.cacheDir, "test-results.json");
-    let testResults = { passed: 0, failed: 0, skipped: 0, errors: [] as string[] };
+    let testResults = { passed: 0, failed: 0, skipped: 0, errors: [] as string[], suppressedRejections: 0 };
     // Whether the shard successfully produced a parseable results file.
     // This is the boundary between "tests completed" and "crash before results".
     let resultsParsed = false;
     try {
       if (fs.existsSync(resultsPath)) {
-        testResults = JSON.parse(fs.readFileSync(resultsPath, "utf8"));
+        testResults = { ...testResults, ...JSON.parse(fs.readFileSync(resultsPath, "utf8")) };
         resultsParsed = true;
       }
     } catch {
@@ -424,7 +421,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
     const hasNoTestFailures = testResults.failed === 0 && testResults.errors.length === 0;
     const isPostTestShutdownCrash = hasNonZeroExit && resultsParsed && hasNoTestFailures;
     const isPreTestCrash = hasNonZeroExit && !resultsParsed;
-    const isSilentTimeout = r.exitCode === 0 && testResults.passed === 0 && testResults.failed === 0 && r.files.length > 0;
+    const isSilentTimeout = r.exitCode === 0 && testResults.passed === 0 && testResults.failed === 0 && testResults.skipped === 0 && r.files.length > 0;
 
     if (isPostTestShutdownCrash) {
       // Tests completed and results were recorded, but the process crashed
@@ -453,6 +450,11 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
       lines.push(`  Files in this shard: ${r.files.join(", ")}`);
       testResults.errors.push(lines.join("\n"));
     }
+
+    if (testResults.suppressedRejections > 0) {
+      warnings.push(`shard-${r.shardIndex}: ${testResults.suppressedRejections} unhandled promise rejection(s) suppressed in renderer`);
+    }
+
     return {
       shardIndex: r.shardIndex,
       passed: testResults.passed,
@@ -466,7 +468,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   });
 
   // Clean up cache dirs after reading results
-  for (const r of results)
+  for (const r of flatResults)
     cleanupCacheDir(r.cacheDir);
 
   // Print consolidated summary

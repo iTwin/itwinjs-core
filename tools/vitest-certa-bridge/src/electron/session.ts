@@ -20,7 +20,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
-import { executeRegisteredCallback } from "../callbackRegistry.js";
+import { dispatchCallback } from "../callbackRegistry.js";
 import { buildRendererHarness } from "./renderer-harness.js";
 import type { RendererTestResults } from "./types.js";
 
@@ -91,25 +91,28 @@ async function main() {
 
   // Initialize backend (registers RPC impls, callbacks, etc.)
   console.log("[session] Starting backend init...");
-  const backendInit = require(_backendInitModule);  
-  if (backendInit && typeof backendInit.then === "function")
-    await backendInit;
+  const backendMod = require(_backendInitModule);
+  const backendInit = backendMod?.default ?? backendMod;
+  if (typeof backendInit === "function") await backendInit();
+  else if (backendInit && typeof backendInit.then === "function") await backendInit;
   console.log("[session] Backend init complete. Registered IPC handlers so far:", registeredChannels);
 
   // Set up IPC bridge for backend callbacks
   ipcMain.handle("certa-callback", async (_event, payload: { token: string; name: string; args: any[] }) => {
     try {
-      if (payload.token !== bridgeToken)
-        throw new Error("Invalid bridge token");
-      const result = await executeRegisteredCallback(payload.name, payload.args);
+      const result = await dispatchCallback(payload.name, payload.args, payload.token, bridgeToken);
       return { result };
     } catch (err: any) {
       return { error: { message: err.message, stack: err.stack } };
     }
   });
 
+  // Guard against spurious render-process-gone after results have already been received.
+  let testResultsReceived = false;
+
   // Listen for test results from the renderer
   ipcMain.once("electron-test-results", (_event, results: RendererTestResults) => {
+    testResultsReceived = true;
     const label = `[${shardId}]`;
     console.log(`\n${label} Electron renderer tests: ${results.passed} passed, ${results.failed} failed`);
     if (results.errors.length > 0) {
@@ -165,7 +168,22 @@ async function main() {
   // Detect renderer crashes (e.g. WebGL failures, OOM) and exit immediately
   // instead of waiting for the full session timeout.
   win.webContents.on("render-process-gone", (_event: Electron.Event, details: Electron.RenderProcessGoneDetails) => {
+    if (testResultsReceived) {
+      // Results already written — this is a post-test shutdown crash, safe to ignore.
+      console.warn(`${shardLabel} Renderer process gone after results received: reason=${details.reason}, exitCode=${details.exitCode} — treating as post-test crash`);
+      return;
+    }
     console.error(`${shardLabel} Renderer process gone: reason=${details.reason}, exitCode=${details.exitCode}`);
+    // Write a minimal crash result so the runner can report a real failure
+    // instead of treating the missing file as a silent timeout.
+    if (process.env.ELECTRON_CACHE_DIR) {
+      try {
+        fs.writeFileSync(
+          path.join(process.env.ELECTRON_CACHE_DIR, "test-results.json"),
+          JSON.stringify({ passed: 0, failed: 1, skipped: 0, errors: [`Renderer crashed: ${details.reason} (exitCode=${details.exitCode})`] }),
+        );
+      } catch {}
+    }
     process.exit(1);
   });
 
