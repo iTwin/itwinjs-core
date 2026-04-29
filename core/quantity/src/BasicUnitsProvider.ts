@@ -34,15 +34,25 @@ interface ResolvedState {
 // The JSON is loaded lazily via dynamic import() on first use, keeping the module footprint
 // near-zero until a provider method is actually called.
 let _resolvePromise: Promise<ResolvedState> | undefined;
+let _permanentError: unknown = undefined;
 
 async function resolveState(): Promise<ResolvedState> {
+  if (_permanentError !== undefined)
+    throw _permanentError;
   if (!_resolvePromise) {
     _resolvePromise = _buildState().catch((err) => {
+      _permanentError = err;
       _resolvePromise = undefined;
       throw err;
     });
   }
   return _resolvePromise;
+}
+
+/** @internal — test use only. Resets the module-level lazy cache. */
+export function _testResetUnitsCache(): void {
+  _resolvePromise = undefined;
+  _permanentError = undefined;
 }
 
 async function _buildState(): Promise<ResolvedState> {

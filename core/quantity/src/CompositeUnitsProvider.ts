@@ -26,6 +26,8 @@ export interface CreateUnitsProviderOptions {
    * Affects `findUnit`, `findUnitByName`, and `getConversion` (first-consulted wins or
    * falls through). `getUnitsByFamily` always merges both providers — the first-consulted
    * provider wins name collisions.
+   *
+   * Has no effect when `primary` is omitted — the returned provider is a plain `BasicUnitsProvider`.
    */
   bisUnitsPolicy?: "preferSchema" | "preferBundled";
 }
