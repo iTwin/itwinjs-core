@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-// Sets up certa to allow a method on the frontend to get an access token
-import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+import { registerBackendCallback } from "@itwin/vitest-certa-bridge/callbackRegistry";
+import { TestUtility } from "@itwin/oidc-signin-tool/lib/cjs/TestUtility";
 import { exposeBackendCallbacks } from "../common/SideChannels";
 
 /** Loads the provided `.env` file into process.env */
@@ -22,6 +22,15 @@ function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
+
+// "getToken" is the legacy callback name used by @itwin/oidc-signin-tool's
+// getAccessTokenFromBackend helper. Register it in the bridge registry so it
+// resolves correctly under vitest-certa-bridge.
+registerBackendCallback("getToken", async (user: any, oidcConfig?: any) => {
+  if (oidcConfig === undefined || oidcConfig === null)
+    return TestUtility.getAccessToken(user);
+  return TestUtility.getAuthorizationClient(user, oidcConfig).getAccessToken();
+});
 
 module.exports = (async () => {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
