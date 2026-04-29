@@ -91,7 +91,7 @@ async function main() {
 
   // Initialize backend (registers RPC impls, callbacks, etc.)
   console.log("[session] Starting backend init...");
-  const backendMod = require(_backendInitModule);  // eslint-disable-line @typescript-eslint/no-require-imports
+  const backendMod = require(_backendInitModule);
   const backendInit = backendMod?.default ?? backendMod;
   if (typeof backendInit === "function") await backendInit();
   else if (backendInit && typeof backendInit.then === "function") await backendInit;

@@ -58,8 +58,8 @@ export function clearCallbacks(): void {
  * so token validation + dispatch logic stays in one place.
  * @internal
  */
-export function dispatchCallback(name: string, args: any[], token: string, expectedToken: string): Promise<any> {
+export async function dispatchCallback(name: string, args: any[], token: string, expectedToken: string): Promise<any> {
   if (token !== expectedToken)
     throw new Error("Invalid bridge token");
-  return Promise.resolve(executeRegisteredCallback(name, args));
+  return executeRegisteredCallback(name, args);
 }

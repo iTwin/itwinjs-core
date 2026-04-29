@@ -15,7 +15,7 @@ export type GrepMode = "include" | "exclude";
  * A callback function that can be registered on the backend and invoked from browser-side test code.
  * @beta
  */
-export type CertaBackendCallback = (...args: any[]) => unknown | Promise<unknown>;
+export type CertaBackendCallback = (...args: any[]) => unknown;
 
 /** @internal */
 export interface BridgeRequest {

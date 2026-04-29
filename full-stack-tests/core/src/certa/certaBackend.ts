@@ -25,5 +25,6 @@ async function getAccessToken(user: any, oidcConfig?: any): Promise<AccessToken>
 
 export function exposeBackendCallbacks(){
   registerBackendCallback(getTokenCallbackName, getAccessToken);
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   registerBackendCallback(legacyGetTokenCallbackName, getAccessToken);
 }

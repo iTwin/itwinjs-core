@@ -301,7 +301,7 @@ export async function runElectronTests(options: ElectronTestRunnerOptions): Prom
   // Run all shards in parallel, with automatic retries for crashed shards
   // (native crashes produce no test-results.json, distinguishing them from test failures).
 
-  type ShardRawResult = { shardIndex: number; exitCode: number; signal: string | undefined; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] };
+  interface ShardRawResult { shardIndex: number; exitCode: number; signal: string | undefined; durationMs: number; peakRssKb: number; fileCount: number; cacheDir: string; lastTestLine: string; files: string[] }
 
   async function runShard(files: string[], index: number, extraElectronArgs?: string[]): Promise<ShardRawResult> {
     const shardId = `shard-${index}`;

@@ -7,8 +7,7 @@
 // See @itwin/vitest-certa-bridge/electron for the full sharding/session implementation.
 
 import { describe, it } from "vitest";
-import { runElectronTests } from "@itwin/vitest-certa-bridge/electron";
-import type { GrepMode } from "@itwin/vitest-certa-bridge/electron";
+import { type GrepMode, runElectronTests } from "@itwin/vitest-certa-bridge/electron";
 import * as path from "path";
 
 // By default, exclude cloud/auth-dependent integration and performance tests.

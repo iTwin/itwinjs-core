@@ -8615,12 +8615,6 @@ export interface RequestNewBriefcaseProps {
     readonly iTwinId: GuidString;
 }
 
-// @internal
-export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps;
-
-// @internal
-export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
-
 // @internal (undocumented)
 export class ResponseLike implements Response {
     constructor(data: any);
@@ -10004,8 +9998,7 @@ export interface SpatialClassifiersContainer {
 
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-    modelSelector?: RelatedElementProps;
-    // @deprecated
+    // (undocumented)
     modelSelectorId: ViewIdString;
 }
 
@@ -11486,8 +11479,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
     // (undocumented)
     angle: AngleProps;
-    baseModel?: RelatedElementProps;
-    // @deprecated
+    // (undocumented)
     baseModelId: Id64String;
     // (undocumented)
     delta: XYProps;
@@ -11510,13 +11502,11 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
-    categorySelector?: RelatedElementProps;
-    // @deprecated
+    // (undocumented)
     categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
-    displayStyle?: RelatedElementProps;
-    // @deprecated
+    // (undocumented)
     displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {
