@@ -109,7 +109,7 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     const curve = this.effectiveCurve();
     if (!curve)
       return false;
-    // the Newton function is just plane altitude: curve points that lie in the plane are altitude roots.
+    // the Newton function is just plane altitude: curve points that lie on the plane are altitude roots (i.e., altitude = 0).
     this.currentF = this._plane.altitude(curve.fractionToPoint(fraction));
     return true;
   }
