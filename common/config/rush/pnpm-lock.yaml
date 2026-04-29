@@ -1345,6 +1345,9 @@ importers:
 
   ../../core/quantity:
     devDependencies:
+      '@bentley/units-schema':
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build

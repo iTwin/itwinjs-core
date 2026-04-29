@@ -1,0 +1,40 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+"use strict";
+const { readFileSync, writeFileSync } = require("fs");
+const { join } = require("path");
+
+// Run automatically as part of `rushx build`. Regenerates src/assets/Units.json when
+// @bentley/units-schema version changes. Commit the result.
+const schemaPath = require.resolve("@bentley/units-schema/Units.ecschema.json");
+const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
+
+const outPath = join(__dirname, "../src/assets/Units.json");
+
+let currentVersion;
+try {
+  currentVersion = JSON.parse(readFileSync(outPath, "utf8")).sourceEcSchemaVersion;
+} catch {
+  currentVersion = undefined;
+}
+
+if (currentVersion === schema.version) {
+  console.log(`Units.json up to date (schema ${schema.version})`);
+  process.exit(0);
+}
+
+// version: "01.00.00" is the SerializedUnitSchema format version — bump only if the interface changes structurally.
+const output = {
+  version: "01.00.00",
+  sourceEcSchemaVersion: schema.version,
+  name: schema.name,
+  alias: schema.alias,
+  label: schema.label,
+  description: schema.description,
+  items: schema.items,
+};
+
+writeFileSync(outPath, JSON.stringify(output, null, 2));
+console.log(`Generated Units.json from @bentley/units-schema ${schema.version}`);

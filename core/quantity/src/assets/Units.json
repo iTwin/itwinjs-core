@@ -516,14 +516,14 @@
       "label": "micro",
       "phenomenon": "Units.NUMBER",
       "definition": "ONE",
-      "numerator": 1e-06
+      "numerator": 0.000001
     },
     "NANO": {
       "schemaItemType": "Constant",
       "label": "nano",
       "phenomenon": "Units.NUMBER",
       "definition": "ONE",
-      "numerator": 1e-09
+      "numerator": 1e-9
     },
     "PICO": {
       "schemaItemType": "Constant",

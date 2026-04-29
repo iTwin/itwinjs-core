@@ -44,7 +44,7 @@ A units provider acts as a registry and converter for units. When you need to fo
 
 #### createUnitsProvider
 
-[createUnitsProvider]($quantity) is a factory function that layers a `primary` provider (such as `SchemaUnitProvider`) on top of `BasicUnitsProvider`. Schema-defined units win on overlap; basic BIS units fill any gaps. Pass `preferBasic: true` to invert precedence.
+[createUnitsProvider]($quantity) is a factory function that layers a `primary` provider (such as `SchemaUnitProvider`) on top of `BasicUnitsProvider`. Schema-defined units win on overlap; basic BIS units fill any gaps. Pass `bisUnitsPolicy: "preferBundled"` to invert precedence so the bundled BIS units win instead.
 
 ```typescript
 import { createUnitsProvider } from "@itwin/core-quantity";
