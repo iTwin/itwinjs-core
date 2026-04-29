@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
+  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass,
 } from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {
@@ -351,15 +351,13 @@ export class ECSchemaToTs {
             throw new Error(`Enumeration property ${ecProperty.fullName} is missing its enumeration.`);
           typeTs = this.addImportClass(classNameToModule, `${ecEnum.schemaKey.name}Elements`, ecEnum.name);
         } else {
-          const ecPrimitiveProperty = ecProperty as PrimitiveProperty;
-          typeTs = this.convertPrimitiveTypeToTsType(ecPrimitiveProperty.primitiveType, classNameToModule);
+          typeTs = this.convertPrimitiveTypeToTsType(ecProperty.primitiveType, classNameToModule);
         }
 
         varDeclarationLine += typeTs;
       } else if (ecProperty.isStruct()) {
         // import struct class if it is in different schema
-        const ecStructProperty = ecProperty as StructProperty;
-        const structClass = ecStructProperty.structClass;
+        const structClass = ecProperty.structClass;
         if (!structClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey))
           varDeclarationLine += this.addImportClass(classNameToModule, `${structClass.schema.schemaKey.name}ElementProps`, structClass.name);
         else

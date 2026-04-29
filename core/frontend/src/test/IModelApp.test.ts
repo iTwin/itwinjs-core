@@ -255,3 +255,68 @@ describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
     expect(startDefaultSpy).not.toHaveBeenCalled();
   });
 });
+
+describe("Undo/redo edit command cleanup", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("undo finishes active edit command before reversing txns", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reverseSingleTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reverseSingleTxnAsync },
+        },
+      },
+    } as any);
+
+    expect(await toolAdmin.doUndoOperation()).toBe(true);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reverseSingleTxnAsync).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(reverseSingleTxnAsync.mock.invocationCallOrder[0]);
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+  });
+
+  it("redo uses notifications and skips txn when finishCommand fails", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reinstateTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reinstateTxnAsync },
+        },
+      },
+    } as any);
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    expect(await toolAdmin.doRedoOperation()).toBe(false);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reinstateTxnAsync).not.toHaveBeenCalled();
+    expect(outputMessageSpy).toHaveBeenCalledOnce();
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+    outputMessageSpy.mockRestore();
+  });
+});

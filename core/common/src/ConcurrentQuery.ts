@@ -773,7 +773,7 @@ export class DbQueryError extends BentleyError {
     super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, { response, request });
   }
   public static throwIfError(response: any, request?: any) {
-    if ((response.status as number) >= (DbResponseStatus.Error as number)) {
+    if ((response.status as number) >= (DbResponseStatus.Error)) {
       throw new DbQueryError(response, request);
     }
     if (response.status === DbResponseStatus.Cancel) {

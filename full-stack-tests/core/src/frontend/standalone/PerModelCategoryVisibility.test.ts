@@ -257,7 +257,7 @@ describe("Per-model category visibility overrides", () => {
     expect(Array.from(cats1c[0]).join()).to.equal("0x2f,0x31");
     expect(Array.from(cats1c[1]).join()).to.equal("0x2d");
     expect(Array.from(cats1d[0]).join()).to.equal("0x2d");
-    expect(Array.from(cats1d[1]).join()).to.equal("0x2e,0x2f");
+    expect(Array.from(cats1d[1]).join()).to.equal("0x2f,0x2e");
   });
 });
 describe("Per-model category visibility overrides with setOverrides function", () => {
@@ -462,6 +462,6 @@ describe("Per-model category visibility overrides with setOverrides function", (
     expect(Array.from(cats1c[0]).join()).to.equal("0x2f,0x31");
     expect(Array.from(cats1c[1]).join()).to.equal("0x2d");
     expect(Array.from(cats1d[0]).join()).to.equal("0x2d");
-    expect(Array.from(cats1d[1]).join()).to.equal("0x2e,0x2f");
+    expect(Array.from(cats1d[1]).join()).to.equal("0x2f,0x2e");
   });
 });

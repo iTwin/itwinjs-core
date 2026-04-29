@@ -54,6 +54,12 @@ These packages provide the following functions to support backend operations:
 
 - Change Summary
   - [Change Summary Overview](../ChangeSummaries)
+  - [ChangesetReader — low-level changeset reading API](./ChangesetReader.md)
+
+- Workspaces and Settings
+  - [Workspaces and Settings overview](./WorkspacesAndSettings.md)
+  - [Settings](./Settings.md)
+  - [Workspace resources](./Workspace.md)
 
 For services and app backends:
 

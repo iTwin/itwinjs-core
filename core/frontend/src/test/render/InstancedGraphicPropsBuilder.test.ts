@@ -132,7 +132,7 @@ describe("InstancedGraphicPropsBuilder", () => {
 
     // Any value that doesn't map to a LinePixels enum member is treated as line code zero (solid).
     expectOvrs(5, { lineCode: LineCode.valueFromLinePixels(LinePixels.Code0) });
-    expectOvrs(6, { lineCode: LineCode.valueFromLinePixels(-1 as LinePixels) });
+    expectOvrs(6, { lineCode: LineCode.valueFromLinePixels(-1) });
     expectOvrs(7, { lineCode: LineCode.valueFromLinePixels(20 as LinePixels) });
     expectOvrs(8, { lineCode: LineCode.valueFromLinePixels(2.7 as LinePixels) });
 
