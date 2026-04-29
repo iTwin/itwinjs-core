@@ -35,6 +35,7 @@
       "types": "./lib/cjs/electron-main.d.ts"
     },
     "./electron": {
+      "import": "./lib/cjs/electron/index.js",
       "require": "./lib/cjs/electron/index.js",
       "types": "./lib/cjs/electron/index.d.ts"
     }
