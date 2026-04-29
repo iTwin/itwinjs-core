@@ -23,6 +23,11 @@ async function getAccessToken(user: any, oidcConfig?: any): Promise<AccessToken>
   return accessToken;
 }
 
+// "getToken" is the legacy callback name used by @itwin/oidc-signin-tool and other
+// external packages that predate the vitest-certa-bridge migration.
+const legacyGetTokenCallbackName = "getToken";
+
 export function exposeBackendCallbacks(){
   registerBackendCallback(getTokenCallbackName, getAccessToken);
+  registerBackendCallback(legacyGetTokenCallbackName, getAccessToken);
 }
