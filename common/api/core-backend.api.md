@@ -75,6 +75,7 @@ import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
+import { ECSpecVersion } from '@itwin/ecschema-metadata';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlReaderBase } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
@@ -430,6 +431,7 @@ export interface AvailableCoordinateReferenceSystemProps {
     deprecated: boolean;
     description: string;
     name: string;
+    unit?: string;
 }
 
 // @beta (undocumented)
@@ -732,6 +734,25 @@ export class BriefcaseManager {
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
 
+// @beta
+export interface BulkDeleteElementsArgs {
+    skipFKConstraintValidations?: boolean;
+}
+
+// @beta
+export interface BulkDeleteElementsResult {
+    failedIds: Id64Set;
+    sqlDeleteStatus: DbResult;
+    status: BulkDeleteElementsStatus;
+}
+
+// @beta
+export enum BulkDeleteElementsStatus {
+    DeletionFailed = 2,
+    PartialSuccess = 1,
+    Success = 0
+}
+
 // @public
 export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -857,6 +878,14 @@ export class CategorySelector extends DefinitionElement {
 }
 
 // @beta
+export interface ChangeCache extends Disposable {
+    all(): IterableIterator<ChangeInstance>;
+    count(): number;
+    get(key: string): ChangeInstance | undefined;
+    set(key: string, value: ChangeInstance): void;
+}
+
+// @beta @deprecated
 export interface ChangedECInstance {
     // (undocumented)
     $meta?: ChangeMetaData;
@@ -899,6 +928,12 @@ export interface ChangeFormatArgs {
 }
 
 // @beta
+export interface ChangeInstance {
+    $meta: ChangeMeta;
+    [key: string]: any;
+}
+
+// @beta
 export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
@@ -906,6 +941,19 @@ export interface ChangeInstanceKey {
 }
 
 // @beta
+export interface ChangeMeta {
+    changeFetchedPropNames: string[];
+    changeIndexes: number[];
+    instanceKey: string;
+    isIndirectChange: boolean;
+    op: SqliteChangeOp;
+    propFilter: PropertyFilter;
+    rowOptions?: RowFormatOptions;
+    stage: SqliteValueStage;
+    tables: string[];
+}
+
+// @beta @deprecated
 export interface ChangeMetaData {
     changeIndexes: number[];
     classFullName?: string;
@@ -921,7 +969,7 @@ export interface ChangesetArg extends IModelIdArg {
     readonly changeset: ChangesetIndexOrId;
 }
 
-// @beta
+// @beta @deprecated
 export class ChangesetECAdaptor implements Disposable {
     [Symbol.dispose](): void;
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
@@ -960,6 +1008,58 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 // @beta
+export class ChangesetReader implements Disposable, ChangeSource {
+    [Symbol.dispose](): void;
+    clearClassNameFilters(): void;
+    clearOpCodeFilters(): void;
+    clearTableNameFilters(): void;
+    close(): void;
+    readonly db: AnyDb;
+    deleted?: ChangeInstance;
+    inserted?: ChangeInstance;
+    get isECTable(): boolean;
+    get isIndirectChange(): boolean;
+    get op(): SqliteChangeOp;
+    static openFile(args: {
+        readonly fileName: string;
+    } & ChangesetReaderArgs): ChangesetReader;
+    static openGroup(args: {
+        readonly changesetFiles: string[];
+    } & ChangesetReaderArgs): ChangesetReader;
+    static openInMemoryChanges(args: Omit<ChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+    }): ChangesetReader;
+    static openLocalChanges(args: Omit<ChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        includeInMemoryChanges?: boolean;
+    }): ChangesetReader;
+    static openTxn(args: Omit<ChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        txnId: Id64String;
+    }): ChangesetReader;
+    setClassNameFilters(classNames: Set<string>): void;
+    setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
+    setTableNameFilters(tableNames: Set<string>): void;
+    step(): boolean;
+    get tableName(): string;
+}
+
+// @beta
+export interface ChangesetReaderArgs {
+    readonly db: AnyDb;
+    readonly invert?: boolean;
+    readonly propFilter?: PropertyFilter;
+    readonly rowOptions?: RowFormatOptions;
+}
+
+// @beta
+export interface ChangeSource {
+    readonly deleted?: ChangeInstance;
+    readonly inserted?: ChangeInstance;
+    readonly op: SqliteChangeOp;
+}
+
+// @beta
 export interface ChangeSummary {
     // (undocumented)
     changeSet: {
@@ -991,6 +1091,12 @@ export class ChangeSummaryManager {
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
+}
+
+// @beta (undocumented)
+export namespace ChangeUnifierCache {
+    export function createInMemoryCache(): ChangeCache;
+    export function createSqliteBackedCache(bufferedReadInstanceSizeInBytes?: number): ChangeCache;
 }
 
 // @beta
@@ -2247,7 +2353,7 @@ export abstract class DriverBundleElement extends InformationContentElement {
     static get className(): string;
 }
 
-// @beta
+// @beta @deprecated
 export interface ECChangeUnifierCache extends Disposable {
     all(): IterableIterator<ChangedECInstance>;
     count(): number;
@@ -2255,7 +2361,7 @@ export interface ECChangeUnifierCache extends Disposable {
     set(key: string, value: ChangedECInstance): void;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export namespace ECChangeUnifierCache {
     export function createInMemoryCache(): ECChangeUnifierCache;
     export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
@@ -2610,6 +2716,7 @@ export class EditTxn {
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
+    deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;
@@ -2684,6 +2791,10 @@ class Element_2 extends Entity {
     protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
     // @beta
     protected static onBeforeOutputsHandledArg(arg: OnElementDependencyArg): void;
+    // @beta
+    protected static onBulkChildDeleted(arg: OnBulkChildDeletedBatchArg): void;
+    // @beta
+    protected static onBulkDeleted(arg: OnBulkDeletedBatchArg): void;
     // @beta
     protected static onChildAdd(_arg: OnChildElementPropsArg): void;
     // @beta
@@ -3703,7 +3814,11 @@ export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordin
 export interface GetAvailableCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
     includeWorld?: boolean;
+    unit?: string;
 }
+
+// @beta
+export function getAvailableCRSUnits(): string[];
 
 // @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
@@ -3914,6 +4029,8 @@ export abstract class IModelDb extends IModel {
     exportSchema(args: ExportSchemaArgs): void;
     // @beta
     exportSchemas(outputDirectory: LocalFileName): void;
+    // @beta
+    exportSchemaXmlString(schemaName: string, ecSpecVersion?: ECSpecVersion): string | undefined;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // @deprecated (undocumented)
@@ -5175,6 +5292,8 @@ export class Model extends Entity {
     // (undocumented)
     readonly name: string;
     // @beta
+    protected static onBulkModelEvents(arg: OnBulkModelEventsArg): void;
+    // @beta
     protected static onDelete(arg: OnModelIdArg): void;
     // @beta
     protected static onDeleted(arg: OnModelIdArg): void;
@@ -5319,6 +5438,43 @@ export interface OnAspectPropsArg extends OnAspectArg {
 }
 
 // @beta
+export interface OnBulkChildDeleteArg {
+    childId: Id64String;
+    parentId: Id64String;
+}
+
+// @beta
+export interface OnBulkChildDeletedBatchArg {
+    elements: OnBulkChildDeleteArg[];
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnBulkDeleteArg {
+    federationGuid?: GuidString;
+    id: Id64String;
+    model: Id64String;
+    subModelId?: Id64String;
+}
+
+// @beta
+export interface OnBulkDeletedBatchArg {
+    elements: OnBulkDeleteArg[];
+    iModel: IModelDb;
+}
+
+// @beta
+export interface OnBulkDeletedElementsArg extends OnModelIdArg {
+    elementIds: Id64String[];
+}
+
+// @beta
+export interface OnBulkModelEventsArg extends OnModelArg {
+    deletedElementsByModel?: OnBulkDeletedElementsArg[];
+    deletedModelIds?: Id64String[];
+}
+
+// @beta
 export interface OnChildElementArg extends OnElementArg {
     // (undocumented)
     parentId: Id64String;
@@ -5419,6 +5575,15 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined;
 
 // @beta
+export class PartialChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_cache?: ChangeCache);
+    appendFrom(source: ChangeSource): void;
+    get instanceCount(): number;
+    get instances(): IterableIterator<ChangeInstance>;
+}
+
+// @beta @deprecated
 export class PartialECChangeUnifier implements Disposable {
     [Symbol.dispose](): void;
     constructor(_db: AnyDb, _cache?: ECChangeUnifierCache);
@@ -5605,6 +5770,13 @@ export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
     parentSubjectId: Id64String;
 }
 
+// @beta
+export enum PropertyFilter {
+    All = 0,
+    BisCoreElement = 1,
+    InstanceKey = 2
+}
+
 // @public @preview
 export type PropertyHandler = (name: string, property: Property) => void;
 
@@ -5712,6 +5884,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 
 // @alpha
 export interface RebaseHandler {
+    dispose?(): void;
     recompute(txn: TxnProps): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
@@ -5725,6 +5898,7 @@ export class RebaseManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     canAbort(): boolean;
+    dispose(): void;
     inProgress(): boolean;
     get isAborting(): boolean;
     get isMerging(): boolean;
@@ -5962,6 +6136,13 @@ export abstract class RoleElement extends Element_2 {
 export class RoleModel extends Model {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface RowFormatOptions {
+    abbreviateBlobs?: boolean;
+    classIdsToClassNames?: boolean;
+    useJsName?: boolean;
 }
 
 // @public
@@ -6658,7 +6839,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @deprecated (undocumented)
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
-    modelSelectorId: Id64String;
+    modelSelector: RelatedElementProps;
+    get modelSelectorId(): Id64String;
+    set modelSelectorId(id: Id64String);
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
@@ -7613,7 +7796,9 @@ export class ViewAttachmentLabel extends DetailingSymbol {
 // @public @preview
 export abstract class ViewDefinition extends DefinitionElement {
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
-    categorySelectorId: Id64String;
+    categorySelector: RelatedElementProps;
+    get categorySelectorId(): Id64String;
+    set categorySelectorId(id: Id64String);
     // (undocumented)
     static get className(): string;
     // (undocumented)
@@ -7624,7 +7809,9 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): ViewDefinitionProps;
     abstract get details(): ViewDetails;
-    displayStyleId: Id64String;
+    displayStyle: RelatedElementProps;
+    get displayStyleId(): Id64String;
+    set displayStyleId(id: Id64String);
     getAuxiliaryCoordinateSystemId(): Id64String;
     isDrawingView(): this is DrawingViewDefinition;
     isSpatialView(): this is SpatialViewDefinition;
@@ -7649,7 +7836,9 @@ export abstract class ViewDefinition extends DefinitionElement {
 export class ViewDefinition2d extends ViewDefinition {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
-    baseModelId: Id64String;
+    baseModel: RelatedElementProps;
+    get baseModelId(): Id64String;
+    set baseModelId(id: Id64String);
     // (undocumented)
     static get className(): string;
     // (undocumented)
