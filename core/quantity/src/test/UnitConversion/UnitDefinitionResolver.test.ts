@@ -8,7 +8,7 @@ import type { SerializedUnitSchema } from "../../SerializedUnitSchema";
 
 // Load the real bundled schema
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const unitsSchema: SerializedUnitSchema = require("../../../public/assets/Units.json");
+const unitsSchema: SerializedUnitSchema = require("../../assets/Units.json");
 
 describe("UnitDefinitionResolver", () => {
   const resolver = new UnitDefinitionResolver(unitsSchema);

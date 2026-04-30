@@ -57,7 +57,7 @@ export function _testResetUnitsCache(): void {
 }
 
 async function _buildState(): Promise<ResolvedState> {
-  const { default: schema } = await import("../public/assets/Units.json");
+  const { default: schema } = await import("./assets/Units.json");
 
   const nameMap = new Map<string, IndexedUnit>();
   const labelMap = new Map<string, IndexedUnit[]>();

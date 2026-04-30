@@ -6,6 +6,6 @@
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
-!lib/public/**
+!lib/**/*.json
 
 lib/**/test/**

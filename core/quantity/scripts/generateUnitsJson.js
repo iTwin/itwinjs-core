@@ -6,12 +6,12 @@
 const { readFileSync, writeFileSync } = require("node:fs");
 const { join } = require("node:path");
 
-// Run automatically as part of `rushx build`. Regenerates public/assets/Units.json when
+// Run automatically as part of `rushx build`. Regenerates src/assets/Units.json when
 // @bentley/units-schema version changes. Commit the result.
 const schemaPath = require.resolve("@bentley/units-schema/Units.ecschema.json");
 const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
-const outPath = join(__dirname, "../public/assets/Units.json");
+const outPath = join(__dirname, "../src/assets/Units.json");
 
 let currentVersion;
 try {
