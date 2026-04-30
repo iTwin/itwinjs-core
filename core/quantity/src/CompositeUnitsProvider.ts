@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BasicUnitsProvider } from "./BasicUnitsProvider";
 import type { UnitConversionProps, UnitProps, UnitsProvider } from "./Interfaces";
+import { BadUnit } from "./Unit";
 
 /**
  * Options for [[createUnitsProvider]].
@@ -73,7 +74,7 @@ class CompositeUnitsProvider implements UnitsProvider {
         return hit;
       }
     }
-    return this._providers[this._providers.length - 1].findUnit(label, schemaName, phenomenon, unitSystem);
+    return tryFind(async () => this._providers[this._providers.length - 1].findUnit(label, schemaName, phenomenon, unitSystem)).then((hit) => hit ?? new BadUnit());
   }
 
   public async findUnitByName(name: string): Promise<UnitProps> {
@@ -83,7 +84,7 @@ class CompositeUnitsProvider implements UnitsProvider {
         return hit;
       }
     }
-    return this._providers[this._providers.length - 1].findUnitByName(name);
+    return tryFind(async () => this._providers[this._providers.length - 1].findUnitByName(name)).then((hit) => hit ?? new BadUnit());
   }
 
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
@@ -111,7 +112,11 @@ class CompositeUnitsProvider implements UnitsProvider {
         }
       } catch { /* fall through to next provider */ }
     }
-    return this._providers[this._providers.length - 1].getConversion(from, to);
+    try {
+      return await this._providers[this._providers.length - 1].getConversion(from, to);
+    } catch {
+      return { factor: 1.0, offset: 0.0, error: true };
+    }
   }
 }
 

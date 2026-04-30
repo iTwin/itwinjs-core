@@ -5,22 +5,17 @@
 
 /** Current version of the serialization format for `SerializedUnitSchema`.
  *
- * This tracks the **JSON structure**, not the unit data content. Three version axis exist:
+ * This value is written into `Units.json` as the `version` field and checked at
+ * parse time. Two version axes exist:
  *
- * - **Format version** (`SERIALIZED_UNIT_SCHEMA_VERSION`): bump the major version when
- *   the shape of the `SerializedUnitSchema` interfaces changes incompatibly (e.g. renaming
- *   fields, removing required properties). Minor bumps for backward-compatible additions.
+ * - **Format version** (`SERIALIZED_UNIT_SCHEMA_VERSION` / `Units.json.version`): bump
+ *   the major version when the shape of the `SerializedUnitSchema` interfaces changes
+ *   incompatibly (e.g. renaming fields, removing required properties). Minor bumps for
+ *   backward-compatible additions.
  *
- * - **Data version** (`version` inside `Units.json`): tracks the content of the unit data
- *   itself — which units are present and their conversion factors. Bump when units are
- *   added, removed, or their definitions change.
- *
- * - **Source provenance** (`sourceEcSchemaVersion` inside `Units.json`): records which version
- *   of the BIS Units EC schema the data was derived from (e.g. `"01.00.09"`). This is a
- *   traceability marker, not a runtime contract.
- *
- * All three are independent: a new unit can be added (data version bump) without changing
- * the serialization format, and vice versa.
+ * - **Source provenance** (`sourceEcSchemaVersion` inside `Units.json`): records which
+ *   version of the BIS Units EC schema the data was derived from (e.g. `"01.00.09"`).
+ *   This is a traceability marker, not a runtime contract.
  *
  * @internal
  */

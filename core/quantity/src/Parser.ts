@@ -462,8 +462,9 @@ export class Parser {
       } else {
         // Add new conversion to the list.
         const conversion = await unitsProvider.getConversion(unitProps, outUnit);
-        if (conversion.error)
-          Logger.logWarning(QuantityLoggerCategory.Package, `Unit conversion from "${unitProps.name}" to "${outUnit.name}" could not be resolved.`);
+        if (conversion.error) {
+          Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unitProps.name}" to "${outUnit.name}" could not be resolved.`);
+        }
         if (conversion) {
           spec = {
             conversion,
@@ -487,8 +488,9 @@ export class Parser {
     const unitConversionInfos = await this.getRequiredUnitsConversionsToParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
     if (unitConversionInfos.outUnit) {
       const outUnitConversion = await unitsProvider.getConversion(unitConversionInfos.outUnit, unitConversionInfos.outUnit);
-      if (outUnitConversion.error)
-        Logger.logWarning(QuantityLoggerCategory.Package, `Unit conversion from "${unitConversionInfos.outUnit.name}" to "${unitConversionInfos.outUnit.name}" could not be resolved.`);
+      if (outUnitConversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unitConversionInfos.outUnit.name}" to "${unitConversionInfos.outUnit.name}" could not be resolved.`);
+      }
       const value = Parser.getQuantityValueFromParseTokens(tokens, format, unitConversionInfos.specs, outUnitConversion);
       if (value.ok) {
         return new Quantity(unitConversionInfos.outUnit, value.value);
@@ -1087,8 +1089,9 @@ export class Parser {
     const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
-      if (conversion.error)
-        Logger.logWarning(QuantityLoggerCategory.Package, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      if (conversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      }
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
       const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
       // add any alternate labels that may be defined for the Unit
@@ -1131,8 +1134,9 @@ export class Parser {
       }
 
       const conversion = await unitsProvider.getConversion(unit, outUnit);
-      if (conversion.error)
-        Logger.logWarning(QuantityLoggerCategory.Package, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      if (conversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      }
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
       const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
       // add any alternate labels that may be defined for the Unit
