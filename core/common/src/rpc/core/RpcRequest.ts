@@ -26,7 +26,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** @internal */
-export class ResponseLike implements Response {
+export class ResponseLike {
   private _data: Promise<any>;
   public get body() { return null; }
   public async arrayBuffer(): Promise<ArrayBuffer> { return this._data; }
@@ -500,7 +500,8 @@ export abstract class RpcRequest<TResponse = any> {
         throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
       }
 
-      this._resolveRaw(new ResponseLike(this._raw));
+      // double-cast required: ResponseLike no longer structurally satisfies Response after dropping implements
+      this._resolveRaw(new ResponseLike(this._raw) as unknown as Response);
     }
 
     this.setStatus(RpcRequestStatus.Resolved);
