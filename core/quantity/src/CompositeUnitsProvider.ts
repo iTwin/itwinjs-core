@@ -55,8 +55,9 @@ export function createUnitsProvider(options: CreateUnitsProviderOptions = {}): U
   // NOTE: returns BasicUnitsProvider directly when no primary is provided.
   // QuantityFormatter.resetToUseInternalUnitsProvider uses instanceof BasicUnitsProvider to detect this.
   // If this fast-path is ever wrapped (e.g. for telemetry), that guard must be updated.
-  if (!primary)
+  if (!primary) {
     return basic;
+  }
 
   const providers = options.bisUnitsPolicy === "preferBundled" ? [basic, primary] : [primary, basic];
   return new CompositeUnitsProvider(providers);
@@ -68,8 +69,9 @@ class CompositeUnitsProvider implements UnitsProvider {
   public async findUnit(label: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     for (let i = 0; i < this._providers.length - 1; i++) {
       const hit = await tryFind(async () => this._providers[i].findUnit(label, schemaName, phenomenon, unitSystem));
-      if (hit?.isValid)
+      if (hit?.isValid) {
         return hit;
+      }
     }
     return this._providers[this._providers.length - 1].findUnit(label, schemaName, phenomenon, unitSystem);
   }
@@ -77,8 +79,9 @@ class CompositeUnitsProvider implements UnitsProvider {
   public async findUnitByName(name: string): Promise<UnitProps> {
     for (let i = 0; i < this._providers.length - 1; i++) {
       const hit = await tryFind(async () => this._providers[i].findUnitByName(name));
-      if (hit?.isValid)
+      if (hit?.isValid) {
         return hit;
+      }
     }
     return this._providers[this._providers.length - 1].findUnitByName(name);
   }
@@ -103,8 +106,9 @@ class CompositeUnitsProvider implements UnitsProvider {
     for (let i = 0; i < this._providers.length - 1; i++) {
       try {
         const result = await this._providers[i].getConversion(from, to);
-        if (!result.error)
+        if (!result.error) {
           return result;
+        }
       } catch { /* fall through to next provider */ }
     }
     return this._providers[this._providers.length - 1].getConversion(from, to);

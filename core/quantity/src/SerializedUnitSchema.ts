@@ -5,7 +5,7 @@
 
 /** Current version of the serialization format for `SerializedUnitSchema`.
  *
- * This tracks the **JSON structure**, not the unit data content. Three version axes exist:
+ * This tracks the **JSON structure**, not the unit data content. Three version axis exist:
  *
  * - **Format version** (`SERIALIZED_UNIT_SCHEMA_VERSION`): bump the major version when
  *   the shape of the `SerializedUnitSchema` interfaces changes incompatibly (e.g. renaming

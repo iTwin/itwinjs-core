@@ -34,16 +34,17 @@ interface ResolvedState {
 // The JSON is loaded lazily via dynamic import() on first use, keeping the module footprint
 // near-zero until a provider method is actually called.
 let _resolvePromise: Promise<ResolvedState> | undefined;
-let _permanentError: unknown = undefined;
+let _permanentError: Error | undefined;
 
 async function resolveState(): Promise<ResolvedState> {
-  if (_permanentError !== undefined)
+  if (_permanentError !== undefined) {
     throw _permanentError;
+  }
   if (!_resolvePromise) {
     _resolvePromise = _buildState().catch((err) => {
-      _permanentError = err;
+      _permanentError = err instanceof Error ? err : new Error(String(err));
       _resolvePromise = undefined;
-      throw err;
+      throw _permanentError;
     });
   }
   return _resolvePromise;
@@ -56,7 +57,7 @@ export function _testResetUnitsCache(): void {
 }
 
 async function _buildState(): Promise<ResolvedState> {
-  const { default: schema } = await import("./assets/Units.json");
+  const { default: schema } = await import("../public/assets/Units.json");
 
   const nameMap = new Map<string, IndexedUnit>();
   const labelMap = new Map<string, IndexedUnit[]>();
@@ -97,8 +98,9 @@ async function _buildState(): Promise<ResolvedState> {
   // Handle InvertedUnit items — must run after nameMap is fully populated above because
   // invertedSource lookup requires the inverted unit's target to already be in nameMap.
   for (const [name, item] of Object.entries(s.items)) {
-    if (item.schemaItemType !== "InvertedUnit")
+    if (item.schemaItemType !== "InvertedUnit") {
       continue;
+    }
     const inv: SerializedInvertedUnit = item;
     const fullName = `${s.name}.${name}`;
     const invertsName = qualifyItemName(inv.invertsUnit, s.name);
@@ -164,17 +166,21 @@ export class BasicUnitsProvider implements UnitsProvider {
    */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     const state = await resolveState();
-    if (schemaName && schemaName !== state.schemaName)
+    if (schemaName && schemaName !== state.schemaName) {
       return new BadUnit();
+    }
     const candidates = state.labelMap.get(unitLabel.toLowerCase());
-    if (!candidates || candidates.length === 0)
+    if (!candidates || candidates.length === 0) {
       return new BadUnit();
+    }
 
     for (const c of candidates) {
-      if (phenomenon && c.props.phenomenon !== phenomenon)
+      if (phenomenon && c.props.phenomenon !== phenomenon) {
         continue;
-      if (unitSystem && c.props.system !== unitSystem)
+      }
+      if (unitSystem && c.props.system !== unitSystem) {
         continue;
+      }
       return c.props;
     }
 
@@ -212,8 +218,9 @@ export class BasicUnitsProvider implements UnitsProvider {
     const from = state.nameMap.get(fromUnit.name);
     const to = state.nameMap.get(toUnit.name);
 
-    if (!from || !to)
+    if (!from || !to) {
       return { factor: 1.0, offset: 0.0, error: true };
+    }
 
     const fromInverted = state.invertedUnits.get(fromUnit.name);
     const toInverted = state.invertedUnits.get(toUnit.name);
@@ -224,8 +231,9 @@ export class BasicUnitsProvider implements UnitsProvider {
     const toPhenomenon = toInverted
       ? state.nameMap.get(toInverted.invertsUnitName)?.props.phenomenon
       : to.props.phenomenon;
-    if (fromPhenomenon !== toPhenomenon)
+    if (fromPhenomenon !== toPhenomenon) {
       return { factor: 1.0, offset: 0.0, error: true };
+    }
 
     if (fromInverted && toInverted) {
       const innerFrom = state.nameMap.get(fromInverted.invertsUnitName);

@@ -72,8 +72,9 @@ export class FormatterSpec {
 
     // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
     const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
-    if (denominatorToNumerator.error)
+    if (denominatorToNumerator.error) {
       Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${denominatorUnit.name}" to "${numeratorUnit.name}" could not be resolved.`);
+    }
     const displayRatioScale = denominatorToNumerator.factor;
 
     // Avoid double-scaling: if persistence unit already encodes the display ratio, use factor 1.
@@ -140,8 +141,9 @@ export class FormatterSpec {
         let unitConversion: UnitConversionProps;
         if (convertFromUnit) {
           unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
-          if (unitConversion.error)
+          if (unitConversion.error) {
             Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${convertFromUnit.name}" to "${unit[0].name}" could not be resolved.`);
+          }
         } else {
           unitConversion = { factor: 1.0, offset: 0.0 };
         }
@@ -175,8 +177,9 @@ export class FormatterSpec {
     if (format.azimuthBaseUnit !== undefined) {
       if (inputUnit !== undefined) {
         azimuthBaseConversion = await unitsProvider.getConversion(format.azimuthBaseUnit, inputUnit);
-        if (azimuthBaseConversion.error)
+        if (azimuthBaseConversion.error) {
           Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.azimuthBaseUnit.name}" to "${inputUnit.name}" could not be resolved.`);
+        }
       } else {
         azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
       }
@@ -185,8 +188,9 @@ export class FormatterSpec {
     if (format.revolutionUnit !== undefined) {
       if (inputUnit !== undefined) {
         revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, inputUnit);
-        if (revolutionConversion.error)
+        if (revolutionConversion.error) {
           Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.revolutionUnit.name}" to "${inputUnit.name}" could not be resolved.`);
+        }
       } else {
         revolutionConversion = { factor: 1.0, offset: 0.0 };
       }

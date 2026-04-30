@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "QuantityFormatter now defaults to BasicUnitsProvider (492 units) from @itwin/core-quantity instead of the old internal BasicUnitsProvider (~40 units). The core-frontend internal BasicUnitsProvider is removed.",
+      "comment": "QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.",
       "type": "none"
     }
   ],

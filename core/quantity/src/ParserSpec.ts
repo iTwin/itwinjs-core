@@ -50,8 +50,9 @@ export class ParserSpec {
 
     // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
     const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
-    if (denominatorToNumerator.error)
+    if (denominatorToNumerator.error) {
       Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${denominatorUnit.name}" to "${numeratorUnit.name}" could not be resolved.`);
+    }
     const displayRatioScale = denominatorToNumerator.factor;
 
     // Avoid double-scaling: if persistence unit already encodes the display ratio, use factor 1.
@@ -117,8 +118,9 @@ export class ParserSpec {
     if (format.azimuthBaseUnit !== undefined) {
       if (outUnit !== undefined) {
         const azimuthResult = await unitsProvider.getConversion(format.azimuthBaseUnit, outUnit);
-        if (azimuthResult.error)
+        if (azimuthResult.error) {
           Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${format.azimuthBaseUnit.name}" to "${outUnit.name}" could not be resolved.`);
+        }
         spec._azimuthBaseConversion = azimuthResult;
       } else {
         spec._azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
@@ -127,8 +129,9 @@ export class ParserSpec {
     if (format.revolutionUnit !== undefined) {
       if (outUnit !== undefined) {
         const revolutionResult = await unitsProvider.getConversion(format.revolutionUnit, outUnit);
-        if (revolutionResult.error)
+        if (revolutionResult.error) {
           Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${format.revolutionUnit.name}" to "${outUnit.name}" could not be resolved.`);
+        }
         spec._revolutionConversion = revolutionResult;
       } else {
         spec._revolutionConversion = { factor: 1.0, offset: 0.0 };
