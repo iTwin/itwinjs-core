@@ -273,7 +273,6 @@ public;type;SupportedSchemaItemType
 preview;type;SupportedSchemaItemType
 public;class;Unit
 preview;class;Unit
-internal;class;UnitConversion
 internal;class;UnitConverter
 public;class;UnitSystem
 preview;class;UnitSystem

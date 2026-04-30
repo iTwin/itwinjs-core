@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "UnitConversion, parseDefinition, and Graph now re-exported from @itwin/core-quantity. UnitConversion.from() signature uses UnitConversionSource interface (structural typing — no consumer changes needed). No public API changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata",
+  "email": "50554904+hl662@users.noreply.github.com"
+}
