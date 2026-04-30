@@ -130,6 +130,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
  *
  * @note This locater is read-only and does not allow adding new schema search paths.
  * @note This locater should be used as a fallback/last chance locater in the schema context as any user defined schema should have higher precedence over the standard schema.
+ * @see [Loading ECSchemas from XML Files]($docs/learning/schema-xml-file-locaters.md) for usage guidance.
  * @public @preview This is a workaround due to the current lack of a full xml parser.
  */
 export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
