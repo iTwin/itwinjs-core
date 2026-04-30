@@ -565,8 +565,8 @@ describe("CloudSqlite", () => {
     newCache2.destroy();
   });
 
-  const prepareDbForCleaningBlocks = async () => {
-    const cache = azSqlite.makeCache("clean-blocks-cache");
+  const prepareDbForCleaningBlocks = async (cacheName: string) => {
+    const cache = azSqlite.makeCache(cacheName);
     const container = testContainers[0];
 
     const dbName = "testBimForCleaningBlocks";
@@ -604,7 +604,7 @@ describe("CloudSqlite", () => {
   };
 
   it("should be able to interrupt cleanDeletedBlocks operation", async () => {
-    const { container, garbageBlocksPrev } = await prepareDbForCleaningBlocks();
+    const { container, garbageBlocksPrev } = await prepareDbForCleaningBlocks("clean-blocks-cache");
 
     // cleanDeletedBlocks defaults to an nSeconds of 3600, so we expect to keep our garbage blocks, because they are less than 3600 seconds old.
     await CloudSqlite.cleanDeletedBlocks(container, {});
@@ -659,7 +659,7 @@ describe("CloudSqlite", () => {
   });
 
   it("slow cleanDeletedBlocks onProgress should not cause race condition", async () => {
-    const { container } = await prepareDbForCleaningBlocks();
+    const { container } = await prepareDbForCleaningBlocks("clean-blocks-cache-race-condition");
 
     let progressCalled = false;
     let progressWaited = false;
