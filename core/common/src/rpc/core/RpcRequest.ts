@@ -500,8 +500,7 @@ export abstract class RpcRequest<TResponse = any> {
         throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
       }
 
-      // double-cast required: ResponseLike no longer structurally satisfies Response after dropping implements
-      this._resolveRaw(new ResponseLike(this._raw) as unknown as Response);
+      this._resolveRaw(new ResponseLike(this._raw));
     }
 
     this.setStatus(RpcRequestStatus.Resolved);
