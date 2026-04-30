@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { describe, expect, it } from "vitest";
-import { type DefinitionFragment, parseDefinition } from "@itwin/core-quantity";
+import { type DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [
@@ -91,7 +91,6 @@ describe("DefinitionParser tests", () => {
     });
 
     it("singular constant/unit/phenomenon provided", () => {
-      // Unit and Phenomenon test, units and phenomena are not wrapped with brackets
       let definition = "TEST";
       let data = [
         [
@@ -106,7 +105,6 @@ describe("DefinitionParser tests", () => {
 
       expect([...parseDefinition(definition)]).to.deep.equal(data);
 
-      // Constant test, constants are wrapped with brackets
       definition = "[TEST]";
       data = [
         [

@@ -8,7 +8,7 @@
 
 import { BeEvent, BentleyError, BeUiEvent, BeUnorderedUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AddFormattingSpecArgs, AlternateUnitLabelsProvider, Format, FormatDefinition, FormatProps,
+  AddFormattingSpecArgs, AlternateUnitLabelsProvider, BasicUnitsProvider, Format, FormatDefinition, FormatProps,
   FormatsChangedArgs, FormatSpecHandle, FormatsProvider, FormatterSpec, FormattingReadyCollector,
   FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParseError, ParserSpec,
   QuantityParseResult, UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
@@ -16,7 +16,7 @@ import {
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
+import { getDefaultAlternateUnitLabels } from "./AlternateUnitLabels";
 import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
@@ -928,6 +928,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
    */
   public async resetToUseInternalUnitsProvider() {
+    // Coupled to createUnitsProvider() returning BasicUnitsProvider directly when no primary is set.
     if (this._unitsProvider instanceof BasicUnitsProvider)
       return;
 
@@ -1310,7 +1311,13 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    return this._unitsProvider.getConversion(fromUnit, toUnit);
+    const result = await this._unitsProvider.getConversion(fromUnit, toUnit);
+    if (result.error)
+      Logger.logWarning(
+        `${FrontendLoggerCategory.Package}.quantityFormatter`,
+        `Unit conversion from "${fromUnit.name}" to "${toUnit.name}" could not be resolved.`,
+      );
+    return result;
   }
 
   /**
