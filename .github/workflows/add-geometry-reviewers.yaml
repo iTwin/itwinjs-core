@@ -10,9 +10,13 @@ jobs:
   build:
     if: ${{ github.event.label.name == 'geometry' }}
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
     - name: Add Reviewers to PR
-      uses: madrapps/add-reviewers@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        reviewers: dassaf4,saeeedtorabi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr edit ${{ github.event.pull_request.number }} \
+          --add-reviewer dassaf4,saeeedtorabi \
+          --repo ${{ github.repository }}

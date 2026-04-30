@@ -24,13 +24,7 @@
 # HOW TO: Add New Files To The Exclusion List
 # 1. Add files to *this* config to trigger
 # 1. Add the glob of paths to trigger on to the "paths:" list below.
-# 2. Add the same paths to the "changed-files-specific" step below.
-#    IMPORTANT NOTE: The tj-actions/changed-files globs are slightly different than GitHub
-#    Actions' globs. There are at least two differences to be aware of:
-#    1. GitHub Actions globs require quotes if they start with a * character,
-#       tj-actions globs do not.
-#    2. ** matches slightly differently. For example, GitHub actions "**.md" would be
-#       tj-actions **/*.md.
+# 2. Add the same paths to the regex pattern in the "Get specific changed files" step below.
 # 3. For any status check that should potentially be skipped and/or faked, go to the
 #    status check's config and add the relevant paths to the paths exclusion list.
 #    ("paths-ignore" for Github Actions and "paths.exclude" for Azure Pipelines.)
@@ -54,36 +48,66 @@ jobs:
   detect-if-skip:
     name: Detect If Skip
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: read
     steps:
-      - uses: actions/checkout@v4
-
       # Check for certain paths having been modified
       - name: Get specific changed files
         id: changed-files-specific
-        uses: tj-actions/changed-files@v45    # See https://github.com/marketplace/actions/changed-files
-        with:
-          files: |
-            **/*.md
-            docs/**
-            .github/CODEOWNERS
-            common/changes/**/*.json
-            **/CHANGELOG.json
-            **/CHANGELOG.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Retrieve all changed file paths in the PR via the GitHub API (handles pagination)
+          CHANGED_FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            --paginate --jq '.[].filename')
 
-      # Fake required checks if neccessary
-      - uses: LouisBrunner/checks-action@v2.0.0   # See https://github.com/marketplace/actions/github-checks
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Check whether every changed file matches one of the allowed patterns:
+          #   **.md            – any Markdown file
+          #   docs/**          – anything under docs/
+          #   .github/CODEOWNERS
+          #   common/changes/**/*.json
+          #   **/CHANGELOG.json
+          #   **/CHANGELOG.md
+          ONLY_MODIFIED="true"
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            if ! echo "$file" | grep -qE '\.md$|^docs/|^\.github/CODEOWNERS$|^common/changes/.*\.json$|(^|.*/)CHANGELOG\.(json|md)$'; then
+              ONLY_MODIFIED="false"
+              echo "File not in skip list: $file"
+              break
+            fi
+          done <<< "$CHANGED_FILES"
+
+          echo "only_modified=$ONLY_MODIFIED" >> "$GITHUB_OUTPUT"
+
+      # Fake required checks if necessary
+      - name: Fake extract-api check
         if: steps.changed-files-specific.outputs.only_modified == 'true'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: extract-api
-          conclusion: success
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/check-runs" \
+            --method POST \
+            --field name="extract-api" \
+            --field head_sha="${{ github.event.pull_request.head.sha }}" \
+            --field status="completed" \
+            --field conclusion="success"
 
       # Add more status checks below if necessary
 
       # TEMPLATE
-      # - uses: LouisBrunner/checks-action@v1.3.0
+      # - name: Fake <name-of-any-status-check-to-simulate> check
       #   if: steps.changed-files-specific.outputs.only_modified == 'true'
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     name: <name-of-any-status-check-to-simulate>
-      #     conclusion: success
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh api "repos/${{ github.repository }}/check-runs" \
+      #       --method POST \
+      #       --field name="<name-of-any-status-check-to-simulate>" \
+      #       --field head_sha="${{ github.event.pull_request.head.sha }}" \
+      #       --field status="completed" \
+      #       --field conclusion="success"
