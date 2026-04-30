@@ -2,12 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant } from "../Metadata/Constant";
-import { Unit } from "../Metadata/Unit";
-import { almostEqual } from "@itwin/core-quantity";
+import { almostEqual } from "../Quantity";
 
 /**
- * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]
+ * Structural interface satisfied by any object that carries a numerator/denominator
+ * factor and an optional offset — for example, the EC `Unit` and `Constant` classes in
+ * `@itwin/ecschema-metadata`.
+ * @internal
+ */
+export interface UnitConversionSource {
+  readonly numerator: number;
+  readonly denominator: number;
+  readonly offset?: number;
+}
+
+/**
+ * Class used for storing calculated conversion between two Units and converting values from one Unit to another.
  * @internal
  */
 export class UnitConversion {
@@ -74,13 +84,13 @@ export class UnitConversion {
   public static identity = new UnitConversion();
 
   /**
-   * Returns UnitConversion with unit's numerator and denominator in factor and unit's offset in offset for reducing
+   * Returns UnitConversion with source's numerator and denominator in factor and source's offset in offset for reducing.
+   * Accepts any object that structurally satisfies `UnitConversionSource` (e.g. EC `Unit` or `Constant`).
    * @internal
    */
-  public static from(unitOrConstant: Unit | Constant): UnitConversion {
-    if (Unit.isUnit(unitOrConstant))
-      return new UnitConversion(unitOrConstant.denominator / unitOrConstant.numerator, -unitOrConstant.offset);
-
-    return new UnitConversion(unitOrConstant.denominator / unitOrConstant.numerator, 0.0);
+  public static from(source: UnitConversionSource): UnitConversion {
+    const offset = source.offset ?? 0;
+    const hasOffset = !almostEqual(offset, 0.0);
+    return new UnitConversion(source.denominator / source.numerator, hasOffset ? -offset : 0.0);
   }
 }

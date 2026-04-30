@@ -36,6 +36,9 @@ publish: false
       - [New APIs](#new-apis-2)
         - [`@itwin/core-quantity`](#itwincore-quantity)
         - [`@itwin/core-frontend`](#itwincore-frontend)
+      - [BasicUnitsProvider and createUnitsProvider](#basicunitsprovider-and-createunitsprovider)
+        - [Layering schema units on top of basic units](#layering-schema-units-on-top-of-basic-units)
+        - [Migration for backend and tool consumers](#migration-for-backend-and-tool-consumers)
       - [Bug fixes](#bug-fixes)
       - [Behavioral changes](#behavioral-changes)
 
@@ -551,6 +554,8 @@ See the [Settings documentation]($docs/learning/backend/Settings.md#itwin-settin
 - **`Units` namespace** — Typed constants for commonly used unit names (e.g., `Units.M`, `Units.FT`, `Units.RAD`). Eliminates magic strings when referencing units programmatically.
 - **`findPersistenceUnitForPhenomenon()`** — Maps phenomenon names to their canonical SI persistence unit.
 - **`FormatsChangedArgs.impliedUnitSystem`** — Allows a `FormatsProvider` to indicate which unit system its format set implies.
+- **[BasicUnitsProvider]($quantity)** — Standalone `UnitsProvider` backed by the full BIS `Units` schema bundled into `@itwin/core-quantity`. It works without an iModel or [SchemaContext]($ecschema-metadata), making the standard BIS unit set available in frontend, backend, and tool workflows.
+- **[createUnitsProvider]($quantity)** and **[CreateUnitsProviderOptions]($quantity)** — Factory and options for composing a primary provider, such as [SchemaUnitProvider]($ecschema-metadata), with the bundled BIS units. `bisUnitsPolicy` controls whether schema-defined units or bundled BIS units win when both define the same unit.
 
 ##### `@itwin/core-frontend`
 
@@ -565,6 +570,63 @@ See the [Settings documentation]($docs/learning/backend/Settings.md#itwin-settin
 - **[QuantityFormatter.addFormattingSpecsToRegistry]($frontend)** — Now accepts an optional `system` parameter to register specs for a specific unit system.
 - **`FormatsProvider.getFormat(name, system?)`** — Optional `system` parameter for per-system KindOfQuantity format resolution.
 
+#### BasicUnitsProvider and createUnitsProvider
+
+`@itwin/core-quantity` now exposes [BasicUnitsProvider]($quantity) and [createUnitsProvider]($quantity) for layered unit resolution.
+
+[QuantityFormatter]($frontend) now defaults to [BasicUnitsProvider]($quantity) — the zero-dependency provider backed by the full BIS `Units` schema. This means:
+
+- All BIS units are available out of the box, covering phenomena such as length, area, volume, temperature, pressure, angle, force, and more.
+- No iModel is required for standard BIS unit support, so UIs and workflows that do not need an iModel can still format and parse quantities correctly.
+- [BasicUnitsProvider]($quantity) can now be imported directly from `@itwin/core-quantity` for backend and tool scenarios that only need standard BIS units.
+
+```typescript
+import { BasicUnitsProvider } from "@itwin/core-quantity";
+
+const provider = new BasicUnitsProvider();
+const meter = await provider.findUnitByName("Units.M");
+const foot = await provider.findUnitByName("Units.FT");
+const conv = await provider.getConversion(meter, foot);
+// conv.factor ~= 3.28084
+```
+
+##### Layering schema units on top of basic units
+
+The new [createUnitsProvider]($quantity) factory composes a `primary` provider, such as [SchemaUnitProvider]($ecschema-metadata), with the bundled BIS units as a fallback:
+
+```typescript
+import { IModelApp } from "@itwin/core-frontend";
+import { createUnitsProvider } from "@itwin/core-quantity";
+import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
+
+const iModelConnection = ...; // an open IModelConnection
+await IModelApp.quantityFormatter.setUnitsProvider(
+  createUnitsProvider({
+    primary: new SchemaUnitProvider(iModelConnection.schemaContext),
+  }),
+);
+```
+
+Precedence rules:
+
+- `primary` wins by default (`bisUnitsPolicy: "preferSchema"`): the primary provider resolves first, and bundled BIS units fill any gaps.
+- `bisUnitsPolicy: "preferBundled"`: bundled BIS units win, and the primary provider is only consulted when the bundled provider cannot answer.
+- `getUnitsByFamily` always merges results from both providers, deduplicated by fully-qualified unit name.
+
+When no `primary` is supplied, `createUnitsProvider()` returns a plain `new BasicUnitsProvider()` rather than a wrapper, preserving `instanceof` checks.
+
+##### Migration for backend and tool consumers
+
+Backends or tools that previously needed a `SchemaContext` only to resolve standard BIS units can now use [BasicUnitsProvider]($quantity) directly:
+
+```typescript
+import { BasicUnitsProvider } from "@itwin/core-quantity";
+
+const provider = new BasicUnitsProvider();
+```
+
+> **Note:** [UnitConversionProps]($quantity) can mark unresolved conversions with `error`. `QuantityFormatter`, `FormatterSpec`, and `Parser` now log warnings when a provider returns one of these fallback conversions, and direct consumers of `UnitConversionProps` should check that flag as well.
+
 #### Bug fixes
 
 - **Fixed listener leak in `FormatsProviderManager`** — Replacing `IModelApp.formatsProvider` multiple times no longer stacks listeners. Old listeners are properly removed before new ones are added.
@@ -574,5 +636,7 @@ See the [Settings documentation]($docs/learning/backend/Settings.md#itwin-settin
 - **Three-level spec registry** — `_formatSpecsRegistry` is now keyed by KoQ name, persistence unit, and unit system (`[koqName][persistenceUnit][unitSystem]`). The same KoQ with different persistence units or different unit systems can coexist. This is a **protected member type change** — subclasses accessing this field directly will need to update.
 - **`getSpecsByName()` return type changed** — Now returns `Map<string, FormattingSpecEntry> | undefined` instead of `FormattingSpecEntry | undefined`.
 - **Two-phase ready flow** — Formatting readiness now follows a two-phase pattern: `onBeforeFormattingReady` fires first (providers register async work via the collector), and the formatter awaits all pending work with a 20-second default timeout before emitting `onFormattingReady`. Rejections are logged as warnings but do not prevent the formatter from becoming ready.
+- **`QuantityFormatter` now defaults to bundled BIS units** — `IModelApp.quantityFormatter` now initializes with [BasicUnitsProvider]($quantity) from `@itwin/core-quantity` instead of the previous limited internal frontend provider. Formatting and parsing therefore work out of the box in non-iModel scenarios with the full BIS unit set, while apps can still layer schema-defined units via [createUnitsProvider]($quantity).
+- **Failed unit conversions are now surfaced in logs** — [UnitConversionProps]($quantity) can mark unresolved conversions with `error`, and `QuantityFormatter`, `FormatterSpec`, and `Parser` now log warnings when a provider returns one of these fallback conversions instead of failing silently.
 
 For detailed usage documentation and code examples, see [QuantityFormatter Lifecycle & Integration](../quantity-formatting/usage/QuantityFormatterAdvanced.md).
