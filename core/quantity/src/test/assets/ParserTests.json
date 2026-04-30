@@ -1,0 +1,434 @@
+{
+  "NUMBER": [
+    [
+      "NUMBER",
+      {
+        "name": "NUMBER",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "NUMBER(2)": [
+    [
+      "NUMBER",
+      {
+        "name": "NUMBER",
+        "exponent": 2,
+        "constant": false
+      }
+    ]
+  ],
+  "NUMBER(-1)": [
+    [
+      "NUMBER",
+      {
+        "name": "NUMBER",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "[NUMBER]": [
+    [
+      "NUMBER",
+      {
+        "name": "NUMBER",
+        "exponent": 1,
+        "constant": true
+      }
+    ]
+  ],
+  "FORCE*LENGTH": [
+    [
+      "FORCE",
+      {
+        "name": "FORCE",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "LENGTH",
+      {
+        "name": "LENGTH",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "WORK*TIME(-1)": [
+    [
+      "WORK",
+      {
+        "name": "WORK",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "TIME",
+      {
+        "name": "TIME",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "LENGTH*LENGTH(-1)*TEMPERATURE_CHANGE(-1)": [
+    [
+      "LENGTH",
+      {
+        "name": "LENGTH",
+        "exponent": 0,
+        "constant": false
+      }
+    ],
+    [
+      "TEMPERATURE_CHANGE",
+      {
+        "name": "TEMPERATURE_CHANGE",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "[PI]*RAD": [
+    [
+      "PI",
+      {
+        "name": "PI",
+        "exponent": 1,
+        "constant": true
+      }
+    ],
+    [
+      "RAD",
+      {
+        "name": "RAD",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "BTU*IN*FT(-2)*HR(-1)*DELTA_FAHRENHEIT(-1)": [
+    [
+      "BTU",
+      {
+        "name": "BTU",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "IN",
+      {
+        "name": "IN",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "FT",
+      {
+        "name": "FT",
+        "exponent": -2,
+        "constant": false
+      }
+    ],
+    [
+      "HR",
+      {
+        "name": "HR",
+        "exponent": -1,
+        "constant": false
+      }
+    ],
+    [
+      "DELTA_FAHRENHEIT",
+      {
+        "name": "DELTA_FAHRENHEIT",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "M(3)*M(-3)": [
+    [
+      "M",
+      {
+        "name": "M",
+        "exponent": 0,
+        "constant": false
+      }
+    ]
+  ],
+  "[PI](2)*[PI](-2)*[PI](2)*[PI](-2)*[PI](2)*[PI](-2)": [
+    [
+      "PI",
+      {
+        "name": "PI",
+        "exponent": 0,
+        "constant": true
+      }
+    ]
+  ],
+  "BTU(-1)*[PI](2)*HR*[ONE]*TEMPERATURE_CHANGE(1)": [
+    [
+      "BTU",
+      {
+        "name": "BTU",
+        "exponent": -1,
+        "constant": false
+      }
+    ],
+    [
+      "PI",
+      {
+        "name": "PI",
+        "exponent": 2,
+        "constant": true
+      }
+    ],
+    [
+      "HR",
+      {
+        "name": "HR",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "ONE",
+      {
+        "name": "ONE",
+        "exponent": 1,
+        "constant": true
+      }
+    ],
+    [
+      "TEMPERATURE_CHANGE",
+      {
+        "name": "TEMPERATURE_CHANGE",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:NUMBER": [
+    [
+      "alias:NUMBER",
+      {
+        "name": "alias:NUMBER",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:NUMBER(2)": [
+    [
+      "alias:NUMBER",
+      {
+        "name": "alias:NUMBER",
+        "exponent": 2,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:NUMBER(-1)": [
+    [
+      "alias:NUMBER",
+      {
+        "name": "alias:NUMBER",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "[alias:NUMBER]": [
+    [
+      "alias:NUMBER",
+      {
+        "name": "alias:NUMBER",
+        "exponent": 1,
+        "constant": true
+      }
+    ]
+  ],
+  "alias:FORCE*alias:LENGTH": [
+    [
+      "alias:FORCE",
+      {
+        "name": "alias:FORCE",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:LENGTH",
+      {
+        "name": "alias:LENGTH",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:WORK*alias:TIME(-1)": [
+    [
+      "alias:WORK",
+      {
+        "name": "alias:WORK",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:TIME",
+      {
+        "name": "alias:TIME",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:LENGTH*alias:LENGTH(-1)*alias:TEMPERATURE_CHANGE(-1)": [
+    [
+      "alias:LENGTH",
+      {
+        "name": "alias:LENGTH",
+        "exponent": 0,
+        "constant": false
+      }
+    ],
+    [
+      "alias:TEMPERATURE_CHANGE",
+      {
+        "name": "alias:TEMPERATURE_CHANGE",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "[alias:PI]*alias:RAD": [
+    [
+      "alias:PI",
+      {
+        "name": "alias:PI",
+        "exponent": 1,
+        "constant": true
+      }
+    ],
+    [
+      "alias:RAD",
+      {
+        "name": "alias:RAD",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:BTU*alias:IN*alias:FT(-2)*alias:HR(-1)*alias:DELTA_FAHRENHEIT(-1)": [
+    [
+      "alias:BTU",
+      {
+        "name": "alias:BTU",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:IN",
+      {
+        "name": "alias:IN",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:FT",
+      {
+        "name": "alias:FT",
+        "exponent": -2,
+        "constant": false
+      }
+    ],
+    [
+      "alias:HR",
+      {
+        "name": "alias:HR",
+        "exponent": -1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:DELTA_FAHRENHEIT",
+      {
+        "name": "alias:DELTA_FAHRENHEIT",
+        "exponent": -1,
+        "constant": false
+      }
+    ]
+  ],
+  "alias:M(3)*alias:M(-3)": [
+    [
+      "alias:M",
+      {
+        "name": "alias:M",
+        "exponent": 0,
+        "constant": false
+      }
+    ]
+  ],
+  "[alias:PI](2)*[alias:PI](-2)*[alias:PI](2)*[alias:PI](-2)*[alias:PI](2)*[alias:PI](-2)": [
+    [
+      "alias:PI",
+      {
+        "name": "alias:PI",
+        "exponent": 0,
+        "constant": true
+      }
+    ]
+  ],
+  "alias:BTU(-1)*[alias:PI](2)*alias:HR*[alias:ONE]*alias:TEMPERATURE_CHANGE(1)": [
+    [
+      "alias:BTU",
+      {
+        "name": "alias:BTU",
+        "exponent": -1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:PI",
+      {
+        "name": "alias:PI",
+        "exponent": 2,
+        "constant": true
+      }
+    ],
+    [
+      "alias:HR",
+      {
+        "name": "alias:HR",
+        "exponent": 1,
+        "constant": false
+      }
+    ],
+    [
+      "alias:ONE",
+      {
+        "name": "alias:ONE",
+        "exponent": 1,
+        "constant": true
+      }
+    ],
+    [
+      "alias:TEMPERATURE_CHANGE",
+      {
+        "name": "alias:TEMPERATURE_CHANGE",
+        "exponent": 1,
+        "constant": false
+      }
+    ]
+  ]
+}

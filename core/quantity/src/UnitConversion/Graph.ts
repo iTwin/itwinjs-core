@@ -45,7 +45,7 @@ interface OutEdgesMap {
 }
 
 /** @internal */
-export class Graph<T> {
+export class UnitConversionGraph<T> {
   private _edgeKeyDelim = "\x01";
   private _label = "";
   private _nodeCount = 0;
@@ -62,7 +62,7 @@ export class Graph<T> {
     this._outEdges = {};
   }
 
-  public setGraph = (label: string): Graph<T> => {
+  public setGraph = (label: string): UnitConversionGraph<T> => {
     this._label = label;
     return this;
   };
@@ -108,7 +108,6 @@ export class Graph<T> {
   public setEdge = (v: string, w: string, value: { exponent: number }) => {
     const edgeId = v + this._edgeKeyDelim + w + this._edgeKeyDelim;
     if (edgeId in this._edgeLabels) {
-      // this._edgeLabels[edgeId] = value;
       // Update exponent, specific to this graph's use case
       this._edgeLabels[edgeId].exponent += value.exponent;
       return;

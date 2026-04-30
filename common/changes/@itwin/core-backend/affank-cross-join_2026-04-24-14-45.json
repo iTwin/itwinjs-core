@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ECSQL: Allow optional ON clause with CROSS JOIN",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
