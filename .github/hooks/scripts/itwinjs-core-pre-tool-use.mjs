@@ -1,9 +1,14 @@
 import { execFile } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { compactJson, getBashCommand, isGitCommitCommand, readHookInput } from "./itwinjs-core-hook-utils.mjs";
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const rushLauncherPath = resolve(repoRoot, "common/scripts/install-run-rush.js");
 
 function runRushChangeVerify() {
   return new Promise((resolve, reject) => {
-    execFile("rush", ["change", "--verify"], { timeout: 30_000 }, (error, stdout, stderr) => {
+    execFile(process.execPath, [rushLauncherPath, "change", "--verify"], { cwd: repoRoot, timeout: 30_000 }, (error, stdout, stderr) => {
       if (error) {
         reject(new Error(stderr || stdout || error.message));
         return;
