@@ -49,7 +49,7 @@ export class FunctionalModel extends RoleModel {
    * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
-  /** @deprecated Use FunctionalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use FunctionalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];

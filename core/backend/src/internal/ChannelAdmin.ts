@@ -90,7 +90,7 @@ class ChannelAdmin implements ChannelControl {
   }
 
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey, txn: EditTxn }): void;
-  /** @deprecated Use makeChannelRoot and supply `txn`. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use makeChannelRoot and supply `txn`. */
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey, txn?: EditTxn }): void {
     const txn = args.txn ?? this._iModel[_implicitTxn];
@@ -113,7 +113,7 @@ class ChannelAdmin implements ChannelControl {
   }
 
   public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string, txn: EditTxn }): Id64String;
-  /** @deprecated Use insertChannelSubject and supply `txn`. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use insertChannelSubject and supply `txn`. */
   public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String;
   public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string, txn?: EditTxn }): Id64String {
     const txn = args.txn ?? this._iModel[_implicitTxn];
