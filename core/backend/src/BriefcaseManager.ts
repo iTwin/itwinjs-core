@@ -879,7 +879,9 @@ export class BriefcaseManager {
     IModelJsFs.writeFileSync(filePath, "[");
     let isFirst = true;
     for (const instancePatch of instancePatches) {
-      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue; // we will not take the old stage of updated instances
+      // we will not take the old stage of updated instances for now, because we still don't have conflict resolution on instance level while using semantic rebase.
+      // Once we have conflict resolution on instance level, we can consider taking old stage of updated instances as well.
+      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue;
       IModelJsFs.appendFileSync(filePath, `${isFirst ? "" : ","}\n${JSON.stringify(instancePatch, Base64EncodedString.replacer)}`);
       isFirst = false;
     }
