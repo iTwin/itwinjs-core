@@ -8622,7 +8622,7 @@ export function resolveNavProp(navProp: RelatedElementProps | undefined, depreca
 export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
 
 // @internal (undocumented)
-export class ResponseLike implements Response {
+export class ResponseLike {
     constructor(data: any);
     // (undocumented)
     arrayBuffer(): Promise<ArrayBuffer>;

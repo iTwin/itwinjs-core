@@ -170,7 +170,7 @@ export class MapLayerFormatRegistry {
       Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
       return undefined;
     }
-    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel);
   }
 
   /**

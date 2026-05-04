@@ -18,13 +18,28 @@ export * from "./Formatter/FormattingReadyCollector";
 export * from "./Formatter/Interfaces";
 export * from "./QuantityLoggerCategory";
 
+export * from "./UnitConversion/UnitConversion";
+export * from "./UnitConversion/UnitDefinitionResolver";
+export * from "./SerializedUnitSchema";
+export { BasicUnitsProvider } from "./BasicUnitsProvider";
+export * from "./CompositeUnitsProvider";
+export * from "./internal/cross-package";
+
 /** @docs-package-description
- * The core-quantity package always runs in a web browser. It contains classes, interfaces, and definitions for formatting and parsing quantity values.
+ * The core-quantity package contains classes, interfaces, and definitions for formatting and parsing quantity values.
  */
 
 /**
  * @docs-group-description Quantity
  * Classes, Interfaces, and definitions used to format and parse quantity values.
+ */
+/**
+ * @docs-group-description BasicUnitsProvider
+ * A UnitsProvider backed by the bundled BIS Units schema JSON asset.
+ */
+/**
+ * @docs-group-description CompositeUnitsProvider
+ * Factory and composition utilities for layering multiple UnitsProviders.
  */
 /**
  * @docs-group-description Logging

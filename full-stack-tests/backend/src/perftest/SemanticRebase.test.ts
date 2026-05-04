@@ -201,7 +201,7 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
           propA: `value_a_${i}`,
           propC: `value_c_${i}`,
         };
-        txn.insertElement(t!.local.elements.createElement(elementProps as any).toJSON());
+        txn.insertElement(t!.local.elements.createElement(elementProps).toJSON());
       }
     });
     const insertEndTime = Date.now();
@@ -268,7 +268,7 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
           propA: `value_a_${i}`,
           propC: `value_c_${i}`,
         };
-        txn.insertElement(t!.local.elements.createElement(elementProps as any).toJSON());
+        txn.insertElement(t!.local.elements.createElement(elementProps).toJSON());
       }
     });
     const insertEndTime = Date.now();

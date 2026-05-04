@@ -71,7 +71,7 @@ export class EntityClass extends ECClass implements HasMixins {
     if (!inheritedProperty && this._mixins) {
       const mixinProps = await Promise.all(this._mixins.map(async (mixin) => (await mixin).getProperty(name)));
       mixinProps.some((prop) => {
-        inheritedProperty = prop as AnyProperty;
+        inheritedProperty = prop;
         return inheritedProperty !== undefined;
       });
     }

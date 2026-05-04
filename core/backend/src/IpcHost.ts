@@ -177,7 +177,7 @@ export abstract class IpcHandler {
       } catch (err: unknown) {
 
         if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
-          return { error: err as any };
+          return { error: err };
 
         const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
           if (visited.has(e))
