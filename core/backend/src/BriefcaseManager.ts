@@ -626,7 +626,7 @@ export class BriefcaseManager {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
         Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
       } else {
-        nativeDb.pullMergeReverseLocalChanges(false);
+        nativeDb.pullMergeReverseLocalChanges();
       }
     }
 
