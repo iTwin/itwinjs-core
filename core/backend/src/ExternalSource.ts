@@ -46,7 +46,7 @@ export class ExternalSource extends InformationReferenceElement {
    * @param txn The active EditTxn.
    */
   public static ensureCodeSpec(txn: EditTxn): Id64String;
-  /** @deprecated Use ExternalSource.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use ExternalSource.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
   public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
     const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
@@ -116,7 +116,7 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
    * @param txn The active EditTxn.
    */
   public static ensureCodeSpec(txn: EditTxn): Id64String;
-  /** @deprecated Use ExternalSourceAttachment.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use ExternalSourceAttachment.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
   public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
     const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
