@@ -159,7 +159,7 @@ describe("SchemaView hidden flags", () => {
   let view: SchemaView;
 
   before(async () => {
-    const testFileName = IModelTestUtils.prepareOutputFile("RuntimeSchemaHidden", "HiddenFlags.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("SchemaViewHidden", "HiddenFlags.bim");
     iModel = SnapshotDb.createEmpty(testFileName, { rootSubject: { name: "HiddenFlagsTest" } });
     await iModel.importSchemaStrings([
       hiddenSchemaDefault,

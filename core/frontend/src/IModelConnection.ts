@@ -658,11 +658,17 @@ export abstract class IModelConnection extends IModel {
       if (!ctx.isOutdated)
         return ctx;
     }
-    this._schemasPromise = this._fetchSchemas().catch((err) => {
-      this._schemasPromise = undefined;
-      throw err;
+    // Capture the in-flight promise locally so the rejection handler only clears
+    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
+    // re-fetch could otherwise replace the field before our fetch fails, and a naive
+    // `_schemasPromise = undefined` would clobber that newer reference.
+    const inflight = this._fetchSchemas();
+    this._schemasPromise = inflight;
+    inflight.catch(() => {
+      if (this._schemasPromise === inflight)
+        this._schemasPromise = undefined;
     });
-    return this._schemasPromise;
+    return inflight;
   }
 
 

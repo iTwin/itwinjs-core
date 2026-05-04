@@ -7,7 +7,7 @@
  */
 
 import { type ClassData, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, type PropertyRef, type RelConstraintData, type SchemaData } from "./SchemaViewInterfaces";
-import { ClassModifier, PropertyKind, RuntimePrimitiveType } from "./SchemaViewInterfaces";
+import { ClassModifier, PropertyKind, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "./ECObjects";
 
@@ -195,12 +195,15 @@ export class SchemaView {
   /** Parse a binary blob into a SchemaView. Synchronous.
    * @param blob - The binary blob from `PRAGMA schema_view`.
    * @param schemaToken - Optional SHA3-256 content hash for cache invalidation.
+   * @beta
    */
   public static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView {
     return parseSchemaViewBlob(blob, schemaToken);
   }
 
-  /** Build from a pre-populated builder (used by ECSQL loader or binary parser). */
+  /** Build from a pre-populated builder (used by the binary parser).
+   * @internal
+   */
   public static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView {
     return builder.build(schemaToken);
   }
@@ -632,7 +635,12 @@ export namespace SchemaView {
 
     // Properties
 
-    /** Find a property by name (case-insensitive). Searches own + inherited. */
+    /** Find a property by name (case-insensitive). Searches own + inherited.
+     *
+     * Note: this resolves the full property list and linear-scans it on every call. For workloads
+     * that hit `getProperty` repeatedly on the same class with different names, a per-class
+     * resolved-property map cache could be added on the view. Not done now - measure before
+     * optimizing. */
     public getProperty(name: string): Property | undefined {
       const allProps = this._ctx.resolveAllProperties(this.idx);
       const lowerName = name.toLowerCase();
@@ -804,7 +812,7 @@ export namespace SchemaView {
    * @beta
    */
   export class PrimitiveProperty extends Property {
-    public get primitiveType(): RuntimePrimitiveType { return this._def.primitiveType; }
+    public get primitiveType(): SchemaViewPrimitiveType { return this._def.primitiveType; }
     public get extendedTypeName(): string | undefined {
       const sid = this._def.extTypeSid;
       return sid !== 0 ? this._ctx.strings[sid] : undefined;
@@ -824,7 +832,7 @@ export namespace SchemaView {
    * @beta
    */
   export class PrimitiveArrayProperty extends Property {
-    public get primitiveType(): RuntimePrimitiveType { return this._def.primitiveType; }
+    public get primitiveType(): SchemaViewPrimitiveType { return this._def.primitiveType; }
     public get extendedTypeName(): string | undefined {
       const sid = this._def.extTypeSid;
       return sid !== 0 ? this._ctx.strings[sid] : undefined;
@@ -940,7 +948,7 @@ export namespace SchemaView {
       return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
     }
     public get schema(): Schema { return new Schema(this._ctx, this._data.schemaIdx); }
-    public get primitiveType(): RuntimePrimitiveType { return this._data.primitiveType; }
+    public get primitiveType(): SchemaViewPrimitiveType { return this._data.primitiveType; }
     public get isStrict(): boolean { return this._data.isStrict; }
 
     /** Iterate enumerators in declaration order. */
@@ -1182,9 +1190,12 @@ export namespace SchemaView {
 
 /** Builder for constructing an immutable `SchemaView`.
  *
- * Collects data during population (from binary parsing or ECSQL queries), then freezes it into
- * a view. Handles string interning and property definition deduplication.
- * @beta
+ * Collects data during binary blob parsing, then freezes it into a view.
+ * Handles string interning and property definition deduplication.
+ *
+ * Consumers should not use this directly - read views via `IModelDb.getSchemaView`
+ * / `IModelConnection.getSchemaView` (or `SchemaView.fromBinary` if you have a raw blob).
+ * @internal
  */
 export class SchemaViewBuilder {
   private readonly _strings: string[] = [""]; // SID 0 = empty string

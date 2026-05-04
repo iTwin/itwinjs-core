@@ -21,13 +21,13 @@ import { TestUtils } from "../TestUtils";
  */
 describe("SchemaView KindOfQuantity presentation formats", () => {
   let iModel: SnapshotDb;
-  let runtimeCtx: SchemaView;
+  let schemaView: SchemaView;
 
   before(async () => {
     if (!IModelHost.isValid)
       await TestUtils.startBackend();
     iModel = SnapshotDb.openFile(path.join(KnownTestLocations.assetsDir, "sim-master.bim"));
-    runtimeCtx = await iModel.getSchemaView();
+    schemaView = await iModel.getSchemaView();
   });
 
   after(() => {
@@ -40,13 +40,13 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
    * IModelDb.schemaContext.
    *
    * SchemaView uses alias-qualified names (e.g. "f:DefaultRealU", "u:M")
-   * because the Units and Formats schemas are excluded from the runtime blob.
+   * because the Units and Formats schemas are excluded from the SchemaView blob.
    * The alias ("f" -> "Formats", "u" -> "Units") is stored in ec_Schema, so we
    * can resolve it using the schema context that has the full schema set.
    */
   it("should resolve KoQ format and unit names via ecschema-metadata", async () => {
     // --- Step 1: find a property with a KoQ via SchemaView ---
-    const rClass = runtimeCtx.findClass("LinearReferencing:DistanceExpression");
+    const rClass = schemaView.findClass("LinearReferencing:DistanceExpression");
     assert.isDefined(rClass, "DistanceExpression class not found");
 
     const rProp = rClass!.getProperty("DistanceAlongFromStart");
@@ -122,8 +122,8 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
    */
   it("should resolve KoQ format and unit names via ECSQL", async () => {
     // --- Step 1: find a KoQ via SchemaView ---
-    const rKoq = runtimeCtx.findKindOfQuantity("LinearReferencing:LENGTH");
-    assert.isDefined(rKoq, "KoQ not found in runtime context");
+    const rKoq = schemaView.findKindOfQuantity("LinearReferencing:LENGTH");
+    assert.isDefined(rKoq, "KoQ not found in SchemaView");
 
     const formats = rKoq!.presentationFormats;
     expect(formats.length).to.be.greaterThan(0);
@@ -172,7 +172,7 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
     // --- Step 4: query the format's composite units (base format units, before overrides) ---
     // DefaultRealU has no composite units (it's a single-unit format), but AngleDMS does.
     // Let's also check the second KoQ format which might have composite units.
-    const angleKoq = runtimeCtx.findKindOfQuantity("RoadRailUnits:ANGLE");
+    const angleKoq = schemaView.findKindOfQuantity("RoadRailUnits:ANGLE");
     if (angleKoq) {
       const angleFormats = angleKoq.presentationFormats;
       // The AngleDMS format has composite units: ARC_DEG, ARC_MINUTE, ARC_SECOND

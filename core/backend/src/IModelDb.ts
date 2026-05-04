@@ -1735,11 +1735,17 @@ export abstract class IModelDb extends IModel {
       if (!ctx.isOutdated)
         return ctx;
     }
-    this._schemasPromise = this._hydrateSchemas().catch((err) => {
-      this._schemasPromise = undefined;
-      throw err;
+    // Capture the in-flight promise locally so the rejection handler only clears
+    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
+    // re-fetch could otherwise replace the field before our hydrate fails, and a naive
+    // `_schemasPromise = undefined` would clobber that newer reference.
+    const inflight = this._hydrateSchemas();
+    this._schemasPromise = inflight;
+    inflight.catch(() => {
+      if (this._schemasPromise === inflight)
+        this._schemasPromise = undefined;
     });
-    return this._schemasPromise;
+    return inflight;
   }
 
   private async _hydrateSchemas(): Promise<SchemaView> {

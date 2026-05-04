@@ -12,10 +12,10 @@ import * as path from "path";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUtils } from "../TestUtils";
 
-/** Schemas excluded from the runtime binary blob by the C++ writer.
- * Must stay in sync with `IsExcludedSchema()` in `RuntimeSchemaWriter.cpp`.
+/** Schemas excluded from the SchemaView binary blob by the C++ writer.
+ * Must stay in sync with `IsExcludedSchema()` in `SchemaViewWriter.cpp`.
  */
-const excludedRuntimeSchemas: ReadonlySet<string> = new Set([
+const excludedSchemaViewSchemas: ReadonlySet<string> = new Set([
   "BisCustomAttributes",
   "CoreCustomAttributes",
   "ECDbFileInfo",
@@ -56,11 +56,11 @@ describe("SchemaView cross-validation", () => {
 
     describe(iModelName, () => {
       let iModel: SnapshotDb;
-      let runtimeCtx: SchemaView;
+      let schemaView: SchemaView;
 
       before(async () => {
         iModel = SnapshotDb.openFile(iModelPath);
-        runtimeCtx = await iModel.getSchemaView();
+        schemaView = await iModel.getSchemaView();
       });
 
       after(() => {
@@ -68,9 +68,9 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have matching schema count and names", () => {
-        // Force all schemas to load via the schemaContext by looking up a class from each runtime schema.
+        // Force all schemas to load via the schemaContext by looking up a class from each SchemaView schema.
         // ecschema-metadata loads schemas lazily - getKnownSchemas() only returns already-loaded ones.
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           // Looking up any item from this schema forces it to load in ecschema-metadata
           const firstClass = rSchema.getClasses().next();
           if (!firstClass.done) {
@@ -81,7 +81,7 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have matching classes for every schema", () => {
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             const metaClass = iModel.schemaContext.getSchemaItemSync(rSchema.name, rClass.name) as ECClass | undefined;
             assert.isDefined(metaClass, `Class '${rClass.fullName}' not found in ecschema-metadata`);
@@ -91,13 +91,13 @@ describe("SchemaView cross-validation", () => {
 
             // Type
             const expectedType = schemaItemTypeToClassType(metaClass!.schemaItemType, metaClass!);
-            expect(rClass.type).to.equal(expectedType, `type mismatch for ${rClass.fullName}: runtime=${ClassType[rClass.type]}, expected=${ClassType[expectedType]}`);
+            expect(rClass.type).to.equal(expectedType, `type mismatch for ${rClass.fullName}: schemaView=${ClassType[rClass.type]}, expected=${ClassType[expectedType]}`);
 
             // Modifier
             const expectedModifier = ecModifierToClassModifier(metaClass!.modifier);
             expect(rClass.modifier).to.equal(expectedModifier, `modifier mismatch for ${rClass.fullName}`);
 
-            // Label (ecschema-metadata returns undefined when no label, runtime returns the name)
+            // Label (ecschema-metadata returns undefined when no label, SchemaView returns the name)
             if (metaClass!.label !== undefined) {
               expect(rClass.label).to.equal(metaClass!.label, `label mismatch for ${rClass.fullName}`);
             }
@@ -115,7 +115,7 @@ describe("SchemaView cross-validation", () => {
       it("should have matching properties for every class", () => {
         let totalChecked = 0;
 
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             const metaClass = iModel.schemaContext.getSchemaItemSync(rSchema.name, rClass.name) as ECClass | undefined;
             if (metaClass === undefined)
@@ -126,7 +126,7 @@ describe("SchemaView cross-validation", () => {
             const metaOwnProps = [...metaClass.getPropertiesSync(true)]; // excludeInherited=true
 
             expect(rOwnProps.length).to.equal(metaOwnProps.length,
-              `own property count mismatch for ${rClass.fullName}: runtime=${rOwnProps.length}, meta=${metaOwnProps.length}`);
+              `own property count mismatch for ${rClass.fullName}: schemaView=${rOwnProps.length}, meta=${metaOwnProps.length}`);
 
             for (const rProp of rOwnProps) {
               const metaProp = metaOwnProps.find((p) => p.name.toLowerCase() === rProp.name.toLowerCase());
@@ -145,7 +145,7 @@ describe("SchemaView cross-validation", () => {
       it("should have matching inherited properties for every class", () => {
         let classesChecked = 0;
 
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             const metaClass = iModel.schemaContext.getSchemaItemSync(rSchema.name, rClass.name) as ECClass | undefined;
             if (metaClass === undefined)
@@ -155,16 +155,16 @@ describe("SchemaView cross-validation", () => {
             const rAllProps = rClass.getProperties();
             const metaAllProps = [...metaClass.getPropertiesSync(false)]; // includeInherited
 
-            // Check that every ecschema-metadata property exists in runtime
+            // Check that every ecschema-metadata property exists in the SchemaView
             for (const metaProp of metaAllProps) {
               const rProp = rAllProps.find((p) => p.name.toLowerCase() === metaProp.name.toLowerCase());
               assert.isDefined(rProp, `Inherited property '${metaProp.name}' on ${rClass.fullName} missing from SchemaView`);
             }
 
-            // Check that every runtime property exists in ecschema-metadata
+            // Check that every SchemaView property exists in ecschema-metadata
             for (const rProp of rAllProps) {
               const metaProp = metaAllProps.find((p) => p.name.toLowerCase() === rProp.name.toLowerCase());
-              assert.isDefined(metaProp, `Runtime property '${rProp.name}' on ${rClass.fullName} has no ecschema-metadata counterpart`);
+              assert.isDefined(metaProp, `SchemaView property '${rProp.name}' on ${rClass.fullName} has no ecschema-metadata counterpart`);
             }
 
             expect(rAllProps.length).to.equal(metaAllProps.length,
@@ -178,7 +178,7 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have correct ecInstanceId values", () => {
-        // Validate that ecInstanceId on runtime view objects matches ec_ table row IDs.
+        // Validate that ecInstanceId on SchemaView objects matches ec_ table row IDs.
         // This is the bridge that lets consumers fall back to ECDbMeta ECSQL queries.
 
         // Schemas
@@ -187,7 +187,7 @@ describe("SchemaView cross-validation", () => {
           while (stmt.step() === DbResult.BE_SQLITE_ROW)
             ecSchemaIds.set(stmt.getValueString(1).toLowerCase(), stmt.getValueInteger(0));
         });
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           const ecId = ecSchemaIds.get(rSchema.name.toLowerCase());
           assert.isDefined(ecId, `ec_Schema row not found for ${rSchema.name}`);
           expect(rSchema.ecInstanceId).to.equal(ecId, `ecInstanceId mismatch for schema ${rSchema.name}`);
@@ -202,7 +202,7 @@ describe("SchemaView cross-validation", () => {
               ecClassIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
           },
         );
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             const key = `${rSchema.name.toLowerCase()}:${rClass.name.toLowerCase()}`;
             const ecId = ecClassIds.get(key);
@@ -221,7 +221,7 @@ describe("SchemaView cross-validation", () => {
           },
         );
         let propsChecked = 0;
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             for (const rProp of rClass.getOwnProperties()) {
               const key = `${rSchema.name.toLowerCase()}:${rClass.name.toLowerCase()}.${rProp.name.toLowerCase()}`;
@@ -243,7 +243,7 @@ describe("SchemaView cross-validation", () => {
               ecEnumIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
           },
         );
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rEnum of rSchema.getEnumerations()) {
             const key = `${rSchema.name.toLowerCase()}:${rEnum.name.toLowerCase()}`;
             const ecId = ecEnumIds.get(key);
@@ -261,7 +261,7 @@ describe("SchemaView cross-validation", () => {
               ecKoqIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
           },
         );
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rKoq of rSchema.getKindOfQuantities()) {
             const key = `${rSchema.name.toLowerCase()}:${rKoq.name.toLowerCase()}`;
             const ecId = ecKoqIds.get(key);
@@ -279,7 +279,7 @@ describe("SchemaView cross-validation", () => {
               ecCatIds.set(`${stmt.getValueString(1).toLowerCase()}:${stmt.getValueString(2).toLowerCase()}`, stmt.getValueInteger(0));
           },
         );
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rCat of rSchema.getPropertyCategories()) {
             const key = `${rSchema.name.toLowerCase()}:${rCat.name.toLowerCase()}`;
             const ecId = ecCatIds.get(key);
@@ -290,7 +290,7 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have matching enumerations", () => {
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rEnum of rSchema.getEnumerations()) {
             const metaEnum = iModel.schemaContext.getSchemaItemSync(rSchema.name, rEnum.name) as Enumeration | undefined;
             assert.isDefined(metaEnum, `Enumeration '${rEnum.fullName}' not found in ecschema-metadata`);
@@ -314,7 +314,7 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have matching KindOfQuantity items", () => {
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rKoq of rSchema.getKindOfQuantities()) {
             const metaKoq = iModel.schemaContext.getSchemaItemSync(rSchema.name, rKoq.name) as KindOfQuantity | undefined;
             assert.isDefined(metaKoq, `KoQ '${rKoq.fullName}' not found in ecschema-metadata`);
@@ -326,7 +326,7 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have matching PropertyCategory items", () => {
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rCat of rSchema.getPropertyCategories()) {
             const metaCat = iModel.schemaContext.getSchemaItemSync(rSchema.name, rCat.name) as PropertyCategory | undefined;
             assert.isDefined(metaCat, `PropertyCategory '${rCat.fullName}' not found in ecschema-metadata`);
@@ -338,7 +338,7 @@ describe("SchemaView cross-validation", () => {
       });
 
       it("should have matching relationship constraints", () => {
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             if (!rClass.isRelationship())
               continue;
@@ -381,7 +381,7 @@ describe("SchemaView cross-validation", () => {
         ];
 
         for (const [className, baseName, expected] of testPairs) {
-          const rClass = runtimeCtx.findClass(className);
+          const rClass = schemaView.findClass(className);
           if (rClass === undefined)
             continue; // Class may not exist in minimal test iModels
 
@@ -415,7 +415,7 @@ describe("SchemaView cross-validation", () => {
         );
 
         // Build a map of property ID -> (schemaName, className, propertyName) from ec_ tables
-        // so we can correlate ec_ property IDs to runtime properties.
+        // so we can correlate ec_ property IDs to SchemaView properties.
         const propIdMap = new Map<number, { schema: string; cls: string; prop: string }>();
         iModel.withSqliteStatement(
           `SELECT p.Id, s.Name, c.Name, p.Name
@@ -434,14 +434,14 @@ describe("SchemaView cross-validation", () => {
         );
 
         // Cross-validate: for every hidden property in ec_ tables that belongs to a
-        // non-excluded schema, the runtime context must also mark it as hidden.
+        // non-excluded schema, the SchemaView must also mark it as hidden.
         let hiddenChecked = 0;
         for (const propId of hiddenPropertyIds) {
           const info = propIdMap.get(propId);
           if (info === undefined) continue;
-          if (excludedRuntimeSchemas.has(info.schema)) continue;
+          if (excludedSchemaViewSchemas.has(info.schema)) continue;
 
-          const rClass = runtimeCtx.findClass(`${info.schema}:${info.cls}`);
+          const rClass = schemaView.findClass(`${info.schema}:${info.cls}`);
           if (rClass === undefined) continue;
 
           // Check own properties only (the property lives on this class)
@@ -456,10 +456,10 @@ describe("SchemaView cross-validation", () => {
         }
 
         // Also spot-check that explicitly visible properties are NOT hidden.
-        // Walk a subset of runtime classes and verify that properties not in the hidden set
+        // Walk a subset of SchemaView classes and verify that properties not in the hidden set
         // are marked as not hidden.
         let visibleChecked = 0;
-        for (const rSchema of runtimeCtx.getSchemas()) {
+        for (const rSchema of schemaView.getSchemas()) {
           for (const rClass of rSchema.getClasses()) {
             for (const rProp of rClass.getOwnProperties()) {
               // Find the ec_ property ID for this prop
@@ -538,9 +538,9 @@ function compareProperty(rProp: ReturnType<SchemaView.Class["getProperties"]>[nu
     // doesn't model enum-as-primitive correctly (see itwinjs-core#8448), but the fields exist at runtime.
     const metaPrimProp = metaProp as unknown as PrimitiveProperty;
     if (metaPrimProp.primitiveType !== undefined) {
-      // RuntimePrimitiveType values match PrimitiveType values
+      // SchemaViewPrimitiveType values match PrimitiveType values
       expect(rProp.primitiveType).to.equal(metaPrimProp.primitiveType,
-        `primitiveType mismatch for ${ctx}: runtime=0x${rProp.primitiveType.toString(16)}, meta=0x${metaPrimProp.primitiveType.toString(16)}`);
+        `primitiveType mismatch for ${ctx}: schemaView=0x${rProp.primitiveType.toString(16)}, meta=0x${metaPrimProp.primitiveType.toString(16)}`);
     }
     if (metaPrimProp.extendedTypeName !== undefined) {
       expect(rProp.extendedTypeName?.toLowerCase()).to.equal(metaPrimProp.extendedTypeName.toLowerCase(),

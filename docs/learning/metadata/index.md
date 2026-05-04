@@ -4,7 +4,7 @@
 
 The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md).
 
-For **runtime** schema access optimized for performance and synchronous lookups, see [SchemaView](./SchemaView.md).
+For schema access optimized for performance and synchronous lookups, see [SchemaView](./SchemaView.md).
 
 The API is split into these packages:
 

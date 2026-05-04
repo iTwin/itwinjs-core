@@ -9,9 +9,9 @@
 import { Logger } from "@itwin/core-bentley";
 import { SchemaView, SchemaViewBuilder } from "./SchemaView";
 import { StrengthDirection, StrengthType } from "./ECObjects";
-import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, RuntimePrimitiveType, schemaViewFormatVersion } from "./SchemaViewInterfaces";
+import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, SchemaViewPrimitiveType, schemaViewFormatVersion } from "./SchemaViewInterfaces";
 
-/** Binary record tags for the runtime schema format.
+/** Binary record tags for the SchemaView blob format.
  * Each tag marks a flat, count-prefixed table. Must stay in sync with the C++ writer. */
 enum Tag {
   PropertyDefTable = 0x0A,
@@ -24,7 +24,7 @@ enum Tag {
 
 const MAGIC = 0x43534348; // "CSCH"
 
-/** Low-level binary reader for the runtime schema blob. */
+/** Low-level binary reader for the SchemaView blob. */
 class BinaryReader {
   private _view: DataView;
   private _bytes: Uint8Array;
@@ -38,7 +38,11 @@ class BinaryReader {
     this._strings = [];
   }
 
-  public readU8(): number { return this._bytes[this._pos++]; }
+  public readU8(): number {
+    if (this._pos >= this._bytes.length)
+      throw new Error(`SchemaView blob truncated: cannot read u8 at offset ${this._pos} (length ${this._bytes.length})`);
+    return this._bytes[this._pos++];
+  }
   public readU16(): number { const v = this._view.getUint16(this._pos, true); this._pos += 2; return v; }
   public readU32(): number { const v = this._view.getUint32(this._pos, true); this._pos += 4; return v; }
   public readI32(): number { const v = this._view.getInt32(this._pos, true); this._pos += 4; return v; }
@@ -54,9 +58,16 @@ class BinaryReader {
 
   /** Parse the string table at the given offset. */
   public parseStringTable(offset: number): void {
+    if (offset > this._bytes.length)
+      throw new Error(`SchemaView blob: stringTable offset ${offset} is past end of blob (length ${this._bytes.length})`);
     const saved = this._pos;
     this._pos = offset;
     const count = this.readU32();
+    // Each entry is at minimum a 4-byte length prefix - a count larger than the remaining bytes
+    // cannot possibly be valid and would cause a huge `new Array` allocation on a malformed blob.
+    const remaining = this._bytes.length - this._pos;
+    if (count > remaining / 4)
+      throw new Error(`SchemaView blob: stringTable count ${count} exceeds remaining buffer (${remaining} bytes)`);
     this._strings = new Array(count);
     const decoder = new TextDecoder();
     for (let i = 0; i < count; i++) {
@@ -64,6 +75,8 @@ class BinaryReader {
       if (len === 0) {
         this._strings[i] = "";
       } else {
+        if (len > this._bytes.length - this._pos)
+          throw new Error(`SchemaView blob: string entry ${i} has length ${len} but only ${this._bytes.length - this._pos} bytes remain`);
         this._strings[i] = decoder.decode(this._bytes.subarray(this._pos, this._pos + len));
         this._pos += len;
       }
@@ -111,7 +124,7 @@ interface PreParsedDef {
   name: string;
   description: string;
   kind: PropertyKind;
-  primitiveType: RuntimePrimitiveType;
+  primitiveType: SchemaViewPrimitiveType;
   extType: string;
   enumRowId: number;        // ec_Enumeration.Id (0 = none)
   structClassRowId: number; // ec_Class.Id for struct type (0 = none)
@@ -149,7 +162,9 @@ function expectTag(reader: BinaryReader, expected: Tag): void {
  * Each table is count-prefixed. Schema items carry their schema's ecInstanceId for ownership resolution.
  * Classes have count-prefixed inline sub-items (base classes, property refs, constraints).
  *
- * @beta
+ * Consumers should call `SchemaView.fromBinary` instead - this function is the low-level
+ * implementation behind it.
+ * @internal
  */
 export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): SchemaView {
   const reader = new BinaryReader(data);
@@ -157,7 +172,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // Header: magic(4) + version(1) + stringTableOffset(4)
   const magic = reader.readU32();
   if (magic !== MAGIC)
-    throw new Error(`Invalid runtime schema magic: 0x${magic.toString(16)}, expected 0x${MAGIC.toString(16)}`);
+    throw new Error(`Invalid SchemaView blob magic: 0x${magic.toString(16)}, expected 0x${MAGIC.toString(16)}`);
   const version = reader.readU8();
   if (version !== schemaViewFormatVersion)
     throw new Error(`Unsupported schema view format version: ${version}, expected ${schemaViewFormatVersion}`);
@@ -197,7 +212,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     preParsedDefs[i] = {
       name: reader.readSRef(),
       kind: reader.readU8() as PropertyKind,
-      primitiveType: reader.readU16() as RuntimePrimitiveType,
+      primitiveType: reader.readU16() as SchemaViewPrimitiveType,
       extType: reader.readSRef(),
       enumRowId: reader.readU32(),
       structClassRowId: reader.readU32(),
@@ -254,7 +269,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   function trackItem(schemaEcId: number, globalIdx: number, starts: number[], counts: number[]): number {
     const schemaIdx = schemaEcIdToIdx.get(schemaEcId);
     if (schemaIdx === undefined)
-      throw new Error(`Runtime schema blob: unknown schema ecInstanceId ${schemaEcId}`);
+      throw new Error(`SchemaView blob: unknown schema ecInstanceId ${schemaEcId}`);
     if (counts[schemaIdx] === 0)
       starts[schemaIdx] = globalIdx;
     counts[schemaIdx]++;
@@ -304,7 +319,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       nameSid: builder.internString(eName),
       labelSid: builder.internString(eLabel),
       descriptionSid: builder.internString(eDesc),
-      primitiveType: ePrimType as RuntimePrimitiveType,
+      primitiveType: ePrimType as SchemaViewPrimitiveType,
       isStrict: eIsStrict,
       enumeratorStart,
       enumeratorCount,

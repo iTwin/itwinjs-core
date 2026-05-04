@@ -13,7 +13,7 @@ import { TestUtils } from "../TestUtils";
 
 /** Simple test schema that will be imported to test cache lifecycle. */
 const testSchemaV1 = `<?xml version="1.0" encoding="UTF-8"?>
-  <ECSchema schemaName="RuntimeSchemaLifecycleTest" alias="rslt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchema schemaName="SchemaViewLifecycleTest" alias="rslt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
     <ECEntityClass typeName="TestElement">
       <BaseClass>bis:PhysicalElement</BaseClass>
@@ -23,7 +23,7 @@ const testSchemaV1 = `<?xml version="1.0" encoding="UTF-8"?>
 
 /** Updated schema with an additional property. */
 const testSchemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
-  <ECSchema schemaName="RuntimeSchemaLifecycleTest" alias="rslt" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchema schemaName="SchemaViewLifecycleTest" alias="rslt" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
     <ECEntityClass typeName="TestElement">
       <BaseClass>bis:PhysicalElement</BaseClass>
@@ -36,7 +36,7 @@ describe("SchemaView lifecycle", () => {
   let iModelId: string;
 
   before(async () => {
-    HubMock.startup("RuntimeSchemaLifecycle", KnownTestLocations.outputDir);
+    HubMock.startup("SchemaViewLifecycle", KnownTestLocations.outputDir);
     await TestUtils.shutdownBackend();
     await TestUtils.startBackend();
   });
@@ -61,7 +61,7 @@ describe("SchemaView lifecycle", () => {
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     const ctx1 = await bc.getSchemaView();
-    expect(ctx1.findClass("RuntimeSchemaLifecycleTest:TestElement")).to.be.undefined;
+    expect(ctx1.findClass("SchemaViewLifecycleTest:TestElement")).to.be.undefined;
     expect(ctx1.isOutdated).to.be.false;
 
     // Import v1 schema - adds TestElement with PropA
@@ -73,7 +73,7 @@ describe("SchemaView lifecycle", () => {
     expect(ctx1.isOutdated).to.be.true;
     expect(ctx2.isOutdated).to.be.false;
 
-    const testClass1 = ctx2.findClass("RuntimeSchemaLifecycleTest:TestElement");
+    const testClass1 = ctx2.findClass("SchemaViewLifecycleTest:TestElement");
     expect(testClass1).to.not.be.undefined;
     expect(testClass1!.getOwnProperties().find((p) => p.name === "PropA")).to.not.be.undefined;
     expect(testClass1!.getOwnProperties().find((p) => p.name === "PropB")).to.be.undefined;
@@ -86,7 +86,7 @@ describe("SchemaView lifecycle", () => {
     expect(ctx2.isOutdated).to.be.true;
     expect(ctx3.isOutdated).to.be.false;
 
-    const testClass2 = ctx3.findClass("RuntimeSchemaLifecycleTest:TestElement");
+    const testClass2 = ctx3.findClass("SchemaViewLifecycleTest:TestElement");
     expect(testClass2).to.not.be.undefined;
     expect(testClass2!.getOwnProperties().find((p) => p.name === "PropB")).to.not.be.undefined;
 
@@ -106,7 +106,7 @@ describe("SchemaView lifecycle", () => {
     bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     const ctx = await bc2.getSchemaView();
-    const testClass = ctx.findClass("RuntimeSchemaLifecycleTest:TestElement");
+    const testClass = ctx.findClass("SchemaViewLifecycleTest:TestElement");
     expect(testClass).to.not.be.undefined;
     expect(testClass!.getOwnProperties().find((p) => p.name === "PropA")).to.not.be.undefined;
 
@@ -114,7 +114,7 @@ describe("SchemaView lifecycle", () => {
     bc2.close();
   });
 
-  it("pullChanges invalidates cached runtime schema context", async () => {
+  it("pullChanges invalidates cached SchemaView", async () => {
     // bc1 will push schema changes; bc2 will pull them
     const bc1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -123,7 +123,7 @@ describe("SchemaView lifecycle", () => {
 
     // bc2 gets initial context (no test schema)
     const ctxBefore = await bc2.getSchemaView();
-    expect(ctxBefore.findClass("RuntimeSchemaLifecycleTest:TestElement")).to.be.undefined;
+    expect(ctxBefore.findClass("SchemaViewLifecycleTest:TestElement")).to.be.undefined;
 
     // bc1: import v1 + push
     await bc1.importSchemaStrings([testSchemaV1]);
@@ -135,7 +135,7 @@ describe("SchemaView lifecycle", () => {
     // After pulling a schema changeset, clearCaches is called which immediately nulls _schemasPromise.
     const ctxAfterPull = await bc2.getSchemaView();
     expect(ctxBefore.isOutdated).to.be.true;
-    const testClass = ctxAfterPull.findClass("RuntimeSchemaLifecycleTest:TestElement");
+    const testClass = ctxAfterPull.findClass("SchemaViewLifecycleTest:TestElement");
     expect(testClass).to.not.be.undefined;
 
     // bc1: import v2 + push
@@ -146,7 +146,7 @@ describe("SchemaView lifecycle", () => {
     await bc2.pullChanges();
     const ctxAfterPull2 = await bc2.getSchemaView();
     expect(ctxAfterPull.isOutdated).to.be.true;
-    const updated = ctxAfterPull2.findClass("RuntimeSchemaLifecycleTest:TestElement");
+    const updated = ctxAfterPull2.findClass("SchemaViewLifecycleTest:TestElement");
     expect(updated).to.not.be.undefined;
     expect(updated!.getOwnProperties().find((p) => p.name === "PropB")).to.not.be.undefined;
 

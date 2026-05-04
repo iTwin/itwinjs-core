@@ -51,7 +51,7 @@ export enum PropertyKind {
 /** Matches ec_ PrimitiveType values.
  * @beta
  */
-export enum RuntimePrimitiveType {
+export enum SchemaViewPrimitiveType {
   Uninitialized = 0x00,
   Binary = 0x101,
   Boolean = 0x201,
@@ -141,7 +141,7 @@ export interface PropertyDef {
   readonly nameSid: number;
   readonly descriptionSid: number;
   readonly kind: PropertyKind;
-  readonly primitiveType: RuntimePrimitiveType;
+  readonly primitiveType: SchemaViewPrimitiveType;
   readonly extTypeSid: number;
   readonly enumIdx: number;
   readonly koqIdx: number;
@@ -195,7 +195,7 @@ export interface EnumerationData {
   readonly nameSid: number;
   readonly labelSid: number;
   readonly descriptionSid: number;
-  readonly primitiveType: RuntimePrimitiveType;
+  readonly primitiveType: SchemaViewPrimitiveType;
   readonly isStrict: boolean;
   readonly enumeratorStart: number;
   readonly enumeratorCount: number;
