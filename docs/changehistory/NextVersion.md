@@ -18,6 +18,7 @@ publish: false
         - [Creating a local SettingsDb](#creating-a-local-settingsdb)
       - [Container type convention](#container-type-convention)
       - [Container separation and lock isolation](#container-separation-and-lock-isolation)
+    - [Lock-aware transaction undo/redo](#lock-aware-transaction-undoredo)
   - [@itwin/core-frontend](#itwincore-frontend-1)
     - [Unified reality model iteration](#unified-reality-model-iteration)
     - [PerModelCategoryVisibility performance improvement](#permodelcategoryvisibility-performance-improvement)
@@ -248,6 +249,52 @@ Settings containers are deliberately separate from workspace containers. Both ex
 - **Independent write locks**: Editing settings does not lock out workspace resource editors, and vice versa.
 - **Clean API surface**: Settings containers do not inherit workspace-db read/write methods (`getWorkspaceDb`, `addWorkspaceDb`, etc.), exposing only settings-specific operations.
 - **Type safety**: Code that receives an `EditableSettingsCloudContainer` cannot accidentally add or retrieve `WorkspaceDb`s from it.
+
+### Lock-aware transaction undo/redo
+
+[TxnManager]($backend) now provides `@beta` async methods that automatically manage lock lifecycle when reversing, reinstating, or canceling transactions. Previously, undoing a transaction retained all associated locks on IModelHub, even though the changes were no longer active locally. The new async methods abandon those locks so that other users can acquire them while the changes are reversed, and re-acquire them before reinstating.
+
+#### New async TxnManager methods
+
+| Method | Description |
+|---|---|
+| [TxnManager.reverseSingleTxnAsync]($backend) | Reverse the most recent operation and abandon its locks. |
+| [TxnManager.reverseTxnsAsync]($backend) | Reverse multiple operations and abandon their locks. |
+| [TxnManager.reverseAllTxnsAsync]($backend) | Reverse all operations back to the beginning of the session. |
+| [TxnManager.reverseToTxnAsync]($backend) | Reverse all operations back to a saved [TxnIdString]($backend). |
+| [TxnManager.cancelToTxnAsync]($backend) | Reverse and permanently cancel operations back to a [TxnIdString]($backend). |
+| [TxnManager.reinstateTxnAsync]($backend) | Re-acquire locks and reinstate the most recently reversed transaction. |
+
+Each reverse/cancel method accepts an optional [ReverseTxnArgs]($common) with a `retainLocks` flag. When `retainLocks` is `true`, the method behaves like the existing synchronous counterpart and does not release locks. When `false` or omitted, locks acquired during the reversed transactions are abandoned on IModelHub.
+
+[TxnManager.reinstateTxnAsync]($backend) accepts optional [ReinstateTxnArgs]($common) to control whether locks for any outstanding unsaved changes are retained or abandoned before the reinstatement.
+
+#### New LockControl methods
+
+[LockControl]($backend) gains several `@beta` methods that support the async `TxnManager` methods:
+
+- [LockControl.abandonAllLocks]($backend) — Abandon all held locks without stamping a changeset, appropriate when discarding changes.
+- [LockControl.abandonLocksForReversedTxn]($backend) — Abandon only the locks acquired during a specific reversed transaction and any later reversed transactions.
+- [LockControl.abandonLocksForCurrentUnsavedTxn]($backend) — Abandon locks acquired in the current, uncommitted transaction.
+- [LockControl.acquireLocksForReinstatingTxn]($backend) — Re-acquire the locks that were previously abandoned, so the transaction can be safely reinstated.
+- [LockControl.clearTxnLockRecords]($backend) — Clear local Txn-lock tracking records after a transaction is permanently canceled.
+
+#### Backward compatibility
+
+The existing synchronous reverse and cancel methods (`reverseSingleTxn`, `reverseTxns`, `reverseAll`, `cancelTo`) remain unchanged and continue to retain all locks. The synchronous `reinstateTxn` also remains available, but note that it will return `LockNotHeld` if the locks for the reversed transaction were previously abandoned by one of the new async reverse/cancel methods. In that case, use [TxnManager.reinstateTxnAsync]($backend) instead, which automatically re-acquires the necessary locks before reinstating.
+
+#### Example
+
+```typescript
+// Undo the last operation and release its locks so other users can edit those elements
+await txnManager.reverseSingleTxnAsync();
+
+// Later, re-acquire the locks and redo the operation
+await txnManager.reinstateTxnAsync();
+
+// Undo and retain locks (same behavior as synchronous reverseSingleTxn)
+await txnManager.reverseSingleTxnAsync({ retainLocks: true });
+```
 
 ## @itwin/core-frontend
 
