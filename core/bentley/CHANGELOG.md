@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Thu, 23 Apr 2026 18:06:53 GMT and should not be manually modified.
+This log was last generated on Mon, 04 May 2026 16:32:08 GMT and should not be manually modified.
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Minor changes
+
+- Add BeUnorderedEvent and BeUnorderedUiEvent — Set-backed event classes with safe concurrent modification during emit.
+
+### Updates
+
+- Improved `Id64.iterable` performance >10x.
+- Added wrapTimerCallback utility function.
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:13 GMT

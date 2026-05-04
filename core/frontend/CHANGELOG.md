@@ -1,6 +1,22 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 23 Apr 2026 18:06:53 GMT and should not be manually modified.
+This log was last generated on Mon, 04 May 2026 16:32:08 GMT and should not be manually modified.
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Minor changes
+
+- Quantity Formatter: readiness events, serialized reload queue, multi-system caching, composite-keyed registry, FormatSpecHandle, listener leak fix.
+
+### Updates
+
+- Improved `PerModelCategoryVisibility` performance in some cases more than 10x.
+- QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.
+- Add new ViewState.getRealityModelTreeRefs method
+- added EditTxn apis
+- Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
+- Fix event listener leak in LayerTileTreeReferenceHandler
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:14 GMT

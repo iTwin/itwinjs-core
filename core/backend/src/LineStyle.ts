@@ -329,7 +329,7 @@ export namespace LineStyleDefinition {
      */
     public static createStrokePatternComponent(txn: EditTxn, props: StrokePatternProps): StyleProps;
     /** Create a file property for a new stroke pattern component.
-     * @deprecated Use createStrokePatternComponent(txn, ...) instead.
+     * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use createStrokePatternComponent(txn, ...) instead.
      */
     public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
     public static createStrokePatternComponent(txnOrIModel: EditTxn | IModelDb, props: StrokePatternProps): StyleProps {
@@ -347,7 +347,7 @@ export namespace LineStyleDefinition {
     public static createPointSymbolComponent(txn: EditTxn, props: PointSymbolProps): StyleProps | undefined;
     /** Create a file property for a new point symbol component.
      * If base and size parameters are not supplied, queries GeometryPart by id to set them.
-     * @deprecated Use createPointSymbolComponent(txn, ...) instead.
+     * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use createPointSymbolComponent(txn, ...) instead.
      */
     public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined;
     public static createPointSymbolComponent(txnOrIModel: EditTxn | IModelDb, props: PointSymbolProps): StyleProps | undefined {
@@ -379,7 +379,7 @@ export namespace LineStyleDefinition {
      */
     public static createStrokePointComponent(txn: EditTxn, props: StrokePointProps): StyleProps;
     /** Create a file property for a new stroke point component.
-     * @deprecated Use createStrokePointComponent(txn, ...) instead.
+     * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use createStrokePointComponent(txn, ...) instead.
      */
     public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
     public static createStrokePointComponent(txnOrIModel: EditTxn | IModelDb, props: StrokePointProps): StyleProps {
@@ -395,7 +395,7 @@ export namespace LineStyleDefinition {
      */
     public static createCompoundComponent(txn: EditTxn, props: CompoundProps): StyleProps;
     /** Create a file property for a new compound component.
-     * @deprecated Use createCompoundComponent(txn, ...) instead.
+     * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use createCompoundComponent(txn, ...) instead.
      */
     public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps;
     public static createCompoundComponent(txnOrIModel: EditTxn | IModelDb, props: CompoundProps): StyleProps {
@@ -411,7 +411,7 @@ export namespace LineStyleDefinition {
      */
     public static createRasterComponent(txn: EditTxn, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
     /** Create a file property for a new raster image component.
-     * @deprecated Use createRasterComponent(txn, ...) instead.
+     * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use createRasterComponent(txn, ...) instead.
      */
     public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
     public static createRasterComponent(txnOrIModel: EditTxn | IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
@@ -439,7 +439,7 @@ export namespace LineStyleDefinition {
     public static createStyle(txn: EditTxn, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
     /** Insert a new line style with the supplied name.
      * @throws [[IModelError]] if unable to insert the line style definition element.
-     * @deprecated Use createStyle(txn, ...) instead.
+     * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use createStyle(txn, ...) instead.
      */
     public static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
     public static createStyle(txnOrIModel: EditTxn | IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String {
