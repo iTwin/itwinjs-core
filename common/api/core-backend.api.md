@@ -4679,18 +4679,6 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @internal
-export interface InstancePatch {
-    // (undocumented)
-    isIndirect: boolean;
-    // (undocumented)
-    key: PatchInstanceKey;
-    // (undocumented)
-    op: "Inserted" | "Updated" | "Deleted";
-    // (undocumented)
-    props?: ECSqlRow;
-}
-
 // @beta
 export interface IntegrityCheckOptions {
     quickCheck?: boolean;
