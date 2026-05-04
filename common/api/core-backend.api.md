@@ -694,7 +694,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
     // @internal
-    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[];
+    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<ChangeInstance>;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
@@ -730,6 +730,8 @@ export class BriefcaseManager {
     static semanticRebaseDataFolderExists(db: BriefcaseDb, txnId: string): boolean;
     // @internal
     static semanticRebaseSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean;
+    // @internal
+    static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void;
     // @internal
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
@@ -4540,6 +4542,7 @@ export class IModelJsFs {
     static readdirSync(pathname: string): string[];
     static readFileSync(pathname: string): string | Buffer;
     static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string;
+    static readLines(pathname: string): AsyncGenerator<string>;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
     static removeSync(pathname: string): void;
@@ -4674,18 +4677,6 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
-}
-
-// @internal
-export interface InstancePatch {
-    // (undocumented)
-    isIndirect: boolean;
-    // (undocumented)
-    key: PatchInstanceKey;
-    // (undocumented)
-    op: "Inserted" | "Updated" | "Deleted";
-    // (undocumented)
-    props?: ECSqlRow;
 }
 
 // @beta
@@ -7562,6 +7553,8 @@ export class TxnManager {
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @beta
     cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
+    // @internal
+    protected _captureInstanceChanges(id: TxnIdString): void;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
