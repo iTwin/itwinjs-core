@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Mon, 04 May 2026 16:32:08 GMT and should not be manually modified.
+This log was last generated on Tue, 05 May 2026 17:43:30 GMT and should not be manually modified.
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+### Updates
+
+- Semantic Rebase uses the new ChangesetReader api. Also while doing semantic rebase we now stream the changed instances onto the temp file while writing as well as stream changed instances from the file while reading.
 
 ## 5.9.0
 Mon, 04 May 2026 16:32:08 GMT
