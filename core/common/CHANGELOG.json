@@ -2,6 +2,27 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.9.0",
+      "tag": "@itwin/core-common_v5.9.0",
+      "date": "Mon, 04 May 2026 16:32:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ITwinSettingsError for iTwin settings container API error handling."
+          },
+          {
+            "comment": "added EditTxn apis"
+          },
+          {
+            "comment": "Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns."
+          },
+          {
+            "comment": "Added ECSql-compatible navigation-property fields to `ViewDefinitionProps`, `SpatialViewDefinitionProps`, and `ViewDefinition2dProps` interfaces. The flat Id64String fields (`categorySelectorId`, `displayStyleId`, `modelSelectorId`, `baseModelId`) are deprecated in favor of the new navigation-property objects but remain as getter/setter pairs instead for backward compatibility."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.8.4",
       "tag": "@itwin/core-common_v5.8.4",
       "date": "Thu, 23 Apr 2026 18:05:13 GMT",

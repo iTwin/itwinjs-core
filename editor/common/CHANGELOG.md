@@ -1,6 +1,13 @@
 # Change Log - @itwin/editor-common
 
-This log was last generated on Thu, 23 Apr 2026 18:06:53 GMT and should not be manually modified.
+This log was last generated on Mon, 04 May 2026 16:33:44 GMT and should not be manually modified.
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- added EditTxn apis
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:14 GMT

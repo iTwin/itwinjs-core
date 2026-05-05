@@ -2,6 +2,21 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "5.9.0",
+      "tag": "@itwin/presentation-backend_v5.9.0",
+      "date": "Mon, 04 May 2026 16:32:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added EditTxn apis"
+          },
+          {
+            "comment": "Fixes possible unhandled error caused by floating promise."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.8.4",
       "tag": "@itwin/presentation-backend_v5.8.4",
       "date": "Thu, 23 Apr 2026 18:05:14 GMT",

@@ -218,7 +218,7 @@ export class SheetInformationAspect extends ElementUniqueAspect {
    * If `information` is `undefined`, any existing aspect will be deleted.
    * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
    * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
-   * @deprecated Use SheetInformationAspect.setSheetInformation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use SheetInformationAspect.setSheetInformation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
 

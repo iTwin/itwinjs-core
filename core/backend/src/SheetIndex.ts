@@ -88,7 +88,7 @@ export class SheetIndex extends InformationReferenceElement {
    * @throws [[IModelError]] if there is a problem inserting the SheetIndex
    */
   public static insert(txn: EditTxn, modelId: Id64String, name: string): Id64String;
-  /** @deprecated Use SheetIndex.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use SheetIndex.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, modelId: Id64String, name: string): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -165,7 +165,7 @@ export class SheetIndexFolder extends SheetIndexEntry {
    * @throws [[IModelError]] if unable to create the element.
    */
   public static insert(txn: EditTxn, arg: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String;
-  /** @deprecated Use SheetIndexFolder.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use SheetIndexFolder.insert(txn, ...) instead. */
   public static insert(arg: SheetIndexEntryCreateArgs): Id64String;
   public static insert(txnOrArg: EditTxn | SheetIndexEntryCreateArgs, arg?: Omit<SheetIndexEntryCreateArgs, "iModelDb">): Id64String {
     const txn = txnOrArg instanceof EditTxn ? txnOrArg : txnOrArg.iModelDb[_implicitTxn];
@@ -229,7 +229,7 @@ export class SheetIndexReference extends SheetIndexEntry {
    * @throws [[IModelError]] if unable to create the element.
    */
   public static insert(txn: EditTxn, arg: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String;
-  /** @deprecated Use SheetIndexReference.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use SheetIndexReference.insert(txn, ...) instead. */
   public static insert(arg: SheetIndexReferenceCreateArgs): Id64String;
   public static insert(txnOrArg: EditTxn | SheetIndexReferenceCreateArgs, arg?: Omit<SheetIndexReferenceCreateArgs, "iModelDb">): Id64String {
     const txn = txnOrArg instanceof EditTxn ? txnOrArg : txnOrArg.iModelDb[_implicitTxn];
@@ -301,7 +301,7 @@ export class SheetReference extends SheetIndexEntry {
    * @throws [[IModelError]] if unable to create the element.
    */
   public static insert(txn: EditTxn, arg: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String;
-  /** @deprecated Use SheetReference.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use SheetReference.insert(txn, ...) instead. */
   public static insert(arg: SheetReferenceCreateArgs): Id64String;
   public static insert(txnOrArg: EditTxn | SheetReferenceCreateArgs, arg?: Omit<SheetReferenceCreateArgs, "iModelDb">): Id64String {
     const txn = txnOrArg instanceof EditTxn ? txnOrArg : txnOrArg.iModelDb[_implicitTxn];
