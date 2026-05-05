@@ -740,11 +740,24 @@ describe("CurveClips", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls);
 
+    const expectedFractions0 = [0.07075513626850614, 0.7896464616645638];
+    const expectedFractions1 = [0.5023836037788738, 0.955441322252151];
+    let intervalIndex = 0;
+
     plane.announceClippedCurveIntervals(bspline,
       (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+        ck.testNearNumber(
+          expectedFractions0[intervalIndex], fraction0, Geometry.smallMetricDistance,
+          "fraction0 of interval " + intervalIndex + " should match expected"
+        );
+        ck.testNearNumber(
+          expectedFractions1[intervalIndex], fraction1, Geometry.smallMetricDistance,
+          "fraction1 of interval " + intervalIndex + " should match expected"
+        );
+        intervalIndex++;
         const point0 = bspline.fractionToPoint(fraction0);
         const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
-        const point2 = bspline.fractionToPoint(fraction1);
+        const point2 = bspline.fractionToPoint(fraction1)
         ck.testTrue(plane.isPointOn(point0), "interval start point is ON");
         ck.testFalse(plane.isPointOn(point1), "interval midpoint is not ON");
         ck.testTrue(plane.isPointOnOrInside(point1), "interval midpoint is IN");
@@ -784,12 +797,24 @@ describe("CurveClips", () => {
     const ls = LineSegment3d.create(start, end);
     const plane = ClipPlane.createEdgeXY(start, end)!;
 
-    for (const spiral of integratedSpirals) {
+    const expectedFractions0 = [0.566779320682332, 0.6451453906884888, 0.669797508773506, 0.7012830652115729, 0.6525700579190455];
+    const expectedFractions1 = [0.9243305460054863, 0.8911049414632376, 0.8742101643208151, 0.8521096666311518, 0.8865243139513794];
+
+    for (let i = 0; i < integratedSpirals.length; i++) {
+      const spiral = integratedSpirals[i];
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, 0, dy);
 
       plane.announceClippedCurveIntervals(spiral,
         (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+          ck.testNearNumber(
+            expectedFractions0[i], fraction0, Geometry.smallMetricDistance,
+            "fraction0 of spiral index " + i + " should match expected"
+          );
+          ck.testNearNumber(
+            expectedFractions1[i], fraction1, Geometry.smallMetricDistance,
+            "fraction1 of spiral index " + i + " should match expected"
+          );
           const point0 = spiral.fractionToPoint(fraction0);
           const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
           const point2 = spiral.fractionToPoint(fraction1);
