@@ -28,6 +28,7 @@ module.exports = [
     rules: {
       "@typescript-eslint/await-thenable": "warn",
       "@typescript-eslint/no-deprecated": "warn",
+      "@typescript-eslint/no-unnecessary-type-assertion": "off",
     }
   },
 ]
