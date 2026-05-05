@@ -1403,12 +1403,19 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
         formatProps,
         formatName: name,
       });
-      if (!this._formatSpecsRegistry.has(name))
-        this._formatSpecsRegistry.set(name, new Map());
-      const unitMap = this._formatSpecsRegistry.get(name)!;
-      if (!unitMap.has(persistenceUnitName))
-        unitMap.set(persistenceUnitName, new Map());
-      unitMap.get(persistenceUnitName)!.set(effectiveSystem, { formatterSpec, parserSpec });
+      let unitMap = this._formatSpecsRegistry.get(name);
+      if (!unitMap) {
+        unitMap = new Map();
+        this._formatSpecsRegistry.set(name, unitMap);
+      }
+
+      let systemMap = unitMap.get(persistenceUnitName);
+      if (!systemMap) {
+        systemMap = new Map();
+        unitMap.set(persistenceUnitName, systemMap);
+      }
+
+      systemMap.set(effectiveSystem, { formatterSpec, parserSpec });
     } else {
       throw new Error(`Unable to find format properties for ${name} with persistence unit ${persistenceUnitName}`);
     }

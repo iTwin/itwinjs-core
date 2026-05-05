@@ -1133,13 +1133,17 @@ describe("Multi-system KoQ registry", () => {
     await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
     await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
 
-    let handle: ReturnType<typeof qf.getFormatSpecHandle>;
-    const observedSpecs: FormatterSpec[] = [];
-    qf.onFormattingReady.addListener(() => {
-      observedSpecs.push(handle.formatterSpec!);
+    const handleRef: { current: ReturnType<typeof qf.getFormatSpecHandle> | undefined } = { current: undefined };
+    const observedSpecs: Array<FormatterSpec | undefined> = [];
+    const removeReadyListener = qf.onFormattingReady.addListener(() => {
+      if (!handleRef.current)
+        throw new Error("Expected FormatSpecHandle to be created before onFormattingReady fired");
+
+      observedSpecs.push(handleRef.current.formatterSpec);
     });
 
-    handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    handleRef.current = handle;
     const imperialFormatterSpec = qf.getSpecsByNameAndUnit({
       name: "TestKoQ.LENGTH",
       persistenceUnitName: "Units.M",
@@ -1160,6 +1164,8 @@ describe("Multi-system KoQ registry", () => {
     expect(observedSpecs).toHaveLength(1);
     expect(observedSpecs[0]).toBe(metricFormatterSpec);
     expect(observedSpecs[0]).not.toBe(imperialFormatterSpec);
+
+    removeReadyListener();
     handle[Symbol.dispose]();
   });
 });
