@@ -1369,12 +1369,12 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     return this._formatSpecsRegistry.get(args.name)?.get(args.persistenceUnitName)?.get(effectiveSystem);
   }
 
-  /** Create a cacheable handle to formatting specs for a specific KoQ and persistence unit.
-   * The handle auto-refreshes when the QuantityFormatter reloads. Call `dispose()` when done.
+  /** Create a handle to formatting specs for a specific KoQ and persistence unit.
+   * The handle reads the current specs from the formatter on access. Call `dispose()` when done.
    *
    * @param koqName - The KindOfQuantity name (e.g., "DefaultToolsUnits.LENGTH")
    * @param persistenceUnit - The persistence unit name (e.g., "Units.M")
-   * @returns A FormatSpecHandle that auto-updates on reload
+   * @returns A FormatSpecHandle that reflects current formatter state
    * @beta
    */
   public getFormatSpecHandle(koqName: string, persistenceUnit: string, system?: UnitSystemKey): FormatSpecHandle {
