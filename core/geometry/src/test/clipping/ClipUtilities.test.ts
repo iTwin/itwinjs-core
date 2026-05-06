@@ -563,8 +563,8 @@ describe("ClipAnyCurve", () => {
       if (clipper.announceClippedCurveIntervals)
         clipper.announceClippedCurveIntervals(bspline,
           (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-            ck.testFraction(expectedFractions0[callIndex], fraction0, "fraction0 of call " + callIndex + " should match expected");
-            ck.testFraction(expectedFractions1[callIndex], fraction1, "fraction1 of call " + callIndex + " should match expected");
+            ck.testFraction(expectedFractions0[callIndex], fraction0, `fraction0 of call ${callIndex} should match expected`);
+            ck.testFraction(expectedFractions1[callIndex], fraction1, `fraction1 of call ${callIndex} should match expected`);
             callIndex++;
             const point0 = bspline.fractionToPoint(fraction0);
             const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
@@ -735,8 +735,8 @@ describe("ClipAnyCurve", () => {
       if (clipper.announceClippedCurveIntervals)
         clipper.announceClippedCurveIntervals(spiral,
           (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-            ck.testFraction(expectedFractions0[callIndex], fraction0, "fraction0 of call " + callIndex + " should match expected");
-            ck.testFraction(expectedFractions1[callIndex], fraction1, "fraction1 of call " + callIndex + " should match expected");
+            ck.testFraction(expectedFractions0[callIndex], fraction0, `fraction0 of call ${callIndex} should match expected`);
+            ck.testFraction(expectedFractions1[callIndex], fraction1, `fraction1 of call ${callIndex} should match expected`);
             callIndex++;
             const point0 = spiral.fractionToPoint(fraction0);
             const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));

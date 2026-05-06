@@ -746,8 +746,8 @@ describe("CurveClips", () => {
 
     plane.announceClippedCurveIntervals(bspline,
       (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-        ck.testFraction(expectedFractions0[intervalIndex], fraction0, "fraction0 of interval " + intervalIndex + " should match expected");
-        ck.testFraction(expectedFractions1[intervalIndex], fraction1, "fraction1 of interval " + intervalIndex + " should match expected");
+        ck.testFraction(expectedFractions0[intervalIndex], fraction0, `fraction0 of interval ${intervalIndex} should match expected`);
+        ck.testFraction(expectedFractions1[intervalIndex], fraction1, `fraction1 of interval ${intervalIndex} should match expected`);
         intervalIndex++;
         const point0 = bspline.fractionToPoint(fraction0);
         const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
@@ -801,8 +801,8 @@ describe("CurveClips", () => {
 
       plane.announceClippedCurveIntervals(spiral,
         (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-          ck.testFraction(expectedFractions0[i], fraction0, "fraction0 of spiral index " + i + " should match expected");
-          ck.testFraction(expectedFractions1[i], fraction1, "fraction1 of spiral index " + i + " should match expected");
+          ck.testFraction(expectedFractions0[i], fraction0, `fraction0 of spiral index ${i} should match expected`);
+          ck.testFraction(expectedFractions1[i], fraction1, `fraction1 of spiral index ${i} should match expected`);
           const point0 = spiral.fractionToPoint(fraction0);
           const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
           const point2 = spiral.fractionToPoint(fraction1);
