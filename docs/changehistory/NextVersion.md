@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+    - [Schema changesets can be reversed](#schema-changesets-can-be-reversed)
 
 ## @itwin/core-backend
 
@@ -23,3 +24,7 @@ SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonI
 ```
 
 This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
+
+### Schema changesets can be reversed
+
+This makes it possible to walk a changeset timeline backwards through interleaved schema and data changesets. After reversing a schema changeset, the EC metadata (class definitions, property mappings, schema version) reflects the state prior to that changeset.
