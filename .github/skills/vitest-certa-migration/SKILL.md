@@ -397,7 +397,7 @@ export default defineConfig({
 
 **Problem:** The `backendInitModule` is compiled CJS (`lib/backend/BackendInit.js`). When it `require()`s `@itwin/vitest-certa-bridge/callbackRegistry`, Node resolves to `lib/cjs/callbackRegistry.js`. But the bridge plugin itself runs as ESM (`lib/esm/plugin.js`) and imports `lib/esm/callbackRegistry.js`. These are **two separate module instances** with separate `callbacks` maps. Callbacks registered from CJS are invisible to the ESM plugin.
 
-**Solution:** Use `globalThis._CertaRegisteredCallbacks` as the single source of truth instead of a module-local variable. Both CJS and ESM instances read/write the same global object, eliminating the dual-instance problem. This also maintains backward compatibility with Certa's original global-based callback storage.
+**Solution:** Use `Symbol.for("@itwin/vitest-certa-bridge/callbacks")` as the registry key on `globalThis` instead of a module-local variable. Both CJS and ESM instances read/write the same `globalThis` slot via the well-known symbol, eliminating the dual-instance problem across any number of module copies.
 
 ### 3. TypeScript subpath exports with `moduleResolution: "node"`
 
@@ -408,7 +408,7 @@ export default defineConfig({
 "typesVersions": {
   "*": {
     "client": ["lib/cjs/client.d.ts"],
-    "callbackRegistry": ["lib/cjs/callbackRegistry.d.ts"]
+    "callbackRegistry": ["lib/cjs/callbackRegistryPublic.d.ts"]
   }
 }
 ```
@@ -460,7 +460,32 @@ The main entry (`@itwin/vitest-certa-bridge`) is only for vitest.config.mts (Nod
 
 **Solution:** The bridge plugin injects `window._CertaSendToBackend` via Vite's `transformIndexHtml` hook, redirecting calls to the `/__certa_bridge` HTTP endpoint. This happens automatically when using the `certaBridge()` plugin — no consumer action needed. External packages work without modification.
 
-### 7. Vite dependency discovery reloading
+### 7. Legacy `"getToken"` callback for `@itwin/oidc-signin-tool` compat
+
+**Problem:** `@itwin/oidc-signin-tool`'s `getAccessTokenFromBackend` and `getServiceAuthTokenFromBackend` helpers call `executeBackendCallback("getToken", ...)` and `executeBackendCallback("getServiceAuthToken", ...)` using the old Certa callback name. Many packages relied on a side-effect import:
+
+```typescript
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+```
+
+That module registers `"getToken"` via `@itwin/certa`'s `CallbackUtils.registerBackendCallback` — i.e., into Certa's registry, not the bridge's. Under vitest-certa-bridge the frontend request routes to the bridge's HTTP middleware, which looks up the bridge's registry — and finds nothing. Result: `Error: Unknown certa backend callback "getToken"`.
+
+**Solution:** In `BackendInit.ts`, remove the oidc-signin-tool side-effect import and register the callbacks explicitly in the bridge registry:
+
+```typescript
+import { registerBackendCallback } from "@itwin/vitest-certa-bridge/callbackRegistry";
+import { TestUtility } from "@itwin/oidc-signin-tool/lib/cjs/TestUtility";
+
+registerBackendCallback("getToken", async (user: any, oidcConfig?: any) => {
+  if (oidcConfig === undefined || oidcConfig === null)
+    return TestUtility.getAccessToken(user);
+  return TestUtility.getAuthorizationClient(user, oidcConfig).getAccessToken();
+});
+```
+
+Add `"getServiceAuthToken"` similarly if the package uses `getServiceAuthTokenFromBackend`.
+
+### 8. Vite dependency discovery reloading
 
 **Problem:** On first run, Vite discovers transitive dependencies (e.g., `js-base64`, `flatbuffers`, `fuse.js`) that need pre-bundling. It reloads the page mid-test, causing a warning: `Vite unexpectedly reloaded a test`. Tests still pass but the warning is noisy.
 
@@ -480,7 +505,6 @@ These packages still use `@itwin/certa` and need migration (in suggested order):
 | `editor/frontend` | — | None | No tests exist, just remove certa dep |
 | `full-stack-tests/rpc-interface` | B | High | backendInitModule + CallbackUtils |
 | `full-stack-tests/rpc` | B | High | Multiple transport backends |
-| `full-stack-tests/core` | B | Very High | Azurite, complex backend init, tokens |
 
 ## Key Files Reference
 
