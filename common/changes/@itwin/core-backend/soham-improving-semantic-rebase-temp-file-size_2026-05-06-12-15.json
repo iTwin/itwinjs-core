@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added batching while writing instance patches onto the file during semantic rebase. Also leaned the $meta field of instance patches to include only necessary properties and skip unnecessary ones.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
