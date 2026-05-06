@@ -746,18 +746,18 @@ describe("CurveClips", () => {
 
     plane.announceClippedCurveIntervals(bspline,
       (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-        ck.testNearNumber(
+        ck.testFraction(
           expectedFractions0[intervalIndex], fraction0, Geometry.smallMetricDistance,
           "fraction0 of interval " + intervalIndex + " should match expected"
         );
-        ck.testNearNumber(
+        ck.testFraction(
           expectedFractions1[intervalIndex], fraction1, Geometry.smallMetricDistance,
           "fraction1 of interval " + intervalIndex + " should match expected"
         );
         intervalIndex++;
         const point0 = bspline.fractionToPoint(fraction0);
         const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
-        const point2 = bspline.fractionToPoint(fraction1)
+        const point2 = bspline.fractionToPoint(fraction1);
         ck.testTrue(plane.isPointOn(point0), "interval start point is ON");
         ck.testFalse(plane.isPointOn(point1), "interval midpoint is not ON");
         ck.testTrue(plane.isPointOnOrInside(point1), "interval midpoint is IN");
@@ -807,11 +807,11 @@ describe("CurveClips", () => {
 
       plane.announceClippedCurveIntervals(spiral,
         (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-          ck.testNearNumber(
+          ck.testFraction(
             expectedFractions0[i], fraction0, Geometry.smallMetricDistance,
             "fraction0 of spiral index " + i + " should match expected"
           );
-          ck.testNearNumber(
+          ck.testFraction(
             expectedFractions1[i], fraction1, Geometry.smallMetricDistance,
             "fraction1 of spiral index " + i + " should match expected"
           );

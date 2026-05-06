@@ -563,11 +563,11 @@ describe("ClipAnyCurve", () => {
       if (clipper.announceClippedCurveIntervals)
         clipper.announceClippedCurveIntervals(bspline,
           (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-            ck.testNearNumber(
+            ck.testFraction(
               expectedFractions0[callIndex], fraction0, Geometry.smallMetricDistance,
               "fraction0 of call " + callIndex + " should match expected",
             );
-            ck.testNearNumber(
+            ck.testFraction(
               expectedFractions1[callIndex], fraction1, Geometry.smallMetricDistance,
               "fraction1 of call " + callIndex + " should match expected",
             );
@@ -741,11 +741,11 @@ describe("ClipAnyCurve", () => {
       if (clipper.announceClippedCurveIntervals)
         clipper.announceClippedCurveIntervals(spiral,
           (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-            ck.testNearNumber(
+            ck.testFraction(
               expectedFractions0[callIndex], fraction0, Geometry.smallMetricDistance,
               "fraction0 of call " + callIndex + " should match expected",
             );
-            ck.testNearNumber(
+            ck.testFraction(
               expectedFractions1[callIndex], fraction1, Geometry.smallMetricDistance,
               "fraction1 of call " + callIndex + " should match expected",
             );
