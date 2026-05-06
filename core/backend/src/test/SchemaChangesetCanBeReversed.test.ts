@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElementProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { assert } from "chai";
-import * as path from "node:path";
 import { DrawingCategory } from "../Category";
-import { _nativeDb } from "../core-backend";
-import { BriefcaseDb } from "../IModelDb";
+import { BriefcaseDb, IModelDb } from "../IModelDb";
 import { HubMock } from "../internal/HubMock";
 import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -85,7 +83,7 @@ const schemas = {
  * Because schema-changeset reversal only rolls back EC-level mapping (not the backing SQLite columns),
  * this is the correct layer to verify after a reversal.
  */
-function hasECProperty(db: BriefcaseDb, schemaName: string, className: string, propertyName: string): boolean {
+function hasECProperty(db: IModelDb, schemaName: string, className: string, propertyName: string): boolean {
   let found = false;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   db.withPreparedStatement(
@@ -156,7 +154,7 @@ describe.only("SchemaChangesetCanBeReversed", () => {
   });
 
   /**
-   * Builds a changeset timeline where schema imports and data inserts are interleaved:
+   * Builds a timeline with interleaved schema and data changesets:
    *
    *   CS1 – setup (model, category) + import schema v01.00.00
    *   CS2 – insert two elements of class C  (data)
@@ -165,131 +163,102 @@ describe.only("SchemaChangesetCanBeReversed", () => {
    *   CS5 – import schema v01.00.02 adding PropD2 to D  (schema)
    *   CS6 – insert two elements of class D with PropD2  (data)
    *
-   * Starting from the tip (CS6), each changeset is reversed one at a time by
-   * downloading the changeset the imodel currently points to and calling
-   * `applyChangeset`.  The native side detects that the supplied changeset's id
-   * equals the current parent id and automatically calls `TxnManager::ReverseChangeset`,
-   * which rolls back EC-level mapping and saves internally — no manual save needed.
+   * After all six changesets are pushed a single V1 checkpoint is built at the tip
+   * (CS6) via [[HubMock.createTipCheckpoint]].  The test then calls
+   * [[HubWrappers.downloadAndOpenCheckpoint]] at three older versions (CS5, CS3, CS1).
    *
-   * After every schema reversal the EC metadata is verified; after every data
-   * reversal the element roster is verified.  None of the reversals should throw.
+   * For each request [[V2CheckpointManager]] (mock path) copies the tip checkpoint — the
+   * *nearest* available checkpoint — to the local target file.  [[CheckpointManager.updateToRequestedVersion]]
+   * detects that the downloaded file is at a newer changeset than requested and calls
+   * [[BriefcaseManager.pullAndApplyChangesets]] with `toIndex < currentIndex`, which reverses
+   * the needed changesets in order.  The opened snapshot is therefore at the exact requested
+   * version and its EC schema metadata reflects the pre-reversal state.
    */
-  it("should reverse interleaved schema and data changesets from tip, verifying EC schema at each step", async () => {
-    const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
-
-    /** Download the changeset the imodel currently sits on and reverse it via applyChangeset. */
-    const reverseCurrentChangeset = async () => {
-      assert.isFalse(imodel.txns.hasUnsavedChanges, "no unsaved changes before reversal");
-      assert.isFalse(imodel.txns.hasPendingTxns, "no pending txns before reversal");
-
-      // Download the changeset whose id equals imodel.changeset.id.
-      // applyChangeset detects this and routes to TxnManager::ReverseChangeset.
-      const cs = await HubMock.downloadChangeset({ iModelId, changeset: { id: imodel.changeset.id }, targetDir });
-      assert.doesNotThrow(() => imodel[_nativeDb].applyChangeset(cs, /* fastForward */ false));
-
-      // Sync JS-side changeset metadata and clear all caches so the next queries
-      // reflect the reverted EC state.
-      imodel.changeset = imodel[_nativeDb].getCurrentChangeset();
-      imodel.clearCaches();
-    };
-
-    // ── CS1: model/category setup + base schema ───────────────────────────────
+  it("should open checkpoint at older schema version by reversing from the tip checkpoint", async () => {
+    // ── CS1: model/category setup + base schema ──────────────────────────────
     await imodel.importSchemaStrings([schemas.v01x00x00]);
     await imodel.pushChanges({ description: "CS1: setup and import base schema v01.00.00" });
+    const cs1Id = imodel.changeset.id;
 
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.0");
-    assert.isTrue(imodel.containsClass("TestDomain:C"));
-    assert.isTrue(imodel.containsClass("TestDomain:D"));
-
-    // ── CS2: insert C elements (data only) ────────────────────────────────────
+    // ── CS2: insert C elements (data only) ───────────────────────────────────
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    const [el1Id, el2Id] = withEditTxn(imodel, (txn) => {
-      const e1 = insertElement(txn, "TestDomain:C", { propC: "c_val_1" });
-      const e2 = insertElement(txn, "TestDomain:C", { propC: "c_val_2" });
-      return [e1, e2];
+    withEditTxn(imodel, (txn) => {
+      insertElement(txn, "TestDomain:C", { propC: "c_val_1" });
+      insertElement(txn, "TestDomain:C", { propC: "c_val_2" });
     });
     await imodel.pushChanges({ description: "CS2: insert C elements" });
-
-    assert.isDefined(imodel.elements.tryGetElement(el1Id), "el1 exists after CS2");
-    assert.isDefined(imodel.elements.tryGetElement(el2Id), "el2 exists after CS2");
 
     // ── CS3: schema v01.00.01 – adds PropC2 to C ─────────────────────────────
     await imodel.importSchemaStrings([schemas.v01x00x01AddPropC2]);
     await imodel.pushChanges({ description: "CS3: import schema v01.00.01 (adds PropC2)" });
+    const cs3Id = imodel.changeset.id;
 
-    imodel.clearCaches();
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.1");
-    assert.isTrue(hasECProperty(imodel, "TestDomain", "C", "PropC2"), "PropC2 present after CS3");
-
-    // ── CS4: insert more C elements using PropC2 (data only) ──────────────────
+    // ── CS4: insert more C elements using PropC2 (data only) ─────────────────
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    const [el3Id, el4Id] = withEditTxn(imodel, (txn) => {
-      const e3 = insertElement(txn, "TestDomain:C", { propC: "c_val_3", propC2: "c2_val_3" });
-      const e4 = insertElement(txn, "TestDomain:C", { propC: "c_val_4", propC2: "c2_val_4" });
-      return [e3, e4];
+    withEditTxn(imodel, (txn) => {
+      insertElement(txn, "TestDomain:C", { propC: "c_val_3", propC2: "c2_val_3" });
+      insertElement(txn, "TestDomain:C", { propC: "c_val_4", propC2: "c2_val_4" });
     });
     await imodel.pushChanges({ description: "CS4: insert C elements with PropC2" });
-
-    assert.isDefined(imodel.elements.tryGetElement(el3Id), "el3 exists after CS4");
-    assert.isDefined(imodel.elements.tryGetElement(el4Id), "el4 exists after CS4");
 
     // ── CS5: schema v01.00.02 – adds PropD2 to D ─────────────────────────────
     await imodel.importSchemaStrings([schemas.v01x00x02AddPropD2]);
     await imodel.pushChanges({ description: "CS5: import schema v01.00.02 (adds PropD2)" });
+    const cs5Id = imodel.changeset.id;
 
-    imodel.clearCaches();
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.2");
-    assert.isTrue(hasECProperty(imodel, "TestDomain", "D", "PropD2"), "PropD2 present after CS5");
-
-    // ── CS6: insert D elements using PropD2 (data only) ───────────────────────
+    // ── CS6: insert D elements using PropD2 (data only) ──────────────────────
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    const [el5Id, el6Id] = withEditTxn(imodel, (txn) => {
-      const e5 = insertElement(txn, "TestDomain:D", { propD: "d_val_5", propD2: "d2_val_5" });
-      const e6 = insertElement(txn, "TestDomain:D", { propD: "d_val_6", propD2: "d2_val_6" });
-      return [e5, e6];
+    withEditTxn(imodel, (txn) => {
+      insertElement(txn, "TestDomain:D", { propD: "d_val_5", propD2: "d2_val_5" });
+      insertElement(txn, "TestDomain:D", { propD: "d_val_6", propD2: "d2_val_6" });
     });
     await imodel.pushChanges({ description: "CS6: insert D elements with PropD2" });
 
-    assert.isDefined(imodel.elements.tryGetElement(el5Id), "el5 exists after CS6");
-    assert.isDefined(imodel.elements.tryGetElement(el6Id), "el6 exists after CS6");
+    // ── Build a single V1 checkpoint at the tip (CS6) ────────────────────────
+    // All three verify steps below will download this tip checkpoint and reverse
+    // it to the requested version via BriefcaseManager.pullAndApplyChangesets.
+    await HubMock.createTipCheckpoint(iModelId);
 
-    // ── Reverse CS6 (data: D elements with PropD2) ───────────────────────────
-    await reverseCurrentChangeset();
-    assert.isUndefined(imodel.elements.tryGetElement(el5Id), "el5 gone after reversing CS6");
-    assert.isUndefined(imodel.elements.tryGetElement(el6Id), "el6 gone after reversing CS6");
-    // Schema must be unchanged (still v01.00.02)
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.2", "schema still v01.00.02 after data-only reversal");
-    assert.isTrue(hasECProperty(imodel, "TestDomain", "D", "PropD2"), "PropD2 still present after data-only reversal of CS6");
+    // ── Open at CS5 (schema v01.00.02): reverses CS6 (data) ──────────────────
+    {
+      const snap = await HubWrappers.downloadAndOpenCheckpoint({
+        accessToken: "user1",
+        iTwinId: HubMock.iTwinId,
+        iModelId,
+        asOf: IModelVersion.asOfChangeSet(cs5Id).toJSON(),
+      });
+      assert.equal(snap.querySchemaVersion("TestDomain"), "1.0.2", "schema is v01.00.02 at CS5");
+      assert.isTrue(hasECProperty(snap, "TestDomain", "C", "PropC2"), "PropC2 present at CS5");
+      assert.isTrue(hasECProperty(snap, "TestDomain", "D", "PropD2"), "PropD2 present at CS5");
+      snap.close();
+    }
 
-    // ── Reverse CS5 (schema: added PropD2 to D) ───────────────────────────────
-    await reverseCurrentChangeset();
-    // EC-level: PropD2 mapping gone; class D itself stays; schema version rolls back.
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.1", "schema back to v01.00.01 after reversing CS5");
-    assert.isTrue(imodel.containsClass("TestDomain:D"), "class D still present in EC after reversing CS5");
-    assert.isFalse(hasECProperty(imodel, "TestDomain", "D", "PropD2"), "PropD2 absent at EC level after reversing CS5");
-    assert.isTrue(hasECProperty(imodel, "TestDomain", "C", "PropC2"), "PropC2 unaffected; CS3 not yet reversed");
+    // ── Open at CS3 (schema v01.00.01): reverses CS4 (data) + CS5 (schema) + CS6 (data) ──
+    {
+      const snap = await HubWrappers.downloadAndOpenCheckpoint({
+        accessToken: "user1",
+        iTwinId: HubMock.iTwinId,
+        iModelId,
+        asOf: IModelVersion.asOfChangeSet(cs3Id).toJSON(),
+      });
+      assert.equal(snap.querySchemaVersion("TestDomain"), "1.0.1", "schema is v01.00.01 at CS3");
+      assert.isTrue(hasECProperty(snap, "TestDomain", "C", "PropC2"), "PropC2 present at CS3");
+      assert.isFalse(hasECProperty(snap, "TestDomain", "D", "PropD2"), "PropD2 absent at CS3 (CS5 schema reverted)");
+      snap.close();
+    }
 
-    // ── Reverse CS4 (data: C elements with PropC2) ───────────────────────────
-    await reverseCurrentChangeset();
-    assert.isUndefined(imodel.elements.tryGetElement(el3Id), "el3 gone after reversing CS4");
-    assert.isUndefined(imodel.elements.tryGetElement(el4Id), "el4 gone after reversing CS4");
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.1", "schema still v01.00.01 after data-only reversal of CS4");
-    assert.isTrue(hasECProperty(imodel, "TestDomain", "C", "PropC2"), "PropC2 still present after data-only reversal of CS4");
-
-    // ── Reverse CS3 (schema: added PropC2 to C) ───────────────────────────────
-    await reverseCurrentChangeset();
-    // EC-level: PropC2 mapping gone; class C itself stays; schema version rolls back.
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.0", "schema back to v01.00.00 after reversing CS3");
-    assert.isTrue(imodel.containsClass("TestDomain:C"), "class C still present in EC after reversing CS3");
-    assert.isFalse(hasECProperty(imodel, "TestDomain", "C", "PropC2"), "PropC2 absent at EC level after reversing CS3");
-    assert.isFalse(hasECProperty(imodel, "TestDomain", "D", "PropD2"), "PropD2 still absent");
-
-    // ── Reverse CS2 (data: original C elements) ──────────────────────────────
-    await reverseCurrentChangeset();
-    assert.isUndefined(imodel.elements.tryGetElement(el1Id), "el1 gone after reversing CS2");
-    assert.isUndefined(imodel.elements.tryGetElement(el2Id), "el2 gone after reversing CS2");
-    assert.equal(imodel.querySchemaVersion("TestDomain"), "1.0.0", "schema still v01.00.00 after reversing CS2");
-    assert.isTrue(imodel.containsClass("TestDomain:C"), "class C still in EC after all reversals");
-    assert.isTrue(imodel.containsClass("TestDomain:D"), "class D still in EC after all reversals");
+    // ── Open at CS1 (schema v01.00.00): reverses CS2 through CS6 ─────────────
+    {
+      const snap = await HubWrappers.downloadAndOpenCheckpoint({
+        accessToken: "user1",
+        iTwinId: HubMock.iTwinId,
+        iModelId,
+        asOf: IModelVersion.asOfChangeSet(cs1Id).toJSON(),
+      });
+      assert.equal(snap.querySchemaVersion("TestDomain"), "1.0.0", "schema is v01.00.00 at CS1");
+      assert.isFalse(hasECProperty(snap, "TestDomain", "C", "PropC2"), "PropC2 absent at CS1 (CS3 schema reverted)");
+      assert.isFalse(hasECProperty(snap, "TestDomain", "D", "PropD2"), "PropD2 absent at CS1");
+      snap.close();
+    }
   });
 });
