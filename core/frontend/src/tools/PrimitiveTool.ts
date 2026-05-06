@@ -223,7 +223,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /**
    * If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool flyover for the undo description.
-   * @deprecated Use methods on [[EditCommand]] IPC instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use methods on [[EditCommand]] IPC instead.
    */
   public async saveChanges(): Promise<void> {
     if (this.iModel.isBriefcaseConnection())

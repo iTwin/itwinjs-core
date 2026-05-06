@@ -510,7 +510,7 @@ export class Element extends Entity {
    * * none of the element's outputs have been processed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
-   * @deprecated Use onBeforeOutputsHandledArg instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use onBeforeOutputsHandledArg instead.
    */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -538,7 +538,7 @@ export class Element extends Entity {
    * This method is not called if none of the element's inputs were changed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
-   * @deprecated Use onAllInputsHandledArg instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use onAllInputsHandledArg instead.
    */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -669,7 +669,7 @@ export class Element extends Entity {
   public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Element into the iModel.
-   * @deprecated Use Element.insert(txn) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Element.insert(txn) instead.
    */
   public insert(): Id64String;
   public insert(txn?: EditTxn): Id64String {
@@ -683,7 +683,7 @@ export class Element extends Entity {
   public update(txn: EditTxn): void;
   /**
    * Update this Element in the iModel.
-   * @deprecated Use Element.update(txn) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Element.update(txn) instead.
    */
   public update(): void;
   public update(txn?: EditTxn): void {
@@ -697,7 +697,7 @@ export class Element extends Entity {
   public delete(txn: EditTxn): void;
   /**
    * Delete this Element from the iModel.
-   * @deprecated Use Element.delete(txn) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Element.delete(txn) instead.
    */
   public delete(): void;
   public delete(txn?: EditTxn): void {
@@ -1282,7 +1282,7 @@ export class Subject extends InformationReferenceElement {
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   /** Insert a Subject
-   * @deprecated Use Subject.insert(txn, ...) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Subject.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
@@ -1373,7 +1373,7 @@ export class Drawing extends Document {
    * @beta
    */
   public static insert(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
-  /** @deprecated Use Drawing.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Drawing.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1645,7 +1645,7 @@ export class DefinitionContainer extends DefinitionSet {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
-  /** @deprecated Use DefinitionContainer.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use DefinitionContainer.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1805,7 +1805,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
-  /** @deprecated Use TemplateRecipe3d.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use TemplateRecipe3d.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1881,7 +1881,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe2d or its sub-model.
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
-  /** @deprecated Use TemplateRecipe2d.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use TemplateRecipe2d.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
