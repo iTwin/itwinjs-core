@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { assert } from "chai";
 import { DrawingCategory } from "../Category";
@@ -101,7 +101,7 @@ function hasECProperty(db: IModelDb, schemaName: string, className: string, prop
   return found;
 }
 
-describe.only("SchemaChangesetCanBeReversed", () => {
+describe("SchemaChangesetCanBeReversed", () => {
   let imodel: BriefcaseDb;
   let iModelId: string;
   let drawingModelId: string;
@@ -117,7 +117,7 @@ describe.only("SchemaChangesetCanBeReversed", () => {
     });
   };
 
-  const insertElement = (txn: EditTxn, className: string, properties: Record<string, unknown>): Id64String => {
+  const insertElement = (txn: EditTxn, className: string, properties: Record<string, unknown>): void => {
     const elementProps: GeometricElementProps = {
       classFullName: className,
       model: drawingModelId,
@@ -126,7 +126,7 @@ describe.only("SchemaChangesetCanBeReversed", () => {
       ...properties,
     };
     const element = txn.iModel.elements.createElement(elementProps);
-    return txn.insertElement(element.toJSON());
+    txn.insertElement(element.toJSON());
   };
 
   before(async () => {

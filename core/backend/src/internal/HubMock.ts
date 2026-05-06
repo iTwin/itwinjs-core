@@ -20,7 +20,6 @@ import { LocalHub } from "../LocalHub";
 import { SnapshotDb, TokenArg } from "../IModelDb";
 import { _getHubAccess, _mockCheckpoint, _nativeDb, _setHubAccess } from "./Symbols";
 import { BriefcaseManager } from "../BriefcaseManager";
-import * as path from "path";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
@@ -45,7 +44,7 @@ function doDownloadNearest(args: { iModelId: string, changeset: ChangesetIndexOr
 
 const mockCheckpoint: MockCheckpoint = {
   mockAttach: (checkpoint: CheckpointProps) => {
-    const targetFile = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
+    const targetFile = join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
     doDownloadPrior({ ...checkpoint, targetFile });
     return targetFile;
   },
