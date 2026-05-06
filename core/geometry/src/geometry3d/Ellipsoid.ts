@@ -160,7 +160,8 @@ export class Ellipsoid implements Clipper {
     this._workPointA = Point3d.create();
     this._workPointB = Point3d.create();
   }
-  /** Create with a clone (not capture) with given transform.
+  /**
+   * Create with a clone (not capture) with given transform.
    * * If transform is undefined, create a unit sphere.
    */
   public static create(matrixOrTransform?: Transform | Matrix3d): Ellipsoid {
@@ -194,7 +195,9 @@ export class Ellipsoid implements Clipper {
    *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
    *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
    */
-  public get transformRef(): Transform { return this._transform; }
+  public get transformRef(): Transform {
+    return this._transform;
+  }
   /**
    * * Convert a world point to point within the underlying mapped sphere space.
    *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
@@ -690,7 +693,7 @@ export class Ellipsoid implements Clipper {
       return localPoint.magnitude() <= 1.0;
     return false;
   }
-  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedSegmentIntervals]]. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
     const localA = this._transform.multiplyInversePoint3d(pointA, this._workPointA);
     const localB = this._transform.multiplyInversePoint3d(pointB, this._workPointB);
@@ -728,7 +731,7 @@ export class Ellipsoid implements Clipper {
     }
     return false;
   }
-  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedArcIntervals]] */
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const arcData = arc.toVectors();
     let numAnnounce = 0;
@@ -774,6 +777,8 @@ export class Ellipsoid implements Clipper {
     }
     return numAnnounce > 0;
   }
+
+  // TODO: implement Clipper.announceClippedCurveIntervals
 }
 /**
  * * An `EllipsoidPatch` is

@@ -712,7 +712,7 @@ describe("ClipPrimitive", () => {
             ck.testTrue(cs.isPointOnOrInside(xyz, 0.001), xyz);
           }
           if (Checker.noisy.convexSetCorners) {
-            GeometryCoreTestIO.consoleLog(` Convex Set range ${prettyPrint(r.toJSON())}`);
+            GeometryCoreTestIO.consoleLog(`Convex Set range ${prettyPrint(r.toJSON())}`);
             for (const xyz of points) {
               GeometryCoreTestIO.consoleLog(`Corner ${prettyPrint(xyz)}`);
             }
@@ -818,7 +818,6 @@ describe("ClipPrimitive", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipPrimitiveMasking");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 function clipAndOutput(allGeometry: GeometryQuery[], clipper: ClipPrimitive,
