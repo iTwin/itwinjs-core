@@ -86,6 +86,7 @@ export default defineConfig(() => {
         transformMixedEsModules: true, // transforms require statements
       },
       rollupOptions: {
+        external: ["electron"],
         input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
         plugins: [
