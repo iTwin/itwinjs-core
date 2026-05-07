@@ -109,8 +109,16 @@ async function testInitializeProvidedRpcInterface() {
   assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
 }
 
+function getTestWebResourcesPath() {
+  return path.join(__dirname, "..", "assets");
+}
+
 async function testOpenMainWindow() {
-  await ElectronHost.startup();
+  await ElectronHost.startup({
+    electronHost: {
+      webResourcesPath: getTestWebResourcesPath(),
+    },
+  });
   const electron = ElectronHost.electron;
 
   let windows = electron.BrowserWindow.getAllWindows();
@@ -146,7 +154,7 @@ async function testMainWindowOpenedWithWebUrl() {
 async function testMainWindowOpenedWithLocalFile() {
   await ElectronHost.startup({
     electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "assets"),
+      webResourcesPath: getTestWebResourcesPath(),
     },
   });
 
@@ -172,7 +180,7 @@ async function testWindowSizeSettings() {
 
   await ElectronHost.startup({
     electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "assets"),
+      webResourcesPath: getTestWebResourcesPath(),
     },
   });
 

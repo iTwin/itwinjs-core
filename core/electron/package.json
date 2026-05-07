@@ -2,10 +2,62 @@
   "name": "@itwin/core-electron",
   "version": "5.10.0-dev.7",
   "description": "iTwin.js ElectronHost and ElectronApp",
+  "typings": "lib/cjs/core-electron",
+  "typesVersions": {
+    "*": {
+      "ElectronFrontend": [
+        "lib/cjs/ElectronFrontend.d.ts"
+      ],
+      "ElectronBackend": [
+        "lib/cjs/ElectronBackend.d.ts"
+      ],
+      "lib/cjs/ElectronFrontend": [
+        "lib/cjs/ElectronFrontend.d.ts"
+      ],
+      "lib/cjs/ElectronFrontend.js": [
+        "lib/cjs/ElectronFrontend.d.ts"
+      ],
+      "lib/cjs/ElectronBackend": [
+        "lib/cjs/ElectronBackend.d.ts"
+      ],
+      "lib/cjs/ElectronBackend.js": [
+        "lib/cjs/ElectronBackend.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    "./ElectronFrontend": {
+      "types": "./lib/cjs/ElectronFrontend.d.ts",
+      "import": "./lib/esm/ElectronFrontend.js",
+      "require": "./lib/cjs/ElectronFrontend.js"
+    },
+    "./ElectronBackend": {
+      "types": "./lib/cjs/ElectronBackend.d.ts",
+      "import": "./lib/esm/ElectronBackend.js",
+      "require": "./lib/cjs/ElectronBackend.js"
+    },
+    "./lib/cjs/ElectronFrontend": {
+      "types": "./lib/cjs/ElectronFrontend.d.ts",
+      "default": "./lib/cjs/ElectronFrontend.js"
+    },
+    "./lib/cjs/ElectronFrontend.js": {
+      "types": "./lib/cjs/ElectronFrontend.d.ts",
+      "default": "./lib/cjs/ElectronFrontend.js"
+    },
+    "./lib/cjs/ElectronBackend": {
+      "types": "./lib/cjs/ElectronBackend.d.ts",
+      "default": "./lib/cjs/ElectronBackend.js"
+    },
+    "./lib/cjs/ElectronBackend.js": {
+      "types": "./lib/cjs/ElectronBackend.d.ts",
+      "default": "./lib/cjs/ElectronBackend.js"
+    }
+  },
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm && node -e \"require('fs').writeFileSync('lib/esm/package.json', JSON.stringify({type:'module'})+'\\n')\"",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./core-electron.ts --onlyJson",
@@ -14,9 +66,8 @@
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "",
     "test:integration": "npm run test:integration:backend && npm run test:integration:frontend",
-    "test:integration:backend": "mocha --config src/test/backend/.mocharc.json",
-    "test:integration:frontend": "certa -r electron --config src/test/frontend/utils/certa.json",
-    "webpack:test": "webpack --config ./src/test/frontend/utils/webpack.config.js 1>&2",
+    "test:integration:backend": "vitest run --config vitest.config.mts",
+    "test:integration:frontend": "vitest run --config vitest.frontend.config.mts",
     "cover": ""
   },
   "repository": {
@@ -42,15 +93,16 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
+    "@itwin/vitest-certa-bridge": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
+    "@vitest/browser": "^3.0.6",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "electron": "^41.0.0",
@@ -60,6 +112,7 @@
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
+    "vitest": "^3.0.6",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.0.1"
   },

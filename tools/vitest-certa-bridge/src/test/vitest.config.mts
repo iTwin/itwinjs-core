@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ElectronHost } from "../../../ElectronBackend";
+import { defineConfig } from "vitest/config";
 
-async function init() {
-  const cacheDir = process.env.ELECTRON_CACHE_DIR;
-  await ElectronHost.startup(cacheDir ? {
-    iModelHost: {
-      cacheDir,
-      profileName: `renderer-${process.pid}`,
-    },
-  } : undefined);
-}
-
-module.exports = init();
+export default defineConfig({
+  test: {
+    dir: "src/test",
+    include: ["**/*.test.ts"],
+    exclude: ["electron-provider-smoke.test.ts"],
+  },
+});
