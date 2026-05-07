@@ -307,10 +307,13 @@ gh pr create \
   --head electron-<NEW_MAJOR> \
   --title "Add support for Electron <NEW_MAJOR>" \
   --body "$(cat <<'EOF'
-Adds support for Electron <NEW_MAJOR>.
-
 ### Breaking changes review
-<Include the breaking changes assessment here — list each change with "affected" / "not affected" status>
+
+<Include the breaking changes assessment table from Step 3 here>
+
+### Notes
+
+<Include any relevant notes, e.g. unmet peer dependencies>
 
 See [Electron <NEW_MAJOR> release blog](https://www.electronjs.org/blog/electron-<NEW_MAJOR>-0) for details.
 EOF
