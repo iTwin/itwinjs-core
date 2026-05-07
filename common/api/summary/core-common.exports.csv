@@ -775,6 +775,8 @@ preview;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
 preview;interface;RepositoryLinkProps
 public;interface;RequestNewBriefcaseProps
+internal;function;resolveNavProp
+internal;function;resolveNavPropId
 internal;class;ResponseLike
 beta;interface;ReverseTxnArgs
 public;class;RgbColor

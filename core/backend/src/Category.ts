@@ -138,7 +138,7 @@ export class SubCategory extends DefinitionElement {
   public static insert(txn: EditTxn, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
   /**
    * Insert a new SubCategory
-   * @deprecated Use SubCategory.insert(txn, ...) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use SubCategory.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
@@ -215,7 +215,7 @@ export class Category extends DefinitionElement {
   public setDefaultAppearance(txn: EditTxn, props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
   /**
    * Set the appearance of the default SubCategory for this Category
-   * @deprecated Use Category.setDefaultAppearance(txn, ...) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Category.setDefaultAppearance(txn, ...) instead.
    */
   public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
   public setDefaultAppearance(txnOrProps: EditTxn | SubCategoryAppearance.Props | SubCategoryAppearance, props?: SubCategoryAppearance.Props | SubCategoryAppearance): void {
@@ -297,7 +297,7 @@ export class DrawingCategory extends Category {
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
   /**
    * Insert a new DrawingCategory
-   * @deprecated Use DrawingCategory.insert(txn, ...) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use DrawingCategory.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
@@ -366,7 +366,7 @@ export class SpatialCategory extends Category {
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
   /**
    * Insert a new SpatialCategory
-   * @deprecated Use SpatialCategory.insert(txn, ...) instead.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use SpatialCategory.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {

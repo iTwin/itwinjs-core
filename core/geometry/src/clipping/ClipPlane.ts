@@ -9,7 +9,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -52,7 +53,7 @@ export interface ClipPlaneProps {
  * More details can be found at docs/learning/geometry/Clipping.md
  *
  * Hence
- * * The halfspace function evaluation for "point" (x,y,z) is `(x,y,z) DOT (u,v,w) - signedDistance`.
+ * * The halfspace function evaluation for point (x,y,z) is `(x,y,z) DOT (u,v,w) - signedDistance`.
  * * POSITIVE values of the halfspace function are "inside".
  * * ZERO value of the halfspace function is "on".
  * * NEGATIVE value of the halfspace function is "outside".
@@ -65,7 +66,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   /**
    * Construct a parallel plane through the origin.
    * * Move it to the actual position.
-   * * _distanceFromOrigin is the distance it moved, with the (inward) normal direction as positive
+   * * _distanceFromOrigin is the distance it moved, with the (inward) normal direction as positive.
    */
   private _distanceFromOrigin: number;
   private _invisible: boolean;
@@ -427,11 +428,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     return Math.abs(this.altitude(point)) <= tolerance;
   }
   /**
-   * Compute intersections of an (UNBOUNDED) arc with the plane.  Append them (as radians) to a growing array.
-   * @param arc arc to test.  The angle limits of the arc are NOT considered.
-   * @param intersectionRadians array to receive results
+   * Compute intersections of an (UNBOUNDED) arc with the plane. Append them (as radians) to a growing array.
+   * @param arc arc to test. The angle limits of the arc are NOT considered.
+   * @param intersectionRadians array to receive results.
    */
-  public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array) {
+  public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void {
     const arcVectors = arc.toVectors();
     const alpha = this.altitude(arc.center);
     const beta = this.velocity(arcVectors.vector0);
@@ -440,17 +441,24 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
       alpha, beta, gamma, undefined, undefined, intersectionRadians,
     );
   }
-  private static _clipArcFractionArray = new GrowableFloat64Array();
-  /**
-   * Announce fractional intervals of arc clip.
-   * * Each call to `announce(fraction0, fraction1, arc)` announces one interval that is inside the clip plane.
-   */
+  private static _clipFractionArray = new GrowableFloat64Array();
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ClipPlane._clipArcFractionArray;
+    const breaks = ClipPlane._clipFractionArray;
     breaks.clear();
     this.appendIntersectionRadians(arc, breaks);
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
+  }
+  /** Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const breaks = ClipPlane._clipFractionArray;
+    breaks.clear();
+    const results: CurveLocationDetail[] = [];
+    curve.appendPlaneIntersectionPoints(this, results);
+    for (const r of results)
+      breaks.push(r.fraction);
+    return ClipUtilities.selectIntervals01(curve, breaks, this, announce);
   }
   /**
    * Compute intersection of (unbounded) segment with the plane.
@@ -552,9 +560,9 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     this.setPlane4d(plane);
     return true;
   }
-  /** Announce the interval (if any) where a line is within the clip plane half space. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     if (f1 < f0)
       return false;

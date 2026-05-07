@@ -2520,7 +2520,7 @@ describe("CurveCurveIntersectXY", () => {
     nonPlanarTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
     nonPlanarTransform.setMultiplyTransformTransform(rotationTransform1, nonPlanarTransform);
     // integrated spirals
-    const integratedSpirals = [];
+    const integratedSpirals: TransitionSpiral3d[] = [];
     const r0 = 0;
     const r1 = 50;
     const activeInterval = Segment1d.create(0, 1);
@@ -2542,7 +2542,7 @@ describe("CurveCurveIntersectXY", () => {
       }
     }
     // direct spirals
-    const directSpirals = [];
+    const directSpirals: TransitionSpiral3d[] = [];
     const length = 100;
     for (const directSpiralType of [
       "Arema",
@@ -2551,7 +2551,7 @@ describe("CurveCurveIntersectXY", () => {
       "WesternAustralian",
       "HalfCosine",
       "AustralianRailCorp",
-      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // TODO: enable below lines after issue 1693 is resolved
       // "Czech",
       // "Italian",
       // "MXCubicAlongArc",
@@ -2638,7 +2638,7 @@ describe("CurveCurveIntersectXY", () => {
       directSpirals[14],
       directSpirals[16],
       directSpirals[17],
-      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // TODO: enable below lines after issue 1693 is resolved
       // directSpirals[19],
       // directSpirals[20],
       // directSpirals[22],

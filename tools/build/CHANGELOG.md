@@ -1,6 +1,28 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Thu, 16 Apr 2026 11:06:21 GMT and should not be manually modified.
+This log was last generated on Tue, 05 May 2026 17:44:54 GMT and should not be manually modified.
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Update @microsoft/api-extractor to ~7.58.7 (removes lodash CVE GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh).
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:13 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
 
 ## 5.8.2
 Thu, 16 Apr 2026 11:05:01 GMT

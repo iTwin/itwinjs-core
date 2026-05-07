@@ -1332,7 +1332,7 @@ describe("GeometryStream", () => {
     assert.isDefined(value.geom);
 
     const geomArrayOut: Arc3d[] = [];
-    const itLocal = GeometryStreamIterator.fromGeometryPart(value as GeometryPartProps);
+    const itLocal = GeometryStreamIterator.fromGeometryPart(value);
     for (const entry of itLocal) {
       assertTrue(entry.primitive.type === "geometryQuery");
       assertTrue(entry.primitive.geometry instanceof Arc3d);

@@ -671,7 +671,7 @@ export class AnnotationTextStyle extends DefinitionElement {
    */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
-    this.validateSettings(arg.props as AnnotationTextStyleProps);
+    this.validateSettings(arg.props);
   }
 
   /**
@@ -681,7 +681,7 @@ export class AnnotationTextStyle extends DefinitionElement {
    */
   protected static override onUpdate(arg: OnElementPropsArg): void {
     super.onUpdate(arg);
-    this.validateSettings(arg.props as AnnotationTextStyleProps);
+    this.validateSettings(arg.props);
   }
 
   private static validateSettings(props: AnnotationTextStyleProps): void {

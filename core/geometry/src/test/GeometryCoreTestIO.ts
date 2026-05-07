@@ -526,7 +526,7 @@ export class GeometryCoreTestIO {
     const json = fs.readFileSync(filePath, "utf8");
     const parsed = IModelJson.Reader.parse(JSON.parse(json));
     if (parsed instanceof GeometryQuery)
-      return parsed as GeometryQuery;
+      return parsed;
     if (Array.isArray(parsed) && parsed.length > 0)
       return parsed as GeometryQuery[];
     return undefined;

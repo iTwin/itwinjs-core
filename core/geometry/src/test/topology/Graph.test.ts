@@ -487,9 +487,9 @@ describe("VUGraph", () => {
     ck.testUndefined(q1);
     ck.testTrue(q instanceof HalfEdge && q === y0Edge);
     const fm = HalfEdge.horizontalScanFraction(y1Edge, ym);
-    ck.testTrue(Number.isFinite(fm as number) && Geometry.isSameCoordinate(f, fm as number));
+    ck.testTrue(Number.isFinite(fm) && Geometry.isSameCoordinate(f, fm as number));
     const f0 = HalfEdge.horizontalScanFraction(y1Edge, y0);
-    ck.testTrue(Number.isFinite(f0 as number) && Geometry.isSameCoordinate(0, f0 as number));
+    ck.testTrue(Number.isFinite(f0) && Geometry.isSameCoordinate(0, f0 as number));
     expect(ck.getNumErrors()).toBe(0);
   });
   it("CoordinatesOnEdges", () => {
@@ -785,7 +785,7 @@ function moveAndMark(
   out.drawLines([xyz0, position.clonePoint()]);
   markPosition(out, position);
   if (expectedTopo !== undefined) {
-    ck.testExactNumber(expectedTopo as number, position.topo);
+    ck.testExactNumber(expectedTopo, position.topo);
   } else {
     ck.testTrue(position.isExteriorTarget, "expect exterior target setting");
   }

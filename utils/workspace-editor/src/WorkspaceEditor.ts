@@ -442,7 +442,7 @@ async function initializeWorkspace(args: InitializeOpts) {
     if (yesNo[0].toUpperCase() !== "Y")
       return;
   }
-  const container = CloudSqlite.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
+  const container = CloudSqlite.createCloudContainer(args);
   container.initializeContainer({ checksumBlockNames: true, blockSize: 4 * 1024 * 1024 });
   showMessage(`container "${args.containerId}" initialized`);
 }
