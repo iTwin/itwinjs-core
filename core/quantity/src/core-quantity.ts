@@ -9,6 +9,7 @@ export * from "./Interfaces";
 export * from "./Parser";
 export * from "./ParserSpec";
 export * from "./Quantity";
+export * from "./UnitConversions";
 export * from "./Unit";
 export * from "./Formatter/Format";
 export * from "./Formatter/FormatterSpec";
@@ -23,6 +24,7 @@ export * from "./UnitConversion/UnitDefinitionResolver";
 export * from "./SerializedUnitSchema";
 export { BasicUnitsProvider } from "./BasicUnitsProvider";
 export * from "./CompositeUnitsProvider";
+export * from "./generated/Units.generated";
 export * from "./internal/cross-package";
 
 /** @docs-package-description

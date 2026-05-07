@@ -58,6 +58,16 @@ const provider = createUnitsProvider({
 
 When no `primary` is supplied, `createUnitsProvider()` returns a plain `new BasicUnitsProvider()` — no wrapper.
 
+You can also use the generated canonical identifiers exported by `@itwin/core-quantity` to avoid magic strings when looking up bundled BIS units:
+
+```ts
+import { BasicUnitsProvider, UnitSchemaNames } from "@itwin/core-quantity";
+
+const provider = new BasicUnitsProvider();
+const meter = await provider.findUnitByName(UnitSchemaNames.Units.M);
+const lengthUnits = await provider.getUnitsByFamily(UnitSchemaNames.Phenomena.LENGTH);
+```
+
 #### SchemaUnitProvider
 
 [SchemaUnitProvider]($ecschema-metadata) loads unit definitions from EC schemas using a [SchemaContext]($ecschema-metadata). It provides access to the extensive Units schema as well as custom units defined in domain schemas.

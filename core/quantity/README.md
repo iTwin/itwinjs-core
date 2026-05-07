@@ -4,6 +4,18 @@ The __@itwin/core-quantity__ package contains classes for quantity formatting an
 
 Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learning/quantity) explaining quantity formatting and its basic concepts.
 
+## Example
+
+```ts
+import { UnitConversions, UnitSchemaNames } from "@itwin/core-quantity";
+
+const feet = UnitConversions.convertBasic(
+  UnitSchemaNames.Units.M,
+  UnitSchemaNames.Units.FT,
+  1,
+);
+```
+
 ## Contributing
 
 When adding new APIs or updating documentation for this package, review if [QuantityFormatting.md](https://github.com/iTwin/itwinjs-core/blob/master/docs/learning/frontend/QuantityFormatting.md) or the [core-quantity learning page](https://github.com/iTwin/itwinjs-core/blob/master/docs/learning/quantity/index.md) needs to be updated as well. When adding or editing code examples, it's encouraged to keep the examples consistent between this file and the linked file above.

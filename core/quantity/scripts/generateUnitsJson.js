@@ -3,44 +3,136 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 "use strict";
-const { readFileSync, writeFileSync } = require("node:fs");
-const { join } = require("node:path");
+const { existsSync, mkdirSync, readFileSync, writeFileSync } = require("node:fs");
+const { dirname, join } = require("node:path");
 
 // Run automatically as part of `rushx build`. Regenerates src/assets/Units.json when
-// @bentley/units-schema version changes. Commit the result.
+// @bentley/units-schema version changes and keeps generated TypeScript identifiers in sync.
 const schemaPath = require.resolve("@bentley/units-schema/Units.ecschema.json");
 const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
-const outPath = join(__dirname, "../src/assets/Units.json");
+const unitsJsonPath = join(__dirname, "../src/assets/Units.json");
+const generatedTsPath = join(__dirname, "../src/generated/Units.generated.ts");
 
-let currentVersion;
-try {
-  currentVersion = JSON.parse(readFileSync(outPath, "utf8")).sourceEcSchemaVersion;
-} catch {
-  currentVersion = undefined;
+function readSerializationVersion() {
+  // Read the serialization format version from source to stay in sync with SERIALIZED_UNIT_SCHEMA_VERSION.
+  // Cannot require() the compiled constant — this script runs before tsc.
+  const schemaTsSrc = readFileSync(join(__dirname, "../src/SerializedUnitSchema.ts"), "utf8");
+  const versionMatch = schemaTsSrc.match(/SERIALIZED_UNIT_SCHEMA_VERSION\s*=\s*"([^"]+)"/);
+  if (!versionMatch)
+    throw new Error("Cannot find SERIALIZED_UNIT_SCHEMA_VERSION in SerializedUnitSchema.ts");
+
+  return versionMatch[1];
 }
 
-if (currentVersion === schema.version) {
-  console.log(`Units.json up to date (schema ${schema.version})`);
-  process.exit(0);
+function buildSerializedUnitsJson(sourceSchema, serializationVersion) {
+  return {
+    version: serializationVersion,
+    sourceEcSchemaVersion: sourceSchema.version,
+    name: sourceSchema.name,
+    alias: sourceSchema.alias,
+    label: sourceSchema.label,
+    description: sourceSchema.description,
+    items: sourceSchema.items,
+  };
 }
 
-// Read the serialization format version from source to stay in sync with SERIALIZED_UNIT_SCHEMA_VERSION.
-// Cannot require() the compiled constant — this script runs before tsc.
-const schemaTsSrc = readFileSync(join(__dirname, "../src/SerializedUnitSchema.ts"), "utf8");
-const versionMatch = schemaTsSrc.match(/SERIALIZED_UNIT_SCHEMA_VERSION\s*=\s*"([^"]+)"/);
-if (!versionMatch)
-  throw new Error("Cannot find SERIALIZED_UNIT_SCHEMA_VERSION in SerializedUnitSchema.ts");
+function isValidIdentifierKey(name) {
+  return /^[$A-Z_][0-9A-Z_$]*$/i.test(name);
+}
 
-const output = {
-  version: versionMatch[1],
-  sourceEcSchemaVersion: schema.version,
-  name: schema.name,
-  alias: schema.alias,
-  label: schema.label,
-  description: schema.description,
-  items: schema.items,
-};
+function assertUniqueGeneratedKeys(entries, schemaItemType) {
+  const seen = new Set();
+  for (const entry of entries) {
+    if (seen.has(entry.key))
+      throw new Error(`Duplicate generated key "${entry.key}" for ${schemaItemType}`);
+    seen.add(entry.key);
+  }
+}
 
-writeFileSync(outPath, JSON.stringify(output, null, 2));
-console.log(`Generated Units.json from @bentley/units-schema ${schema.version}`);
+function collectGeneratedSection(sourceSchema, schemaItemTypes) {
+  const itemTypes = Array.isArray(schemaItemTypes) ? schemaItemTypes : [schemaItemTypes];
+  const entries = Object.entries(sourceSchema.items)
+    .filter(([, item]) => itemTypes.includes(item.schemaItemType))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, item]) => {
+      if (!isValidIdentifierKey(name))
+        throw new Error(`Cannot emit invalid TypeScript identifier key "${name}" for ${item.schemaItemType}`);
+      return { key: name, value: `${sourceSchema.name}.${name}` };
+    });
+
+  assertUniqueGeneratedKeys(entries, itemTypes.join("/"));
+  return entries;
+}
+
+function renderSection(indent, entries) {
+  if (entries.length === 0)
+    return `${indent}{}`;
+
+  const lines = [`${indent}{`];
+  for (const entry of entries) {
+    lines.push(`${indent}  ${entry.key}: "${entry.value}",`);
+  }
+  lines.push(`${indent}}`);
+  return lines.join("\n");
+}
+
+function buildGeneratedUnitsModule(sourceSchema) {
+  const unitEntries = collectGeneratedSection(sourceSchema, ["Unit", "InvertedUnit"]);
+  const phenomenonEntries = collectGeneratedSection(sourceSchema, "Phenomenon");
+  const unitSystemEntries = collectGeneratedSection(sourceSchema, "UnitSystem");
+
+  return `${[
+    "/*---------------------------------------------------------------------------------------------",
+    "* Copyright (c) Bentley Systems, Incorporated. All rights reserved.",
+    "* See LICENSE.md in the project root for license terms and full copyright notice.",
+    "*--------------------------------------------------------------------------------------------*/",
+    "/* eslint-disable @typescript-eslint/naming-convention */",
+    "// AUTO-GENERATED by scripts/generateUnitsJson.js. Do not edit by hand.",
+    "",
+    "/** Canonical bundled Units schema identifiers generated from the bundled Units.json asset.",
+    " * @beta",
+    " */",
+    "export const UnitSchemaNames = {",
+    `  Units: ${renderSection("  ", unitEntries).slice(2)},`,
+    `  Phenomena: ${renderSection("  ", phenomenonEntries).slice(2)},`,
+    `  UnitSystems: ${renderSection("  ", unitSystemEntries).slice(2)},`,
+    "} as const;",
+    "",
+  ].join("\n")}`;
+}
+
+function readFileIfExists(filePath) {
+  return existsSync(filePath) ? readFileSync(filePath, "utf8") : undefined;
+}
+
+function writeIfChanged(filePath, content) {
+  const current = readFileIfExists(filePath);
+  if (current === content)
+    return false;
+
+  mkdirSync(dirname(filePath), { recursive: true });
+  writeFileSync(filePath, content);
+  return true;
+}
+
+function main() {
+  const serializationVersion = readSerializationVersion();
+  const unitsJson = buildSerializedUnitsJson(schema, serializationVersion);
+  const unitsJsonContent = `${JSON.stringify(unitsJson, null, 2)}\n`;
+  const generatedTsContent = buildGeneratedUnitsModule(schema);
+
+  const jsonChanged = writeIfChanged(unitsJsonPath, unitsJsonContent);
+  const tsChanged = writeIfChanged(generatedTsPath, generatedTsContent);
+
+  if (!jsonChanged && !tsChanged) {
+    console.log(`Units artifacts up to date (schema ${schema.version})`);
+    return;
+  }
+
+  console.log(`Generated Units artifacts from @bentley/units-schema ${schema.version}`);
+}
+
+if (require.main === module) {
+  main();
+}

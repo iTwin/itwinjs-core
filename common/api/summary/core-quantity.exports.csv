@@ -89,10 +89,12 @@ internal;class;UnitConversion
 internal;class;UnitConversionGraph
 beta;enum;UnitConversionInvert
 beta;interface;UnitConversionProps
+beta;const;UnitConversions
 internal;interface;UnitConversionSource
 beta;interface;UnitConversionSpec
 internal;class;UnitDefinitionResolver
 alpha;interface;UnitExtraData
 beta;interface;UnitProps
+beta;const;UnitSchemaNames
 beta;interface;UnitsProvider
 beta;type;UnitSystemKey
