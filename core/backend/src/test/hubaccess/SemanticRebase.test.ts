@@ -570,7 +570,7 @@ class TestIModel {
       classFullName: aspectClassName,
       element: { id: elementId, relClassName: "BisCore.ElementOwnsUniqueAspect" },
       ...properties,
-    } as ElementAspectProps;
+    };
     return txn.insertAspect(aspectProps);
   }
 
