@@ -8,6 +8,8 @@ Properties of Entities model their attributes relevant in light of a particular 
 
 Note that while a schema designer is responsible to model all relevant properties of an Entity, not every property needs to be persisted in a BIS repository. Some properties can be derived from other information already persisted. This is specially true for iTwin Native apps offering data-editing functionality. Persisting data about properties that could be derived turns them into, effectively, caches that need to be kept in-sync as the more fundamental information change. In general, caches add significant implementation complexity.
 
+Schema designers need to choose which properties to persist and which ones to introduce as derived. That decision can be arbitrary sometimes, depending on the situation. For example, three very common physical properties of a _Pipe_ are its _inner diameter_, _outer diameter_ and _thickness_. Persisting only two of them is sufficient since the third one can can be derived from them.
+
 ## Persisted Properties
 
 The following sections focus on properties that are meant to be persisted in a BIS repository.
@@ -71,6 +73,20 @@ iTwin Native applications, which use BIS repositories as their primary Data Stor
 - Properties associated to Template-recipes and other parametric algorithms that help users create Road, Rail or Bridge 3D models.
 
 Each iTwin Native application shall evaluate the aforementioned strategies while modeling authoring-focused properties, keeping in mind considerations such as desired UX behaviors. In general, essential properties of Elements modeling real-world Entities are not mixed with autoring-focused properties on the same Element-class. The latter are typically introduced via application-specific Element or Aspect subclasses, or as JSON data. This last option leads to the need of custom application UX developments that expose it correctly to its users.
+
+## Summary
+
+The following table summarizes the situations appropriate for the different approaches presented above.
+
+| Situation | Approach |
+| --- | --- |
+| Independent Essential Properties | Element Properties |
+| Dependent Essential Properties | Mandatory Element Aspect |
+| Non-essential / Optional Properties | Element Aspect |
+| Association Properties | Link-table Relationship Properties |
+| Derived Properties | Presentation Rules or ECView |
+| Authoring-focused data | Any of above or Separate JSON-based property |
+| Adhoc data | Element.JsonProperties |
 
 ---
 | Next: [Mixins](./mixins.md)
