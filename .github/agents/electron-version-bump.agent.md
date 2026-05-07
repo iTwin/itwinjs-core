@@ -115,7 +115,9 @@ grep -r '"electron":' --include='package.json' -l .
 
 Compare the results with the list above and include any additional files found.
 
-### Step 3: Review and apply breaking changes
+### Step 3: Review breaking changes and get approval
+
+**This step requires explicit invoker approval before proceeding to file modifications.**
 
 Fetch the Electron breaking changes documentation. Use the raw URL to avoid GitHub rate limiting:
 
@@ -144,10 +146,7 @@ grep -r "require(\"electron\")" --include='*.ts' --include='*.js' -l .
 For each breaking change listed in the Electron docs for the new major version:
 
 1. **Identify** whether the breaking change affects any API used in this codebase.
-2. **If affected**, apply the necessary code fix:
-   - Search the codebase for all usages of the affected API.
-   - Update the code to use the new API or pattern as prescribed by the Electron breaking changes doc.
-   - Ensure backward compatibility with the minimum supported Electron version (currently ^35.0.0) — use feature detection or version checks when the old API is removed and a polyfill is needed.
+2. **If affected**, describe the required code fix and which files need modification.
 3. **If not affected**, note it and move on.
 
 **Common breaking change categories to watch for:**
@@ -158,6 +157,24 @@ For each breaking change listed in the Electron docs for the new major version:
 - Changes to `contextBridge` behavior
 - New required permissions or security policy changes
 - Deprecated APIs that are now removed
+
+#### Present findings and wait for approval
+
+After completing the analysis, present a summary table to the invoker:
+
+| Breaking change | Affected? | Proposed fix |
+| --- | --- | --- |
+| (change description) | Yes / No | (fix description or "N/A") |
+
+**STOP here and wait for the invoker's explicit go-ahead before making any file changes.** If the invoker requests modifications to the proposed approach, incorporate their feedback before proceeding.
+
+#### Apply breaking change fixes (after approval)
+
+Once approved, for each affected breaking change:
+
+- Search the codebase for all usages of the affected API.
+- Update the code to use the new API or pattern as prescribed by the Electron breaking changes doc.
+- Ensure backward compatibility with the minimum supported Electron version (currently ^35.0.0) — use feature detection or version checks when the old API is removed and a polyfill is needed.
 
 If a breaking change requires a non-trivial migration (e.g., architectural changes), document the issue in the report. If triggered from a GitHub issue, add a comment to the issue describing the blocker and wait for guidance. Otherwise, ask the invoker before proceeding with the fix.
 
