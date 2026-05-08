@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 05 May 2026 17:44:54 GMT and should not be manually modified.
+This log was last generated on Fri, 08 May 2026 20:37:55 GMT and should not be manually modified.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones.
 
 ## 5.9.1
 Tue, 05 May 2026 17:43:30 GMT
