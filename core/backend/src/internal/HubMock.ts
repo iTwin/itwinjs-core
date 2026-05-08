@@ -283,16 +283,20 @@ export class HubMock {
     const prevCheckpointFile = join(hub.checkpointDir, hub.checkpointNameFromIndex(prevIndex));
     const tempFile = join(hub.rootDir, `checkpoint-building-${csIndex}.bim`);
     IModelJsFs.copySync(prevCheckpointFile, tempFile);
+  try {
     const db = SnapshotDb.openForApplyChangesets(tempFile);
     try {
-      // Apply all changesets from prevIndex+1 up to csIndex.
       await BriefcaseManager.pullAndApplyChangesets(db, { accessToken: "", toIndex: csIndex });
       db[_nativeDb].saveChanges();
     } finally {
       db.close();
     }
+
     hub.uploadCheckpoint({ changesetIndex: csIndex, localFile: tempFile });
-    IModelJsFs.removeSync(tempFile);
+  } finally {
+    if (IModelJsFs.existsSync(tempFile))
+      IModelJsFs.removeSync(tempFile);
+  }
   }
 
   public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
