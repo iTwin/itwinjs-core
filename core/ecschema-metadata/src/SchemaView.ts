@@ -377,6 +377,7 @@ export class SchemaView {
 // =====================================================================================
 
 
+/** @beta */
 export namespace SchemaView {
 
   /** Lightweight view over a schema in a `SchemaView`. Holds only a view reference and
@@ -511,6 +512,7 @@ export namespace SchemaView {
       /** @internal */ public readonly idx: number,
     ) { }
 
+    /** @internal */
     protected get _data() { return this._ctx.classes[this.idx]; }
 
     /** Row ID from ec_Class. Matches `ECInstanceId` in ECDbMeta views, e.g.

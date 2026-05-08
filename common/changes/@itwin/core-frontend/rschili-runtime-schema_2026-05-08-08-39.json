@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "add schemaView to iModelConnection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
