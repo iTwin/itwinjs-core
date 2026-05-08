@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { CompressedId64Set, Guid, Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
 import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -13,10 +13,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
-describe("Planar clip mask (#integration)", () => {
+// Skip in Electron: rendering path is identical to Chrome (same WebGL shaders/draping logic),
+// but SwiftShader + main-thread tile decoding makes each test 180-200s on CI. Chrome covers this.
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
 
@@ -41,7 +43,7 @@ describe("Planar clip mask (#integration)", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -116,9 +118,8 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map");
   });
 
-  it("is masked by specific model", async function () {
+  it("is masked by specific model", async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
     // If the model is visible, it fills the masked region of the mask.
@@ -126,17 +127,16 @@ describe("Planar clip mask (#integration)", () => {
 
     // If the model is not visible, it makes a hole in the map revealing the background color.
     await expectPixels(mask, "bg", (vp) => vp.changeViewedModels([]));
-  });
+  }, 480000);
 
-  it("is masked by DesignModel priority",  async function () {
+  it("is masked by DesignModel priority", async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
     // Models only contribute to the mask in priority mode if they are visible.
     await expectPixels(mask, "model");
     await expectPixels(mask, "map", (vp) => vp.changeViewedModels([]));
-  });
+  }, 480000);
 
   it("is not masked if priority threshold > DesignModel", async () => {
     // This just proves that the next test doesn't just *look* like it passed because the dynamic geometry is naturally drawing
@@ -182,9 +182,8 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry",  async function () {
+  it("is masked by dynamic element geometry", async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
       id: Guid.createValue(),
@@ -208,14 +207,13 @@ describe("Planar clip mask (#integration)", () => {
         getReferences: () => [treeRef],
       });
     });
-  });
+  }, 480000);
 
-  it("is masked by priority by dynamic geometry", async function () {
+  it("is masked by priority by dynamic geometry", async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
     }, "dynamic", addDynamicGeometry);
-  });
+  }, 480000);
 });

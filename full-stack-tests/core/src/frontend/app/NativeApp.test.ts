@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { NativeApp } from "@itwin/core-frontend";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -13,15 +12,17 @@ import { TestUtility } from "../TestUtility";
 if (ProcessDetector.isElectronAppFrontend) {
 
   describe("NativeApp startup", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
     });
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
     it("should startup offline without errors", async () => {
       await usingOfflineScope(async () => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
         await ElectronApp.shutdown();
         await ElectronApp.startup({ iModelApp: TestUtility.iModelAppOptions }); // restart with no network available
         assert.isTrue(ElectronApp.isValid);
@@ -30,12 +31,12 @@ if (ProcessDetector.isElectronAppFrontend) {
   });
 
   describe("NativeApp Storage", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
       await TestRpcInterface.getClient().purgeStorageCache();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 

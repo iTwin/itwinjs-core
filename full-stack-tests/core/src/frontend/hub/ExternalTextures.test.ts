@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/internal/webgl";
@@ -34,7 +34,7 @@ describe("external texture requests (#integration)", () => {
   const extTexLoader = ExternalTextureLoader.instance;
   let totalLoadTextureCalls = 0;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
@@ -43,7 +43,7 @@ describe("external texture requests (#integration)", () => {
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

@@ -2,9 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
-import * as sinonChai from "sinon-chai";
-import { expect, use } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
@@ -14,11 +12,11 @@ import {
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
-import { fakeViewState } from "./TileIO.test";
+import { fakeViewState } from "./FakeViewState";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { IModelTile, IModelTileContent, IModelTileTree, TileStorage } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
-use(sinonChai);
+
 
 describe("IModelTileRequestChannels", () => {
   function getTileData() {
@@ -321,10 +319,10 @@ describe("IModelTileRequestChannels", () => {
 });
 
 describe("RPC channels", () => {
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
   });
-  after(async () => {
+  afterAll(async () => {
     await TestUtility.shutdownFrontend();
   });
 
@@ -349,8 +347,8 @@ describe("TileStorage", () => {
 
   function stubTileRpcInterface(
     getTileCacheConfigReturns: TransferConfig | undefined,
-  ): sinon.SinonStub<[], IModelTileRpcInterface> {
-    return sinon.stub(IModelTileRpcInterface, "getClient").returns(
+  ): MockInstance {
+    return vi.spyOn(IModelTileRpcInterface, "getClient").mockReturnValue(
       {
         async getTileCacheConfig(): Promise<TransferConfig | undefined> {
           return Promise.resolve(getTileCacheConfigReturns);
@@ -362,7 +360,7 @@ describe("TileStorage", () => {
   let tileStorage: TileStorage;
   let iModel: TestSnapshotConnection;
   let downloadTileParameters: Parameters<typeof tileStorage.downloadTile>;
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     iModel = await TestSnapshotConnection.openFile("test.bim");
     const rpcProps = iModel.getRpcProps();
@@ -375,7 +373,7 @@ describe("TileStorage", () => {
       undefined,
     ];
   });
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await TestUtility.shutdownFrontend();
   });
@@ -383,7 +381,7 @@ describe("TileStorage", () => {
     tileStorage = new TileStorage(mockFrontendStorage); // Clears cache
   });
   afterEach(() => {
-    sinon.restore();
+    vi.restoreAllMocks();
   });
 
   it("should return undefined if the backend does not support caching", async () => {
@@ -394,9 +392,9 @@ describe("TileStorage", () => {
 
   it("should not request tile content when the backend does not support caching", async () => {
     stubTileRpcInterface(undefined);
-    const storageSpy = sinon.spy(tileStorage.storage).download;
+    const storageSpy = vi.spyOn(tileStorage.storage, "download");
     await tileStorage.downloadTile(...downloadTileParameters);
-    expect(storageSpy).to.have.not.been.called;
+    expect(storageSpy).not.toHaveBeenCalled();
   });
 
   it("should cache transfer configs", async () => {
@@ -407,14 +405,14 @@ describe("TileStorage", () => {
     };
     const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
     await tileStorage.downloadTile(...downloadTileParameters);
-    expect(tileRpcInterfaceStub).to.have.been.calledOnce;
+    expect(tileRpcInterfaceStub).toHaveBeenCalledOnce();
     await tileStorage.downloadTile(...downloadTileParameters);
-    expect(tileRpcInterfaceStub).to.have.been.calledOnce; // Not called again
+    expect(tileRpcInterfaceStub).toHaveBeenCalledOnce(); // Not called again
   });
 
   it("should refresh expired cached transfer config", async () => {
-    const clock = sinon.useFakeTimers();
-    after(() => clock.restore());
+    vi.useFakeTimers();
+    afterAll(() => vi.useRealTimers());
     const dateExpiration = new Date(new Date().getTime() + (1000 * 60 * 60)); // 1 hour from now
     const transferConfig: TransferConfig = {
       baseUrl: "test",
@@ -423,10 +421,10 @@ describe("TileStorage", () => {
     };
     const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
     await tileStorage.downloadTile(...downloadTileParameters);
-    expect(tileRpcInterfaceStub).to.have.been.calledOnce;
+    expect(tileRpcInterfaceStub).toHaveBeenCalledOnce();
 
-    clock.setSystemTime(new Date(dateExpiration.getTime() + 1000)); // Advance 1hour 1s
+    vi.setSystemTime(new Date(dateExpiration.getTime() + 1000)); // Advance 1hour 1s
     await tileStorage.downloadTile(...downloadTileParameters);
-    expect(tileRpcInterfaceStub).to.have.been.calledTwice;
+    expect(tileRpcInterfaceStub).toHaveBeenCalledTimes(2);
   });
 });

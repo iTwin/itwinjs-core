@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
@@ -130,6 +128,8 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { ElectronRendererAuthorization } = await import("@itwin/electron-authorization/Renderer");
       const clientId = process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID;
       if (!clientId)
         throw new Error("missing IMJS_OIDC_ELECTRON_TEST_CLIENT_ID");
@@ -159,16 +159,16 @@ export class TestUtility {
       throw new Error("no access token");
 
     const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
-    assert(iTwin && iTwin.id);
+    if (!iTwin?.id)
+      throw new Error(`iTwin "${iTwinName}" not found`);
     return iTwin.id;
   }
 
   public static async queryIModelIdByName(iTwinId: string, iModelName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
-    assert.isDefined(iModelId);
     if (!iModelId)
-      throw new Error("no access token");
+      throw new Error(`iModel "${iModelName}" not found in iTwin "${iTwinId}"`);
     return iModelId;
   }
 
@@ -190,6 +190,11 @@ export class TestUtility {
   public static get iModelAppOptions(): IModelAppOptions {
     return {
       applicationVersion: "1.2.1.1",
+      // Vitest browser mode serves test pages under /__vitest_test__/; without an
+      // absolute publicPath, relative URLs (worker scripts, locale JSON) resolve
+      // against that prefix and 404. Absolute paths serve from Vite's publicDir.
+      publicPath: "/",
+      localization: new ITwinLocalization({ urlTemplate: "/locales/{{lng}}/{{ns}}.json" }),
       rpcInterfaces,
     };
   }
@@ -216,13 +221,15 @@ export class TestUtility {
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       return ElectronApp.startup({ iModelApp: iopts });
     }
 
     if (enableWebEdit) {
-      let socketUrl = new URL(window.location.toString());
-      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
-      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+      // Construct a clean WebSocket URL — Vite proxy forwards /ipc to the backend server.
+      // Don't use window.location pathname (includes Vitest internal paths).
+      const socketUrl = new URL(`ws://${window.location.hostname}:${window.location.port}/ipc`);
 
       return LocalhostIpcApp.startup({ iModelApp: iopts, localhostIpcApp: { socketUrl } });
     } else {
@@ -238,8 +245,11 @@ export class TestUtility {
     this._expectedOpenIModels.clear();
     await this.cleanupOpenIModels();
 
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       return ElectronApp.shutdown();
+    }
 
     return IModelApp.shutdown();
   }

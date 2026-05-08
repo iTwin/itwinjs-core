@@ -2,20 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it, type TestFunction } from "vitest";
 import { DbResult, ProcessDetector } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: TestFunction): void {
   if (cond()) {
-    return it.skip(`${title} [${skipMsg}]`, callback);
+    it.skip(`${title} [${skipMsg}]`, callback);
+    return;
   }
-  return it(title, callback);
+  it(title, callback);
 }
-function skipIfWeb(title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+function skipIfWeb(title: string, callback: TestFunction): void {
   return skipIf(() => ProcessDetector.isBrowserProcess, "skipping for browser", title, callback);
 }
 
@@ -26,7 +27,7 @@ describe("ECSql Query", () => {
   let imodel4: IModelConnection;
   let imodel5: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel1 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
@@ -35,7 +36,7 @@ describe("ECSql Query", () => {
     imodel5 = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel1?.close();
     await imodel2?.close();
     await imodel3?.close();
@@ -68,7 +69,7 @@ describe("ECSql Query", () => {
       });
     };
 
-    const queries = [];
+    const queries: Promise<void>[] = [];
     for (let i = 0; i < 100; i++) {
       queries.push(cb());
     }
@@ -132,7 +133,7 @@ describe("ECSql Query", () => {
     const pageSize = 5;
     const query = "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
-    const pendingRowCount = [];
+    const pendingRowCount: number[] = [];
     for (const db of dbs) {
       const reader = db.createQueryReader(`SELECT COUNT(*) FROM (${query})`);
       if (await reader.step())
@@ -157,7 +158,7 @@ describe("ECSql Query", () => {
 
     // verify async iterator
     for (const db of dbs) {
-      const resultSet = [];
+      const resultSet: any[] = [];
       for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         resultSet.push(row);

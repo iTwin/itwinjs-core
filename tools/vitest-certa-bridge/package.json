@@ -1,0 +1,88 @@
+{
+  "name": "@itwin/vitest-certa-bridge",
+  "version": "5.8.0-dev.6",
+  "description": "Vitest plugin that bridges browser and Electron test code to Node.js backend callbacks, replacing @itwin/certa",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "typings": "lib/cjs/index",
+  "typesVersions": {
+    "*": {
+      "client": ["lib/cjs/client.d.ts"],
+      "callbackRegistry": ["lib/cjs/callbackRegistryPublic.d.ts"],
+      "electron-main": ["lib/cjs/electron-main.d.ts"],
+      "electron": ["lib/cjs/electron/index.d.ts"]
+    }
+  },
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js",
+      "types": "./lib/cjs/index.d.ts"
+    },
+    "./client": {
+      "import": "./lib/esm/client.js",
+      "require": "./lib/cjs/client.js",
+      "types": "./lib/cjs/client.d.ts"
+    },
+    "./callbackRegistry": {
+      "import": "./lib/esm/callbackRegistryPublic.js",
+      "require": "./lib/cjs/callbackRegistryPublic.js",
+      "types": "./lib/cjs/callbackRegistryPublic.d.ts"
+    },
+    "./electron-main": {
+      "import": "./lib/esm/electron-main.js",
+      "require": "./lib/cjs/electron-main.js",
+      "types": "./lib/cjs/electron-main.d.ts"
+    },
+    "./electron": {
+      "import": "./lib/cjs/electron/index.js",
+      "require": "./lib/cjs/electron/index.js",
+      "types": "./lib/cjs/electron/index.d.ts"
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "tools/vitest-certa-bridge"
+  },
+  "scripts": {
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm && node -e \"require('fs').writeFileSync('lib/esm/package.json', JSON.stringify({type:'module'})+'\\n')\"",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
+    "cover": "",
+    "docs": "",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "^6.0.0",
+    "@types/node": "~20.17.0",
+    "electron": "^41.0.0",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
+    "typescript": "~5.6.2",
+    "vitest": "^3.0.6",
+    "vite": "^6.4.2"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0",
+    "vitest": ">=3.0.0",
+    "electron": ">=28.0.0",
+    "dotenv": ">=16.0.0",
+    "dotenv-expand": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    },
+    "dotenv": {
+      "optional": true
+    },
+    "dotenv-expand": {
+      "optional": true
+    }
+  }
+}

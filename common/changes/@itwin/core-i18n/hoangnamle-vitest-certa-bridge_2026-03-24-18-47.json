@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add vitest-certa-bridge plugin and migrate integration tests to Vitest.",
+      "type": "none",
+      "packageName": "@itwin/core-i18n"
+    }
+  ],
+  "packageName": "@itwin/core-i18n",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

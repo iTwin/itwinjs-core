@@ -2,21 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  ModelProps, PackedFeatureTable, RelatedElementProps, TileContentSource, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/internal/webgl";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
@@ -67,17 +66,9 @@ export class FakeREProps implements RelatedElementProps {
   public constructor() { this.id = Id64.invalid; }
 }
 
-export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
-  return {
-    iModel,
-    is3d: () => true !== options?.is2d,
-    viewFlags: new ViewFlags({
-      renderMode: options?.renderMode ?? RenderMode.SmoothShade,
-      visibleEdges: options?.visibleEdges ?? false,
-    }),
-    displayStyle: {},
-  } as unknown as ViewState;
-}
+import { fakeViewState } from "./FakeViewState";
+// Re-export for any remaining consumers — other test files should import from "./FakeViewState" directly.
+export { fakeViewState } from "./FakeViewState";
 
 function delta(a: number, b: number): number {
   return Math.abs(a - b);
@@ -263,12 +254,12 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -441,12 +432,12 @@ describe("TileIO (WebGL)", () => {
 describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -604,7 +595,7 @@ describe("mirukuru TileTree", () => {
     public override createTarget(canvas: HTMLCanvasElement): TestTarget { return new TestTarget(this, canvas); }
   }
 
-  before(async () => {
+  beforeAll(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
 
     // electron version of certa doesn't serve worker scripts.
@@ -613,6 +604,8 @@ describe("mirukuru TileTree", () => {
 
     await MockRender.App.startup({ tileAdmin });
     if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       await ElectronApp.startup({
         iModelApp: {
           localization: new EmptyLocalization(),
@@ -638,11 +631,14 @@ describe("mirukuru TileTree", () => {
     }
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await MockRender.App.shutdown();
-    if (ProcessDetector.isElectronAppFrontend)
+    if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
       await ElectronApp.shutdown();
+    }
   });
 
   // mirukuru contains a model (ID 0x1C) containing a single rectangle.
@@ -706,7 +702,7 @@ describe("mirukuru TileTree", () => {
       const projExt = imodel.projectExtents;
       expect(projExt.xLength()).to.equal(header.contentRange.xLength());
       expect(projExt.yLength()).to.equal(header.contentRange.yLength());
-      expect(header.contentRange.zLength()).to.deep.equalWithFpTolerance(0); // project extents are chubbed up; content range is tight.
+      expect(header.contentRange.zLength()).to.be.lessThan(0.001); // project extents are chubbed up; content range is tight.
     };
 
     // Test current version of tile tree by asking model to load it
@@ -761,7 +757,7 @@ describe("TileAdmin", () => {
       await TestUtility.shutdownFrontend();
   };
 
-  after(async () => {
+  afterAll(async () => {
     await cleanup();
   });
 
@@ -784,6 +780,8 @@ describe("TileAdmin", () => {
       });
 
       if (ProcessDetector.isElectronAppFrontend) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { ElectronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend.js");
         await ElectronApp.startup({
           iModelApp: {
             tileAdmin: props,

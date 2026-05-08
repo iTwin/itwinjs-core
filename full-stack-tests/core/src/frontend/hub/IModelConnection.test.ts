@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
@@ -26,7 +26,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
@@ -46,7 +46,7 @@ describe("IModelConnection (#integration)", () => {
     IModelApp.formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, "imperial");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
     if (iModel)
       await iModel.close();
@@ -140,6 +140,7 @@ describe("IModelConnection (#integration)", () => {
       const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
       assert.isNotNull(readOnlyTest);
 
+      const connections: IModelConnection[] = [readOnlyTest];
       const promises = new Array<Promise<void>>();
       let n = 0;
       while (++n < 25) {
@@ -147,11 +148,19 @@ describe("IModelConnection (#integration)", () => {
           .then((readOnlyTest2: IModelConnection) => {
             assert.isNotNull(readOnlyTest2);
             assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
+            connections.push(readOnlyTest2);
           });
         promises.push(promise);
       }
 
       await Promise.all(promises);
+
+      // Close all connections to prevent leak detection by the global afterEach hook.
+      // Each openRemote creates a distinct CheckpointConnection object.
+      for (const conn of connections) {
+        if (!conn.isClosed)
+          await conn.close();
+      }
     });
   }
 
@@ -218,7 +227,11 @@ describe("IModelConnection (#integration)", () => {
   it("properly deserializes gcs latitude", async () => {
       const iTwinId = await TestUtility.getTestITwinId();
       const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
-      iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
-      assert.notEqual(iModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+      const texModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+      try {
+        assert.notEqual(texModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+      } finally {
+        await texModel.close();
+      }
     })
 });

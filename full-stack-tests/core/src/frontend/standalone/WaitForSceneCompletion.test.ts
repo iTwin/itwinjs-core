@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ColorDef, RenderMode } from "@itwin/core-common";
 import { IModelConnection, ViewRect } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -12,12 +12,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Wait for scene completion", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

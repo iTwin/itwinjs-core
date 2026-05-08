@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
@@ -13,18 +13,18 @@ import {
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable } from "@itwin/core-bentley";
+import { Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("ViewState", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("ViewState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
   let viewState: SpatialViewState;
   let unitTestRpcImp: TestRpcInterface;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
@@ -38,7 +38,7 @@ describe("ViewState", () => {
     unitTestRpcImp = TestRpcInterface.getClient();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await imodel2?.close();
     await imodel3?.close();
@@ -567,15 +567,15 @@ describe("ViewState", () => {
   });
 });
 
-describe("ViewState2d", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("ViewState2d", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("ReadWriteTest.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

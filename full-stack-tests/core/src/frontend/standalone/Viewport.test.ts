@@ -9,7 +9,7 @@ import {
   CompassMode, IModelApp, IModelConnection, PanViewTool,
   ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync,
 } from "@itwin/core-frontend";
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
@@ -31,7 +31,7 @@ describe("Viewport", () => {
   const viewDiv = createViewDiv();
   const viewDiv2 = createViewDiv();
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await TestSnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
@@ -39,7 +39,7 @@ describe("Viewport", () => {
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await imodel2?.close();
     await TestUtility.shutdownFrontend();
@@ -200,7 +200,7 @@ describe("Viewport performance", () => {
 
   const viewDiv = createViewDiv();
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = SpatialViewState.createBlank(
@@ -211,7 +211,7 @@ describe("Viewport performance", () => {
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

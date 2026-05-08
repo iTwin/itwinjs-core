@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, beforeAll, beforeEach, describe, it } from "vitest";
 import { Localization } from "@itwin/core-common";
 import { ITwinLocalization } from "../ITwinLocalization";
 
@@ -61,7 +61,7 @@ describe("ITwinLocalization", () => {
 
     describe("with no default namespace predefined", () => {
 
-      before(() => {
+      beforeAll(() => {
         itwinLocalization = new ITwinLocalization();
       });
 
@@ -107,7 +107,7 @@ describe("ITwinLocalization", () => {
 
     describe("with default namespace", () => {
 
-      before(() => {
+      beforeAll(() => {
         itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default" } });
       });
 
@@ -145,7 +145,7 @@ describe("ITwinLocalization", () => {
 
   describe("#getLocalizedKeys", () => {
 
-    before(async () => {
+    beforeAll(async () => {
       localization = new ITwinLocalization();
       await localization.initialize(["Default", "Test"]);
 
@@ -257,7 +257,7 @@ describe("ITwinLocalization", () => {
   // For interpolation options, see: https://www.i18next.com/translation-function/interpolation
   describe("#getLocalizedString", () => {
 
-    before(async () => {
+    beforeAll(async () => {
       localization = new ITwinLocalization({ initOptions: { lng: "en-US" } });
       await localization.initialize(["Default", "Test"]);
 
@@ -564,7 +564,7 @@ describe("ITwinLocalization", () => {
 
   describe("#getLocalizedString with namespace passed in as an option", () => {
 
-    before(async () => {
+    beforeAll(async () => {
       localization = new ITwinLocalization();
       await localization.initialize(["Default", "Test"]);
 
@@ -769,7 +769,7 @@ describe("ITwinLocalization", () => {
 
   describe("#getEnglishString", () => {
 
-    before(async () => {
+    beforeAll(async () => {
       localization = new ITwinLocalization();
       await localization.initialize(["Default", "Test"]);
 

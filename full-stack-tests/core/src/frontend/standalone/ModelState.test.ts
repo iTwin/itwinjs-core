@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Id64 } from "@itwin/core-bentley";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
   DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SpatialModelState,
@@ -11,18 +11,18 @@ import {
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("ModelState", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel2 = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await imodel2?.close();
     await imodel3?.close();

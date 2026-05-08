@@ -66,20 +66,40 @@ steps:
     condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:chrome
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
+    displayName: "Run Core Full Stack Tests (Chrome) [Linux]"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:electron
+    workingDirectory: "full-stack-tests/core"
+    env:
+      NODE_ENV: development
+      VITEST_ELECTRON_SHARD_COUNT: "1"
+    displayName: "Run Core Full Stack Tests (Electron) [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration
+  - script: npm run test:integration:chrome
     workingDirectory: "full-stack-tests/core"
     env:
       NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
+    displayName: "Run Core Full Stack Tests (Chrome) [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  # macOS only: Windows hosted agents lack a stable GPU backend for the volume
+  # of WebGL rendering in 68 test files (WARP crashes with 0xC0000409).
+  # Chrome integration tests cover the same code paths on Windows, and
+  # core/electron validates basic Electron functionality there.
+  - script: npm run test:integration:electron
+    workingDirectory: "full-stack-tests/core"
+    env:
+      NODE_ENV: development
+      VITEST_ELECTRON_SHARD_COUNT: "1"
+    displayName: "Run Core Full Stack Tests (Electron) [macOS]"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
@@ -93,13 +113,13 @@ steps:
     workingDirectory: "full-stack-tests/rpc"
     env:
       NODE_ENV: development
-    displayName: "Run RPC Full Stack Tests"
+    displayName: "Run RPC Full Stack Tests [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: npm run test
     workingDirectory: "full-stack-tests/rpc"
-    displayName: "Run RPC Full Stack Tests"
+    displayName: "Run RPC Full Stack Tests [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
@@ -114,7 +134,7 @@ steps:
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
-    displayName: "Run Electron Frontend Tests"
+    displayName: "Run Electron Frontend Tests [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
@@ -122,7 +142,7 @@ steps:
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
-    displayName: "Run Electron Frontend Tests"
+    displayName: "Run Electron Frontend Tests [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   # By default linux agents do not have a real display so use the virtual framebuffer
@@ -130,13 +150,13 @@ steps:
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development
-    displayName: "Run Electron Backend Tests"
+    displayName: "Run Electron Backend Tests [Linux]"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: npm run test:integration:backend
     workingDirectory: "core/electron"
-    displayName: "Run Electron Backend Tests"
+    displayName: "Run Electron Backend Tests [Non-Linux]"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - task: PublishTestResults@2

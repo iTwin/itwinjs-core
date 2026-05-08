@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { SnapshotConnection } from "@itwin/core-frontend";
@@ -12,11 +12,11 @@ import { SchemaKey } from "@itwin/ecschema-metadata";
 if (ProcessDetector.isElectronAppFrontend) {
 
   describe("SnapshotConnection", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 

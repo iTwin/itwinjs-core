@@ -2,18 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { Id64 } from "@itwin/core-bentley";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
 import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Plan projections (#integration)", () => {
+// Skip in Electron: rendering path is identical to Chrome (same WebGL shaders/draping logic).
+// SwiftShader on Windows crashes (STATUS_STACK_BUFFER_OVERRUN) after accumulated GPU-heavy map operations. Chrome covers this.
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
@@ -36,7 +38,7 @@ describe("Plan projections (#integration)", () => {
     mirukuru = await TestSnapshotConnection.openFile("planprojection.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await mirukuru.close();
     await TestUtility.shutdownFrontend();
   });

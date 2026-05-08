@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import {
   GraphicType, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
@@ -20,7 +20,7 @@ describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
@@ -35,7 +35,7 @@ describe("PrimitiveBuilder", () => {
     viewport = ScreenViewport.create(viewDiv, spatialView);
   });
 
-  after(async () => {
+  afterAll(async () => {
     viewport?.[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai"
+import { afterAll, assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -21,7 +21,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
   const csvPath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "full-stack-tests/core/lib/frontend/test/output", "QueryExtentsPerfTests.csv");
   const reporter = new FrontendPerfReporter(csvPath);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
 
     iModel = await TestSnapshotConnection.openFile(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets", "test_ec_4003.bim"));
@@ -29,7 +29,7 @@ describe("queryExtents Performance Tests (#performance)", () => {
     await discoverModelIds();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (iModel)
       await iModel.close();
 

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@itwin/core-common";
 import {
@@ -71,7 +71,7 @@ describe("Per-model category visibility overrides", () => {
   const hide = PerModelCategoryVisibility.Override.Hide;
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
@@ -94,7 +94,7 @@ describe("Per-model category visibility overrides", () => {
     vp[Symbol.dispose]();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -273,7 +273,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
   const hide = PerModelCategoryVisibility.Override.Hide;
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
@@ -289,7 +289,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     vp[Symbol.dispose]();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

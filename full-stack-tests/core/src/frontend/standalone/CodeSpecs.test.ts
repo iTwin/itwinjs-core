@@ -2,22 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { IModelStatus } from "@itwin/core-bentley";
+import { IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 
-describe("IModelConnection.CodeSpecs", async () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("IModelConnection.CodeSpecs", async () => {
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     iModel = await TestSnapshotConnection.openFile("test.bim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (iModel) {
       await iModel.close();
     }

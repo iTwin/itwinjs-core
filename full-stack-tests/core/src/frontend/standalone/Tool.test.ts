@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { ElementAgenda, IModelApp, IModelConnection, ModifyElementSource, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -11,11 +11,11 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Tools", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

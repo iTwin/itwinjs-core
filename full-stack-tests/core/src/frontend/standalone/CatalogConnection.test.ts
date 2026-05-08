@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as path from "path";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { CatalogIModel } from "@itwin/core-common";
@@ -18,13 +18,13 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("CatalogConnection", async () => {
     const iTwinId = Guid.createValue();
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, true);
       // this test uses the AzTest framework on the backend, and requires its authorization client.
       await coreFullStackTestIpc.useAzTestAuthClient();
     });
 
-    after(async () => {
+    afterAll(async () => {
       // restore the backend's authorization client to its value before this test started
       await coreFullStackTestIpc.restoreAuthClient();
       await TestUtility.shutdownFrontend();
@@ -55,13 +55,13 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       // verify that only users with administrator privilege may create new containers
       await coreFullStackTestIpc.setAzTestUser("readWrite");
-      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "1.0.0", iTwinId, manifest, metadata })).rejectedWith("only admins may create containers");
+      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "1.0.0", iTwinId, manifest, metadata })).rejects.toThrow("only admins may create containers");
 
       await coreFullStackTestIpc.setAzTestUser("admin");
       // verify that illegal dbNames are rejected
-      await expect(CatalogConnection.createNewContainer({ localCatalogFile, dbName: "a:b", version: "1.0.0", iTwinId, manifest, metadata })).rejectedWith("invalid dbName");
+      await expect(CatalogConnection.createNewContainer({ localCatalogFile, dbName: "a:b", version: "1.0.0", iTwinId, manifest, metadata })).rejects.toThrow("invalid dbName");
       // verify that an illegal initial version is rejected
-      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "not a version", iTwinId, manifest, metadata })).rejectedWith("invalid version specification");
+      await expect(CatalogConnection.createNewContainer({ localCatalogFile, version: "not a version", iTwinId, manifest, metadata })).rejects.toThrow("invalid version specification");
 
       // create a container for our tests. The initial version is supplied as "1.0.0"
       const newContainer = await CatalogConnection.createNewContainer({ localCatalogFile, version: "1.0.0", iTwinId, manifest, metadata });
@@ -81,20 +81,20 @@ if (ProcessDetector.isElectronAppFrontend) {
       await readonlyConnection.close();
 
       // attempting to open a version that isn't present, or a dbName that isn't right should fail
-      await expect(CatalogConnection.openReadonly({ containerId, version: "^2" })).rejectedWith("No version of");
-      await expect(CatalogConnection.openReadonly({ dbName: "not there", containerId, version: "^1" })).rejectedWith("No version of");
+      await expect(CatalogConnection.openReadonly({ containerId, version: "^2" })).rejects.toThrow("No version of");
+      await expect(CatalogConnection.openReadonly({ dbName: "not there", containerId, version: "^1" })).rejects.toThrow("No version of");
 
       // attempt to acquire the write lock for an unauthorized user
-      await expect(CatalogConnection.acquireWriteLock({ containerId, username: people.bill })).rejectedWith("unauthorized user");
+      await expect(CatalogConnection.acquireWriteLock({ containerId, username: people.bill })).rejects.toThrow("unauthorized user");
       // simulate a user with write access to the container
       await coreFullStackTestIpc.setAzTestUser("readWrite");
       // verify that to create a new version, the write lock must be held
-      await expect(CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" })).rejectedWith("Write lock must be held");
+      await expect(CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" })).rejects.toThrow("Write lock must be held");
 
       // get the write lock. The username supplied should become the "last editor" in the manifest.
       await CatalogConnection.acquireWriteLock({ containerId, username: people.bill });
       // you should not be able to edit a Catalog that has already been published.
-      await expect(CatalogConnection.openEditable({ version: "1.0.0", containerId })).rejectedWith("Catalog has already been published");
+      await expect(CatalogConnection.openEditable({ version: "1.0.0", containerId })).rejects.toThrow("Catalog has already been published");
 
       // create a patch version from the most recent version that starts with 1 (should be 1.0.0). This will create version "1.0.1"
       const v101 = await CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" });

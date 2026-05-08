@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
@@ -18,8 +16,7 @@ import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initial
 import { TestUtility } from "../TestUtility";
 import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
 
-const expect = chai.expect;
-chai.use(chaiAsPromised);
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 const dummyRange = new Range3d();
 function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange {
@@ -47,12 +44,12 @@ describe("GraphicalEditingScope", () => {
       }
     }
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await closeIModel();
       await TestUtility.shutdownFrontend();
     });
@@ -65,21 +62,21 @@ describe("GraphicalEditingScope", () => {
       imodel = await BriefcaseConnection.openStandalone(oldFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await imodel.supportsGraphicalEditing()).to.be.false;
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
+      await expect(imodel.enterEditingScope()).rejects.toThrow(IModelError);
     });
 
     it("should not be supported for iModels with BisCore < 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(oldFilePath);
       expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
       expect(await imodel.supportsGraphicalEditing()).to.be.false;
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
+      await expect(imodel.enterEditingScope()).rejects.toThrow(IModelError);
     });
 
     it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.Readonly);
       expect(imodel.openMode).to.equal(OpenMode.Readonly);
       expect(await imodel.supportsGraphicalEditing()).to.be.false;
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
+      await expect(imodel.enterEditingScope()).rejects.toThrow(IModelError);
     });
 
     it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
@@ -102,7 +99,7 @@ describe("GraphicalEditingScope", () => {
     it("throws if enter is called repeatedly", async () => {
       imodel = await openWritable();
       const scope = await imodel.enterEditingScope();
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith("Cannot create an editing scope for an iModel that already has one");
+      await expect(imodel.enterEditingScope()).rejects.toThrow("Cannot create an editing scope for an iModel that already has one");
       await scope.exit();
     });
 
@@ -110,7 +107,7 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
       const scope = await imodel.enterEditingScope();
       await scope.exit();
-      await expect(scope.exit()).to.be.rejectedWith("Cannot exit editing scope after it is disconnected from the iModel");
+      await expect(scope.exit()).rejects.toThrow("Cannot exit editing scope after it is disconnected from the iModel");
     });
 
     it("exits the scope when closing the iModel", async () => {

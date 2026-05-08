@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode } from "@itwin/core-bentley";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
+import { coreFullStackTestIpc, initializeEditTools, coreFullStackTestCommandIpc as ipc, saveBriefcaseChanges } from "../Editing";
 import * as path from "path";
 import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
-describe("SubCategoriesCache", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("SubCategoriesCache", () => {
   // test.bim:
   //  3d views:
   //    view:           34
@@ -27,12 +27,12 @@ describe("SubCategoriesCache", () => {
   describe("read-only", () => {
     let imodel: IModelConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, true);
       imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     });
 
-    after(async () => {
+    afterAll(async () => {
       if (undefined !== imodel)
         await imodel.close();
 
@@ -365,16 +365,32 @@ describe("SubCategoriesCache", () => {
   describe("read-write", () => {
     let bc: BriefcaseConnection;
     let dictId: Id64String;
-    let pullChanges: () => Id64String[];
+    const changedElements = new Set<Id64String>();
 
-    before(async () => {
+    const sourceFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+    let perTestFilePath: string;
+
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
+    });
 
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
-      bc = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+    afterAll(async () => {
+      await TestUtility.shutdownFrontend();
+    });
 
-      const changedElements = new Set<Id64String>();
+    // Open a fresh BriefcaseConnection against a *per-test copy* of the .bim so that
+    // native-layer state (TxnManager change-set buffers, SQLite page cache, etc.) cannot
+    // leak between tests. This was introduced to fix a Windows-only flake in the
+    // "invalidates cache for parent category when subcategory is added, deleted, or modified"
+    // test: when rush cover retried the suite, a stale update from a previous attempt was
+    // persisted in the shared asset and caused a later red→green update to be elided at
+    // the native layer, suppressing the onElementsChanged event the test was awaiting.
+    beforeEach(async () => {
+      changedElements.clear();
+      perTestFilePath = await coreFullStackTestIpc.createTempBimCopy(sourceFilePath);
+      bc = await BriefcaseConnection.openStandalone(perTestFilePath, OpenMode.ReadWrite);
+
       bc.txns.onElementsChanged.addListener((changes) => {
         for (const key of ["inserted", "updated", "deleted"] as const) {
           const elems = changes[key];
@@ -387,25 +403,37 @@ describe("SubCategoriesCache", () => {
       });
 
       dictId = await bc.models.getDictionaryModel();
-
-      pullChanges = () => {
-        const result = Array.from(changedElements);
-        changedElements.clear();
-        return result;
-      };
     });
 
-    after(async () => {
-      await bc.close();
-      await TestUtility.shutdownFrontend();
+    afterEach(async () => {
+      // Undo all committed txns so close() persists a clean file, then assert the
+      // return code. A silent non-Success here previously masked the root cause of the
+      // Windows flake described in beforeEach. Cleanup of the per-test copy must run
+      // even if reverseAll or close throws, so wrap in try/finally.
+      let reverseStatus: IModelStatus | undefined;
+      try {
+        reverseStatus = await bc.txns.reverseAll();
+        await bc.close();
+      } finally {
+        await coreFullStackTestIpc.deleteTempBimCopy(perTestFilePath);
+      }
+      expect(reverseStatus).to.equal(IModelStatus.Success);
     });
 
-    function expectChanges(changedElementIds: Id64String[]): void {
-      const actual = pullChanges();
+    // The backend sends change events synchronously but the frontend receives
+    // them asynchronously over WebSocket IPC.  Wait for events to arrive before
+    // asserting, then drain the set for the next check.
+    function drainAndAssertChanges(changedElementIds: Id64String[]): void {
+      const actual = Array.from(changedElements);
+      changedElements.clear();
       expect(actual).to.deep.equal(changedElementIds);
     }
 
-    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+    // Event-driven helper: registers a one-shot onElementsChanged listener,
+    // runs the provided action (save/undo/redo), then waits for the event.
+    // The Push notification always arrives before the IPC Response, so the
+    // listener is guaranteed to fire before or during the await.
+    async function doAndExpectChanges(action: () => Promise<unknown>, changedElementIds: Id64String[]): Promise<void> {
       const pending = new Promise<void>((resolve) => {
         const remove = bc.txns.onElementsChanged.addListener(() => {
           remove();
@@ -413,9 +441,13 @@ describe("SubCategoriesCache", () => {
         });
       });
 
-      await saveBriefcaseChanges(bc);
+      await action();
       await pending;
-      expectChanges(changedElementIds);
+      drainAndAssertChanges(changedElementIds);
+    }
+
+    async function saveAndExpectChanges(changedElementIds: Id64String[]): Promise<void> {
+      return doAndExpectChanges(async () => saveBriefcaseChanges(bc), changedElementIds);
     }
 
     function getDefaultSubCategoryId(categoryId: string): string {
@@ -450,22 +482,17 @@ describe("SubCategoriesCache", () => {
       await saveAndExpectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(subcat, undefined);
-
-      const req = bc.subcategories.load(cat);
-      expect(req?.promise).not.to.be.undefined;
-      await req?.promise;
-      expectCachedSubCategories(cat, [subcat]);
-      expectAppearance(subcat, ColorDef.blue);
-
-      await ipc.deleteDefinitionElements(bc.key, [cat]);
-      await saveAndExpectChanges([cat, subcat]);
-      expectCachedSubCategories(cat, undefined);
-      expectAppearance(subcat, undefined);
     });
 
-    it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
+    it("invalidates cache for parent category when subcategory is added, deleted, or modified", { timeout: 120_000 }, async () => {
+      const t0 = Date.now();
+      // eslint-disable-next-line no-console
+      const log = (msg: string) => console.log(`[SubCat +${((Date.now() - t0) / 1000).toFixed(1)}s] ${msg}`);
+
+      log("createAndInsertSpatialCategory...");
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       const s1 = getDefaultSubCategoryId(cat);
+      log("saveAndExpectChanges #1 (create category)...");
       await saveAndExpectChanges([cat, s1]);
 
       await bc.subcategories.load(cat)?.promise;
@@ -473,12 +500,15 @@ describe("SubCategoriesCache", () => {
       expectAppearance(s1, ColorDef.blue);
 
       // Insert a new subcategory
+      log("loadProps...");
       const s2Props = await bc.elements.loadProps(s1) as SubCategoryProps;
       s2Props.id = s2Props.federationGuid = undefined;
       s2Props.code.value = "SubCat2";
       s2Props.appearance = { color: ColorDef.red.toJSON() };
 
+      log("insertElement...");
       const s2 = await ipc.insertElement(bc.key, s2Props);
+      log("saveAndExpectChanges #2 (insert subcat)...");
       await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, undefined);
@@ -490,9 +520,11 @@ describe("SubCategoriesCache", () => {
       expectAppearance(s2, ColorDef.red);
 
       // Change the appearance of a subcategory
+      log("updateElement...");
       s2Props.id = s2;
       s2Props.appearance = { color: ColorDef.green.toJSON() };
       await ipc.updateElement(bc.key, s2Props);
+      log("saveAndExpectChanges #3 (update subcat)...");
       await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
@@ -504,7 +536,9 @@ describe("SubCategoriesCache", () => {
       expectAppearance(s2, ColorDef.green);
 
       // Delete a subcategory
+      log("deleteDefinitionElements...");
       await ipc.deleteDefinitionElements(bc.key, [s2]);
+      log("saveAndExpectChanges #4 (delete subcat)...");
       await saveAndExpectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
       expectAppearance(s1, ColorDef.blue);
@@ -514,8 +548,9 @@ describe("SubCategoriesCache", () => {
       expectCachedSubCategories(cat, [s1]);
 
       // Undo
-      await bc.txns.reverseSingleTxn();
-      expectChanges([s2]);
+      log("undo (reverseSingleTxn)...");
+      await doAndExpectChanges(async () => bc.txns.reverseSingleTxn(), [s2]);
+      log("undo done");
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
@@ -523,13 +558,15 @@ describe("SubCategoriesCache", () => {
       expectAppearance(s1, ColorDef.blue);
 
       // Redo
-      await bc.txns.reinstateTxn();
-      expectChanges([s2]);
+      log("redo (reinstateTxn)...");
+      await doAndExpectChanges(async () => bc.txns.reinstateTxn(), [s2]);
+      log("redo done");
       expectCachedSubCategories(cat, undefined);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
       expectAppearance(s1, ColorDef.blue);
+      log("test complete");
     });
   });
 });

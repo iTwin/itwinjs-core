@@ -31,6 +31,7 @@ variables:
 jobs:
   - job: Node_24_x
     condition: succeeded()
+    timeoutInMinutes: 45
     pool:
       vmImage: ubuntu-latest
     steps:

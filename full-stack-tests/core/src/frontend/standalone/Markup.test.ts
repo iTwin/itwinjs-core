@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { IModelApp, IModelConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
@@ -14,7 +14,7 @@ describe("Markup tests", async () => {
   let imodel: IModelConnection;
   let vp: ScreenTestViewport;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
@@ -22,7 +22,7 @@ describe("Markup tests", async () => {
     await MarkupApp.start(vp);
   });
 
-  after(async () => {
+  afterAll(async () => {
     vp[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();

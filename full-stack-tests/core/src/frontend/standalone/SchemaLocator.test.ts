@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@itwin/core-frontend";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { EntityClass, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { assert, expect } from "chai";
+import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Schema Locater Tests", () => {
+describe.skipIf(ProcessDetector.isElectronAppFrontend)("Schema Locater Tests", () => {
   let context = new SchemaContext();
   let imodel: IModelConnection;
 

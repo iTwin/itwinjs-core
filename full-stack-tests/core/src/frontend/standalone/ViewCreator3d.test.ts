@@ -2,22 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, ViewCreator3d } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -86,8 +85,8 @@ describe("ViewCreator3d", async () => {
     imodel.subcategories.add("0x17", "0x18", new SubCategoryAppearance(), true);
     imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance(), true);
 
-    const loadSpy = sinon.spy(imodel.subcategories, "load");
-    const queryStub = sinon.stub(imodel, "queryAllUsedSpatialSubCategories").rejects(new Error("Internal Server Error"));
+    const loadSpy = vi.spyOn(imodel.subcategories, "load");
+    const queryStub = vi.spyOn(imodel, "queryAllUsedSpatialSubCategories" as any).mockRejectedValue(new Error("Internal Server Error"));
 
     const creator = new ViewCreator3d(imodel);
     const view = await creator.createDefaultView();
@@ -98,9 +97,9 @@ describe("ViewCreator3d", async () => {
 
     expect(Array.from(view.categorySelector.categories)).to.deep.equal(["0x17"]);
     expectVisible(true, true);
-    expect(loadSpy).to.be.calledOnce;
-    loadSpy.restore();
-    queryStub.restore();
+    expect(loadSpy).toHaveBeenCalledOnce();
+    loadSpy.mockRestore();
+    queryStub.mockRestore();
   });
 });
 

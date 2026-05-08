@@ -7,6 +7,13 @@
  */
 /* eslint-disable no-restricted-syntax */
 
+// Polyfill WebGLRenderingContext for Node.js environments (e.g., backend tests) so that
+// the TextureUnit enum initializers below can resolve. GL.ts has the same guard, but
+// const-enum-to-enum migrations can cause this module to load before GL.ts in the CJS graph.
+if (typeof WebGLRenderingContext === "undefined") {
+  (globalThis as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });
+}
+
 /** Ordered list of render passes which produce a rendered frame.
  * [[RenderCommands]] organizes its [[DrawCommands]] into a list indexed by RenderPass.
  * @see [[Pass]] for the type from which the RenderPass for a [[Primitive]] is derived.
@@ -211,7 +218,7 @@ export enum TextureUnit {
  * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
  * @internal
  */
-export const enum RenderOrder {
+export enum RenderOrder {
   None = 0,
   Background = 1, // i.e., background map drawn without depth
   BlankingRegion = 2,

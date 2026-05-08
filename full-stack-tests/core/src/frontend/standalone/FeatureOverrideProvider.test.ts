@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, Viewport,
 } from "@itwin/core-frontend";
@@ -13,12 +13,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("FeatureOverrideProvider", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 

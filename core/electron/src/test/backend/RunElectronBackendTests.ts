@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { spawn, SpawnOptions } from "child_process";
 import * as path from "path";
 import { TestResult, testSuites } from "./ElectronBackendTests";
@@ -13,7 +13,10 @@ async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
   const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-require-imports
 
   const args = [
-    path.join(__dirname, "./RunSingleTest.js"),
+    // RunSingleTest runs inside a spawned Electron main process, so it must
+    // use compiled JS — tsx/esm loaders don't work reliably inside
+    // Electron's custom module system.
+    path.resolve(process.cwd(), "lib/cjs/test/backend/RunSingleTest.js"),
   ];
 
   const options: SpawnOptions = {
@@ -36,7 +39,7 @@ async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
 
 // Goes though every test registered in [testSuites] and executed each in separate Electron main process.
 for (const testSuite of testSuites) {
-  describe(testSuite.title, async () => {
+  describe(testSuite.title, () => {
     for (const test of testSuite.tests) {
       it(test.title, async () => {
         await spawnElectronMainProcess(testSuite.title, test.title);

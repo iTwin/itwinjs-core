@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ColorDef } from "@itwin/core-common";
 import { IModelApp, Pixel, VaryingType } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -14,13 +14,13 @@ describe("Screen-space effects", () => {
   let imodel: TestSnapshotConnection;
   let disabledEffectName: string | undefined;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     registerEffects();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
