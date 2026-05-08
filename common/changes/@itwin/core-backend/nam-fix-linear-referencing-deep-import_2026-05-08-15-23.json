@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Export _implicitTxn as a crossPackage internal symbol",
+      "comment": "",
       "type": "none"
     }
   ],
