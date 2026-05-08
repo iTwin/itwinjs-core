@@ -1469,8 +1469,6 @@ describe("Semantic Rebase", function (this: Suite) {
   });
 
   it("bulk local elements survive semantic rebase with incoming transforming schema change", async function () {
-    this.timeout(25000);
-
     const runBulkRebaseTest = async (count: number) => {
       t = await TestIModel.initialize(`BulkElements${count}`);
       const farTxn = startTestTxn(t.far, `${count} elements rebase far`);
