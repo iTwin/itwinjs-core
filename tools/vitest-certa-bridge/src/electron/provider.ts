@@ -3,11 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { type ChildProcess, spawn } from "child_process";
-import * as fs from "fs";
-import * as os from "os";
-import * as path from "path";
-import { createRequire } from "module";
+import { type ChildProcess, spawn } from "node:child_process";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { createRequire } from "node:module";
 import { playwright as PlaywrightBrowserProvider } from "@vitest/browser/providers";
 import type { BrowserProviderInitializationOptions, TestProject } from "vitest/node";
 import type { ElectronBrowserProviderOptions } from "./types.js";

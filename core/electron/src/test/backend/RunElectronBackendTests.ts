@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, describe, it } from "vitest";
-import { spawn, SpawnOptions } from "child_process";
-import * as path from "path";
+import { spawn, SpawnOptions } from "node:child_process";
+import * as path from "node:path";
 import { TestResult, testSuites } from "./ElectronBackendTests";
 
 /** Spawns new Electron process and executes a single test before terminating newly spawned process. */

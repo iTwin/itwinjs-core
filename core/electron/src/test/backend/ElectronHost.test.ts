@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
-import { strict as assert } from "assert";
-import { exec } from "child_process";
+import * as path from "node:path";
+import { strict as assert } from "node:assert";
+import { exec } from "node:child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";

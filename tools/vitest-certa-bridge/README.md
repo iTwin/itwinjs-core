@@ -14,7 +14,7 @@ Additional package surfaces should be added in later VCB branches only when a co
 Use the provider from a Vitest browser-mode config. Vitest still requires each test package to define its own config because test globs, reporters, server filesystem allowlists, backend init modules, and preload modules are package-specific; the bridge cannot infer those safely as global defaults.
 
 ```ts
-import * as path from "path";
+import * as path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
