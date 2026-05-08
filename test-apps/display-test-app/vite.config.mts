@@ -114,7 +114,18 @@ export default defineConfig(() => {
       },
     },
     plugins: [
-      ignore(["electron"]), // equivalent to webpack externals
+      // Externalize electron in both dev and build — resolves to window['electron']
+      {
+        name: "vite-plugin-electron-external",
+        resolveId(id) {
+          if (id === "electron") return "\0electron-external";
+        },
+        load(id) {
+          if (id === "\0electron-external")
+            return "export default window['electron'];";
+        },
+      },
+      ignore(["electron"]), // equivalent to webpack externals (build only fallback)
       // copy static assets to .static-assets folder
       copy({
         targets: [
@@ -163,9 +174,23 @@ export default defineConfig(() => {
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
       exclude: [
+        "electron",
         "@itwin/core-frontend", //prevents import not resolved errors
         "@itwin/core-common", //prevents rpc errors
       ],
+      esbuildOptions: {
+        plugins: [
+          {
+            name: "externalize-electron",
+            setup(build) {
+              build.onResolve({ filter: /^electron$/ }, () => ({
+                path: "electron",
+                external: true,
+              }));
+            },
+          },
+        ],
+      },
     },
   };
 });
