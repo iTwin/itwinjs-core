@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
+import { basicUnitConversionData } from "../generated/BasicUnitConversions.generated";
 import { UnitSchemaNames } from "../generated/Units.generated";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import { UnitConversions } from "../UnitConversions";
@@ -134,6 +135,31 @@ describe("Quantity", () => {
     const conversion = UnitConversions.getBasicConversion(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT);
     expect(UnitConversions.convertValue(1, conversion)).toBeCloseTo(3.28084, 5);
     expect(UnitConversions.convertValue(2, conversion)).toBeCloseTo(6.56168, 5);
+  });
+
+  it("generated basic conversion data matches provider-backed conversions across bundled units", async () => {
+    const provider = new BasicUnitsProvider();
+    const anchorsByPhenomenon = new Map<string, string>();
+
+    for (const [unitName, entry] of Object.entries(basicUnitConversionData)) {
+      if (!entry[3] && !anchorsByPhenomenon.has(entry[0]))
+        anchorsByPhenomenon.set(entry[0], unitName);
+    }
+
+    for (const [unitName, entry] of Object.entries(basicUnitConversionData)) {
+      const anchorName = anchorsByPhenomenon.get(entry[0]) ?? unitName;
+      const [fromUnit, toUnit] = await Promise.all([
+        provider.findUnitByName(unitName),
+        provider.findUnitByName(anchorName),
+      ]);
+
+      const actual = UnitConversions.getBasicConversion(unitName, anchorName);
+      const expected = await provider.getConversion(fromUnit, toUnit);
+      expect(actual.inversion).toBe(expected.inversion);
+      expect(actual.error).toBe(expected.error);
+      expect(almostEqual(UnitConversions.convertValue(1.2345, actual), UnitConversions.convertValue(1.2345, expected), 1e-15)).toBe(true);
+      expect(almostEqual(UnitConversions.convertValue(9876.54321, actual), UnitConversions.convertValue(9876.54321, expected), 1e-15)).toBe(true);
+    }
   });
 
   it("UnitConversions.convertBasic preserves ordinary zero conversions", () => {

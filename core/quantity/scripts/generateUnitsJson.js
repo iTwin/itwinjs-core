@@ -5,6 +5,7 @@
 "use strict";
 const { existsSync, mkdirSync, readFileSync, writeFileSync } = require("node:fs");
 const { dirname, join } = require("node:path");
+const { buildGeneratedBasicConversionModule } = require("./buildBasicUnitConversions");
 
 // Run automatically as part of `rushx build`. Regenerates src/assets/Units.json when
 // @bentley/units-schema version changes and keeps generated TypeScript identifiers in sync.
@@ -13,6 +14,7 @@ const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
 const unitsJsonPath = join(__dirname, "../src/assets/Units.json");
 const generatedTsPath = join(__dirname, "../src/generated/Units.generated.ts");
+const basicConversionTsPath = join(__dirname, "../src/generated/BasicUnitConversions.generated.ts");
 
 function readSerializationVersion() {
   // Read the serialization format version from source to stay in sync with SERIALIZED_UNIT_SCHEMA_VERSION.
@@ -121,11 +123,13 @@ function main() {
   const unitsJson = buildSerializedUnitsJson(schema, serializationVersion);
   const unitsJsonContent = `${JSON.stringify(unitsJson, null, 2)}\n`;
   const generatedTsContent = buildGeneratedUnitsModule(schema);
+  const basicConversionTsContent = buildGeneratedBasicConversionModule(schema);
 
   const jsonChanged = writeIfChanged(unitsJsonPath, unitsJsonContent);
   const tsChanged = writeIfChanged(generatedTsPath, generatedTsContent);
+  const basicTsChanged = writeIfChanged(basicConversionTsPath, basicConversionTsContent);
 
-  if (!jsonChanged && !tsChanged) {
+  if (!jsonChanged && !tsChanged && !basicTsChanged) {
     console.log(`Units artifacts up to date (schema ${schema.version})`);
     return;
   }

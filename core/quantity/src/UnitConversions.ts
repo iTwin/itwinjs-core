@@ -6,20 +6,62 @@
  * @module Quantity
  */
 
-import unitsSchema from "./assets/Units.json";
 import { QuantityError, QuantityStatus } from "./Exception";
-import { type UnitConversionProps, type UnitProps, type UnitsProvider } from "./Interfaces";
+import { UnitConversionInvert, type UnitConversionProps, type UnitProps, type UnitsProvider } from "./Interfaces";
+import { basicUnitConversionData } from "./generated/BasicUnitConversions.generated";
 import { convertValueOrThrow } from "./internal/UnitConversionMath";
-import type { SerializedUnitSchema } from "./SerializedUnitSchema";
-import { getBasicUnitConversion } from "./internal/BasicUnitConversionData";
-import { getBasicUnitsResolvedState } from "./internal/BasicUnitsResolvedStateCache";
 
-function resolveBasicUnit(unitName: string): UnitProps {
-  const unit = getBasicUnitsResolvedState(unitsSchema as SerializedUnitSchema).nameMap.get(unitName)?.props;
-  if (!unit)
-    throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitName}".`);
+type BasicUnitConversionEntry = readonly [
+  phenomenon: string,
+  factor: number,
+  offset: number,
+  invertsUnitName?: string,
+];
 
-  return unit;
+const basicUnitConversionLookup = basicUnitConversionData as Record<string, BasicUnitConversionEntry>;
+
+function throwUnknownUnit(unitName: string): never {
+  throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitName}".`);
+}
+
+function getBasicUnitEntry(unitName: string): BasicUnitConversionEntry {
+  return basicUnitConversionLookup[unitName] ?? throwUnknownUnit(unitName);
+}
+
+function composeConversion(fromUnit: BasicUnitConversionEntry, toUnit: BasicUnitConversionEntry): UnitConversionProps {
+  return {
+    factor: toUnit[1] / fromUnit[1],
+    offset: toUnit[2] - ((toUnit[1] * fromUnit[2]) / fromUnit[1]),
+  };
+}
+
+function getBasicConversion(fromUnit: string, toUnit: string): UnitConversionProps {
+  const from = getBasicUnitEntry(fromUnit);
+  const to = getBasicUnitEntry(toUnit);
+  const innerFrom = from[3] ? getBasicUnitEntry(from[3]) : from;
+  const innerTo = to[3] ? getBasicUnitEntry(to[3]) : to;
+
+  if (innerFrom[0] !== innerTo[0])
+    return { factor: 1.0, offset: 0.0, error: true };
+
+  if (from[3] && to[3])
+    return composeConversion(innerFrom, innerTo);
+
+  if (from[3]) {
+    return {
+      ...composeConversion(innerFrom, to),
+      inversion: UnitConversionInvert.InvertPreConversion,
+    };
+  }
+
+  if (to[3]) {
+    return {
+      ...composeConversion(from, innerTo),
+      inversion: UnitConversionInvert.InvertPostConversion,
+    };
+  }
+
+  return composeConversion(from, to);
 }
 
 async function resolveProviderUnit(unitsProvider: UnitsProvider, unitOrName: string | UnitProps): Promise<UnitProps> {
@@ -49,11 +91,6 @@ async function getProviderConversion(
   return unitsProvider.getConversion(from, to);
 }
 
-function getBasicConversion(fromUnit: string, toUnit: string): UnitConversionProps {
-  const state = getBasicUnitsResolvedState(unitsSchema as SerializedUnitSchema);
-  return getBasicUnitConversion(state, resolveBasicUnit(fromUnit), resolveBasicUnit(toUnit));
-}
-
 async function convert(
   unitsProvider: UnitsProvider,
   fromUnit: string | UnitProps,
@@ -71,7 +108,8 @@ function convertBasic(fromUnit: string, toUnit: string, value: number): number {
  * Exported as a plain module value so related helpers are discoverable from one ESM/CJS-friendly surface
  * without introducing a TypeScript namespace or static utility class.
  * Provider-backed lookup remains async because `UnitsProvider` is async by contract.
- * Basic conversion uses the built-in unit data shipped with `core-quantity` and resolves lazily on first use.
+ * Basic conversion uses pre-resolved built-in conversion data generated from the bundled Units schema,
+ * so it stays synchronous without needing app startup/init hooks.
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention

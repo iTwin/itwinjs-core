@@ -5,8 +5,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
+import { basicUnitConversionData } from "../generated/BasicUnitConversions.generated";
 
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
+const generatedBasicConversionsSource = readFileSync(require.resolve("../generated/BasicUnitConversions.generated.ts"), "utf8");
 
 describe("Generated Units artifacts", () => {
   it("keeps Units.json aligned with the expected serialized schema envelope", () => {
@@ -39,5 +41,12 @@ describe("Generated Units artifacts", () => {
   it("does not emit unrelated schema item types into UnitSchemaNames", () => {
     expect(generatedIdentifiersSource).not.toContain('PI: "Units.PI"');
     expect(generatedIdentifiersSource).not.toContain('MILLI: "Units.MILLI"');
+  });
+
+  it("emits representative pre-resolved basic conversion entries", () => {
+    expect(generatedBasicConversionsSource).toContain('"Units.M": ["Units.LENGTH", 1, 0]');
+    expect(generatedBasicConversionsSource).toContain('"Units.FT": ["Units.LENGTH"');
+    expect(generatedBasicConversionsSource).toContain('"Units.HORIZONTAL_PER_VERTICAL": ["Units.SLOPE"');
+    expect(basicUnitConversionData["Units.HORIZONTAL_PER_VERTICAL"][3]).toBe("Units.VERTICAL_PER_HORIZONTAL");
   });
 });
