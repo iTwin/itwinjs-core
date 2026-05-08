@@ -207,15 +207,7 @@ Each of these events covers a different reload trigger, but they all mean the sa
 Replace all subscriptions with [QuantityFormatter.onBeforeFormattingReady]($frontend). Register your async loading work via the [FormattingReadyCollector]($quantity) — the formatter awaits all pending work before emitting [QuantityFormatter.onFormattingReady]($frontend).
 
 ```ts
-// ✅ Provider work is awaited before formatting is considered ready
-const removeListener = IModelApp.quantityFormatter.onBeforeFormattingReady.addListener((collector) => {
-  collector.addPendingWork(
-    IModelApp.quantityFormatter.addFormattingSpecsToRegistry("MyDomain.PRESSURE", "Units.PA")
-  );
-});
-
-// Single unsubscribe on teardown
-removeListener();
+[[include:Quantity_Formatting.BeforeFormattingReady]]
 ```
 
 **Option B — For tool developers and UI components** (recommended):
