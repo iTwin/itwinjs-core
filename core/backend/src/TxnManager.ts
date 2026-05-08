@@ -19,11 +19,10 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
-import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesetReader } from "./ChangesetReader";
 import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
-import { ChangeInstance } from "./ChangesetReaderTypes";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -676,7 +675,7 @@ export class RebaseManager {
    * @param instance
    * @internal
    */
-  private applyInstancePatch(instance: ChangeInstance) {
+  private applyInstancePatch(instance: InstancePatch) {
     const nativeDb = this._iModel[_nativeDb];
     const { $meta, ...props } = instance;
     switch ($meta.op) {
