@@ -7,8 +7,7 @@
  */
 
 import { assert, DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, EditTxn, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
-import { _implicitTxn } from "@itwin/core-backend/lib/cjs/internal/Symbols";
+import { _implicitTxn, ECSqlStatement, EditTxn, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
 import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@itwin/core-common";
 import {
   ComparisonOption, LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
