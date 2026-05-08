@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-backend",
+      "comment": "Export _implicitTxn as a crossPackage internal symbol",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-backend"
+}
