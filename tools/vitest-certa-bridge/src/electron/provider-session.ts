@@ -137,8 +137,9 @@ async function main() {
     webPreferences: {
       preload,
       nodeIntegration: false,
-      // Vitest browser mode executes test modules inside a tester iframe. Load the preload
-      // in subframes too so renderer tests can reach the callback bridge from that iframe.
+      // Vitest browser mode executes tests inside a same-origin tester iframe. Electron only
+      // loads preload scripts into that iframe when this option is enabled; nodeIntegration
+      // itself remains disabled above, so tests still rely on contextBridge-exposed APIs.
       nodeIntegrationInSubFrames: true,
       contextIsolation: true,
       sandbox: false,

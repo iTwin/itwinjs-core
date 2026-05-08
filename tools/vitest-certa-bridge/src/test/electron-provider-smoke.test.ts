@@ -7,14 +7,29 @@ import { describe, expect, it, vi } from "vitest";
 
 type SendToBackend = (name: string, args: unknown[]) => Promise<unknown>;
 
+function getBridgeGlobal(name: string): unknown {
+  for (const candidateWindow of [window, window.parent, window.top]) {
+    try {
+      const candidate = (candidateWindow as unknown as Record<string, unknown> | null)?.[name];
+      if (candidate !== undefined)
+        return candidate;
+    } catch {
+      // Ignore inaccessible frames. Vitest's tester iframe is same-origin in this provider,
+      // but keep the helper defensive in case that changes.
+    }
+  }
+
+  return undefined;
+}
+
 function getSendToBackend(): SendToBackend {
-  const candidate = (window as unknown as Record<string, unknown>)._CertaSendToBackend;
+  const candidate = getBridgeGlobal("_CertaSendToBackend");
   expect(candidate).toBeTypeOf("function");
   return candidate as SendToBackend;
 }
 
 function getUserPreloadState() {
-  return (window as unknown as Record<string, unknown>).__electronProviderUserPreload;
+  return getBridgeGlobal("__electronProviderUserPreload");
 }
 
 describe("Electron Vitest browser provider", () => {

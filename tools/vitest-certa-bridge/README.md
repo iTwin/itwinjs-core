@@ -58,7 +58,7 @@ The not-yet-supported areas are specifically `@vitest/browser` command APIs that
 
 The provider also starts with `supportsParallelism = false`. That keeps one Electron session active at a time while the callback bridge, preload composition, cache isolation, and teardown behavior are proven. Parallel sessions can be enabled later after adding dedicated coverage for concurrent BrowserWindows/processes and any shared backend callback state.
 
-Test-file isolation is still controlled by Vitest browser-mode config. The provider loads its preload into Vitest's tester iframe, so isolated test iframes are a supported direction, but each consuming package should validate its own setup/teardown assumptions when enabling or changing isolation.
+Test-file isolation is still controlled by Vitest browser-mode config. Vitest executes tests inside a same-origin tester iframe, so the provider loads its preload into subframes while keeping `nodeIntegration` disabled and `contextIsolation` enabled. Each consuming package should validate its own setup/teardown assumptions when enabling or changing isolation.
 
 ## Backend callbacks
 

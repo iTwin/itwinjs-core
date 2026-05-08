@@ -7,11 +7,13 @@ import { type ChildProcess, spawn } from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import { createRequire } from "module";
 import { playwright as PlaywrightBrowserProvider } from "@vitest/browser/providers";
 import type { BrowserProviderInitializationOptions, TestProject } from "vitest/node";
 import type { ElectronBrowserProviderOptions } from "./types.js";
 
 const playwrightBrowserProviderBase: any = PlaywrightBrowserProvider;
+const moduleRequire = createRequire(path.join(process.cwd(), "package.json"));
 
 interface ElectronSession {
   process: ChildProcess;
@@ -20,9 +22,8 @@ interface ElectronSession {
 
 /** Resolve the Electron provider main-process entry point from this package's compiled CJS output. */
 function getProviderSessionEntryPath(): string {
-  // __dirname is either lib/cjs/electron or lib/esm/electron. Electron main runs under CJS,
-  // so always target the CJS provider-session entry.
-  const pkgRoot = path.resolve(__dirname, "../../..");
+  const providerEntry = moduleRequire.resolve("@itwin/vitest-certa-bridge/electron-provider");
+  const pkgRoot = path.resolve(path.dirname(providerEntry), "../../..");
   return path.join(pkgRoot, "lib", "cjs", "electron", "provider-session.js");
 }
 
@@ -120,7 +121,7 @@ export default class ElectronBrowserProvider extends playwrightBrowserProviderBa
     }
 
     const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `vitest-electron-${sessionId}-`));
-    const electronBin = require("electron/index.js");
+    const electronBin = moduleRequire("electron/index.js") as string;
     const sessionEntry = getProviderSessionEntryPath();
     const electronArgs = [...(this._options.electronArgs ?? []), sessionEntry];
 
@@ -133,6 +134,8 @@ export default class ElectronBrowserProvider extends playwrightBrowserProviderBa
       VITEST_ELECTRON_SESSION_ID: sessionId,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       VITEST_ELECTRON_CACHE_DIR: cacheDir,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ELECTRON_CACHE_DIR: cacheDir,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       VITEST_ELECTRON_HEADLESS: String(this._project.config.browser.headless !== false),
     };
@@ -198,8 +201,8 @@ export default class ElectronBrowserProvider extends playwrightBrowserProviderBa
       electronProcess.on("exit", (code, signal) => {
         this._sessions.delete(sessionId);
         cleanupCacheDir(cacheDir);
-        if (!settled && code !== 0 && code !== null)
-          settleReject(new Error(`Electron provider session ${sessionId} exited before tests completed: code=${code}, signal=${signal ?? "none"}`));
+        if (!settled)
+          settleReject(new Error(`Electron provider session ${sessionId} exited before becoming ready: code=${code ?? "none"}, signal=${signal ?? "none"}`));
       });
     });
   }

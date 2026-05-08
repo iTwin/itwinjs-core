@@ -6,7 +6,7 @@
 import { ElectronHost } from "../../../ElectronBackend";
 
 async function init() {
-  const cacheDir = process.env.ELECTRON_CACHE_DIR;
+  const cacheDir = process.env.VITEST_ELECTRON_CACHE_DIR ?? process.env.ELECTRON_CACHE_DIR;
   await ElectronHost.startup(cacheDir ? {
     iModelHost: {
       cacheDir,
