@@ -1755,6 +1755,8 @@ export abstract class IModelDb extends IModel {
     // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
     // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
     // don't support OFFSET-based pagination.
+    // This implementation uses the non-pinned version of the pragma other than frontend - because backend
+    // is always strictly coupled with the native code.
     const reader = this.createQueryReader("PRAGMA schema_view");
     const result = await reader.next();
     if (result.done)
