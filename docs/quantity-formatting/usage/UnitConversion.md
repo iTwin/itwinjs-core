@@ -148,7 +148,7 @@ Use the provider-backed helpers when unit lookup/conversion must go through a [U
 >
 > **Note:** [UnitConversions]($quantity).[convertBasic]($quantity) and [UnitConversions]($quantity).[getBasicConversion]($quantity) use pre-resolved built-in basic conversion data shipped with `core-quantity`, so they do not require app startup/init hooks.
 >
-> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[getBasicConversion]($quantity) may still return `UnitConversionProps` with `error: true` for incompatible units. [UnitConversions]($quantity).[convertValue]($quantity), [UnitConversions]($quantity).[convert]($quantity), and [UnitConversions]($quantity).[convertBasic]($quantity) are the throwing application paths. Lookup-based helpers also throw when a unit name cannot be resolved.
+> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[getBasicConversion]($quantity) may still return `UnitConversionProps` with `error: true` for incompatible units. [UnitConversions]($quantity).[convertValue]($quantity), [UnitConversions]($quantity).[convert]($quantity), and [UnitConversions]($quantity).[convertBasic]($quantity) are the throwing application paths. Lookup-based helpers throw when a unit name cannot be resolved, and provider-backed [UnitConversions]($quantity).[getConversion]($quantity) may also reject if the underlying [UnitsProvider]($quantity) throws while computing the conversion.
 
 ## See Also
 

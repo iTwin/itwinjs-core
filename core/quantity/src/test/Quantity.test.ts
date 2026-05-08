@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
-import { basicUnitConversionData } from "../generated/BasicUnitConversions.generated";
+import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 import { UnitSchemaNames } from "../generated/Units.generated";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import { UnitConversions } from "../UnitConversions";

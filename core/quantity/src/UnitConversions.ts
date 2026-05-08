@@ -8,7 +8,7 @@
 
 import { QuantityError, QuantityStatus } from "./Exception";
 import { UnitConversionInvert, type UnitConversionProps, type UnitProps, type UnitsProvider } from "./Interfaces";
-import { basicUnitConversionData } from "./generated/BasicUnitConversions.generated";
+import { basicUnitConversionData } from "./internal/BasicUnitConversions.generated";
 import { convertValueOrThrow } from "./internal/UnitConversionMath";
 
 type BasicUnitConversionEntry = readonly [

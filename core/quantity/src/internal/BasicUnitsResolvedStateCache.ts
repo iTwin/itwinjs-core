@@ -5,9 +5,8 @@
 import type { SerializedUnitSchema } from "../SerializedUnitSchema";
 import { type BasicUnitsResolvedState, buildBasicUnitsResolvedState } from "./BasicUnitConversionData";
 
-// Shared module-level cache for the built-in basic-units indexes.
-// Both the synchronous UnitConversions helpers and the async BasicUnitsProvider resolve the same
-// immutable state, so the expensive schema walk happens at most once per process.
+// Shared module-level cache for the built-in basic-units indexes used by BasicUnitsProvider.
+// UnitConversions no longer uses this cache after moving to a compact generated basic-conversion artifact.
 let _resolvedState: BasicUnitsResolvedState | undefined;
 let _resolvePromise: Promise<BasicUnitsResolvedState> | undefined;
 let _permanentError: Error | undefined;
@@ -16,17 +15,6 @@ function rememberFailure(err: unknown): never {
   _permanentError = err instanceof Error ? err : new Error(String(err));
   _resolvePromise = undefined;
   throw _permanentError;
-}
-
-/** Returns the shared resolved state for the built-in basic units, building it synchronously if needed.
- * @internal
- */
-export function getBasicUnitsResolvedState(schema: SerializedUnitSchema): BasicUnitsResolvedState {
-  if (_permanentError !== undefined)
-    throw _permanentError;
-
-  _resolvedState ??= buildBasicUnitsResolvedState(schema);
-  return _resolvedState;
 }
 
 /** Returns the shared resolved state for the built-in basic units, loading/building it asynchronously if needed.

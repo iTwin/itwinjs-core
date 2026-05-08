@@ -5,10 +5,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
-import { basicUnitConversionData } from "../generated/BasicUnitConversions.generated";
+import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
-const generatedBasicConversionsSource = readFileSync(require.resolve("../generated/BasicUnitConversions.generated.ts"), "utf8");
+const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
 
 describe("Generated Units artifacts", () => {
   it("keeps Units.json aligned with the expected serialized schema envelope", () => {

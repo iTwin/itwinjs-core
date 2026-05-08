@@ -8,15 +8,6 @@ const expressionRgx = /^(([A-Z]\w*:)?([A-Z]\w*|\[([A-Z]\w*:)?[A-Z]\w*\])(\(-?\d+
 const tokenRgx = /(?:(\[)?((?:[A-Z]\w*:)?[A-Z]\w*)\]?)(?:\((-?\d+)\))?/i;
 const MAX_RESOLUTION_DEPTH = 30;
 
-function assertUniqueGeneratedKeys(entries, schemaItemType) {
-  const seen = new Set();
-  for (const entry of entries) {
-    if (seen.has(entry.key))
-      throw new Error(`Duplicate generated key "${entry.key}" for ${schemaItemType}`);
-    seen.add(entry.key);
-  }
-}
-
 function almostEqual(a, b, tolerance = Number.EPSILON) {
   const absDiff = Math.abs(a - b);
   const scaledTolerance = Math.max(1, Math.abs(a), Math.abs(b)) * tolerance;
@@ -173,7 +164,7 @@ function buildResolvedUnitMap(sourceSchema) {
   return resolved;
 }
 
-function buildBasicConversionEntries(sourceSchema) {
+function buildBasicConversionEntries(sourceSchema, assertUniqueGeneratedKeys) {
   const resolvedUnits = buildResolvedUnitMap(sourceSchema);
   const entries = [];
 
@@ -204,8 +195,8 @@ function buildBasicConversionEntries(sourceSchema) {
   return entries;
 }
 
-function buildGeneratedBasicConversionModule(sourceSchema) {
-  const entries = buildBasicConversionEntries(sourceSchema);
+function buildGeneratedBasicConversionModule(sourceSchema, assertUniqueGeneratedKeys) {
+  const entries = buildBasicConversionEntries(sourceSchema, assertUniqueGeneratedKeys);
   const lines = [
     "/*---------------------------------------------------------------------------------------------",
     "* Copyright (c) Bentley Systems, Incorporated. All rights reserved.",

@@ -14,7 +14,7 @@ const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
 
 const unitsJsonPath = join(__dirname, "../src/assets/Units.json");
 const generatedTsPath = join(__dirname, "../src/generated/Units.generated.ts");
-const basicConversionTsPath = join(__dirname, "../src/generated/BasicUnitConversions.generated.ts");
+const basicConversionTsPath = join(__dirname, "../src/internal/BasicUnitConversions.generated.ts");
 
 function readSerializationVersion() {
   // Read the serialization format version from source to stay in sync with SERIALIZED_UNIT_SCHEMA_VERSION.
@@ -123,7 +123,7 @@ function main() {
   const unitsJson = buildSerializedUnitsJson(schema, serializationVersion);
   const unitsJsonContent = `${JSON.stringify(unitsJson, null, 2)}\n`;
   const generatedTsContent = buildGeneratedUnitsModule(schema);
-  const basicConversionTsContent = buildGeneratedBasicConversionModule(schema);
+  const basicConversionTsContent = buildGeneratedBasicConversionModule(schema, assertUniqueGeneratedKeys);
 
   const jsonChanged = writeIfChanged(unitsJsonPath, unitsJsonContent);
   const tsChanged = writeIfChanged(generatedTsPath, generatedTsContent);
