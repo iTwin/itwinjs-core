@@ -28,3 +28,5 @@ This is equivalent in result to an `INNER JOIN`, but the optimizer is not permit
 ### Schema changesets can be reversed
 
 This makes it possible to walk a changeset timeline backwards through interleaved schema and data changesets. After reversing a schema changeset, the EC metadata (class definitions, property mappings, schema version) reflects the state prior to that changeset.
+
+As a result, [CheckpointManager.downloadCheckpoint]($backend) now succeeds when the target changeset is older than the checkpoint and the range spans one or more schema changesets. Previously this would fail because schema changesets could not be reversed.
