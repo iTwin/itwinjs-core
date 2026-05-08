@@ -30,11 +30,31 @@ async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
   };
 
   const electronProcess = spawn(command, args, options);
+  let exited = false;
 
-  const exitCode = await new Promise((resolve) => {
-    electronProcess.on("exit", (status) => resolve(status || 0));
-  });
-  assert.equal(exitCode, TestResult.Success);
+  try {
+    const exitCode = await new Promise<number>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        electronProcess.kill("SIGTERM");
+        reject(new Error(`Timed out waiting for Electron test process to exit: ${suiteToRun} > ${testToRun}`));
+      }, 55000);
+
+      electronProcess.on("exit", (status) => {
+        exited = true;
+        clearTimeout(timeout);
+        resolve(status || 0);
+      });
+      electronProcess.on("error", (error) => {
+        exited = true;
+        clearTimeout(timeout);
+        reject(error);
+      });
+    });
+    assert.equal(exitCode, TestResult.Success);
+  } finally {
+    if (!exited)
+      electronProcess.kill("SIGKILL");
+  }
 }
 
 // Goes though every test registered in [testSuites] and executed each in separate Electron main process.

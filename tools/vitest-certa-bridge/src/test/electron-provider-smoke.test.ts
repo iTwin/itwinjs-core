@@ -5,13 +5,16 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    _CertaSendToBackend: (name: string, args: unknown[]) => Promise<unknown>;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    __electronProviderUserPreload: { loaded: boolean; processType: string };
-  }
+type SendToBackend = (name: string, args: unknown[]) => Promise<unknown>;
+
+function getSendToBackend(): SendToBackend {
+  const candidate = (window as unknown as Record<string, unknown>)._CertaSendToBackend;
+  expect(candidate).toBeTypeOf("function");
+  return candidate as SendToBackend;
+}
+
+function getUserPreloadState() {
+  return (window as unknown as Record<string, unknown>).__electronProviderUserPreload;
 }
 
 describe("Electron Vitest browser provider", () => {
@@ -24,16 +27,18 @@ describe("Electron Vitest browser provider", () => {
   });
 
   it("loads a consumer preload alongside the bridge preload", () => {
-    expect(window.__electronProviderUserPreload).toEqual({
+    expect(getUserPreloadState()).toEqual({
       loaded: true,
       processType: "renderer",
     });
   });
 
   it("calls backend callbacks from a real Vitest renderer test", async () => {
-    await expect(window._CertaSendToBackend("electron-provider:add", [2, 5])).resolves.toBe(7);
-    await expect(window._CertaSendToBackend("electron-provider:asyncEcho", ["from renderer"])).resolves.toEqual({ echoed: "from renderer" });
-    await expect(window._CertaSendToBackend("electron-provider:mainProcessInfo", [])).resolves.toMatchObject({
+    const sendToBackend = getSendToBackend();
+
+    await expect(sendToBackend("electron-provider:add", [2, 5])).resolves.toBe(7);
+    await expect(sendToBackend("electron-provider:asyncEcho", ["from renderer"])).resolves.toEqual({ echoed: "from renderer" });
+    await expect(sendToBackend("electron-provider:mainProcessInfo", [])).resolves.toMatchObject({
       appReady: true,
       processType: "browser",
     });

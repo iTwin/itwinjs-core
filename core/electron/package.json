@@ -11,17 +11,11 @@
       "ElectronBackend": [
         "lib/cjs/ElectronBackend.d.ts"
       ],
-      "lib/cjs/ElectronFrontend": [
-        "lib/cjs/ElectronFrontend.d.ts"
+      "lib/cjs/*": [
+        "lib/cjs/*.d.ts"
       ],
-      "lib/cjs/ElectronFrontend.js": [
-        "lib/cjs/ElectronFrontend.d.ts"
-      ],
-      "lib/cjs/ElectronBackend": [
-        "lib/cjs/ElectronBackend.d.ts"
-      ],
-      "lib/cjs/ElectronBackend.js": [
-        "lib/cjs/ElectronBackend.d.ts"
+      "lib/cjs/*.js": [
+        "lib/cjs/*.d.ts"
       ]
     }
   },
@@ -36,21 +30,13 @@
       "import": "./lib/esm/ElectronBackend.js",
       "require": "./lib/cjs/ElectronBackend.js"
     },
-    "./lib/cjs/ElectronFrontend": {
-      "types": "./lib/cjs/ElectronFrontend.d.ts",
-      "default": "./lib/cjs/ElectronFrontend.js"
+    "./lib/cjs/*": {
+      "types": "./lib/cjs/*.d.ts",
+      "default": "./lib/cjs/*.js"
     },
-    "./lib/cjs/ElectronFrontend.js": {
-      "types": "./lib/cjs/ElectronFrontend.d.ts",
-      "default": "./lib/cjs/ElectronFrontend.js"
-    },
-    "./lib/cjs/ElectronBackend": {
-      "types": "./lib/cjs/ElectronBackend.d.ts",
-      "default": "./lib/cjs/ElectronBackend.js"
-    },
-    "./lib/cjs/ElectronBackend.js": {
-      "types": "./lib/cjs/ElectronBackend.d.ts",
-      "default": "./lib/cjs/ElectronBackend.js"
+    "./lib/cjs/*.js": {
+      "types": "./lib/cjs/*.d.ts",
+      "default": "./lib/cjs/*.js"
     }
   },
   "license": "MIT",
@@ -99,22 +85,15 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@itwin/vitest-certa-bridge": "workspace:*",
-    "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "@vitest/browser": "^3.0.6",
-    "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "electron": "^41.0.0",
     "eslint": "^9.31.0",
     "glob": "^10.5.0",
-    "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "vitest": "^3.0.6",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^5.0.1"
+    "vitest": "^3.0.6"
   },
   "dependencies": {
     "@openid/appauth": "^1.3.2",

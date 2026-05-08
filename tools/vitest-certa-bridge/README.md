@@ -7,7 +7,7 @@ This first stacked PR intentionally exposes only the pieces needed by `core/elec
 - a custom Vitest browser provider at `@itwin/vitest-certa-bridge/electron-provider`
 - backend callback registration from the package root
 
-Chrome/browser migration helpers and the older shim-style Electron harness are intentionally not part of this branch. Add them in later VCB branches only when a consumer needs them.
+Additional package surfaces should be added in later VCB branches only when a consumer needs them.
 
 ## Electron browser provider
 
@@ -70,7 +70,7 @@ import { registerBackendCallback } from "@itwin/vitest-certa-bridge";
 registerBackendCallback("example:add", (a: number, b: number) => a + b);
 ```
 
-A backend init module is optional. Downstream packages only need one when their renderer tests require package-specific Electron-main startup or backend callbacks. This package's own smoke test generates its backend/preload fixtures from the test config so no checked-in fixture is mistaken for required consumer boilerplate.
+A backend init module is optional. Downstream packages only need one when their renderer tests require package-specific Electron-main startup or backend callbacks. This package's own smoke test uses checked-in TypeScript fixtures that are compiled before the provider test runs; they are test coverage for this package, not required consumer boilerplate.
 
 Renderer tests can call the preload-exposed bridge:
 

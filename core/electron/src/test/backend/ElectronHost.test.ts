@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert } from "chai";
+import { strict as assert } from "assert";
 import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";

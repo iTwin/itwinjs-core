@@ -7,7 +7,9 @@
   "typings": "lib/cjs/index",
   "typesVersions": {
     "*": {
-      "electron-provider": ["lib/cjs/electron/provider.d.ts"]
+      "electron-provider": [
+        "lib/cjs/electron/provider.d.ts"
+      ]
     }
   },
   "exports": {
@@ -37,7 +39,8 @@
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "vitest run --config src/test/vitest.config.mts",
-    "test:electron-provider": "vitest run --config src/test/vitest.electron-provider.config.mts"
+    "test:electron-provider": "npm run -s build:test-fixtures && vitest run --config src/test/vitest.electron-provider.config.mts",
+    "build:test-fixtures": "tsc -p tsconfig.test-fixtures.json 1>&2"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
