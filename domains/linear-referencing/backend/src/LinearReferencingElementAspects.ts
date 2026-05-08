@@ -7,8 +7,7 @@
  */
 
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import { EditTxn, ElementMultiAspect, IModelDb } from "@itwin/core-backend";
-import { _implicitTxn } from "@itwin/core-backend/lib/cjs/internal/Symbols";
+import { _implicitTxn, EditTxn, ElementMultiAspect, IModelDb } from "@itwin/core-backend";
 import { RelatedElement } from "@itwin/core-common";
 import {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
