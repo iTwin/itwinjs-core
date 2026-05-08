@@ -171,19 +171,15 @@ export class ElectronHost {
       const saveMaximized = (maximized: boolean) => {
         NativeHost.settingsStore.setData(`windowMaximized-${windowName}`, maximized);
       };
-      const saveWindowState = () => {
-        saveWindowPosition();
-        saveMaximized(mainWindow.isMaximized());
-      };
 
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
       saveMaximized(mainWindow.isMaximized());
 
-      const debouncedSaveWindowState = debounce(() => saveWindowState());
-      mainWindow.on("resize", () => debouncedSaveWindowState());
-      mainWindow.on("move", () => debouncedSaveWindowState());
-      saveWindowState();
+      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition());
+      mainWindow.on("resize", () => debouncedSaveWindowSizeAndPos());
+      mainWindow.on("move", () => debouncedSaveWindowSizeAndPos());
+      saveWindowPosition();
     }
   }
 

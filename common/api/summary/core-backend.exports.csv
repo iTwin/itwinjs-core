@@ -367,6 +367,7 @@ public;class;IModelJsFs
 public;class;IModelJsFsStats
 public;interface;IModelNameArg
 internal;class;IModelNative
+internal;const;_implicitTxn
 beta;type;ImplicitWriteEnforcement
 public;class;InformationContentElement
 preview;class;InformationContentElement
@@ -386,6 +387,7 @@ internal;function;initializeTracing
 beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
+internal;interface;InstancePatch
 beta;interface;IntegrityCheckOptions
 public;class;IpcHandler
 public;class;IpcHost
