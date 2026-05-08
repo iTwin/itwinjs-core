@@ -345,7 +345,6 @@ export interface FormatsChangedArgs {
 // @beta
 export class FormatSpecHandle implements Disposable {
     [Symbol.dispose](): void;
-    // @internal
     constructor(args: FormatSpecHandleArgs);
     format(value: number): string;
     get formatterSpec(): FormatterSpec | undefined;
@@ -355,7 +354,7 @@ export class FormatSpecHandle implements Disposable {
     get system(): UnitSystemKey | undefined;
 }
 
-// @internal
+// @beta
 export interface FormatSpecHandleArgs extends FormattingSpecArgs {
     provider: FormattingSpecProvider;
 }
