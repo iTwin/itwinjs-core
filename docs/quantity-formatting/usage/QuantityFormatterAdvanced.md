@@ -206,9 +206,7 @@ Each of these events covers a different reload trigger, but they all mean the sa
 
 Replace all subscriptions with [QuantityFormatter.onBeforeFormattingReady]($frontend). Register your async loading work via the [FormattingReadyCollector]($quantity) — the formatter awaits all pending work before emitting [QuantityFormatter.onFormattingReady]($frontend).
 
-```ts
-[[include:Quantity_Formatting.BeforeFormattingReady]]
-```
+See the earlier examples in this guide, especially **"Example: Domain spec provider that re-registers on reload"**, for the full provider lifecycle pattern.
 
 **Option B — For tool developers and UI components** (recommended):
 
