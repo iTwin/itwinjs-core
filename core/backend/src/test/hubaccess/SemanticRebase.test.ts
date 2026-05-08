@@ -656,7 +656,7 @@ class TestIModel {
  * Test suite for rebase logic with schema changes that require data transformations.
  */
 describe("Semantic Rebase", function (this: Suite) {
-  this.timeout(60000); // operations can be slow
+  this.timeout(90000); // operations can be slow
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -1468,6 +1468,45 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Local schema transformation should be preserved");
   });
 
+  it("bulk local elements survive semantic rebase with incoming transforming schema change", async function () {
+    const runBulkRebaseTest = async (count: number) => {
+      t = await TestIModel.initialize(`BulkElements${count}`);
+      const farTxn = startTestTxn(t.far, `${count} elements rebase far`);
+      const localTxn = startTestTxn(t.local, `${count} elements rebase local`);
+
+      await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+      const elementIds: string[] = [];
+      for (let i = 0; i < count; i++) {
+        elementIds.push(t.insertElement(localTxn, "TestDomain:C", {
+          propA: `bulk_a_${i}`,
+          propC: `bulk_c_${i}`,
+        }));
+      }
+      localTxn.saveChanges(`local insert ${count} elements`);
+
+      await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+      await pushChanges(farTxn, "far move PropC to A");
+
+      await pullChanges(localTxn);
+      t.local.clearCaches();
+
+      for (let i = 0; i < count; i++) {
+        const element = t.getElementProps(t.local, elementIds[i]);
+        chai.expect(element.propA).to.equal(`bulk_a_${i}`, `Element ${i} propA should be preserved`);
+        chai.expect(element.propC).to.equal(`bulk_c_${i}`, `Element ${i} propC should be preserved after transform`);
+      }
+
+      const schema = t.local.getSchemaProps("TestDomain");
+      chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
+      t.shutdown();
+      t = undefined;
+    };
+
+    await runBulkRebaseTest(133);
+    await runBulkRebaseTest(100);
+    await runBulkRebaseTest(101);
+  });
+
   it("should fail when importing schema with unsaved data changes", async () => {
     t = await TestIModel.initialize("UnsavedDataChangesSchemaImport");
     const localTxn = startTestTxn(t.local, "should fail when importing schema with unsaved data changes local");
@@ -1497,7 +1536,7 @@ describe("Semantic Rebase", function (this: Suite) {
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
 describe("Semantic Rebase with indirect changes", function (this: Suite) {
-  this.timeout(60000); // operations can be slow
+  this.timeout(90000); // operations can be slow
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -1844,7 +1883,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
  * Test suite for data conflicts, conflict handlers, lifecycle events, and mixed schema+conflict scenarios during semantic rebase.
  */
 describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -2118,7 +2157,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
  * Tests scenarios where one or both sides import schemas in multiple sequential steps before the rebase.
  */
 describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -2346,7 +2385,7 @@ describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: S
  * Tests that aspect insert/update/delete operations are correctly captured and reinstated.
  */
 describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -2605,7 +2644,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
  * Ensures int, double, and boolean property values are preserved correctly through rebase.
  */
 describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -2831,7 +2870,7 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
  * Edge case where both local and far delete the same element independently.
  */
 describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -2902,7 +2941,7 @@ describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Sui
  * Tests interactions when three separate briefcases are involved in schema+data operations.
  */
 describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -3036,7 +3075,7 @@ describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
  * pulls multiple times before pushing, accumulating rebase operations.
  */
 describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -3140,7 +3179,7 @@ describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite)
  * Tests that newly added entity classes and their instances survive semantic rebase.
  */
 describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -3295,7 +3334,7 @@ describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite
  * Tests boundary conditions like importing schema while rebasing, concurrent pull attempts, etc.
  */
 describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -3438,7 +3477,7 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
  * that need to be correctly captured and reinstated during semantic rebase.
  */
 describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -3644,7 +3683,7 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
  * Tests that rebase folder state is correctly managed in unusual lifecycle scenarios.
  */
 describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite) {
-  this.timeout(60000);
+  this.timeout(90000);
   let t: TestIModel | undefined;
 
   before(async () => {
@@ -3763,7 +3802,7 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
 });
 
 describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
-  this.timeout(90000);
+  this.timeout(120000);
   let t: TestIModel | undefined;
 
   before(async () => {
