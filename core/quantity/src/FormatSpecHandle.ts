@@ -16,23 +16,21 @@ import type { UnitSystemKey } from "./Interfaces";
  * @internal
  */
 export interface FormatSpecHandleArgs extends FormattingSpecArgs {
-  /** The provider that supplies spec lookups and reload events. */
+  /** The provider that supplies current formatting spec lookups. */
   provider: FormattingSpecProvider;
 }
 
-/** A cacheable handle to formatting and parsing specs for a specific KoQ and persistence unit.
- * Automatically refreshes when the QuantityFormatter reloads. Use [[QuantityFormatter.getFormatSpecHandle]]
+/** A handle to formatting and parsing specs for a specific KoQ and persistence unit.
+ * Reads the current specs from the provider on access. Use [[QuantityFormatter.getFormatSpecHandle]]
  * to create instances.
  *
  * When formatting is not yet ready, [[format]] returns a `value.toString()` fallback.
- * Call [[dispose]] when the handle is no longer needed to unsubscribe from reload events.
+ * Dispose the handle when it is no longer needed to invalidate it.
  *
  * @beta
  */
 export class FormatSpecHandle implements Disposable {
-  private _formatterSpec: FormatterSpec | undefined;
-  private _parserSpec: ParserSpec | undefined;
-  private _removeListener: (() => void) | undefined;
+  private _disposed = false;
   private readonly _provider: FormattingSpecProvider;
   private readonly _koqName: string;
   private readonly _persistenceUnit: string;
@@ -44,10 +42,6 @@ export class FormatSpecHandle implements Disposable {
     this._koqName = args.name;
     this._persistenceUnit = args.persistenceUnitName;
     this._system = args.system;
-    this._removeListener = args.provider.onFormattingReady.addListener(() => {
-      this._refresh();
-    });
-    this._refresh();
   }
 
   /** The KoQ name this handle is keyed to. */
@@ -60,10 +54,10 @@ export class FormatSpecHandle implements Disposable {
   public get system(): UnitSystemKey | undefined { return this._system; }
 
   /** The current FormatterSpec, or undefined if not yet loaded. */
-  public get formatterSpec(): FormatterSpec | undefined { return this._formatterSpec; }
+  public get formatterSpec(): FormatterSpec | undefined { return this._getEntry()?.formatterSpec; }
 
   /** The current ParserSpec, or undefined if not yet loaded. */
-  public get parserSpec(): ParserSpec | undefined { return this._parserSpec; }
+  public get parserSpec(): ParserSpec | undefined { return this._getEntry()?.parserSpec; }
 
   /** Format a quantity value using the current spec.
    * If the formatter is not yet ready, returns `value.toString()` as a fallback.
@@ -71,38 +65,28 @@ export class FormatSpecHandle implements Disposable {
    * @returns The formatted string.
    */
   public format(value: number): string {
-    if (!this._formatterSpec)
+    const formatterSpec = this.formatterSpec;
+    if (!formatterSpec)
       return value.toString();
-    return this._provider.formatQuantity(value, this._formatterSpec);
+    return this._provider.formatQuantity(value, formatterSpec);
   }
 
-  /** Unsubscribe from reload events and clear cached specs.
-   * Idempotent and safe to call during a pending reload.
+  /** Invalidate this handle.
+   * Idempotent and safe to call multiple times.
+   * No additional teardown is required because the handle owns no external resources.
    */
   public [Symbol.dispose](): void {
-    if (this._removeListener) {
-      this._removeListener();
-      this._removeListener = undefined;
-    }
-    this._formatterSpec = undefined;
-    this._parserSpec = undefined;
+    this._disposed = true;
   }
 
-  private _refresh(): void {
-    // Guard against mid-emission callbacks after dispose() — event may still fire during iteration.
-    if (!this._removeListener)
-      return;
-    const entry: FormattingSpecEntry | undefined = this._provider.getSpecsByNameAndUnit({
+  private _getEntry(): FormattingSpecEntry | undefined {
+    if (this._disposed)
+      return undefined;
+
+    return this._provider.getSpecsByNameAndUnit({
       name: this._koqName,
       persistenceUnitName: this._persistenceUnit,
       system: this._system,
     });
-    if (entry) {
-      this._formatterSpec = entry.formatterSpec;
-      this._parserSpec = entry.parserSpec;
-    } else {
-      this._formatterSpec = undefined;
-      this._parserSpec = undefined;
-    }
   }
 }
