@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+  - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
 
@@ -23,3 +24,7 @@ SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonI
 ```
 
 This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
+
+## Electron 42 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 42](https://www.electronjs.org/blog/electron-42-0).
