@@ -174,7 +174,7 @@ Once approved, for each affected breaking change:
 
 - Search the codebase for all usages of the affected API.
 - Update the code to use the new API or pattern as prescribed by the Electron breaking changes doc.
-- Ensure backward compatibility with the minimum supported Electron version (currently ^35.0.0) — use feature detection or version checks when the old API is removed and a polyfill is needed.
+- Ensure backward compatibility with the minimum supported Electron version documented in docs/learning/SupportedPlatforms.md — use feature detection or version checks when the old API is removed and a polyfill is needed.
 
 If a breaking change requires a non-trivial migration (e.g., architectural changes), document the issue in the report. If triggered from a GitHub issue, add a comment to the issue describing the blocker and wait for guidance. Otherwise, ask the invoker before proceeding with the fix.
 
