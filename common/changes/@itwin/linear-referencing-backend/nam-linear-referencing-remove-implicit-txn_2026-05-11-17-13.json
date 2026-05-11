@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Remove linear-referencing-backend's dependency on core-backend _implicitTxn internals.",
+      "comment": "",
       "type": "none",
       "packageName": "@itwin/linear-referencing-backend"
     }
