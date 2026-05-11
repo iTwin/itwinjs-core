@@ -22,6 +22,7 @@ import {
 import { AcquireNewBriefcaseIdArg, DownloadChangesetArg, DownloadChangesetRangeArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
+import { CloudSqlite } from "./CloudSqlite";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -113,6 +114,30 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
 };
+
+/** Arguments for [[BriefcaseDb.revertToVersion]]
+ * Specifies the target version as either a local/cloud file or a changeset index backed by a V2 checkpoint.
+ * @public
+ */
+export type RevertToVersionArgs = TokenArg & (
+  | {
+    /** The file path (or cloud db name) of the older version of the same iModel.
+     * The file must be at the exact state you want to revert to.
+     */
+    fileName: LocalFileName;
+    /** Optional cloud container when `fileName` is a cloud db name. */
+    container?: CloudSqlite.CloudContainer;
+    changesetIndex?: never;
+  }
+  | {
+    /** The changeset index of the version to revert to.
+     * A V2 checkpoint must exist at or before this index, or the operation will fail.
+     */
+    changesetIndex: ChangesetIndex;
+    fileName?: never;
+    container?: never;
+  }
+);
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public

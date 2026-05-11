@@ -28,7 +28,7 @@ import {
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
+import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs, RevertToVersionArgs } from "./BriefcaseManager";
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -3948,6 +3948,26 @@ export class BriefcaseDb extends IModelDb {
 
   public async getAllChangesetHealthData(): Promise<ChangesetHealthStats[]> {
     return this[_nativeDb].getAllChangesetHealthData() as ChangesetHealthStats[];
+  }
+
+  /**
+   * Revert this iModel to a previous version by computing a diff against the target version and applying it inverted.
+   * Only tracked tables are included in the diff; internal tables (e.g. be_Local, txn tables, spatial index) are excluded.
+   * The target version may be specified as a local file path / cloud db name, or as a changeset index backed by a V2 checkpoint.
+   * @throws if there are local changes (uncommitted or committed txns), if the iModel GUIDs differ, or if the base file/checkpoint cannot be opened.
+   * @public
+   */
+  public async revertToVersion(arg: RevertToVersionArgs): Promise<void> {
+    if (arg.changesetIndex !== undefined) {
+      const accessToken = arg.accessToken ?? await IModelHost.getAccessToken();
+      const changeset = await IModelHost[_hubAccess].queryChangeset({ accessToken, iModelId: this.iModelId, changeset: { index: arg.changesetIndex } });
+      const checkpoint: CheckpointProps = { iModelId: this.iModelId, iTwinId: this.iTwinId, changeset, accessToken };
+      const { dbName } = await V2CheckpointManager.attach(checkpoint);
+      this[_nativeDb].revertToVersion(dbName);
+    } else {
+      this[_nativeDb].revertToVersion(arg.fileName);
+    }
+    this.clearCaches();
   }
 
   /** Revert timeline changes and then push resulting changeset */

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Code, ColorDef, GeometryStreamProps, IModel, QueryBinder, QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -10,7 +10,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { _nativeDb, ChannelControl, GraphicalElement2d, Subject, SubjectOwnsSubjects } from "../../core-backend";
+import { _nativeDb, ChannelControl, GraphicalElement2d, IModelJsFs, StandaloneDb, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
@@ -179,7 +179,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
   });
 
   function getClassIdByName(iModel: BriefcaseDb, className: string): Id64String {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     return iModel.withPreparedStatement(`SELECT ECInstanceId from meta.ECClassDef where Name=?`, (stmt) => {
       stmt.bindString(1, className);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -747,7 +747,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
     // 6. Revert to timeline 2
     await rwIModel.revertAndPushChanges({ toIndex: 2, description: "revert to timeline 2" });
@@ -757,7 +757,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1"]);
 
     await rwIModel.revertAndPushChanges({ toIndex: 6, description: "reinstate last reverted changeset" });
@@ -766,7 +766,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await addPropertyAndImportSchema();
@@ -774,7 +774,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
     txn.saveChanges();
     await rwIModel.pushChanges({ description: "import schema, insert element 5 & update element 1" });
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // skip schema changes & auto generated comment
@@ -785,7 +785,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
     assert.isUndefined(findEl(el5));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await rwIModel.revertAndPushChanges({ toIndex: 9 });
@@ -795,7 +795,7 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     txn.end();
     rwIModel.close();
@@ -1916,5 +1916,263 @@ describe("PRAGMA ECSQL Functions", async () => {
     expect(resultArray[0].id).to.equal("0x20000000001");
     expect(resultArray[0].key_id).to.equal("0x20000000002");
     txn.end();
+  });
+});
+
+describe.only("revertToVersion", () => {
+  let iTwinId: GuidString;
+  const accessToken = "super manager token";
+
+  before(() => {
+    HubMock.startup("RevertToVersionTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
+  after(() => HubMock.shutdown());
+
+  /** Helper: count elements of a given class via ECSQL */
+  function countElements(db: BriefcaseDb, classFullName: string): number {
+    return db.withStatement(`SELECT count(*) FROM ${classFullName}`, (stmt) => {
+      stmt.step();
+      return stmt.getValue(0).getInteger();
+    });
+  }
+
+  it("b1 creates schema+data changesets, b2 reverts and pushes, b3 pulls and verifies", async () => {
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "RevertToVersion", description: "TestSubject", accessToken });
+
+    // ── b1: create all schema and data changesets ──────────────────────────────
+    let b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    let txn1 = startTestTxn(b1, "b1 setup");
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    const schemaV1 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="RevertTestDomain" alias="rtd" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p1" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+
+    // Changeset 1: schema v1 + drawing model + category setup
+    await b1.acquireSchemaLock();
+    await importSchemaStrings(txn1, [schemaV1]);
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn1, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "TestCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(txn1, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,255,0)").toJSON() }));
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "schema v1 + setup", accessToken });
+
+    const createEl1 = async (args: { [key: string]: any }): Promise<Id64String> => {
+      await b1.locks.acquireLocks({ exclusive: drawingModelId });
+      const geom: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.createZero(), 1))];
+      const elProps = { classFullName: "RevertTestDomain:TestElement", model: drawingModelId, category: drawingCategoryId, code: Code.createEmpty(), geom, ...args };
+      return txn1.insertElement(elProps);
+    };
+
+    // Changeset 2: insert 2 elements (v1 schema)
+    const el1 = await createEl1({ p1: "alpha" });
+    const el2 = await createEl1({ p1: "beta" });
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "insert 2 elements", accessToken });
+
+    assert.isTrue(Id64.isValidId64(el1));
+    assert.isTrue(Id64.isValidId64(el2));
+
+    // Close b1 to flush the WAL, then copy as checkpoint — this is the revert target
+    const b1Path = b1.pathName;
+    txn1.end();
+    b1.close();
+    const checkpointFile = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-checkpoint.bim`);
+    IModelJsFs.copySync(b1Path, checkpointFile);
+
+    // Reopen b1 to continue creating changesets
+    b1 = await BriefcaseDb.open({ fileName: b1Path });
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    txn1 = startTestTxn(b1, "b1 continue");
+
+    const schemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="RevertTestDomain" alias="rtd" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p1" typeName="string"/>
+            <ECProperty propertyName="p2" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+
+    // Changeset 3: schema v2 — add p2 property
+    await b1.acquireSchemaLock();
+    await importSchemaStrings(txn1, [schemaV2]);
+    txn1.saveFileProperty({ name: "testProp", namespace: "testValue" }, "testProp");
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "schema v2 with p2", accessToken });
+
+    // Changeset 4: insert element using p2
+    const el3 = await createEl1({ p1: "gamma", p2: "delta" });
+
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "insert element with p2", accessToken });
+    assert.isTrue(Id64.isValidId64(el3));
+
+    txn1.end();
+    b1.close();
+
+    // ── b2 and b3: download briefcases on tip ──────────────────────────────────
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    b3.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Both briefcases start at tip: 3 elements, schema has p1+p2
+    assert.equal(countElements(b2, "RevertTestDomain:TestElement"), 3);
+    assert.equal(countElements(b3, "RevertTestDomain:TestElement"), 3);
+
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("RevertTestDomain:TestElement").properties), ["p1", "p2"]);
+    assert.isFalse(b2.txns.hasPendingTxns);
+    // ── b2: revert to checkpoint and push the revert changeset ────────────────
+    await b2.acquireSchemaLock(); // schema lock required since revert undoes schema changes
+    await b2.revertToVersion({ fileName: checkpointFile });
+    assert.isTrue(b2.txns.hasPendingTxns);
+
+    await b2.pushChanges({ description: "revert to checkpoint", accessToken });
+
+    assert.isUndefined(b2.queryFilePropertyString({ name: "testProp", namespace: "testValue" })); // verify file property was reverted and is queryable
+    // Verify b2 after revert: 2 elements, only p1 in schema
+    assert.equal(countElements(b2, "RevertTestDomain:TestElement"), 2);
+
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("RevertTestDomain:TestElement").properties), ["p1"]);
+
+    // ── b3: pull the revert changeset ─────────────────────────────────────────
+    await b3.pullChanges({ accessToken });
+
+    // Verify b3 after pull: 2 elements, only p1 in schema
+    assert.equal(countElements(b3, "RevertTestDomain:TestElement"), 2);
+
+    assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("RevertTestDomain:TestElement").properties), ["p1"]);
+
+    b2.close();
+    b3.close();
+    IModelJsFs.removeSync(checkpointFile);
+  });
+
+  it("should revert using fileName path", async () => {
+    // Create a StandaloneDb (no txn tracking), insert elements, copy as base, insert more, revert
+    const fileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}.bim`);
+    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-base.bim`);
+    const seedFile = IModelTestUtils.resolveAssetFile("test.bim");
+    IModelJsFs.copySync(seedFile, fileName);
+
+    const db = StandaloneDb.openFile(fileName, OpenMode.ReadWrite);
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    db[_nativeDb].saveChanges(); // ensure clean state
+
+    // Copy the db in its current seed state as the base file
+    IModelJsFs.copySync(fileName, baseFileName);
+
+    // Insert a new subject element to make a change
+    db[_nativeDb].insertElement({
+      classFullName: "BisCore:Subject",
+      model: IModel.repositoryModelId,
+      parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsSubjects" },
+      code: Subject.createCode(db, IModel.rootSubjectId, "ExtraSubject"),
+    });
+    db[_nativeDb].saveChanges();
+    db[_nativeDb].deleteAllTxns(); // clear pending txns so revertToVersion doesn't reject
+    db[_nativeDb].saveChanges();
+
+    // Verify element was added
+    const countBefore = db.withStatement("SELECT count(*) FROM bis:Subject", (stmt) => { stmt.step(); return stmt.getValue(0).getInteger(); });
+    assert.isAbove(countBefore, 1); // at least the root + the new one
+
+    // Revert to base (fileName path)
+    await db.revertToVersion({ fileName: baseFileName });
+
+    // Verify element is gone (back to base state)
+    const countAfter = db.withStatement("SELECT count(*) FROM bis:Subject", (stmt) => { stmt.step(); return stmt.getValue(0).getInteger(); });
+    assert.equal(countAfter, countBefore - 1);
+
+    db.close();
+    IModelJsFs.removeSync(fileName);
+    IModelJsFs.removeSync(baseFileName);
+  });
+
+  it("should throw when there are unsaved changes", async () => {
+    const fileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}.bim`);
+    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-base.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), fileName);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), baseFileName);
+
+    const db = StandaloneDb.openFile(fileName, OpenMode.ReadWrite);
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Make an unsaved change via an explicit EditTxn (do not save)
+    const unsavedTxn = new EditTxn(db, "unsaved change");
+    unsavedTxn.start();
+    unsavedTxn.insertElement({
+      classFullName: "BisCore:Subject",
+      model: IModel.repositoryModelId,
+      parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsSubjects" },
+      code: Subject.createCode(db, IModel.rootSubjectId, "Unsaved"),
+    });
+    // Do NOT call saveChanges — nativeDb.hasUnsavedChanges() is true
+
+    let threw = false;
+    try {
+      await db.revertToVersion({ fileName: baseFileName });
+    } catch {
+      threw = true;
+    }
+    assert.isTrue(threw, "revertToVersion should throw when there are unsaved changes");
+
+    unsavedTxn.end("abandon");
+    db.close();
+    IModelJsFs.removeSync(fileName);
+    IModelJsFs.removeSync(baseFileName);
+  });
+
+  it("should throw when there are pending txns", async () => {
+    const fileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}.bim`);
+    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-base.bim`);
+    IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), fileName);
+
+    // Open with transactions enabled so saveChanges creates a pending txn
+    const db = StandaloneDb.openFile(fileName, OpenMode.ReadWrite);
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    db[_nativeDb].saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
+    db[_nativeDb].saveChanges();
+
+    // Copy after enabling txns so base has same state
+    IModelJsFs.copySync(fileName, baseFileName);
+
+    // Insert an element and save via an explicit EditTxn — creates a pending txn
+    const pendingTxn = new EditTxn(db, "pending txn subject");
+    pendingTxn.start();
+    pendingTxn.insertElement({
+      classFullName: "BisCore:Subject",
+      model: IModel.repositoryModelId,
+      parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsSubjects" },
+      code: Subject.createCode(db, IModel.rootSubjectId, "PendingTxnSubject"),
+    });
+    pendingTxn.end(); // saves + deactivates; creates a pending txn
+
+    let threw = false;
+    try {
+      await db.revertToVersion({ fileName: baseFileName });
+    } catch {
+      threw = true;
+    }
+    assert.isTrue(threw, "revertToVersion should throw when there are pending txns");
+
+    db[_nativeDb].abandonChanges();
+    db[_nativeDb].deleteAllTxns();
+    db[_nativeDb].saveChanges();
+    db.close();
+    IModelJsFs.removeSync(fileName);
+    IModelJsFs.removeSync(baseFileName);
   });
 });
