@@ -1704,7 +1704,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
+   * Gets the context that allows accessing the metadata (`@itwin/ecschema-metadata` package) of this iModel.
+   *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need schema authoring
+   * (via `@itwin/ecschema-editing`), custom-attribute deserialization, or the full ecschema-metadata object graph.
    * @public @preview
    */
   public get schemaContext(): SchemaContext {
@@ -1727,7 +1731,9 @@ export abstract class IModelDb extends IModel {
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
-   * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
+   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
    * @beta
    */
   public async getSchemaView(): Promise<SchemaView> {

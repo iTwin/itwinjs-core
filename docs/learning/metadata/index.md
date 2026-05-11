@@ -14,7 +14,9 @@ The API is split into these packages:
 
 ## Obtaining metadata from an imodel
 
-An [IModelDb]($backend) owns a [SchemaContext]($ecschema-metadata) which can be used to access all the meta information stored inside of the imodel. For a lighter read-only alternative, see [SchemaView](./SchemaView.md).
+For runtime read-only access - class/property iteration, IS-A checks, KOQ lookups, presentation logic - prefer [SchemaView](./SchemaView.md), available from [IModelDb]($backend) and [IModelConnection]($frontend) via `getSchemaView()`.
+
+An [IModelDb]($backend) also owns a [SchemaContext]($ecschema-metadata) which exposes the full ecschema-metadata object graph. Use the SchemaContext when you need schema authoring (see `@itwin/ecschema-editing`), custom-attribute deserialization, or any workflow that depends on the complete EC type system.
 
 *Example:*
 

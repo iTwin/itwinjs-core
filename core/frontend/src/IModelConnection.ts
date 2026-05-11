@@ -624,6 +624,10 @@ export abstract class IModelConnection extends IModel {
    * This means to correctly access schema context, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
    * Server-side applications would also [configure RPC]($docs/learning/rpcinterface/#server-side-configuration) as needed.
    *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need custom-attribute deserialization
+   * or the full ecschema-metadata object graph.
+   *
    * @note While a `BlankConnection` returns a valid `schemaContext`, it has an invalid locater registered by default, and will throw an error when trying to call it's methods.
    * @beta
    */
@@ -649,7 +653,9 @@ export abstract class IModelConnection extends IModel {
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
-   * It is designed as a faster, lower-memory alternative to `schemaContext` (ecschema-metadata).
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for custom-attribute
+   * deserialization or anywhere you need the full ecschema-metadata object graph.
    * @beta
    */
   public async getSchemaView(): Promise<SchemaView> {
