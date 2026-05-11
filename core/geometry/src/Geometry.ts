@@ -589,7 +589,7 @@ export class Geometry {
    * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
    * @see [[isSameFraction]], [[isSameCoordinate]], etc., which have more appropriate default absolute tolerances for
-   * input fractions and distances/coordinates.
+   * inputs known to be fractions and distances/coordinates.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
