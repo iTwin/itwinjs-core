@@ -8,7 +8,7 @@ A backend can make the following kinds of changes:
 - [Create or update Models](./CreateModels.md)
 - [Reserve Codes](./ReserveCodes.md)
 
-Use [IModelDb.saveChanges]($backend) to commit changes locally. [BriefcaseDb.txns]($backend) manages local transactions and supports undo/redo of pending local changes — those saved via `IModelDb.saveChanges` but not yet pushed. Once changes are pushed to iModelHub via `BriefcaseDb.pushChanges`, they become part of the permanent changeset history and can no longer be reversed using the local undo/redo stack.
+Use [IModelDb.saveChanges]($backend) to commit changes locally. [BriefcaseDb.txns]($backend) manages local transactions and supports undo/redo of pending local changes — those saved via [IModelDb.saveChanges]($backend) but not yet pushed. Once changes are pushed to iModelHub via [BriefcaseDb.pushChanges]($backend), they become part of the permanent changeset history and can no longer be reversed using the local undo/redo stack.
 
 ## Pushing changes to iModelHub
 
@@ -18,7 +18,7 @@ Use [BriefcaseDb.pushChanges]($backend) to push local changes to iModelHub as a 
 
 ## Reversing pushed changesets
 
-While the local undo/redo stack is cleared after pushing, it is still possible to reverse the *effect* of previously-pushed changesets using [BriefcaseDb.revertAndPushChanges]($backend). This method applies the targeted changesets in reverse to produce a new "revert" changeset, which is then pushed to iModelHub. The original changesets are **not** removed from iModelHub's timeline — the history is append-only and immutable.
+While the local undo/redo stack is cleared after pushing, it is still possible to reverse the *effect* of previously-pushed changesets using [BriefcaseDb.revertAndPushChanges]($backend). This method applies the targeted changesets in reverse to produce a new "revert" changeset, which is then pushed to iModelHub. Before calling it, the briefcase must be "clean": it must have no unsaved changes (`hasUnsavedChanges` must be false) and no pending transactions (`txns.hasPendingTxns` must be false). Save and push local changes first, or discard them, before attempting the revert. The original changesets are **not** removed from iModelHub's timeline — the history is append-only and immutable.
 
 | Scenario | Mechanism |
 |---|---|
