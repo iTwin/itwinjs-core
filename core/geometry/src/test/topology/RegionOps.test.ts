@@ -357,7 +357,7 @@ describe("RegionOps", () => {
     lift.multiplyPoint3d(expectedCentroid, expectedCentroid);
     loop.tryTransformInPlace(lift);
     ray = RegionOps.centroidAreaNormal(loop, ray);
-    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+    if (ck.testDefined(ray, "ray defined for lifted square") && ck.testDefined(ray.a, "computed area")) {
       centroid = ray.origin;
       ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for lifted square");
       ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for lifted square");
