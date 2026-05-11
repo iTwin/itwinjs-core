@@ -246,6 +246,7 @@ export class SchemaContext {
   private _knownSchemas: SchemaCache;
   private _fallbackLocaterDefined: boolean;
   private _classHierarchy: ECClassHierarchy;
+  private _strictSchemaValidation: boolean;
 
   constructor() {
     this._locaters = [];
@@ -254,7 +255,16 @@ export class SchemaContext {
     this._locaters.push(this._knownSchemas);
     this._fallbackLocaterDefined = false;
     this._classHierarchy = new ECClassHierarchy();
+    this._strictSchemaValidation = false;
   }
+
+  /**
+   * If true, unknown constructs in schemas with a version newer than the current EC spec version
+   * will cause errors instead of silently substituting defaults. Default is false (tolerant mode).
+   * @beta
+   */
+  public get strictSchemaValidation(): boolean { return this._strictSchemaValidation; }
+  public set strictSchemaValidation(value: boolean) { this._strictSchemaValidation = value; }
 
   public get locaters(): ReadonlyArray<ISchemaLocater> { return this._locaters; }
 

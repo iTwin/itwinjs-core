@@ -98,7 +98,35 @@ Circular references are not supported and will result in a failure to load the s
     }
   ],
   "items": {
-    ...
+    // ...
   }
 }
 ```
+
+## Serialization Formats
+
+EC schemas can be represented in two serialization formats: **XML** (`.ecschema.xml`) and **JSON** (EC JSON). The XML format is the canonical source format used by BIS schemas, while JSON is used for interchange between layers.
+
+### Format Support by Layer
+
+| Operation      | imodel-native (C++) | ecschema-metadata (TypeScript) |
+| -------------- | :-----------------: | :----------------------------: |
+| **Read XML**   |          ✅          |               ✅                |
+| **Write XML**  |          ✅          |               ✅                |
+| **Read JSON**  |          —          |               ✅                |
+| **Write JSON** |          ✅          |               ✅                |
+
+The native C++ layer reads schemas from XML and can serialize to both XML and JSON, but cannot deserialize from JSON. The TypeScript `ecschema-metadata` package supports both formats for both reading and writing.
+
+### Version Identification
+
+Each format encodes the EC specification version differently:
+
+- **XML**: The `xmlns` attribute on the root `<ECSchema>` element contains the version, e.g. `xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2"`.
+- **JSON**: The `$schema` property contains a URI with the version, e.g. `"$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema"`.
+
+### Version Tolerance
+
+When deserializing a schema whose EC specification version is newer than the version understood by the current software, both formats apply **tolerance logic** to avoid hard failures. Unknown constructs — such as unrecognized property types, class modifiers, or enumeration backing types — are silently accepted with default values (e.g. unknown primitive types default to `string`, unknown class modifiers default to `None`).
+
+This tolerance allows older software to partially read schemas authored against a newer specification. However, when importing schemas into an ECDb (e.g. during `importSchemas`), **strict validation** is enabled: unknown constructs from future-version schemas are rejected rather than silently defaulted, to prevent corrupted or incomplete data from being persisted.

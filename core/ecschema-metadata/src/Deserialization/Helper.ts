@@ -954,8 +954,11 @@ export class SchemaReadHelper<T = unknown> {
 
     const loadTypeName = async (typeName: string): Promise<ECSchemaStatus> => {
       if (undefined === parsePrimitiveType(typeName)) {
-        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion))
+        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion)) {
+          if (this._context.strictSchemaValidation)
+            throw new ECSchemaError(ECSchemaStatus.NewerECSpecVersion, `Property ${classObj.name}.${propName} has an unknown type '${typeName}' from a newer EC spec version. Strict schema validation rejects unknown types.`);
           return ECSchemaStatus.NewerECSpecVersion;
+        }
         await this.findSchemaItem(typeName);
       }
       return ECSchemaStatus.Success;
@@ -1011,8 +1014,11 @@ export class SchemaReadHelper<T = unknown> {
   private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
     const loadTypeName = (typeName: string): ECSchemaStatus => {
       if (undefined === parsePrimitiveType(typeName)) {
-        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion))
+        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion)) {
+          if (this._context.strictSchemaValidation)
+            throw new ECSchemaError(ECSchemaStatus.NewerECSpecVersion, `Property ${classObj.name}.${propName} has an unknown type '${typeName}' from a newer EC spec version. Strict schema validation rejects unknown types.`);
           return ECSchemaStatus.NewerECSpecVersion;
+        }
         this.findSchemaItemSync(typeName);
       }
       return ECSchemaStatus.Success;
