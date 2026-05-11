@@ -68,8 +68,11 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
-    if (transform.matrix.determinant() < 0.0)
-      this._latitudeSweep.reverseInPlace();
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis to preserve outward normals
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      this._latitudeSweep.setStartEndRadians(-this._latitudeSweep.endRadians, -this._latitudeSweep.startRadians);
+    }
     return true;
   }
   /**
@@ -317,7 +320,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const cosPhi = Math.cos(phiRadians);
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
-      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0),   // !!! note cosTheta term is omitted -- scale is wrong, but remains non-zero at poles.
+      this._localToWorld.matrix.multiplyXYZ(-fTheta * sinTheta, fTheta * cosTheta, 0),   // NOTE: cosPhi scale is omitted, so the u-derivative scale is wrong but at least at the poles it's nonzero
       this._localToWorld.matrix.multiplyXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
   }

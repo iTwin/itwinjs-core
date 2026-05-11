@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./ECSchemaRpcInterface";
 export * from "./ECSchemaRpcLocater";
+export * from "./RpcIncrementalSchemaLocater";

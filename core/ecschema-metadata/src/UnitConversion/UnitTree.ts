@@ -10,21 +10,19 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { SchemaItemType } from "../ECObjects";
-import { UnitConversion } from "./UnitConversion";
-import { DefinitionFragment, parseDefinition } from "./Parser";
-import { Graph } from "./Graph";
+import { type DefinitionFragment, parseDefinition, UnitConversion, UnitConversionGraph } from "@itwin/core-quantity";
 
 /** @internal */
 export class GraphUtils {
   /**
    * DFS traversal - Post order
-   * @param _graph Graph to traverse
+   * @param _graph DirectedGraph to traverse
    * @param start Starting node
    * @param keyFrom Get key from label
    * @param op Reducing function
    * @param initial Initial label
    */
-  public static dfsReduce<T>(_graph: Graph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, initial: T, baseUnitsMap: Map<string, number>, accumulatedExponent: number): T {
+  public static dfsReduce<T>(_graph: UnitConversionGraph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, initial: T, baseUnitsMap: Map<string, number>, accumulatedExponent: number): T {
     const outEdges = _graph.outEdges(key);
     let t = initial;
     if (outEdges.length > 0) {
@@ -38,7 +36,7 @@ export class GraphUtils {
       );
     } else {
       if (baseUnitsMap.has(key)) {
-        const oldExponent = baseUnitsMap.get(key)!;
+        const oldExponent = baseUnitsMap.get(key) ?? 0;
         baseUnitsMap.set(key, oldExponent + accumulatedExponent);
       } else {
         baseUnitsMap.set(key, accumulatedExponent);
@@ -51,7 +49,7 @@ export class GraphUtils {
 
 /** @internal */
 export class UnitGraph {
-  private _graph = new Graph<Unit | Constant>();
+  private _graph = new UnitConversionGraph<Unit | Constant>();
   private _unitsInProgress = new Map<string, Promise<void>>();
 
   constructor(private _context: SchemaContext) {
@@ -121,7 +119,7 @@ export class UnitGraph {
    * @param unit Current unit to be added to graph
    */
   public async addUnit(unit: Unit | Constant): Promise<void> {
-    if(this._unitsInProgress.has(unit.key.fullName))
+    if (this._unitsInProgress.has(unit.key.fullName))
       return this._unitsInProgress.get(unit.key.fullName);
 
     if (this._graph.hasNode(unit.key.fullName))
@@ -187,6 +185,8 @@ export class UnitGraph {
         const emap = map.raise(exponent);
         return pm ? pm.multiply(emap) : emap;
       }, undefined);
+      // EC Constant nodes have no offset property → UnitConversionSource.offset is undefined → 0.
+      // Matches the prior explicit 0.0 branch before UnitConversion moved to core-quantity.
       const thisMap = this._graph.node(unitFullName) ? UnitConversion.from(this._graph.node(unitFullName)) : UnitConversion.identity;
       const other = cmap || UnitConversion.identity;
       const result = other.compose(thisMap);

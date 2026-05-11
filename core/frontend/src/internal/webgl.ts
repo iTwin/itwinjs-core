@@ -16,6 +16,6 @@ export { MeshGraphic } from "./render/webgl/Mesh";
 export { PolylineGeometry } from "./render/webgl/Polyline";
 export { RenderOrder } from "./render/webgl/RenderFlags";
 export { FrameBuffer } from "./render/webgl/FrameBuffer";
-export { ExternalTextureLoader, ExternalTextureRequest, Texture2DHandle, TextureHandle } from "./render/webgl/Texture";
+export { ExternalTextureLoader, type ExternalTextureRequest, Texture2DHandle, TextureHandle } from "./render/webgl/Texture";
 export { FeatureOverrides } from "./render/webgl/FeatureOverrides";
 export { GL } from "./render/webgl/GL";

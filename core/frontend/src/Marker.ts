@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { assert, Logger, ObservableSet } from "@itwin/core-bentley";
+import { assert, expectDefined, Logger, ObservableSet } from "@itwin/core-bentley";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef } from "@itwin/core-common";
+import { ColorDef, Hilite } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { imageElementFromUrl } from "./common/ImageUtil";
 import { ViewRect } from "./common/ViewRect";
@@ -129,7 +129,7 @@ export class Marker implements CanvasDecoration {
   /** Called when the mouse pointer enters this Marker. */
   public onMouseEnter(ev: BeButtonEvent) {
     this._isHilited = true;
-    this._hiliteColor = ev.viewport!.hilite.color;
+    this._hiliteColor = ev.viewport?.hilite.color ?? new Hilite.Settings().color;
     IModelApp.accuSnap.clear();
   }
 
@@ -139,7 +139,7 @@ export class Marker implements CanvasDecoration {
   /** Called when the mouse pointer moves over this Marker */
   public onMouseMove(ev: BeButtonEvent): void {
     if (this.title)
-      ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
+      expectDefined(ev.viewport).openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
   /** Called when a mouse button is pressed over this Marker. */
   public onMouseButton?(_ev: BeButtonEvent): boolean;
@@ -287,7 +287,7 @@ export class Marker implements CanvasDecoration {
    * Override this method to provide an alternative positioning approach.
    */
   protected positionHtml() {
-    const html = this.htmlElement!;
+    const html = expectDefined(this.htmlElement);
     const style = html.style;
     style.position = "absolute";
     const size = html.getBoundingClientRect(); // Note: only call this *after* setting position = absolute

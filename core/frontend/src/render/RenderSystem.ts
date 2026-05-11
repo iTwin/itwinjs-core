@@ -248,7 +248,7 @@ export abstract class RenderSystem implements Disposable {
    */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   /** @internal */
-  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     const params = createMeshParams(args, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
@@ -295,7 +295,7 @@ export abstract class RenderSystem implements Disposable {
    */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   /** @internal */
-  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
@@ -822,7 +822,7 @@ export namespace RenderSystem {
     /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
      * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
-     * @deprecated in 4.x - will not be removed until after 2026-06-13. WebGL 1 is no longer supported.
+     * @deprecated in 4.0.0 - will not be removed until after 2026-06-13. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 

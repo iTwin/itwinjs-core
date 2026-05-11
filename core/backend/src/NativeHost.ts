@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
@@ -18,6 +18,7 @@ import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 import { CatalogIModelHandler } from "./CatalogDb";
+import { setOnlineStatus } from "./internal/OnlineStatus";
 
 /**
  * Implementation of NativeAppFunctions
@@ -199,6 +200,12 @@ export class NativeHost {
     if (this._reachability !== status) {
       this._reachability = status;
       this.onInternetConnectivityChanged.raiseEvent(status);
+      if (ProcessDetector.isMobileAppBackend) {
+        // Merely referencing NativeHost from a non-native backend causes a runtime exception (even
+        // inside an if statement that checks that the backend is a mobile backend). This allows code
+        // that needs to check connectivity to do so without referencing NativeHost directly.
+        setOnlineStatus(status === InternetConnectivityStatus.Online);
+      }
     }
   }
 }

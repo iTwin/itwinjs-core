@@ -147,9 +147,7 @@ export class RotationalSweep extends SolidPrimitive {
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
     const section = this._contour.curves.clone();
-    if (section) {
-      section.tryTransformInPlace(this.getFractionalRotationTransform(vFraction));
-    }
+    section.tryTransformInPlace(this.getFractionalRotationTransform(vFraction));
     return section;
   }
   /** Extend range using sampled points on the surface. */

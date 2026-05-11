@@ -73,7 +73,7 @@ export function dispose(disposable?: Disposable): undefined;
  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use builtin Disposable type instead.
  * @public
  */
-export function dispose(disposable?: IDisposable): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+export function dispose(disposable?: IDisposable): undefined;
 export function dispose(disposable?: Disposable | IDisposable): undefined {
   if (undefined !== disposable) {
     if (Symbol.dispose in disposable)
@@ -94,7 +94,7 @@ export function disposeArray(list?: Disposable[]): undefined;
  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use builtin Disposable type instead.
  * @public
  */
-export function disposeArray(list?: IDisposable[]): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+export function disposeArray(list?: IDisposable[]): undefined;
 export function disposeArray(list?: Disposable[] | IDisposable[]): undefined {
   if (undefined === list)
     return undefined;

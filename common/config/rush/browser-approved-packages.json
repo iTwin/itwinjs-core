@@ -4,11 +4,11 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -136,7 +136,11 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@cesium/engine",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -159,12 +163,16 @@
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/cesium-renderer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/cloud-agnostic-core",
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -304,7 +312,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/object-storage-core",
@@ -451,6 +459,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "cesium",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "chai",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -517,6 +529,10 @@
     {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "deep-equal-in-any-order",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "detect-port",

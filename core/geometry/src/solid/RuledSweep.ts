@@ -27,7 +27,7 @@ import { SweepContour } from "./SweepContour";
 export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;
 /**
  * A ruled sweep (surface) is a collection of 2 or more contours.
- * * All contours must have identical number and type of geometry. (paths, loops, parity regions, lines, arcs, other curves).
+ * * All contours must have identical number and type of geometry: (paths, loops, parity regions, lines, arcs, other curves).
  * @public
  */
 export class RuledSweep extends SolidPrimitive {
@@ -93,6 +93,10 @@ export class RuledSweep extends SolidPrimitive {
     for (const contour of this._contours) {
       if (!contour.tryTransformInPlace(transform))
         return false;
+    }
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse the sweep order to preserve outward normals
+      this._contours.reverse();
     }
     return true;
   }

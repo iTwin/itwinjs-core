@@ -11,10 +11,10 @@ import { Geometry } from "../../Geometry";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
+import { Newton1dUnboundedApproximateDerivative, NewtonRtoRStrokeHandler } from "../../numerics/Newton";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive, TangentOptions } from "../CurvePrimitive";
-import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
+
 
 /**
  * Context for searching for the tangent(s) to a CurvePrimitive.
@@ -169,7 +169,10 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
     return true;
   }
   private announceRay(fraction: number, data: Ray3d): void {
-    this._functionB = this.evaluateFunction(data)!;
+    const value = this.evaluateFunction(data);
+    if (value === undefined)
+      return;
+    this._functionB = value;
     this._fractionB = fraction;
     if (this._numThisCurve++ > 0) // after the first stroke point, a stroke segment is defined, so we have an interval
       this.searchInterval();

@@ -117,8 +117,11 @@ export class IdleTool extends InteractiveTool {
       await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset);
       return EventHandled.Yes;
     } else if (ev.isDoubleTap) {
+      const vp = ev.viewport;
+      if (undefined === vp)
+        return EventHandled.No;
       // Fit view on single finger double tap.
-      const tool = new FitViewTool(ev.viewport!, true);
+      const tool = new FitViewTool(vp, true);
       return await tool.run() ? EventHandled.Yes : EventHandled.No;
     }
     return EventHandled.No;

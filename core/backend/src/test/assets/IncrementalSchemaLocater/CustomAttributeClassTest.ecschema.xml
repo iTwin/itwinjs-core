@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="CustomAttributeClassTest" alias="cat" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <ECCustomAttributeClass typeName="CustomAttributeModifierNone" modifier="None" appliesTo="Any" displayLabel="TestLabel" description="Test Description">
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <TestCustomAttribute xmlns="CustomAttributeClassTest.01.00.00"/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECCustomAttributeClass>
+
+  <ECCustomAttributeClass typeName="CustomAttributeModifierSealed" modifier="Sealed"  appliesTo="AnyClass" displayLabel="TestLabel" description="Test Description">
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <TestCustomAttribute xmlns="CustomAttributeClassTest.01.00.00"/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECCustomAttributeClass>
+
+  <ECCustomAttributeClass typeName="CustomAttributeModifierAbstract" modifier="Abstract" appliesTo="Schema" displayLabel="TestLabel" description="Test Description">
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <TestCustomAttribute xmlns="CustomAttributeClassTest.01.00.00"/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECCustomAttributeClass>
+
+  <ECCustomAttributeClass typeName="TestCustomAttribute" appliesTo="CustomAttributeClass" modifier="Sealed"/>
+</ECSchema>

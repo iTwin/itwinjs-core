@@ -115,6 +115,9 @@ export class EmptyLocalization implements Localization {
     }
     // Simulate correct and simple usage of i18next's translation function
     // Namely, remove the leading namespace substring if there is one
+    // Note: if there are no colons, split will return an array with a single element, which is the
+    // key itself. So pop()! is safe.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return key.split(":", 2).pop()!;
   }
   public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }

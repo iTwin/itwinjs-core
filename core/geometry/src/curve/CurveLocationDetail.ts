@@ -5,10 +5,12 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert, OrderedComparator } from "@itwin/core-bentley";
 import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { CurvePrimitive } from "./CurvePrimitive";
 
 /**
@@ -101,7 +103,12 @@ export class CurveLocationDetail {
   public setIntervalRole(value: CurveIntervalRole): void {
     this.intervalRole = value;
   }
-  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1. */
+  /** Set the `fraction` and `point`, using direct assignment (capture!) to `point`. */
+  public captureFractionPoint(fraction: number, point: Point3d): void {
+    this.fraction = fraction;
+    this.point = point;
+  }
+  /** Set the (optional) `fraction1` and `point1`, using direct assignment (capture!) to `point1`. */
   public captureFraction1Point1(fraction1: number, point1: Point3d): void {
     this.fraction1 = fraction1;
     this.point1 = point1;
@@ -109,6 +116,10 @@ export class CurveLocationDetail {
   /** Test if this pair has fraction1 defined. */
   public get hasFraction1(): boolean {
     return this.fraction1 !== undefined;
+  }
+  /** Test if this detail defines an interval. Preferable to [[CurveLocationDetail.hasFraction1]]. */
+  public isInterval(): this is { fraction1: number, point1: Point3d } {
+    return this.fraction1 !== undefined && this.point1 !== undefined;
   }
   /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex). */
   public get isIsolated(): boolean {
@@ -165,7 +176,7 @@ export class CurveLocationDetail {
    * @param vector (optional) vector to install.
    * @param a (optional) numeric value to install.
    */
-  public setFP(fraction: number, point: Point3d, vector?: Vector3d, a: number = 0.0): void {
+  public setFP(fraction: number, point: XYAndZ, vector?: Vector3d, a: number = 0.0): void {
     this.fraction = fraction;
     this.point.setFromPoint3d(point);
     this.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(vector, this.vectorInCurveLocationDetail);
@@ -187,7 +198,7 @@ export class CurveLocationDetail {
     this.curve = curve;
   }
   /** Record the distance from the CurveLocationDetail's point to the parameter point. */
-  public setDistanceTo(point: Point3d) {
+  public setDistanceTo(point: XYAndZ) {
     this.a = this.point.distance(point);
   }
   /** Create with a CurvePrimitive pointer but no coordinate data. */
@@ -198,7 +209,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail using CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
-    curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
+    curve: CurvePrimitive | undefined, fraction: number, point: XYAndZ, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -212,7 +223,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail with only ray, fraction, and point. */
   public static createRayFractionPoint(
-    ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail,
+    ray: Ray3d, fraction: number, point: XYAndZ, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.fraction = fraction;
@@ -224,7 +235,7 @@ export class CurveLocationDetail {
   public static createCurveFractionPointDistanceCurveSearchStatus(
     curve: CurvePrimitive | undefined,
     fraction: number,
-    point: Point3d,
+    point: XYAndZ,
     distance: number,
     status: CurveSearchStatus,
     result?: CurveLocationDetail,
@@ -321,7 +332,7 @@ export class CurveLocationDetail {
   public static createCurveFractionPointDistance(
     curve: CurvePrimitive,
     fraction: number,
-    point: Point3d,
+    point: XYAndZ,
     a: number,
     result?: CurveLocationDetail,
   ): CurveLocationDetail {
@@ -344,7 +355,7 @@ export class CurveLocationDetail {
    * @returns true if the given distance is smaller (and hence this detail was updated)
    */
   public updateIfCloserCurveFractionPointDistance(
-    curve: CurvePrimitive, fraction: number, point: Point3d, a: number,
+    curve: CurvePrimitive, fraction: number, point: XYAndZ, a: number,
   ): boolean {
     if (this.a < a)
       return false;
@@ -368,11 +379,13 @@ export class CurveLocationDetail {
     }
   }
   /**
-   * Return the fraction where f falls between fraction and fraction1.
-   * * ASSUME fraction1 defined
+   * Return the fraction where `f` falls between `fraction` and `fraction1`.
+   * * If the fractions are too close or `fraction1` is undefined, `defaultFraction` is returned.
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
-    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
+    if (this.fraction1 === undefined)
+      return defaultFraction;
+    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1, f);
     if (a === undefined)
       return defaultFraction;
     return a;
@@ -392,9 +405,12 @@ export class CurveLocationDetail {
     }
     return detailB;
   }
-  /** Compare only the curve and fraction of this detail with `other`. */
-  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }): boolean {
-    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction);
+  /**
+   * Compare only the curve and fraction of this detail with `other`.
+   * @param fractionTol optional relative tolerance for comparing fractions with [[Geometry.isAlmostEqualNumber]].
+  */
+  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }, fractionTol?: number): boolean {
+    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction, fractionTol);
   }
   /**
    * Transform the detail in place.
@@ -538,11 +554,77 @@ export class CurveLocationDetailPair {
   public tryTransformInPlace(transform: Transform): boolean {
     return this.detailA.tryTransformInPlace(transform) && this.detailB.tryTransformInPlace(transform);
   }
+  /**
+   * Return a pair comparator useful for sorting an array of detail pairs by their fractions.
+   * * Comparison assumes detailA curves are the same and detailB curves are the same.
+   * * Comparison checks for equality of pair fractions, then of pair points, then sorts by detailA.fraction, then detailB.fraction.
+   * @param fractionTol tolerance for comparing fractions. Default value [[Geometry.smallFraction]].
+   * @param pointTol tolerance for comparing points, used if fractions are distinct. Default value [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to perform point comparisons in xy only. Default is false (compare 3D points).
+   * @param equateClosedCurveFractions whether to equate fractions 0 and 1 for physically closed curves. Default is false.
+   */
+  public static comparePairsByFractions(
+    fractionTol: number = Geometry.smallFraction,
+    pointTol: number = Geometry.smallMetricDistance,
+    xyOnly: boolean = false,
+    equateClosedCurveFractions: boolean = false,
+  ): OrderedComparator<CurveLocationDetailPair> {
+    return (p0: CurveLocationDetailPair, p1: CurveLocationDetailPair): number => {
+      assert(() => p0.detailA.curve === p1.detailA.curve && p0.detailB.curve === p1.detailB.curve, "pairs are compatible");
+      const curveA = p0.detailA.curve;
+      const curveB = p0.detailB.curve;
+      let fraction0A = p0.detailA.fraction;
+      let fraction0B = p0.detailB.fraction;
+      let fraction1A = p1.detailA.fraction;
+      let fraction1B = p1.detailB.fraction;
+      if (equateClosedCurveFractions) {
+        if (curveA?.isPhysicallyClosedCurve(pointTol, xyOnly)) {
+          if (Geometry.isAlmostEqualEitherNumber(p0.detailA.fraction, 0, 1, fractionTol))
+            fraction0A = 0;
+          if (Geometry.isAlmostEqualEitherNumber(p1.detailA.fraction, 0, 1, fractionTol))
+            fraction1A = 0;
+        }
+        if (curveB?.isPhysicallyClosedCurve(pointTol, xyOnly)) {
+          if (Geometry.isAlmostEqualEitherNumber(p0.detailB.fraction, 0, 1, fractionTol))
+            fraction0B = 0;
+          if (Geometry.isAlmostEqualEitherNumber(p1.detailB.fraction, 0, 1, fractionTol))
+            fraction1B = 0;
+        }
+      }
+      const sameFractionsA = Geometry.isAlmostEqualNumber(fraction0A, fraction1A, fractionTol);
+      if (sameFractionsA && Geometry.isAlmostEqualNumber(fraction0B, fraction1B, fractionTol))
+        return 0;
+      const samePointsA = xyOnly ? p0.detailA.point.isAlmostEqualXY(p1.detailA.point, pointTol) : p0.detailA.point.isAlmostEqual(p1.detailA.point, pointTol);
+      if (samePointsA && (xyOnly ? p0.detailB.point.isAlmostEqualXY(p1.detailB.point, pointTol) : p0.detailB.point.isAlmostEqual(p1.detailB.point, pointTol)))
+        return 0;
+      return sameFractionsA ? fraction0B - fraction1B : fraction0A - fraction1A;
+    };
+  }
+  /**
+   * Return a pair comparator useful for sorting an array of detail pairs by their points.
+   * * Comparison sorts the points lexicographically, `detailA.point` first, then `detailB.point`.
+   * @param pointTol tolerance for comparing points. Default value [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to perform point comparisons in xy only. Default is false (compare 3D points).
+   */
+  public static comparePairsByPoints(
+    pointTol: number = Geometry.smallMetricDistance,
+    xyOnly: boolean = false,
+  ): OrderedComparator<CurveLocationDetailPair> {
+    return (p0: CurveLocationDetailPair, p1: CurveLocationDetailPair): number => {
+      const comparePoints = xyOnly ? Geometry.compareXY(pointTol) : Geometry.compareXYZ(pointTol);
+      const compareA = comparePoints(p0.detailA.point, p1.detailA.point);
+      const compareB = comparePoints(p0.detailB.point, p1.detailB.point);
+      const samePointsA = compareA === 0;
+      if (samePointsA && compareB === 0)
+        return 0;
+      return samePointsA ? compareB : compareA;
+    };
+  }
 }
 
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures.
- * @deprecated in 4.x - will not be removed until after 2026-06-13. Use CurveLocationDetailPair[] instead.
+ * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {

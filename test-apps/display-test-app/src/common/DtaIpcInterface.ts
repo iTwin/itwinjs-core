@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { DisplayStyle3dProps, SpatialViewDefinitionProps } from "@itwin/core-common";
+import { DisplayStyle3dProps, Placement2dProps, SpatialViewDefinitionProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
 
 export const dtaChannel = "display-test-app/dta";
@@ -39,4 +39,40 @@ export interface DtaIpcInterface {
    * Returns the Id of the section drawing view.
    */
   createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult>;
+
+  /**
+   * Inserts an annotation text style into the specified iModel.
+   * Returns the ID of the inserted text style element.
+   */
+  insertTextStyle(iModelKey: string, name: string, settingProps: TextStyleSettingsProps): Promise<Id64String>;
+
+  /**
+   * Looks up the specified text style by name in the specified iModel and updates its settings.
+   */
+  updateTextStyle(iModelKey: string, name: string, newSettingProps: TextStyleSettingsProps): Promise<void>;
+
+  /**
+   * Looks up the specified text style by name in the specified iModel and deletes it.
+   */
+  deleteTextStyle(iModelKey: string, name: string): Promise<void>;
+
+  /**
+   * Inserts a text annotation into the specified iModel.
+   */
+  insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String>;
+
+  /**
+   * Updates an existing text annotation in the specified iModel.
+   */
+  updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, defaultTextStyleId?: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<void>;
+
+  /**
+   * Deletes an existing text annotation in the specified iModel.
+   */
+  deleteText(iModelKey: string, elementId: Id64String): Promise<void>;
+
+  /**
+   * If the model is a DrawingModel, sets the scale factor on the Drawing element.
+   */
+  setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
 }

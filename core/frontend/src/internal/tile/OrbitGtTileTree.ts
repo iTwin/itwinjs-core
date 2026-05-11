@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { assert, BeTimePoint, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, compareStringsOrUndefined, expectDefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
@@ -335,7 +335,7 @@ export class OrbitGtTileTree extends TileTree {
           colorFormat: "bgr",
         }, this.iModel);
 
-        renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
+        renderGraphic = system.createBatch(expectDefined(renderGraphic), PackedFeatureTable.pack(featureTable), range);
         args.graphics.add(renderGraphic);
         this._tileGraphics.set(key, new OrbitGtTileGraphic(renderGraphic, args.context.viewport, args.now));
       }
@@ -441,7 +441,7 @@ export namespace OrbitGtTileTree {
     const dataManager = new OrbitGtDataManager(pointCloudReader, pointCloudCRS, PointDataRaw.TYPE);
     const pointCloudBounds = dataManager.getPointCloudBounds();
     const pointCloudRange = rangeFromOrbitGt(pointCloudBounds);
-    const pointCloudCenter = pointCloudRange.localXYZToWorld(.5, .5, .5)!;
+    const pointCloudCenter = expectDefined(pointCloudRange.localXYZToWorld(.5, .5, .5));
     const addCloudCenter = Transform.createTranslation(pointCloudCenter);
     const ecefTransform = Transform.createIdentity();
     let pointCloudCenterToDb = addCloudCenter;

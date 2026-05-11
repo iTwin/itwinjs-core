@@ -7,10 +7,10 @@ import { expect } from "chai";
 import * as fs from "fs";
 import path from "path";
 import * as sinon from "sinon";
-import { BriefcaseDb, BriefcaseManager, IModelDb, IpcHost, StandaloneDb } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelDb, IpcHost, StandaloneDb, withEditTxn } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock.js";
 import { IModelStatus } from "@itwin/core-bentley";
-import { IModel, IpcSocketBackend } from "@itwin/core-common";
+import { IModel } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { KeySet } from "@itwin/presentation-common";
 import { PresentationIpcEvents } from "@itwin/presentation-common/internal";
@@ -29,13 +29,13 @@ describe("Reacting to IModel data changes", () => {
     }
     const socketStub = {
       send: sinon.stub(),
-      addListener: sinon.stub().returns(() => {}),
+      addListener: sinon.stub().returns(() => { }),
       removeListener: sinon.stub(),
-      handle: sinon.stub().returns(() => {}),
+      handle: sinon.stub().returns(() => { }),
     };
     await IpcHost.startup({
       ipcHost: {
-        socket: socketStub as IpcSocketBackend,
+        socket: socketStub,
       },
       iModelHost: {
         cacheDir: cachesDirectory,
@@ -94,12 +94,13 @@ describe("Reacting to IModel data changes", () => {
 
       await validateRootSubject(imodel, false, "test");
 
-      const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
-      imodel.elements.updateElement({
-        ...rootSubjectProps,
-        code: { ...rootSubjectProps.code, value: "updated" },
+      withEditTxn(imodel, (txn) => {
+        const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
+        txn.updateElement({
+          ...rootSubjectProps,
+          code: { ...rootSubjectProps.code, value: "updated" },
+        });
       });
-      imodel.saveChanges();
 
       await validateRootSubject(imodel, true, "updated");
     });
@@ -113,12 +114,13 @@ describe("Reacting to IModel data changes", () => {
       await validateRootSubject(imodel1, false, "test");
 
       await imodel2.locks.acquireLocks({ exclusive: IModel.rootSubjectId });
-      const rootSubjectProps = imodel2.elements.getElementProps({ id: "0x1" });
-      imodel2.elements.updateElement({
-        ...rootSubjectProps,
-        code: { ...rootSubjectProps.code, value: "updated" },
+      withEditTxn(imodel2, (txn) => {
+        const rootSubjectProps = imodel2.elements.getElementProps({ id: "0x1" });
+        txn.updateElement({
+          ...rootSubjectProps,
+          code: { ...rootSubjectProps.code, value: "updated" },
+        });
       });
-      imodel2.saveChanges();
       await imodel2.pushChanges({ description: `updated root subject label` });
 
       await imodel1.pullChanges();
@@ -132,12 +134,13 @@ describe("Reacting to IModel data changes", () => {
 
       await validateRootSubject(imodel, false, "test");
 
-      const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
-      imodel.elements.updateElement({
-        ...rootSubjectProps,
-        code: { ...rootSubjectProps.code, value: "updated" },
+      withEditTxn(imodel, (txn) => {
+        const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
+        txn.updateElement({
+          ...rootSubjectProps,
+          code: { ...rootSubjectProps.code, value: "updated" },
+        });
       });
-      imodel.saveChanges();
       await validateRootSubject(imodel, true, "updated");
 
       expect(imodel.txns.reverseTxns(1)).to.eq(IModelStatus.Success);
@@ -178,6 +181,7 @@ describe("Reacting to IModel data changes", () => {
           });
         });
       }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodes = await Presentation.getManager().getNodes(createNodesRequestProps(imodel));
       expect(nodes)
         .to.have.lengthOf(1)
@@ -201,12 +205,13 @@ describe("Reacting to IModel data changes", () => {
       // UserLabel property is not set, so CodeValue is used instead
       await validateRootSubject(imodel, false, "test");
 
-      const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
-      imodel.elements.updateElement({
-        ...rootSubjectProps,
-        userLabel: `updated`,
+      withEditTxn(imodel, (txn) => {
+        const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
+        txn.updateElement({
+          ...rootSubjectProps,
+          userLabel: `updated`,
+        });
       });
-      imodel.saveChanges();
 
       // UserLabel is now set - using that
       await validateRootSubject(imodel, true, "updated");
@@ -221,12 +226,13 @@ describe("Reacting to IModel data changes", () => {
       await validateRootSubject(imodel1, false, "test");
 
       await imodel2.locks.acquireLocks({ exclusive: IModel.rootSubjectId });
-      const rootSubjectProps = imodel2.elements.getElementProps({ id: "0x1" });
-      imodel2.elements.updateElement({
-        ...rootSubjectProps,
-        userLabel: `updated`,
+      withEditTxn(imodel2, (txn) => {
+        const rootSubjectProps = imodel2.elements.getElementProps({ id: "0x1" });
+        txn.updateElement({
+          ...rootSubjectProps,
+          userLabel: `updated`,
+        });
       });
-      imodel2.saveChanges();
       await imodel2.pushChanges({ description: `updated root subject label` });
 
       await imodel1.pullChanges();
@@ -241,12 +247,13 @@ describe("Reacting to IModel data changes", () => {
 
       await validateRootSubject(imodel, false, "test");
 
-      const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
-      imodel.elements.updateElement({
-        ...rootSubjectProps,
-        userLabel: `updated`,
+      withEditTxn(imodel, (txn) => {
+        const rootSubjectProps = imodel.elements.getElementProps({ id: "0x1" });
+        txn.updateElement({
+          ...rootSubjectProps,
+          userLabel: `updated`,
+        });
       });
-      imodel.saveChanges();
 
       await validateRootSubject(imodel, true, "updated");
 
@@ -266,7 +273,7 @@ async function setupStandaloneDbTest(mochaContext: Mocha.Context) {
   }
   const imodel = StandaloneDb.createEmpty(imodelPath, {
     rootSubject: { name: "test" },
-    allowEdit: JSON.stringify({ txns: true }),
+    enableTransactions: true,
   });
   return {
     imodel,

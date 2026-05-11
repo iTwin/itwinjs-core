@@ -14,7 +14,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range2d, Range3d, RangeBase } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";

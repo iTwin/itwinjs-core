@@ -7,10 +7,11 @@
  * @module CartesianGeometry
  */
 
+import { OrderedComparator } from "@itwin/core-bentley";
 import { AngleSweep } from "./geometry3d/AngleSweep";
-import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
+import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
-import { XAndY } from "./geometry3d/XYZProps";
+import { XAndY, XYAndZ } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -22,18 +23,18 @@ import { Point4d } from "./geometry4d/Point4d";
  * @public
  */
 export enum AxisOrder {
-  /** Right handed system, X then Y then Z */
+  /** Right-handed system, X then Y then Z. */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   XYZ = 0,
-  /** Right handed system, Y then Z then X */
+  /** Right-handed system, Y then Z then X. */
   YZX = 1,
-  /** Right handed system, Z then X then Y */
+  /** Right-handed system, Z then X then Y. */
   ZXY = 2,
-  /** Left handed system, X then Z then Y */
+  /** Left-handed system, X then Z then Y. For a right-handed alternative, swap the first two axes and use `AxisOrder.ZXY`. */
   XZY = 4,
-  /** Left handed system, Y then X then Z */
+  /** Left-handed system, Y then X then Z. For a right-handed alternative, swap the first two axes and use `AxisOrder.XYZ`.*/
   YXZ = 5,
-  /** Left handed system, Z then Y then X */
+  /** Left-handed system, Z then Y then X. For a right-handed alternative, swap the first two axes and use `AxisOrder.YZX`.*/
   ZYX = 6,
 }
 /**
@@ -208,7 +209,7 @@ export type AngleSweepProps =
 /**
 * Interface for method with a clone operation.
 * @public
-* @deprecated in 4.x - will not be removed until after 2026-06-13. Use ICloneable.
+* @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use ICloneable.
 */
 export interface Cloneable<T> {
   /** Required method to return a deep clone. */
@@ -225,7 +226,8 @@ export interface ICloneable<T> {
    */
   clone(result?: T): T;
 }
-/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
+/**
+ * Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
  * @public
  */
 export interface PerpParallelOptions {
@@ -235,7 +237,7 @@ export interface PerpParallelOptions {
    */
   radianSquaredTol?: number;
   /**
-   * Squared distance tolerance for detecting a zero-length vector.
+   * Squared distance tolerance for detecting equal points.
    * Default: [[Geometry.smallMetricDistanceSquared]].
    */
   distanceSquaredTol?: number;
@@ -264,6 +266,8 @@ export class Geometry {
   public static readonly smallAngleSeconds = 2e-7;
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
+  /** Relative fraction tolerance for Newton iterations. */
+  public static readonly smallNewtonStep = 1.0e-11;
   /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
   public static readonly smallFloatingPoint = 1.0e-15;
   /** Radians value for full circle 2PI radians minus [[smallAngleRadians]]. */
@@ -280,7 +284,7 @@ export class Geometry {
   public static readonly largeCoordinateResult = 1.0e13;
   /**
    * Numeric value that may considered infinite for metric coordinates.
-   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use [[largeCoordinateResult]].
+   * @deprecated in 4.9.0 - will not be removed until after 2026-06-13. Use [[largeCoordinateResult]].
    * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual
    * points at this coordinate invites numerical problems.
    */
@@ -291,7 +295,7 @@ export class Geometry {
   }
   /**
    * Test if the absolute value of x is at least [[largeCoordinateResult]].
-   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use [[isLargeCoordinateResult]].
+   * @deprecated in 4.9.0 - will not be removed until after 2026-06-13. Use [[isLargeCoordinateResult]].
    */
   public static isHugeCoordinate(x: number): boolean {
     return Geometry.isLargeCoordinateResult(x);
@@ -351,6 +355,15 @@ export class Geometry {
     if (d < 0)
       d = -d;
     return d <= tolerance;
+  }
+  /**
+   * Toleranced test for equivalent fractions.
+   * @param x first fraction to compare
+   * @param y second fraction to compare
+   * @param tolerance maximum difference between fractions considered equivalent, defaulting to [[smallFraction]].
+   */
+  public static isSameFraction(x: number, y: number, tolerance: number = Geometry.smallFraction): boolean {
+    return this.isSameCoordinate(x, y, tolerance);
   }
   /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using
@@ -446,7 +459,7 @@ export class Geometry {
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with x as first test and y as second (z is ignored).
    * * This is appropriate for a horizontal sweep in the plane.
    */
-  public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
+  public static lexicalXYLessThan(a: XAndY, b: XAndY): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -461,7 +474,7 @@ export class Geometry {
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with y as first test and x as second (z is ignored).
    * * This is appropriate for a vertical sweep in the plane.
    */
-  public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
+  public static lexicalYXLessThan(a: XAndY, b: XAndY): -1 | 0 | 1 {
     if (a.y < b.y)
       return -1;
     else if (a.y > b.y)
@@ -473,7 +486,7 @@ export class Geometry {
     return 0;
   }
   /** Lexical comparison of (a.x, a.y, a.z) and (b.x, b.y, b.z) with x as first test, y as second, and z as third. */
-  public static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1 {
+  public static lexicalXYZLessThan(a: XYAndZ, b: XYAndZ): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -487,6 +500,60 @@ export class Geometry {
     else if (a.z > b.z)
       return 1;
     return 0;
+  }
+  /**
+   * Constructor for a lexical comparison with tolerance (x then y then z).
+   * @param distanceTol tolerance for comparing coordinates. Default value is [[Geometry.smallMetricDistance]].
+   * @returns comparison function useful for ordered map callbacks.
+   */
+  public static compareXYZ(distanceTol: number = Geometry.smallMetricDistance): OrderedComparator<XYAndZ> {
+    return (p0: XYAndZ, p1: XYAndZ): -1 | 0 | 1 => {
+      if (XYAndZ.almostEqual(p0, p1, distanceTol))
+        return 0;
+      if (!Geometry.isSameCoordinate(p0.x, p1.x, distanceTol)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isSameCoordinate(p0.y, p1.y, distanceTol)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      if (!Geometry.isSameCoordinate(p0.z, p1.z, distanceTol)) {
+        if (p0.z < p1.z)
+          return -1;
+        if (p0.z > p1.z)
+          return 1;
+      }
+      return 0;
+    };
+  }
+  /**
+   * Constructor for a lexical comparison with tolerance (x then y).
+   * @param distanceTol tolerance for comparing coordinates. Default value is [[Geometry.smallMetricDistance]].
+   * @returns comparison function useful for ordered map callbacks.
+   */
+  public static compareXY(distanceTol: number = Geometry.smallMetricDistance): OrderedComparator<XAndY> {
+    return (p0: XAndY, p1: XAndY): -1 | 0 | 1 => {
+      if (XAndY.almostEqual(p0, p1, distanceTol))
+        return 0;
+      if (!Geometry.isSameCoordinate(p0.x, p1.x, distanceTol)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isSameCoordinate(p0.y, p1.y, distanceTol)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      return 0;
+    };
   }
   /**
    * Test if `value` is at most [[smallFraction]] in absolute value.
@@ -519,7 +586,7 @@ export class Geometry {
   }
   /**
    * Toleranced equality test.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -528,17 +595,17 @@ export class Geometry {
   }
   /**
    * Toleranced test for equality to at least one of two numbers.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal, or `a` and `c` are almost equal.
    */
   public static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     return this.isAlmostEqualNumber(a, b, tolerance) || this.isAlmostEqualNumber(a, c, tolerance);
   }
   /**
-   * Toleranced test for equality to any of `count` numbers supplied by `iterator`.
+   * Toleranced test for equality to any value in `values`.
    * @param a value to test
    * @param values array of values to test against, or an object that provides the i_th value, where 0 <= i < length.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` is almost equal to at least one value supplied by `iterator`.
    */
   public static isAlmostEqualAnyNumber(a: number, values: number[] | { iter: (i: number) => number, length: number }, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -549,25 +616,27 @@ export class Geometry {
     return false;
   }
   /**
-   * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
-   * * [[smallAngleRadians]] is used if tolerance is `undefined`.
+   * Toleranced equality test for xy points.
+   * @param a first point
+   * @param b second point
+   * @param tolerance _relative_ coordinate tolerance. Default value is [[smallAngleRadians]].
    */
   public static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance: number = Geometry.smallAngleRadians): boolean {
     const tol = tolerance * (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
     return (Math.abs(a.x - b.x) <= tol) && (Math.abs(a.y - b.y) <= tol);
   }
   /**
-   * Toleranced equality test using caller-supplied `tolerance`.
-   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
+   * Test if a distance is smaller than `tolerance` (or equal).
+   * @param tolerance distance tolerance. Default value is [[smallMetricDistance]].
    */
   public static isDistanceWithinTol(distance: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(distance) <= tolerance;
   }
-  /** Toleranced equality test using [[smallMetricDistance]] tolerance. */
+  /** Test if a distance is smaller than [[smallMetricDistance]] (or equal). */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
-  /** Toleranced equality test using [[smallMetricDistanceSquared]] tolerance. */
+  /** Test if a squared distance is smaller than [[smallMetricDistanceSquared]] (or equal). */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
@@ -722,24 +791,24 @@ export class Geometry {
     return Geometry.hypotenuseXY(x1 - x0, y1 - y0);
   }
   /**
-   * Return the squared distance between xy points given as numbers.
-   * @param x0 x coordinate of point 0
-   * @param y0 y coordinate of point 0
-   * @param x1 x coordinate of point 1
-   * @param y1 y coordinate of point 1
-   */
+  * Return the squared distance between xy points given as numbers.
+  * @param x0 x coordinate of point 0
+  * @param y0 y coordinate of point 0
+  * @param x1 x coordinate of point 1
+  * @param y1 y coordinate of point 1
+  */
   public static distanceSquaredXYXY(x0: number, y0: number, x1: number, y1: number): number {
     return Geometry.hypotenuseSquaredXY(x1 - x0, y1 - y0);
   }
   /**
-   * Return the distance between xyz points given as numbers.
-   * @param x0 x coordinate of point 0
-   * @param y0 y coordinate of point 0
-   * @param z0 z coordinate of point 0
-   * @param x1 x coordinate of point 1
-   * @param y1 y coordinate of point 1
-   * @param z1 z coordinate of point 1
-   */
+    * Return the distance between xyz points given as numbers.
+    * @param x0 x coordinate of point 0
+    * @param y0 y coordinate of point 0
+    * @param z0 z coordinate of point 0
+    * @param x1 x coordinate of point 1
+    * @param y1 y coordinate of point 1
+    * @param z1 z coordinate of point 1
+    */
   public static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
     return Geometry.hypotenuseXYZ(x1 - x0, y1 - y0, z1 - z0);
   }
@@ -831,6 +900,13 @@ export class Geometry {
       result,
     );
   }
+  /**
+   * 2D cross product of vectors with the vectors presented with common origin point, and two target points.
+   * @see crossProductXYXY for interpretations of the result.
+   */
+  public static crossProductToPointsXY(origin: XAndY, target0: XAndY, target1: XAndY): number {
+    return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
+  }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductMagnitude(
     ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
@@ -856,6 +932,27 @@ export class Geometry {
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
+  /**
+   * Return fractional length of the projection of the first vector ("the space vector") ux,uy to the vector vx,vy ("the direction vector")
+   * @param ux x component of space vector
+   * @param uy y component of space vector
+   * @param vx x component of direction vector
+   * @param vy y component of direction vector
+   * @param defaultFraction the returned value in case the magnitude of the direction vector is too small
+   * @returns the signed length of the projection divided by the length of the direction vector
+   */
+  public static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction: number = 0): number {
+    /*
+     * projection length is (this.target)/||target||
+     * but here we return (this.target)/||target||^2
+     */
+    const denominator = vx * vx + vy * vy;
+    if (denominator < Geometry.smallMetricDistanceSquared)
+      return defaultFraction;
+    const numerator = ux * vx + uy * vy;
+    return numerator / denominator;
+  }
+
   /**
    * Return the mean curvature for two radii.
    * * Curvature is the reciprocal of radius.
@@ -1319,17 +1416,17 @@ export class Geometry {
   /**
    * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
-   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use cloneArray.
+   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use cloneArray.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
     if (array === undefined)
       return undefined;
-    const clonedArray: T[] = [];
+    const clonedArray: (T | undefined)[] = [];
     for (const element of array) {
-      clonedArray.push(element.clone()!);
+      clonedArray.push(element.clone());
     }
-    return clonedArray;
+    return clonedArray as T[];
   }
   /**
    * Clone an array whose members have the cloneable type `T`.
@@ -1344,3 +1441,4 @@ export class Geometry {
     return clonedArray;
   }
 }
+

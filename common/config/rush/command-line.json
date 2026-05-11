@@ -85,6 +85,16 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
+      "name": "lint-deprecation",
+      "commandKind": "bulk",
+      "summary": "Formats deprecation messages",
+      "description": "Iterates through each package in the monorepo and lints it with custom configuration",
+      "enableParallelism": true,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "test",
       "commandKind": "bulk",
       "summary": "Run test script for each package",

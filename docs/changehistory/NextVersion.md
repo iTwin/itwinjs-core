@@ -1,42 +1,30 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
-Table of contents:
+- [NextVersion](#nextversion)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+  - [Electron 42 support](#electron-42-support)
 
-- [Electron 36 support](#electron-36-support)
-- [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
-- [API deprecations](#api-deprecations)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
-  - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+## @itwin/core-backend
 
-## Electron 36 support
+### ECSQL CROSS JOIN now supports optional ON clause
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0).
+`CROSS JOIN` in ECSQL now accepts an optional `ON` condition, matching standard SQL and SQLite behavior. Previously, `CROSS JOIN` only produced an unfiltered Cartesian product between two classes.
 
-## Google Photorealistic 3D Tiles support
+The key benefit of using `CROSS JOIN` with an `ON` clause — rather than `INNER JOIN` — is optimizer control: SQLite's [special CROSS JOIN handling](https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_) prevents the query planner from reordering the joined tables, giving applications explicit control over the join order and query execution plan.
 
-iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Google3dTilesProvider`. See [this article](../learning/frontend/GooglePhotorealistic3dTiles.md) for more details.
+**Example** — filter the Cartesian product while locking join order:
 
-![Google Photorealistic 3D Tiles - Exton](../learning/frontend/google-photorealistic-3d-tiles-1.jpg "Google Photorealistic 3D Tiles - Exton")
+```sql
+-- Returns only matching Person/Identifier pairs, but forces Person to be the outer table
+SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonId
+```
 
-![Google Photorealistic 3D Tiles - Philadelphia](../learning/frontend/google-photorealistic-3d-tiles-2.jpg "Google Photorealistic 3D Tiles - Philadelphia")
+This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
 
-## API deprecations
+## Electron 42 support
 
-### @itwin/presentation-common
-
-- `UnitSystemFormat`, `FormatsMap` and `KoqPropertyValueFormatter` constructor using the latter type have been deprecated. Instead, the constructor overload with "props" object should be used. The props object allows passing an optional `FormatsProvider` to use for finding formatting props for different types of values. When not specified, the `SchemaFormatsProvider` is used by default, so the behavior stays the same as before. Ideally, it's expected that frontend apps will pass `IModelApp.formatsProvider` for this prop.
-
-### @itwin/presentation-backend
-
-- The `PresentationManagerProps.schemaContextProvider` property has been deprecated. Starting with `5.0` release, `SchemaContext` is always available on [IModelDb]($core-backend), so this prop is no longer needed. If supplied, it will still be preferred over the iModel's schema context, until the property is removed completely in a future release.
-- The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the new `formatsProvider` property.
-
-### @itwin/presentation-frontend
-
-- The `PresentationManagerProps.schemaContextProvider` property has been deprecated. Starting with `5.0` release, `SchemaContext` is always available on [IModelConnection]($core-frontend), so this prop is no longer needed. If supplied, it will still be preferred over the iModel's schema context, until the property is removed completely in a future release.
-- The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the `FormatsProvider` now being available on [IModelApp.formatsProvider]($core-frontend).
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 42](https://www.electronjs.org/blog/electron-42-0).

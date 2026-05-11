@@ -18,9 +18,9 @@ export class LengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "length";
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
+      kindOfQuantityName: kindOfQuantityName ?? "DefaultToolsUnits.LENGTH",
       iconSpec,
     });
   }
@@ -42,9 +42,9 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "surveyLength";
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
+      kindOfQuantityName: kindOfQuantityName ?? "CivilUnits.LENGTH",
       iconSpec,
     });
   }
@@ -67,9 +67,9 @@ export class EngineeringLengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "engineeringLength";
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
+      kindOfQuantityName: kindOfQuantityName ?? "AecUnits.LENGTH",
       iconSpec,
     });
   }

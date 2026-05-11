@@ -6,23 +6,132 @@
  * @module WebGL
  */
 
+import { BeEvent } from "@itwin/core-bentley";
 import { LinePixels } from "@itwin/core-common";
 
-/** Map a LinePixels value to an integer in [0..9] that can be used by shaders to index into the corresponding pixel pattern.
- * This is used for feature overrides, including those defined by InstancedGraphicParams.
+/** @internal */
+export interface LineCodeAssignmentArgs {
+  /** Zero-based index of the new pattern within the texture. */
+  readonly code: number;
+  /** The 32-bit bitfield representing the pattern written into the texture. */
+  readonly pattern: number;
+}
+
+const textureSize = 32;
+// Initial capacity - will be updated to System.maxTextureSize in initializeLineCodeCapacity().
+// This value is used only for tests that don't initialize the full System.
+let maxLineCodeSlots = 16384;
+
+const patternToCode = new Map<number, number>();
+const patterns: number[] = [];
+const assignmentEvent = new BeEvent<(args: LineCodeAssignmentArgs) => void>();
+let defaultPatternsInitialized = false;
+
+/** Initialize the maximum line code slots based on System's maxTextureSize.
+ * Must be called before initializeDefaultPatterns().
+ * @internal
  */
-export function lineCodeFromLinePixels(pixels: LinePixels): number {
+export function initializeLineCodeCapacity(maxTexSize: number): void {
+  // Cap at the smaller of maxTextureSize or theoretical maximum (65,536)
+  maxLineCodeSlots = Math.min(maxTexSize, 65536);
+}
+
+const defaultPatterns: LinePixels[] = [
+  LinePixels.Solid,
+  LinePixels.Code1,
+  LinePixels.Code2,
+  LinePixels.Code3,
+  LinePixels.Code4,
+  LinePixels.Code5,
+  LinePixels.Code6,
+  LinePixels.Code7,
+  LinePixels.HiddenLine,
+  LinePixels.Invisible,
+];
+
+function normalizePatternValue(pixels: LinePixels): number | undefined {
   switch (pixels) {
-    case LinePixels.Code0: return 0;
-    case LinePixels.Code1: return 1;
-    case LinePixels.Code2: return 2;
-    case LinePixels.Code3: return 3;
-    case LinePixels.Code4: return 4;
-    case LinePixels.Code5: return 5;
-    case LinePixels.Code6: return 6;
-    case LinePixels.Code7: return 7;
-    case LinePixels.HiddenLine: return 8;
-    case LinePixels.Invisible: return 9;
-    default: return 0;
+    case LinePixels.Invalid:
+      return normalizePatternValue(LinePixels.Solid);
+    case LinePixels.Solid:
+    case LinePixels.Code0:
+      return 0xffffffff;
+    default:
+      return pixels >>> 0;
   }
+}
+
+function assignCodeForPattern(pattern: number): number {
+  const normalized = pattern >>> 0;
+  const existing = patternToCode.get(normalized);
+  if (undefined !== existing)
+    return existing;
+
+  if (patterns.length >= maxLineCodeSlots) {
+    // Exceeded maximum supported line patterns
+    return 0;
+  }
+
+  const code = patterns.length;
+  patterns.push(normalized);
+  patternToCode.set(normalized, code);
+  assignmentEvent.raiseEvent({ code, pattern: normalized });
+  return code;
+}
+
+/** Initialize default line patterns. Called when System is ready.
+ * @internal
+ */
+export function initializeDefaultPatterns(): void {
+  if (defaultPatternsInitialized)
+    return;
+
+  defaultPatternsInitialized = true;
+  for (const pattern of defaultPatterns) {
+    const normalized = normalizePatternValue(pattern);
+    if (undefined !== normalized)
+      assignCodeForPattern(normalized);
+  }
+}
+
+/** Reset initialization state - used when System reinitializes.
+ * @internal
+ */
+export function resetLineCodeState(): void {
+  patternToCode.clear();
+  patterns.length = 0;
+  defaultPatternsInitialized = false;
+}
+
+/** Map a LinePixels value to a texture row index that identifies the corresponding pattern. */
+export function lineCodeFromLinePixels(pixels: LinePixels): number {
+  // Ensure default patterns are initialized (for tests that don't call System.onInitialized)
+  initializeDefaultPatterns();
+
+  const normalized = normalizePatternValue(pixels);
+  if (undefined === normalized)
+    return 0;
+
+  return assignCodeForPattern(normalized);
+}
+
+/** @internal */
+export function onLineCodeAssigned(listener: (args: LineCodeAssignmentArgs) => void): () => void {
+  assignmentEvent.addListener(listener);
+  return () => assignmentEvent.removeListener(listener);
+}
+
+/** @internal */
+export function getLineCodePatterns(): readonly number[] {
+  return patterns;
+}
+
+/** @internal */
+export const lineCodeTextureSize = textureSize;
+
+/** Get the current capacity of the line code texture.
+ * @internal
+ */
+export function lineCodeTextureCapacity(): number {
+  return maxLineCodeSlots;
 }

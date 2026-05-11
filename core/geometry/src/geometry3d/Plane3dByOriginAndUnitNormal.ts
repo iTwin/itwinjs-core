@@ -111,7 +111,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
     ax: number, ay: number, az: number, ux: number, uy: number, uz: number, result?: Plane3dByOriginAndUnitNormal,
   ): Plane3dByOriginAndUnitNormal | undefined {
     const magU = Geometry.hypotenuseXYZ(ux, uy, uz);
-    if (magU < Geometry.smallMetricDistance)
+    if (magU <= Geometry.smallFraction) // cf. Vector3d.normalizeWithLength
       return undefined;
     if (result) {
       result._origin.set(ax, ay, az);

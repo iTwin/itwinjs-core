@@ -251,7 +251,7 @@ export class ClipStyle {
     this.intersectionStyle = intersectionStyle;
   }
 
-  /** @deprecated in 4.x - will not be removed until after 2026-06-13. Use [[create(style: ClipStyleCreateArgs]] */
+  /** @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use [[create(style: ClipStyleCreateArgs]] */
   public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
 
   /** Create a style from its components. */

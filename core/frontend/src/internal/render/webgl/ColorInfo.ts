@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
 import { FloatRgba } from "./FloatRGBA";
 import { VertexTable } from "../../../common/internal/render/VertexTable";
@@ -39,7 +39,7 @@ export class ColorInfo {
   public get isNonUniform() { return !this.isUniform; }
   public get uniform(): FloatRgba {
     assert(this.isUniform);
-    return this._uniform!;
+    return expectDefined(this._uniform);
   }
 
   private static _nonUniformTranslucent = new ColorInfo(true);

@@ -39,7 +39,7 @@ describe("Parsing tests:", () => {
     const inchesQty = meterQty.convertTo(inchUnit, conversion);
 
     expect(meterQty.magnitude).toEqual(1.0);
-    expect(inchesQty!.magnitude).toEqual(meterQty.magnitude * conversion.factor);
+    expect(inchesQty.magnitude).toEqual(meterQty.magnitude * conversion.factor);
   });
 
   it("Convert units", async () => {
@@ -867,6 +867,7 @@ describe("Synchronous Parsing tests:", async () => {
       { value: "1 F + 1.5", magnitude: 0.762 },
       { value: "-2FT 6IN + 6IN", magnitude: -0.6096 },
       { value: "-2FT-6IN - 6IN", magnitude: -0.9144 },
+      { value: "-2FT-6IN- 6IN", magnitude: -0.9144 },
       { value: "1 1/2FT + 1/2IN", magnitude: 0.45720000000000005 + 0.0127 },
       // Below, we treat the - as a spacer when both spacer and math operations are enabled, unless the - is between whitespaces. The 0.5 uses the default unit conversion because it's not considered part of the composite unit.
       { value: "2' 6\"-0.5", magnitude: 0.9144 },
@@ -986,6 +987,34 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
+  it("parse returns a bad value with ParseError.UnitLabelSuppliedButNotMatched", async () => {
+    const formatDataUnitless = {
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+      allowMathematicOperations: true,
+    };
+    const formatUnitless = new Format("test");
+    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless);
+    const unitlessParserSpec = await ParserSpec.create(formatUnitless, unitsProvider, outUnit, unitsProvider);
+
+    const testData = [
+      "100 INVALIDUNIT",
+      "50 BADLABEL",
+      "25.5 UNKNOWNUNIT",
+      "1.5 NOTFOUND",
+      "1metera + 123 + 1.65"
+    ];
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, unitlessParserSpec);
+      expect(Parser.isParseError(parseResult)).to.be.true;
+      if (Parser.isParseError(parseResult)) {
+        expect(parseResult.error).toEqual(ParseError.UnitLabelSuppliedButNotMatched);
+      }
+    }
+  });
   it("Parse into length values using custom parse labels", () => {
     const testData = [
       // if no quantity is provided then the format unit is used to determine unit

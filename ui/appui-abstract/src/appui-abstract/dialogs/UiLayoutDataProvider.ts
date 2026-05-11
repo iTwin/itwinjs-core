@@ -94,7 +94,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   }
 
   protected loadItemsInternal(items: ReadonlyArray<DialogItem> | undefined) {
-    this._items = items ? items : [];
+    this._items = items ?? [];
     this._rows = this.layoutDialogRows();
   }
 
@@ -105,10 +105,14 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   }
 
   public get items(): ReadonlyArray<DialogItem> {
-    if (undefined === this._items) {
-      this.loadItemsInternal(this.supplyDialogItems());
-    }
-    return this._items!;
+    const items = this._items;
+    if (undefined !== items)
+      return items;
+
+    this.loadItemsInternal(this.supplyDialogItems());
+    // If _items is undefined, the hook above failed to initialize it
+    // Deemed more honest to use the non-null assertion than explicit cast
+    return this._items!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Called to inform listeners that new properties are ready for display in UI. */

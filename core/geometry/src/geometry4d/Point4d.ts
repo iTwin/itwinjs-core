@@ -253,7 +253,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence. Assumed to be a valid index!
-   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use createFromPacked instead.
+   * @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use createFromPacked instead.
    */
   public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
     return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);

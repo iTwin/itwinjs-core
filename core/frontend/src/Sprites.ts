@@ -122,7 +122,7 @@ export class SpriteLocation implements CanvasDecoration {
   public deactivate() {
     if (!this.isActive)
       return;
-    this._viewport!.invalidateDecorations();
+    this._viewport?.invalidateDecorations();
     this._viewport = undefined;
   }
 
@@ -130,8 +130,8 @@ export class SpriteLocation implements CanvasDecoration {
    * @see [[CanvasDecoration.drawDecoration]]
    */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    const sprite = this._sprite!;
-    if (undefined === sprite.image)
+    const sprite = this._sprite;
+    if (undefined === sprite || undefined === sprite.image)
       return;
 
     if (undefined !== this._alpha)

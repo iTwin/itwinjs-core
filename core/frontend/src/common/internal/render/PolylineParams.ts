@@ -12,8 +12,9 @@ import { VertexTable } from "./VertexTable";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { VertexTableBuilder } from "./VertexTableBuilder";
-import { MeshArgs } from "../../../render/MeshArgs";
+import { MeshArgsPositions } from "../../../render/MeshArgs";
 import { PolylineArgs } from "../../../render/PolylineArgs";
+import { MeshPolylineList } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
 
 /** Represents a tesselated polyline.
  * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
@@ -37,6 +38,7 @@ export interface PolylineParams {
   type: PolylineTypeFlags;
   weight: number;
   linePixels: LinePixels;
+  hasCumulativeDistances: boolean;
 }
 
 /** Parameter associated with each vertex index of a tesselated polyline. */
@@ -51,10 +53,14 @@ const enum PolylineParam { // eslint-disable-line no-restricted-syntax
   kNoneAdjustWeight = 32 * 3,
 }
 
-/** @internal */
-export function tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined {
-  const tesselator = PolylineTesselator.fromMesh(args);
-  return tesselator?.tesselate();
+export function tesselatePolylineList(args: {
+  points: MeshArgsPositions,
+  polylines: MeshPolylineList,
+  width: number,
+  is2d: boolean,
+}): TesselatedPolyline {
+  const tesselator = PolylineTesselator.create(args);
+  return tesselator.tesselate();
 }
 
 class PolylineVertex {
@@ -122,11 +128,13 @@ class PolylineTesselator {
     return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, !!args.flags.is2d));
   }
 
-  public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
-    if (undefined !== args.edges?.polylines.lines && undefined !== args.points)
-      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, true === args.is2d));
-
-    return undefined;
+  public static create(args: {
+    points: MeshArgsPositions,
+    polylines: MeshPolylineList,
+    width: number,
+    is2d: boolean,
+  }): PolylineTesselator {
+    return new PolylineTesselator(args.polylines.map((x) => x.indices), args.points, wantJointTriangles(args.width, args.is2d));
   }
 
   public tesselate(): TesselatedPolyline {
@@ -255,6 +263,7 @@ export function createPolylineParams(args: PolylineArgs, maxDimension: number): 
     type: args.flags.type ?? PolylineTypeFlags.Normal,
     weight: args.width,
     linePixels: args.linePixels,
+    hasCumulativeDistances: (args.cumulativeDistances?.length ?? 0) > 0,
   };
 }
 

@@ -51,10 +51,18 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public override async run(..._args: any[]): Promise<boolean> {
     const { toolAdmin, viewManager } = IModelApp;
-    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !await toolAdmin.onInstallTool(this))
+    if (!this.isCompatibleViewport(viewManager.selectedView, false))
+      return false;
+
+    if (!await toolAdmin.onInstallTool(this))
       return false;
 
     await toolAdmin.startPrimitiveTool(this);
+    // If another tool was installed at the same time (due to concurrent run calls),
+    // the last start to complete wins. Detect that situation and return false.
+    if (toolAdmin.primitiveTool !== this)
+      return false;
+
     await toolAdmin.onPostInstallTool(this);
     return true;
   }
@@ -88,8 +96,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true; // No specific target, two spatial views are considered compatible.
 
     let allowView = false;
+    const targetView = this.targetView;
     view.forEachModel((model) => {
-      if (!allowView && this.targetView!.view.viewsModel(model.id))
+      if (!allowView && targetView.view.viewsModel(model.id))
         allowView = true;
     });
 
@@ -212,9 +221,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return true;
   }
 
-  /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool flyover for the undo description. */
+  /**
+   * If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool flyover for the undo description.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use methods on [[EditCommand]] IPC instead.
+   */
   public async saveChanges(): Promise<void> {
     if (this.iModel.isBriefcaseConnection())
-      return this.iModel.saveChanges(this.flyover);
+      return this.iModel.saveChanges(this.flyover); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 }

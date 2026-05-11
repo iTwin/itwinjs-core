@@ -38,7 +38,7 @@ import { XYAndZ } from "./XYZProps";
  * For the equator circle, phi=0, cos(phi) = 1, sin(phi)=0
  *           f = u * cos(theta) + v * sin(theta).
  * with derivative
- *          df / dTheta = = u * sin(theta) + v * cos(theta)
+ *          df / dTheta = - u * sin(theta) + v * cos(theta)
  * whose zero is            tan(theta) = v/u
  * (and that has two solutions 180 degrees apart)
  * Then with that theta let      A = u * cos(theta) + v * sin(theta)
@@ -160,7 +160,8 @@ export class Ellipsoid implements Clipper {
     this._workPointA = Point3d.create();
     this._workPointB = Point3d.create();
   }
-  /** Create with a clone (not capture) with given transform.
+  /**
+   * Create with a clone (not capture) with given transform.
    * * If transform is undefined, create a unit sphere.
    */
   public static create(matrixOrTransform?: Transform | Matrix3d): Ellipsoid {
@@ -182,7 +183,7 @@ export class Ellipsoid implements Clipper {
   public static createCenterMatrixRadii(center: Point3d, axes: Matrix3d | undefined, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid {
     let scaledAxes;
     if (axes === undefined)
-      scaledAxes = Matrix3d.createScale(radiusX, radiusY, radiusZ)!;
+      scaledAxes = Matrix3d.createScale(radiusX, radiusY, radiusZ);
     else
       scaledAxes = axes.scaleColumns(radiusX, radiusY, radiusZ);
     return new Ellipsoid(Transform.createOriginAndMatrix(center, scaledAxes));
@@ -194,7 +195,9 @@ export class Ellipsoid implements Clipper {
    *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
    *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
    */
-  public get transformRef(): Transform { return this._transform; }
+  public get transformRef(): Transform {
+    return this._transform;
+  }
   /**
    * * Convert a world point to point within the underlying mapped sphere space.
    *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
@@ -365,7 +368,7 @@ export class Ellipsoid implements Clipper {
    * * For a given pair of points on an ellipsoid, construct an arc (possibly elliptical) which
    *   * passes through both points
    *   * is completely within the ellipsoid surface
-   *   * has its centerEvaluate a point on the ellipsoid at angles give in radians.
+   *   * has its center
    * * If the ellipsoid is a sphere, this is the shortest great-circle arc between the two points.
    * * If the ellipsoid is not a sphere, this is close to but not precisely the shortest path.
    * @param thetaARadians longitude, in radians, for pointA
@@ -373,6 +376,7 @@ export class Ellipsoid implements Clipper {
    * @param thetaBRadians longitude, in radians, for pointB
    * @param phiBRadians latitude, in radians, for pointB
    * @param result optional preallocated result
+   * @param returns great arc, or undefined if input points are identical or diametrically opposite.
    */
   public radiansPairToGreatArc(
     thetaARadians: number, phiARadians: number,
@@ -381,8 +385,7 @@ export class Ellipsoid implements Clipper {
     SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._workUnitVectorA);
     SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._workUnitVectorB);
     const sweepAngle = this._workUnitVectorA.angleTo(this._workUnitVectorB);
-    // the unit vectors (on unit sphere) are never 0, so this cannot fail.
-    const matrix = Matrix3d.createRigidFromColumns(this._workUnitVectorA, this._workUnitVectorB, AxisOrder.XYZ)!;
+    const matrix = Matrix3d.createRigidFromColumns(this._workUnitVectorA, this._workUnitVectorB, AxisOrder.XYZ);
     if (matrix !== undefined) {
       const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
       return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
@@ -390,9 +393,7 @@ export class Ellipsoid implements Clipper {
     }
     return undefined;
   }
-  /**
-   * See radiansPairToGreatArc, which does this computation with positions from `angleA` and `angleB` directly as radians
-   */
+  /** See [[radiansPairToGreatArc]], which does this computation with positions from `angleA` and `angleB` directly as radians. */
   public anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined {
     return this.radiansPairToGreatArc(
       angleA.longitudeRadians, angleA.latitudeRadians, angleB.longitudeRadians, angleB.latitudeRadians, result);
@@ -522,21 +523,36 @@ export class Ellipsoid implements Clipper {
     return Arc3d.create(center, vector0, vector90, longitudeSweep, result);
   }
   /**
-   * * create a section arc with and end at positions A and B, and in plane with the normal at a fractional
-   *    interpolation between.
+   * Create a section arc with start and end at positions A and B, and in plane with the normal at a fractional
+   * interpolation between.
    * @param angleA start point of arc (given as angles on this ellipsoid)
-   * @param intermediateNormalFraction
+   * @param intermediateNormalFraction fraction at which to interpolate normals at A and B to define arc plane
    * @param angleB end point of arc (given as angles on this ellipsoid)
+   * @param result optional pre-allocated object to populate and return
+   * @returns arc in the plane defined by the normal at the intermediate point, or `undefined` if calculation fails.
    */
-  public sectionArcWithIntermediateNormal(
-    angleA: LongitudeLatitudeNumber,
-    intermediateNormalFraction: number,
-    angleB: LongitudeLatitudeNumber): Arc3d {
-    const normalA = this.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians)!;
-    const normalB = this.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians)!;
+  public sectionArcInPlaneOfInterpolatedNormal(angleA: LongitudeLatitudeNumber, intermediateNormalFraction: number, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined {
+    const normalA = this.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians);
+    const normalB = this.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians);
+    if (!normalA || !normalB)
+      return undefined;
     const normal = normalA.direction.interpolate(intermediateNormalFraction, normalB.direction);
-    const arc = this.createSectionArcPointPointVectorInPlane(angleA, angleB, normal);
-    return arc!;
+    return this.createSectionArcPointPointVectorInPlane(angleA, angleB, normal, result);
+  }
+  /**
+   * Create a section arc with start and end at positions A and B, and in plane with the normal at a fractional
+   * interpolation between.
+   * @param angleA start point of arc (given as angles on this ellipsoid)
+   * @param intermediateNormalFraction fraction at which to interpolate normals at A and B to define arc plane
+   * @param angleB end point of arc (given as angles on this ellipsoid)
+   * @returns arc in the plane defined by the normal at the intermediate point. If calculation fails, return an
+   * arc with zero matrix.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-01-05. Prefer [[sectionArcInPlaneOfInterpolatedNormal]],
+   * which has expanded return type.
+   */
+  public sectionArcWithIntermediateNormal(angleA: LongitudeLatitudeNumber, intermediateNormalFraction: number, angleB: LongitudeLatitudeNumber): Arc3d {
+    const arc = this.sectionArcInPlaneOfInterpolatedNormal(angleA, intermediateNormalFraction, angleB);
+    return arc ?? Arc3d.createXYZXYZXYZ(0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   /**
@@ -677,7 +693,7 @@ export class Ellipsoid implements Clipper {
       return localPoint.magnitude() <= 1.0;
     return false;
   }
-  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedSegmentIntervals]]. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
     const localA = this._transform.multiplyInversePoint3d(pointA, this._workPointA);
     const localB = this._transform.multiplyInversePoint3d(pointB, this._workPointB);
@@ -715,7 +731,7 @@ export class Ellipsoid implements Clipper {
     }
     return false;
   }
-  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedArcIntervals]] */
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const arcData = arc.toVectors();
     let numAnnounce = 0;
@@ -761,6 +777,8 @@ export class Ellipsoid implements Clipper {
     }
     return numAnnounce > 0;
   }
+
+  // TODO: implement Clipper.announceClippedCurveIntervals
 }
 /**
  * * An `EllipsoidPatch` is

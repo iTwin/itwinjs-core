@@ -1,4 +1,5 @@
 const iTwinPlugin = require("@itwin/eslint-plugin");
+const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base");
 
 module.exports = [
   {
@@ -10,5 +11,6 @@ module.exports = [
     rules: {
       "radix": "warn"
     }
-  }
+  },
+  ...eslintBaseConfig
 ];

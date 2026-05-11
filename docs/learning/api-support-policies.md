@@ -45,9 +45,10 @@ iTwin.js uses [API Extractor](https://api-extractor.com/) to help manage its API
 - ["beta"](https://api-extractor.com/pages/tsdoc/tag_beta/) indicates an API currently under development. Users are encouraged to experiment with the API and provide feedback, with the understanding that breaking changes may occur at any time.
 - ["public"](https://api-extractor.com/pages/tsdoc/tag_public/) indicates a stable API suitable for use in production, to which breaking changes will only be introduced under the strict policies described in this document.
 
-In addition to any one of the above release tags, an API may also be tagged as ["deprecated"](https://api-extractor.com/pages/tsdoc/tag_deprecated/), indicating that it should no longer be used and may be removed in a future release. A deprecated tag is typically accompanied by information about the package version in which it became deprecated and guidance for adjusting existing usage of the API, e.g., what API to use instead. A "public" deprecated API will only be removed according to the [deprecation policy](#api-deprecation-policy).
+In addition to any one of the above release tags, an API may also be tagged as:
 
-Additionally, ["preview"] indicates an API that is stable within the current major version, but may be changed or removed in the next major version. It is typically used in conjunction with the public tag to signal that while the API is production-ready for the time being, it is not guaranteed to remain stable across major version updates.
+- ["deprecated"](https://api-extractor.com/pages/tsdoc/tag_deprecated/), indicating that it should no longer be used and may be removed in a future release. A deprecated tag is typically accompanied by information about the package version in which it became deprecated and guidance for adjusting existing usage of the API, e.g., what API to use instead. A "public" deprecated API will only be removed according to the [deprecation policy](#api-deprecation-policy).
+- ["preview"](./guidelines/release-tags-guidelines.md) indicates an API that is stable within the current major version, but may be changed or removed in the next major version. It is typically used in conjunction with the public tag to signal that while the API is production-ready for the time being, it is not guaranteed to remain stable across major version updates.
 
 Only "public" and "beta" APIs are included in the [published documentation](https://www.itwinjs.org/reference/). An API typically starts out as "beta". It may evolve rapidly in response to feedback before stabilizing and being promoted to "public". On occasion, a "beta" API may be abandoned - not all experiments succeed.
 
@@ -170,12 +171,13 @@ Very rarely, a critical security issue may arise that cannot reasonably be addre
 
 ## Version support status
 
-| Major Version | Status          | Release    | Active Start | Maintenance Start | End-of-life        |
-| ------------- | --------------- | ---------- | ------------ | ----------------- | ------------------ |
-| 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01         |
-| 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31          |
-| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22         |
-| 4.x           | **Current**     | 2023-05-22 | TBD          | TBD               | TBD                |
+| Major Version | Status          | Release    | Active Start | Maintenance Start | End-of-life |
+| ------------- | --------------- | ---------- | ------------ | ----------------- | ----------- |
+| 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01  |
+| 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31   |
+| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22  |
+| 4.x           | **Active**      | 2023-05-22 | 2025-06-13   | 2025-12-13        | 2026-06-13  |
+| 5.x           | **Current**     | 2025-06-13 | TBD          | TBD               | TBD         |
 
 _\*Dates are subject to change._
 

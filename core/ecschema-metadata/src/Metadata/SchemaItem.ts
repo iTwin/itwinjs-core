@@ -8,6 +8,7 @@
 
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps } from "../Deserialization/JsonProps";
+import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
@@ -32,6 +33,7 @@ export abstract class SchemaItem {
   private _key: SchemaItemKey;
   private _description?: string;
   private _label?: string;
+  private _loadingController?: SchemaLoadingController;
 
   /** @internal */
   constructor(schema: Schema, name: string) {
@@ -44,6 +46,15 @@ export abstract class SchemaItem {
   public get key() { return this._key; }
   public get label() { return this._label; }
   public get description() { return this._description; }
+
+  /**
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
+   * @internal
+   */
+  public get loadingController(): SchemaLoadingController | undefined {
+    return this._loadingController;
+  }
 
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**
@@ -97,7 +108,7 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version.toString()}.`);
     }
   }
 
@@ -114,7 +125,7 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version.toString()}.`);
     }
   }
 
@@ -170,6 +181,11 @@ export abstract class SchemaItem {
   /** @internal */
   protected setDescription(description: string) {
     this._description = description;
+  }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
   }
 }
 

@@ -182,6 +182,7 @@ export class SchemaDiagnosticVisitor {
     });
 
     if (modifyEntry === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       modifyEntry = {
         changeType: "modify",
         schemaType: schemaItem.schemaItemType,

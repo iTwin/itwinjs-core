@@ -74,7 +74,7 @@ describe("Newton", () => {
         iterator.setX(x + 1);
         if (ck.testTrue(iterator.runIterations())) {
           const x1 = iterator.getX();
-          ck.testCoordinate(x, iterator.getX(), "Newton converted to correct value");
+          ck.testCoordinate(x, iterator.getX(), "Newton converged to correct value");
           ck.testLE(iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
           if (Checker.noisy.newtonRtoRD)
             GeometryCoreTestIO.consoleLog("   ", { x, x1, n: iterator.numIterations });
@@ -133,7 +133,7 @@ describe("Newton", () => {
     // find sqrt(2) solution of f(x) = x^2 = 2
     if (ck.testTrue(iterator.runIterations())) {
       const solution = iterator.getX(); // x_n
-      ck.testCoordinate(solution, expectedSolution1, "Newton converted to correct value");
+      ck.testCoordinate(solution, expectedSolution1, "Newton converged to correct value");
       GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution1, n: iterator.numIterations });
     }
     iterator.setX(-1); // initial condition x_0 = -1
@@ -141,7 +141,7 @@ describe("Newton", () => {
     // find -sqrt(2) solution of f(x) = x^2 = 2
     if (ck.testTrue(iterator.runIterations())) {
       const solution = iterator.getX(); // x_n
-      ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
+      ck.testCoordinate(solution, expectedSolution2, "Newton converged to correct value");
       GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2, n: iterator.numIterations });
     }
     expect(ck.getNumErrors()).toBe(0);
@@ -155,7 +155,7 @@ describe("Newton", () => {
     // find sqrt(2) solution of f(x) = x^2 = 2
     if (ck.testTrue(iterator.runIterations())) {
       const solution = iterator.getX(); // x_n
-      ck.testCoordinate(solution, expectedSolution1, "Newton converted to correct value");
+      ck.testCoordinate(solution, expectedSolution1, "Newton converged to correct value");
       GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution1, n: iterator.numIterations });
     }
     iterator.setX(-1); // initial condition x_0 = -1
@@ -163,7 +163,7 @@ describe("Newton", () => {
     // find -sqrt(2) solution of f(x) = x^2 = 2
     if (ck.testTrue(iterator.runIterations())) {
       const solution = iterator.getX(); // x_n
-      ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
+      ck.testCoordinate(solution, expectedSolution2, "Newton converged to correct value");
       GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2, n: iterator.numIterations });
     }
     expect(ck.getNumErrors()).toBe(0);
@@ -179,8 +179,8 @@ describe("Newton", () => {
     if (ck.testTrue(iterator.runIterations())) {
       const solutionU = iterator.getU(); // u_n
       const solutionV = iterator.getV(); // v_n
-      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converted to correct U value");
-      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converted to correct V value");
+      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converged to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converged to correct V value");
       GeometryCoreTestIO.consoleLog({
         solutionU,
         expectedSolutionU: expectedSolution1U,
@@ -196,8 +196,8 @@ describe("Newton", () => {
     if (ck.testTrue(iterator.runIterations())) {
       const solutionU = iterator.getU(); // u_n
       const solutionV = iterator.getV(); // v_n
-      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converted to correct U value");
-      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converted to correct V value");
+      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converged to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converged to correct V value");
       GeometryCoreTestIO.consoleLog({
         solutionU,
         expectedSolutionU: expectedSolution2U,
@@ -219,8 +219,8 @@ describe("Newton", () => {
     if (ck.testTrue(iterator.runIterations())) {
       const solutionU = iterator.getU(); // u_n
       const solutionV = iterator.getV(); // v_n
-      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converted to correct U value");
-      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converted to correct V value");
+      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converged to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converged to correct V value");
       GeometryCoreTestIO.consoleLog({
         solutionU,
         expectedSolutionU: expectedSolution1U,
@@ -236,8 +236,8 @@ describe("Newton", () => {
     if (ck.testTrue(iterator.runIterations())) {
       const solutionU = iterator.getU(); // u_n
       const solutionV = iterator.getV(); // v_n
-      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converted to correct U value");
-      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converted to correct V value");
+      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converged to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converged to correct V value");
       GeometryCoreTestIO.consoleLog({
         solutionU,
         expectedSolutionU: expectedSolution2U,
@@ -255,12 +255,12 @@ describe("Newton", () => {
     const initialCondition1 = 1;
     let solution = SimpleNewton.runNewton1D(initialCondition1, func, derivative)!;
     const expectedSolution1 = Math.sqrt(2);
-    ck.testCoordinate(solution, expectedSolution1, "Newton converted to correct value");
+    ck.testCoordinate(solution, expectedSolution1, "Newton converged to correct value");
     GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution1 });
     const initialCondition2 = -1;
     solution = SimpleNewton.runNewton1D(initialCondition2, func, derivative)!;
     const expectedSolution2 = -Math.sqrt(2);
-    ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
+    ck.testCoordinate(solution, expectedSolution2, "Newton converged to correct value");
     GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2 });
 
     expect(ck.getNumErrors()).toBe(0);

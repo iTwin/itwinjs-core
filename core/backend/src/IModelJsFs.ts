@@ -10,6 +10,7 @@
 // cspell: ignore wflag
 
 import * as fs from "fs-extra";
+import * as readline from "readline";
 import * as path from "path";
 
 /* TODO: define File Mode Constants: S_IWUSR, et al. */
@@ -64,6 +65,22 @@ export class IModelJsFs {
 
   /** Read file */
   public static readFileSync(pathname: string): string | Buffer { return fs.readFileSync(pathname); }
+
+  /** Read file with encoding */
+  public static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string { return fs.readFileSync(pathname, { encoding }); }
+
+  /** Reads a file line by line as an async iterable, without loading the entire file into memory. */
+  public static async *readLines(pathname: string): AsyncGenerator<string> {
+    const stream = fs.createReadStream(pathname);
+    const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+    try {
+      for await (const line of rl)
+        yield line;
+    } finally {
+      rl.close();
+      stream.destroy();
+    }
+  }
 
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(pathname: string): boolean {

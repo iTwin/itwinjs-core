@@ -12,7 +12,7 @@ In addition, because the data in iModels is normalized, the pieces of data need 
 
 ![Property sources](./media/property-grid-source-queries.png)
 
-Lastly, having a constantly evolving domains' layer that needs to used as basis for all ECSQL queries makes creating hierarchies an even more difficult task than it already is. Each type of parent node needs to have a unique ECSQL query to load its children and each of the queries need to involve relationships, target classes, navigation properties, handle polymorphism, grouping, sorting, paging and everything else. That is all doable, but wouldn't it be great if it was doable in declarative way by defining rules for the hierarchy in JSON and [**only a few lines of code**](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=presetation-tree-sample&imodel=Metrostation+Sample)?
+Lastly, having a constantly evolving domains' layer that needs to used as basis for all ECSQL queries makes creating hierarchies an even more difficult task than it already is. Each type of parent node needs to have a unique ECSQL query to load its children and each of the queries need to involve relationships, target classes, navigation properties, handle polymorphism, grouping, sorting, paging and everything else. That is all doable, but wouldn't it be great if it was doable in declarative way by defining rules for the hierarchy in JSON and [**only a few lines of code**](https://www.itwinjs.org/sandboxes/iTwinPlatform/Presetation%20Tree/)?
 
 ![Hierarchy sources](./media/hierarchy-level-sources.png)
 

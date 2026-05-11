@@ -13,7 +13,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { XAndY } from "../geometry3d/XYZProps";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToNumberFunction } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
@@ -324,7 +324,7 @@ export enum RegionGroupOpType {
   Union = 0,
   Parity = 1,
   Intersection = 2,
-  NonBounding = -1,
+  NonBounding = -1, // The RegionGroupMembers are not regions and therefore do not participate in parity rules
 }
 
 /**
@@ -334,7 +334,7 @@ export enum RegionGroupOpType {
  * * a reference to the parent group (which in turn leads back to the `RegionBooleanContext`)
  * @internal
  */
-class RegionGroupMember {
+export class RegionGroupMember {
   public region: Loop | ParityRegion | CurvePrimitive | MultiLineStringDataVariant;
   public sweepState: number;
   public parentGroup: RegionGroup;
@@ -455,7 +455,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   /** bridge edges */
   public extraGeometry!: RegionGroup;
   public graph!: HalfEdgeGraph;
-  public faceAreaFunction!: NodeToNumberFunction;
+  public faceAreaFunction!: HalfEdgeToNumberFunction;
   public binaryOp: RegionBinaryOpType;
   private constructor(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType) {
     this.groupA = new RegionGroup(this, groupTypeA);
@@ -478,6 +478,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this.addConnectives();
   }
   private _workSegment?: LineSegment3d;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
@@ -552,8 +553,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
-    this.graph = graph;
-    this.faceAreaFunction = faceAreaFromCurvedEdgeData;
+    RegionOps.removeExtraneousBridgeEdges(this.graph = graph, undefined, this.faceAreaFunction = faceAreaFromCurvedEdgeData);
   }
   private _announceFaceFunction?: AnnounceClassifiedFace;
   /**
@@ -574,15 +574,13 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const nodeHasBeenVisitedMask = this.graph.grabMask();
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
-      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
-      if (exteriorHalfEdge) {
-        const exteriorMask = HalfEdgeMask.EXTERIOR;
-        const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
-        this.graph.clearMask(allMasksToClear);
-        RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
-          this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
-        );
-      }
+      const exteriorHalfEdge = component.faces[component.faceAreas.indexOf(Math.min(...component.faceAreas))];
+      const exteriorMask = HalfEdgeMask.EXTERIOR;
+      const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
+      this.graph.clearMask(allMasksToClear);
+      RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
+        this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
+      );
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
     this.graph.dropMask(nodeHasBeenVisitedMask);
@@ -645,9 +643,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     if (data instanceof RegionGroupMember)
       return updateRegionGroupMemberState(data);
 
-    if (data instanceof CurveLocationDetail) {
+    if (data instanceof CurveLocationDetail && data.curve) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
-      const member = data.curve!.parent;
+      const member = data.curve.parent;
       if (member instanceof RegionGroupMember)
         return updateRegionGroupMemberState(member);
     }
@@ -702,16 +700,15 @@ function areaUnderPartialCurveXY(
     trapezoidArea = -(xyEnd.x - xyStart.x) * (0.5 * (xyStart.y + xyEnd.y) - referencePoint.y);
   }
   let areaToChord = 0.0;
-  if (detail && detail.curve && detail.hasFraction1) {
+  if (detail && detail.curve && detail.isInterval()) {
     if (detail.curve instanceof LineSegment3d) {
       // nothing to do for a line segment
     } else if (detail.curve instanceof Arc3d) {
-      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1!);
+      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1);
     } else {
-      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1!);
-      areaToChord = partial ?
-        RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1!, detail.point))) ?? 0
-        : 0;
+      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1);
+      const loopArea = partial ? RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1, detail.point))) : 0;
+      areaToChord = loopArea ?? 0;
     }
   }
   return trapezoidArea + areaToChord;
@@ -750,7 +747,7 @@ export class GraphComponent {
    * @param extendRangeForEdge optional function to compute edge range.  If undefined, linear edge is assumed.
    * @param faceAreaFunction optional function to compute face area.  If undefined, linear edges are assumed.
    */
-  public buildFaceData(extendRangeForEdge: NodeAndRangeFunction | undefined, faceAreaFunction: NodeToNumberFunction | undefined) {
+  public buildFaceData(extendRangeForEdge: NodeAndRangeFunction | undefined, faceAreaFunction: HalfEdgeToNumberFunction | undefined) {
     const vertexFunction = (node: HalfEdge) => {
       if (extendRangeForEdge)
         extendRangeForEdge(node, this.range);
@@ -763,8 +760,10 @@ export class GraphComponent {
       f.sumAroundFace(vertexFunction);
     }
     this.faceAreas.length = 0;
+    if (faceAreaFunction === faceAreaFromCurvedEdgeData && !this.faces.every((he: HalfEdge) => he.edgeTag instanceof CurveLocationDetail))
+      faceAreaFunction = undefined; // prerequisite CurveLocationDetails are absent, fall through to default
     if (!faceAreaFunction)
-      faceAreaFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node);
+      faceAreaFunction = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node); // polygon area
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
     }

@@ -112,9 +112,21 @@ export class DynamicsContext extends RenderContext {
   private _foreground?: GraphicList;
   private _overlay?: GraphicList;
 
-  /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]]. */
+  /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]].
+   * These graphics are drawn as [[GraphicType.Scene]].
+   * @see [[addOverlay]] to add a graphic to be drawn as an overlay instead.
+   */
   public addGraphic(graphic: RenderGraphic): void {
     this.add(graphic, false);
+  }
+
+  /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]].
+   * These graphics are drawn as part of the viewport's scene as described by [[GraphicType.Scene]], except
+   * that they always draw on top of other graphics as with [[GraphicType.WorldOverlay]].
+   * @see [[addGraphic]] to add an ordinary scene graphic instead.
+   */
+  public addOverlay(graphic: RenderGraphic): void {
+    this.add(graphic, true);
   }
 
   /** @internal */

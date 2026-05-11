@@ -57,7 +57,7 @@ export enum SyncMode {
   FixedVersion = 1,
   /** A briefcase that can be edited. A unique briefcaseId must be assigned by iModelHub. */
   PullAndPush = 2,
-  /** use [BriefcaseIdValue.Unassigned](%backend). This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
+  /** use [[BriefcaseIdValue.Unassigned]]. This makes a briefcase that can accept changesets from iModelHub but can never create changesets. */
   PullOnly = 3,
 }
 
@@ -161,6 +161,9 @@ export interface RequestNewBriefcaseProps {
 
   /** Id of the change set of the new briefcase. If undefined, use latest. */
   asOf?: IModelVersionProps;
+
+  /** A string to represent the device that holds the briefcase. */
+  deviceName?: string;
 }
 
 /**

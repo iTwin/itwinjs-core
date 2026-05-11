@@ -11,7 +11,9 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -24,9 +26,10 @@ import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
+import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
@@ -521,6 +524,54 @@ describe("Solids", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "DgnSolids");
     expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("LinearSweepWithHoles", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const outer = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3)));
+    const hole0 = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1)));
+    const hole1 = Loop.create(LineString3d.create(Sample.createRectangleXY(2.5, 0.5, 1, 1)));
+    const sweepVec = Vector3d.create(0, 0, 4);
+    const options = StrokeOptions.createForFacets();
+
+    const testSweepMesh = (sweep: LinearSweep | undefined, expectedNumVisibleEdges: number): void => {
+      if (ck.testDefined(sweep, "created sweep")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep, x0 += 10, y0);
+        const builder = PolyfaceBuilder.create(options);
+        builder.addLinearSweep(sweep);
+        const mesh = builder.claimPolyface(true);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0 += 10, y0);
+        ck.testTrue(PolyfaceQuery.isPolyfaceManifold(mesh), "faceted linear sweep has no boundary edges");
+        let numVisibleEdges = 0;  // double-counted
+        for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet(); )
+          numVisibleEdges += visitor.edgeVisible.filter((edgeIsVisible: boolean) => edgeIsVisible).length;
+        ck.testExactNumber(expectedNumVisibleEdges, numVisibleEdges / 2, "faceted linear sweep has no extraneous visible edges");
+      }
+    };
+
+    // regionBooleanXY used to create a split-washer whose meshed sweep had extraneous visible edges, and boundary edges
+    const puncturedShape = RegionOps.regionBooleanXY(outer, [hole0, hole1], RegionBinaryOpType.AMinusB);
+    if (ck.testDefined(puncturedShape, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, puncturedShape, x0, y0);
+      ck.testType(puncturedShape, ParityRegion, "boolean subtract resulted in a ParityRegion");
+      const sweep1 = LinearSweep.create(puncturedShape, sweepVec, true);
+      testSweepMesh(sweep1, 36);
+    }
+    x0 = 0;
+    y0 += 10;
+    // this mesh has no extraneous visible edges and no boundary edges
+    const parityRegion = RegionOps.sortOuterAndHoleLoopsXY([outer, hole0, hole1]);
+    if (ck.testDefined(parityRegion, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, parityRegion, x0, y0);
+      ck.testType(parityRegion, ParityRegion, "sortOuterAndHoleLoopsXY resulted in a ParityRegion");
+      const sweep2 = LinearSweep.create(parityRegion, sweepVec, true);
+      testSweepMesh(sweep2, 36);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "LinearSweepWithHoles");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 

@@ -7,8 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { RenderMode } from "@itwin/core-common";
-import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
+import { EdgeAppearanceOverrides, RenderMode } from "@itwin/core-common";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { PolylineBuffers } from "./CachedGeometry";
@@ -22,7 +21,8 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
-import { SegmentEdgeParams, SilhouetteParams } from "../../../common/internal/render/EdgeParams";
+import { PolylineEdgeGroup, SegmentEdgeParams, SilhouetteParams } from "../../../common/internal/render/EdgeParams";
+import { lineCodeFromLinePixels } from "../../../common/internal/render/LineCode";
 
 /** @internal */
 export class EdgeGeometry extends MeshGeometry {
@@ -130,12 +130,15 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
 /** @internal */
 export class PolylineEdgeGeometry extends MeshGeometry {
   private _buffers: PolylineBuffers;
+  private readonly _colorInfo: ColorInfo;
+  private readonly _width: number;
+  private readonly _lineCode: number;
 
   public get lutBuffers() { return this._buffers.buffers; }
 
-  public static create(mesh: MeshData, polyline: TesselatedPolyline): PolylineEdgeGeometry | undefined {
-    const buffers = PolylineBuffers.create(polyline);
-    return undefined !== buffers ? new PolylineEdgeGeometry(polyline.indices.length, buffers, mesh) : undefined;
+  public static create(mesh: MeshData, group: PolylineEdgeGroup): PolylineEdgeGeometry | undefined {
+    const buffers = PolylineBuffers.create(group.polyline);
+    return undefined !== buffers ? new PolylineEdgeGeometry(group.polyline.indices.length, buffers, mesh, group.appearance) : undefined;
   }
 
   public get isDisposed(): boolean { return this._buffers.isDisposed; }
@@ -149,13 +152,22 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
-  protected override _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
-  protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
-  public override getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
   public override getPass(target: Target) { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public override get polylineBuffers(): PolylineBuffers { return this._buffers; }
+
+  protected override _getLineCode(params: ShaderProgramParams): number {
+    return params.target.computeEdgeLineCode(params.renderPass, this._lineCode);
+  }
+
+  protected override _getLineWeight(params: ShaderProgramParams): number {
+    return params.target.computeEdgeWeight(params.renderPass, this._width);
+  }
+
+  public override getColor(target: Target) {
+    return target.computeEdgeColor(this._colorInfo);
+  }
 
   public override wantMonochrome(target: Target): boolean {
     return target.currentViewFlags.renderMode === RenderMode.Wireframe;
@@ -170,8 +182,12 @@ export class PolylineEdgeGeometry extends MeshGeometry {
     bufs.unbind();
   }
 
-  private constructor(numIndices: number, buffers: PolylineBuffers, mesh: MeshData) {
+  private constructor(numIndices: number, buffers: PolylineBuffers, mesh: MeshData, appearance: EdgeAppearanceOverrides | undefined) {
     super(mesh, numIndices);
     this._buffers = buffers;
+
+    this._colorInfo = appearance?.color ? ColorInfo.createFromColorDef(appearance.color) : mesh.lut.colorInfo;
+    this._width = appearance?.width ?? mesh.edgeWidth;
+    this._lineCode = appearance?.linePixels ? lineCodeFromLinePixels(appearance?.linePixels) : mesh.edgeLineCode;
   }
 }

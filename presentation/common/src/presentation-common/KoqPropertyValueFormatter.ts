@@ -16,7 +16,7 @@ import { InvertedUnit, KindOfQuantity, SchemaContext, SchemaFormatsProvider, Sch
  *
  * @public
  *
- * @deprecated in 5.1. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
+ * @deprecated in 5.1 - will not be removed until after 2026-08-08. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
  */
 export interface UnitSystemFormat {
   unitSystems: UnitSystemKey[];
@@ -44,7 +44,7 @@ export interface UnitSystemFormat {
  *
  * @public
  *
- * @deprecated in 5.1. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
+ * @deprecated in 5.1 - will not be removed until after 2026-08-08. `FormatsMap` and related APIs have been deprecated in favor of [FormatsProvider]($core-quantity).
  */
 export interface FormatsMap {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -60,6 +60,8 @@ export interface FormatOptions {
   koqName: string;
   /** Unit system to use for formatting. */
   unitSystem?: UnitSystemKey;
+  /** Optional overrides for the format used to parse or format values. */
+  formatOverride?: Partial<Omit<FormatProps, "type">>;
 }
 
 /**
@@ -84,7 +86,7 @@ export class KoqPropertyValueFormatter {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
 
-  /** @deprecated in 5.1. Use the overload that takes a props object. */
+  /** @deprecated in 5.1 - will not be removed until after 2026-08-08. Use the overload that takes a props object. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   constructor(schemaContext: SchemaContext, defaultFormats?: FormatsMap, formatsProvider?: FormatsProvider);
   constructor(props: KoqPropertyValueFormatterProps);
@@ -130,7 +132,7 @@ export class KoqPropertyValueFormatter {
     }
     const { formatProps, persistenceUnitName } = formattingProps;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, { ...formatProps, ...options.formatOverride });
     return FormatterSpec.create("", format, this._unitsProvider, persistenceUnit);
   }
 
@@ -141,7 +143,7 @@ export class KoqPropertyValueFormatter {
     }
     const { formatProps, persistenceUnitName } = formattingProps;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, { ...formatProps, ...options.formatOverride });
     return ParserSpec.create(format, this._unitsProvider, persistenceUnit);
   }
 
@@ -154,8 +156,7 @@ export class KoqPropertyValueFormatter {
     const persistenceUnit = await koq.persistenceUnit;
     assert(!!persistenceUnit);
 
-    // default to metric as it's the persistence unit system
-    const unitSystem = options.unitSystem ?? "metric";
+    const unitSystem = options.unitSystem;
 
     const formatsProvider = this._formatsProvider ?? new SchemaFormatsProvider(this._schemaContext, unitSystem);
     const formatProps = await formatsProvider.getFormat(koqName);
@@ -163,7 +164,7 @@ export class KoqPropertyValueFormatter {
     // `SchemaFormatsProvider` will fall back to default presentation format, but we want to fall back
     // to default formats' map first, and only then to the default presentation format. All of this can
     // be removed with the removal of default formats map.
-    if (this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
+    if (unitSystem && this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
       const defaultFormatProps = await getFormatPropsFromDefaultFormats({
         schemaContext: this._schemaContext,
         formatsMap: this._defaultFormats,

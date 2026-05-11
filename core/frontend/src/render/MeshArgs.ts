@@ -6,9 +6,15 @@
  * @module Rendering
  */
 
-import { ColorIndex, FeatureIndex, FillFlags, OctEncodedNormal, QPoint3dList, RenderMaterial, RenderTexture } from "@itwin/core-common";
+import { ColorIndex, FeatureIndex, FillFlags, OctEncodedNormal, QPoint3dList, RenderMaterial, RenderTexture, TextureMapping } from "@itwin/core-common";
 import { MeshArgsEdges } from "../common/internal/render/MeshPrimitives";
 import { AuxChannel, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+
+/** The positions of the vertices in a [[MeshArgs]]. If the positions are not quantized, they must include
+ * a precomputed [Range3d]($core-geometry) encompassing all of the points.
+ * @public
+ */
+export type MeshArgsPositions = QPoint3dList | (Array<Point3d> & { range: Range3d });
 
 /** Arguments supplied to [[RenderSystem.createTriMesh]] describing a triangle mesh.
  * @public
@@ -24,7 +30,7 @@ export interface MeshArgs {
   /** The positions of the mesh's vertices, indexed by [[vertIndices]]. If the positions are not quantized, they must include
    * a precomputed [Range3d]($core-geometry) encompassing all of the points.
    */
-  points: QPoint3dList | (Array<Point3d> & { range: Range3d });
+  points: MeshArgsPositions;
   /** The per-vertex normal vectors, indexed by [[vertIndices]].
    * Normal vectors are required if the mesh is to be lit or have [ThematicDisplay]($common) applied to it.
    */
@@ -55,6 +61,14 @@ export interface MeshArgs {
     texture: RenderTexture;
     /** The per-vertex texture coordinates, indexed by [[vertIndices]]. */
     uvParams: Point2d[];
+    /** True if want to use constant LOD texture mapping for the surface texture.
+     * Default: false.
+     */
+    useConstantLod?: boolean;
+    /** Parameters for constant LOD mapping mode.
+     * See [[TextureMapping.ConstantLodParamProps]] for defaults.
+     */
+    constantLodParams?: TextureMapping.ConstantLodParamProps;
   };
 }
 

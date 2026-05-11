@@ -155,9 +155,12 @@ export interface RenderMaterialAssetProps {
   HasFinish?: boolean;
   /** Specular exponent (surface shininess); range is 0 to 128; if undefined, defaults to 13.5 */
   finish?: number;
-  /** If true, this material has surface transparency; if undefined, defaults to false */
+  /** If true, then this material overrides the surface transparency to be the value of [[transmit]].
+   * If false, then this material overrides the surface to be fully opaque.
+   * If undefined, then this material does not override the surface transparency at all.
+   */
   HasTransmit?: boolean;
-  /** Surface transparency; if undefined, defaults to 0.0 */
+  /** Surface transparency; if undefined, defaults to 0.0. Has no effect unless [[HasTransmit]] is true. */
   transmit?: number;
   /** If true, this material has a value for diffuse reflectivity; if undefined, defaults to false */
   HasDiffuse?: boolean;

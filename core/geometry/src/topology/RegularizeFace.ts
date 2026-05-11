@@ -150,8 +150,7 @@ export class RegularizationContext {
    * @param candidates Array of nodes to search
    * @param nodeComparisonFunction function for lexical comparison.
    */
-  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[],
-    directionSign: number) {
+  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[], directionSign: number): HalfEdge | undefined {
     const y0 = node.y;
     const x0 = node.x;
     let dx;
@@ -234,8 +233,8 @@ export class RegularizationContext {
   private downwardConnectionFromBottomPeak(node: HalfEdge): HalfEdge | undefined {
     let connectTo;
     const upFunction = (a: HalfEdge, b: HalfEdge) => HalfEdgeGraphOps.compareNodesYXUp(a, b);
-    const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0)!;
-    const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0)!;
+    const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0);
+    const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0);
     connectTo = this.updateMaxNode(connectTo, upEdgeBase, upFunction);
     if (downEdgeBase)
       connectTo = this.updateMaxNode(connectTo, downEdgeBase.faceSuccessor, upFunction);
@@ -267,8 +266,9 @@ export class RegularizationContext {
     if (nodeA1 !== undefined && nodeB1 !== undefined) {
       HalfEdge.pinch(nodeA1, nodeC);
       HalfEdge.pinch(nodeB1, nodeC.edgeMate);
+      nodeC.setMaskAroundEdge(HalfEdgeMask.REGULARIZED_EDGE);
       if (RegularizationContext.announceEdge)
-        RegularizationContext.announceEdge(this.graph, nodeA, nodeB, direction);
+        RegularizationContext.announceEdge(this.graph, nodeC, nodeC.edgeMate, direction);
       return nodeC;
     }
     return undefined;

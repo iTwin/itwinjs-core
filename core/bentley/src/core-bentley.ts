@@ -15,6 +15,7 @@ export * from "./Compare";
 export * from "./CompressedId64Set";
 export * from "./Dictionary";
 export * from "./Disposable";
+export * from "./Expect";
 export * from "./Id";
 export * from "./IndexMap";
 export * from "./JsonSchema";
@@ -35,6 +36,7 @@ export * from "./Tracing";
 export * from "./TupleKeyedMap";
 export * from "./TypedArrayBuilder";
 export * from "./UnexpectedErrors";
+export * from "./UtilityFunctions";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
 

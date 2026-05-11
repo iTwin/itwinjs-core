@@ -167,8 +167,8 @@ export class VAOHandle implements WebGLDisposable {
 
   /** Frees the WebGL vertex array object */
   public [Symbol.dispose](): void {
-    if (!this.isDisposed) {
-      this._context.deleteVertexArray(this._arrayObject!);
+    if (!this.isDisposed && undefined !== this._arrayObject) {
+      this._context.deleteVertexArray(this._arrayObject);
       this._arrayObject = undefined;
     }
   }
@@ -217,8 +217,10 @@ export class BufferHandle implements WebGLDisposable {
   /** Frees the WebGL buffer */
   public [Symbol.dispose](): void {
     if (!this.isDisposed) {
-      System.instance.context.deleteBuffer(this._glBuffer!);
-      this._glBuffer = undefined;
+      if (undefined !== this._glBuffer) {
+        System.instance.context.deleteBuffer(this._glBuffer);
+        this._glBuffer = undefined;
+      }
       this._bytesUsed = 0;
     }
   }

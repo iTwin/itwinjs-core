@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
 import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
@@ -80,7 +80,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     const sourceSchemaReference = await this._sourceSchema.getReference(entry.difference.name) as Schema;
     const targetSchemaReferenceName = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
     if (targetSchemaReferenceName && targetSchemaReferenceName !== sourceSchemaReference.name) {
-      this.addConflict({
+      return this.addConflict({
         code: ConflictCode.ConflictingReferenceAlias,
         difference: entry,
         source: entry.difference.name,
@@ -89,11 +89,27 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       });
     }
 
-    const sourceSchemaKey = sourceSchemaReference.schemaKey;
-    const targetSchemaKey = await this._targetSchema.getReference(entry.difference.name)
-      .then((schema) => schema?.schemaKey);
+    // The targetSchemaReference can be undefined, if the reference will be added by the source schema.
+    // In this case further validation is not needed.
+    const targetSchemaReference = await this._targetSchema.getReference(entry.difference.name);
+    if(targetSchemaReference === undefined) {
+      return;
+    }
 
-    if(entry.changeType === "modify" && targetSchemaKey && !sourceSchemaKey.matches(targetSchemaKey, SchemaMatchType.LatestWriteCompatible)) {
+    const sourceSchemaKey = sourceSchemaReference.schemaKey;
+    const targetSchemaKey = targetSchemaReference.schemaKey;
+
+    if(targetSchemaReference.isDynamic !== sourceSchemaReference.isDynamic) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingReferenceDynamic,
+        difference: entry,
+        description: "Cannot update a schema reference to or from a dynamic schema.",
+        source: sourceSchemaKey.toString(),
+        target: targetSchemaKey.toString(),
+      });
+    }
+
+    if(entry.changeType === "modify" && !targetSchemaReference.isDynamic && !areCompatible(sourceSchemaKey, targetSchemaKey)) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceVersion,
         difference: entry,
@@ -579,4 +595,13 @@ function resolvePropertyTypeName(property: Property) {
   if (property.isNavigation())
     return `${prefix}${property.relationshipClass.fullName}${suffix}`;
   return propertyTypeToString(property.propertyType);
+}
+
+/**
+ * Checks if the two schemas are compatible. Since the merger will eventually take the most
+ * recent schema version, it is sufficient to check if they are write compatible in one direction.
+ */
+function areCompatible(leftSchemaKey: SchemaKey, rightSchemaKey: SchemaKey): boolean {
+  return leftSchemaKey.matches(rightSchemaKey, SchemaMatchType.LatestWriteCompatible)
+      || rightSchemaKey.matches(leftSchemaKey, SchemaMatchType.LatestWriteCompatible);
 }

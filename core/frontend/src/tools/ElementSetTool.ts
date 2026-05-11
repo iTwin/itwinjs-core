@@ -126,7 +126,10 @@ export class ElementAgenda {
       this.clear();
       return;
     }
-    const group = this.groupMarks.pop()!;
+    const group = this.groupMarks.pop();
+    if (undefined === group)
+      return;
+
     this.setEntriesHiliteState(false, group.start, this.length); // make sure removed entries aren't left hilited...
     this.elements.splice(group.start);
   }

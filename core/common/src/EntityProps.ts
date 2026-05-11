@@ -103,6 +103,7 @@ export enum PrimitiveTypeCode {
  * };
  * ```
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** A custom attribute instance
@@ -148,6 +149,7 @@ export interface PropertyMetaDataProps {
  * @beta
  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the `Property` class from @itwin/ecschema-metadata` instead.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class PropertyMetaData implements PropertyMetaDataProps {
   public primitiveType?: PrimitiveTypeCode;
   public structName?: string;
@@ -263,6 +265,7 @@ export interface EntityMetaDataProps {
  * @beta
  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `EntityClass` class from `@itwin/ecschema-metadata` instead.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class EntityMetaData implements EntityMetaDataProps {
   /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
   public readonly classId: Id64String;

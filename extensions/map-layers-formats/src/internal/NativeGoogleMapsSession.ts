@@ -10,7 +10,6 @@ import { Logger } from "@itwin/core-bentley";
 import { MapCartoRectangle, QuadIdProps } from "@itwin/core-frontend";
 import { BaseGoogleMapsSession, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager } from "../GoogleMaps/GoogleMapsSession.js";
 
-
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
 /*
@@ -33,8 +32,12 @@ export class NativeGoogleMapsSession extends BaseGoogleMapsSession {
     return NativeGoogleMapsSession.getTileApiBaseUrl;
   }
 
+  protected getViewportApiBaseUrl() {
+    return NativeGoogleMapsSession.viewportApiBaseUrl;
+  }
+
   public getTileSize(): number {
-      return this.json.tileWidth;
+    return this.json.tileWidth;
   }
 
   public getTileRequest(position: QuadIdProps): GoogleMapsRequest {
@@ -44,34 +47,34 @@ export class NativeGoogleMapsSession extends BaseGoogleMapsSession {
     return {url};
   }
 
-  public getViewportInfoRequest (rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest {
+  public getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest {
     const degrees = rectangle.toDegrees();
     const url = new URL(
-      `${this.getTileApiBaseUrl()}\
-      zoom=${zoomLevel}\
-      &north=${degrees.north}&south=${degrees.south}&east=${degrees.east}&west=${degrees.west}`
+      `${this.getViewportApiBaseUrl()}` +
+      `?zoom=${zoomLevel}` +
+      `&north=${degrees.north}&south=${degrees.south}&east=${degrees.east}&west=${degrees.west}`
     );
     url.searchParams.append("key", this.apiKey);
     url.searchParams.append("session", this.json.session);
     return {url};
   }
 
-    /**
-     * Creates a Google Maps session.
-     * @param apiKey Google Cloud API key
-     * @param opts Options to create the session
-     * @internal
-    */
-    public static async create (apiKey: string, opts: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSessionData>  {
-      const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
-      const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
-      const response = await fetch (request);
-      if (!response.ok) {
-        throw new Error(`CreateSession request failed: ${response.status} - ${response.statusText}`);
-      }
-      Logger.logInfo(loggerCategory, `Session created successfully`);
-      return response.json();
+  /**
+   * Creates a Google Maps session.
+   * @param apiKey Google Cloud API key
+   * @param opts Options to create the session
+   * @internal
+  */
+  public static async create(apiKey: string, opts: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSessionData>  {
+    const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
+    const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
+    const response = await fetch (request);
+    if (!response.ok) {
+      throw new Error(`CreateSession request failed: ${response.status} - ${response.statusText}`);
     }
+    Logger.logInfo(loggerCategory, `Session created successfully`);
+    return response.json();
+  }
 }
 
 /*
@@ -90,5 +93,4 @@ export class NativeGoogleMapsSessionManager extends GoogleMapsSessionManager {
     const json = await NativeGoogleMapsSession.create(this.apiKey, sessionOptions);
     return new NativeGoogleMapsSession(json, this.apiKey);
   }
-
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Optimized EditTxn.deleteElements for better performance and clearer reporting; added batch lifecycle callbacks Element.onBulkDeleted, Element.onBulkChildDeleted, and Model.onBulkModelEvents to avoid per-element notification overhead.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

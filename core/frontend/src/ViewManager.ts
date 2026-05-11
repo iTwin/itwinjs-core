@@ -260,8 +260,10 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Get the first opened view. */
   public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
 
-  /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
-  private updateRenderToScreen() {
+  /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen.
+   * @internal
+   */
+  protected updateRenderToScreen() {
     const renderToScreen = 1 === this._viewports.length;
     for (const vp of this)
       vp.rendersToScreen = renderToScreen;

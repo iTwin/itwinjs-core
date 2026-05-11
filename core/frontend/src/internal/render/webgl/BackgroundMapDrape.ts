@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, Frustum, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../../tile/internal";
@@ -45,7 +45,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
-  private readonly _plane = Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.create(0, 0, 1))!;
+  private readonly _plane = expectDefined(Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.create(0, 0, 1)));
 
   private constructor(drapedTree: TileTreeReference, mapTree: MapTileTreeReference) {
     super();
@@ -115,7 +115,7 @@ export class BackgroundMapDrape extends TextureDrape {
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
       builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
-      builder.addFrustum(this._debugFrustum!);
+      builder.addFrustum(expectDefined(this._debugFrustum));
       builder.setSymbology(ColorDef.white, ColorDef.white, 1);
       builder.addFrustum(this._frustum);
       this._debugFrustumGraphic = builder.finish();
@@ -152,7 +152,7 @@ export class BackgroundMapDrape extends TextureDrape {
     const prevPlan = target.plan;
     const drawingParams = PlanarTextureProjection.getTextureDrawingParams(target);
     const stack = new BranchStack();
-    stack.changeRenderPlan(drawingParams.viewFlags, prevPlan.is3d, prevPlan.hline);
+    stack.changeRenderPlan(drawingParams.viewFlags, prevPlan.is3d, prevPlan.hline, prevPlan.contours);
     stack.setSymbologyOverrides(this._symbologyOverrides);
 
     const batchState = new BatchState(stack);

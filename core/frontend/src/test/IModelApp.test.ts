@@ -2,8 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { EmptyLocalization } from "@itwin/core-common";
+import { BasicUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
@@ -167,5 +170,152 @@ describe("IModelApp", () => {
   it("Should create mock render system without WebGL", () => {
     expect(IModelApp.hasRenderSystem).toBe(true);
     expect(IModelApp.renderSystem).toBeInstanceOf(MockRender.System);
+  });
+});
+
+
+describe("IModelApp startup tests", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("Should normalize path correctly", async () => {
+    await IModelApp.startup({ publicPath: "assets" });
+    expect(IModelApp.publicPath).toBe("assets/");
+    await IModelApp.shutdown();
+    await IModelApp.startup({ publicPath: "assets/" });
+    expect(IModelApp.publicPath).toBe("assets/");
+    await IModelApp.shutdown();
+    await IModelApp.startup();
+    expect(IModelApp.publicPath).toBe("");
+    await IModelApp.shutdown();
+  });
+});
+
+/**
+ * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
+ * but still delegates to BasicUnitsProvider for correct behaviour.
+ */
+class NonBundledUnitsProvider {
+  private readonly _delegate = new BasicUnitsProvider();
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
+  }
+  public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
+    return this._delegate.getUnitsByFamily(phenomenon);
+  }
+  public async findUnitByName(name: string): Promise<UnitProps> {
+    return this._delegate.findUnitByName(name);
+  }
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
+    return this._delegate.getConversion(fromUnit, toUnit);
+  }
+}
+
+describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("startPrimitiveTool does not emit activeToolChanged after toolAdmin.onShutDown clears _idleTool", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    // Simulate the race: onShutDown has cleared _idleTool but IModelApp is still initialised.
+    IModelApp.toolAdmin.onShutDown();
+
+    let toolChangedEmitted = false;
+    const removeListener = IModelApp.toolAdmin.activeToolChanged.addListener(() => { toolChangedEmitted = true; });
+
+    // Must not throw and must not fire activeToolChanged (no valid idle tool exists).
+    await IModelApp.toolAdmin.startPrimitiveTool(undefined);
+
+    expect(toolChangedEmitted).toBe(false);
+    removeListener();
+  });
+
+  it("setUnitsProvider does not call startDefaultTool after IModelApp.shutdown", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    const toolAdmin = IModelApp.toolAdmin;
+    const formatter = IModelApp.quantityFormatter;
+
+    // Install a non-default provider so resetToUseInternalUnitsProvider won't early-exit.
+    await formatter.setUnitsProvider(new NonBundledUnitsProvider());
+
+    await IModelApp.shutdown();
+
+    const startDefaultSpy = vi.spyOn(toolAdmin, "startDefaultTool");
+
+    // Simulates the race: async units-provider reset fires after IModelApp has shut down.
+    await formatter.resetToUseInternalUnitsProvider();
+
+    // startDefaultTool must NOT be called — IModelApp is no longer initialised.
+    expect(startDefaultSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("Undo/redo edit command cleanup", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("undo finishes active edit command before reversing txns", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reverseSingleTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reverseSingleTxnAsync },
+        },
+      },
+    } as any);
+
+    expect(await toolAdmin.doUndoOperation()).toBe(true);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reverseSingleTxnAsync).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(reverseSingleTxnAsync.mock.invocationCallOrder[0]);
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+  });
+
+  it("redo uses notifications and skips txn when finishCommand fails", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reinstateTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reinstateTxnAsync },
+        },
+      },
+    } as any);
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    expect(await toolAdmin.doRedoOperation()).toBe(false);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reinstateTxnAsync).not.toHaveBeenCalled();
+    expect(outputMessageSpy).toHaveBeenCalledOnce();
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+    outputMessageSpy.mockRestore();
   });
 });

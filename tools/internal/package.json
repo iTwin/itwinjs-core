@@ -12,6 +12,7 @@
     "clean": "",
     "docs": "",
     "lint": "",
+    "lint-deprecation": "",
     "test": "",
     "cover": ""
   },
@@ -24,7 +25,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0"
   }
 }

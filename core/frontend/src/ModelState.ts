@@ -6,7 +6,7 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { expectDefined, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement,
 } from "@itwin/core-common";
@@ -33,9 +33,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   constructor(props: ModelProps, iModel: IModelConnection, state?: ModelState) {
     super(props, iModel, state);
-    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
+    this.modeledElement = expectDefined(RelatedElement.fromJSON(props.modeledElement));
     this.name = props.name ? props.name : "";
-    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
+    this.parentModel = expectDefined(Id64.fromJSON(props.parentModel)); // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaKeyProps } from "../Deserialization/JsonProps";
 import { SchemaMatchType } from "../ECObjects";
 import { ECSchemaError } from "../Exception";
@@ -45,8 +45,8 @@ describe("SchemaKey", () => {
 
     it("should compare against a string", () => {
       const key = new SchemaKey("SchemaName", 1, 2, 3);
-      expect(key.compareByName("SchemaName")).to.be.true;
-      expect(key.compareByName("WrongSchemaName")).to.be.false;
+      expect(key.compareByName("SchemaName")).toBe(true);
+      expect(key.compareByName("WrongSchemaName")).toBe(false);
     });
 
     it("should compare case-insensitive successfully", () => {
@@ -58,8 +58,8 @@ describe("SchemaKey", () => {
       const key = new SchemaKey("SchemaName", 1, 2, 3);
       const matchingKey = new SchemaKey("SchemaName", 1, 2, 3);
       const incompatibleKey = new SchemaKey("WrongSchemaName", 1, 2, 3);
-      expect(key.compareByName(matchingKey)).to.be.true;
-      expect(key.compareByName(incompatibleKey)).to.be.false;
+      expect(key.compareByName(matchingKey)).toBe(true);
+      expect(key.compareByName(incompatibleKey)).toBe(false);
     });
   });
 

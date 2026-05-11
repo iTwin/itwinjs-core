@@ -94,6 +94,7 @@ public;interface;CheckboxFormatPropEditorSpec
 public;class;CheckpointConnection
 public;enum;ClipEventType
 public;class;Cluster
+internal;function;collectMaskRefs
 public;type;CollectTileStatus
 public;enum;CompassMode
 public;interface;ComputeChordToleranceArgs
@@ -106,7 +107,6 @@ public;function;connectViewportViews
 internal;enum;ContextMode
 public;class;ContextRealityModelState
 public;enum;ContextRotationId
-beta;interface;ContourHit
 internal;class;CoordinateConverter
 internal;interface;CoordinateConverterOptions
 public;enum;CoordinateLockOverrides
@@ -195,7 +195,6 @@ internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
 beta;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
-beta;interface;FormattingSpecEntry
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
 internal;interface;FrameCameraFrustumData
@@ -218,6 +217,7 @@ public;class;GeometricModel2dState
 public;class;GeometricModel3dState
 public;class;GeometricModelState
 public;interface;GeometryTileTreeReference
+public;interface;GeometryTileTreeReferenceOptions
 public;class;GeoServices
 internal;type;GeoServicesOptions
 internal;interface;GetAttachmentViewportArgs
@@ -315,6 +315,7 @@ internal;class;IModelFrameLifecycle
 public;interface;IModelIdArg
 public;class;IModelRoutingContext
 internal;class;IModelTileTree
+internal;const;_implementationProhibited
 public;class;InputCollector
 public;enum;InputSource
 beta;interface;Instance
@@ -350,6 +351,8 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+alpha;interface;LockService
+alpha;type;LockServiceFactory
 internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
@@ -415,6 +418,7 @@ public;class;MeasureLengthTool
 public;class;MeasureLocationTool
 public;class;MeasureVolumeTool
 public;interface;MeshArgs
+public;type;MeshArgsPositions
 public;enum;MessageBoxIconType
 public;enum;MessageBoxType
 public;enum;MessageBoxValue
@@ -528,9 +532,11 @@ public;class;RealityTileTree
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
+internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
+internal;interface;RenderGeometry
 public;class;RenderGraphic
 public;class;RenderGraphicOwner
 beta;interface;RenderGraphicTileTreeArgs
@@ -545,6 +551,7 @@ internal;enum;BufferType
 internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
+internal;interface;RenderPlan
 public;class;RenderSystem
 public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
@@ -744,6 +751,7 @@ public;interface;ViewportGraphicBuilderOptions
 public;class;ViewPose
 public;class;ViewPose2d
 public;class;ViewPose3d
+beta;interface;ViewRealityModel
 public;class;ViewRect
 public;class;ViewRedoTool
 public;class;ViewState

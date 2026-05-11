@@ -6,6 +6,7 @@
  * @module Bspline
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -699,8 +700,9 @@ export namespace BSplineCurveOps {
       if (!this.removeDuplicateFitPoints(options))
         return false;
 
+      let hasClosurePoint = (options.fitPoints.length > 1) && options.fitPoints[0].isAlmostEqual(options.fitPoints[options.fitPoints.length - 1]);
+
       // if only 2 unique points, then must create open curve
-      let hasClosurePoint = options.fitPoints[0].isAlmostEqual(options.fitPoints[options.fitPoints.length - 1]);
       if (3 === options.fitPoints.length && hasClosurePoint) {
         options.fitPoints.pop();
         if (undefined !== options.knots)
@@ -865,7 +867,9 @@ export namespace BSplineCurveOps {
       } else { // closed
         if (undefined !== (poles = this.solveNearTridiagonal(options.fitPoints, alpha, beta, gamma))) {
           if (poles.length > 2) {
-            poles.unshift(poles.pop()!);  // shift poles right to line up with the knots
+            const pole = poles.pop();
+            assert(pole !== undefined, "expect pop to succeed since length > 2");
+            poles.unshift(pole); // shift poles right to line up with the knots
             for (let i = 0; i < options.order - 1; ++i)
               poles.push(poles[i].clone()); // periodically extend (the modern way)
           }

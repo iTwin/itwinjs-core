@@ -6,12 +6,13 @@
  * @module Polyface
  */
 
+import { assert } from "@itwin/core-bentley";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { IndexedPolyface } from "../Polyface";
-import { Geometry } from "../../Geometry";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Angle } from "../../geometry3d/Angle";
 
 /**
  * Normal vector with area (or other numeric) and source index
@@ -32,7 +33,9 @@ class IndexedAreaAndNormal {
     this.normal.addScaledInPlace(normal, weight);
   }
   public divideNormalByArea() {
-    this.normal.scaleInPlace(1.0 / this.area);
+    assert(this.area > 0);
+    if (this.area > 0)
+      this.normal.scaleInPlace(1.0 / this.area);
   }
 }
 
@@ -125,17 +128,14 @@ export class BuildAverageNormalsContext {
         const clusterNormal = new IndexedAreaAndNormal(clusterIndex++, 0.0, Vector3d.createZero());
         clusters.push(clusterNormal);
         // Accumulate with equal weights . . .
-        clusterNormal.addWeightedNormal(1.0, baseData.facetData.normal);
-        for (let candidateSectorIndex = baseSectorIndex;
-          candidateSectorIndex < sectors.length;
-          candidateSectorIndex++) {
+        for (let candidateSectorIndex = baseSectorIndex; candidateSectorIndex < sectors.length; candidateSectorIndex++) {
           const candidateSector = sectors[candidateSectorIndex];
           if (candidateSector.vertexIndex !== vertexIndex)
             break;
           if (candidateSector.facetData.normal.angleTo(baseFacetData.normal).radians > toleranceRadians)
             continue;
           if (candidateSector.sectorClusterData === undefined) {
-            clusterNormal.addWeightedNormal(1.0, candidateSector.facetData.normal);
+            clusterNormal.addWeightedNormal(1.0, candidateSector.facetData.normal); // first time thru this is base sector normal
             candidateSector.sectorClusterData = clusterNormal;
           }
         }
@@ -153,7 +153,9 @@ export class BuildAverageNormalsContext {
     }
     // emplace the indices
     for (const sector of sectors) {
-      polyface.data.normalIndex.push(sector.sectorClusterData!.index);
+      assert(sector.sectorClusterData !== undefined, "previous sectors loop should have pointed each sector to a cluster");
+      if (sector.sectorClusterData)
+        polyface.data.normalIndex.push(sector.sectorClusterData.index);
     }
   }
   /**

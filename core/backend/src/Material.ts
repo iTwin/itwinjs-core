@@ -11,9 +11,11 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -167,7 +169,6 @@ export class RenderMaterialElement extends DefinitionElement {
       }
     }
 
-    // const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
     const renderMaterialProps: RenderMaterialProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, materialName),
@@ -182,7 +183,7 @@ export class RenderMaterialElement extends DefinitionElement {
             specular_color: params.specularColor,
             HasFinish: params.finish !== undefined,
             finish: params.finish,
-            HasTransmit: params.transmit !== undefined,
+            HasTransmit: params.transmit !== undefined ? true : undefined,
             transmit: params.transmit,
             HasDiffuse: params.diffuse !== undefined,
             diffuse: params.diffuse,
@@ -206,21 +207,29 @@ export class RenderMaterialElement extends DefinitionElement {
 
   /**
    * Insert a new RenderMaterial into a model.
-   * @param iModelDb Insert into this iModel
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new Texture into this DefinitionModel
    * @param materialName The name/CodeValue of the RenderMaterial
    * @param params Parameters object which describes how to construct the RenderMaterial
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
-    const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
-    return iModelDb.elements.insertElement(renderMaterial.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
+  /**
+   * Insert a new RenderMaterial into a model.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use RenderMaterialElement.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const renderMaterial = this.create(txn.iModel, definitionModelId, materialName, params);
+    return renderMaterial.insert(txn);
   }
 
   /** @beta */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
+    await super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
       if (typeof mapName !== "string")
         continue;
@@ -258,8 +267,9 @@ export namespace RenderMaterialElement {
      */
     public finish?: number;
     /** A transparency to be applied to the surface, ranging from 0 (fully opaque) to 1 (fully transparent).
-     * The surface's own transparency will be multiplied by `(1 - transmit)`. permitting the material to increase but not decrease the surface transparency.
-     * Default: 13.5.
+     * If defined, then the material transparency overrides the transparency of whatever surface the material is applied to.
+     * If undefined, the material has no effect on surface transparency.
+     * Default: undefined.
      */
     public transmit?: number;
     /** The surface's diffuse reflectivity from 0.0 to 1.0. Default: 0.6. */

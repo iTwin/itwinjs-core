@@ -317,11 +317,37 @@ export class Matrix4d implements BeJSONFunctions {
   /**
    * Return the (affine, non-perspective) Transform with the upper 3 rows of this matrix
    * @return undefined if this Matrix4d has perspective effects in the w row.
+   * @see toTransform
    */
   public get asTransform(): Transform | undefined {
     if (this.hasPerspective)
       return undefined;
     return Transform.createRowValues(this._coffs[0], this._coffs[1], this._coffs[2], this._coffs[3], this._coffs[4], this._coffs[5], this._coffs[6], this._coffs[7], this._coffs[8], this._coffs[9], this._coffs[10], this._coffs[11]);
+  }
+  /**
+   * Populate a [[Transform]] from the instance, even if the transformations aren't equivalent.
+   * * A Transform cannot encode perspective, but this method returns one even if it isn't equivalent to the instance.
+   * * Compare to the [[asTransform]] property, which returns `undefined` when there is perspective.
+   * @param result optional preallocated object to populate and return.
+   * @returns derived `Transform` and a flag indicating its validity:
+   * * `transform` is filled with the top three rows of the instance's entries scaled by the reciprocal of nonzero [[weight]];
+   * if [[weight]] is zero, `transform` is set to the identity.
+   * * `isValid` is true if and only if the last row of the instance is essentially `[000w]` for nonzero `w` = [[weight]].
+   * @see asTransform
+   */
+  public toTransform(result?: Transform): { transform: Transform, isValid: boolean } {
+    const transform = Transform.createIdentity(result);
+    let isValid = false;
+    if (this.weight() !== 0.0) {
+      const scale = 1.0 / this.weight();
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++)
+          transform.matrix.setAt(i, j, scale * this.atIJ(i, j));
+      }
+      transform.origin.set(scale * this.atIJ(0, 3), scale * this.atIJ(1, 3), scale * this.atIJ(2, 3));
+      isValid = Geometry.isSmallMetricDistance(scale * (Math.abs(this.atIJ(3, 0) + Math.abs(this.atIJ(3, 1)) + Math.abs(this.atIJ(3, 2)))));
+    }
+    return { transform, isValid };
   }
   /** multiply this * other. */
   public multiplyMatrixMatrix(other: Matrix4d, result?: Matrix4d): Matrix4d {

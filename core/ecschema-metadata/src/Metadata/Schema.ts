@@ -34,6 +34,8 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
+import { SchemaLoadingController } from "../utils/SchemaLoadingController";
+
 /**
  * @public @preview
  */
@@ -49,6 +51,7 @@ export class Schema implements CustomAttributeContainerProps {
   private _customAttributes?: Map<string, CustomAttribute>;
   private _originalECSpecMajorVersion?: number;
   private _originalECSpecMinorVersion?: number;
+  private _loadingController?: SchemaLoadingController;
 
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
@@ -74,7 +77,7 @@ export class Schema implements CustomAttributeContainerProps {
   constructor(context: SchemaContext);
   /** @internal */
   constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, alias?: string, readVer?: number, writeVer?: number, minorVer?: number) {
-    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
+    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer, writeVer, minorVer)) : nameOrKey;
     this._context = context;
     this.references = [];
     this._items = new Map<string, SchemaItem>();
@@ -149,6 +152,20 @@ export class Schema implements CustomAttributeContainerProps {
 
   /** Returns the schema context this schema is within. */
   public get context(): SchemaContext { return this._context; }
+
+  /** Returns whether this schema is dynamic schema */
+  public get isDynamic(): boolean {
+    return this.customAttributes !== undefined && this.customAttributes.has("CoreCustomAttributes.DynamicSchema");
+  }
+
+  /**
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
+   * @internal
+   */
+  public get loadingController(): SchemaLoadingController | undefined {
+    return this._loadingController;
+  }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
@@ -584,7 +601,7 @@ export class Schema implements CustomAttributeContainerProps {
   public async getItem<T extends typeof SchemaItem>(name: string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
     if (itemConstructor === undefined)
-      return this.getItemSync(name) as InstanceType<T> | undefined;
+      return this.getItemSync(name);
 
     return this.getItemSync(name, itemConstructor);
   }
@@ -603,7 +620,7 @@ export class Schema implements CustomAttributeContainerProps {
       return value;
 
     if (isSupportedSchemaItemType(value.schemaItemType, itemConstructor.schemaItemType))
-      return value as InstanceType<T>;
+      return value;
 
     return undefined;
   }
@@ -808,7 +825,7 @@ export class Schema implements CustomAttributeContainerProps {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
       if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version.toString()}' that does not match the provided version '${schemaProps.version}'.`);
     }
 
     if (schemaProps.$schema.match(`https://dev\\.bentley\\.com/json_schemas/ec/([0-9]+)/ecschema`) == null && schemaProps.$schema.match(`http://www\\.bentley\\.com/schemas/Bentley\\.ECXML\\.([0-9]+)`) == null)
@@ -819,7 +836,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (schemaProps.ecSpecMajorVersion === undefined || schemaProps.ecSpecMinorVersion === undefined) {
       ecVersion = ((schemaProps.$schema.search("ECXML") !== -1) ? XmlParser.parseXmlNamespace(schemaProps.$schema) : JsonParser.parseJSUri(schemaProps.$schema)) as ECSpecVersion;
     } else {
-      ecVersion = { readVersion: schemaProps.ecSpecMajorVersion, writeVersion: schemaProps.ecSpecMinorVersion } as ECSpecVersion;
+      ecVersion = { readVersion: schemaProps.ecSpecMajorVersion, writeVersion: schemaProps.ecSpecMinorVersion };
     }
 
     this._originalECSpecMajorVersion = ecVersion.readVersion;
@@ -908,6 +925,11 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECSchemaError(ECSchemaStatus.InvalidECName, "The specified schema alias is invalid.");
     }
     this._alias = alias;
+  }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
   }
 }
 
