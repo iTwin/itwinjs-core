@@ -16,6 +16,28 @@ import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY"
 import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";
 
 /**
+ * Options used for method [[CurveCurve.closeApproachProjectedXYPairs]] and [[CurveCurve.closestApproachProjectedXYPair]].
+ * @public
+ */
+export interface CloseApproachOptions {
+  /**
+   * Maximum xy-distance.
+   * Default: {@link Geometry.largeCoordinateResult}.
+   */
+  maxDistance?: number;
+  /**
+   * Newton convergence tolerance.
+   * Default: {@link Geometry.smallNewtonStep}.
+   */
+  newtonTolerance?: number;
+  /**
+   * Maximum number of iterations for the Newton method.
+   * Default: 50.
+   */
+  newtonMaxIterations?: number;
+}
+
+/**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
  * @public
  */
@@ -105,13 +127,23 @@ export class CurveCurve {
    * an `AnyRegion`, then close approaches are computed only to the defining curves, not to the area they enclose.
    * @param curveA first curve
    * @param curveB second curve
-   * @param maxDistance maximum xy-distance to consider between the curves.
+   * @param maxDistanceOrOptions maximum xy-distance to consider between the curves, or a list of extended options.
    * Close approaches further than this xy-distance are not returned.
    */
   public static closeApproachProjectedXYPairs(
-    curveA: AnyCurve, curveB: AnyCurve, maxDistance: number,
+    curveA: AnyCurve, curveB: AnyCurve, maxDistanceOrOptions: number | CloseApproachOptions,
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveCloseApproachXY(curveB);
+    let maxDistance: number | undefined;
+    let newtonTolerance: number | undefined;
+    let newtonMaxIterations: number | undefined;
+    if (Geometry.isNumber(maxDistanceOrOptions)) {
+      maxDistance = maxDistanceOrOptions;
+    } else {
+      maxDistance = maxDistanceOrOptions.maxDistance ?? Geometry.largeCoordinateResult;
+      newtonTolerance = maxDistanceOrOptions.newtonTolerance;
+      newtonMaxIterations = maxDistanceOrOptions.newtonMaxIterations ?? 50;
+    }
+    const handler = new CurveCurveCloseApproachXY(curveB, undefined, newtonTolerance, newtonMaxIterations);
     handler.maxDistanceToAccept = maxDistance;
     curveA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
@@ -125,20 +157,21 @@ export class CurveCurve {
    * found among the pairs.
    * @param curveA first curve
    * @param curveB second curve
+   * @param options optional parameters for close approach calculation
    * @return detail pair of closest xy-approach, undefined if not found
    */
-  public static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve): CurveLocationDetailPair | undefined {
-    const range = curveA.range();
-    range.extendRange(curveB.range());
-    const maxDistance = range.low.distanceXY(range.high);
-    const closeApproaches = this.closeApproachProjectedXYPairs(curveA, curveB, maxDistance);
+  public static closestApproachProjectedXYPair(
+    curveA: AnyCurve, curveB: AnyCurve, options?: CloseApproachOptions
+  ): CurveLocationDetailPair | undefined {
+    if (options === undefined)
+      options = { maxDistance: Geometry.largeCoordinateResult };
+    const closeApproaches = this.closeApproachProjectedXYPairs(curveA, curveB, options);
     if (!closeApproaches.length)
       return undefined;
     let iMin = 0;
-    let minDistXY = 2 * maxDistance;
+    let minDistXY = Geometry.largeCoordinateResult;
     for (let i = 0; i < closeApproaches.length; ++i) {
-      // TODO: this distance should already be in detail.a. Verify this, then just use it instead of recomputing below.
-      const distXY = closeApproaches[i].detailA.point.distanceXY(closeApproaches[i].detailB.point);
+      const distXY = closeApproaches[i].detailA.a;
       if (distXY < minDistXY) {
         iMin = i;
         minDistXY = distXY;

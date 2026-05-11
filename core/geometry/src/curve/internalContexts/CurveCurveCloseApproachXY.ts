@@ -58,6 +58,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private _maxDistanceSquared: number;
   private _xyTolerance: number;
   private _newtonTolerance: number;
+  private _newtonMaxIterations: number = 15;
   /**
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
    * both curves and their length is smaller than _maxDistanceToAccept.
@@ -75,13 +76,20 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
    * @param xyTolerance optional tolerance for comparing xy points (default [[Geometry.smallMetricDistance]]).
    * @param newtonTolerance optional relative fraction tolerance for Newton iteration (default [[Geometry.smallNewtonStep]]).
+   * @param newtonMaxIterations optional max iterations for Newton iteration (default 15).
    */
-  public constructor(geometryB?: AnyCurve, xyTolerance: number = Geometry.smallMetricDistance, newtonTolerance: number = Geometry.smallNewtonStep) {
+  public constructor(
+    geometryB?: AnyCurve,
+    xyTolerance: number = Geometry.smallMetricDistance,
+    newtonTolerance: number = Geometry.smallNewtonStep,
+    newtonMaxIterations: number = 15
+  ) {
     super();
     this._geometryB = geometryB instanceof ProxyCurve ? geometryB.proxyCurve : geometryB;
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
     this._xyTolerance = xyTolerance;
     this._newtonTolerance = newtonTolerance;
+    this._newtonMaxIterations = newtonMaxIterations;
     const compare = CurveLocationDetailPair.comparePairsByPoints(xyTolerance, true);
     this._results = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
   }

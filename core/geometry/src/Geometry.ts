@@ -1226,6 +1226,13 @@ export class Geometry {
     return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
   }
   /**
+   * Return `true` if `a` is a finite number.
+   * @param a value to test
+   */
+  public static isNumber(a: any): a is number {
+    return Number.isFinite(a);
+  }
+  /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including
    * those beyond minEntries).
    */

@@ -1817,7 +1817,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SpiralKnownCloseApproach");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it.only("BsplineCloseApproach", () => {
+  it("BsplineCloseApproach", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
@@ -1974,15 +1974,15 @@ describe("CurveCurveCloseApproachXY", () => {
         dx += 200;
       }
     };
-    // testCloseApproachBsplineCurve(bsplines, bsplineData);
+    testCloseApproachBsplineCurve(bsplines, bsplineData);
 
-    // dx = 0;
-    // dy = 5000;
-    // const numExpectedCloseApproaches = 15;
-    // for (const pair of [[curveChain0, curveChain1], [path0, path1], [curveChain0, path1], [curveChain1, path0]]) {
-    //   visualizeAndTestSpiralOrBsplineCloseApproaches(ck, allGeometry, testIndex++, pair[0], pair[1], maxDistance, numExpectedCloseApproaches, dx, dy);
-    //   dx += 300;
-    // }
+    dx = 0;
+    dy = 5000;
+    const numExpectedCloseApproaches = 15;
+    for (const pair of [[curveChain0, curveChain1], [path0, path1], [curveChain0, path1], [curveChain1, path0]]) {
+      visualizeAndTestSpiralOrBsplineCloseApproaches(ck, allGeometry, testIndex++, pair[0], pair[1], maxDistance, numExpectedCloseApproaches, dx, dy);
+      dx += 300;
+    }
 
     // make sure closest approach can find bspline tangency intersections
     const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number, dy0: number) => {
@@ -1997,8 +1997,8 @@ describe("CurveCurveCloseApproachXY", () => {
         ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `bspline${index}  closest point is at the tangency`);
       }
     };
-    // dx = 0;
-    // dy = 5500;
+    dx = 0;
+    dy = 5500;
     for (let i = 0; i < bsplines.length; i++) {
       if (i === 1 || i === 2) // Newton does not converge due to near-degenerate tangency
         continue;
