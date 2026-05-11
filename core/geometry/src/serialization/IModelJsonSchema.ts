@@ -1467,20 +1467,15 @@ export namespace IModelJson {
       const xySameLength = Geometry.isSameCoordinate(xMag, yMag);
       const axisVector = Vector3d.createStartEnd(centerA, centerB);
 
-      // special case of cylinder
-      if (Geometry.isSameCoordinate(radiusA, radiusB)
-        && vectorX.isPerpendicularTo(axisVector)
-        && vectorY.isPerpendicularTo(axisVector)
-        && xySameLength
-        && Geometry.isSameCoordinate(xMag, 1.0)) {
-        return {
-          cylinder: {
-            capped: data.capped,
-            start: centerA.toJSON(),
-            end: centerB.toJSON(),
-            radius: radiusA,
-          },
+      const cylinderRadius = data.cylinderRadius();
+      if (cylinderRadius > 0) {
+        const cylinderProps: CylinderProps = {
+          capped: data.capped,
+          start: centerA.toJSON(),
+          end: centerB.toJSON(),
+          radius: cylinderRadius,
         };
+        return { cylinder: cylinderProps };
       }
 
       const coneProps: ConeProps = {

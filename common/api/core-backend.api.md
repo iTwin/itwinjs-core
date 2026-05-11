@@ -694,7 +694,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
     // @internal
-    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<ChangeInstance>;
+    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch>;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
@@ -4677,6 +4677,12 @@ export interface InstanceChange {
     opCode: ChangeOpCode;
     // (undocumented)
     summaryId: Id64String;
+}
+
+// @internal
+export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
+    // (undocumented)
+    $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
 }
 
 // @beta
