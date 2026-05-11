@@ -331,7 +331,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
   public constructor(txn: EditTxn);
   /**
    * Create an ElementTreeDeleter.
-   * @deprecated Supply an explicit EditTxn.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Supply an explicit EditTxn.
    */
   public constructor(iModel: IModelDb);
   public constructor(iModelOrTxn: IModelDb | EditTxn) {
@@ -459,7 +459,7 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
    * @param iModel The iModel
    * @param topElement Where to start the search.
    * @param shouldPruneCb Callback that selects sub-trees that should be deleted.
-   * @deprecated Supply an explicit EditTxn.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Supply an explicit EditTxn.
    * @see deleteElementSubTrees for a simple way to use this class.
    */
   public constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter);
@@ -518,7 +518,7 @@ export function deleteElementTree(txn: EditTxn, topElement: Id64String, maxPasse
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
- * @deprecated Supply an explicit `txn`.
+ * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Supply an explicit `txn`.
  * @beta
  */
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
@@ -529,7 +529,7 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String): voi
 export function deleteElementTree(args: DeleteElementTreeArgs): void;
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param args Specifies the iModel and top element.
- * @deprecated Supply `txn` via [[DeleteElementTreeArgs]].
+ * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Supply `txn` via [[DeleteElementTreeArgs]].
  * @beta
  */
 export function deleteElementTree(args: { iModel: IModelDb, topElement: Id64String, maxPasses?: number }): void;
@@ -583,7 +583,7 @@ export function deleteElementSubTrees(txn: EditTxn, topElement: Id64String, filt
  * @param iModel The iModel
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.
- * @deprecated Supply `txn` explicitly.
+ * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Supply `txn` explicitly.
  * @beta
  */
 export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;

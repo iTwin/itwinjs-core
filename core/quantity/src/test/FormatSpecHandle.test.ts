@@ -67,17 +67,17 @@ describe("FormatSpecHandle", () => {
     handle[Symbol.dispose]();
   });
 
-  it("refreshes specs when onFormattingReady fires", () => {
+  it("reflects provider changes without waiting for onFormattingReady", () => {
     const provider = createMockProvider(undefined);
     const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M" });
     expect(handle.formatterSpec).toBeUndefined();
 
-    // Now make the provider return an entry and fire ready
     const entry = createMockEntry();
     vi.mocked(provider.getSpecsByNameAndUnit).mockReturnValue(entry);
-    provider.ready.emit();
 
     expect(handle.formatterSpec).toBe(entry.formatterSpec);
+    expect(handle.parserSpec).toBe(entry.parserSpec);
+    expect(handle.format(42)).toBe("formatted:42");
     handle[Symbol.dispose]();
   });
 
@@ -87,6 +87,7 @@ describe("FormatSpecHandle", () => {
     const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M", system: "imperial" });
 
     expect(handle.system).toBe("imperial");
+    void handle.formatterSpec;
     expect(provider.getSpecsByNameAndUnit).toHaveBeenCalledWith({
       name: "TestKoQ",
       persistenceUnitName: "Units.M",
@@ -95,19 +96,20 @@ describe("FormatSpecHandle", () => {
     handle[Symbol.dispose]();
   });
 
-  it("[Symbol.dispose] clears specs and unsubscribes from events", () => {
+  it("does not perform provider lookups after dispose", () => {
     const entry = createMockEntry();
     const provider = createMockProvider(entry);
     const handle = new FormatSpecHandle({ provider, name: "TestKoQ", persistenceUnitName: "Units.M" });
 
     handle[Symbol.dispose]();
+    vi.mocked(provider.getSpecsByNameAndUnit).mockClear();
+    vi.mocked(provider.formatQuantity).mockClear();
+
     expect(handle.formatterSpec).toBeUndefined();
     expect(handle.parserSpec).toBeUndefined();
-
-    // Fire ready after dispose — should NOT repopulate
-    vi.mocked(provider.getSpecsByNameAndUnit).mockClear();
-    provider.ready.emit();
+    expect(handle.format(42)).toBe("42");
     expect(provider.getSpecsByNameAndUnit).not.toHaveBeenCalled();
+    expect(provider.formatQuantity).not.toHaveBeenCalled();
   });
 
   it("[Symbol.dispose] is idempotent", () => {

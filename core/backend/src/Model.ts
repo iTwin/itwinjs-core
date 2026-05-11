@@ -329,7 +329,7 @@ export class Model extends Entity {
   public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Model in the iModel.
-   * @deprecated Use Model.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Model.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insert(): Id64String;
   public insert(txn?: EditTxn) { return this.id = (txn ?? this.iModel[_implicitTxn]).insertModel(this.toJSON()); }
@@ -341,7 +341,7 @@ export class Model extends Entity {
   public update(txn: EditTxn): void;
   /**
    * Update this Model in the iModel.
-   * @deprecated Use Model.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Model.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public update(): void;
   public update(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).updateModel(this.toJSON()); }
@@ -353,7 +353,7 @@ export class Model extends Entity {
   public delete(txn: EditTxn): void;
   /**
    * Delete this Model from the iModel.
-   * @deprecated Use Model.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Model.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public delete(): void;
   public delete(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).deleteModel(this.id); }
@@ -526,7 +526,7 @@ export class PhysicalModel extends SpatialModel {
     * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
-  /** @deprecated Use PhysicalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use PhysicalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -563,7 +563,7 @@ export class SpatialLocationModel extends SpatialModel {
     * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
-  /** @deprecated Use SpatialLocationModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use SpatialLocationModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -643,7 +643,7 @@ export class SheetIndexModel extends InformationModel {
    * @throws [[IModelError]] if there is an insert problem.
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
-  /** @deprecated Use SheetIndexModel.insert(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use SheetIndexModel.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];

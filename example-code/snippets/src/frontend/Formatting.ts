@@ -148,7 +148,7 @@ export function useFormatSpecHandle() {
   const formatted = handle.format(1.5);
   assert(formatted.length > 0);
 
-  // Explicitly dispose when done to unsubscribe from reload events
+  // Explicitly dispose when done to invalidate the handle
   handle[Symbol.dispose]();
 }
 // __PUBLISH_EXTRACT_END__
@@ -161,7 +161,7 @@ export function useFormatSpecHandleWithUsing() {
     "Units.M",
   );
 
-  // The handle auto-refreshes when the formatter reloads
+  // The handle reads the current formatter state on access
   const formatted = handle.format(2.75);
   assert(formatted.length > 0);
   // handle is automatically disposed at end of scope
