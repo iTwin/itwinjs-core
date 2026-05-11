@@ -8,7 +8,7 @@ import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves } from "../../curve/CurveCollection";
-import { CurveCurve } from "../../curve/CurveCurve";
+import { CloseApproachOptions, CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve } from "../../curve/CurveTypes";
@@ -32,6 +32,19 @@ import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
+/** Verify that the `a` property of both details in a close approach pair equals the XY distance between points. */
+function verifyClosestApproachDistance(ck: Checker, pair: CurveLocationDetailPair): void {
+  const distXY = pair.detailA.point.distanceXY(pair.detailB.point);
+  ck.testCoordinate(distXY, pair.detailA.a, "detailA.a equals XY distance");
+  ck.testCoordinate(distXY, pair.detailB.a, "detailB.a equals XY distance");
+}
+
+/** Verify that `a` equals the XY distance for all pairs in an array. */
+function verifyCloseApproachDistances(ck: Checker, pairs: CurveLocationDetailPair[]): void {
+  for (const pair of pairs)
+    verifyClosestApproachDistance(ck, pair);
+}
+
 /** Create line segments joining various fractional positions on two arcs. Compute close approach for each. */
 function testVaryingLineSegments(
   _ck: Checker,
@@ -51,6 +64,7 @@ function testVaryingLineSegments(
     for (const f1 of fractions) {
       const lineB = LineSegment3d.create(arc0.fractionToPoint(f0), arc1.fractionToPoint(f1));
       const approaches = CurveCurve.closeApproachProjectedXYPairs(lineB, geometryA, maxDistance);
+      verifyCloseApproachDistances(_ck, approaches);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineB, x0, y0);
       if (approaches.length > 0) {
@@ -119,6 +133,7 @@ function testVaryingSubsets(
         if (!partialB)
           continue;
         const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, partialB, maxDistance);
+        verifyCloseApproachDistances(_ck, approaches);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, partialB, x0, y0);
         if (approaches.length > 0) {
@@ -194,6 +209,7 @@ function test2Ellipses(
     geometryB.tryTransformInPlace(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB, 0, dy);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     let numUniqueIntersections = 0;
     let numUniquePerpCloseApproach = 0;
     const intersectionSet = new Set<Point3d>();
@@ -271,8 +287,10 @@ function visualizeAndTestSpiralOrBsplineCloseApproaches(
 
   // test both paths
   const closeApproachesAB = CurveCurve.closeApproachProjectedXYPairs(curve0, curve1, maxDistance);
+  verifyCloseApproachDistances(ck, closeApproachesAB);
   testSpiralIntersection(closeApproachesAB);
   const closeApproachesBA = CurveCurve.closeApproachProjectedXYPairs(curve1, curve0, maxDistance);
+  verifyCloseApproachDistances(ck, closeApproachesBA);
   testSpiralIntersection(closeApproachesBA, true);
 
   if (ck.testExactNumber(closeApproachesAB.length, closeApproachesBA.length, `test #${testIndex}: close approach count should be the same regardless of order`)) {
@@ -306,6 +324,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineSegment3d.createXYZXYZ(6, 2, -1, 1, 7, -2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     ck.testExactNumber(approaches.length, 1);
     const start = approaches.at(0)!.detailA.point;
     const end = approaches.at(0)!.detailB.point;
@@ -320,6 +339,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     const expectedMinLenSqr = 0;
     ck.testLE(
@@ -338,6 +358,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineSegment3d.createXYXY(6, 2, 1, 7);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const start = approaches.at(0)!.detailA.point;
     const end = approaches.at(0)!.detailB.point;
     const approachSegment = LineSegment3d.create(start, end);
@@ -353,6 +374,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 1);
@@ -385,6 +407,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineString3d.create([1, 0, 1], [2, 3, 1], [3, 0, 1], [4, 2, 1], [5, 0, 1], [6, 3, -2], [7, 0, 1]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     ck.testLE(0, approaches.length);
     if (approaches.length > 0) {
       for (const ap of approaches) {
@@ -405,6 +428,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 0.5);
@@ -428,6 +452,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineString3d.create([1, 0], [2, 1], [3, 0]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     ck.testLE(0, approaches.length);
     if (approaches.length > 0) {
       for (const ap of approaches) {
@@ -448,6 +473,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 1);
@@ -484,6 +510,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineSegment3d.createXYXY(-5, 4, 5, 4);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const start = approaches.at(0)!.detailA.point;
     const end = approaches.at(0)!.detailB.point;
     const approachSegment = LineSegment3d.create(start, end);
@@ -495,6 +522,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 0.5);
@@ -519,6 +547,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineSegment3d.createXYZXYZ(0, 3, -3, 0, 6, 3);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     if (approaches.length > 0) {
       for (const ap of approaches) {
         const start = ap.detailA.point;
@@ -538,6 +567,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
@@ -558,6 +588,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = LineSegment3d.createXYXY(-5, 3, 5, 3);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const start = approaches.at(0)!.detailA.point;
     const end = approaches.at(0)!.detailB.point;
     const lenSqr = start.distanceSquaredXY(end);
@@ -575,6 +606,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 0.5);
@@ -598,6 +630,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find approaches
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -619,6 +652,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
@@ -658,7 +692,9 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [geometryA, geometryB2], shift, 0);
 
     const approaches1 = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB1, maxDistance);
+    verifyCloseApproachDistances(ck, approaches1);
     const approaches2 = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB2, maxDistance);
+    verifyCloseApproachDistances(ck, approaches2);
     const approach1Len = approaches1.length;
     if (ck.testLE(3, approach1Len, "expect at least 3 approaches between line and line string")) {
       for (const ap of approaches1) {
@@ -696,7 +732,9 @@ describe("CurveCurveCloseApproachXY", () => {
     const closestApproach1 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB1);
     const closestApproach2 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB2);
     ck.testDefined(closestApproach1, "found the closest approach between line and line string");
+    verifyClosestApproachDistance(ck, closestApproach1!);
     ck.testDefined(closestApproach2, "found the closest approach between line and path of segments");
+    verifyClosestApproachDistance(ck, closestApproach2!);
     const detailA1 = closestApproach1!.detailA;
     const detailB1 = closestApproach1!.detailB;
     const detailA2 = closestApproach2!.detailA;
@@ -747,7 +785,9 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [geometryA, geometryB2], shift, 0);
 
     const approaches1 = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB1, maxDistance);
+    verifyCloseApproachDistances(ck, approaches1);
     const approaches2 = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB2, maxDistance);
+    verifyCloseApproachDistances(ck, approaches2);
     const approach1Len = approaches1.length;
     if (ck.testLE(4, approach1Len, "expect at least 4 approaches between line and line string")) {
       for (const ap of approaches1) {
@@ -785,7 +825,9 @@ describe("CurveCurveCloseApproachXY", () => {
     const closestApproach1 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB1);
     const closestApproach2 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB2);
     ck.testDefined(closestApproach1, "found the closest approach between line and line string");
+    verifyClosestApproachDistance(ck, closestApproach1!);
     ck.testDefined(closestApproach2, "found the closest approach between line and path of segments");
+    verifyClosestApproachDistance(ck, closestApproach2!);
     const detailA1 = closestApproach1!.detailA;
     const detailB1 = closestApproach1!.detailB;
     const detailA2 = closestApproach2!.detailA;
@@ -845,6 +887,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const numExpectedIntersections = 1;
     let numIntersectionsFound = 0;
     const approachLen = approaches.length;
@@ -883,6 +926,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     ck.testExactNumber(0, approaches.length); // distance between circles is more than max distance
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc2");
     expect(ck.getNumErrors()).toBe(0);
@@ -896,6 +940,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [geometryA, geometryB]);
 
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     ck.testExactNumber(3, approaches.length, "expect 3 close approaches between the ellipses");
     for (const approach of approaches) {
       const approachSegment = LineSegment3d.create(approach.detailA.point, approach.detailB.point);
@@ -906,6 +951,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 0);
@@ -933,6 +979,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -954,6 +1001,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 0.5);
@@ -1013,6 +1061,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const numExpectedIntersections = 1;
     let numIntersectionsFound = 0;
     const expectedIntersectionPoint = Point3d.create(2, 0);
@@ -1042,6 +1091,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const numExpectedIntersections = 2;
     let numIntersectionsFound = 0;
     const expectedIntersectionPoint1 = Point3d.create(0, 1);
@@ -1073,6 +1123,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const numExpectedIntersections = 1;
     let numIntersectionsFound = 0;
     const expectedIntersectionPoint = Point3d.create(-1, 0);
@@ -1102,6 +1153,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const numExpectedIntersections = 2;
     let numIntersectionsFound = 0;
     const expectedIntersectionPoint1 = Point3d.create(0, 1);
@@ -1158,6 +1210,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find approaches
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -1179,6 +1232,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const detailA = closestApproach!.detailA;
     const detailB = closestApproach!.detailB;
     ck.testCoordinate(detailA.fraction, 1 / 6);
@@ -1211,6 +1265,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find approaches
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -1232,6 +1287,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
@@ -1333,6 +1389,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find approaches
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -1354,6 +1411,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
@@ -1388,6 +1446,7 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find approaches
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     ck.testTrue(0 < approaches.length, "found at least one close approach");
     for (const ap of approaches) {
       const approachSegment = LineSegment3d.create(ap.detailA.point, ap.detailB.point);
@@ -1401,6 +1460,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     if (ck.testDefined(closestApproach, "found closest approach")) {
+      verifyClosestApproachDistance(ck, closestApproach);
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, closestApproach.detailA.point, 0.06);
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, closestApproach.detailB.point, 0.06);
       const xyDist = closestApproach.detailA.point.distanceXY(closestApproach.detailB.point);
@@ -1428,6 +1488,7 @@ describe("CurveCurveCloseApproachXY", () => {
     geometryB.tryAddChild(loop2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -1449,6 +1510,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
@@ -1476,6 +1538,7 @@ describe("CurveCurveCloseApproachXY", () => {
     geometryB.tryAddChild(loop2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -1497,6 +1560,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
@@ -1522,6 +1586,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const geometryB = BagOfCurves.create(path, lineString2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     const approachLen = approaches.length;
     ck.testLE(0, approachLen);
     if (approachLen > 0) {
@@ -1543,6 +1608,7 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
+    verifyClosestApproachDistance(ck, closestApproach!);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
@@ -1769,6 +1835,7 @@ describe("CurveCurveCloseApproachXY", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0, dy0);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangency.detailA.point, 5, dx0, dy0);
         ck.testSmallRelative(tangency.detailA.a, `${spiral.spiralType} closest point is an intersection`);
+        ck.testSmallRelative(tangency.detailB.a, `${spiral.spiralType} closest point is an intersection`);
         // spiral math is not exact, so we expect more slop than usual
         ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `${spiral.spiralType} closest point is at the tangency`);
       }
@@ -1806,6 +1873,7 @@ describe("CurveCurveCloseApproachXY", () => {
         const spiral = spiral0.cloneTransformed(transforms[i]);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [seg, spiral], x0);
         const approaches = CurveCurve.closeApproachProjectedXYPairs(spiral, seg, maxDist[i]);
+        verifyCloseApproachDistances(ck, approaches);
         captureCloseApproaches(allGeometry, approaches, x0);
         ck.testExactNumber(numMinima[i], approaches.length, "returned expected unique close approaches <= maxLength");
         for (const approach of approaches)
@@ -1818,7 +1886,7 @@ describe("CurveCurveCloseApproachXY", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineCloseApproach", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
@@ -1988,20 +2056,22 @@ describe("CurveCurveCloseApproachXY", () => {
     const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number, dy0: number) => {
       const ray = bspline.fractionToPointAndDerivative(0.2);
       const seg = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
-      const tangency = CurveCurve.closestApproachProjectedXYPair(bspline, seg);
+      let options: CloseApproachOptions | undefined = undefined;
+      if (index === 1 || index === 2)
+        options = { newtonTolerance: 1e-9 };
+      const tangency = CurveCurve.closestApproachProjectedXYPair(bspline, seg, options);
       if (ck.testDefined(tangency, `found closest points between the bspline${index} and the line`)) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx0, dy0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0, dy0);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangency.detailA.point, 5, dx0, dy0);
         ck.testSmallRelative(tangency.detailA.a, `bspline${index}  closest point is an intersection`);
+        ck.testSmallRelative(tangency.detailB.a, `bspline${index}  closest point is an intersection`);
         ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `bspline${index}  closest point is at the tangency`);
       }
     };
     dx = 0;
     dy = 5500;
     for (let i = 0; i < bsplines.length; i++) {
-      if (i === 1 || i === 2) // Newton does not converge due to near-degenerate tangency
-        continue;
       testTangencyAtBsplineInterior(bsplines[i], i, dx, dy);
       dx += 200;
     }
@@ -2035,6 +2105,7 @@ describe("CurveCurveCloseApproachXY", () => {
         const spiral = bspline0.cloneTransformed(transforms[i]);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [seg, spiral], x0);
         const approaches = CurveCurve.closeApproachProjectedXYPairs(spiral, seg, maxDist[i]);
+        verifyCloseApproachDistances(ck, approaches);
         captureCloseApproaches(allGeometry, approaches, x0);
         ck.testExactNumber(numMinima[i], approaches.length, "returned expected unique close approaches <= maxLength");
         for (const approach of approaches)
@@ -2079,6 +2150,7 @@ describe("CurveCurveCloseApproachXY", () => {
 
     const maxDistance = 2;
     const approaches = CurveCurve.closeApproachProjectedXYPairs(bspline, arc, maxDistance);
+    verifyCloseApproachDistances(ck, approaches);
     captureCloseApproaches(allGeometry, approaches);
     ck.testExactNumber(1, approaches.length, "should find exactly 1 close approach");
     ck.testLE(approaches[0].detailA.a, maxDistance, "closest approach length should be less than maxDistance");
