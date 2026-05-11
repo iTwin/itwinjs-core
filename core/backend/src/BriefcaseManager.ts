@@ -29,9 +29,16 @@ import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
-import { ChangeInstance } from "./ChangesetReaderTypes";
+import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
+
+/** The argument for patch instances during semantic rebase
+ * @internal
+ */
+export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
+  $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
+}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
@@ -864,7 +871,7 @@ export class BriefcaseManager {
    * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure
    * @param db The [BriefcaseDb]($backend) instance for storing the changed instances against a txn
    * @param txnId The txn id for which we are storing the changed instances
-   * @param instancePatches The [ChangeInstance]($backend) instance patches to be stored
+   * @param instancePatches The [ChangeInstance]($backend) IterableIterator instance patches to be stored
    * @internal
    */
   public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void {
@@ -876,15 +883,33 @@ export class BriefcaseManager {
       IModelJsFs.removeSync(targetDir);
 
     IModelJsFs.recursiveMkDirSync(targetDir);
-    IModelJsFs.writeFileSync(filePath, "[");
+
+    const BATCH_SIZE = 100;
     let isFirst = true;
+    let batchParts: string[] = [];
+
+    const flushBatch = () => {
+      if (batchParts.length === 0) return;
+      IModelJsFs.appendFileSync(filePath, batchParts.join(""));
+      batchParts = [];
+    };
+
+    IModelJsFs.writeFileSync(filePath, "[");
     for (const instancePatch of instancePatches) {
       // we will not take the old stage of updated instances for now, because we still don't have conflict resolution on instance level while using semantic rebase.
       // Once we have conflict resolution on instance level, we can consider taking old stage of updated instances as well.
       if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue;
-      IModelJsFs.appendFileSync(filePath, `${isFirst ? "" : ","}\n${JSON.stringify(instancePatch, Base64EncodedString.replacer)}`);
+      const { $meta, ...rest } = instancePatch;
+      const transformedInstance: InstancePatch = {
+        ...rest,
+        $meta: { op: $meta.op, stage: $meta.stage, isIndirectChange: $meta.isIndirectChange },
+      };
+      batchParts.push(`${isFirst ? "" : ","}\n${JSON.stringify(transformedInstance, Base64EncodedString.replacer)}`);
       isFirst = false;
+      if (batchParts.length >= BATCH_SIZE)
+        flushBatch();
     }
+    flushBatch();
     IModelJsFs.appendFileSync(filePath, "\n]");
   }
 
@@ -949,14 +974,14 @@ export class BriefcaseManager {
    * @returns Instance patches
    * @internal
    */
-  public static async *getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<ChangeInstance> {
+  public static async *getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch> {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
     const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
     for await (const line of IModelJsFs.readLines(filePath)) {
       if (line === "[" || line === "]" || line === "") continue;
       const trimmedLine = line.trim().endsWith(",") ? line.trim().slice(0, -1) : line.trim(); // remove trailing comma if exists
-      yield JSON.parse(trimmedLine, Base64EncodedString.reviver) as ChangeInstance;
+      yield JSON.parse(trimmedLine, Base64EncodedString.reviver) as InstancePatch;
     }
   }
 
