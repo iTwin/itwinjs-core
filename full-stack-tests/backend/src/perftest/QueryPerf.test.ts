@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { Code, ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, IModel, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { ECSqlStatement, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
@@ -200,6 +200,69 @@ describe.only("RepeatedQueryPerformanceTests", () => {
         Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
       });
       reporter.addEntry("RepeatedQueryPerformanceTests", "withQueryReader (sync) - element exists", "Avg time per query (ms)", avgTime, {
+        Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
+      });
+    }
+  });
+
+  it("withQueryReader (sync) - parameterized query with changing bindings", async () => {
+    const ecsql = "SELECT ECInstanceId FROM bis.Element WHERE ECInstanceId = ?";
+
+    for (const iterations of QUERY_ITERATIONS) {
+      const startTime = performance.now();
+
+      for (let i = 0; i < iterations; i++) {
+        const elementId = elementIds[i % elementIds.length];
+
+        testIModel.withQueryReader(ecsql, (reader) => {
+          const hasRow = reader.step();
+          assert.isTrue(hasRow, "Element should exist");
+          reader.current.toRow();
+        }, QueryBinder.from([elementId]));
+      }
+
+      const endTime = performance.now();
+      const totalTime = endTime - startTime;
+      const avgTime = totalTime / iterations;
+
+      // eslint-disable-next-line no-console
+      console.log(`withQueryReader (sync) parameterized | ${iterations} iterations | total: ${totalTime.toFixed(2)}ms | avg: ${avgTime.toFixed(4)}ms`);
+
+      reporter.addEntry("RepeatedQueryPerformanceTests", "withQueryReader (sync) - parameterized bindings", "Total time (ms)", totalTime, {
+        Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
+      });
+      reporter.addEntry("RepeatedQueryPerformanceTests", "withQueryReader (sync) - parameterized bindings", "Avg time per query (ms)", avgTime, {
+        Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
+      });
+    }
+  });
+
+  it("createQueryReader (async) - parameterized query with changing bindings", async () => {
+    const ecsql = "SELECT ECInstanceId FROM bis.Element WHERE ECInstanceId = ?";
+
+    for (const iterations of QUERY_ITERATIONS) {
+      const startTime = performance.now();
+
+      for (let i = 0; i < iterations; i++) {
+        const elementId = elementIds[i % elementIds.length];
+
+        const reader = testIModel.createQueryReader(ecsql, QueryBinder.from([elementId]), { usePrimaryConn: true });
+        const hasRow = await reader.step();
+        assert.isTrue(hasRow, "Element should exist");
+        reader.current.toRow();
+      }
+
+      const endTime = performance.now();
+      const totalTime = endTime - startTime;
+      const avgTime = totalTime / iterations;
+
+      // eslint-disable-next-line no-console
+      console.log(`createQueryReader (async) parameterized | ${iterations} iterations | total: ${totalTime.toFixed(2)}ms | avg: ${avgTime.toFixed(4)}ms`);
+
+      reporter.addEntry("RepeatedQueryPerformanceTests", "createQueryReader (async) - parameterized bindings", "Total time (ms)", totalTime, {
+        Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
+      });
+      reporter.addEntry("RepeatedQueryPerformanceTests", "createQueryReader (async) - parameterized bindings", "Avg time per query (ms)", avgTime, {
         Iterations: iterations, CoreVersion: CORE_MAJ_MIN,
       });
     }
