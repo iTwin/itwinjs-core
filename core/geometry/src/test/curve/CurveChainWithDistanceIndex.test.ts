@@ -408,6 +408,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const lowestPolygonPoint = Point3d.create(-4, -4, 2);
     const skewPlanePolygon = [Point3d.create(4, 4, 8), Point3d.create(-4, 4, 5), lowestPolygonPoint, Point3d.create(4, -4, 5)];
     const chainB = CurveChainWithDistanceIndex.createCapture(Loop.createPolygon(skewPlanePolygon));
+    GeometryCoreTestIO.captureGeometry(allGeometry, [chainA, chainB]);
     const pairs = CurveCurve.closeApproachProjectedXYPairs(chainA, chainB, 1.5);
     // known fractions of xy close approaches
     const arcFractionOfChain = semicircleCW.curveLength() / chainA.curveLength();
@@ -431,7 +432,7 @@ describe("CurveChainWithDistanceIndex", () => {
         else
           ck.announceError("unexpected close approach");
       }
-      GeometryCoreTestIO.captureGeometry(allGeometry, [chainA, chainB, LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point), LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point)]);
+      GeometryCoreTestIO.captureGeometry(allGeometry, [LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point), LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point)]);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainLoops");
     expect(ck.getNumErrors()).toBe(0);

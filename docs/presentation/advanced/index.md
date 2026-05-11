@@ -8,4 +8,3 @@
 - [Ruleset Supplementation](./RulesetSupplementation.md)
   - [Default BIS Presentation Rules](./DefaultBisRules.md)
 - [Performance Tips](./Performance.md)
-- [Testing](./Testing.md)

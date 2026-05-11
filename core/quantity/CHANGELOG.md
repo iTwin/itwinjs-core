@@ -1,6 +1,64 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Mon, 09 Mar 2026 14:43:24 GMT and should not be manually modified.
+This log was last generated on Fri, 08 May 2026 20:37:55 GMT and should not be manually modified.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Fix FormatSpecHandle stale state during onFormattingReady
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Minor changes
+
+- Add Units namespace with typed constants, findPersistenceUnitForPhenomenon helper, and impliedUnitSystem to FormatsChangedArgs.
+
+### Updates
+
+- Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:14 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+_Version update only_
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
 
 ## 5.7.1
 Mon, 09 Mar 2026 14:41:48 GMT
@@ -13,6 +71,11 @@ Tue, 03 Mar 2026 18:21:20 GMT
 ### Updates
 
 - Fix `Quantity.convertTo()` function signature to always return a valid object
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

@@ -5,62 +5,26 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
-    - [WithQueryReader API](#withqueryreader-api)
+    - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+  - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
 
-### WithQueryReader API
+### ECSQL CROSS JOIN now supports optional ON clause
 
-A new [withQueryReader]($docs/learning/backend/WithQueryReaderCodeExamples.md) method has been added to both [ECDb]($backend) and [IModelDb]($backend), providing true row-by-row behavior for ECSQL queries with synchronous execution. This API introduces a new [ECSqlSyncReader]($backend) through the [ECSqlRowExecutor]($backend) and supports configuration via [SynchronousQueryOptions]($backend).
+`CROSS JOIN` in ECSQL now accepts an optional `ON` condition, matching standard SQL and SQLite behavior. Previously, `CROSS JOIN` only produced an unfiltered Cartesian product between two classes.
 
-**Key Features:**
+The key benefit of using `CROSS JOIN` with an `ON` clause — rather than `INNER JOIN` — is optimizer control: SQLite's [special CROSS JOIN handling](https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_) prevents the query planner from reordering the joined tables, giving applications explicit control over the join order and query execution plan.
 
-- **True row-by-row streaming**: Unlike the existing async reader APIs, `withQueryReader` provides synchronous row-by-row access to query results
-- **Consistent API across databases**: The same interface is available on both `ECDb` and `IModelDb` instances
-- **Configurable behavior**: Support for various query options through `SynchronousQueryOptions`
+**Example** — filter the Cartesian product while locking join order:
 
-**Usage Examples:**
-
-```typescript
-// ECDb usage
-db.withQueryReader("SELECT ECInstanceId, UserLabel FROM bis.Element LIMIT 100", (reader) => {
-  while (reader.step()) {
-    const row = reader.current;
-    console.log(`ID: ${row.id}, Label: ${row.userLabel}`);
-  }
-});
-
-// IModelDb usage with options
-iModelDb.withQueryReader(
-  "SELECT ECInstanceId, CodeValue FROM bis.Element",
-  (reader) => {
-    while (reader.step()) {
-      const row = reader.current;
-      processElement(row);
-    }
-  }
-);
+```sql
+-- Returns only matching Person/Identifier pairs, but forces Person to be the outer table
+SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonId
 ```
 
-**Migration from deprecated APIs:**
+This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
 
-This API serves as the recommended replacement for synchronous query scenarios previously handled by the deprecated `ECSqlStatement` for read-only operations:
+## Electron 42 support
 
-```typescript
-// Before - using deprecated ECSqlStatement
-db.withPreparedStatement(query, (stmt) => {
-  while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-    const row = stmt.getRow();
-    processRow(row);
-  }
-});
-
-// Now - using withQueryReader
-db.withQueryReader(query, (reader) => {
-  while (reader.step()) {
-    const row = reader.current;
-    processRow(row);
-  }
-});
-```
-
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 42](https://www.electronjs.org/blog/electron-42-0).

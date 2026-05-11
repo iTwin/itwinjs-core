@@ -103,6 +103,7 @@
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>
     <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <ECProperty propertyName="range3d" typeName="binary"/>
     <ECStructProperty propertyName="st" typeName="ComplexStruct"/>
   </ECEntityClass>
   <ECEntityClass typeName="IPrimitiveAspect" modifier="Abstract">
@@ -122,6 +123,7 @@
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>
     <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <ECProperty propertyName="range3d" typeName="binary"/>
     <ECStructProperty propertyName="st" typeName="ComplexStruct"/>
   </ECEntityClass>
   <ECEntityClass typeName="IPrimitiveArray" modifier="Abstract">
@@ -172,6 +174,7 @@
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>
     <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <ECProperty propertyName="range3d" typeName="binary"/>
     <ECArrayProperty propertyName="array_i" typeName="int" minOccurs="0" maxOccurs="unbounded"/>
     <ECArrayProperty propertyName="array_l" typeName="long" minOccurs="0" maxOccurs="unbounded"/>
     <ECArrayProperty propertyName="array_d" typeName="double" minOccurs="0" maxOccurs="unbounded"/>

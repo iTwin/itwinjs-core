@@ -11,12 +11,11 @@ import { Geometry } from "../../Geometry";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
+import { Newton1dUnboundedApproximateDerivative, NewtonRtoRStrokeHandler } from "../../numerics/Newton";
 import { SmallSystem } from "../../numerics/SmallSystem";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**
  * Context for searching for the closest point to a CurvePrimitive.
@@ -47,7 +46,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     this._workRay = Ray3d.createZero();
     this._closestPoint = result;
     if (this._closestPoint)
-      this._closestPoint.a = Geometry.largeCoordinateResult
+      this._closestPoint.a = Geometry.largeCoordinateResult;
     this._extend = extend ?? false;
     this._xyOnly = xyOnly ?? false;
     this.startCurvePrimitive(undefined);

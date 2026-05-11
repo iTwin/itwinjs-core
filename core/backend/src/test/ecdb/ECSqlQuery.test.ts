@@ -409,7 +409,7 @@ describe("ECSql Query", () => {
     // expect log message when statement fails
     let slm = new SequentialLogMatcher();
     slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ true), "no such table: def (BE_SQLITE_ERROR)");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
@@ -422,7 +422,7 @@ describe("ECSql Query", () => {
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ true), "ECClass 'abc.def' does not exist or could not be loaded.");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error

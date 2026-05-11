@@ -259,7 +259,7 @@ export class SheetViewAttachments implements Disposable {
     this._impl = await this._impl.postload(response, iModel);
   }
 
-  public async reload(sheetModelId: Id64String, iModel: IModelConnection): Promise<void> {
+  public async reload(sheetModelId: Id64String, iModel: IModelConnection): Promise<boolean> {
     const renderers = this._renderers;
     const reload = this._reload = reloadAttachments(sheetModelId, iModel);
     const impl = await this._reload;
@@ -277,7 +277,11 @@ export class SheetViewAttachments implements Disposable {
         // We are attached to a Viewport - reload the renderers.
         this.loadRenderers();
       }
+
+      return true;
     }
+
+    return false;
   }
 
   public attachToViewport(args: {

@@ -2183,6 +2183,19 @@ export interface DbBlobResponse extends DbResponse {
     rawBlobSize: number;
 }
 
+// @public
+export interface DbCloudContainerInfo {
+    readonly alias?: string;
+    readonly baseUri: string;
+    readonly containerId: string;
+    readonly dbName?: string;
+    readonly description?: string;
+    readonly isPublic?: boolean;
+    readonly storageType: "azure" | "google";
+    readonly version?: string;
+    readonly writeable?: boolean;
+}
+
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
@@ -2971,6 +2984,30 @@ export interface EdgeOptions {
 export interface EditingScopeNotifications {
     // (undocumented)
     notifyGeometryChanged: (modelProps: ModelGeometryChangesProps[]) => void;
+}
+
+// @beta
+export interface EditTxnError extends ITwinError {
+    readonly description?: string;
+    readonly iModelKey?: string;
+}
+
+// @beta (undocumented)
+export namespace EditTxnError {
+    const scope = "itwin-EditTxn";
+    export function isError(error: unknown, key?: Key): error is EditTxnError;
+    export type Key =
+    /** an attempt to start an EditTxn when one is already active */
+    "already-active" |
+    /** an attempt to modify an iModel through the implicit transaction when explicit transactions are enforced */
+    "implicit-txn-write-disallowed" |
+    /** an attempt to start an EditTxn when unsaved changes are already present */
+    "unsaved-changes" |
+    /** an attempt to perform an operation that requires an active EditTxn when none is active */
+    "not-active" |
+    /** an attempt to use an EditTxn with the wrong iModel */
+    "wrong-imodel";
+    export function throwError(key: Key, message: string, iModelKey?: string, description?: string): never;
 }
 
 // @public
@@ -5550,6 +5587,7 @@ export const ipcAppChannels: {
 
 // @internal
 export interface IpcAppFunctions {
+    // @deprecated (undocumented)
     abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
@@ -5573,11 +5611,18 @@ export interface IpcAppFunctions {
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    reinstateTxnAsync: (key: string, args?: ReinstateTxnArgs) => Promise<void>;
+    // (undocumented)
     restartTxnSession: (key: string) => Promise<void>;
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    reverseAllTxnsAsync: (key: string, args?: ReverseTxnArgs) => Promise<void>;
+    // (undocumented)
     reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
+    // (undocumented)
+    reverseTxnsAsync: (key: string, numOperations: number, args?: ReverseTxnArgs) => Promise<void>;
+    // @deprecated (undocumented)
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
@@ -5746,6 +5791,22 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface ITwinSettingsError extends ITwinError {
+    readonly iTwinId?: GuidString;
+    readonly priority?: number;
+}
+
+// @beta (undocumented)
+export namespace ITwinSettingsError {
+    const // (undocumented)
+    scope = "itwin-settings";
+    export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
+    // (undocumented)
+    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
 
 // @public
 export interface JsonGeometryStream {
@@ -7764,6 +7825,7 @@ export class QueryBinder {
     bindNull(indexOrName: string | number): this;
     bindPoint2d(indexOrName: string | number, val: Point2d): this;
     bindPoint3d(indexOrName: string | number, val: Point3d): this;
+    bindRange3d(indexOrName: string | number, val: LowAndHighXYZ): this;
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;
@@ -7985,6 +8047,11 @@ export class RealityModelDisplaySettings {
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
+
+// @beta
+export interface ReinstateTxnArgs {
+    readonly retainLocks?: boolean;
+}
 
 // @public @preview
 export class RelatedElement implements RelatedElementProps {
@@ -8548,8 +8615,14 @@ export interface RequestNewBriefcaseProps {
     readonly iTwinId: GuidString;
 }
 
+// @internal
+export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps;
+
+// @internal
+export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
+
 // @internal (undocumented)
-export class ResponseLike implements Response {
+export class ResponseLike {
     constructor(data: any);
     // (undocumented)
     arrayBuffer(): Promise<ArrayBuffer>;
@@ -8583,6 +8656,11 @@ export class ResponseLike implements Response {
     get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
     // (undocumented)
     get url(): string;
+}
+
+// @beta
+export interface ReverseTxnArgs {
+    readonly retainLocks?: boolean;
 }
 
 // @public
@@ -9372,7 +9450,7 @@ export interface RunLayoutResult {
 // @beta
 export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
-// @alpha
+// @beta
 export interface SaveChangesArgs {
     appData?: {
         [key: string]: any;
@@ -9478,6 +9556,22 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     path: string;
     // (undocumented)
     protocolVersion?: number;
+}
+
+// @beta
+export namespace ServerBasedLocksError {
+    const scope = "itwin-ServerBasedLocks";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The briefcase contains unsaved changes */
+    "has-unsaved-changes" |
+    /** A SQLite error occurred while reading or writing the "locks" database */
+    "lock-database-problem" |
+    /** The specified Txn ID is not known to the TxnManager */
+    "txn-id-not-found" |
+    /** Attempted to abandon locks for a Txn that has not yet been reversed */
+    "txn-not-reversed";
+    export function throwError(key: Key, message: string): never;
 }
 
 // @public (undocumented)
@@ -9910,7 +10004,8 @@ export interface SpatialClassifiersContainer {
 
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-    // (undocumented)
+    modelSelector?: RelatedElementProps;
+    // @deprecated
     modelSelectorId: ViewIdString;
 }
 
@@ -11391,7 +11486,8 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
     // (undocumented)
     angle: AngleProps;
-    // (undocumented)
+    baseModel?: RelatedElementProps;
+    // @deprecated
     baseModelId: Id64String;
     // (undocumented)
     delta: XYProps;
@@ -11414,11 +11510,13 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
-    // (undocumented)
+    categorySelector?: RelatedElementProps;
+    // @deprecated
     categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
-    // (undocumented)
+    displayStyle?: RelatedElementProps;
+    // @deprecated
     displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {

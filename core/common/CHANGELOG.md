@@ -1,6 +1,68 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Mon, 09 Mar 2026 14:43:24 GMT and should not be manually modified.
+This log was last generated on Fri, 08 May 2026 20:37:55 GMT and should not be manually modified.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+_Version update only_
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Added ITwinSettingsError for iTwin settings container API error handling.
+- added EditTxn apis
+- Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
+- Added ECSql-compatible navigation-property fields to `ViewDefinitionProps`, `SpatialViewDefinitionProps`, and `ViewDefinition2dProps` interfaces. The flat Id64String fields (`categorySelectorId`, `displayStyleId`, `modelSelectorId`, `baseModelId`) are deprecated in favor of the new navigation-property objects but remain as getter/setter pairs instead for backward compatibility.
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:13 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Updates
+
+- Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks.
+- Support for binding range3d
+- QueryBinder should not fail on bind empty array
+- Minor bump on `IModelReadRpcInterface.interfaceVersion`.
+- Add common DbCloudContainerInfo interface for metadata display
+- Added ECSqlReaderBase api which will act as a base point for both the async and sync version of ECSqlReader
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
 
 ## 5.7.1
 Mon, 09 Mar 2026 14:41:48 GMT
@@ -15,6 +77,11 @@ Tue, 03 Mar 2026 18:21:20 GMT
 - Move some types from backend to common
 - Fix a bug in a 'if' statement with a color def TBGR numeric value.
 - Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

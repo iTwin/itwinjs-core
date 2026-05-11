@@ -27,6 +27,7 @@ export * from "./ColorByName";
 export * from "./ColorDef";
 export * from "./CommonLoggerCategory";
 export * from "./ContextRealityModel";
+export * from "./DbCloudContainerInfo";
 export * from "./DisplayStyleSettings";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";

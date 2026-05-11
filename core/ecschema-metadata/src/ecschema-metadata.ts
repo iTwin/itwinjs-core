@@ -40,7 +40,6 @@ export * from "./PropertyTypes";
 export * from "./SchemaJsonLocater";
 export * from "./SchemaKey";
 export * from "./SchemaLoader";
-export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";

@@ -44,4 +44,10 @@ export interface EditorIpc {
 export interface EditCommandIpc {
   /** Identify the current `EditCommand`'s name and version, optionally returning additional properties that describe its state. */
   ping: () => Promise<{ commandId: string, version: string, [propName: string]: any }>;
+  /** Save pending changes on this command's transaction.
+   * @param description Optional description saved with the changes.
+   */
+  saveChanges: (description?: string) => Promise<void>;
+  /** Abandon pending changes on this command's transaction. */
+  abandonChanges: () => Promise<void>;
 }

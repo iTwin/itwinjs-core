@@ -14,7 +14,7 @@ import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 
 /** @internal */
 export namespace SchemaSync {
@@ -97,7 +97,7 @@ export namespace SchemaSync {
         const schemaSyncDbUri = syncAccess.getUri();
         iModel.clearCaches();
         iModel[_nativeDb].schemaSyncPull(schemaSyncDbUri);
-        iModel.saveChanges("schema synchronized with cloud container");
+        iModel[_implicitTxn].saveChanges("schema synchronized with cloud container");
       });
     }
   };
@@ -114,15 +114,15 @@ export namespace SchemaSync {
       await briefcase.pullChanges();
     }
     try {
-      iModel.saveFileProperty(syncProperty, JSON.stringify(props));
+      iModel[_implicitTxn].saveFileProperty(syncProperty, JSON.stringify(props));
       await withLockedAccess(arg.iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
         iModel[_nativeDb].schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
-        iModel.saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
+        iModel[_implicitTxn].saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
       });
     } catch (err) {
       throw err;
     } finally {
-      iModel.abandonChanges();
+      iModel[_implicitTxn].abandonChanges();
     }
 
     if (briefcase) {
