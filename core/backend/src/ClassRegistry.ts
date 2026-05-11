@@ -336,7 +336,7 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
  *
  * @example
  * @
@@ -347,8 +347,8 @@ export class ClassRegistry {
  *
  * Replacement:
  * ```ts
- * const entityMetaData: EntityClass | undefined = iModel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
- * const relationshipMetaData: RelationshipClass | undefined = iModel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", RelationshipClass);
+ * const view = await iModel.getSchemaView();
+ * const cls = view.getClass("SchemaName:ClassName");
  * ```
  */
 export class MetaDataRegistry {

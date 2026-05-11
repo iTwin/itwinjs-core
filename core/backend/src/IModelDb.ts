@@ -1662,7 +1662,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1670,7 +1670,8 @@ export abstract class IModelDb extends IModel {
    * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.getClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1845,7 +1846,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.getClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1853,7 +1854,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.getClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1872,7 +1874,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.getClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1880,7 +1882,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.getClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1900,7 +1903,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.getClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1910,9 +1913,10 @@ export abstract class IModelDb extends IModel {
    * }, false);
    *
    * // Replacement:
-   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * }, false);
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.getClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1927,7 +1931,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.getClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1937,9 +1941,10 @@ export abstract class IModelDb extends IModel {
    * });
    *
    * // Replacement:
-   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * });
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.getClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
