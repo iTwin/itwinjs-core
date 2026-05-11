@@ -4589,9 +4589,6 @@ export class IModelNative {
     static get platform(): typeof IModelJsNative;
 }
 
-// @internal (undocumented)
-export const _implicitTxn: unique symbol;
-
 // @beta
 export type ImplicitWriteEnforcement = "allow" | "log" | "throw";
 
