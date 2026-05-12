@@ -93,7 +93,7 @@ export class SchemaLocalization {
 
   /**
    * Get localized label for a schema.
-   * Fallback: localized label → original label → schema name
+   * Fallback: localized label (specific locale) → localized label (base locale) → original label → schema name
    */
   public async getSchemaLabel(schema: Schema): Promise<string> {
     const localization = await this.getSchemaLocalizationJson(schema.name);
@@ -102,18 +102,30 @@ export class SchemaLocalization {
       return localization.label;
     }
 
+    // Try base locale if specific locale didn't have the schema label
+    const baseLocalization = await this.getBaseLocalizationJson(schema.name);
+    if (baseLocalization?.label) {
+      return baseLocalization.label;
+    }
+
     return schema.label || schema.name;
   }
 
   /**
    * Get localized description for a schema.
-   * Fallback: localized description → original description
+   * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getSchemaDescription(schema: Schema): Promise<string | undefined> {
     const localization = await this.getSchemaLocalizationJson(schema.name);
 
     if (localization?.description) {
       return localization.description;
+    }
+
+    // Try base locale if specific locale didn't have the schema description
+    const baseLocalization = await this.getBaseLocalizationJson(schema.name);
+    if (baseLocalization?.description) {
+      return baseLocalization.description;
     }
 
     return schema.description;
