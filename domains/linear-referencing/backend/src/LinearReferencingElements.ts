@@ -8,7 +8,6 @@
 
 import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import { ECSqlStatement, EditTxn, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
-import { _implicitTxn } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@itwin/core-common";
 import {
   ComparisonOption, LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
@@ -86,16 +85,23 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
   public static insertFromTo(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert a new `LinearLocation`.
-   * @deprecated Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   public static insertFromTo(txnOrIModel: EditTxn | IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const newId = LinearlyLocated.insertFromTo(txn, this.toProps(modelId, categoryId), linearElementId, fromToPosition);
-    ILinearLocationLocatesElement.insert(txn, newId, locatedElementId);
-    return newId;
+    if (txnOrIModel instanceof EditTxn) {
+      const newId = LinearlyLocated.insertFromTo(txnOrIModel, this.toProps(modelId, categoryId), linearElementId, fromToPosition);
+      ILinearLocationLocatesElement.insert(txnOrIModel, newId, locatedElementId);
+      return newId;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    const iModelNewId = LinearlyLocated.insertFromTo(txnOrIModel, this.toProps(modelId, categoryId), linearElementId, fromToPosition);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    ILinearLocationLocatesElement.insert(txnOrIModel, iModelNewId, locatedElementId);
+    return iModelNewId;
   }
 
   /** Insert this `LinearLocation` using an explicit transaction.
@@ -103,14 +109,21 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
    */
   public insertFromTo(txn: EditTxn, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert this `LinearLocation`.
-   * @deprecated Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   public insertFromTo(txnOrIModel: EditTxn | IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const newId = LinearlyLocated.insertFromTo(txn, this.toJSON(), linearElementId, fromToPosition);
-    ILinearLocationLocatesElement.insert(txn, newId, locatedElementId);
-    return newId;
+    if (txnOrIModel instanceof EditTxn) {
+      const newId = LinearlyLocated.insertFromTo(txnOrIModel, this.toJSON(), linearElementId, fromToPosition);
+      ILinearLocationLocatesElement.insert(txnOrIModel, newId, locatedElementId);
+      return newId;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    const iModelNewId = LinearlyLocated.insertFromTo(txnOrIModel, this.toJSON(), linearElementId, fromToPosition);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    ILinearLocationLocatesElement.insert(txnOrIModel, iModelNewId, locatedElementId);
+    return iModelNewId;
   }
 
   /** Insert a new `LinearLocation` using an explicit transaction.
@@ -119,16 +132,23 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
   public static insertAt(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert a new `LinearLocation`.
-   * @deprecated Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   public static insertAt(txnOrIModel: EditTxn | IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const newId = LinearlyLocated.insertAt(txn, this.toProps(modelId, categoryId), linearElementId, atPosition);
-    ILinearLocationLocatesElement.insert(txn, newId, locatedElementId);
-    return newId;
+    if (txnOrIModel instanceof EditTxn) {
+      const newId = LinearlyLocated.insertAt(txnOrIModel, this.toProps(modelId, categoryId), linearElementId, atPosition);
+      ILinearLocationLocatesElement.insert(txnOrIModel, newId, locatedElementId);
+      return newId;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    const iModelNewId = LinearlyLocated.insertAt(txnOrIModel, this.toProps(modelId, categoryId), linearElementId, atPosition);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    ILinearLocationLocatesElement.insert(txnOrIModel, iModelNewId, locatedElementId);
+    return iModelNewId;
   }
 
   /** Insert this `LinearLocation` using an explicit transaction.
@@ -136,14 +156,21 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
    */
   public insertAt(txn: EditTxn, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert this `LinearLocation`.
-   * @deprecated Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   public insertAt(txnOrIModel: EditTxn | IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const newId = LinearlyLocated.insertAt(txn, this.toJSON(), linearElementId, atPosition);
-    ILinearLocationLocatesElement.insert(txn, newId, locatedElementId);
-    return newId;
+    if (txnOrIModel instanceof EditTxn) {
+      const newId = LinearlyLocated.insertAt(txnOrIModel, this.toJSON(), linearElementId, atPosition);
+      ILinearLocationLocatesElement.insert(txnOrIModel, newId, locatedElementId);
+      return newId;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    const iModelNewId = LinearlyLocated.insertAt(txnOrIModel, this.toJSON(), linearElementId, atPosition);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    ILinearLocationLocatesElement.insert(txnOrIModel, iModelNewId, locatedElementId);
+    return iModelNewId;
   }
 }
 
@@ -210,14 +237,17 @@ export class Referent extends ReferentElement {
   public static insertAt(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
   /** Insert a new `Referent`.
-   * @deprecated Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
   public static insertAt(txnOrIModel: EditTxn | IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    return LinearlyLocated.insertAt(txn, this.toProps(modelId, categoryId, referencedElementId), linearElementId, atPosition);
+    if (txnOrIModel instanceof EditTxn)
+      return LinearlyLocated.insertAt(txnOrIModel, this.toProps(modelId, categoryId, referencedElementId), linearElementId, atPosition);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    return LinearlyLocated.insertAt(txnOrIModel, this.toProps(modelId, categoryId, referencedElementId), linearElementId, atPosition);
   }
 
   /** Insert this `Referent` using an explicit transaction.
@@ -225,12 +255,15 @@ export class Referent extends ReferentElement {
    */
   public insertAt(txn: EditTxn, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
   /** Insert this `Referent`.
-   * @deprecated Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
   public insertAt(txnOrIModel: EditTxn | IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    return LinearlyLocated.insertAt(txn, this.toJSON(), linearElementId, atPosition);
+    if (txnOrIModel instanceof EditTxn)
+      return LinearlyLocated.insertAt(txnOrIModel, this.toJSON(), linearElementId, atPosition);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+    return LinearlyLocated.insertAt(txnOrIModel, this.toJSON(), linearElementId, atPosition);
   }
 }
 
@@ -548,12 +581,20 @@ class QueryLinearLocationsECSQLGen {
  * @beta
  */
 export class LinearlyLocated {
-  private static insertBasic(txn: EditTxn, elProps: ElementProps, linearElementId: Id64String): Id64String {
-    const newId = txn.insertElement(elProps);
+  private static insertBasic(txnOrIModel: EditTxn | IModelDb, elProps: ElementProps, linearElementId: Id64String): Id64String {
+    const newId = txnOrIModel instanceof EditTxn
+      ? txnOrIModel.insertElement(elProps)
+      : (() => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+        return txnOrIModel.elements.insertElement(elProps);
+      })();
 
-    const linearlyLocatedAlongLinearElement =
-      ILinearlyLocatedAlongILinearElement.create(txn.iModel, newId, linearElementId);
-    linearlyLocatedAlongLinearElement.insert(txn);
+    if (txnOrIModel instanceof EditTxn)
+      ILinearlyLocatedAlongILinearElement.insert(txnOrIModel, newId, linearElementId);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      ILinearlyLocatedAlongILinearElement.insert(txnOrIModel, newId, linearElementId);
+    }
 
     return newId;
   }
@@ -575,16 +616,21 @@ export class LinearlyLocated {
    * @param atPosition Linear position.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
-   * @deprecated Use LinearlyLocated.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps): Id64String;
   public static insertAt(txnOrIModel: EditTxn | IModelDb, elProps: ElementProps, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const newId: Id64String = this.insertBasic(txn, elProps, linearElementId);
-    LinearlyReferencedAtLocation.insert(txn, newId, atPosition.atPosition,
-      atPosition.fromReferent === undefined ? undefined : atPosition.fromReferent.id);
+    const newId: Id64String = this.insertBasic(txnOrIModel, elProps, linearElementId);
+    if (txnOrIModel instanceof EditTxn)
+      LinearlyReferencedAtLocation.insert(txnOrIModel, newId, atPosition.atPosition,
+        atPosition.fromReferent === undefined ? undefined : atPosition.fromReferent.id);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      LinearlyReferencedAtLocation.insert(txnOrIModel, newId, atPosition.atPosition,
+        atPosition.fromReferent === undefined ? undefined : atPosition.fromReferent.id);
+    }
     return newId;
   }
 
@@ -605,18 +651,25 @@ export class LinearlyLocated {
    * @param fromToPosition Linear position.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
-   * @deprecated Use LinearlyLocated.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
   public static insertFromTo(txnOrIModel: EditTxn | IModelDb, elProps: ElementProps, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps): Id64String {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const newId: Id64String = this.insertBasic(txn, elProps, linearElementId);
-    LinearlyReferencedFromToLocation.insert(txn, newId,
-      fromToPosition.fromPosition, fromToPosition.toPosition,
-      fromToPosition.fromPositionFromReferent === undefined ? undefined : fromToPosition.fromPositionFromReferent.id,
-      fromToPosition.toPositionFromReferent === undefined ? undefined : fromToPosition.toPositionFromReferent.id);
+    const newId: Id64String = this.insertBasic(txnOrIModel, elProps, linearElementId);
+    if (txnOrIModel instanceof EditTxn)
+      LinearlyReferencedFromToLocation.insert(txnOrIModel, newId,
+        fromToPosition.fromPosition, fromToPosition.toPosition,
+        fromToPosition.fromPositionFromReferent === undefined ? undefined : fromToPosition.fromPositionFromReferent.id,
+        fromToPosition.toPositionFromReferent === undefined ? undefined : fromToPosition.toPositionFromReferent.id);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      LinearlyReferencedFromToLocation.insert(txnOrIModel, newId,
+        fromToPosition.fromPosition, fromToPosition.toPosition,
+        fromToPosition.fromPositionFromReferent === undefined ? undefined : fromToPosition.fromPositionFromReferent.id,
+        fromToPosition.toPositionFromReferent === undefined ? undefined : fromToPosition.toPositionFromReferent.id);
+    }
     return newId;
   }
 
@@ -681,7 +734,7 @@ export class LinearlyLocated {
    * @param linearLocationProps The properties to use to update the LinearlyReferencedAtLocation aspect.
    * @param aspectId The Id of the aspect to update. If not known, the first aspectId will be looked-up.
    * @throws [[IModelError]]
-   * @deprecated Use LinearlyLocated.updateAtLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.updateAtLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps,
     aspectId?: Id64String): void;
@@ -690,8 +743,7 @@ export class LinearlyLocated {
     aspectId?: Id64String): void;
   public static updateAtLocation(txnOrIModel: EditTxn | IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps,
     aspectId?: Id64String): void {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const iModel = txn.iModel;
+    const iModel = txnOrIModel instanceof EditTxn ? txnOrIModel.iModel : txnOrIModel;
     let linearLocAspectId: Id64String;
     if (aspectId !== undefined)
       linearLocAspectId = aspectId;
@@ -711,7 +763,12 @@ export class LinearlyLocated {
       fromReferent: linearLocationProps.fromReferent,
     };
 
-    txn.updateAspect(linearLocationAspectProps);
+    if (txnOrIModel instanceof EditTxn)
+      txnOrIModel.updateAspect(linearLocationAspectProps);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      txnOrIModel.elements.updateAspect(linearLocationAspectProps);
+    }
   }
 
   /** Update an existing LinearlyReferencedFromToLocation aspect within the iModel.
@@ -720,7 +777,7 @@ export class LinearlyLocated {
    * @param linearLocationProps The properties to use to update the LinearlyReferencedFromToLocation aspect.
    * @param aspectId The Id of the aspect to update. If not known, the first aspectId will be looked-up.
    * @throws [[IModelError]]
-   * @deprecated Use LinearlyLocated.updateFromToLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.updateFromToLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps,
     aspectId?: Id64String): void;
@@ -729,8 +786,7 @@ export class LinearlyLocated {
     aspectId?: Id64String): void;
   public static updateFromToLocation(txnOrIModel: EditTxn | IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps,
     aspectId?: Id64String): void {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    const iModel = txn.iModel;
+    const iModel = txnOrIModel instanceof EditTxn ? txnOrIModel.iModel : txnOrIModel;
     let linearLocAspectId: Id64String;
     if (aspectId !== undefined)
       linearLocAspectId = aspectId;
@@ -752,7 +808,12 @@ export class LinearlyLocated {
       toPositionFromReferent: linearLocationProps.toPositionFromReferent,
     };
 
-    txn.updateAspect(linearLocationAspectProps);
+    if (txnOrIModel instanceof EditTxn)
+      txnOrIModel.updateAspect(linearLocationAspectProps);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      txnOrIModel.elements.updateAspect(linearLocationAspectProps);
+    }
   }
 
   /** Query for the Id of the Linear-Element along which the specified LinearlyLocated Element is located.

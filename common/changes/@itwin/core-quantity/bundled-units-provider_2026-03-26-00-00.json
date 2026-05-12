@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

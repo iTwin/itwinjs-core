@@ -6,11 +6,13 @@
  * @module Quantity
  */
 
+import { Logger } from "@itwin/core-bentley";
 import { QuantityConstants } from "./Constants";
 import { QuantityError, QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { QuantityLoggerCategory } from "./QuantityLoggerCategory";
 import { ParserSpec } from "./ParserSpec";
 import { applyConversion, Quantity } from "./Quantity";
 
@@ -460,6 +462,9 @@ export class Parser {
       } else {
         // Add new conversion to the list.
         const conversion = await unitsProvider.getConversion(unitProps, outUnit);
+        if (conversion.error) {
+          Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unitProps.name}" to "${outUnit.name}" could not be resolved.`);
+        }
         if (conversion) {
           spec = {
             conversion,
@@ -482,7 +487,11 @@ export class Parser {
   private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const unitConversionInfos = await this.getRequiredUnitsConversionsToParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
     if (unitConversionInfos.outUnit) {
-      const value = Parser.getQuantityValueFromParseTokens(tokens, format, unitConversionInfos.specs, await unitsProvider.getConversion(unitConversionInfos.outUnit, unitConversionInfos.outUnit));
+      const outUnitConversion = await unitsProvider.getConversion(unitConversionInfos.outUnit, unitConversionInfos.outUnit);
+      if (outUnitConversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unitConversionInfos.outUnit.name}" to "${unitConversionInfos.outUnit.name}" could not be resolved.`);
+      }
+      const value = Parser.getQuantityValueFromParseTokens(tokens, format, unitConversionInfos.specs, outUnitConversion);
       if (value.ok) {
         return new Quantity(unitConversionInfos.outUnit, value.value);
       }
@@ -1080,6 +1089,9 @@ export class Parser {
     const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
+      if (conversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      }
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
       const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
       // add any alternate labels that may be defined for the Unit
@@ -1122,6 +1134,9 @@ export class Parser {
       }
 
       const conversion = await unitsProvider.getConversion(unit, outUnit);
+      if (conversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      }
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
       const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
       // add any alternate labels that may be defined for the Unit

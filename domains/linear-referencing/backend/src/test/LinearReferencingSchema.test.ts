@@ -52,7 +52,7 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
     return LinearlyLocated.getFromToLocation(this.iModel, this.id);
   }
 
-  /** @deprecated Use updateFromToLocation(txn, ...) instead. */
+  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use updateFromToLocation(txn, ...) instead. */
   public updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 
   public updateFromToLocation(txn: EditTxn, linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;

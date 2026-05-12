@@ -258,7 +258,7 @@ export interface AddFormattingSpecArgs extends FormattingSpecArgs {
   formatProps?: FormatProps;
 }
 
-/** Minimal contract required by [[FormatSpecHandle]] to look up specs and subscribe to reloads.
+/** Minimal contract required by [[FormatSpecHandle]] to look up current specs and expose formatting readiness.
  * Implemented by [[QuantityFormatter]] in `@itwin/core-frontend`.
  * @beta
  */
