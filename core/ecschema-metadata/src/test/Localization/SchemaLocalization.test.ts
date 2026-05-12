@@ -801,8 +801,8 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original labels when locale not available for any schema", async () => {
-      // French (fr) not provided for any schema
-      const localization = new SchemaLocalization(provider, "fr");
+      // Urdu (ur) not provided for any schema
+      const localization = new SchemaLocalization(provider, "ur");
 
       const buildingLabel = await localization.getSchemaLabel(testBuildingSchema);
       expect(buildingLabel).to.equal("Test Building Schema");
@@ -827,6 +827,17 @@ describe("SchemaLocalization", () => {
 
       await expect(localization.getSchemaLabel(testBuildingSchema)).rejects.toThrow("Invalid localization JSON");
     });
+
+    it("should throw error, when major version is different", async () => {
+      const localization = new SchemaLocalization(provider, "fr");
+
+      // TestProduct schema and its French localization have same major version
+      const productLabel = await localization.getSchemaLabel(testProductSchema);
+      expect(productLabel).to.equal("Schéma de test de produit");
+      expect(testProductSchema.label).to.equal("Test Product Schema");
+
+      // TestPerson schema and its French localization have different major version
+      await expect(localization.getSchemaLabel(testPersonSchema)).rejects.toThrow(`Localization version mismatch for schema "TestPerson". Schema major version is 1, but localization is for major version 2.`);
+    });
   });
 });
-

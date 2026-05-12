@@ -51,42 +51,71 @@ export class SchemaLocalization {
   }
 
   /**
+   * Provide major version of localized schema
+   * @param version The version string.
+   * @returns Major version number, or undefined
+   */
+  private getMajorVersion(version: string): number | undefined {
+    const rawVersion = version.split(".");
+    if (rawVersion.length > 0) {
+      const majorVersion = parseInt(rawVersion[0], 10);
+      return isNaN(majorVersion) ? undefined : majorVersion;
+    }
+
+    return undefined;
+  }
+
+  /**
    * Load and cache the localization JSON for a schema.
-   * @param schemaName The name of the schema
+   * @param schema The schema to load localization for
    * @returns The localization JSON, or null if not found
    * @internal
    */
-  private async getSchemaLocalizationJson(schemaName: string): Promise<SchemaLocalizationJson | null> {
-    const cacheKey = `${schemaName}:${this._locale}`;
+  private async getSchemaLocalizationJson(schema: Schema): Promise<SchemaLocalizationJson | null> {
+    const cacheKey = `${schema.name}:${this._locale}`;
 
     if (this._cache.has(cacheKey)) {
       return this._cache.get(cacheKey) || null;
     }
 
-    const localization = await this._provider.getLocalization(schemaName, this._locale);
+    const localization = await this._provider.getLocalization(schema.name, this._locale);
+    if (localization && localization.version) {
+      const localizationMajor = this.getMajorVersion(localization.version);
+      if (schema.schemaKey.readVersion !== localizationMajor) {
+        throw new Error(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor}.`);
+      }
+    }
+
     this._cache.set(cacheKey, localization || null);
     return localization || null;
   }
 
   /**
    * Load the base locale localization if the current locale has a region (e.g., "es" from "es-CO").
-   * @param schemaName The name of the schema
+   * @param schema The schema to load localization for
    * @returns The base localization JSON, or null if not found or not applicable
    * @internal
    */
-  private async getBaseLocalizationJson(schemaName: string): Promise<SchemaLocalizationJson | null> {
+  private async getBaseLocalizationJson(schema: Schema): Promise<SchemaLocalizationJson | null> {
     if (!this._locale.includes("-")) {
       return null;
     }
 
     const baseLocale = this._locale.split("-")[0];
-    const cacheKey = `${schemaName}:${baseLocale}`;
+    const cacheKey = `${schema.name}:${baseLocale}`;
 
     if (this._cache.has(cacheKey)) {
       return this._cache.get(cacheKey) || null;
     }
 
-    const localization = await this._provider.getLocalization(schemaName, baseLocale);
+    const localization = await this._provider.getLocalization(schema.name, baseLocale);
+    if (localization && localization.version) {
+      const localizationMajor = this.getMajorVersion(localization.version);
+      if (schema.schemaKey.readVersion !== localizationMajor) {
+        throw new Error(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor}.`);
+      }
+    }
+
     this._cache.set(cacheKey, localization || null);
     return localization || null;
   }
@@ -96,14 +125,14 @@ export class SchemaLocalization {
    * Fallback: localized label (specific locale) → localized label (base locale) → original label → schema name
    */
   public async getSchemaLabel(schema: Schema): Promise<string> {
-    const localization = await this.getSchemaLocalizationJson(schema.name);
+    const localization = await this.getSchemaLocalizationJson(schema);
 
     if (localization?.label) {
       return localization.label;
     }
 
     // Try base locale if specific locale didn't have the schema label
-    const baseLocalization = await this.getBaseLocalizationJson(schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(schema);
     if (baseLocalization?.label) {
       return baseLocalization.label;
     }
@@ -116,14 +145,14 @@ export class SchemaLocalization {
    * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getSchemaDescription(schema: Schema): Promise<string | undefined> {
-    const localization = await this.getSchemaLocalizationJson(schema.name);
+    const localization = await this.getSchemaLocalizationJson(schema);
 
     if (localization?.description) {
       return localization.description;
     }
 
     // Try base locale if specific locale didn't have the schema description
-    const baseLocalization = await this.getBaseLocalizationJson(schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(schema);
     if (baseLocalization?.description) {
       return baseLocalization.description;
     }
@@ -136,7 +165,7 @@ export class SchemaLocalization {
    * Fallback: localized label (specific locale) → localized label (base locale) → original label → item name
    */
   public async getSchemaItemLabel(item: SchemaItem): Promise<string> {
-    const localization = await this.getSchemaLocalizationJson(item.schema.name);
+    const localization = await this.getSchemaLocalizationJson(item.schema);
 
     if (localization) {
       const localizedText = this.findItemLocalization(localization, item);
@@ -146,7 +175,7 @@ export class SchemaLocalization {
     }
 
     // Try base locale if specific locale didn't have the item
-    const baseLocalization = await this.getBaseLocalizationJson(item.schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(item.schema);
     if (baseLocalization) {
       const localizedText = this.findItemLocalization(baseLocalization, item);
       if (localizedText?.label) {
@@ -162,7 +191,7 @@ export class SchemaLocalization {
    * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getSchemaItemDescription(item: SchemaItem): Promise<string | undefined> {
-    const localization = await this.getSchemaLocalizationJson(item.schema.name);
+    const localization = await this.getSchemaLocalizationJson(item.schema);
 
     if (localization) {
       const localizedText = this.findItemLocalization(localization, item);
@@ -172,7 +201,7 @@ export class SchemaLocalization {
     }
 
     // Try base locale if specific locale didn't have the item
-    const baseLocalization = await this.getBaseLocalizationJson(item.schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(item.schema);
     if (baseLocalization) {
       const localizedText = this.findItemLocalization(baseLocalization, item);
       if (localizedText?.description) {
@@ -188,7 +217,7 @@ export class SchemaLocalization {
    * Fallback: localized label (specific locale) → localized label (base locale) → original label → property name
    */
   public async getPropertyLabel(ecClass: ECClass, property: Property): Promise<string> {
-    const localization = await this.getSchemaLocalizationJson(ecClass.schema.name);
+    const localization = await this.getSchemaLocalizationJson(ecClass.schema);
 
     const localizedLabel = localization?.classes?.[ecClass.name]?.properties?.[property.name]?.label;
     if (localizedLabel) {
@@ -196,7 +225,7 @@ export class SchemaLocalization {
     }
 
     // Try base locale if specific locale didn't have the property
-    const baseLocalization = await this.getBaseLocalizationJson(ecClass.schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(ecClass.schema);
     const baseLocalizedLabel = baseLocalization?.classes?.[ecClass.name]?.properties?.[property.name]?.label;
     if (baseLocalizedLabel) {
       return baseLocalizedLabel;
@@ -210,7 +239,7 @@ export class SchemaLocalization {
    * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getPropertyDescription(ecClass: ECClass, property: Property): Promise<string | undefined> {
-    const localization = await this.getSchemaLocalizationJson(ecClass.schema.name);
+    const localization = await this.getSchemaLocalizationJson(ecClass.schema);
 
     const localizedDescription = localization?.classes?.[ecClass.name]?.properties?.[property.name]?.description;
     if (localizedDescription) {
@@ -218,7 +247,7 @@ export class SchemaLocalization {
     }
 
     // Try base locale if specific locale didn't have the property
-    const baseLocalization = await this.getBaseLocalizationJson(ecClass.schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(ecClass.schema);
     const baseLocalizedDescription = baseLocalization?.classes?.[ecClass.name]?.properties?.[property.name]?.description;
     if (baseLocalizedDescription) {
       return baseLocalizedDescription;
@@ -232,7 +261,7 @@ export class SchemaLocalization {
    * Fallback: localized label (specific locale) → localized label (base locale) → original label → enumerator name
    */
   public async getEnumeratorLabel(enumeration: Enumeration, enumeratorName: string): Promise<string> {
-    const localization = await this.getSchemaLocalizationJson(enumeration.schema.name);
+    const localization = await this.getSchemaLocalizationJson(enumeration.schema);
 
     const localizedLabel = localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.label;
     if (localizedLabel) {
@@ -240,7 +269,7 @@ export class SchemaLocalization {
     }
 
     // Try base locale if specific locale didn't have the enumerator
-    const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema);
     const baseLocalizedLabel = baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.label;
     if (baseLocalizedLabel) {
       return baseLocalizedLabel;
@@ -256,7 +285,7 @@ export class SchemaLocalization {
    * Fallback: localized description (specific locale) → localized description (base locale) → original description
    */
   public async getEnumeratorDescription(enumeration: Enumeration, enumeratorName: string): Promise<string | undefined> {
-    const localization = await this.getSchemaLocalizationJson(enumeration.schema.name);
+    const localization = await this.getSchemaLocalizationJson(enumeration.schema);
 
     const localizedDescription = localization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description;
     if (localizedDescription) {
@@ -264,7 +293,7 @@ export class SchemaLocalization {
     }
 
     // Try base locale if specific locale didn't have the enumerator
-    const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema.name);
+    const baseLocalization = await this.getBaseLocalizationJson(enumeration.schema);
     const baseLocalizedDescription = baseLocalization?.enumerations?.[enumeration.name]?.enumerators?.[enumeratorName]?.description;
     if (baseLocalizedDescription) {
       return baseLocalizedDescription;
