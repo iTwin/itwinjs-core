@@ -661,7 +661,7 @@ describe("DeleteDefinitionElements", () => {
       });
 
       describe("rerun the suite with deprecated api from IModelDb", () => {
-        let previousEnforcement = EditTxn.implicitWriteEnforcement
+        let previousEnforcement = EditTxn.implicitWriteEnforcement;
         before(() => {
           EditTxn.implicitWriteEnforcement = "allow";
         });
@@ -889,7 +889,7 @@ describe("DeleteDefinitionElements", () => {
       });
 
       describe("rerun the suite with deprecated api from IModelDb", () => {
-        let previousEnforcement = EditTxn.implicitWriteEnforcement
+        let previousEnforcement = EditTxn.implicitWriteEnforcement;
         before(() => {
           EditTxn.implicitWriteEnforcement = "allow";
         });
@@ -1801,7 +1801,7 @@ describe("DeleteDefinitionElements", () => {
     });
 
     describe("rerun the suite with deprecated api from IModelDb", () => {
-      let previousEnforcement = EditTxn.implicitWriteEnforcement
+      let previousEnforcement = EditTxn.implicitWriteEnforcement;
       before(() => {
         EditTxn.implicitWriteEnforcement = "allow";
       });
@@ -1997,7 +1997,7 @@ describe("DeleteDefinitionElements", () => {
     });
 
     describe("rerun the suite with deprecated api from IModelDb", () => {
-      let previousEnforcement = EditTxn.implicitWriteEnforcement
+      let previousEnforcement = EditTxn.implicitWriteEnforcement;
       before(() => {
         EditTxn.implicitWriteEnforcement = "allow";
       });
