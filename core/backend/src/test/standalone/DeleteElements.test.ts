@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
+import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, ImplicitWriteEnforcement, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
@@ -87,7 +87,7 @@ describe("deleteElements (native bulk delete API)", () => {
 
     txn.abandonChanges();
 
-    // Verify that the same test case produces the same result when using the deprecated IModelDb.deleteElements API, to ensure that the deprecation does not cause any regressions.
+    // Verify that the same test case produces the same result when using the deprecated iModelDb.elements.deleteElements API, to ensure that the deprecation does not cause any regressions.
     executeTestCaseDeprecated(label, idsToDelete, deleted, retained, expectedFailed);
   };
 
@@ -96,25 +96,27 @@ describe("deleteElements (native bulk delete API)", () => {
     EditTxn.implicitWriteEnforcement = "allow";
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    let resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
+    try {
+      let resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
 
-    if (expectedFailed.length === 0)
-      assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
-    else
-      assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
+      if (expectedFailed.length === 0)
+        assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
+      else
+        assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
 
-    assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
+      assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
 
-    for (const id of deleted)
-      assertDeleted(id, `[${label}] ${id} should have been deleted`);
+      for (const id of deleted)
+        assertDeleted(id, `[${label}] ${id} should have been deleted`);
 
-    for (const id of retained)
-      assertExists(id, `[${label}] ${id} should have been retained`);
+      for (const id of retained)
+        assertExists(id, `[${label}] ${id} should have been retained`);
+    } finally {
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModelDb.abandonChanges();
-
-    EditTxn.implicitWriteEnforcement = previousEnforcement;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      iModelDb.abandonChanges();
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
+    }
   };
 
   /**
@@ -887,8 +889,9 @@ describe("deleteElements (native bulk delete API)", () => {
     });
 
     describe("rerun the suite with deprecated api from IModelDb", () => {
-      let previousEnforcement = EditTxn.implicitWriteEnforcement;
+      let previousEnforcement: ImplicitWriteEnforcement;
       before(() => {
+        previousEnforcement = EditTxn.implicitWriteEnforcement;
         EditTxn.implicitWriteEnforcement = "allow";
       });
       after(() => {
@@ -1075,6 +1078,40 @@ describe("deleteElements (native bulk delete API)", () => {
         assertModelDeleted(partitionId, "sub-model should be deleted");
         assertDeleted(subElem1, "subElem1 should be deleted");
         assertDeleted(subElem2, "subElem2 should be deleted");
+      });
+
+      it("duplicate IDs should be handled (deprecated api)", () => {
+        const rootA = insertElement();
+        const rootB = insertElement();
+
+        // rootA appears twice - should not throw and should be deleted exactly once.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        assert.equal(iModelDb.elements.deleteElements([rootA, rootA, rootB]).status, BulkDeleteElementsStatus.Success);
+        assertDeleted(rootA, "rootA should be deleted");
+        assertDeleted(rootB, "rootB should be deleted");
+      });
+
+      it("invalid IDs in the input throw an exception (deprecated api)", () => {
+        const rootA = insertElement();
+
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        assert.throws(() => iModelDb.elements.deleteElements([Id64.invalid, rootA]), `Invalid element ids: 0`);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        assert.throws(() => iModelDb.elements.deleteElements(["not-an-id", rootA]), `Invalid element ids: not-an-id`);
+
+        assertExists(rootA, "rootA should not have been deleted after a throw");
+      });
+
+      it("scope chain delete with skipping constraint validation should fail (deprecated api)", () => {
+        const rootA = insertElement();
+        const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
+        const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
+        const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
+
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
+        assert.equal(resultStatus.status, BulkDeleteElementsStatus.DeletionFailed);
+        assert.equal(resultStatus.sqlDeleteStatus, DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY);
       });
     });
   });

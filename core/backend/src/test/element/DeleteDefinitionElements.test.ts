@@ -12,7 +12,7 @@ import { EditTxn } from "../../EditTxn";
 import {
   CategorySelector, ChannelControl, DefinitionContainer, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingViewDefinition, GenericGraphicalType2d, GenericPhysicalType, GeometryPart,
-  GraphicalElement2dIsOfType, IModelJsFs, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalElementIsOfType,
+  GraphicalElement2dIsOfType, IModelJsFs, ImplicitWriteEnforcement, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalElementIsOfType,
   PhysicalModel, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
 } from "../../core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
@@ -345,19 +345,21 @@ describe("DeleteDefinitionElements", () => {
       const previousEnforcement = EditTxn.implicitWriteEnforcement;
       EditTxn.implicitWriteEnforcement = "allow";
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const failed = iModelDb.elements.deleteElements(idsToDelete);
-      assert.sameMembers(Array.from(failed.failedIds), expectedFailed, `[${label}] failed set mismatch`);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const failed = iModelDb.elements.deleteElements(idsToDelete);
+        assert.sameMembers(Array.from(failed.failedIds), expectedFailed, `[${label}] failed set mismatch`);
 
-      for (const id of expectedDeleted)
-        assert.isUndefined(iModelDb.elements.tryGetElement(id), `error reading element`);
-      for (const id of expectedRetained)
-        assert.isDefined(iModelDb.elements.tryGetElement(id), `[${label}] ${id} should have been retained`);
+        for (const id of expectedDeleted)
+          assert.isUndefined(iModelDb.elements.tryGetElement(id), `error reading element`);
+        for (const id of expectedRetained)
+          assert.isDefined(iModelDb.elements.tryGetElement(id), `[${label}] ${id} should have been retained`);
+      } finally {
+        if (abandonChanges)
+          iModelDb.abandonChanges();
 
-      if (abandonChanges)
-        iModelDb.abandonChanges();
-
-      EditTxn.implicitWriteEnforcement = previousEnforcement;
+        EditTxn.implicitWriteEnforcement = previousEnforcement;
+      }
     };
 
     it("should delete only if not used with deleteElements", async () => {
@@ -661,8 +663,9 @@ describe("DeleteDefinitionElements", () => {
       });
 
       describe("rerun the suite with deprecated api from IModelDb", () => {
-        let previousEnforcement = EditTxn.implicitWriteEnforcement;
+        let previousEnforcement: ImplicitWriteEnforcement;
         before(() => {
+          previousEnforcement = EditTxn.implicitWriteEnforcement;
           EditTxn.implicitWriteEnforcement = "allow";
         });
         after(() => {
@@ -889,8 +892,9 @@ describe("DeleteDefinitionElements", () => {
       });
 
       describe("rerun the suite with deprecated api from IModelDb", () => {
-        let previousEnforcement = EditTxn.implicitWriteEnforcement;
+        let previousEnforcement: ImplicitWriteEnforcement;
         before(() => {
+          previousEnforcement = EditTxn.implicitWriteEnforcement;
           EditTxn.implicitWriteEnforcement = "allow";
         });
         after(() => {
@@ -1801,8 +1805,9 @@ describe("DeleteDefinitionElements", () => {
     });
 
     describe("rerun the suite with deprecated api from IModelDb", () => {
-      let previousEnforcement = EditTxn.implicitWriteEnforcement;
+      let previousEnforcement: ImplicitWriteEnforcement;
       before(() => {
+        previousEnforcement = EditTxn.implicitWriteEnforcement;
         EditTxn.implicitWriteEnforcement = "allow";
       });
       after(() => {
@@ -1997,8 +2002,9 @@ describe("DeleteDefinitionElements", () => {
     });
 
     describe("rerun the suite with deprecated api from IModelDb", () => {
-      let previousEnforcement = EditTxn.implicitWriteEnforcement;
+      let previousEnforcement: ImplicitWriteEnforcement;
       before(() => {
+        previousEnforcement = EditTxn.implicitWriteEnforcement;
         EditTxn.implicitWriteEnforcement = "allow";
       });
       after(() => {
