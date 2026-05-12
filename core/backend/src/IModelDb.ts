@@ -3978,13 +3978,13 @@ export class BriefcaseDb extends IModelDb {
       const checkpoint: CheckpointProps = { iModelId: this.iModelId, iTwinId: this.iTwinId, changeset, accessToken };
       const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
       if (container) {
-        nativeDb.revertToVersion(`${dbName}?vfs=${container.cache!.name}&writable=0`);
+        nativeDb.revertToCheckpoint(`${dbName}?vfs=${container.cache!.name}&writable=0`);
       } else {
         // HubMock: dbName is already a local file path
-        nativeDb.revertToVersion(dbName);
+        nativeDb.revertToCheckpoint(dbName);
       }
     } else {
-      nativeDb.revertToVersion(arg.fileName);
+      nativeDb.revertToCheckpoint(arg.fileName);
     }
     this.clearCaches();
   }
