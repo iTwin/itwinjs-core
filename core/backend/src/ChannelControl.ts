@@ -9,6 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited, _verifyChannel } from "./internal/Symbols";
 import { IModelDb } from "./IModelDb";
+import type { EditTxn } from "./EditTxn";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
@@ -66,10 +67,38 @@ export interface ChannelControl {
    * @throws if the element is already in a channel different than the shared channel, or if
    * there is already another channelRoot element for the specified channelKey
    */
+  makeChannelRoot(args: {
+    elementId: Id64String;
+    channelKey: ChannelKey;
+    /** The transaction to use for the operation. */
+    txn: EditTxn;
+  }): void;
+  /** Make an existing element a new Channel root.
+   * @throws if the element is already in a channel different than the shared channel, or if
+   * there is already another channelRoot element for the specified channelKey
+   * @deprecated Use [[makeChannelRoot]] and supply `txn`.
+   */
   makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
   /** Insert a new Subject element that is a Channel Root in this iModel.
    * @returns the ElementId of the new Subject element.
    * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
+   */
+  insertChannelSubject(args: {
+    /** The name of the new Subject element */
+    subjectName: string;
+    /** The channel key for the new [[Subject]]. This is the string to pass to [[addAllowedChannel]]*/
+    channelKey: ChannelKey;
+    /** the Id of the parent of the new Subject. Default is [[IModel.rootSubjectId]]. */
+    parentSubjectId?: Id64String;
+    /** Optional description for new Subject. */
+    description?: string;
+    /** The EditTxn to use for the operation. */
+    txn: EditTxn;
+  }): Id64String;
+  /** Insert a new Subject element that is a Channel Root in this iModel.
+   * @returns the ElementId of the new Subject element.
+   * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
+   * @deprecated Use [[insertChannelSubject]] and supply `txn`.
    */
   insertChannelSubject(args: {
     /** The name of the new Subject element */

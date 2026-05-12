@@ -324,6 +324,10 @@ export class Sphere extends SolidPrimitive implements UVSurface {
       this._localToWorld.matrix.multiplyXYZ(-fPhi * cosTheta * sinPhi, -fPhi * sinTheta * sinPhi, fPhi * cosPhi),
       result);
   }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._localToWorld.matrix.columnZ().isParallelTo(this._localToWorld.matrix.columnXCrossColumnY(), true, true);
+  }
   /**
    * * A sphere is can be closed two ways:
    *   * full sphere (no caps needed for closure)

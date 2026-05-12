@@ -8,7 +8,8 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -35,6 +36,7 @@ export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
+ * The collection must form a single convex volume.
  * @public
  */
 export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
@@ -367,20 +369,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     }
     return true;
   }
-  /**
-   * Find the parts of the line segment (if any) that is within the convex clip volume.
-   * * The line segment is defined by `pointA` and `pointB`.
-   * * The input fractional interval from `fraction0` to `fraction1` (increasing) is the active part to consider.
-   * * To clip to the usual bounded line segment, start with fractions (0,1).
-   * If the clip volume is unbounded, the line interval may also be unbounded.
-   * * An unbounded line portion will have fraction coordinates positive or negative `Number.MAX_VALUE`.
-   * @param f0 fraction that is the initial lower fraction of the active interval (e.g., 0.0 for bounded segment).
-   * @param f1 fraction that is the initial upper fraction of the active interval (e.g., 1.0 for bounded segment).
-   * @param pointA segment start (fraction 0)
-   * @param pointB segment end (fraction 1)
-   * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
-   * @returns true if a segment was announced, false if entirely outside.
-   */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
@@ -418,19 +407,27 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     }
     return false;
   }
-  private static _clipArcFractionArray = new GrowableFloat64Array();
-  /**
-   * Find fractional parts of the arc that are within this ClipPlaneSet, and announce each as
-   * * `announce(fraction, fraction, curve)`
-   */
+  private static _clipFractionArray = new GrowableFloat64Array();
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ConvexClipPlaneSet._clipArcFractionArray;
+    const breaks = ConvexClipPlaneSet._clipFractionArray;
     breaks.clear();
     for (const clipPlane of this.planes) {
       clipPlane.appendIntersectionRadians(arc, breaks);
     }
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
+  }
+  /** Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const breaks = ConvexClipPlaneSet._clipFractionArray;
+    breaks.clear();
+    const results: CurveLocationDetail[] = [];
+    for (const clipPlane of this.planes)
+      curve.appendPlaneIntersectionPoints(clipPlane, results);
+    for (const r of results)
+      breaks.push(r.fraction);
+    return ClipUtilities.selectIntervals01(curve, breaks, this, announce);
   }
   /**
    * Find the parts of the (unbounded) line segment (if any) that is within the convex clip volume.
@@ -628,7 +625,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     output: GrowableXYZArray,
     work?: GrowableXYZArray,
     planeToSkip?: ClipPlane,
-    tolerance: number =  Geometry.smallMetricDistance,
+    tolerance: number = Geometry.smallMetricDistance,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);

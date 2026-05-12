@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { ECSqlReader } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
@@ -23,7 +22,6 @@ import {
   getFieldInfos,
   PropertyFullName,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
-import { IFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
 import { ensureIModelInitialized, startIModelInitialization } from "../../presentation-frontend/IModelConnectionInitialization.js";
 
 describe("FavoritePropertiesManager", () => {
@@ -33,7 +31,6 @@ describe("FavoritePropertiesManager", () => {
   let primitiveField: Field;
   let nestedContentField: NestedContentField;
   let storageMock: ReturnType<typeof stubFavoritePropertiesStorage>;
-  let storage: IFavoritePropertiesStorage;
 
   let iTwinId: string;
   let imodelId: string;
@@ -58,8 +55,7 @@ describe("FavoritePropertiesManager", () => {
 
   beforeEach(async () => {
     storageMock = stubFavoritePropertiesStorage();
-    storage = storageMock as unknown as IFavoritePropertiesStorage;
-    manager = new FavoritePropertiesManager({ storage });
+    manager = new FavoritePropertiesManager({ storage: storageMock });
     imodelMock = stubIModelConnection();
     imodel = imodelMock as unknown as IModelConnection;
   });
@@ -97,7 +93,7 @@ describe("FavoritePropertiesManager", () => {
         };
       },
     };
-    imodelMock.createQueryReader.returns(ecSqlReader as unknown as ECSqlReader);
+    imodelMock.createQueryReader.returns(ecSqlReader);
     return imodelMock.createQueryReader;
   }
 

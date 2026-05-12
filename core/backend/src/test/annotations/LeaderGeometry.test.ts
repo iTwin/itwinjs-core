@@ -218,7 +218,6 @@ describe("LeaderGeometry", () => {
 
               if (shape === "slash") {
                 expect(terminatorGeometry).to.be.instanceOf(LineSegment3d);
-                terminatorGeometry = terminatorGeometry as LineSegment3d;
                 expect(terminatorGeometry.curveLength()).to.equal(terminatorHeight);
               }
 

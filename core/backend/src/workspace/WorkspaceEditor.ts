@@ -34,6 +34,8 @@ export namespace WorkspaceEditor {
 
   /**
    * Create a new, empty, [[EditableWorkspaceDb]] file on the local filesystem for importing [[Workspace]] resources.
+   * @note Do not pass an untrusted or unintended path in `localFileName`.
+   * This helper creates or overwrites the file at that location; callers that need fail-if-exists behavior should check first.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
@@ -47,6 +49,8 @@ export namespace WorkspaceEditor {
     iModelId?: GuidString;
     /** Optional label filter. */
     label?: string;
+    /** The type of container to query. Defaults to `"workspace"`. */
+    containerType?: "workspace" | "settings";
   }
 
   /**
@@ -61,7 +65,7 @@ export namespace WorkspaceEditor {
     if (undefined === BlobContainer.service)
       throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
     const userToken = await IModelHost.getAccessToken();
-    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: "workspace" });
+    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: args.containerType ?? "workspace" });
   }
 }
 
@@ -78,6 +82,8 @@ export interface CreateNewWorkspaceContainerArgs {
   manifest: WorkspaceDbManifest;
   /** Metadata stored by the BlobContainer service */
   metadata: Omit<BlobContainer.Metadata, "containerType">;
+  /** The type of container to create. Defaults to `"workspace"`. */
+  containerType?: "workspace" | "settings";
   /** The name of the default [[WorkspaceDb]] created inside the new container.
    * Default: "workspace-db";
    */
@@ -105,7 +111,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 
   /**
    * Create a new, empty [[WorkspaceDb]].
-   * @param args - The arguments for creating the new WorkspaceDb.
+   * @param args - The arguments for creating the new WorkspaceDb. If `args.version` is omitted for a cloud container, the new db is created as version `0.0.0`.
    * @returns A promise that resolves to an EditableWorkspaceDb.
    */
   createDb(args: { dbName?: WorkspaceDbName, version?: WorkspaceDbVersion, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
@@ -117,6 +123,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 
   /**
    * Get an editable [[WorkspaceDb]] to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
+   * Repeated calls that resolve to the same WorkspaceDb return the same cached instance until it is closed.
    * @param props - The properties of the WorkspaceDb.
    */
   getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;
@@ -140,6 +147,17 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
    * Abandon any changes made to the container and release the write lock. Any newly created versions of WorkspaceDbs are discarded.
    */
   abandonChanges(): void;
+
+  /**
+   * Acquire the write lock, get or create an editable tip [[WorkspaceDb]], open it, run `operation`,
+   * then close the db and release the lock.
+   * If the current tip has already been published, a new prerelease version is created automatically.
+   * On error the lock is released and changes are abandoned.
+   * @param user - The name of the user acquiring the write lock.
+   * @param operation - A callback invoked with the opened [[EditableWorkspaceDb]].
+   * @param props - Properties identifying which db to operate on. Defaults to the container's default db.
+   */
+  withEditableDb(user: string, operation: (db: EditableWorkspaceDb) => void, props?: WorkspaceDbProps): Promise<void>;
 }
 
 /**

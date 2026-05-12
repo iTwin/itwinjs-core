@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHost } from "../../IModelHost";
+import { TestUtils } from "../TestUtils";
 
 describe("SettingsSchemas", () => {
 
@@ -13,7 +14,7 @@ describe("SettingsSchemas", () => {
   // the current state before and after they run so they're not affected by, nor influence, other tests running in the same process.
   const restartSession = async () => {
     await IModelHost.shutdown();
-    await IModelHost.startup();
+    await TestUtils.startBackend();
   };
   before(async () => {
     await restartSession();

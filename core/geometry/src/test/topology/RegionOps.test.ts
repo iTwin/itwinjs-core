@@ -1089,7 +1089,7 @@ describe("RegionOps", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("constructAllXYRegionLoops", () => {
+  it("constructAllXYRegionLoops1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const deltaX = 5;
@@ -1182,7 +1182,7 @@ describe("RegionOps", () => {
       compareSignedLoops(parityData0.withBridges, parityData1.withBridges, "ParityRegionsBSplineHoleWithBridges");
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops1");
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -1225,6 +1225,94 @@ describe("RegionOps", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  function checkConstructAllXYRegionLoops(
+    ck: Checker,
+    allGeometry: GeometryQuery[],
+    input: AnyCurve[],
+    expectedChildCounts: number[],
+    dx = 0,
+    dy = 0
+  ): void {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, input, dx, dy);
+    const signedLoops = RegionOps.constructAllXYRegionLoops(input);
+    GeometryCoreTestIO.captureCloneGeometry(
+      allGeometry,
+      signedLoops.map((component) => component.positiveAreaLoops).flat(),
+      dx + 200,
+      dy
+    );
+    if (ck.testExactNumber(1, signedLoops.length, "constructAllXYRegionLoops is expected to result in 1 component")) {
+      const posLoops = signedLoops[0].positiveAreaLoops;
+      const numPosLoops = posLoops.length;
+      ck.testExactNumber(
+        expectedChildCounts.length,
+        numPosLoops,
+        "constructAllXYRegionLoops is expected to result in expected number of positive area loops"
+      );
+      for (let i = 0; i < numPosLoops; i++)
+        ck.testExactNumber(
+          expectedChildCounts[i],
+          posLoops[i].children.length,
+          `positive loop ${i} has ${expectedChildCounts[i]} children`
+        );
+    }
+  }
+
+  it("constructAllXYRegionLoops3", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dy = 0;
+
+    const path1 = Path.create(LineString3d.create([
+      Point3d.create(900, 550),
+      Point3d.create(900, 440),
+      Point3d.create(985, 440),
+      Point3d.create(985, 550),
+      Point3d.create(900, 550),
+    ]));
+    const line1 = LineString3d.create(Point3d.create(940, 570), Point3d.create(940, 420));
+    const line2 = LineString3d.create(Point3d.create(910, 570), Point3d.create(910, 420));
+    const path2 = Path.create(LineString3d.create([
+      Point3d.create(920, 530),
+      Point3d.create(920, 450),
+      Point3d.create(960, 450),
+      Point3d.create(960, 530),
+      Point3d.create(920, 530),
+    ]));
+    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, line1, path2], [8, 8, 4, 4]);
+    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, line2, path2], [4, 11, 4], 0, dy += 200);
+    checkConstructAllXYRegionLoops(ck, allGeometry, [path1, path2], [11, 4], 0, dy += 200);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops3");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("constructAllXYRegionLoops4", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // data from ADO bug 1978563
+    const path1 = IModelJson.Reader.parse(
+      JSON.parse(fs.readFileSync("./src/test/data/curve/constructAllXYRegionLoops/InnerArea.imjs", "utf8"))
+    );
+    const line = IModelJson.Reader.parse(
+      JSON.parse(fs.readFileSync("./src/test/data/curve/constructAllXYRegionLoops/Line.imjs", "utf8")));
+    const path2 = IModelJson.Reader.parse(
+      JSON.parse(fs.readFileSync("./src/test/data/curve/constructAllXYRegionLoops/OuterArea.imjs", "utf8"))
+    );
+    if (ck.testDefined(path1, "read path1 from file")
+      && ck.testDefined(line, "read line from file")
+      && ck.testDefined(path2, "read path2 from file")) {
+      const successfullyRead = path1 instanceof Path && line instanceof LineString3d && path2 instanceof Path;
+      ck.testTrue(successfullyRead, "read expected geometry types from file");
+      if (successfullyRead)
+        checkConstructAllXYRegionLoops(ck, allGeometry, [path1, line, path2], [22, 10, 10, 24]);
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops4");
     expect(ck.getNumErrors()).toBe(0);
   });
 

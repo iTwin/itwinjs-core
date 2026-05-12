@@ -17,20 +17,21 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
-import { GetSettingsDbArgs, SettingsDb, settingsResourceName } from "../../workspace/SettingsDb";
+import { isSettingsDb, queryStringResourceNames } from "../../workspace/SettingsDb";
+import { settingsResourceName } from "../../workspace/SettingsEditor";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
   WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
-  WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
+  WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
 } from "../../workspace/Workspace";
 import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor, WorkspaceEditor as WorkspaceEditorNs } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
-import { SettingsDbImpl } from "./SettingsDbImpl";
 import { SettingsImpl } from "./SettingsImpl";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
 import { getOnlineStatus } from "../OnlineStatus";
 import { BlobContainer } from "../../BlobContainerService";
+
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -101,7 +102,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     return this._cloudContainer;
   }
 
-  protected _wsDbs = new Map<WorkspaceDbName, WorkspaceDb>();
+  protected _wsDbs = new Map<string, WorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
   public constructor(workspace: WorkspaceImpl, props: WorkspaceContainerProps & { accessToken: AccessToken }) {
@@ -142,28 +143,29 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 
   public resolveDbFileName(props: WorkspaceDbProps): WorkspaceDbFullName {
+    const dbName = workspaceDbNameWithDefault(props.dbName);
     const container = this.cloudContainer;
     if (undefined === container)
-      return join(this.dirName, `${props.dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
+      return join(this.dirName, `${dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
 
-    return CloudSqlite.querySemverMatch({ ...props, container, dbName: workspaceDbNameWithDefault(props.dbName) });
+    return CloudSqlite.querySemverMatch({ ...props, container, dbName });
   }
 
   public addWorkspaceDb(toAdd: WorkspaceDb) {
-    if (undefined !== this._wsDbs.get(toAdd.dbName))
+    if (undefined !== this._wsDbs.get(toAdd.dbFileName))
       WorkspaceError.throwError("already-exists", { message: `workspaceDb '${toAdd.dbName}' already exists in workspace` });
-    this._wsDbs.set(toAdd.dbName, toAdd);
+    this._wsDbs.set(toAdd.dbFileName, toAdd);
   }
 
   public getWorkspaceDb(props?: WorkspaceDbProps): WorkspaceDb {
-    return this._wsDbs.get(workspaceDbNameWithDefault(props?.dbName)) ?? new WorkspaceDbImpl(props ?? {}, this);
+    const dbFileName = this.resolveDbFileName(props ?? {});
+    return this._wsDbs.get(dbFileName) ?? new WorkspaceDbImpl(props ?? {}, this);
   }
 
   public closeWorkspaceDb(toDrop: WorkspaceDb) {
-    const name = toDrop.dbName;
-    const wsDb = this._wsDbs.get(name);
+    const wsDb = this._wsDbs.get(toDrop.dbFileName);
     if (wsDb === toDrop) {
-      this._wsDbs.delete(name);
+      this._wsDbs.delete(toDrop.dbFileName);
       wsDb.close();
     }
   }
@@ -377,59 +379,63 @@ class WorkspaceImpl implements Workspace {
   public async getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb> {
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
-      const accessToken = props.isPublic ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
+      const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
       container = new WorkspaceContainerImpl(this, { ...props, accessToken });
     }
     return container.getWorkspaceDb(props);
-  }
-
-  public getSettingsDb(args: GetSettingsDbArgs): SettingsDb {
-    const container = this.findContainer(args.containerId);
-    if (undefined === container)
-      WorkspaceError.throwError("does-not-exist", { message: `No settings container found for containerId "${args.containerId}"` });
-
-    const settingsDb = new SettingsDbImpl({ dbName: args.dbName ?? "settings-db", version: args.version }, container, args.priority);
-
-    if (!settingsDb.hasSettingsManifestProperty)
-      WorkspaceError.throwError("does-not-exist", { message: `Container "${args.containerId}" does not contain a SettingsDb — missing settings manifest` });
-
-    return settingsDb;
   }
 
   public async loadSettingsDictionary(props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[], problems?: WorkspaceDbLoadError[]) {
     if (!Array.isArray(props))
       props = [props];
 
+    const getSettingsResourceNames = (db: WorkspaceDb, dbProps: WorkspaceDbSettingsProps): WorkspaceResourceName[] => {
+      if (!isSettingsDb(db))
+        return [dbProps.resourceName ?? settingsResourceName];
+
+      const all = queryStringResourceNames(db);
+      // If resourceName is supplied, load it last so it has highest precedence at the same priority.
+      return dbProps.resourceName !== undefined
+        ? [...all.filter((name) => name !== dbProps.resourceName), dbProps.resourceName]
+        : all;
+    };
+
     for (const prop of props) {
       const db = await this.getWorkspaceDb(prop);
       db.open();
       try {
-        const manifest = db.manifest;
-        const resourceName = prop.resourceName ?? settingsResourceName;
-        const dictProps: SettingsDictionaryProps = { name: resourceName, workspaceDb: db, priority: prop.priority };
-        // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
-        if (undefined === this.settings.getDictionary(dictProps)) {
-          const settingsJson = db.getString(resourceName);
-          if (undefined === settingsJson)
-            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+        const resourceNames = getSettingsResourceNames(db, prop);
 
-          db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
+        for (const resourceName of resourceNames) {
+          try {
+            const manifest = db.manifest;
+            const dictProps: SettingsDictionaryProps = { name: resourceName, workspaceDb: db, priority: prop.priority };
+            // don't load if we already have this dictionary. Happens if the same WorkspaceDb is in more than one list
+            if (undefined === this.settings.getDictionary(dictProps)) {
+              const settingsJson = db.getString(resourceName);
+              if (undefined === settingsJson)
+                throwWorkspaceDbLoadError(`could not load setting dictionary resource '${resourceName}' from: '${manifest.workspaceName}'`, prop, db);
 
-          this.settings.addJson(dictProps, settingsJson);
-          const dict = this.settings.getDictionary(dictProps);
-          if (dict) {
-            Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
-            // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
-            const nested = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
-            if (nested !== undefined) {
-              IModelHost.settingsSchemas.validateSetting<WorkspaceDbSettingsProps[]>(nested, WorkspaceSettingNames.settingsWorkspaces);
-              await this.loadSettingsDictionary(nested, problems);
+              this.settings.addJson(dictProps, settingsJson);
+              const dict = this.settings.getDictionary(dictProps);
+              if (dict) {
+                Workspace.onSettingsDictionaryLoadedFn({ dict, from: db });
+                // if the dictionary we just loaded has a "settingsWorkspaces" entry, load them too, recursively
+                const nested = dict.getSetting<WorkspaceDbSettingsProps[]>(WorkspaceSettingNames.settingsWorkspaces);
+                if (nested !== undefined) {
+                  IModelHost.settingsSchemas.validateSetting<WorkspaceDbSettingsProps[]>(nested, WorkspaceSettingNames.settingsWorkspaces);
+                  await this.loadSettingsDictionary(nested, problems);
+                }
+              }
             }
+          } catch (e) {
+            problems?.push(e as WorkspaceDbLoadError);
           }
         }
       } catch (e) {
-        db.close();
         problems?.push(e as WorkspaceDbLoadError);
+      } finally {
+        db.close();
       }
     }
   }
@@ -494,13 +500,6 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
   }
 }
 
-const settingsEditorCacheName = "SettingsEditor";
-class SettingsEditorWorkspaceImpl extends WorkspaceImpl {
-  public override getCloudCache(): WorkspaceCloudCache {
-    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: settingsEditorCacheName, cacheSize: "2G" });
-  }
-}
-
 class EditorImpl implements WorkspaceEditor {
   public readonly [_implementationProhibited] = undefined;
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
@@ -509,7 +508,7 @@ class EditorImpl implements WorkspaceEditor {
     class CloudAccess extends CloudSqlite.DbAccess<WorkspaceSqliteDb> {
       protected static override _cacheName = workspaceEditorName;
       public static async initializeWorkspace(args: CreateNewWorkspaceContainerArgs) {
-        const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "workspace" } });
+        const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: args.containerType ?? "workspace" } });
         const dbFullName = CloudSqlite.makeSemverName(workspaceDbNameWithDefault(args.dbName), "0.0.0");
         await super._initializeDb({ ...args, props, dbName: dbFullName, dbType: WorkspaceSqliteDb, blockSize: "4M" });
         return props;
@@ -568,7 +567,7 @@ interface EditCloudContainer extends WorkspaceCloudContainer {
 
 class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWorkspaceContainer {
   public override get cloudContainer(): EditCloudContainer | undefined {
-    return super.cloudContainer as EditCloudContainer | undefined;
+    return super.cloudContainer;
   }
 
   public get cloudProps(): WorkspaceContainerProps | undefined {
@@ -597,10 +596,11 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
   }
 
   public getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb {
-    const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
+    const dbFileName = this.resolveDbFileName(props);
+    const db = this._wsDbs.get(dbFileName) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
 
     if (this.cloudContainer && !CloudSqlite.isSemverEditable(db.dbFileName, this.cloudContainer)) {
-      this._wsDbs.delete(workspaceDbNameWithDefault(props.dbName));
+      this._wsDbs.delete(dbFileName);
       CloudSqliteError.throwError("already-published", { message: `${db.dbFileName} has been published and is not editable. Make a new version first.` });
     }
 
@@ -627,7 +627,38 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
     }
   }
 
-  public async createDb(args: { dbName?: string, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb> {
+  public async withEditableDb(user: string, operation: (db: EditableWorkspaceDb) => void, props?: WorkspaceDbProps): Promise<void> {
+    this.acquireWriteLock(user);
+    try {
+      let db: EditableWorkspaceDb;
+      try {
+        db = this.getEditableDb({ ...props, includePrerelease: true });
+      } catch (error) {
+        if (!CloudSqliteError.isError(error, "already-published"))
+          throw error;
+
+        const newVersion = await this.createNewWorkspaceDbVersion({
+          fromProps: props,
+          versionType: "prerelease",
+          identifier: "beta",
+        });
+        db = this.getEditableDb(newVersion.newDb);
+      }
+
+      db.open();
+      try {
+        operation(db);
+      } finally {
+        db.close();
+      }
+      this.releaseWriteLock();
+    } catch (error) {
+      this.abandonChanges();
+      throw error;
+    }
+  }
+
+  public async createDb(args: { dbName?: string, version?: WorkspaceDbVersion, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb> {
     if (!this.cloudContainer) {
       WorkspaceEditor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
     } else {
@@ -637,7 +668,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
         IModelJsFs.removeSync(tempDbFile);
 
       WorkspaceEditor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
-      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(workspaceDbNameWithDefault(args.dbName)) });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: CloudSqlite.makeSemverName(workspaceDbNameWithDefault(args.dbName), args.version) });
       IModelJsFs.removeSync(tempDbFile);
     }
 
@@ -780,10 +811,6 @@ export function constructWorkspace(settings: Settings, opts?: WorkspaceOpts): Ow
 
 export function constructWorkspaceEditor(): WorkspaceEditor {
   return new EditorImpl();
-}
-
-export function constructSettingsEditorWorkspace(settings: Settings, opts?: WorkspaceOpts): OwnedWorkspace {
-  return new SettingsEditorWorkspaceImpl(settings, opts);
 }
 
 /**
