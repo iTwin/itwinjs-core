@@ -16,7 +16,7 @@ import { TestUtils } from "../TestUtils";
 
 chai.use(chaiAsPromised);
 
-describe.only("Code value swap is ignored on pull changes", function (this: Suite) {
+describe.only("Code value management: null, swap, undo/redo, and cross-briefcase pull", function (this: Suite) {
   this.timeout(60000);
 
   before(async () => {
@@ -26,7 +26,130 @@ describe.only("Code value swap is ignored on pull changes", function (this: Suit
   after(async () => {
     await TestUtils.shutdownBackend();
   });
+  it("null codeValue on elem1, swap codeValues between two elements sharing the same codeSpec and codeScope, verify undo/redo, push, and b2 sees final state after pull", async () => {
+    HubMock.startup("CodeSwapTest", KnownTestLocations.outputDir);
+    let b1: BriefcaseDb | undefined;
+    let b2: BriefcaseDb | undefined;
 
+    try {
+      // --- Setup iModel ---
+      const iModelId = await HubMock.createNewIModel({
+        accessToken: "user1",
+        iTwinId: HubMock.iTwinId,
+        iModelName: "CodeSwapTest",
+        description: "CodeSwapTest",
+      });
+
+      b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+      b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+      b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      // --- Create a drawing model + category and a CodeSpec ---
+      let drawingModelId: Id64String;
+      let drawingCategoryId: Id64String;
+      let codeSpecId: Id64String;
+      let codeScopeId: Id64String; // will be the drawing model
+
+      await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+      withEditTxn(b1, "setup model, category, codeSpec", (txn) => {
+        const modelCode = IModelTestUtils.getUniqueModelCode(b1!, "DrawingModel");
+        const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode);
+        drawingModelId = modelId;
+
+        let catId = DrawingCategory.queryCategoryIdByName(b1!, IModel.dictionaryId, "MyDrawingCategory");
+        if (undefined === catId)
+          catId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+        drawingCategoryId = catId;
+
+        codeSpecId = b1!.codeSpecs.insert(txn, "MyCodeSpec", CodeScopeSpec.Type.Model);
+        codeScopeId = drawingModelId;
+      });
+
+      await b1.pushChanges({ description: "setup" });
+      await b2.pullChanges();
+
+      // --- Insert two elements with same codeSpecId/codeScopeId but different codeValues ---
+      let elem1Id: Id64String;
+      let elem2Id: Id64String;
+
+      await b1.locks.acquireLocks({ shared: drawingModelId! });
+      withEditTxn(b1, "insert two coded elements", (txn) => {
+        const elem1Props: GeometricElement2dProps = {
+          classFullName: "BisCore:DrawingGraphic",
+          model: drawingModelId!,
+          category: drawingCategoryId!,
+          code: new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_A" }),
+        };
+        const elem2Props: GeometricElement2dProps = {
+          classFullName: "BisCore:DrawingGraphic",
+          model: drawingModelId!,
+          category: drawingCategoryId!,
+          code: new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_B" }),
+        };
+        elem1Id = txn.insertElement(elem1Props);
+        elem2Id = txn.insertElement(elem2Props);
+      });
+
+      await b1.pushChanges({ description: "insert two elements with CODE_A and CODE_B" });
+      await b2.pullChanges();
+
+      // Verify initial state
+      let e1 = b1.elements.getElementProps(elem1Id!);
+      let e2 = b1.elements.getElementProps(elem2Id!);
+      chai.expect(e1.code.spec).to.equal(codeSpecId!);
+      chai.expect(e1.code.scope).to.equal(codeScopeId!);
+      chai.expect(e1.code.value).to.equal("CODE_A");
+      chai.expect(e2.code.spec).to.equal(codeSpecId!);
+      chai.expect(e2.code.scope).to.equal(codeScopeId!);
+      chai.expect(e2.code.value).to.equal("CODE_B");
+
+      await b1.locks.acquireLocks({ exclusive: [elem2Id!, elem1Id!] });
+      withEditTxn(b1, "swap code values", (txn) => {
+        const props = b1!.elements.getElementProps(elem1Id!);
+        props.code = new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "" });
+        txn.updateElement(props);
+
+        const props1 = b1!.elements.getElementProps(elem1Id!);
+        const props2 = b1!.elements.getElementProps(elem2Id!);
+
+        props2.code = new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_A" });
+        props1.code = new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_B" });
+
+        txn.updateElement(props2);
+        txn.updateElement(props1);
+      });
+      b1.clearCaches();
+      // Verify after swap2
+      e1 = b1.elements.getElementProps(elem1Id!);
+      e2 = b1.elements.getElementProps(elem2Id!);
+      chai.expect(e1.code.value).to.equal("CODE_B");
+      chai.expect(e2.code.value).to.equal("CODE_A");
+
+      // --- Undo (reverse txn2: the swap) ---
+      chai.expect(b1.txns.isUndoPossible).to.be.true;
+      b1.txns.reverseTxns(1);
+
+      e1 = b1.elements.getElementProps(elem1Id!);
+      e2 = b1.elements.getElementProps(elem2Id!);
+      chai.expect(e1.code.value).to.equal("CODE_B"); // back to CODE_A before swap
+      chai.expect(e2.code.value).to.equal("CODE_A"); // back to CODE_B before swap
+
+      // --- Redo (reinstate txn2: the swap) ---
+      chai.expect(b1.txns.isRedoPossible).to.be.true;
+      b1.txns.reinstateTxn();
+
+      e1 = b1.elements.getElementProps(elem1Id!);
+      e2 = b1.elements.getElementProps(elem2Id!);
+      chai.expect(e1.code.value).to.equal("CODE_B");
+      chai.expect(e2.code.value).to.equal("CODE_A");
+
+    } finally {
+      b1?.close();
+      HubMock.shutdown();
+    }
+  });
   it("insert two elements with same codeSpecId and codeScopeId, null first code, swap codes, undo/redo, push", async () => {
     HubMock.startup("CodeSwapTest", KnownTestLocations.outputDir);
     let b1: BriefcaseDb | undefined;
