@@ -98,7 +98,7 @@ export class Texture extends DefinitionElement {
    */
   public static insertTexture(txn: EditTxn, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
   /** Insert a new texture into a [[DefinitionModel]].
-   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use Texture.insertTexture(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Texture.insertTexture(txn, ...) instead.
    */
   public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
   public static insertTexture(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
