@@ -355,8 +355,10 @@ describe("DeleteDefinitionElements", () => {
         for (const id of expectedRetained)
           assert.isDefined(iModelDb.elements.tryGetElement(id), `[${label}] ${id} should have been retained`);
       } finally {
-        if (abandonChanges)
+        if (abandonChanges) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           iModelDb.abandonChanges();
+        }
 
         EditTxn.implicitWriteEnforcement = previousEnforcement;
       }

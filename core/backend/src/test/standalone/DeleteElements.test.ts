@@ -95,9 +95,9 @@ describe("deleteElements (native bulk delete API)", () => {
     const previousEnforcement = EditTxn.implicitWriteEnforcement;
     EditTxn.implicitWriteEnforcement = "allow";
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     try {
-      let resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
 
       if (expectedFailed.length === 0)
         assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
