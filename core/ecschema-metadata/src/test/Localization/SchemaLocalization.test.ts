@@ -458,6 +458,39 @@ describe("SchemaLocalization", () => {
       expect(description).to.equal("Foot unit"); // Falls back to original description
     });
 
+    it("should localize inverted unit", async () => {
+      const localization = new SchemaLocalization(provider, "de");
+
+      const invertedUnit = await testBuildingSchema.getInvertedUnit("PER_M");
+      expect(invertedUnit).toBeDefined();
+
+      const label = await localization.getSchemaItemLabel(invertedUnit!);
+      // Localized inverted unit label
+      expect(label).to.equal("Pro Meter");
+      // Actual inverted unit label
+      expect(invertedUnit!.label).to.equal("Per Meter");
+
+      const description = await localization.getSchemaItemDescription(invertedUnit!);
+      // Localized inverted unit description
+      expect(description).to.equal("Invertierte Metereinheit");
+      // Actual inverted unit description
+      expect(invertedUnit!.description).to.equal("Inverted meter unit");
+    });
+
+    it("should fall back to original label and description, when inverted unit not in localization", async () => {
+      const localization = new SchemaLocalization(provider, "es");
+
+      // PER_M not in es localization, should fall back to original
+      const invertedUnit = await testBuildingSchema.getInvertedUnit("PER_M");
+      expect(invertedUnit).toBeDefined();
+
+      const label = await localization.getSchemaItemLabel(invertedUnit!);
+      expect(label).to.equal("Per Meter"); // Falls back to original label
+
+      const description = await localization.getSchemaItemDescription(invertedUnit!);
+      expect(description).to.equal("Inverted meter unit"); // Falls back to original description
+    });
+
     it("should localize phenomenon", async () => {
       const localization = new SchemaLocalization(provider, "de");
 

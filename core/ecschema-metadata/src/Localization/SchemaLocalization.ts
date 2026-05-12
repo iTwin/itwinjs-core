@@ -8,6 +8,7 @@ import { ECClass } from "../Metadata/Class";
 import { Property } from "../Metadata/Property";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Enumeration } from "../Metadata/Enumeration";
+import { SchemaItemType } from "../ECObjects";
 import { ILocalizationProvider } from "./LocalizationProvider";
 import { LocalizedText, SchemaLocalizationJson } from "./LocalizationTypes";
 
@@ -269,47 +270,46 @@ export class SchemaLocalization {
   private findItemLocalization(localization: SchemaLocalizationJson, item: SchemaItem): LocalizedText | undefined {
     const itemName = item.name;
 
-    if (item.schemaItemType === "EntityClass" ||
-      item.schemaItemType === "StructClass" ||
-      item.schemaItemType === "CustomAttributeClass" ||
-      item.schemaItemType === "RelationshipClass" ||
-      item.schemaItemType === "Mixin") {
-      return localization.classes?.[itemName];
-    }
+    switch (item.schemaItemType) {
+      case SchemaItemType.EntityClass:
+      case SchemaItemType.StructClass:
+      case SchemaItemType.CustomAttributeClass:
+      case SchemaItemType.RelationshipClass:
+      case SchemaItemType.Mixin:
+        return localization.classes?.[itemName];
 
-    if (item.schemaItemType === "Enumeration") {
-      return localization.enumerations?.[itemName];
-    }
+      case SchemaItemType.Enumeration:
+        return localization.enumerations?.[itemName];
 
-    if (item.schemaItemType === "Unit") {
-      return localization.units?.[itemName];
-    }
+      case SchemaItemType.Unit:
+        return localization.units?.[itemName];
 
-    if (item.schemaItemType === "Phenomenon") {
-      return localization.phenomena?.[itemName];
-    }
+      case SchemaItemType.InvertedUnit:
+        return localization.invertedUnits?.[itemName];
 
-    if (item.schemaItemType === "UnitSystem") {
-      return localization.unitSystems?.[itemName];
-    }
+      case SchemaItemType.Phenomenon:
+        return localization.phenomena?.[itemName];
 
-    if (item.schemaItemType === "PropertyCategory") {
-      return localization.propertyCategories?.[itemName];
-    }
+      case SchemaItemType.UnitSystem:
+        return localization.unitSystems?.[itemName];
 
-    if (item.schemaItemType === "Format") {
-      return localization.formats?.[itemName];
-    }
+      case SchemaItemType.PropertyCategory:
+        return localization.propertyCategories?.[itemName];
 
-    if (item.schemaItemType === "KindOfQuantity") {
-      return localization.kindOfQuantities?.[itemName];
-    }
+      case SchemaItemType.Format:
+        return localization.formats?.[itemName];
 
-    if (item.schemaItemType === "Constant") {
-      return localization.constants?.[itemName];
-    }
+      case SchemaItemType.KindOfQuantity:
+        return localization.kindOfQuantities?.[itemName];
 
-    return undefined;
+      case SchemaItemType.Constant:
+        return localization.constants?.[itemName];
+
+      default:
+        // eslint-disable-next-line no-console
+        console.warn(`Localization not supported for schema item type: ${item.schemaItemType}`);
+        return undefined;
+    }
   }
 
   /**

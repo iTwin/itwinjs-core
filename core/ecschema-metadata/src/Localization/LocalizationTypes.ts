@@ -53,6 +53,8 @@ export interface SchemaLocalizationJson {
   enumerations?: { [enumerationName: string]: LocalizedEnumerationText };
   /** Localized units, keyed by unit name */
   units?: { [unitName: string]: LocalizedText };
+  /** Localized inverted units, keyed by inverted unit name */
+  invertedUnits?: { [invertedUnitName: string]: LocalizedText };
   /** Localized phenomena, keyed by phenomenon name */
   phenomena?: { [phenomenonName: string]: LocalizedText };
   /** Localized unit systems, keyed by unit system name */

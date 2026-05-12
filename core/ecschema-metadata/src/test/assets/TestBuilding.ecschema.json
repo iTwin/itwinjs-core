@@ -277,6 +277,13 @@
       "unitSystem": "TestBuilding.IMPERIAL",
       "definition": "FT"
     },
+    "PER_M": {
+      "schemaItemType": "InvertedUnit",
+      "label": "Per Meter",
+      "description": "Inverted meter unit",
+      "invertsUnit": "TestBuilding.M",
+      "unitSystem": "TestBuilding.METRIC"
+    },
     "SpatialCategory": {
       "schemaItemType": "PropertyCategory",
       "label": "Spatial Category",

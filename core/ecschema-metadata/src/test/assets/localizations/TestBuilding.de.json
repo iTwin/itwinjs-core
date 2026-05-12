@@ -91,6 +91,12 @@
       "description": "Metereinheit"
     }
   },
+  "invertedUnits": {
+    "PER_M": {
+      "label": "Pro Meter",
+      "description": "Invertierte Metereinheit"
+    }
+  },
   "unitSystems": {
     "METRIC": {
       "label": "Metrisch",
