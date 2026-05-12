@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Implement RevertToCheckpoint functionality and improve error handling",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
