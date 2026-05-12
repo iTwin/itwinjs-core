@@ -171,6 +171,10 @@ export class RotationalSweep extends SolidPrimitive {
         strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep, stepTransform));
     }
   }
+  /** Return true if the sweep axis and contour are not coplanar. */
+  public override get isSkew(): boolean {
+    return !this._normalizedAxis.direction.isPerpendicularTo(this._contour.localToWorld.matrix.columnXCrossColumnY(), true);
+  }
   /** Specify if the sweep forms a closed volume. */
   public get isClosedVolume(): boolean {
     return this.capped || this._sweepAngle.isFullCircle;

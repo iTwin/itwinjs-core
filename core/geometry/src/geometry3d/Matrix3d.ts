@@ -1455,6 +1455,10 @@ export class Matrix3d implements BeJSONFunctions {
   public rowZMagnitude(): number {
     return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]);
   }
+  /** Return the cross product of column X with column Y. */
+  public columnXCrossColumnY(result?: Vector3d): Vector3d {
+    return Geometry.crossProductXYZXYZ(this.coffs[0], this.coffs[3], this.coffs[6], this.coffs[1], this.coffs[4], this.coffs[7], result);
+  }
   /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {
     return this.coffs[0] * this.coffs[1]
