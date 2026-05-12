@@ -631,6 +631,8 @@ export class BriefcaseDb extends IModelDb {
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
     revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
+    // @alpha
+    revertToCheckpoint(arg: RevertToCheckpointArgs): Promise<void>;
     // @internal (undocumented)
     get skipSyncSchemasOnPullAndPush(): boolean;
     toJSON(): BriefcaseConnectionProps;
@@ -6125,6 +6127,15 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     toIndex: ChangesetIndex;
     skipSchemaChanges?: true;
 };
+
+// @alpha
+export type RevertToCheckpointArgs = TokenArg & ({
+    fileName: LocalFileName;
+    changesetIndex?: never;
+} | {
+    changesetIndex: ChangesetIndex;
+    fileName?: never;
+});
 
 // @public @preview
 export abstract class RoleElement extends Element_2 {
