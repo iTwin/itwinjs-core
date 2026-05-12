@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Allow reversing schema changeset",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
