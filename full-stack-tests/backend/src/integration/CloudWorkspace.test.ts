@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
 import {
-  CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps,
+  CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, withEditTxn, Workspace, WorkspaceContainerProps,
   WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
@@ -211,7 +211,7 @@ describe("Cloud workspace containers", () => {
     const imodelSettings: SettingsContainer = {};
     imodelSettings[WorkspaceSettingNames.settingsWorkspaces] = [settingsWorkspaces];
     imodelSettings["app1/max1"] = 100;
-    imodel.saveSettingDictionary("Dict2", imodelSettings);
+    withEditTxn(imodel, (txn) => txn.saveSettingDictionary("Dict2", imodelSettings));
     imodel.close();
 
     let errors: WorkspaceDbLoadErrors | undefined;
@@ -467,7 +467,7 @@ describe("Cloud workspace containers", () => {
       const nestedVersion = (await nestedContainer.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
       const nestedDb = nestedContainer.getEditableDb(nestedVersion);
       nestedDb.open();
-      nestedDb.updateSettingsResource({ "app1/nestedValue": 42 } as SettingsContainer);
+      nestedDb.updateSettingsResource({ "app1/nestedValue": 42 });
       nestedDb.close();
       nestedContainer.releaseWriteLock();
 

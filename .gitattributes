@@ -5,6 +5,7 @@
 # Ensure these file types use the correct OS specific line endings
 *.bat                                         eol=crlf
 *.sh                                          eol=lf
+*.api.md                                      eol=lf
 presentation/common/Ruleset.schema.json text  eol=lf
 *.snap                                        eol=lf
 

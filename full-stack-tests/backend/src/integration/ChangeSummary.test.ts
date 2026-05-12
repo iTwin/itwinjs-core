@@ -10,7 +10,7 @@ import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
+  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, EditTxn, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
@@ -420,28 +420,30 @@ describe("ChangeSummary", () => {
 
     // Populate the iModel with 3 elements
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: managerRequestContext, iTwinId: testITwinId, iModelId: testIModelId });
-    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
-    iModel.saveChanges("Added test model");
-    const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-    iModel.saveChanges("Added test category");
-    const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
-    const elementId2: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
-    const elementId3: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
-    iModel.saveChanges("Added test elements");
+    const txn = new EditTxn(iModel, "change summary test");
+    txn.start();
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
+    txn.saveChanges("Added test model");
+    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+    txn.saveChanges("Added test category");
+    const elementId1: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    const elementId2: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    const elementId3: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    txn.saveChanges("Added test elements");
 
     // Setup the hierarchy as element3 -> element1
     const element3 = iModel.elements.getElement(elementId3);
     element3.parent = new ElementOwnsChildElements(elementId1);
-    iModel.elements.updateElement(element3.toJSON());
-    iModel.saveChanges("Updated element1 as the parent of element3");
+    txn.updateElement(element3.toJSON());
+    txn.saveChanges("Updated element1 as the parent of element3");
 
     // Push changes to the hub
     await iModel.pushChanges({ accessToken: managerRequestContext, description: "Setup test model" });
 
     // Modify the hierarchy to element3 -> element2
     element3.parent = new ElementOwnsChildElements(elementId2);
-    iModel.elements.updateElement(element3.toJSON());
-    iModel.saveChanges("Updated element2 as the parent of element3");
+    txn.updateElement(element3.toJSON());
+    txn.saveChanges("Updated element2 as the parent of element3");
 
     // Push changes to the hub
     await iModel.pushChanges({ accessToken: managerRequestContext, description: "Updated parent element" });

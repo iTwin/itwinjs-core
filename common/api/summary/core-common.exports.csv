@@ -255,6 +255,8 @@ internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
 internal;interface;EditingScopeNotifications
+beta;interface;EditTxnError
+beta;namespace;EditTxnError
 public;type;ElementAlignedBox2d
 public;type;ElementAlignedBox3d
 public;interface;ElementAspectProps
@@ -744,6 +746,7 @@ beta;interface;RealityDataSourceProps
 beta;interface;RealityModelDisplayProps
 beta;class;RealityModelDisplaySettings
 internal;const;REGISTRY
+beta;interface;ReinstateTxnArgs
 public;class;RelatedElement
 preview;class;RelatedElement
 public;interface;RelatedElementProps
@@ -772,7 +775,10 @@ preview;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
 preview;interface;RepositoryLinkProps
 public;interface;RequestNewBriefcaseProps
+internal;function;resolveNavProp
+internal;function;resolveNavPropId
 internal;class;ResponseLike
+beta;interface;ReverseTxnArgs
 public;class;RgbColor
 public;interface;RgbColorProps
 public;type;RgbFactorProps
@@ -849,7 +855,7 @@ beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
 beta;type;RunProps
-alpha;interface;SaveChangesArgs
+beta;interface;SaveChangesArgs
 public;enum;SchemaState
 public;interface;SectionDrawingLocationProps
 preview;interface;SectionDrawingLocationProps
@@ -861,6 +867,7 @@ preview;enum;SectionType
 public;interface;SerializedRpcActivity
 internal;interface;SerializedRpcOperation
 internal;interface;SerializedRpcRequest
+beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps

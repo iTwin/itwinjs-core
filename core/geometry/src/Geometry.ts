@@ -23,18 +23,18 @@ import { Point4d } from "./geometry4d/Point4d";
  * @public
  */
 export enum AxisOrder {
-  /** Right handed system, X then Y then Z */
+  /** Right-handed system, X then Y then Z. */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   XYZ = 0,
-  /** Right handed system, Y then Z then X */
+  /** Right-handed system, Y then Z then X. */
   YZX = 1,
-  /** Right handed system, Z then X then Y */
+  /** Right-handed system, Z then X then Y. */
   ZXY = 2,
-  /** Left handed system, X then Z then Y */
+  /** Left-handed system, X then Z then Y. For a right-handed alternative, swap the first two axes and use `AxisOrder.ZXY`. */
   XZY = 4,
-  /** Left handed system, Y then X then Z */
+  /** Left-handed system, Y then X then Z. For a right-handed alternative, swap the first two axes and use `AxisOrder.XYZ`.*/
   YXZ = 5,
-  /** Left handed system, Z then Y then X */
+  /** Left-handed system, Z then Y then X. For a right-handed alternative, swap the first two axes and use `AxisOrder.YZX`.*/
   ZYX = 6,
 }
 /**
@@ -266,6 +266,8 @@ export class Geometry {
   public static readonly smallAngleSeconds = 2e-7;
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
+  /** Relative fraction tolerance for Newton iterations. */
+  public static readonly smallNewtonStep = 1.0e-11;
   /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
   public static readonly smallFloatingPoint = 1.0e-15;
   /** Radians value for full circle 2PI radians minus [[smallAngleRadians]]. */

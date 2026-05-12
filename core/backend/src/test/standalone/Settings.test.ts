@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
+import { withEditTxn } from "../../EditTxn";
 import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
 import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -290,20 +291,22 @@ describe("Settings", () => {
     const gcsDbDict: SettingsContainer = {
       "gcs/databases": ["gcs/Usa", "gcs/Canada"],
     };
-    iModel2.saveSettingDictionary("gcs-dbs", gcsDbDict);
-    iModel2.saveSettingDictionary("test1", setting1);
+    withEditTxn(iModel2, (txn) => {
+      txn.saveSettingDictionary("gcs-dbs", gcsDbDict);
+      txn.saveSettingDictionary("test1", setting1);
+    });
     iModel2.close();
 
     let iModel3 = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
     expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1["imodel/setting1"]);
 
-    iModel3.saveSettingDictionary("test1", setting1changed);
+    withEditTxn(iModel3, (txn) => txn.saveSettingDictionary("test1", setting1changed));
     iModel3.close();
     iModel3 = StandaloneDb.openFile(iModelName);
     expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1changed["imodel/setting1"]);
-    iModel3.deleteSettingDictionary("test1");
+    withEditTxn(iModel3, (txn) => txn.deleteSettingDictionary("test1"));
     iModel3.close();
 
     iModel3 = StandaloneDb.openFile(iModelName);

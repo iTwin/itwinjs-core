@@ -5,49 +5,26 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
-    - [iTwin settings workspace](#itwin-settings-workspace)
-      - [New APIs](#new-apis)
-      - [Usage examples](#usage-examples)
-      - [Configuration requirements](#configuration-requirements)
+    - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+  - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
 
-### iTwin settings workspace
+### ECSQL CROSS JOIN now supports optional ON clause
 
-*Applications* can now store and load named settings dictionaries in an iTwin-scoped workspace, separate from iModel-level settings so the same values can be shared across iModels in that iTwin.
+`CROSS JOIN` in ECSQL now accepts an optional `ON` condition, matching standard SQL and SQLite behavior. Previously, `CROSS JOIN` only produced an unfiltered Cartesian product between two classes.
 
-Under the hood, that workspace uses a [SettingsDb]($backend), which is a settings-formatted [WorkspaceDb]($backend) named `settings-db`. In that db, each string resource is one settings dictionary:
+The key benefit of using `CROSS JOIN` with an `ON` clause — rather than `INNER JOIN` — is optimizer control: SQLite's [special CROSS JOIN handling](https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_) prevents the query planner from reordering the joined tables, giving applications explicit control over the join order and query execution plan.
 
-- Resource name: dictionary name
-- Resource value: JSON dictionary content
+**Example** — filter the Cartesian product while locking join order:
 
-Developers still read and write settings dictionaries by name, while container management, versioning, and cloud sync follow the standard workspace model.
+```sql
+-- Returns only matching Person/Identifier pairs, but forces Person to be the outer table
+SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonId
+```
 
+This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
 
-#### New APIs
+## Electron 42 support
 
-- [EditableWorkspaceContainer.withEditableDb]($backend): Acquire a write lock, get or create an editable tip WorkspaceDb, run an operation, then close and release. Automatically creates a new prerelease version if the tip is already published.
-- [IModelHost.getITwinWorkspace]($backend): Load an iTwin-level workspace with all named settings dictionaries.
-- [IModelHost.saveSettingDictionary]($backend) and [IModelHost.deleteSettingDictionary]($backend): Save and remove named settings dictionaries in the iTwin's settings container.
-
-These methods read and write dictionaries in the underlying [SettingsDb]($backend). The dictionary name becomes the resource name, allowing multiple independent dictionaries to coexist in the same container. This mirrors the existing [IModelDb.saveSettingDictionary]($backend) / [IModelDb.deleteSettingDictionary]($backend) pattern.
-
-#### Usage examples
-
-Save a settings dictionary to an iTwin:
-
-[[include:WorkspaceExamples.SaveITwinSettings]]
-
-Read it back:
-
-[[include:WorkspaceExamples.GetITwinWorkspace]]
-
-Delete it:
-
-[[include:WorkspaceExamples.DeleteITwinSetting]]
-
-#### Configuration requirements
-
-To use iTwin-scoped settings dictionaries, configure [IModelHost.authorizationClient]($backend) and [BlobContainer.service]($backend) so the backend can query and update the iTwin settings workspace container.
-
-See the [Workspace documentation]($docs/learning/backend/Workspace.md) for full details.
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 42](https://www.electronjs.org/blog/electron-42-0).
