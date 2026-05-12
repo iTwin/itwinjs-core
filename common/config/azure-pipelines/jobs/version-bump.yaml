@@ -65,7 +65,7 @@ jobs:
   - job: CreateBranch
     displayName: Create branch for next release
     dependsOn: CheckPrevCommit
-    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(not(${{ parameters.DryRunDeprecationOnly }}), eq('${{ parameters.BumpType }}', 'releaseCandidate'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     steps:
       - checkout: self
       - bash: |
@@ -182,10 +182,7 @@ jobs:
 
   - job: DryRunDeprecationSmoke
     displayName: Dry Run Deprecation Smoke Test
-    dependsOn:
-    - CreateBranch
-    - CheckPrevCommit
-    condition: and(${{ parameters.DryRunDeprecationOnly }}, or(eq('${{ parameters.BumpType }}', 'minor'), eq('${{ parameters.BumpType }}', 'patch')), in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped', 'SucceededWithIssues'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
+    condition: and(${{ parameters.DryRunDeprecationOnly }}, or(eq('${{ parameters.BumpType }}', 'minor'), eq('${{ parameters.BumpType }}', 'patch')))
     steps:
       - checkout: self
 
@@ -483,7 +480,7 @@ jobs:
   - job: UpdateMaster
     displayName: Update master to next minor version
     dependsOn: Bump
-    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(not(${{ parameters.DryRunDeprecationOnly }}), eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     steps:
       - checkout: self
       - task: UseNode@1
