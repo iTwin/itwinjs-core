@@ -367,7 +367,6 @@ public;class;IModelJsFs
 public;class;IModelJsFsStats
 public;interface;IModelNameArg
 internal;class;IModelNative
-internal;const;_implicitTxn
 beta;type;ImplicitWriteEnforcement
 public;class;InformationContentElement
 preview;class;InformationContentElement
