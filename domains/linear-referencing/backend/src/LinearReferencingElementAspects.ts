@@ -7,7 +7,7 @@
  */
 
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import { _implicitTxn, EditTxn, ElementMultiAspect, IModelDb } from "@itwin/core-backend";
+import { EditTxn, ElementMultiAspect, IModelDb } from "@itwin/core-backend";
 import { RelatedElement } from "@itwin/core-common";
 import {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
@@ -89,8 +89,13 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
 
   public static insert(txnOrIModel: EditTxn | IModelDb, locatedElementId: Id64String,
     at: DistanceExpression, fromReferentId?: Id64String): void {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    txn.insertAspect(this.toProps(locatedElementId, at, fromReferentId));
+    const aspectProps = this.toProps(locatedElementId, at, fromReferentId);
+    if (txnOrIModel instanceof EditTxn)
+      txnOrIModel.insertAspect(aspectProps);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      txnOrIModel.elements.insertAspect(aspectProps);
+    }
   }
 }
 
@@ -147,7 +152,12 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
 
   public static insert(txnOrIModel: EditTxn | IModelDb, locatedElementId: Id64String,
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    txn.insertAspect(this.toProps(locatedElementId, from, to, fromReferentId, toReferentId));
+    const aspectProps = this.toProps(locatedElementId, from, to, fromReferentId, toReferentId);
+    if (txnOrIModel instanceof EditTxn)
+      txnOrIModel.insertAspect(aspectProps);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      txnOrIModel.elements.insertAspect(aspectProps);
+    }
   }
 }

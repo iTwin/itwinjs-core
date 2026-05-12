@@ -692,6 +692,7 @@ export class Box extends SolidPrimitive {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     readonly solidPrimitiveType = "box";
     strokeConstantVSection(zFraction: number): LineString3d;
     tryTransformInPlace(transform: Transform): boolean;
@@ -1378,6 +1379,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined;
     static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone;
     static createDgnCone(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined;
+    cylinderRadius(allowSkew?: boolean): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getCenterA(): Point3d;
@@ -1391,6 +1393,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "cone";
     strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d;
@@ -3380,6 +3383,7 @@ export class LinearSweep extends SolidPrimitive {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     readonly solidPrimitiveType = "linearSweep";
     tryTransformInPlace(transform: Transform): boolean;
 }
@@ -3662,6 +3666,7 @@ export class Matrix3d implements BeJSONFunctions {
     coffs: Float64Array;
     columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number): number;
     columnX(result?: Vector3d): Vector3d;
+    columnXCrossColumnY(result?: Vector3d): Vector3d;
     columnXDotColumnY(): number;
     columnXDotColumnZ(): number;
     columnXMagnitude(): number;
@@ -5626,6 +5631,7 @@ export class RotationalSweep extends SolidPrimitive {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     readonly solidPrimitiveType = "rotationalSweep";
     tryTransformInPlace(transform: Transform): boolean;
 }
@@ -5790,6 +5796,7 @@ export abstract class SolidPrimitive extends GeometryQuery {
     readonly geometryCategory = "solid";
     abstract getConstructiveFrame(): Transform | undefined;
     abstract get isClosedVolume(): boolean;
+    get isSkew(): boolean;
     abstract readonly solidPrimitiveType: SolidPrimitiveType;
 }
 
@@ -5849,6 +5856,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     get latitudeSweepFraction(): number;
     maxAxisRadius(): number;
     maxIsoParametricDistance(): Vector2d;
@@ -6048,6 +6056,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "torusPipe";
     tryTransformInPlace(transform: Transform): boolean;
