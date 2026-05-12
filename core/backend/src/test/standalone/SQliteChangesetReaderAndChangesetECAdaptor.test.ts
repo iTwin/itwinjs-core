@@ -1919,12 +1919,12 @@ describe("PRAGMA ECSQL Functions", async () => {
   });
 });
 
-describe.only("revertToVersion", () => {
+describe("revertToCheckpoint", () => {
   let iTwinId: GuidString;
   const accessToken = "super manager token";
 
   before(() => {
-    HubMock.startup("RevertToVersionTest", KnownTestLocations.outputDir);
+    HubMock.startup("RevertToCheckpointTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
   after(() => HubMock.shutdown());
@@ -1938,7 +1938,7 @@ describe.only("revertToVersion", () => {
   }
 
   it("b1 creates schema+data changesets, b2 reverts and pushes, b3 pulls and verifies", async () => {
-    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "RevertToVersion", description: "TestSubject", accessToken });
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "RevertToCheckpoint", description: "TestSubject", accessToken });
 
     // ── b1: create all schema and data changesets ──────────────────────────────
     let b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
@@ -1987,7 +1987,7 @@ describe.only("revertToVersion", () => {
     const b1Path = b1.pathName;
     txn1.end();
     b1.close();
-    const checkpointFile = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-checkpoint.bim`);
+    const checkpointFile = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}-checkpoint.bim`);
     IModelJsFs.copySync(b1Path, checkpointFile);
 
     // Reopen b1 to continue creating changesets
@@ -2036,7 +2036,7 @@ describe.only("revertToVersion", () => {
     assert.isFalse(b2.txns.hasPendingTxns);
     // ── b2: revert to checkpoint and push the revert changeset ────────────────
     await b2.acquireSchemaLock(); // schema lock required since revert undoes schema changes
-    await b2.revertToVersion({ fileName: checkpointFile });
+    await b2.revertToCheckpoint({ fileName: checkpointFile });
     assert.isTrue(b2.txns.hasPendingTxns);
 
     await b2.pushChanges({ description: "revert to checkpoint", accessToken });
@@ -2062,8 +2062,8 @@ describe.only("revertToVersion", () => {
 
   it("should revert using fileName path", async () => {
     // Create a StandaloneDb (no txn tracking), insert elements, copy as base, insert more, revert
-    const fileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}.bim`);
-    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-base.bim`);
+    const fileName = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}.bim`);
+    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}-base.bim`);
     const seedFile = IModelTestUtils.resolveAssetFile("test.bim");
     IModelJsFs.copySync(seedFile, fileName);
 
@@ -2082,7 +2082,7 @@ describe.only("revertToVersion", () => {
       code: Subject.createCode(db, IModel.rootSubjectId, "ExtraSubject"),
     });
     db[_nativeDb].saveChanges();
-    db[_nativeDb].deleteAllTxns(); // clear pending txns so revertToVersion doesn't reject
+    db[_nativeDb].deleteAllTxns(); // clear pending txns so revertToCheckpoint doesn't reject
     db[_nativeDb].saveChanges();
 
     // Verify element was added
@@ -2090,7 +2090,7 @@ describe.only("revertToVersion", () => {
     assert.isAbove(countBefore, 1); // at least the root + the new one
 
     // Revert to base (fileName path)
-    await db.revertToVersion({ fileName: baseFileName });
+    await db.revertToCheckpoint({ fileName: baseFileName });
 
     // Verify element is gone (back to base state)
     const countAfter = db.withStatement("SELECT count(*) FROM bis:Subject", (stmt) => { stmt.step(); return stmt.getValue(0).getInteger(); });
@@ -2102,8 +2102,8 @@ describe.only("revertToVersion", () => {
   });
 
   it("should throw when there are unsaved changes", async () => {
-    const fileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}.bim`);
-    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-base.bim`);
+    const fileName = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}.bim`);
+    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}-base.bim`);
     IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), fileName);
     IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), baseFileName);
 
@@ -2123,11 +2123,11 @@ describe.only("revertToVersion", () => {
 
     let threw = false;
     try {
-      await db.revertToVersion({ fileName: baseFileName });
+      await db.revertToCheckpoint({ fileName: baseFileName });
     } catch {
       threw = true;
     }
-    assert.isTrue(threw, "revertToVersion should throw when there are unsaved changes");
+    assert.isTrue(threw, "revertToCheckpoint should throw when there are unsaved changes");
 
     unsavedTxn.end("abandon");
     db.close();
@@ -2136,8 +2136,8 @@ describe.only("revertToVersion", () => {
   });
 
   it("should throw when there are pending txns", async () => {
-    const fileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}.bim`);
-    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToVersion", `${Guid.createValue()}-base.bim`);
+    const fileName = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}.bim`);
+    const baseFileName = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}-base.bim`);
     IModelJsFs.copySync(IModelTestUtils.resolveAssetFile("test.bim"), fileName);
 
     // Open with transactions enabled so saveChanges creates a pending txn
@@ -2162,11 +2162,11 @@ describe.only("revertToVersion", () => {
 
     let threw = false;
     try {
-      await db.revertToVersion({ fileName: baseFileName });
+      await db.revertToCheckpoint({ fileName: baseFileName });
     } catch {
       threw = true;
     }
-    assert.isTrue(threw, "revertToVersion should throw when there are pending txns");
+    assert.isTrue(threw, "revertToCheckpoint should throw when there are pending txns");
 
     db[_nativeDb].abandonChanges();
     db[_nativeDb].deleteAllTxns();
@@ -2174,5 +2174,88 @@ describe.only("revertToVersion", () => {
     db.close();
     IModelJsFs.removeSync(fileName);
     IModelJsFs.removeSync(baseFileName);
+  });
+
+  it("should revert using changesetIndex (V2 checkpoint path via HubMock)", async () => {
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "RevertToCheckpointV2", description: "TestSubject", accessToken });
+
+    // ── b1: create schema, data, and push changesets ──────────────────────────
+    let b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    let txn1 = startTestTxn(b1, "b1 setup");
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="RevertTestDomain" alias="rtd" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p1" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+
+    // Changeset 1: schema + drawing model + category
+    await b1.acquireSchemaLock();
+    await importSchemaStrings(txn1, [schema]);
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn1, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "TestCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(txn1, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,255,0)").toJSON() }));
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "schema + setup", accessToken });
+
+    const createEl = async (args: { [key: string]: any }): Promise<Id64String> => {
+      await b1.locks.acquireLocks({ exclusive: drawingModelId });
+      const geom: GeometryStreamProps = [IModelJson.Writer.toIModelJson(Arc3d.createXY(Point3d.createZero(), 1))];
+      const elProps = { classFullName: "RevertTestDomain:TestElement", model: drawingModelId, category: drawingCategoryId, code: Code.createEmpty(), geom, ...args };
+      return txn1.insertElement(elProps);
+    };
+
+    // Changeset 2: insert 2 elements
+    await createEl({ p1: "alpha" });
+    await createEl({ p1: "beta" });
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "insert 2 elements", accessToken });
+
+    // Upload a V2 checkpoint at changeset index 2 — this is the revert target
+    const b1Path = b1.pathName;
+    txn1.end();
+    b1.close();
+    // Copy the briefcase file for the checkpoint (WAL is flushed on close)
+    const cpFile = IModelTestUtils.prepareOutputFile("RevertToCheckpoint", `${Guid.createValue()}-v2cp.bim`);
+    IModelJsFs.copySync(b1Path, cpFile);
+    HubMock.findLocalHub(iModelId).uploadCheckpoint({ changesetIndex: 2, localFile: cpFile });
+
+    // Reopen b1 and push one more element (changeset 3)
+    b1 = await BriefcaseDb.open({ fileName: b1Path });
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    txn1 = startTestTxn(b1, "b1 continue");
+    await createEl({ p1: "gamma" });
+    txn1.saveChanges();
+    await b1.pushChanges({ description: "insert 3rd element", accessToken });
+    txn1.end();
+    b1.close();
+
+    // ── b2: open at tip, revert via changesetIndex ────────────────────────────
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+    b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Tip has 3 elements
+    assert.equal(countElements(b2, "RevertTestDomain:TestElement"), 3);
+
+    // Revert to changeset 2 using the changesetIndex path (goes through V2CheckpointManager.attach → HubMock)
+    await b2.acquireSchemaLock();
+    await b2.revertToCheckpoint({ changesetIndex: 2 });
+    assert.isTrue(b2.txns.hasPendingTxns);
+
+    await b2.pushChanges({ description: "revert to checkpoint at cs2", accessToken });
+
+    // After revert+push: should have 2 elements
+    assert.equal(countElements(b2, "RevertTestDomain:TestElement"), 2);
+
+    b2.close();
+    IModelJsFs.removeSync(cpFile);
   });
 });

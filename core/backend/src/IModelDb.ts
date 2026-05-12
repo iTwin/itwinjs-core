@@ -28,7 +28,7 @@ import {
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs, RevertToVersionArgs } from "./BriefcaseManager";
+import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs, RevertToCheckpointArgs } from "./BriefcaseManager";
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -3951,21 +3951,40 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
-   * Revert this iModel to a previous version by computing a diff against the target version and applying it inverted.
+   * Revert this iModel to a checkpoint by computing a diff against the checkpoint and applying it inverted.
    * Only tracked tables are included in the diff; internal tables (e.g. be_Local, txn tables, spatial index) are excluded.
-   * The target version may be specified as a local file path / cloud db name, or as a changeset index backed by a V2 checkpoint.
-   * @throws if there are local changes (uncommitted or committed txns), if the iModel GUIDs differ, or if the base file/checkpoint cannot be opened.
-   * @public
+   * The checkpoint may be specified as a local file path or as a changeset index backed by a V2 checkpoint.
+   * @throws if there are local changes (uncommitted or committed txns), if the iModel GUIDs differ, or if the checkpoint cannot be opened.
+   * @alpha
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    */
-  public async revertToVersion(arg: RevertToVersionArgs): Promise<void> {
+  public async revertToCheckpoint(arg: RevertToCheckpointArgs): Promise<void> {
+    const nativeDb = this[_nativeDb];
+    if (nativeDb.hasUnsavedChanges()) {
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot revert with unsaved changes");
+    }
+    if (nativeDb.hasPendingTxns()) {
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
+    }
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert with indirect changes");
+    }
+    if (this.txns.rebaser.inProgress() && !this.txns.rebaser.isAborting) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert while a rebase is in progress");
+    }
     if (arg.changesetIndex !== undefined) {
       const accessToken = arg.accessToken ?? await IModelHost.getAccessToken();
       const changeset = await IModelHost[_hubAccess].queryChangeset({ accessToken, iModelId: this.iModelId, changeset: { index: arg.changesetIndex } });
       const checkpoint: CheckpointProps = { iModelId: this.iModelId, iTwinId: this.iTwinId, changeset, accessToken };
-      const { dbName } = await V2CheckpointManager.attach(checkpoint);
-      this[_nativeDb].revertToVersion(dbName);
+      const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
+      if (container) {
+        nativeDb.revertToVersion(`${dbName}?vfs=${container.cache!.name}&writable=0`);
+      } else {
+        // HubMock: dbName is already a local file path
+        nativeDb.revertToVersion(dbName);
+      }
     } else {
-      this[_nativeDb].revertToVersion(arg.fileName);
+      nativeDb.revertToVersion(arg.fileName);
     }
     this.clearCaches();
   }
