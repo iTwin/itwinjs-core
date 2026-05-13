@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add outline geometry as Path instead of Loop in text annotations",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
