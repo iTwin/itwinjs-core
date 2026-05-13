@@ -361,6 +361,10 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const b = Math.abs(this.getMinorRadius());
     return Vector2d.create(b * Math.PI * 2.0, (a + b) * this._sweep.radians);
   }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._localToWorld.matrix.columnZ().isParallelTo(this._localToWorld.matrix.columnXCrossColumnY(), true, true);
+  }
   /**
    * @return true if this is a closed volume.
    */

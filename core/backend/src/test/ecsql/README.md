@@ -48,6 +48,7 @@ SELECT * from meta.ECSchemaDef LIMIT 5
 > - bindNull
 > - bindPoint2d
 > - bindPoint3d
+> - bindRange3d
 > - bindDateTime (Only available for ECSqlStatement)
 > - bindNavigation (Only available for ECSqlStatement)
 > - bindArray (Only available for ECSqlStatement)

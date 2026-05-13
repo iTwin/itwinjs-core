@@ -7,6 +7,7 @@ import { assert, expect } from "chai";
 import { _nativeDb, IModelJsFs, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Code, IModel } from "@itwin/core-common";
+import { withEditTxn } from "../../EditTxn";
 
 describe("StandaloneDb", () => {
 
@@ -131,7 +132,7 @@ describe("StandaloneDb", () => {
       IModelJsFs.removeSync(fileName);
     });
 
-    it("should delete txns on close", async() => {
+    it("should delete txns on close", async () => {
       const fileName = IModelTestUtils.prepareOutputFile("StandaloneDb", "DeleteTxnsOnClose.bim");
 
       // Create with transactions explicitly enabled
@@ -163,15 +164,13 @@ describe("StandaloneDb", () => {
       </ECSchema>`;
 
       await iModel.importSchemaStrings([schema1]);
-      iModel.saveChanges();
-
-      const e1 = iModel.elements.insertElement({
-        classFullName: "TestDomain:A1Recipe2d",
-        model: IModel.dictionaryId,
-        code: Code.createEmpty(),
+      const e1 = await withEditTxn(iModel, async (txn) => {
+        return txn.insertElement({
+          classFullName: "TestDomain:A1Recipe2d",
+          model: IModel.dictionaryId,
+          code: Code.createEmpty(),
+        });
       });
-
-      iModel.saveChanges(`inserted element ${e1}`);
       expect(iModel.txns.hasPendingTxns).to.be.true;
 
       // load up concurrent queries to ensure they are shutdown on close

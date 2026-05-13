@@ -36,12 +36,11 @@ describe("SchemaLoaderPerformance", () => {
     const bisSchemaPaths = getBisSchemaPaths();
 
     try {
-      await iModelDb.importSchemas(bisSchemaPaths);   // will throw an exception if import fails
+      await iModelDb.importSchemas(bisSchemaPaths);   // auto-saves
     } catch {
       throw new Error(`Failed to import schemas`);
     }
 
-    iModelDb.saveChanges();
     iModelDb.close();
   });
 

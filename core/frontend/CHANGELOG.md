@@ -1,6 +1,79 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 12 Mar 2026 14:14:32 GMT and should not be manually modified.
+This log was last generated on Fri, 08 May 2026 20:37:55 GMT and should not be manually modified.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Fix FormatSpecHandle stale state during onFormattingReady
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Minor changes
+
+- Quantity Formatter: readiness events, serialized reload queue, multi-system caching, composite-keyed registry, FormatSpecHandle, listener leak fix.
+
+### Updates
+
+- Improved `PerModelCategoryVisibility` performance in some cases more than 10x.
+- QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.
+- Add new ViewState.getRealityModelTreeRefs method
+- added EditTxn apis
+- Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
+- Fix event listener leak in LayerTileTreeReferenceHandler
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:14 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Minor changes
+
+- Add support for the proposed BENTLEY_materials_line_style glTF extension, including line width and custom line-pattern rendering for glTF line primitives.
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Support geometry collection for reality meshes with glTF tiles
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- New LockService interface and new BriefcaseConnection.locks property
+- Update measure tool to fallback to QuantityType
+- Fix crash when QuantityFormatter.setUnitsProvider is called after IModelApp shutdown — ToolAdmin no longer emits activeToolChanged with an undefined tool.
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+- Add support for WMTS sparse tilesets
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+### Updates
+
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
 
 ## 5.7.2
 Thu, 12 Mar 2026 14:12:44 GMT

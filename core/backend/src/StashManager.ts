@@ -399,7 +399,7 @@ export class StashManager {
 
     db[_nativeDb].stashRestore(stashFile);
     db[_resetIModelDb]();
-    db.saveChanges();
+    db[_nativeDb].saveChanges();
     Logger.logInfo(loggerCategory, `Restored stash: ${this.getStashId(args)}`);
   }
 }

@@ -66,9 +66,9 @@ describe("EdgeSettings", () => {
         expected: makeExpected(undefined, undefined, undefined, 4),
       },
       {
-        // Nonsense LinePixels => solid
+        // Nonsense LinePixels register as custom patterns
         settings: makeSettings(makeStyle(undefined, undefined, 1234321 as LinePixels), makeStyle(undefined, undefined, 4321234 as LinePixels)),
-        expected: makeExpected(undefined, undefined, LinePixels.Solid, undefined, LinePixels.Solid),
+        expected: makeExpected(undefined, undefined, 1234321 as LinePixels, undefined, 4321234 as LinePixels),
       },
       {
         settings: makeSettings(undefined, makeStyle(ColorDef.green, 2, LinePixels.Code3)),

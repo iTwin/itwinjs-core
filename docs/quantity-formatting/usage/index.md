@@ -34,6 +34,8 @@ Understand how UnitConversionSpec works and how unit conversions are performed b
 
 ## Additional Resources
 
+- **[QuantityFormatter Lifecycle & Integration](./QuantityFormatterAdvanced.md)** - Readiness signals, spec provider integration for domain teams, multi-system access, and auto-refreshing FormatSpecHandle
+
 - **[QuantityFormatting (Outdated)](./QuantityFormatting-old.md)** - Previous documentation version for frontend iTwin applications, retained for reference
 
 ## See Also

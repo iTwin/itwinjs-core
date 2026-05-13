@@ -2,6 +2,96 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.9.2",
+      "tag": "@itwin/core-common_v5.9.2",
+      "date": "Fri, 08 May 2026 20:36:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.9.1",
+      "tag": "@itwin/core-common_v5.9.1",
+      "date": "Tue, 05 May 2026 17:43:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.9.0",
+      "tag": "@itwin/core-common_v5.9.0",
+      "date": "Mon, 04 May 2026 16:32:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ITwinSettingsError for iTwin settings container API error handling."
+          },
+          {
+            "comment": "added EditTxn apis"
+          },
+          {
+            "comment": "Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns."
+          },
+          {
+            "comment": "Added ECSql-compatible navigation-property fields to `ViewDefinitionProps`, `SpatialViewDefinitionProps`, and `ViewDefinition2dProps` interfaces. The flat Id64String fields (`categorySelectorId`, `displayStyleId`, `modelSelectorId`, `baseModelId`) are deprecated in favor of the new navigation-property objects but remain as getter/setter pairs instead for backward compatibility."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.8.4",
+      "tag": "@itwin/core-common_v5.8.4",
+      "date": "Thu, 23 Apr 2026 18:05:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.3",
+      "tag": "@itwin/core-common_v5.8.3",
+      "date": "Thu, 23 Apr 2026 14:52:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.2",
+      "tag": "@itwin/core-common_v5.8.2",
+      "date": "Thu, 16 Apr 2026 11:05:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.1",
+      "tag": "@itwin/core-common_v5.8.1",
+      "date": "Fri, 10 Apr 2026 13:02:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.0",
+      "tag": "@itwin/core-common_v5.8.0",
+      "date": "Thu, 02 Apr 2026 18:19:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks."
+          },
+          {
+            "comment": "Support for binding range3d"
+          },
+          {
+            "comment": "QueryBinder should not fail on bind empty array"
+          },
+          {
+            "comment": "Minor bump on `IModelReadRpcInterface.interfaceVersion`."
+          },
+          {
+            "comment": "Add common DbCloudContainerInfo interface for metadata display"
+          },
+          {
+            "comment": "Added ECSqlReaderBase api which will act as a base point for both the async and sync version of ECSqlReader"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.7.3",
+      "tag": "@itwin/core-common_v5.7.3",
+      "date": "Tue, 24 Mar 2026 14:29:17 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.7.2",
       "tag": "@itwin/core-common_v5.7.2",
       "date": "Thu, 12 Mar 2026 14:12:44 GMT",

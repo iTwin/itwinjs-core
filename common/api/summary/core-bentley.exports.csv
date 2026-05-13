@@ -16,6 +16,8 @@ public;enum;BentleyLoggerCategory
 public;enum;BentleyStatus
 public;class;BeTimePoint
 public;class;BeUiEvent
+beta;class;BeUnorderedEvent
+beta;class;BeUnorderedUiEvent
 public;enum;BriefcaseStatus
 public;class;ByteStream
 public;enum;ChangeSetStatus
@@ -162,5 +164,6 @@ public;class;UnexpectedErrors
 public;function;using
 deprecated;function;using
 public;function;utf8ToString
+beta;function;wrapTimerCallback
 public;class;YieldManager
 public;interface;YieldManagerOptions

@@ -1091,7 +1091,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _environment: Environment;
   private _planProjections?: Map<string, PlanProjectionSettings>;
 
-  private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
+  private get _json3d(): DisplayStyle3dSettingsProps { return this._json; }
 
   public override is3d(): this is DisplayStyle3dSettings {
     return true;
