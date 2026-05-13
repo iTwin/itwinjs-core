@@ -120,7 +120,7 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
    * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use GenericGraphicalModel3d.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use GenericGraphicalModel3d.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -191,7 +191,7 @@ export class GroupModel extends GroupInformationModel {
    * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use GroupModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use GroupModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
