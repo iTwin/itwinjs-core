@@ -119,7 +119,7 @@ export class ModelSelector extends DefinitionElement {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use ModelSelector.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use ModelSelector.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -224,7 +224,7 @@ export class CategorySelector extends DefinitionElement {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use CategorySelector.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use CategorySelector.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -659,7 +659,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @beta
    */
   public static insertWithCamera(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use SpatialViewDefinition.insertWithCamera(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SpatialViewDefinition.insertWithCamera(txn, ...) instead. */
   public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
   public static insertWithCamera(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -726,7 +726,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use OrthographicViewDefinition.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use OrthographicViewDefinition.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -905,7 +905,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use DrawingViewDefinition.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DrawingViewDefinition.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -966,7 +966,7 @@ export class SheetViewDefinition extends ViewDefinition2d {
    * @beta
    */
   public static insert(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String;
-  /** @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use SheetViewDefinition.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SheetViewDefinition.insert(txn, ...) instead. */
   public static insert(args: CreateSheetViewDefinitionArgs): Id64String;
   public static insert(txnOrArgs: EditTxn | CreateSheetViewDefinitionArgs, args?: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String {
     const txn = txnOrArgs instanceof EditTxn ? txnOrArgs : txnOrArgs.iModel[_implicitTxn];
