@@ -706,6 +706,38 @@ describe("SchemaLocalization", () => {
       // Actual label
       expect(customAttr!.label).to.equal("Building Metadata");
     });
+
+    it("should throw error when localization JSON has wrong schema name", async () => {
+      const schemaLoader = async (_schemaName: string, locale: string) => {
+        return {
+          name: "testSchema",
+          locale: locale,
+          label: "Test Label",
+          description: "Test Description",
+        };
+      };
+
+      const invalidProvider = new LocalizationProvider(schemaLoader);
+      // Should throw error due to schema name mismatch
+      await expect(invalidProvider.getLocalization("TestBuilding", "de"))
+        .rejects.toThrow('Localization JSON mismatch for TestBuilding:de - expected schema name "TestBuilding" but got "testSchema"');
+    });
+
+    it("should throw error when localization JSON has wrong locale", async () => {
+      const schemaLoader = async (schemaName: string, _locale: string) => {
+        return {
+          name: schemaName,
+          locale: "fr",
+          label: "Test Label",
+          description: "Test Description",
+        };
+      };
+
+      const invalidProvider = new LocalizationProvider(schemaLoader);
+      // Should throw error due to locale mismatch
+      await expect(invalidProvider.getLocalization("TestBuilding", "de"))
+        .rejects.toThrow('Localization JSON mismatch for TestBuilding:de - expected locale "de" but got "fr"');
+    });
   });
 
   describe("Schema localization for multiple schemas", () => {

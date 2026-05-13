@@ -56,6 +56,15 @@ export class LocalizationProvider implements ILocalizationProvider {
         throw new Error(`Invalid localization JSON for ${schemaName}:${locale} - missing schema name or locale`);
       }
 
+      if (localizationData.name !== schemaName) {
+        throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected schema name "${schemaName}" but got "${localizationData.name}"`);
+      }
+
+      const expectedLocale = locale.includes("-") && !localizationData.locale.includes("-") ? locale.split("-")[0] : locale;
+      if (localizationData.locale !== expectedLocale) {
+        throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected locale "${expectedLocale}" but got "${localizationData.locale}"`);
+      }
+
       this._localizationCache.set(cacheKey, localizationData);
       return localizationData;
     }
