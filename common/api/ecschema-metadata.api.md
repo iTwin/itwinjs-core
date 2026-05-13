@@ -2247,6 +2247,9 @@ export interface SchemaLocalizationJson {
     formats?: {
         [formatName: string]: LocalizedText;
     };
+    invertedUnits?: {
+        [invertedUnitName: string]: LocalizedText;
+    };
     kindOfQuantities?: {
         [koqName: string]: LocalizedText;
     };
