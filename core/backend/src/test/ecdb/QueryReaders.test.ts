@@ -387,7 +387,6 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
         await readerCallback(reader);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       it("Get id using iterable iterator with UseJsPropertyNames rowFormat", async () => {
         const resultAssertCallback = (row: QueryRowProxy, expectedId: string) => {
           assert.equal(row[0], expectedId);
@@ -540,7 +539,6 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
         await readerCallback(reader);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       it("Get id using step with UseJsPropertyNames rowFormat", async () => {
         const resultAssertCallback = (queryReader: ECSqlReader | ECSqlSyncReader, expectedId: string) => {
           assert.equal(queryReader.current[0], expectedId);
@@ -696,7 +694,6 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
         await readerCallback(reader);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       it("Get duplicate property names using iterable iterator with UseJsPropertyNames rowFormat", async () => {
         const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
         const resultassertCallback = (row: QueryRowProxy, expectedId: string) => {
@@ -854,7 +851,6 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
         await readerCallback(reader);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       it("Get only ECInstanceId with UseJsPropertyNames rowFormat", async () => {
         const resultassertCallback = (queryReader: ECSqlReader | ECSqlSyncReader, expectedId: string) => {
           assert.equal(queryReader.current[0], expectedId);
@@ -1002,7 +998,6 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
         await readerCallback(reader);
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       it("Get one column with custom name with UseJsPropertyNames rowFormat", async () => {
         const resultassertCallback = (queryReader: ECSqlReader | ECSqlSyncReader, expectedId: string) => {
           assert.equal(queryReader.current[0], expectedId);

@@ -625,7 +625,6 @@ class TestIModel {
    * The SELECT must list ECInstanceId as the first column. Any additional columns are captured
    * by the caller-supplied names and stored in the returned row objects.
    *
-   // eslint-disable-next-line @typescript-eslint/no-deprecated
    * Rows are returned using {@link QueryRowFormat.UseJsPropertyNames} so:
    *   ECInstanceId             → row.id
    *   ec_className(ECClassId)  → row.className  (when aliased as `className`)
