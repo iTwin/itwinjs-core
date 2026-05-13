@@ -160,7 +160,6 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
   }
 
   {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseJsPropertyNames
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
@@ -173,7 +172,6 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
   }
 
   {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseJsPropertyNames_ToArray
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
