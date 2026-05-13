@@ -169,12 +169,12 @@ export interface IpcAppFunctions {
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
   /**
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
    * see BriefcaseConnection.saveChanges
    */
   saveChanges: (key: string, description?: string) => Promise<void>;
   /**
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
    * see BriefcaseConnection.abandonChanges
    */
   abandonChanges: (key: string) => Promise<void>;
