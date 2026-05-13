@@ -958,11 +958,10 @@ export interface UnitConversionProps {
 
 // @beta
 export const UnitConversions: {
-    readonly getConversion: (unitsProvider: UnitsProvider, fromUnit: string | UnitProps, toUnit: string | UnitProps) => Promise<UnitConversionProps>;
-    readonly getBasicConversion: (fromUnit: string, toUnit: string) => UnitConversionProps;
-    readonly convert: (unitsProvider: UnitsProvider, fromUnit: string | UnitProps, toUnit: string | UnitProps, value: number) => Promise<number>;
-    readonly convertBasic: (fromUnit: string, toUnit: string, value: number) => number;
+    readonly getConversion: (fromUnit: string, toUnit: string) => UnitConversionProps;
+    readonly convert: (fromUnit: string, toUnit: string, value: number) => number;
     readonly convertValue: (value: number, conversion: UnitConversionProps) => number;
+    readonly isCompatible: (fromUnit: string, toUnit: string) => boolean;
 };
 
 // @internal

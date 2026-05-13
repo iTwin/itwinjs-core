@@ -7,7 +7,7 @@
  */
 
 import { QuantityError, QuantityStatus } from "./Exception";
-import { UnitConversionInvert, type UnitConversionProps, type UnitProps, type UnitsProvider } from "./Interfaces";
+import { UnitConversionInvert, type UnitConversionProps } from "./Interfaces";
 import { basicUnitConversionData } from "./internal/BasicUnitConversions.generated";
 import { convertValueOrThrow } from "./internal/UnitConversionMath";
 
@@ -24,8 +24,12 @@ function throwUnknownUnit(unitName: string): never {
   throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitName}".`);
 }
 
-function getBasicUnitEntry(unitName: string): BasicUnitConversionEntry {
+function getUnitEntry(unitName: string): BasicUnitConversionEntry {
   return basicUnitConversionLookup[unitName] ?? throwUnknownUnit(unitName);
+}
+
+function getComparableEntry(unit: BasicUnitConversionEntry): BasicUnitConversionEntry {
+  return unit[3] ? getUnitEntry(unit[3]) : unit;
 }
 
 function composeConversion(fromUnit: BasicUnitConversionEntry, toUnit: BasicUnitConversionEntry): UnitConversionProps {
@@ -35,28 +39,28 @@ function composeConversion(fromUnit: BasicUnitConversionEntry, toUnit: BasicUnit
   };
 }
 
-function getBasicConversion(fromUnit: string, toUnit: string): UnitConversionProps {
-  const from = getBasicUnitEntry(fromUnit);
-  const to = getBasicUnitEntry(toUnit);
-  const innerFrom = from[3] ? getBasicUnitEntry(from[3]) : from;
-  const innerTo = to[3] ? getBasicUnitEntry(to[3]) : to;
+function getConversion(fromUnit: string, toUnit: string): UnitConversionProps {
+  const from = getUnitEntry(fromUnit);
+  const to = getUnitEntry(toUnit);
+  const comparableFrom = getComparableEntry(from);
+  const comparableTo = getComparableEntry(to);
 
-  if (innerFrom[0] !== innerTo[0])
+  if (comparableFrom[0] !== comparableTo[0])
     return { factor: 1.0, offset: 0.0, error: true };
 
   if (from[3] && to[3])
-    return composeConversion(innerFrom, innerTo);
+    return composeConversion(comparableFrom, comparableTo);
 
   if (from[3]) {
     return {
-      ...composeConversion(innerFrom, to),
+      ...composeConversion(comparableFrom, to),
       inversion: UnitConversionInvert.InvertPreConversion,
     };
   }
 
   if (to[3]) {
     return {
-      ...composeConversion(from, innerTo),
+      ...composeConversion(from, comparableTo),
       inversion: UnitConversionInvert.InvertPostConversion,
     };
   }
@@ -64,65 +68,32 @@ function getBasicConversion(fromUnit: string, toUnit: string): UnitConversionPro
   return composeConversion(from, to);
 }
 
-async function resolveProviderUnit(unitsProvider: UnitsProvider, unitOrName: string | UnitProps): Promise<UnitProps> {
-  if (typeof unitOrName !== "string") {
-    if (!unitOrName.isValid)
-      throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitOrName.name || "<invalid>"}".`);
-
-    return unitOrName;
-  }
-
-  const unit = await unitsProvider.findUnitByName(unitOrName);
-  if (!unit.isValid)
-    throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitOrName}".`);
-
-  return unit;
+function convert(fromUnit: string, toUnit: string, value: number): number {
+  return convertValueOrThrow(value, getConversion(fromUnit, toUnit));
 }
 
-async function getProviderConversion(
-  unitsProvider: UnitsProvider,
-  fromUnit: string | UnitProps,
-  toUnit: string | UnitProps,
-): Promise<UnitConversionProps> {
-  const [from, to] = await Promise.all([
-    resolveProviderUnit(unitsProvider, fromUnit),
-    resolveProviderUnit(unitsProvider, toUnit),
-  ]);
-  return unitsProvider.getConversion(from, to);
+function isCompatible(fromUnit: string, toUnit: string): boolean {
+  const from = getComparableEntry(getUnitEntry(fromUnit));
+  const to = getComparableEntry(getUnitEntry(toUnit));
+  return from[0] === to[0];
 }
 
-async function convert(
-  unitsProvider: UnitsProvider,
-  fromUnit: string | UnitProps,
-  toUnit: string | UnitProps,
-  value: number,
-): Promise<number> {
-  return convertValueOrThrow(value, await getProviderConversion(unitsProvider, fromUnit, toUnit));
-}
-
-function convertBasic(fromUnit: string, toUnit: string, value: number): number {
-  return convertValueOrThrow(value, getBasicConversion(fromUnit, toUnit));
-}
-
-/** One-stop unit conversion helpers for provider-backed async conversion and built-in basic sync conversion.
+/** One-stop unit conversion helpers for the built-in canonical unit set generated from `@bentley/units-schema`.
+ * This surface is synchronous and only supports built-in canonical unit names shipped with `core-quantity`.
+ * For schema-defined, custom, or provider-resolved units outside that built-in set, use a `UnitsProvider`-based workflow instead.
  * Exported as a plain module value so related helpers are discoverable from one ESM/CJS-friendly surface
  * without introducing a TypeScript namespace or static utility class.
- * Provider-backed lookup remains async because `UnitsProvider` is async by contract.
- * Basic conversion uses pre-resolved built-in conversion data generated from the bundled Units schema,
- * so it stays synchronous without needing app startup/init hooks.
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const UnitConversions: {
-  readonly getConversion: (unitsProvider: UnitsProvider, fromUnit: string | UnitProps, toUnit: string | UnitProps) => Promise<UnitConversionProps>;
-  readonly getBasicConversion: (fromUnit: string, toUnit: string) => UnitConversionProps;
-  readonly convert: (unitsProvider: UnitsProvider, fromUnit: string | UnitProps, toUnit: string | UnitProps, value: number) => Promise<number>;
-  readonly convertBasic: (fromUnit: string, toUnit: string, value: number) => number;
+  readonly getConversion: (fromUnit: string, toUnit: string) => UnitConversionProps;
+  readonly convert: (fromUnit: string, toUnit: string, value: number) => number;
   readonly convertValue: (value: number, conversion: UnitConversionProps) => number;
+  readonly isCompatible: (fromUnit: string, toUnit: string) => boolean;
 } = {
-  getConversion: getProviderConversion,
-  getBasicConversion,
+  getConversion,
   convert,
-  convertBasic,
   convertValue: convertValueOrThrow,
+  isCompatible,
 };

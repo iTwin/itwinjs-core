@@ -104,51 +104,49 @@ While most conversions happen automatically through FormatterSpec and ParserSpec
 
 </details>
 
-## Basic Unit Conversion
+## Built-in UnitConversions
 
-Use the basic conversion helpers when both units come from the built-in unit data shipped with `core-quantity`.
-This is the simplest path for common BIS units and does not require any app startup/init hook.
+Use [UnitConversions]($quantity) for the built-in canonical unit set shipped with `core-quantity`.
+Its data is generated from the canonical units schema in `@bentley/units-schema`, so this path stays synchronous and does not require any app startup/init hook.
 
-For a one-off conversion, use [UnitConversions]($quantity).[convertBasic]($quantity):
+If your units are not from the built-in canonical set, use a [UnitsProvider]($quantity)-based workflow instead.
 
-<details>
-<summary>Example Code</summary>
-
-```ts
-[[include:Quantity_UnitConversion.Basic_Convert]]
-```
-
-</details>
-
-For repeated conversions within the same basic unit pair, resolve once and reuse the conversion with [UnitConversions]($quantity).[getBasicConversion]($quantity) and [UnitConversions]($quantity).[convertValue]($quantity). `getBasicConversion(...)` may still return `UnitConversionProps` with `error: true` for incompatible units, so apply the result with `convertValue(...)` rather than using the raw factors directly:
+For a one-off conversion, use [UnitConversions]($quantity).[convert]($quantity):
 
 <details>
 <summary>Example Code</summary>
 
 ```ts
-[[include:Quantity_UnitConversion.Basic_Repeated_Convert]]
+[[include:Quantity_UnitConversion.Convert]]
 ```
 
 </details>
 
-## Provider-backed Unit Conversion
-
-Use the provider-backed helpers when unit lookup/conversion must go through a [UnitsProvider]($quantity), for example when the caller is not limited to the built-in basic unit set. As with the basic repeated-conversion path, `getConversion(...)` may return `UnitConversionProps` with `error: true` for incompatible units, so apply the result with `convertValue(...)` or use `convert(...)` for the throwing one-shot path.
+For repeated conversions within the same built-in unit pair, resolve once and reuse the conversion with [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[convertValue]($quantity). `getConversion(...)` may still return `UnitConversionProps` with `error: true` for incompatible known units, so apply the result with `convertValue(...)` rather than using the raw factors directly:
 
 <details>
 <summary>Example Code</summary>
 
 ```ts
-[[include:Quantity_UnitConversion.Provider_Convert]]
+[[include:Quantity_UnitConversion.Repeated_Convert]]
 ```
 
 </details>
 
-> **Note:** [UnitConversions]($quantity).[convert]($quantity) and [UnitConversions]($quantity).[getConversion]($quantity) stay asynchronous because `UnitsProvider` lookup/conversion methods are async by contract.
+Use [UnitConversions]($quantity).[isCompatible]($quantity) as a built-in canonical-unit compatibility helper before attempting a conversion when you need a boolean check instead of conversion metadata:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_UnitConversion.IsCompatible]]
+```
+
+</details>
+
+> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[isCompatible]($quantity) operate only on the built-in canonical unit set; they are not package-wide helpers for schema-defined, custom, or provider-resolved units.
 >
-> **Note:** [UnitConversions]($quantity).[convertBasic]($quantity) and [UnitConversions]($quantity).[getBasicConversion]($quantity) use pre-resolved built-in basic conversion data shipped with `core-quantity`, so they do not require app startup/init hooks.
->
-> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[getBasicConversion]($quantity) may still return `UnitConversionProps` with `error: true` for incompatible units. [UnitConversions]($quantity).[convertValue]($quantity), [UnitConversions]($quantity).[convert]($quantity), and [UnitConversions]($quantity).[convertBasic]($quantity) are the throwing application paths. Lookup-based helpers throw when a unit name cannot be resolved, and provider-backed [UnitConversions]($quantity).[getConversion]($quantity) may also reject if the underlying [UnitsProvider]($quantity) throws while computing the conversion.
+> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) may still return `UnitConversionProps` with `error: true` for incompatible known units. [UnitConversions]($quantity).[convertValue]($quantity) and [UnitConversions]($quantity).[convert]($quantity) are the throwing application paths. Lookup-based helpers throw when a unit name cannot be resolved.
 
 ## See Also
 

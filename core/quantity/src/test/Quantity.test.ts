@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
-import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 import { UnitSchemaNames } from "../generated/Units.generated";
+import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import { UnitConversions } from "../UnitConversions";
 
@@ -95,46 +95,30 @@ describe("Quantity", () => {
       .toThrowError(QuantityError);
   });
 
-  it("UnitConversions.convert resolves unit name strings and converts asynchronously", async () => {
-    const provider = new BasicUnitsProvider();
-    const value = await UnitConversions.convert(
-      provider,
-      UnitSchemaNames.Units.M,
-      UnitSchemaNames.Units.FT,
-      1,
-    );
-    expect(value).toBeCloseTo(3.28084, 5);
+  it("UnitConversions.convert converts synchronously using built-in canonical units", () => {
+    expect(UnitConversions.convert(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT, 1)).toBeCloseTo(3.28084, 5);
   });
 
-  it("UnitConversions.getConversion accepts resolved UnitProps for repeated conversions", async () => {
-    const provider = new BasicUnitsProvider();
-    const from = await provider.findUnitByName(UnitSchemaNames.Units.M);
-    const to = await provider.findUnitByName(UnitSchemaNames.Units.FT);
-    const conversion = await UnitConversions.getConversion(provider, from, to);
+  it("UnitConversions.getConversion supports repeated synchronous conversions", () => {
+    const conversion = UnitConversions.getConversion(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT);
     expect(UnitConversions.convertValue(1, conversion)).toBeCloseTo(3.28084, 5);
     expect(UnitConversions.convertValue(2, conversion)).toBeCloseTo(6.56168, 5);
   });
 
-  it("UnitConversions.convert throws for unknown provider-backed unit names", async () => {
-    const provider = new BasicUnitsProvider();
-    await expect(UnitConversions.convert(provider, "Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT, 1))
-      .rejects.toThrowError(QuantityError);
+  it("UnitConversions.getConversion returns error metadata for incompatible built-in units", () => {
+    expect(UnitConversions.getConversion(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S)).toEqual({ factor: 1, offset: 0, error: true });
   });
 
-  it("UnitConversions.convert throws for invalid provider-backed conversions", async () => {
-    const provider = new BasicUnitsProvider();
-    await expect(UnitConversions.convert(provider, UnitSchemaNames.Units.M, UnitSchemaNames.Units.S, 1))
-      .rejects.toThrowError(QuantityError);
+  it("UnitConversions.isCompatible returns true for compatible built-in units", () => {
+    expect(UnitConversions.isCompatible(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT)).toBe(true);
   });
 
-  it("UnitConversions.convertBasic converts synchronously using built-in basic units", () => {
-    expect(UnitConversions.convertBasic(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT, 1)).toBeCloseTo(3.28084, 5);
+  it("UnitConversions.isCompatible returns false for incompatible built-in units", () => {
+    expect(UnitConversions.isCompatible(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S)).toBe(false);
   });
 
-  it("UnitConversions.getBasicConversion supports repeated synchronous conversions", () => {
-    const conversion = UnitConversions.getBasicConversion(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT);
-    expect(UnitConversions.convertValue(1, conversion)).toBeCloseTo(3.28084, 5);
-    expect(UnitConversions.convertValue(2, conversion)).toBeCloseTo(6.56168, 5);
+  it("UnitConversions.isCompatible throws for unknown built-in unit names", () => {
+    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT)).toThrowError(QuantityError);
   });
 
   it("generated basic conversion data matches provider-backed conversions across bundled units", async () => {
@@ -153,7 +137,7 @@ describe("Quantity", () => {
         provider.findUnitByName(anchorName),
       ]);
 
-      const actual = UnitConversions.getBasicConversion(unitName, anchorName);
+      const actual = UnitConversions.getConversion(unitName, anchorName);
       const expected = await provider.getConversion(fromUnit, toUnit);
       expect(actual.inversion).toBe(expected.inversion);
       expect(actual.error).toBe(expected.error);
@@ -162,17 +146,22 @@ describe("Quantity", () => {
     }
   });
 
-  it("UnitConversions.convertBasic preserves ordinary zero conversions", () => {
-    expect(UnitConversions.convertBasic(UnitSchemaNames.Units.FT, UnitSchemaNames.Units.M, 0)).toBe(0);
+  it("UnitConversions.convert preserves ordinary zero conversions", () => {
+    expect(UnitConversions.convert(UnitSchemaNames.Units.FT, UnitSchemaNames.Units.M, 0)).toBe(0);
   });
 
-  it("UnitConversions.convertBasic throws for unknown basic unit names", () => {
-    expect(() => UnitConversions.convertBasic("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT, 1))
+  it("UnitConversions.getConversion throws for unknown built-in unit names", () => {
+    expect(() => UnitConversions.getConversion("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT))
       .toThrowError(QuantityError);
   });
 
-  it("UnitConversions.convertBasic throws for invalid basic conversions", () => {
-    expect(() => UnitConversions.convertBasic(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S, 1))
+  it("UnitConversions.convert throws for unknown built-in unit names", () => {
+    expect(() => UnitConversions.convert("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT, 1))
+      .toThrowError(QuantityError);
+  });
+
+  it("UnitConversions.convert throws for invalid built-in conversions", () => {
+    expect(() => UnitConversions.convert(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S, 1))
       .toThrowError(QuantityError);
   });
 });

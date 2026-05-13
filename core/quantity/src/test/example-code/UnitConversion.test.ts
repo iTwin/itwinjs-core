@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { BasicUnitsProvider } from "../../BasicUnitsProvider";
 import { UnitSchemaNames } from "../../generated/Units.generated";
 import { UnitConversions } from "../../UnitConversions";
 
 describe("Quantity unit conversion examples", () => {
-  it("Basic one-off conversion", () => {
-    // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Basic_Convert
-    const feet = UnitConversions.convertBasic(
+  it("One-off conversion", () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Convert
+    const feet = UnitConversions.convert(
       UnitSchemaNames.Units.M,
       UnitSchemaNames.Units.FT,
       1,
@@ -20,9 +19,9 @@ describe("Quantity unit conversion examples", () => {
     expect(feet).toBeCloseTo(3.28084, 5);
   });
 
-  it("Basic repeated conversion", () => {
-    // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Basic_Repeated_Convert
-    const conversion = UnitConversions.getBasicConversion(
+  it("Repeated conversion", () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Repeated_Convert
+    const conversion = UnitConversions.getConversion(
       UnitSchemaNames.Units.M,
       UnitSchemaNames.Units.FT,
     );
@@ -35,17 +34,14 @@ describe("Quantity unit conversion examples", () => {
     expect(feet2).toBeCloseTo(6.56168, 5);
   });
 
-  it("Provider-backed conversion", async () => {
-    // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Provider_Convert
-    const provider = new BasicUnitsProvider();
-    const feet = await UnitConversions.convert(
-      provider,
+  it("Compatibility check", () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.IsCompatible
+    const isLengthConversion = UnitConversions.isCompatible(
       UnitSchemaNames.Units.M,
       UnitSchemaNames.Units.FT,
-      1,
     );
     // __PUBLISH_EXTRACT_END__
 
-    expect(feet).toBeCloseTo(3.28084, 5);
+    expect(isLengthConversion).toBe(true);
   });
 });

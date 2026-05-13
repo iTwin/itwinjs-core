@@ -9,12 +9,14 @@ Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learnin
 ```ts
 import { UnitConversions, UnitSchemaNames } from "@itwin/core-quantity";
 
-const feet = UnitConversions.convertBasic(
+const feet = UnitConversions.convert(
   UnitSchemaNames.Units.M,
   UnitSchemaNames.Units.FT,
   1,
 );
 ```
+
+UnitConversions provides synchronous conversion helpers for the built-in canonical unit set generated from `@bentley/units-schema`.
 
 ## Contributing
 
