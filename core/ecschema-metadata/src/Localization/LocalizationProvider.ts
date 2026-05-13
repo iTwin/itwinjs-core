@@ -48,6 +48,12 @@ export class LocalizationProvider implements ILocalizationProvider {
     // Try fallback to language without region (e.g., "es-CO" → "es")
     if (!localizationData && locale.includes("-")) {
       const baseLocale = locale.split("-")[0];
+      const baseCacheKey = `${schemaName}:${baseLocale}`;
+
+      if (this._localizationCache.has(baseCacheKey)) {
+        return this._localizationCache.get(baseCacheKey);
+      }
+
       localizationData = await this._loader(schemaName, baseLocale);
     }
 
@@ -65,7 +71,9 @@ export class LocalizationProvider implements ILocalizationProvider {
         throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected locale "${expectedLocale}" but got "${localizationData.locale}"`);
       }
 
+      const cacheKey = `${schemaName}:${localizationData.locale}`;
       this._localizationCache.set(cacheKey, localizationData);
+
       return localizationData;
     }
 
