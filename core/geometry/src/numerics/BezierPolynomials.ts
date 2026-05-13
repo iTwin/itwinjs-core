@@ -660,7 +660,7 @@ export class UnivariateBezier extends BezierCoffs {
    * that the final iteration will clean it up to nearly machine precision.
    * @returns final fraction of iteration if converged.  undefined if iteration failed to converge.
    */
-  public runNewton(startFraction: number, tolerance: number = 1.0e-11): number | undefined {
+  public runNewton(startFraction: number, tolerance: number = Geometry.smallNewtonStep): number | undefined {
     const derivativeFactor = this.order - 1;
     let numConverged = 0;
     let u = startFraction;

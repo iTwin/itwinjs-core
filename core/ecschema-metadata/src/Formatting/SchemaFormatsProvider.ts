@@ -77,7 +77,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<FormatDefinition | undefined> {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, systemOverride?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     let kindOfQuantity: KindOfQuantity | undefined;
     try {
       kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
@@ -91,8 +91,9 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // If a unit system is provided, find the first presentation format that matches it.
-    if (this._unitSystem) {
-      const unitSystemMatchers = getUnitSystemGroupMatchers(this._unitSystem);
+    const effectiveSystem = systemOverride ?? this._unitSystem;
+    if (effectiveSystem) {
+      const unitSystemMatchers = getUnitSystemGroupMatchers(effectiveSystem);
       const presentationFormats = kindOfQuantity.presentationFormats;
       for (const matcher of unitSystemMatchers) {
         for (const lazyFormat of presentationFormats) {
@@ -141,7 +142,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
-  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+  public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     const schemaKey = new SchemaKey(schemaName);
     let schema: Schema | undefined;
@@ -169,7 +170,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
       }
       return format.toJSON(true);
     }
-    return this.getKindOfQuantityFormatFromSchema(itemKey);
+    return this.getKindOfQuantityFormatFromSchema(itemKey, system);
   }
 }
 

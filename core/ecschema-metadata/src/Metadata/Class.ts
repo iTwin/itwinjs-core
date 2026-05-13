@@ -92,7 +92,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   public async getDerivedClasses(): Promise<ECClass[] | undefined> {
     const derivedClasses: ECClass[] = [];
-    for(const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
+    for (const derivedClassKey of this.schema.context.classHierarchy.getDerivedClassKeys(this.key)) {
       let derivedClass = await this.schema.getItem(derivedClassKey.name, ECClass); // if the derived class is in the same schema this will get it without going to the context
       if (derivedClass) {
         derivedClasses.push(derivedClass);
@@ -391,8 +391,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${typeof structType === "string" ? structType : structType?.fullName ?? "undefined"}, is not a valid StructClass.`);
 
     return correctType;
   }
@@ -413,8 +412,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${typeof structType === "string" ? structType : structType?.fullName ?? "undefined"}, is not a valid StructClass.`);
 
     return correctType;
   }
@@ -613,14 +611,16 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   private async getClassFromReferencesRecursively(itemKey: SchemaItemKey): Promise<ECClass | undefined> {
     const schemaList: Schema[] = [this.schema];
-    while(schemaList.length > 0) {
+    while (schemaList.length > 0) {
       const currentSchema = schemaList.shift();
-      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
-        const baseClass = await currentSchema!.getItem(itemKey.name, ECClass);
+      if (!currentSchema)
+        break;
+      if (currentSchema.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = await currentSchema.getItem(itemKey.name, ECClass);
         schemaList.splice(0); // clear the list
         return baseClass;
       }
-      schemaList.push(...currentSchema!.references);
+      schemaList.push(...currentSchema.references);
     }
     return undefined;
   }
@@ -641,14 +641,16 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   private getClassFromReferencesRecursivelySync(itemKey: SchemaItemKey): ECClass | undefined {
     const schemaList: Schema[] = [this.schema];
-    while(schemaList.length > 0) {
+    while (schemaList.length > 0) {
       const currentSchema = schemaList.shift();
-      if(currentSchema!.schemaKey.compareByName(itemKey.schemaKey)) {
-        const baseClass = currentSchema!.getItemSync(itemKey.name, ECClass);
+      if (!currentSchema)
+        break;
+      if (currentSchema.schemaKey.compareByName(itemKey.schemaKey)) {
+        const baseClass = currentSchema.getItemSync(itemKey.name, ECClass);
         schemaList.splice(0); // clear the list
         return baseClass;
       }
-      schemaList.push(...currentSchema!.references);
+      schemaList.push(...currentSchema.references);
     }
     return undefined;
   }
@@ -857,7 +859,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
 
     for (const baseClassKey of this.schema.context.classHierarchy.getBaseClassKeys(this.key)) {
-      if(baseClassKey.matchesFullName(targetSchemaKey.fullName)) {
+      if (baseClassKey.matchesFullName(targetSchemaKey.fullName)) {
         return true;
       }
     }

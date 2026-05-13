@@ -1759,7 +1759,6 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
-      iModel.saveChanges();
       iModel.close();
     }
   });
@@ -3586,3 +3585,4 @@ describe("ECSqlStatement", () => {
     });
   });
 });
+

@@ -9,7 +9,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -33,7 +33,7 @@ import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 export type ClipVectorProps = ClipPrimitiveProps[];
 
 /**
- * Class holding an array structure of shapes defined by `ClipPrimitive`
+ * Class holding an array structure of shapes defined by `ClipPrimitive`.
  * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.
  * * In the most common usage, one of the `ClipPrimitive` will be an outer region, and all others are holes with marker
  * flag indicating that the outside of each hole is live.
@@ -49,12 +49,16 @@ export class ClipVector implements Clipper {
    */
   public boundingRange: Range3d = Range3d.createNull();
   /** Returns a reference to the array of ClipShapes. */
-  public get clips() { return this._clips; }
+  public get clips() {
+    return this._clips;
+  }
   private constructor(clips?: ClipPrimitive[]) {
     this._clips = clips ? clips : [];
   }
   /** Returns true if this ClipVector contains a ClipPrimitive. */
-  public get isValid(): boolean { return this._clips.length > 0; }
+  public get isValid(): boolean {
+    return this._clips.length > 0;
+  }
   /** Create a ClipVector with an empty set of ClipShapes. */
   public static createEmpty(result?: ClipVector): ClipVector {
     if (result) {
@@ -151,7 +155,7 @@ export class ClipVector implements Clipper {
     }
     return true;
   }
-  // Proxy object to implement line and arc clip.
+  // Proxy object to implement curve clipping.
   private _clipNodeProxy?: BooleanClipNodeIntersection;
   private ensureProxyClipNode(): boolean {
     if (this._clipNodeProxy)
@@ -169,7 +173,7 @@ export class ClipVector implements Clipper {
   }
   /**
    * Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   * * Implement as intersection of child clippers.
    */
   public announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
@@ -179,13 +183,24 @@ export class ClipVector implements Clipper {
       return this._clipNodeProxy.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announce);
     return false;
   }
-  /** Method from [[Clipper]] interface.
-   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+  /**
+   * Method from [[Clipper]] interface.
+   * * Implement as intersection of child clippers.
    */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     this.ensureProxyClipNode();
     if (this._clipNodeProxy)
       return this._clipNodeProxy.announceClippedArcIntervals(arc, announce);
+    return false;
+  }
+  /**
+   * Method from [[Clipper]] interface.
+   * * Implement as intersection of child clippers.
+   */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensureProxyClipNode();
+    if (this._clipNodeProxy)
+      return this._clipNodeProxy.announceClippedCurveIntervals(curve, announce);
     return false;
   }
   /** Execute polygon clip as intersection of the child primitives. */

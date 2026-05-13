@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
+import { withEditTxn } from "../../EditTxn";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   PropertyMetaData,
@@ -440,12 +441,12 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntityId = imodel.elements.insertElement({
+    const testEntityId = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
     const elemWithNavProp = new GeneratedTestElementWithNavProp({
       classFullName: "TestGeneratedClasses:TestElementWithNavProp",
@@ -484,12 +485,12 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntityId = imodel.elements.insertElement({
+    const testEntityId = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
     const elemWithNavProp = new GeneratedTestElementWithNavProp({
       classFullName: "TestGeneratedClasses:TestElementWithNavProp",
@@ -520,21 +521,21 @@ describe("Class Registry - generated classes", () => {
       EntityReferences.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
-    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
+    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `model-value-${index}`,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps));
+    } as TestEntityProps)));
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestAspectWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestAspectWithNavProp");
 
-    const aspectWithNavPropId = imodel.elements.insertAspect({
+    const aspectWithNavPropId = withEditTxn(imodel, (txn) => txn.insertAspect({
       classFullName: GeneratedTestAspectWithNavProp.classFullName,
       navProp: { id: modelTestEntityIds[0], relClassName: "TestGeneratedClasses:NonElemRel" },
       element: { id: modelTestEntityIds[1] },
-    } as TestAspectWithNavProp);
+    } as TestAspectWithNavProp));
 
     class GeneratedTestModelWithNavProp extends imodel.getJsClass<typeof Model>("TestGeneratedClasses:TestModelWithNavProp") {
       constructor(props: TestModelWithNavPropProps) {
@@ -552,7 +553,7 @@ describe("Class Registry - generated classes", () => {
       // relNavProp: { id: relWithNavPropId, relClassName: "TestGeneratedClasses:ModelToRelNavRel" },
     } as TestModelWithNavPropProps);
 
-    const modelWithNavPropId = modelWithNavProp.insert();
+    const modelWithNavPropId = withEditTxn(imodel, (txn) => modelWithNavProp.insert(txn));
 
     expect(
       [...modelWithNavProp.getReferenceIds()],
@@ -565,12 +566,12 @@ describe("Class Registry - generated classes", () => {
       // EntityReferences.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
 
-    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
+    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `rel-value-${index}`,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps));
+    } as TestEntityProps)));
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedLinkTableRelWithNavProp = imodel.getJsClass<typeof LinkTableRelWithNavProp>("TestGeneratedClasses:LinkTableRelWithNavProp");
@@ -593,7 +594,7 @@ describe("Class Registry - generated classes", () => {
       },
     }, imodel);
 
-    const _relWithNavPropId = relWithNavProp.insert();
+    const _relWithNavPropId = withEditTxn(imodel, (txn) => relWithNavProp.insert(txn));
 
     expect(
       [...relWithNavProp.getReferenceIds()],
@@ -631,19 +632,19 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntity1Id = imodel.elements.insertElement({
+    const testEntity1Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-1",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
-    const testEntity2Id = imodel.elements.insertElement({
+    const testEntity2Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-2",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
     const elemWithNavProp = new ActualTestElementWithNavProp({
       classFullName: TestElementWithNavProp.classFullName,
@@ -745,21 +746,21 @@ describe("Class Registry - generated classes", () => {
     assert.isFalse(ActualDerived5.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
     assert.isFalse(ActualDerived6.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
 
-    const testEntity1Id = imodel.elements.insertElement({
+    const testEntity1Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:Derived6",
       prop: "sample-value-1",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
-    const testEntity2Id = imodel.elements.insertElement({
+    const testEntity2Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-2",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
-    const derived6Id = imodel.elements.insertElement({
+    const derived6Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: Derived6.classFullName,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
@@ -771,7 +772,7 @@ describe("Class Registry - generated classes", () => {
         id: testEntity2Id,
         relClassName: "TestGeneratedClasses:DerivedElemRel",
       },
-    } as DerivedWithNavPropProps);
+    } as DerivedWithNavPropProps));
 
     const derived6 = imodel.elements.getElement(derived6Id);
 

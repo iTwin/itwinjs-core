@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
-  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
+  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
@@ -308,9 +308,11 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
   if (!property.class.baseClass)
     return;
 
-  const primitiveType = getPrimitiveType(property);
-  if (!primitiveType)
+  const maybePrimitiveType = getPrimitiveType(property);
+  if (!maybePrimitiveType)
     return;
+
+  const primitiveType: PrimitiveType = maybePrimitiveType;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
     const baseProperty = await baseClass.getProperty(property.name, true);
@@ -328,7 +330,7 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
     if (!baseType || primitiveType === baseType)
       return;
 
-    return new Diagnostics.IncompatibleValueTypePropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName, primitiveTypeToString(baseType), primitiveTypeToString(primitiveType!)]);
+    return new Diagnostics.IncompatibleValueTypePropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName, primitiveTypeToString(baseType), primitiveTypeToString(primitiveType)]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {
@@ -585,7 +587,7 @@ function propertyTypesMatch(propertyA: Property, propertyB: Property) {
 
 function getPrimitiveType(property: Property): PrimitiveType | undefined {
   if (property.isPrimitive())
-    return (property as PrimitiveProperty).primitiveType;
+    return (property).primitiveType;
 
   return undefined;
 }

@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
-import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
+import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore, withEditTxn } from "@itwin/core-backend";
 import { IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";
@@ -44,7 +44,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async restartIModelHost(): Promise<void> {
     await IModelHost.shutdown();
-    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache"), implicitWriteEnforcement: "throw" });
   }
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
@@ -75,7 +75,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     await initializeContainer(viewContainer);
     removeViewStore = SnapshotDb.onOpen.addListener((dbName) => {
       const db = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
-      db.views.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType });
+      withEditTxn(db, (txn) => txn.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType }));
       db.close();
     });
     AzuriteTest.userToken = "";

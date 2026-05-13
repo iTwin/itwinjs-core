@@ -104,7 +104,7 @@ export class SettingsImpl implements Settings {
     return false;
   }
 
-  public * getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}> {
+  public * getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary }> {
     for (const dictionary of this.dictionaries) {
       const value = dictionary.getSetting<T>(settingName);
       if (undefined !== value) {

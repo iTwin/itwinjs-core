@@ -35,6 +35,7 @@ export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./ECSqlSyncReader";
+export * from "./EditTxn";
 export * from "./Element";
 export * from "./ElementAspect";
 export * from "./ElementGraphics";
@@ -84,6 +85,9 @@ export * from "./workspace/Workspace";
 export * from "./workspace/WorkspaceEditor";
 export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
+export * from "./ChangesetReader";
+export * from "./ChangesetReaderTypes";
+export * from "./PartialChangeUnifier";
 
 export * from "./internal/cross-package";
 

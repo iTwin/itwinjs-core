@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
-  PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
+  PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory, withEditTxn,
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
@@ -48,7 +48,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
   const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
 
   // create an external source and owning repository link to use as our *Target Scope Element* for future synchronizations
-  const masterLinkRepoId = branchDb.constructEntity<RepositoryLink, RepositoryLinkProps>({
+  const masterLinkRepoId = withEditTxn(branchDb, (txn) => branchDb.constructEntity<RepositoryLink, RepositoryLinkProps>({
     classFullName: RepositoryLink.classFullName,
     code: RepositoryLink.createCode(branchDb, IModelDb.repositoryModelId, "example-code-value"),
     model: IModelDb.repositoryModelId,
@@ -56,16 +56,16 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     format: "iModel",
     repositoryGuid: masterDb.iModelId,
     description: "master iModel repository",
-  }).insert();
+  }).insert(txn));
 
-  const masterExternalSourceId = branchDb.constructEntity<ExternalSource, ExternalSourceProps>({
+  const masterExternalSourceId = withEditTxn(branchDb, (txn) => branchDb.constructEntity<ExternalSource, ExternalSourceProps>({
     classFullName: ExternalSource.classFullName,
     model: IModelDb.rootSubjectId,
     code: Code.createEmpty(),
     repository: new ExternalSourceIsInRepository(masterLinkRepoId),
     connectorName: "iModel Transformer",
     connectorVersion: require("@itwin/imodel-transformer/package.json").version,
-  }).insert();
+  }).insert(txn));
 
   // initialize the branch provenance
   const branchInitializer = new IModelTransformer(masterDb, branchDb, {
@@ -75,12 +75,11 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     // store the synchronization provenance in the scope of our representation of the external source, master
     targetScopeElementId: masterExternalSourceId,
   });
-  await branchInitializer.processAll();
+  const description = "initialized branch iModel";
+  await withEditTxn(branchDb, description, async () => branchInitializer.processAll());
   branchInitializer.dispose();
 
-  // save+push our changes to whatever hub we're using
-  const description = "initialized branch iModel";
-  branchDb.saveChanges(description);
+  // The withEditTxn scope above ends by calling EditTxn.saveChanges before pushChanges.
   await branchDb.pushChanges({
     accessToken: myAccessToken,
     description,
@@ -103,11 +102,10 @@ async function forwardSyncMasterToBranch(masterDb: BriefcaseDb, branchDb: Briefc
   const opts: ProcessChangesOptions = {
     accessToken: myAccessToken,
   };
-  await synchronizer.processChanges(opts);
-  synchronizer.dispose();
-  // save and push
   const description = "updated branch with recent master changes";
-  branchDb.saveChanges(description);
+  await withEditTxn(branchDb, description, async () => synchronizer.processChanges(opts));
+  synchronizer.dispose();
+  // The withEditTxn scope above ends by calling EditTxn.saveChanges before pushChanges.
   await branchDb.pushChanges({
     accessToken: myAccessToken,
     description,
@@ -133,11 +131,10 @@ async function reverseSyncBranchToMaster(branchDb: BriefcaseDb, masterDb: Briefc
   const opts: ProcessChangesOptions = {
     accessToken: myAccessToken,
   };
-  await reverseSynchronizer.processChanges(opts);
-  reverseSynchronizer.dispose();
-  // save and push
   const description = "merged changes from branch into master";
-  masterDb.saveChanges(description);
+  await withEditTxn(masterDb, description, async () => reverseSynchronizer.processChanges(opts));
+  reverseSynchronizer.dispose();
+  // The withEditTxn scope above ends by calling EditTxn.saveChanges before pushChanges.
   await masterDb.pushChanges({
     accessToken: myAccessToken,
     description,
@@ -151,8 +148,12 @@ async function arbitraryEdit(db: BriefcaseDb, myAccessToken: AccessToken, descri
   let spatialCategoryId = db.elements.queryElementIdByCode(spatialCategoryCode);
   let physicalModelId = db.elements.queryElementIdByCode(physicalModelCode);
   if (physicalModelId === undefined || spatialCategoryId === undefined) {
-    spatialCategoryId = SpatialCategory.insert(db, IModel.dictionaryId, "SpatialCategory1", new SubCategoryAppearance());
-    physicalModelId = PhysicalModel.insert(db, IModel.rootSubjectId, "PhysicalModel1");
+    const ids = withEditTxn(db, (txn) => ({
+      spatialCategoryId: SpatialCategory.insert(txn, IModel.dictionaryId, "SpatialCategory1", new SubCategoryAppearance()),
+      physicalModelId: PhysicalModel.insert(txn, IModel.rootSubjectId, "PhysicalModel1"),
+    }));
+    spatialCategoryId = ids.spatialCategoryId;
+    physicalModelId = ids.physicalModelId;
   }
   const physicalObjectProps: PhysicalElementProps = {
     classFullName: PhysicalObject.classFullName,
@@ -167,8 +168,8 @@ async function arbitraryEdit(db: BriefcaseDb, myAccessToken: AccessToken, descri
     },
   };
   arbitraryEdit.editCounter++;
-  db.elements.insertElement(physicalObjectProps);
-  db.saveChanges();
+  withEditTxn(db, description, (txn) => txn.insertElement(physicalObjectProps));
+  // The withEditTxn scope above ends by calling EditTxn.saveChanges before pushChanges.
   await db.pushChanges({
     accessToken: myAccessToken,
     description,
