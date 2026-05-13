@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
+import unitsSchema from "../assets/Units.json";
 import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
@@ -10,6 +11,15 @@ import { UnitSchemaNames } from "../generated/Units.generated";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import { UnitConversions } from "../UnitConversions";
+
+const unitsSchemaItems = unitsSchema.items as Record<string, { schemaItemType: string }>;
+
+function expectedBuiltInConversionUnitNames(): string[] {
+  return Object.entries(unitsSchemaItems)
+    .filter(([, item]) => item.schemaItemType === "Unit" || item.schemaItemType === "InvertedUnit")
+    .map(([name]) => `${unitsSchema.name}.${name}`)
+    .sort((a, b) => a.localeCompare(b));
+}
 
 describe("Quantity", () => {
   it("almost-equal", async () => {
@@ -151,6 +161,10 @@ describe("Quantity", () => {
     }
   });
 
+  it("generated basic conversion data covers every bundled Unit and InvertedUnit item", () => {
+    expect(Object.keys(basicUnitConversionData).sort((a, b) => a.localeCompare(b))).toEqual(expectedBuiltInConversionUnitNames());
+  });
+
   it("generated basic conversion data matches provider-backed conversions across bundled units", async () => {
     const provider = new BasicUnitsProvider();
     const anchorsByPhenomenon = new Map<string, string>();
@@ -190,8 +204,17 @@ describe("Quantity", () => {
       .toThrowError(QuantityError);
   });
 
-  it("UnitConversions.convert throws for invalid built-in conversions", () => {
-    expect(() => UnitConversions.convert(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S, 1))
-      .toThrowError(QuantityError);
+  it("UnitConversions.convert throws for invalid built-in conversions with both unit names", () => {
+    let error: unknown;
+    try {
+      UnitConversions.convert(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S, 1);
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(QuantityError);
+    expect((error as QuantityError).errorNumber).toBe(QuantityStatus.InvalidUnitConversion);
+    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.M);
+    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.S);
   });
 });

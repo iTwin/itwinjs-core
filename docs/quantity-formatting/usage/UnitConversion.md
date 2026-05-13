@@ -111,7 +111,7 @@ Its data is generated from the canonical units schema in `@bentley/units-schema`
 
 If your units are not from the built-in canonical set, use a [UnitsProvider]($quantity)-based workflow instead.
 
-For a one-off conversion, use [UnitConversions]($quantity).[convert]($quantity):
+For a one-off conversion, use [UnitConversions.convert]($quantity):
 
 <details>
 <summary>Example Code</summary>
@@ -122,7 +122,7 @@ For a one-off conversion, use [UnitConversions]($quantity).[convert]($quantity):
 
 </details>
 
-For repeated conversions within the same built-in unit pair, resolve once and reuse the conversion with [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[convertValue]($quantity). `getConversion(...)` may still return `UnitConversionProps` with `error: true` for incompatible known units, so apply the result with `convertValue(...)` rather than using the raw factors directly:
+For repeated conversions within the same built-in unit pair, resolve once and reuse the conversion with [UnitConversions.getConversion]($quantity) and [UnitConversions.convertValue]($quantity). `getConversion(...)` may still return `UnitConversionProps` with `error: true` for incompatible known units, so apply the result with `convertValue(...)` rather than using the raw factors directly:
 
 <details>
 <summary>Example Code</summary>
@@ -133,7 +133,7 @@ For repeated conversions within the same built-in unit pair, resolve once and re
 
 </details>
 
-Use [UnitConversions]($quantity).[isCompatible]($quantity) as a built-in canonical-unit compatibility helper before attempting a conversion when you need a boolean check instead of conversion metadata:
+Use [UnitConversions.isCompatible]($quantity) as a built-in canonical-unit compatibility helper before attempting a conversion when you need a boolean check instead of conversion metadata:
 
 <details>
 <summary>Example Code</summary>
@@ -144,9 +144,9 @@ Use [UnitConversions]($quantity).[isCompatible]($quantity) as a built-in canonic
 
 </details>
 
-> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) and [UnitConversions]($quantity).[isCompatible]($quantity) operate only on the built-in canonical unit set; they are not package-wide helpers for schema-defined, custom, or provider-resolved units.
+> **Note:** [UnitConversions.getConversion]($quantity) and [UnitConversions.isCompatible]($quantity) operate only on the built-in canonical unit set; they are not package-wide helpers for schema-defined, custom, or provider-resolved units.
 >
-> **Note:** [UnitConversions]($quantity).[getConversion]($quantity) may still return `UnitConversionProps` with `error: true` for incompatible known units. [UnitConversions]($quantity).[convertValue]($quantity) and [UnitConversions]($quantity).[convert]($quantity) are the throwing application paths. Lookup-based helpers throw when a unit name cannot be resolved.
+> **Note:** [UnitConversions.getConversion]($quantity) may still return `UnitConversionProps` with `error: true` for incompatible known units. [UnitConversions.convertValue]($quantity) and [UnitConversions.convert]($quantity) are the throwing application paths. Lookup-based helpers throw when a unit name cannot be resolved.
 
 ## See Also
 

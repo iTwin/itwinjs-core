@@ -72,7 +72,11 @@ function getConversion(fromUnit: string, toUnit: string): UnitConversionProps {
 }
 
 function convert(fromUnit: string, toUnit: string, value: number): number {
-  return convertValueOrThrow(value, getConversion(fromUnit, toUnit));
+  const conversion = getConversion(fromUnit, toUnit);
+  if (conversion.error)
+    throw new QuantityError(QuantityStatus.InvalidUnitConversion, `Cannot convert value from "${fromUnit}" to "${toUnit}" using invalid conversion metadata.`);
+
+  return convertValueOrThrow(value, conversion);
 }
 
 function isCompatible(fromUnit: string, toUnit: string): boolean {

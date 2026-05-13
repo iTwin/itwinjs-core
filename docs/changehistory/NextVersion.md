@@ -8,7 +8,7 @@ publish: false
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
     - [Schema changesets can be reversed](#schema-changesets-can-be-reversed)
   - [@itwin/core-quantity](#itwincore-quantity)
-    - [Quantity conversion helpers now expose generated inverted-unit identifiers and tighten invalid conversion handling](#quantity-conversion-helpers-now-expose-generated-inverted-unit-identifiers-and-tighten-invalid-conversion-handling)
+    - [Generated unit identifiers and sync built-in conversion helpers](#generated-unit-identifiers-and-sync-built-in-conversion-helpers)
   - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
@@ -36,11 +36,13 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 
 ## @itwin/core-quantity
 
-### Quantity conversion helpers now expose generated inverted-unit identifiers and tighten invalid conversion handling
+### Generated unit identifiers and sync built-in conversion helpers
 
-`@itwin/core-quantity` now generates [UnitSchemaNames]($quantity) entries for bundled BIS `InvertedUnit` items in addition to `Unit`, `Phenomenon`, and `UnitSystem` items. This removes remaining magic-string cases for bundled ratio-style units such as `Units.HORIZONTAL_PER_VERTICAL`.
+`@itwin/core-quantity` now exposes beta [UnitSchemaNames]($quantity) and [UnitConversions]($quantity) helpers for the built-in canonical unit set shipped with the package. This gives callers discoverable package-owned identifiers instead of magic strings and a synchronous built-in conversion path for canonical bundled units.
 
-Additionally, [Quantity]($quantity).[convertTo]($quantity) now throws [QuantityError]($quantity) with [QuantityStatus.InvalidUnitConversion]($quantity) when given `UnitConversionProps` marked with `error: true`, matching the newer [UnitConversions]($quantity) throwing helpers. Callers that previously relied on `convertTo(...)` silently applying identity math for invalid conversions should update to handle this error explicitly.
+[UnitSchemaNames]($quantity) now includes bundled BIS `InvertedUnit` identifiers in addition to `Unit`, `Phenomenon`, and `UnitSystem` items, removing remaining magic-string cases for ratio-style units such as `Units.HORIZONTAL_PER_VERTICAL`.
+
+Additionally, [Quantity.convertTo]($quantity) now throws [QuantityError]($quantity) with [QuantityStatus.InvalidUnitConversion]($quantity) when given `UnitConversionProps` marked with `error: true`, matching the newer [UnitConversions]($quantity) throwing helpers. Callers that previously relied on `convertTo(...)` silently applying identity math for invalid conversions should update to handle this error explicitly.
 
 ## Electron 42 support
 
