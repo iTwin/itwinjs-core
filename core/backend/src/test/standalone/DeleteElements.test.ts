@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, ImplicitWriteEnforcement, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
+import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
@@ -157,6 +157,35 @@ describe("deleteElements (native bulk delete API)", () => {
         [parentA],
         [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3],
         [parentB, childB1, childB2, standalone, childS1]);
+    });
+
+    it("Second call to deleteElement fails if a read cursor on a temp table is open", () => {
+      // Create a temp table on the same SQLite connection that the native bulk-delete will use to simulate a shared temp table lock
+      iModelDb.withSqliteStatement("CREATE TABLE IF NOT EXISTS temp.temp_table (x INTEGER)", (s) => s.step());
+      iModelDb.withSqliteStatement("INSERT INTO temp.temp_table VALUES (1)", (s) => s.step());
+
+      const lockStmt = iModelDb.prepareSqliteStatement("SELECT x FROM temp.temp_table");
+      assert.equal(lockStmt.step(), DbResult.BE_SQLITE_ROW);
+
+      const el1 = insertElement();
+      const el2 = insertElement();
+
+      const result1 = txn.deleteElements([el1]);
+      const result2 = txn.deleteElements([el2]);
+
+      for (const result of [result1, result2]) {
+        assert.equal(result.failedIds.size, 0);
+        assert.equal(result.status, BulkDeleteElementsStatus.Success, "deleteElements call must succeed");
+        assert.equal(result.sqlDeleteStatus, DbResult.BE_SQLITE_OK);
+      }
+
+      // Would have been the case if "DROP TABLE IF EXISTS..." was used (bug)
+      assert.notEqual(result2.status, BulkDeleteElementsStatus.DeletionFailed);
+      assert.notEqual(result2.sqlDeleteStatus, DbResult.BE_SQLITE_LOCKED);
+
+      lockStmt[Symbol.dispose](); // release the simulated read-lock
+
+      txn.abandonChanges();
     });
 
     it("explicitly delete the whole tree", () => {
@@ -886,233 +915,6 @@ describe("deleteElements (native bulk delete API)", () => {
       assertModelDeleted(partitionId, "sub-model should be deleted");
       assertDeleted(subElem1, "subElem1 should be deleted");
       assertDeleted(subElem2, "subElem2 should be deleted");
-    });
-
-    describe("rerun the suite with deprecated api from IModelDb", () => {
-      let previousEnforcement: ImplicitWriteEnforcement;
-      before(() => {
-        previousEnforcement = EditTxn.implicitWriteEnforcement;
-        EditTxn.implicitWriteEnforcement = "allow";
-      });
-      after(() => {
-        EditTxn.implicitWriteEnforcement = previousEnforcement;
-      });
-
-      it("delete a modeled element cascades into its sub-model (deprecated api)", () => {
-        const partitionId = insertSubModel();
-        const elem1 = insertElementInModel(partitionId);
-        const elem2 = insertElementInModel(partitionId);
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([partitionId]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assert.isEmpty(result.failedIds);
-        assertDeleted(partitionId, "partition element should be deleted");
-        assertModelDeleted(partitionId, "sub-model should be deleted");
-        assertDeleted(elem1, "elem1 inside sub-model should be deleted");
-        assertDeleted(elem2, "elem2 inside sub-model should be deleted");
-        assertExists(unrelated, "unrelated element should be retained");
-      });
-
-      it("delete a parent whose child is a modeled element cascades into the sub-model (deprecated api)", () => {
-        const subjectA = Subject.insert(txn, IModel.rootSubjectId, `SubjectA-${++partitionCounter}`);
-        const childPartitionId = PhysicalModel.insert(txn, subjectA, `ChildPartition-${partitionCounter}`);
-        const elem1 = insertElementInModel(childPartitionId);
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([subjectA]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertDeleted(subjectA, "subject should be deleted");
-        assertDeleted(childPartitionId, "child partition element should be deleted");
-        assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
-        assertDeleted(elem1, "elem1 inside child partition sub-model should be deleted");
-        assertExists(unrelated, "unrelated element should be retained");
-      });
-
-      it("delete a modeled element whose sub-model elements have children (deprecated api)", () => {
-        const partitionId = insertSubModel();
-        const elem1 = insertElementInModel(partitionId);
-        const childOfElem1 = insertElementInModel(partitionId, { parentId: elem1 });
-        const grandchildOfElem1 = insertElementInModel(partitionId, { parentId: childOfElem1 });
-        const elem2 = insertElementInModel(partitionId);
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([partitionId]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertDeleted(partitionId, "partition should be deleted");
-        assertModelDeleted(partitionId, "sub-model should be deleted");
-        assertDeleted(elem1, "elem1 should be deleted");
-        assertDeleted(childOfElem1, "child of elem1 should be deleted");
-        assertDeleted(grandchildOfElem1, "grandchild of elem1 should be deleted");
-        assertDeleted(elem2, "elem2 should be deleted");
-        assertExists(unrelated, "unrelated should be retained");
-      });
-
-      it("partition ignored when a sub-model element is a code scope for an external element (deprecated api)", () => {
-        const partitionId = insertSubModel();
-        const scopingElem = insertElementInModel(partitionId);
-        const otherElem = insertElementInModel(partitionId);
-        const external = insertElement({ codeScope: scopingElem, codeValue: "ext-code" });
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([partitionId, unrelated]);
-        assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
-        assertExists(partitionId, "partition should be ignored (retained)");
-        assertModelExists(partitionId, "sub-model should be retained");
-        assertExists(scopingElem, "scopingElem should be retained");
-        assertExists(otherElem, "otherElem should be retained");
-        assertExists(external, "external should be retained");
-        assertDeleted(unrelated, "unrelated should still be deleted");
-      });
-
-      it("cross-sub-model intra-set code scope dependency: both partitions deleted cleanly (deprecated api)", () => {
-        const p1 = insertSubModel();
-        const scopingElem = insertElementInModel(p1);
-        const p2 = insertSubModel();
-        const dependentElem = insertElementInModel(p2, {});
-
-        const dependentId = txn.insertElement({
-          classFullName: "Generic:PhysicalObject",
-          model: p2,
-          category: categoryId,
-          code: { spec: codeSpecId, scope: scopingElem, value: "dep-code" },
-          placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
-        } as PhysicalElementProps);
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([p1, p2]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertDeleted(p1, "p1 should be deleted");
-        assertModelDeleted(p1, "sub-model of p1 should be deleted");
-        assertDeleted(scopingElem, "scopingElem should be deleted");
-        assertDeleted(p2, "p2 should be deleted");
-        assertModelDeleted(p2, "sub-model of p2 should be deleted");
-        assertDeleted(dependentElem, "dependentElem should be deleted");
-        assertDeleted(dependentId, "dependentId should be deleted");
-      });
-
-      it("deep cascade: grandparent Subject -> child Subject -> partition -> sub-model elements (deprecated api)", () => {
-        const grandparentSubjectId = Subject.insert(txn, IModel.rootSubjectId, `GrandparentSubject-${++partitionCounter}`);
-        const childSubjectId = Subject.insert(txn, grandparentSubjectId, `ChildSubject-${partitionCounter}`);
-        const grandchildPartitionId = PhysicalModel.insert(txn, childSubjectId, `GrandchildPartition-${partitionCounter}`);
-        const innerElem1 = insertElementInModel(grandchildPartitionId);
-        const innerElem2 = insertElementInModel(grandchildPartitionId);
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([grandparentSubjectId]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertDeleted(grandparentSubjectId, "grandparent subject should be deleted");
-        assertDeleted(childSubjectId, "child subject should be deleted");
-        assertDeleted(grandchildPartitionId, "grandchild partition should be deleted");
-        assertModelDeleted(grandchildPartitionId, "grandchild sub-model should be deleted");
-        assertDeleted(innerElem1, "innerElem1 should be deleted");
-        assertDeleted(innerElem2, "innerElem2 should be deleted");
-        assertExists(unrelated, "unrelated should be retained");
-      });
-
-      it("delete a modeled element whose sub-model is empty (deprecated api)", () => {
-        const partitionId = insertSubModel();
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([partitionId]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertDeleted(partitionId, "partition should be deleted");
-        assertModelDeleted(partitionId, "empty sub-model should be deleted");
-        assertExists(unrelated, "unrelated should be retained");
-      });
-
-      it("deleting a regular element with a mix of ordinary and partition children cascades correctly (deprecated api)", () => {
-        const subjectA = Subject.insert(txn, IModel.rootSubjectId, `MixedChildSubject-${++partitionCounter}`);
-        const partitionChild = PhysicalModel.insert(txn, subjectA, `MixedChildPartition-${partitionCounter}`);
-        const subElem1 = insertElementInModel(partitionChild);
-        const subElem2 = insertElementInModel(partitionChild);
-        const unrelated = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([subjectA]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertDeleted(subjectA, "subjectA should be deleted");
-        assertDeleted(partitionChild, "partition child should be deleted");
-        assertModelDeleted(partitionChild, "sub-model of partition child should be deleted");
-        assertDeleted(subElem1, "subElem1 should be deleted");
-        assertDeleted(subElem2, "subElem2 should be deleted");
-        assertExists(unrelated, "unrelated should be retained");
-      });
-
-      it("deleting a mid-tree regular element whose child is a partition cascades into the sub-model; grandparent survives (deprecated api)", () => {
-        const subjectGP = Subject.insert(txn, IModel.rootSubjectId, `MidTreeGP-${++partitionCounter}`);
-        const subjectP = Subject.insert(txn, subjectGP, `MidTreeP-${partitionCounter}`);
-        const partitionId = PhysicalModel.insert(txn, subjectP, `MidTreePartition-${partitionCounter}`);
-        const subElem1 = insertElementInModel(partitionId);
-        const subElem2 = insertElementInModel(partitionId);
-
-        // Only pass subjectP - grandparent must survive, everything below subjectP must go.
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([subjectP]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertExists(subjectGP, "grandparent should survive");
-        assertDeleted(subjectP, "parent should be deleted");
-        assertDeleted(partitionId, "partition should be deleted");
-        assertModelDeleted(partitionId, "sub-model should be deleted");
-        assertDeleted(subElem1, "subElem1 should be deleted");
-        assertDeleted(subElem2, "subElem2 should be deleted");
-      });
-
-      it("deleting a partition element directly (not via its regular parent) cascades into the sub-model; parent survives (deprecated api)", () => {
-        const subjectA = Subject.insert(txn, IModel.rootSubjectId, `DirectPartSubject-${++partitionCounter}`);
-        const partitionId = PhysicalModel.insert(txn, subjectA, `DirectPartPartition-${partitionCounter}`);
-        const subElem1 = insertElementInModel(partitionId);
-        const subElem2 = insertElementInModel(partitionId);
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const result = iModelDb.elements.deleteElements([partitionId]);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success);
-        assertExists(subjectA, "subject (regular parent) should survive");
-        assertDeleted(partitionId, "partition should be deleted");
-        assertModelDeleted(partitionId, "sub-model should be deleted");
-        assertDeleted(subElem1, "subElem1 should be deleted");
-        assertDeleted(subElem2, "subElem2 should be deleted");
-      });
-
-      it("duplicate IDs should be handled (deprecated api)", () => {
-        const rootA = insertElement();
-        const rootB = insertElement();
-
-        // rootA appears twice - should not throw and should be deleted exactly once.
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        assert.equal(iModelDb.elements.deleteElements([rootA, rootA, rootB]).status, BulkDeleteElementsStatus.Success);
-        assertDeleted(rootA, "rootA should be deleted");
-        assertDeleted(rootB, "rootB should be deleted");
-      });
-
-      it("invalid IDs in the input throw an exception (deprecated api)", () => {
-        const rootA = insertElement();
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        assert.throws(() => iModelDb.elements.deleteElements([Id64.invalid, rootA]), `Invalid element ids: 0`);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        assert.throws(() => iModelDb.elements.deleteElements(["not-an-id", rootA]), `Invalid element ids: not-an-id`);
-
-        assertExists(rootA, "rootA should not have been deleted after a throw");
-      });
-
-      it("scope chain delete with skipping constraint validation should fail (deprecated api)", () => {
-        const rootA = insertElement();
-        const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
-        const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-        const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
-
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
-        assert.equal(resultStatus.status, BulkDeleteElementsStatus.DeletionFailed);
-        assert.equal(resultStatus.sqlDeleteStatus, DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY);
-      });
     });
   });
 });
