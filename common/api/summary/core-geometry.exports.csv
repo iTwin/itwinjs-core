@@ -73,6 +73,7 @@ public;class;ClipVector
 public;type;ClipVectorProps
 public;interface;Cloneable
 deprecated;interface;Cloneable
+public;interface;CloseApproachOptions
 internal;class;ClusterableArray
 internal;function;compareRange1dLexicalLowHigh
 internal;class;Complex

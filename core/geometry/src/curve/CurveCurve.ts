@@ -129,6 +129,8 @@ export class CurveCurve {
    * @param curveB second curve
    * @param maxDistanceOrOptions maximum xy-distance to consider between the curves, or a list of extended options.
    * Close approaches further than this xy-distance are not returned.
+   * @return array of detail pairs of close xy-approaches. XY-length of the returned close approach is set in `detailA.a`
+   * and `detailB.a`.
    */
   public static closeApproachProjectedXYPairs(
     curveA: AnyCurve, curveB: AnyCurve, maxDistanceOrOptions: number | CloseApproachOptions,
@@ -141,7 +143,7 @@ export class CurveCurve {
     } else {
       maxDistance = maxDistanceOrOptions.maxDistance ?? Geometry.largeCoordinateResult;
       newtonTolerance = maxDistanceOrOptions.newtonTolerance;
-      newtonMaxIterations = maxDistanceOrOptions.newtonMaxIterations ?? 50;
+      newtonMaxIterations = maxDistanceOrOptions.newtonMaxIterations;
     }
     const handler = new CurveCurveCloseApproachXY(curveB, undefined, newtonTolerance, newtonMaxIterations);
     handler.maxDistanceToAccept = maxDistance;
@@ -158,7 +160,8 @@ export class CurveCurve {
    * @param curveA first curve
    * @param curveB second curve
    * @param options optional parameters for close approach calculation
-   * @return detail pair of closest xy-approach, undefined if not found
+   * @return detail pair of closest xy-approach, undefined if not found. XY-length of the returned close approach is
+   * set in `detailA.a` and `detailB.a`.
    */
   public static closestApproachProjectedXYPair(
     curveA: AnyCurve, curveB: AnyCurve, options?: CloseApproachOptions

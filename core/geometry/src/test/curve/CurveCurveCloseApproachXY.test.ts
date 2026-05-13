@@ -2055,7 +2055,9 @@ describe("CurveCurveCloseApproachXY", () => {
     // make sure closest approach can find bspline tangency intersections
     const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number, dy0: number) => {
       const ray = bspline.fractionToPointAndDerivative(0.2);
-      const seg = LineString3d.create(ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50));
+      const seg = LineString3d.create(
+        ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
+      );
       let options: CloseApproachOptions | undefined = undefined;
       if (index === 1 || index === 2)
         options = { newtonTolerance: 1e-9 };
@@ -2064,9 +2066,9 @@ describe("CurveCurveCloseApproachXY", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx0, dy0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0, dy0);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangency.detailA.point, 5, dx0, dy0);
-        ck.testSmallRelative(tangency.detailA.a, `bspline${index}  closest point is an intersection`);
-        ck.testSmallRelative(tangency.detailB.a, `bspline${index}  closest point is an intersection`);
-        ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `bspline${index}  closest point is at the tangency`);
+        ck.testSmallRelative(tangency.detailA.a, `bspline${index} closest point is an intersection`);
+        ck.testSmallRelative(tangency.detailB.a, `bspline${index} closest point is an intersection`);
+        ck.testPoint3d(ray.origin, tangency.detailA.point, 10 * Geometry.smallMetricDistance, `bspline${index} closest point is at the tangency`);
       }
     };
     dx = 0;
