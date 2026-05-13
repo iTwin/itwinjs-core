@@ -6,6 +6,7 @@
  * @module Quantity
  */
 
+import { QuantityError, QuantityStatus } from "./Exception";
 import { QuantityProps, UnitConversionProps, UnitProps } from "./Interfaces";
 import { applyConversionCore, convertValueOrThrow, almostEqual as internalAlmostEqual, almostZero as internalAlmostZero } from "./internal/UnitConversionMath";
 
@@ -58,6 +59,13 @@ export class Quantity implements QuantityProps {
    *  @throws [[QuantityError]] with [[QuantityStatus.InvertingZero]] when inversion would require dividing by zero or almost-zero.
    */
   public convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity {
+    if (conversion.error) {
+      throw new QuantityError(
+        QuantityStatus.InvalidUnitConversion,
+        `Cannot convert quantity from "${this.unit.name}" to "${toUnit.name}" using invalid conversion metadata.`,
+      );
+    }
+
     const newMagnitude = convertValueOrThrow(this.magnitude, conversion);
     return new Quantity(toUnit, newMagnitude);
   }

@@ -91,8 +91,18 @@ describe("Quantity", () => {
 
   it("Quantity.convertTo throws on invalid unit conversion metadata", () => {
     const quantity = new Quantity({ name: UnitSchemaNames.Units.M, label: "m", phenomenon: UnitSchemaNames.Phenomena.LENGTH, isValid: true, system: UnitSchemaNames.UnitSystems.SI }, 10);
-    expect(() => quantity.convertTo({ name: UnitSchemaNames.Units.S, label: "s", phenomenon: UnitSchemaNames.Phenomena.TIME, isValid: true, system: UnitSchemaNames.UnitSystems.SI }, { factor: 1, offset: 0, error: true }))
-      .toThrowError(QuantityError);
+
+    let error: unknown;
+    try {
+      quantity.convertTo({ name: UnitSchemaNames.Units.S, label: "s", phenomenon: UnitSchemaNames.Phenomena.TIME, isValid: true, system: UnitSchemaNames.UnitSystems.SI }, { factor: 1, offset: 0, error: true });
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(QuantityError);
+    expect((error as QuantityError).errorNumber).toBe(QuantityStatus.InvalidUnitConversion);
+    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.M);
+    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.S);
   });
 
   it("UnitConversions.convert converts synchronously using built-in canonical units", () => {
