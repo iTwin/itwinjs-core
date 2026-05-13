@@ -467,6 +467,7 @@ export class FavoritePropertiesManager implements Disposable {
     INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
     INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
     WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reader = imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     while (await reader.step()) {
       const row = reader.current.toRow();

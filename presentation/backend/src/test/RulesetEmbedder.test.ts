@@ -200,6 +200,7 @@ describe("RulesetEmbedder", () => {
       normalizedVersion: normalizeVersion(entry.ruleset.version),
     }));
     imodelMock.createQueryReader
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .withArgs(sinon.match.any, QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })
       .returns(stubECSqlReader(results));
   }

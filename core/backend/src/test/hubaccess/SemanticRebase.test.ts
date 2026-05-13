@@ -625,6 +625,7 @@ class TestIModel {
    * The SELECT must list ECInstanceId as the first column. Any additional columns are captured
    * by the caller-supplied names and stored in the returned row objects.
    *
+   // eslint-disable-next-line @typescript-eslint/no-deprecated
    * Rows are returned using {@link QueryRowFormat.UseJsPropertyNames} so:
    *   ECInstanceId             → row.id
    *   ec_className(ECClassId)  → row.className  (when aliased as `className`)
@@ -637,6 +638,7 @@ class TestIModel {
    */
   public static async queryToMap(briefcase: BriefcaseDb, ecsql: string): Promise<Map<Id64String, Record<string, any>>> {
     const result = new Map<Id64String, Record<string, any>>();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reader = briefcase.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     for await (const row of reader) {
       const r = row.toRow() as Record<string, any>;
