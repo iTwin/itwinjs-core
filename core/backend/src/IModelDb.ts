@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { EditTxn } from "./EditTxn";
+import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -2884,6 +2884,19 @@ export namespace IModelDb {
      */
     public deleteElement(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteElement(ids);
+    }
+
+    /**
+     * Delete multiple elements from the iModel.
+     * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+     * @param deleteOptions Options for the delete operation.
+     * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+     * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
+     * @deprecated Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @beta
+     */
+    public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
+      return this._iModel[_implicitTxn].deleteElements(ids, deleteOptions);
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
