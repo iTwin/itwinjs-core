@@ -121,6 +121,26 @@ describe("Quantity", () => {
     expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT)).toThrowError(QuantityError);
   });
 
+  it("UnitConversions lookup helpers reject inherited object property names as unknown units", () => {
+    for (const unitName of ["__proto__", "constructor", "toString"]) {
+      for (const call of [
+        () => UnitConversions.getConversion(unitName, UnitSchemaNames.Units.FT),
+        () => UnitConversions.isCompatible(unitName, UnitSchemaNames.Units.FT),
+        () => UnitConversions.convert(unitName, UnitSchemaNames.Units.FT, 1),
+      ]) {
+        let error: unknown;
+        try {
+          call();
+        } catch (caught) {
+          error = caught;
+        }
+
+        expect(error).toBeInstanceOf(QuantityError);
+        expect((error as QuantityError).errorNumber).toBe(QuantityStatus.UnknownUnit);
+      }
+    }
+  });
+
   it("generated basic conversion data matches provider-backed conversions across bundled units", async () => {
     const provider = new BasicUnitsProvider();
     const anchorsByPhenomenon = new Map<string, string>();

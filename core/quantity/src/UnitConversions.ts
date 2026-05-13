@@ -25,7 +25,10 @@ function throwUnknownUnit(unitName: string): never {
 }
 
 function getUnitEntry(unitName: string): BasicUnitConversionEntry {
-  return basicUnitConversionLookup[unitName] ?? throwUnknownUnit(unitName);
+  if (!Object.prototype.hasOwnProperty.call(basicUnitConversionLookup, unitName))
+    return throwUnknownUnit(unitName);
+
+  return basicUnitConversionLookup[unitName];
 }
 
 function getComparableEntry(unit: BasicUnitConversionEntry): BasicUnitConversionEntry {
