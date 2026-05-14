@@ -32,6 +32,13 @@ export interface CreateSectionDrawingViewResult {
   spatialViewId: Id64String;
 }
 
+/** Result of creating a reproduction iModel for issue #1659. */
+export interface CreateReproIModelResult {
+  filePath: string;
+  numModels: number;
+  totalElements: number;
+}
+
 export interface DtaIpcInterface {
   sayHello: () => Promise<string>;
 
@@ -39,6 +46,11 @@ export interface DtaIpcInterface {
    * Returns the Id of the section drawing view.
    */
   createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult>;
+
+  /** Creates a test iModel with many physical models and elements for reproducing issue #1659.
+   * Each model becomes a separate tile tree reference, amplifying decoration rebuild cost.
+   */
+  createReproIModel(numModels: number, elementsPerModel: number): Promise<CreateReproIModelResult>;
 
   /**
    * Inserts an annotation text style into the specified iModel.

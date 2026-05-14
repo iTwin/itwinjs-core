@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-frontend";
 import { IModelJson, LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { basicManipulationIpc, CreateElementWithDynamicsTool, EditTools } from "@itwin/editor-frontend";
+import { basicManipulationIpc, CreateElementWithDynamicsTool, EditTools, TransformElementsTool } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
 import { parseArgs } from "@itwin/frontend-devtools";
 
@@ -315,5 +315,21 @@ export class SetEditorToolSettingsTool extends Tool {
     }
 
     return true;
+  }
+}
+
+/** Interactive move tool — select elements then click two points to define translation. */
+export class InteractiveMoveElementsTool extends TransformElementsTool {
+  public static override toolId = "InteractiveMoveElements";
+  public static override iconSpec = "icon-move";
+
+  protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
+    return this.anchorPoint ? Transform.createTranslation(ev.point.minus(this.anchorPoint)) : undefined;
+  }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new InteractiveMoveElementsTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
