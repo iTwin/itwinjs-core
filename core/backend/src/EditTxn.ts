@@ -318,7 +318,7 @@ export class EditTxn {
     // Channel verification on the target model
     iModel.channels[_verifyChannel](targetModel);
 
-    // Invalidate caches
+    // Invalidate caches before mutation
     iModel.elements[_cache].delete({ id: props.id });
     iModel.elements[_instanceKeyCache].deleteById(props.id);
 
@@ -339,22 +339,26 @@ export class EditTxn {
       throw err;
     }
 
+    // TODO: Remove this workaround once native addon is rebuilt with the _SetParentId fix in DgnElement.cpp.
     // Workaround: native _SetParentId has a bug where clearing parent (both args invalid) fails silently.
     // If we moved to a model without a parent, ensure the parent is cleared via direct SQL.
     if (props.targetModelId && !props.targetElementId) {
-      const curParent = iModel.withPreparedSqliteStatement("SELECT ParentId FROM bis_Element WHERE Id=?", (stmt) => {
-        stmt.bindId(1, props.id);
-        if (!stmt.nextRow())
-          return undefined;
-        return stmt.getValueId(0);
-      });
-      if (curParent && curParent !== "0" && curParent !== "0x0") {
+      const curParent = iModel.withQueryReader(
+        "SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=?",
+        (reader) => reader.step() ? reader.current[0] as Id64String | undefined : undefined,
+        QueryBinder.from([props.id]),
+      );
+      if (curParent && Id64.isValidId64(curParent)) {
         iModel.withPreparedSqliteStatement("UPDATE bis_Element SET ParentId=NULL,ParentRelECClassId=NULL WHERE Id=?", (stmt) => {
           stmt.bindId(1, props.id);
           stmt.step();
         });
       }
     }
+
+    // Invalidate caches again after all mutations (including workaround SQL) are complete
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
   }
 
   /**

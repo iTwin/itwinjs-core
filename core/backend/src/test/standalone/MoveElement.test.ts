@@ -11,7 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
 
-describe.only("moveElement", () => {
+describe("moveElement", () => {
   let seedDb: SnapshotDb;
   let iModelDb: SnapshotDb;
   let modelAId: Id64String;

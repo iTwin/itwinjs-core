@@ -142,7 +142,7 @@ export interface InsertElementOptions {
   forceUseId?: boolean;
 }
 
-/** Options for [[IModelDb.Elements.moveElement]] and [[EditTxn.moveElement]].
+/** Options for [[EditTxn.moveElement]].
  * At least one of `targetModelId` or `targetElementId` must be specified.
  * @beta
  */
