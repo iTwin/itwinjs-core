@@ -1513,9 +1513,9 @@ describe("Server-based locks", () => {
       bc.close();
     });
 
-    function makePhysicalProps(bc: BriefcaseDb): PhysicalElementProps {
-      const childId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
-      const childElement = bc.elements.getElement<PhysicalElement>(childId);
+    function makePhysicalProps(briefcase: BriefcaseDb): PhysicalElementProps {
+      const childId = IModelTestUtils.queryByUserLabel(briefcase, "ChildObject1B");
+      const childElement = briefcase.elements.getElement<PhysicalElement>(childId);
       return {
         classFullName: PhysicalObject.classFullName,
         model: childElement.model,
