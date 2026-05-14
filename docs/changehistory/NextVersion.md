@@ -6,6 +6,8 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+  - [@itwin/core-electron](#itwincore-electron)
+    - [Added ESM-compatible Electron frontend and backend entrypoints](#added-esm-compatible-electron-frontend-and-backend-entrypoints)
 
 ## @itwin/core-backend
 
@@ -23,3 +25,16 @@ SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonI
 ```
 
 This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
+
+## @itwin/core-electron
+
+### Added ESM-compatible Electron frontend and backend entrypoints
+
+`@itwin/core-electron` now publishes ESM output and explicit package subpaths for Electron frontend and backend imports:
+
+```ts
+import { ElectronApp } from "@itwin/core-electron/ElectronFrontend";
+import { ElectronHost } from "@itwin/core-electron/ElectronBackend";
+```
+
+These entrypoints give ESM/Vite-based consumers a supported import path that does not load the CommonJS `lib/cjs` files in a browser runtime. Existing deep CommonJS imports remain available for compatibility.

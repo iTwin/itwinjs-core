@@ -10,7 +10,6 @@ import * as path from "node:path";
 import { createRequire } from "node:module";
 import { playwright as PlaywrightBrowserProvider } from "@vitest/browser/providers";
 import type { BrowserProviderInitializationOptions, TestProject } from "vitest/node";
-import type { ElectronBrowserProviderOptions } from "./types.js";
 
 const playwrightBrowserProviderBase: any = PlaywrightBrowserProvider;
 const moduleRequire = createRequire(path.join(process.cwd(), "package.json"));
@@ -18,6 +17,23 @@ const moduleRequire = createRequire(path.join(process.cwd(), "package.json"));
 interface ElectronSession {
   process: ChildProcess;
   cacheDir: string;
+}
+
+/**
+ * Options passed to the custom Vitest BrowserProvider for Electron.
+ * @beta
+ */
+export interface ElectronBrowserProviderOptions {
+  /** Absolute path to the backend init module loaded in the Electron main process before opening the Vitest page. */
+  backendInitModule?: string;
+  /** Absolute path to a consumer preload module. The provider wraps it with bridge callback exposure. */
+  preloadModule?: string;
+  /** Extra environment variables to pass to the Electron process. */
+  env?: Record<string, string>;
+  /** Extra command-line arguments passed to the Electron binary. */
+  electronArgs?: string[];
+  /** Timeout in milliseconds for provider startup and Electron session lifetime. */
+  timeout?: number;
 }
 
 /** Resolve the Electron provider main-process entry point from this package's compiled CJS output. */
