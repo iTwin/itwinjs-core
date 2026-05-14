@@ -52,6 +52,18 @@
       }
     },
     {
+      "version": "5.8.5",
+      "tag": "@itwin/core-frontend_v5.8.5",
+      "date": "Thu, 14 May 2026 19:12:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.8.4",
       "tag": "@itwin/core-frontend_v5.8.4",
       "date": "Thu, 23 Apr 2026 18:05:14 GMT",
