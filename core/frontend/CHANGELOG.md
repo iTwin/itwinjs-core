@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 23 Apr 2026 18:05:14 GMT and should not be manually modified.
+This log was last generated on Thu, 14 May 2026 19:12:21 GMT and should not be manually modified.
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:14 GMT
