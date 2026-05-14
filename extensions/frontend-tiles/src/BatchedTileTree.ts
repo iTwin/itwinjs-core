@@ -43,6 +43,7 @@ export class BatchedTileTree extends TileTree {
     this.scheduleScript = params.script;
     this.modelGroups = params.modelGroups;
     this._layerHandler = new LayerTileTreeHandler(this);
+    this.deepestTileDepth = params.reader.deepestTileDepth;
 
     this.decoder = acquireImdlDecoder({
       type: BatchType.Primary,
