@@ -5,7 +5,6 @@
 
 import * as path from "node:path";
 import { strict as assert } from "node:assert";
-import { exec } from "node:child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";
@@ -176,7 +175,6 @@ async function testMainWindowOpenedWithLocalFile() {
 
 async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
-  const isXvfbRunning = await isXvfbProcessRunning();
 
   await ElectronHost.startup({
     electronHost: {
@@ -203,10 +201,7 @@ async function testWindowSizeSettings() {
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  if (isXvfbRunning)
-    window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(250); // "maximize" event is not always emitted immediately
+  await BeDuration.wait(250); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   if (!isMaximized) {
@@ -218,10 +213,7 @@ async function testWindowSizeSettings() {
   assert(isMaximized);
 
   window.unmaximize();
-  if (isXvfbRunning)
-    window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
+  await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   if (isMaximized !== false) {
@@ -283,22 +275,4 @@ function assertElectronHostIsInitialized() {
   assert(typeof ElectronHost.webResourcesPath === "string");
   assert(typeof ElectronHost.appIconPath === "string");
   assert(typeof ElectronHost.frontendURL === "string");
-}
-
-/**
- * Checks if `xvfb` is running on the machine.
- * @note `true` doesn't necessary mean that tests are using `xvfb`.
- */
-async function isXvfbProcessRunning(): Promise<boolean> {
-  if (process.platform !== "linux")
-    return false;
-
-  let doesXvfbProcessExists = false;
-  const bashProcess = exec("pgrep xvfb", (_, stdout) => {
-    const processNumber = Number(stdout);
-    doesXvfbProcessExists = !isNaN(processNumber);
-  });
-
-  await new Promise((resolve) => bashProcess.on("close", resolve));
-  return doesXvfbProcessExists;
 }
