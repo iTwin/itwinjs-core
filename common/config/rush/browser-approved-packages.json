@@ -355,6 +355,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@itwin/vitest-certa-bridge",
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -364,7 +368,7 @@
     },
     {
       "name": "@loaders.gl/draco",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@microsoft/api-extractor",
@@ -392,11 +396,11 @@
     },
     {
       "name": "@vitest/browser",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@vitest/coverage-v8",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "common", "frontend", "integration-testing" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -540,11 +544,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",
@@ -600,7 +604,7 @@
     },
     {
       "name": "flatbuffers",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "flatbush",
@@ -616,7 +620,7 @@
     },
     {
       "name": "fuse.js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "get-system-fonts",
@@ -640,11 +644,11 @@
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "i18next-http-backend",
@@ -664,7 +668,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "jsdom",
@@ -776,7 +780,7 @@
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "prettier",
@@ -891,6 +895,10 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "tsx",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "tty-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -928,7 +936,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "vite-multiple-assets",
@@ -948,7 +956,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "webpack",
@@ -960,7 +968,7 @@
     },
     {
       "name": "wms-capabilities",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ws",

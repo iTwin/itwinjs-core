@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add native Vitest Electron renderer integration coverage.",
+      "type": "none",
+      "packageName": "@itwin/core-electron"
+    }
+  ],
+  "packageName": "@itwin/core-electron",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

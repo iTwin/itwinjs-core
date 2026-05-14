@@ -6,7 +6,13 @@
 import { ElectronHost } from "../../../ElectronBackend";
 
 async function init() {
-  await ElectronHost.startup();
+  const cacheDir = process.env.VITEST_ELECTRON_CACHE_DIR ?? process.env.ELECTRON_CACHE_DIR;
+  await ElectronHost.startup(cacheDir ? {
+    iModelHost: {
+      cacheDir,
+      profileName: `renderer-${process.pid}`,
+    },
+  } : undefined);
 }
 
 module.exports = init();

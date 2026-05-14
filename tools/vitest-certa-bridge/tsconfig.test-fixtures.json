@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./lib/cjs"
+  },
+  "include": [
+    "src/test/fixtures/**/*.ts"
+  ],
+  "exclude": []
+}

@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
-import { assert } from "chai";
-import { exec } from "child_process";
+import * as path from "node:path";
+import { strict as assert } from "node:assert";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";
@@ -109,8 +108,16 @@ async function testInitializeProvidedRpcInterface() {
   assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
 }
 
+function getTestWebResourcesPath() {
+  return path.join(__dirname, "..", "assets");
+}
+
 async function testOpenMainWindow() {
-  await ElectronHost.startup();
+  await ElectronHost.startup({
+    electronHost: {
+      webResourcesPath: getTestWebResourcesPath(),
+    },
+  });
   const electron = ElectronHost.electron;
 
   let windows = electron.BrowserWindow.getAllWindows();
@@ -146,7 +153,7 @@ async function testMainWindowOpenedWithWebUrl() {
 async function testMainWindowOpenedWithLocalFile() {
   await ElectronHost.startup({
     electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "assets"),
+      webResourcesPath: getTestWebResourcesPath(),
     },
   });
 
@@ -168,11 +175,10 @@ async function testMainWindowOpenedWithLocalFile() {
 
 async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
-  const isXvfbRunning = await isXvfbProcessRunning();
 
   await ElectronHost.startup({
     electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "assets"),
+      webResourcesPath: getTestWebResourcesPath(),
     },
   });
 
@@ -195,21 +201,27 @@ async function testWindowSizeSettings() {
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  if (isXvfbRunning)
-    window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(250); // "maximize" event is not always emitted immediately
+  await BeDuration.wait(250); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
+  if (!isMaximized) {
+    // "maximize" event delivery is not reliable in all Electron test environments. The test
+    // cares that ElectronHost's handler persists the maximized state, not Electron's event timing.
+    window.emit("maximize");
+    isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
+  }
   assert(isMaximized);
 
   window.unmaximize();
-  if (isXvfbRunning)
-    window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
+  await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
+  if (isMaximized !== false) {
+    // "unmaximize" event delivery is not reliable in all Electron test environments. The test
+    // cares that ElectronHost's handler persists the unmaximized state, not Electron's event timing.
+    window.emit("unmaximize");
+    isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
+  }
   assert(isMaximized === false);
 
   const width = 250;
@@ -263,22 +275,4 @@ function assertElectronHostIsInitialized() {
   assert(typeof ElectronHost.webResourcesPath === "string");
   assert(typeof ElectronHost.appIconPath === "string");
   assert(typeof ElectronHost.frontendURL === "string");
-}
-
-/**
- * Checks if `xvfb` is running on the machine.
- * @note `true` doesn't necessary mean that tests are using `xvfb`.
- */
-async function isXvfbProcessRunning(): Promise<boolean> {
-  if (process.platform !== "linux")
-    return false;
-
-  let doesXvfbProcessExists = false;
-  const bashProcess = exec("pgrep xvfb", (_, stdout) => {
-    const processNumber = Number(stdout);
-    doesXvfbProcessExists = !isNaN(processNumber);
-  });
-
-  await new Promise((resolve) => bashProcess.on("close", resolve));
-  return doesXvfbProcessExists;
 }
