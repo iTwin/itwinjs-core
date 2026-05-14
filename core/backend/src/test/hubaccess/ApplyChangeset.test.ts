@@ -207,6 +207,12 @@ describe("apply changesets", function (this: Suite) {
       const subjectId = withEditTxn(b1, "Inserted Subject", (txn) => txn.insertElement(subjectProps));
       await b1.pushChanges({ description: "Inserted Subject", retainLocks: true });
 
+      // FIXME: We should not need to reacquire this element lock, since we pushed with `retainLocks: true`.
+      // See https://github.com/iTwin/itwinjs-core/issues/9302
+      await b1.locks.acquireLocks({
+        exclusive: subjectId,
+      });
+
       const existingCode = b1.elements.getElementProps(subjectId).code;
       withEditTxn(b1, "Updated Subject", (txn) => {
         txn.updateElement({
