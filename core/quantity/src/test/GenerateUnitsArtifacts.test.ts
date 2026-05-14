@@ -7,8 +7,25 @@ import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { buildGeneratedBasicConversionModule } = require("../../scripts/buildBasicUnitConversions") as {
+  buildGeneratedBasicConversionModule: (
+    schema: typeof unitsSchema,
+    assertUniqueGeneratedKeys: (entries: Array<{ key: string }>, description: string) => void,
+  ) => string;
+};
+
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
+
+function assertUniqueGeneratedKeys(entries: Array<{ key: string }>, description: string): void {
+  const seen = new Set<string>();
+  for (const entry of entries) {
+    if (seen.has(entry.key))
+      throw new Error(`Duplicate ${description} key generated: ${entry.key}`);
+    seen.add(entry.key);
+  }
+}
 
 describe("Generated Units artifacts", () => {
   it("keeps Units.json aligned with the expected serialized schema envelope", () => {
@@ -46,7 +63,12 @@ describe("Generated Units artifacts", () => {
   it("emits representative pre-resolved basic conversion entries", () => {
     expect(generatedBasicConversionsSource).toContain('"Units.M": ["Units.LENGTH", 1, 0]');
     expect(generatedBasicConversionsSource).toContain('"Units.FT": ["Units.LENGTH"');
+    expect(generatedBasicConversionsSource).toContain('"Units.CELSIUS": ["Units.TEMPERATURE"');
     expect(generatedBasicConversionsSource).toContain('"Units.HORIZONTAL_PER_VERTICAL": ["Units.SLOPE"');
     expect(basicUnitConversionData["Units.HORIZONTAL_PER_VERTICAL"][3]).toBe("Units.VERTICAL_PER_HORIZONTAL");
+  });
+
+  it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
+    expect(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedBasicConversionsSource);
   });
 });

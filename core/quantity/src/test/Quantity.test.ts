@@ -165,28 +165,32 @@ describe("Quantity", () => {
     expect(Object.keys(basicUnitConversionData).sort((a, b) => a.localeCompare(b))).toEqual(expectedBuiltInConversionUnitNames());
   });
 
-  it("generated basic conversion data matches provider-backed conversions across bundled units", async () => {
+  it("generated basic conversion data matches provider-backed conversions for every bundled same-phenomenon unit pair", async () => {
     const provider = new BasicUnitsProvider();
-    const anchorsByPhenomenon = new Map<string, string>();
+    const resolvedUnits = new Map<string, Awaited<ReturnType<BasicUnitsProvider["findUnitByName"]>>>();
+    const unitsByPhenomenon = new Map<string, string[]>();
+
+    await Promise.all(Object.keys(basicUnitConversionData).map(async (unitName) => {
+      resolvedUnits.set(unitName, await provider.findUnitByName(unitName));
+    }));
 
     for (const [unitName, entry] of Object.entries(basicUnitConversionData)) {
-      if (!entry[3] && !anchorsByPhenomenon.has(entry[0]))
-        anchorsByPhenomenon.set(entry[0], unitName);
+      const byPhenomenon = unitsByPhenomenon.get(entry[0]) ?? [];
+      byPhenomenon.push(unitName);
+      unitsByPhenomenon.set(entry[0], byPhenomenon);
     }
 
-    for (const [unitName, entry] of Object.entries(basicUnitConversionData)) {
-      const anchorName = anchorsByPhenomenon.get(entry[0]) ?? unitName;
-      const [fromUnit, toUnit] = await Promise.all([
-        provider.findUnitByName(unitName),
-        provider.findUnitByName(anchorName),
-      ]);
-
-      const actual = UnitConversions.getConversion(unitName, anchorName);
-      const expected = await provider.getConversion(fromUnit, toUnit);
-      expect(actual.inversion).toBe(expected.inversion);
-      expect(actual.error).toBe(expected.error);
-      expect(almostEqual(UnitConversions.convertValue(1.2345, actual), UnitConversions.convertValue(1.2345, expected), 1e-15)).toBe(true);
-      expect(almostEqual(UnitConversions.convertValue(9876.54321, actual), UnitConversions.convertValue(9876.54321, expected), 1e-15)).toBe(true);
+    for (const unitNames of unitsByPhenomenon.values()) {
+      for (const fromName of unitNames) {
+        for (const toName of unitNames) {
+          const actual = UnitConversions.getConversion(fromName, toName);
+          const expected = await provider.getConversion(resolvedUnits.get(fromName)!, resolvedUnits.get(toName)!);
+          expect(actual.inversion).toBe(expected.inversion);
+          expect(actual.error).toBe(expected.error);
+          expect(almostEqual(UnitConversions.convertValue(1.2345, actual), UnitConversions.convertValue(1.2345, expected), 1e-15)).toBe(true);
+          expect(almostEqual(UnitConversions.convertValue(9876.54321, actual), UnitConversions.convertValue(9876.54321, expected), 1e-15)).toBe(true);
+        }
+      }
     }
   });
 
