@@ -7,11 +7,11 @@ Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learnin
 ## Example
 
 ```ts
-import { UnitConversions, UnitSchemaNames } from "@itwin/core-quantity";
+import { UnitConversions, Units } from "@itwin/core-quantity";
 
 const feet = UnitConversions.convert(
-  UnitSchemaNames.Units.M,
-  UnitSchemaNames.Units.FT,
+  Units.LENGTH.M,
+  Units.LENGTH.FT,
   1,
 );
 ```

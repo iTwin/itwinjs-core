@@ -61,11 +61,11 @@ When no `primary` is supplied, `createUnitsProvider()` returns a plain `new Basi
 You can also use the generated canonical identifiers exported by `@itwin/core-quantity` to avoid magic strings when looking up bundled BIS units:
 
 ```ts
-import { BasicUnitsProvider, UnitSchemaNames } from "@itwin/core-quantity";
+import { BasicUnitsProvider, Phenomena, Units } from "@itwin/core-quantity";
 
 const provider = new BasicUnitsProvider();
-const meter = await provider.findUnitByName(UnitSchemaNames.Units.M);
-const lengthUnits = await provider.getUnitsByFamily(UnitSchemaNames.Phenomena.LENGTH);
+const meter = await provider.findUnitByName(Units.LENGTH.M);
+const lengthUnits = await provider.getUnitsByFamily(Phenomena.LENGTH);
 ```
 
 #### SchemaUnitProvider

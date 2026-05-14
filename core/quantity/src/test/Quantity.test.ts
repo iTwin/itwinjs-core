@@ -7,7 +7,7 @@ import unitsSchema from "../assets/Units.json";
 import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
-import { UnitSchemaNames } from "../generated/Units.generated";
+import { Phenomena, Units, UnitSystems } from "../generated/Units.generated";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import { UnitConversions } from "../UnitConversions";
@@ -100,53 +100,53 @@ describe("Quantity", () => {
   });
 
   it("Quantity.convertTo throws on invalid unit conversion metadata", () => {
-    const quantity = new Quantity({ name: UnitSchemaNames.Units.M, label: "m", phenomenon: UnitSchemaNames.Phenomena.LENGTH, isValid: true, system: UnitSchemaNames.UnitSystems.SI }, 10);
+    const quantity = new Quantity({ name: Units.LENGTH.M, label: "m", phenomenon: Phenomena.LENGTH, isValid: true, system: UnitSystems.SI }, 10);
 
     let error: unknown;
     try {
-      quantity.convertTo({ name: UnitSchemaNames.Units.S, label: "s", phenomenon: UnitSchemaNames.Phenomena.TIME, isValid: true, system: UnitSchemaNames.UnitSystems.SI }, { factor: 1, offset: 0, error: true });
+      quantity.convertTo({ name: Units.TIME.S, label: "s", phenomenon: Phenomena.TIME, isValid: true, system: UnitSystems.SI }, { factor: 1, offset: 0, error: true });
     } catch (caught) {
       error = caught;
     }
 
     expect(error).toBeInstanceOf(QuantityError);
     expect((error as QuantityError).errorNumber).toBe(QuantityStatus.InvalidUnitConversion);
-    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.M);
-    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.S);
+    expect((error as QuantityError).message).toContain(Units.LENGTH.M);
+    expect((error as QuantityError).message).toContain(Units.TIME.S);
   });
 
   it("UnitConversions.convert converts synchronously using built-in canonical units", () => {
-    expect(UnitConversions.convert(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT, 1)).toBeCloseTo(3.28084, 5);
+    expect(UnitConversions.convert(Units.LENGTH.M, Units.LENGTH.FT, 1)).toBeCloseTo(3.28084, 5);
   });
 
   it("UnitConversions.getConversion supports repeated synchronous conversions", () => {
-    const conversion = UnitConversions.getConversion(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT);
+    const conversion = UnitConversions.getConversion(Units.LENGTH.M, Units.LENGTH.FT);
     expect(UnitConversions.convertValue(1, conversion)).toBeCloseTo(3.28084, 5);
     expect(UnitConversions.convertValue(2, conversion)).toBeCloseTo(6.56168, 5);
   });
 
   it("UnitConversions.getConversion returns error metadata for incompatible built-in units", () => {
-    expect(UnitConversions.getConversion(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S)).toEqual({ factor: 1, offset: 0, error: true });
+    expect(UnitConversions.getConversion(Units.LENGTH.M, Units.TIME.S)).toEqual({ factor: 1, offset: 0, error: true });
   });
 
   it("UnitConversions.isCompatible returns true for compatible built-in units", () => {
-    expect(UnitConversions.isCompatible(UnitSchemaNames.Units.M, UnitSchemaNames.Units.FT)).toBe(true);
+    expect(UnitConversions.isCompatible(Units.LENGTH.M, Units.LENGTH.FT)).toBe(true);
   });
 
   it("UnitConversions.isCompatible returns false for incompatible built-in units", () => {
-    expect(UnitConversions.isCompatible(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S)).toBe(false);
+    expect(UnitConversions.isCompatible(Units.LENGTH.M, Units.TIME.S)).toBe(false);
   });
 
   it("UnitConversions.isCompatible throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT)).toThrowError(QuantityError);
+    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST", Units.LENGTH.FT)).toThrowError(QuantityError);
   });
 
   it("UnitConversions lookup helpers reject inherited object property names as unknown units", () => {
     for (const unitName of ["__proto__", "constructor", "toString"]) {
       for (const call of [
-        () => UnitConversions.getConversion(unitName, UnitSchemaNames.Units.FT),
-        () => UnitConversions.isCompatible(unitName, UnitSchemaNames.Units.FT),
-        () => UnitConversions.convert(unitName, UnitSchemaNames.Units.FT, 1),
+        () => UnitConversions.getConversion(unitName, Units.LENGTH.FT),
+        () => UnitConversions.isCompatible(unitName, Units.LENGTH.FT),
+        () => UnitConversions.convert(unitName, Units.LENGTH.FT, 1),
       ]) {
         let error: unknown;
         try {
@@ -195,30 +195,30 @@ describe("Quantity", () => {
   });
 
   it("UnitConversions.convert preserves ordinary zero conversions", () => {
-    expect(UnitConversions.convert(UnitSchemaNames.Units.FT, UnitSchemaNames.Units.M, 0)).toBe(0);
+    expect(UnitConversions.convert(Units.LENGTH.FT, Units.LENGTH.M, 0)).toBe(0);
   });
 
   it("UnitConversions.getConversion throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.getConversion("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT))
+    expect(() => UnitConversions.getConversion("Units.DOES_NOT_EXIST", Units.LENGTH.FT))
       .toThrowError(QuantityError);
   });
 
   it("UnitConversions.convert throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.convert("Units.DOES_NOT_EXIST", UnitSchemaNames.Units.FT, 1))
+    expect(() => UnitConversions.convert("Units.DOES_NOT_EXIST", Units.LENGTH.FT, 1))
       .toThrowError(QuantityError);
   });
 
   it("UnitConversions.convert throws for invalid built-in conversions with both unit names", () => {
     let error: unknown;
     try {
-      UnitConversions.convert(UnitSchemaNames.Units.M, UnitSchemaNames.Units.S, 1);
+      UnitConversions.convert(Units.LENGTH.M, Units.TIME.S, 1);
     } catch (caught) {
       error = caught;
     }
 
     expect(error).toBeInstanceOf(QuantityError);
     expect((error as QuantityError).errorNumber).toBe(QuantityStatus.InvalidUnitConversion);
-    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.M);
-    expect((error as QuantityError).message).toContain(UnitSchemaNames.Units.S);
+    expect((error as QuantityError).message).toContain(Units.LENGTH.M);
+    expect((error as QuantityError).message).toContain(Units.TIME.S);
   });
 });

@@ -57,6 +57,8 @@ beta;function;parseRatioType
 beta;class;ParserSpec
 beta;function;parseScientificType
 beta;function;parseShowSignOption
+beta;const;Phenomena
+beta;type;PhenomenonName
 beta;interface;PotentialParseUnit
 beta;class;Quantity
 internal;class;QuantityConstants
@@ -94,7 +96,10 @@ internal;interface;UnitConversionSource
 beta;interface;UnitConversionSpec
 internal;class;UnitDefinitionResolver
 alpha;interface;UnitExtraData
+beta;type;UnitName
 beta;interface;UnitProps
-beta;const;UnitSchemaNames
+beta;const;Units
 beta;interface;UnitsProvider
 beta;type;UnitSystemKey
+beta;type;UnitSystemName
+beta;const;UnitSystems

@@ -38,9 +38,9 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 
 ### Generated unit identifiers and sync built-in conversion helpers
 
-`@itwin/core-quantity` now exposes beta [UnitSchemaNames]($quantity) and [UnitConversions]($quantity) helpers for the built-in canonical unit set shipped with the package. This gives callers discoverable package-owned identifiers instead of magic strings and a synchronous built-in conversion path for canonical bundled units.
+`@itwin/core-quantity` now exposes beta [Units]($quantity), [Phenomena]($quantity), [UnitSystems]($quantity), and [UnitConversions]($quantity) helpers for the built-in canonical unit set shipped with the package. This gives callers discoverable package-owned identifiers instead of magic strings, grouped unit browsing by phenomenon, and a synchronous built-in conversion path for canonical bundled units.
 
-[UnitSchemaNames]($quantity) now includes bundled BIS `InvertedUnit` identifiers in addition to `Unit`, `Phenomenon`, and `UnitSystem` items, removing remaining magic-string cases for ratio-style units such as `Units.HORIZONTAL_PER_VERTICAL`.
+[Units]($quantity) includes bundled BIS `InvertedUnit` identifiers inside their natural phenomenon buckets, removing magic-string cases for ratio-style units such as `Units.HORIZONTAL_PER_VERTICAL`.
 
 Additionally, [Quantity.convertTo]($quantity) now throws [QuantityError]($quantity) with [QuantityStatus.InvalidUnitConversion]($quantity) when given `UnitConversionProps` marked with `error: true`, matching the newer [UnitConversions]($quantity) throwing helpers. Callers that previously relied on `convertTo(...)` silently applying identity math for invalid conversions should update to handle this error explicitly.
 

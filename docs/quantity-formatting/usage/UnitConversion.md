@@ -107,6 +107,7 @@ While most conversions happen automatically through FormatterSpec and ParserSpec
 ## Built-in UnitConversions
 
 Use [UnitConversions]($quantity) for the built-in canonical unit set shipped with `core-quantity`.
+Pair it with the generated [Units]($quantity), [Phenomena]($quantity), and [UnitSystems]($quantity) identifiers, with bundled units grouped by phenomenon for discovery.
 Its data is generated from the canonical units schema in `@bentley/units-schema`, so this path stays synchronous and does not require any app startup/init hook.
 
 If your units are not from the built-in canonical set, use a [UnitsProvider]($quantity)-based workflow instead.

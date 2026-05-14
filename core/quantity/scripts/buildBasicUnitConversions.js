@@ -220,5 +220,6 @@ function buildGeneratedBasicConversionModule(sourceSchema, assertUniqueGenerated
 }
 
 module.exports = {
+  buildBasicConversionEntries,
   buildGeneratedBasicConversionModule,
 };

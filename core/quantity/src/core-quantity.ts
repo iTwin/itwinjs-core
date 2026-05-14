@@ -44,6 +44,10 @@ export * from "./internal/cross-package";
  * Factory and composition utilities for layering multiple UnitsProviders.
  */
 /**
+ * @docs-group-description Units.generated
+ * Generated built-in canonical unit, phenomenon, and unit-system identifiers.
+ */
+/**
  * @docs-group-description Logging
  * Logger categories used by this package.
  */

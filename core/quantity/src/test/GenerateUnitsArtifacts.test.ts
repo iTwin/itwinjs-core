@@ -41,21 +41,25 @@ describe("Generated Units artifacts", () => {
     expect(unitsSchema.items.SI.schemaItemType).toBe("UnitSystem");
   });
 
-  it("exports UnitSchemaNames with pluralized section names", () => {
-    expect(generatedIdentifiersSource).toContain("export const UnitSchemaNames = {");
-    expect(generatedIdentifiersSource).toContain("  Units: {");
-    expect(generatedIdentifiersSource).toContain("  Phenomena: {");
-    expect(generatedIdentifiersSource).toContain("  UnitSystems: {");
+  it("exports grouped Units plus flat Phenomena and UnitSystems", () => {
+    expect(generatedIdentifiersSource).toContain("export const Units = {");
+    expect(generatedIdentifiersSource).toContain("  LENGTH: {");
+    expect(generatedIdentifiersSource).toContain("export const Phenomena = {");
+    expect(generatedIdentifiersSource).toContain("export const UnitSystems = {");
+    expect(generatedIdentifiersSource).toContain('import type { NestedValueOf, ValueOf } from "@itwin/core-bentley";');
+    expect(generatedIdentifiersSource).toContain("export type UnitName = NestedValueOf<typeof Units>;");
+    expect(generatedIdentifiersSource).toContain("export type PhenomenonName = ValueOf<typeof Phenomena>;");
+    expect(generatedIdentifiersSource).toContain("export type UnitSystemName = ValueOf<typeof UnitSystems>;");
   });
 
   it("emits representative canonical identifiers in the generated module", () => {
-    expect(generatedIdentifiersSource).toContain('M: "Units.M"');
-    expect(generatedIdentifiersSource).toContain('HORIZONTAL_PER_VERTICAL: "Units.HORIZONTAL_PER_VERTICAL"');
-    expect(generatedIdentifiersSource).toContain('LENGTH: "Units.LENGTH"');
-    expect(generatedIdentifiersSource).toContain('SI: "Units.SI"');
+    expect(generatedIdentifiersSource).toContain('    M: "Units.M"');
+    expect(generatedIdentifiersSource).toContain('    HORIZONTAL_PER_VERTICAL: "Units.HORIZONTAL_PER_VERTICAL"');
+    expect(generatedIdentifiersSource).toContain('  LENGTH: "Units.LENGTH"');
+    expect(generatedIdentifiersSource).toContain('  SI: "Units.SI"');
   });
 
-  it("does not emit unrelated schema item types into UnitSchemaNames", () => {
+  it("does not emit unrelated schema item types into grouped Units", () => {
     expect(generatedIdentifiersSource).not.toContain('PI: "Units.PI"');
     expect(generatedIdentifiersSource).not.toContain('MILLI: "Units.MILLI"');
   });

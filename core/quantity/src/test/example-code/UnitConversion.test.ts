@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { UnitSchemaNames } from "../../generated/Units.generated";
+import { Units } from "../../generated/Units.generated";
 import { UnitConversions } from "../../UnitConversions";
 
 describe("Quantity unit conversion examples", () => {
   it("One-off conversion", () => {
     // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Convert
     const feet = UnitConversions.convert(
-      UnitSchemaNames.Units.M,
-      UnitSchemaNames.Units.FT,
+      Units.LENGTH.M,
+      Units.LENGTH.FT,
       1,
     );
     // __PUBLISH_EXTRACT_END__
@@ -22,8 +22,8 @@ describe("Quantity unit conversion examples", () => {
   it("Repeated conversion", () => {
     // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Repeated_Convert
     const conversion = UnitConversions.getConversion(
-      UnitSchemaNames.Units.M,
-      UnitSchemaNames.Units.FT,
+      Units.LENGTH.M,
+      Units.LENGTH.FT,
     );
 
     const feet1 = UnitConversions.convertValue(1, conversion);
@@ -37,8 +37,8 @@ describe("Quantity unit conversion examples", () => {
   it("Compatibility check", () => {
     // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.IsCompatible
     const isLengthConversion = UnitConversions.isCompatible(
-      UnitSchemaNames.Units.M,
-      UnitSchemaNames.Units.FT,
+      Units.LENGTH.M,
+      Units.LENGTH.FT,
     );
     // __PUBLISH_EXTRACT_END__
 
