@@ -142,6 +142,26 @@ export interface InsertElementOptions {
   forceUseId?: boolean;
 }
 
+/** Options for [[IModelDb.Elements.moveElement]] and [[EditTxn.moveElement]].
+ * At least one of `targetModelId` or `targetElementId` must be specified.
+ * @beta
+ */
+export interface MoveElementProps {
+  /** The Id of the element to move. */
+  id: Id64String;
+  /** The Id of the target model. The moved element will become a root element (no parent) in this model.
+   * If `targetElementId` is also specified, the element becomes a child of that element in this model.
+   */
+  targetModelId?: Id64String;
+  /** The Id of the target parent element. The moved element will become a child of this element.
+   * If `targetModelId` is not specified, the model is deduced from this element.
+   * If this element is a modeled element (partition), the moved element becomes a root element in that element's sub-model.
+   */
+  targetElementId?: Id64String;
+  /** Optional new Code for the element. Required when the element's CodeScope is model-based and the model is changing. */
+  code?: CodeProps;
+}
+
 /** Options supplied to [[IModelDb.clearCaches]].
  * @beta
  */

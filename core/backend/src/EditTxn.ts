@@ -8,13 +8,13 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, OpenMode } from "@itwin/core-bentley";
-import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, QueryBinder, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
+import type { IModelDb, InsertElementOptions, MoveElementProps, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
-import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
@@ -271,6 +271,90 @@ export class EditTxn {
         throw err;
       }
     });
+  }
+
+  /** Move an element to a different model and/or parent.
+   * The element must be a leaf element (no children). If the element has children, this method will throw.
+   * At least one of `targetModelId` or `targetElementId` must be specified in props.
+   * Lock enforcement: requires exclusive lock on the element being moved, and shared locks on the target parent (if any) and the target model.
+   * @param props The move parameters: element id, target model/parent, and optional new code.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws [[IModelError]] if the move fails (e.g., element has children, model type mismatch, duplicate code).
+   * @beta
+   */
+  public moveElement(props: MoveElementProps): void {
+    this.verifyWriteable();
+    const iModel = this.iModel;
+
+    if (!props.targetModelId && !props.targetElementId)
+      throw new IModelError(IModelStatus.BadArg, "moveElement requires at least one of targetModelId or targetElementId");
+
+    // Lock enforcement: exclusive lock on element being moved
+    iModel.locks.checkExclusiveLock(props.id, "element", "move");
+
+    // Resolve the target model for lock/channel checks
+    let targetModel: Id64String;
+    if (props.targetModelId) {
+      targetModel = props.targetModelId;
+    } else {
+      targetModel = iModel.withQueryReader(
+        "SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?",
+        (reader) => {
+          if (!reader.step())
+            throw new IModelError(IModelStatus.NotFound, `target element ${props.targetElementId} not found`);
+          return reader.current[0] as Id64String;
+        },
+        QueryBinder.from([props.targetElementId!]),
+      );
+    }
+
+    // Shared lock on target element (new parent) if specified
+    if (props.targetElementId)
+      iModel.locks.checkSharedLock(props.targetElementId, "parent", "move");
+
+    // Shared lock on target model
+    iModel.locks.checkSharedLock(targetModel, "model", "move");
+
+    // Channel verification on the target model
+    iModel.channels[_verifyChannel](targetModel);
+
+    // Invalidate caches
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
+
+    // Build native props: if only targetModelId is specified (no parent), use it as targetElementId
+    // since in BIS model ID = partition element ID, and native detects the sub-model to make element root.
+    const nativeProps = {
+      id: props.id,
+      targetModelId: props.targetModelId,
+      targetElementId: props.targetElementId ?? props.targetModelId!,
+      code: props.code,
+    };
+
+    try {
+      iModel[_nativeDb].moveElement(nativeProps);
+    } catch (err: any) {
+      err.message = `Error moving element [${err.message}], id: ${props.id}`;
+      err.metadata = { moveProps: props };
+      throw err;
+    }
+
+    // Workaround: native _SetParentId has a bug where clearing parent (both args invalid) fails silently.
+    // If we moved to a model without a parent, ensure the parent is cleared via direct SQL.
+    if (props.targetModelId && !props.targetElementId) {
+      const curParent = iModel.withPreparedSqliteStatement("SELECT ParentId FROM bis_Element WHERE Id=?", (stmt) => {
+        stmt.bindId(1, props.id);
+        if (!stmt.nextRow())
+          return undefined;
+        return stmt.getValueId(0);
+      });
+      if (curParent && curParent !== "0" && curParent !== "0x0") {
+        iModel.withPreparedSqliteStatement("UPDATE bis_Element SET ParentId=NULL,ParentRelECClassId=NULL WHERE Id=?", (stmt) => {
+          stmt.bindId(1, props.id);
+          stmt.step();
+        });
+      }
+    }
   }
 
   /**
