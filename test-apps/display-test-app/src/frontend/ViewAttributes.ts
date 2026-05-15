@@ -11,6 +11,7 @@ import {
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGoogle3dTilesUrl, Google3dTilesProvider, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { AzureMaps } from "@itwin/map-layers-formats";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -571,7 +572,7 @@ export class ViewAttributes {
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName }),
+      handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName, type: Number.parseInt(types.value, 10) }),
     }).select;
 
     const types = createComboBox({
@@ -583,7 +584,19 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMapProvider({ type: Number.parseInt(select.value, 10) }),
+      handler: (select) => this.updateBackgroundMapProvider({ name: imageryProviders.value as BackgroundMapProviderName, type: Number.parseInt(select.value, 10) }),
+    }).select;
+
+    const azureTypes = createComboBox({
+      parent: backgroundSettingsDiv,
+      name: "Azure Maps: ",
+      id: "viewAttr_azureMapType",
+      entries: [
+        { name: "Street", value: BackgroundMapType.Street },
+        { name: "Aerial", value: BackgroundMapType.Aerial },
+        { name: "Hybrid", value: BackgroundMapType.Hybrid },
+      ],
+      handler: (select) => this.applyAzureBackgroundMap(Number.parseInt(select.value, 10)),
     }).select;
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
@@ -649,6 +662,11 @@ export class ViewAttributes {
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
+      const azureType = AzureMaps.getBackgroundMapType(view.displayStyle);
+      if (undefined !== azureType) {
+        azureTypes.value = azureType.toString();
+      }
+
       const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
       if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
         imageryProviders.value = baseLayer.provider.name;
@@ -705,7 +723,15 @@ export class ViewAttributes {
     this.sync();
   }
 
+  private applyAzureBackgroundMap(type: BackgroundMapType): void {
+    AzureMaps.applyBackgroundMap(this._vp.displayStyle, type);
+    this.sync();
+  }
+
   private updateBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    if (undefined !== AzureMaps.getBackgroundMapType(this._vp.displayStyle))
+      AzureMaps.clearBackgroundLayers(this._vp.displayStyle);
+
     this._vp.displayStyle.changeBackgroundMapProvider(props);
     this.sync();
   }

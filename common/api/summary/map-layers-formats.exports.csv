@@ -1,6 +1,8 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 internal;class;ArcGisFeatureProvider
+beta;const;AzureMaps
+public;class;AzureMapsMapLayerFormat
 beta;class;BaseGoogleMapsSession
 internal;class;DefaultArcGiSymbology
 beta;const;GoogleMaps

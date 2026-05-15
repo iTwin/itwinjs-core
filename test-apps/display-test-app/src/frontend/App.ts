@@ -300,6 +300,9 @@ export class DisplayTestApp {
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
             : undefined,
+          AzureMaps: configuration.azureMapsKey
+            ? { key: "subscription-key", value: configuration.azureMapsKey }
+            : undefined,
           GoogleMaps: configuration.googleMapsKey
             ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
