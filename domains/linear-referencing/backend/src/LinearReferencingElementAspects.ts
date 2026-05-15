@@ -82,7 +82,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     at: DistanceExpression, fromReferentId?: Id64String): void;
 
   /** Insert a new aspect.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyReferencedAtLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyReferencedAtLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insert(iModel: IModelDb, locatedElementId: Id64String,
     at: DistanceExpression, fromReferentId?: Id64String): void;
@@ -145,7 +145,7 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
 
   /** Insert a new aspect.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyReferencedFromToLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyReferencedFromToLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insert(iModel: IModelDb, locatedElementId: Id64String,
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
