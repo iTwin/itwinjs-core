@@ -429,6 +429,8 @@ preview;class;Model
 public;class;ModelSelector
 preview;class;ModelSelector
 internal;class;ModelSelectorRefersToModels
+beta;interface;MoveElementProps
+beta;interface;MoveElementTreeProps
 public;class;NativeAppStorage
 internal;const;_nativeDb
 public;class;NativeHost

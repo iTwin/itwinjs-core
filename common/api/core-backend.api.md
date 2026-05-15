@@ -2735,6 +2735,8 @@ export class EditTxn {
     insertModel(props: ModelProps): Id64String;
     insertRelationship(props: RelationshipProps): Id64String;
     get isActive(): boolean;
+    moveElement(props: MoveElementProps): void;
+    moveElementTree(props: MoveElementTreeProps): void;
     onClose(): void;
     saveChanges(args?: string | SaveChangesArgs): void;
     saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
@@ -5363,6 +5365,19 @@ export class ModelSelectorRefersToModels extends Relationship {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+}
+
+// @beta
+export interface MoveElementProps {
+    code?: CodeProps;
+    id: Id64String;
+    targetElementId?: Id64String;
+    targetModelId?: Id64String;
+}
+
+// @beta
+export interface MoveElementTreeProps extends MoveElementProps {
+    onMoveChild?: (childProps: ElementProps) => CodeProps | undefined;
 }
 
 // @public
