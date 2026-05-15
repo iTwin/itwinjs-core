@@ -8,8 +8,12 @@ import unitsSchema from "../assets/Units.json";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { buildGeneratedBasicConversionModule } = require("../../scripts/buildBasicUnitConversions") as {
+const { buildGeneratedBasicConversionModule, buildGeneratedDefaultPersistenceModule } = require("../../scripts/buildBasicUnitConversions") as {
   buildGeneratedBasicConversionModule: (
+    schema: typeof unitsSchema,
+    assertUniqueGeneratedKeys: (entries: Array<{ key: string }>, description: string) => void,
+  ) => string;
+  buildGeneratedDefaultPersistenceModule: (
     schema: typeof unitsSchema,
     assertUniqueGeneratedKeys: (entries: Array<{ key: string }>, description: string) => void,
   ) => string;
@@ -17,6 +21,7 @@ const { buildGeneratedBasicConversionModule } = require("../../scripts/buildBasi
 
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
+const generatedDefaultPersistenceSource = readFileSync(require.resolve("../internal/DefaultPersistenceUnits.generated.ts"), "utf8");
 
 function assertUniqueGeneratedKeys(entries: Array<{ key: string }>, description: string): void {
   const seen = new Set<string>();
@@ -72,7 +77,19 @@ describe("Generated Units artifacts", () => {
     expect(basicUnitConversionData["Units.HORIZONTAL_PER_VERTICAL"][3]).toBe("Units.VERTICAL_PER_HORIZONTAL");
   });
 
+  it("emits representative default persistence entries and omits LENGTH_RATIO", () => {
+    expect(generatedDefaultPersistenceSource).toContain("[Phenomena.LENGTH]: Units.LENGTH.M");
+    expect(generatedDefaultPersistenceSource).toContain("[Phenomena.CURRENCY]: Units.CURRENCY.US_DOLLAR");
+    expect(generatedDefaultPersistenceSource).toContain("[Phenomena.SLOPE]: Units.SLOPE.M_PER_M");
+    expect(generatedDefaultPersistenceSource).toContain("Phenomena.LENGTH_RATIO is intentionally omitted");
+    expect(generatedDefaultPersistenceSource).not.toContain("[Phenomena.LENGTH_RATIO]");
+  });
+
   it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
     expect(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedBasicConversionsSource);
+  });
+
+  it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
+    expect(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedDefaultPersistenceSource);
   });
 });

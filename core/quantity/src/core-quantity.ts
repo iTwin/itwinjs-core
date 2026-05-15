@@ -8,6 +8,7 @@ export * from "./FormatSpecHandle";
 export * from "./Interfaces";
 export * from "./Parser";
 export * from "./ParserSpec";
+export * from "./PersistenceUnits";
 export * from "./Quantity";
 export * from "./UnitConversions";
 export * from "./Unit";
@@ -34,6 +35,10 @@ export * from "./internal/cross-package";
 /**
  * @docs-group-description Quantity
  * Classes, Interfaces, and definitions used to format and parse quantity values.
+ */
+/**
+ * @docs-group-description PersistenceUnits
+ * Helpers for recommended built-in default persistence units by phenomenon.
  */
 /**
  * @docs-group-description BasicUnitsProvider

@@ -38,6 +38,7 @@ beta;function;formatTypeToString
 deprecated;function;formatTypeToString
 beta;interface;FormatUnitSpec
 beta;enum;FractionalPrecision
+beta;function;getDefaultPersistenceUnit
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
 beta;const;isCustomFormatProps
