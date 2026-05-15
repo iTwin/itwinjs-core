@@ -164,12 +164,14 @@ export interface MoveElementProps {
 
 /** Options for [[EditTxn.moveElementTree]].
  * Moves an element and its entire subtree to a new model/parent.
+ * @note The caller should hold exclusive locks on all elements in the subtree, not just the root.
  * @beta
  */
 export interface MoveElementTreeProps extends MoveElementProps {
   /** Optional callback invoked for each descendant element being moved.
    * Return a CodeProps to override the element's code in the new model, or undefined to keep the existing code.
    * This is required for descendant elements that have model-scoped codes when the model is changing.
+   * This callback is NOT invoked for the root element — use [[MoveElementProps.code]] to set the root's code.
    * @param childProps The full properties of the child element about to be moved.
    * @returns A new CodeProps for the child, or undefined to keep its current code.
    */

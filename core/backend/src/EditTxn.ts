@@ -323,9 +323,12 @@ export class EditTxn {
 
   /** Move an element and its entire subtree to a different model and/or parent.
    * At least one of `targetModelId` or `targetElementId` must be specified in props.
-   * The subtree is moved top-down (parent first, then children DFS). For each descendant,
+   * The subtree is moved in two passes: (1) all descendants are moved bottom-up (leaves first) as root elements
+   * in the target model, (2) parent-child relationships are re-established within the new model. For each descendant,
    * the optional `onMoveChild` callback is invoked to allow code overrides (needed when code scope is model-based).
    * Lock enforcement: requires exclusive lock on the root element being moved, and shared locks on the target parent/model.
+   * @note Callers should ensure exclusive locks are held on all descendant elements before calling this method.
+   * In a multi-user environment, failing to lock descendants could result in conflicts if another user modifies them concurrently.
    * @param props The move parameters including optional callback for child code resolution.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] if the move fails.
@@ -371,14 +374,17 @@ export class EditTxn {
     // Store each element's original parent for re-parenting in pass 2.
     const subtreePostOrder: Array<{ id: Id64String; parentId: Id64String | undefined }> = [];
     const collectPostOrder = (parentId: Id64String) => {
-      iModel.withPreparedSqliteStatement("SELECT Id FROM bis_Element WHERE ParentId=?", (stmt) => {
-        stmt.bindId(1, parentId);
-        while (stmt.nextRow()) {
-          const childId = stmt.getValueId(0);
-          collectPostOrder(childId); // recurse into grandchildren first
-          subtreePostOrder.push({ id: childId, parentId });
-        }
-      });
+      iModel.withQueryReader(
+        "SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?",
+        (reader) => {
+          while (reader.step()) {
+            const childId = reader.current[0] as Id64String;
+            collectPostOrder(childId); // recurse into grandchildren first
+            subtreePostOrder.push({ id: childId, parentId });
+          }
+        },
+        QueryBinder.from([parentId]),
+      );
     };
     collectPostOrder(props.id);
 
@@ -433,7 +439,7 @@ export class EditTxn {
     const nativeProps = {
       id: props.id,
       targetModelId: props.targetModelId,
-      targetElementId: props.targetElementId ?? props.targetModelId!,
+      targetElementId: props.targetElementId,
       code: props.code,
       allowChildren,
     };
@@ -444,22 +450,6 @@ export class EditTxn {
       err.message = `Error moving element [${err.message}], id: ${props.id}`;
       err.metadata = { moveProps: props };
       throw err;
-    }
-
-    // TODO: Remove this workaround once native addon is rebuilt with the _SetParentId fix in DgnElement.cpp.
-    // Workaround: native _SetParentId has a bug where clearing parent (both args invalid) fails silently.
-    if (props.targetModelId && !props.targetElementId) {
-      const curParent = iModel.withQueryReader(
-        "SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=?",
-        (reader) => reader.step() ? reader.current[0] as Id64String | undefined : undefined,
-        QueryBinder.from([props.id]),
-      );
-      if (curParent && Id64.isValidId64(curParent)) {
-        iModel.withPreparedSqliteStatement("UPDATE bis_Element SET ParentId=NULL,ParentRelECClassId=NULL WHERE Id=?", (stmt) => {
-          stmt.bindId(1, props.id);
-          stmt.step();
-        });
-      }
     }
 
     // Invalidate caches after mutation
