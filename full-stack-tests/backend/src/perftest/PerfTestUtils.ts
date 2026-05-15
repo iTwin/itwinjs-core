@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
@@ -29,19 +29,18 @@ export class PerfTestDataMgr {
     if (this.db) {
       await this.db.importSchemas([schemaPath]);
       if (testCName)
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
-      this.db.saveChanges();
     }
   }
   public setup() {
     if (this.db) {
-      this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this.db, Code.createEmpty(), true);
+      this.modelId = withEditTxn(this.db, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === this.catId) {
-        this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        this.catId = withEditTxn(this.db, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
       }
       this.db[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      this.db.saveChanges();
     }
   }
   public closeDb() {
@@ -155,6 +154,7 @@ export class PerfTestUtility {
        AND abc.TargetECInstanceId != ec_classid('${schemaName}', '${className}')
        AND schema.Name != 'BisCore')`;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         props.push(stmt.getRow().name);
@@ -205,6 +205,7 @@ export class PerfTestUtility {
 
   public static getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();

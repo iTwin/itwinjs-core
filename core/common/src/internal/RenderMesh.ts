@@ -6,6 +6,8 @@
  * @module Rendering
  */
 
+import { ColorDef } from "../ColorDef";
+import { LinePixels } from "../LinePixels";
 import { OctEncodedNormalPair } from "../OctEncodedNormal";
 import { PolylineIndices } from "../RenderPolyline";
 
@@ -55,10 +57,24 @@ export class MeshEdge {
 }
 
 /** @internal */
+export interface EdgeAppearanceOverrides {
+  color?: ColorDef;
+  linePixels?: LinePixels;
+  width?: number;
+}
+
+/** @internal */
+export interface MeshPolylineGroup {
+  polylines: MeshPolyline[];
+  appearance?: EdgeAppearanceOverrides;
+}
+
+/** @internal */
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
-  public polylines: MeshPolylineList = [];
+  public appearance?: EdgeAppearanceOverrides;
+  public polylineGroups: MeshPolylineGroup[] = [];
   public silhouetteNormals: OctEncodedNormalPair[] = [];
   public constructor() { }
 }
@@ -102,16 +118,18 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
 
 /** @internal */
 export class PolylineEdgeArgs {
-  public lines?: PolylineIndices[];
+  public groups?: MeshPolylineGroup[];
 
-  public constructor(lines?: PolylineIndices[]) { this.init(lines); }
+  public constructor(groups?: MeshPolylineGroup[]) {
+    this.init(groups);
+  }
 
-  public init(lines?: PolylineIndices[]): boolean {
-    this.lines = undefined !== lines && 0 < lines.length ? lines : undefined;
+  public init(groups?: MeshPolylineGroup[]): boolean {
+    this.groups = groups?.filter((group) => group.polylines.length > 0);
     return this.isValid;
   }
 
-  public get numLines() { return undefined !== this.lines ? this.lines.length : 0; }
-  public get isValid() { return this.numLines > 0; }
-  public clear() { this.lines = undefined; }
+  public get numGroups() { return this.groups?.length ?? 0; }
+  public get isValid() { return this.numGroups > 0; }
+  public clear() { this.groups = undefined; }
 }

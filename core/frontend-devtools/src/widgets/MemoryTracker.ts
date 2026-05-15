@@ -137,7 +137,7 @@ class MemoryPanel {
     this._labels = labels;
     this._div = document.createElement("div");
 
-    this._header = document.createElement("label")!;
+    this._header = document.createElement("label");
     this._header.style.fontWeight = "bold";
     this._div.appendChild(this._header);
 

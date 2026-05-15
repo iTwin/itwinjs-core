@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
@@ -9,10 +10,10 @@ import { IModel } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, GroupingSpecificationTypes, InstanceKey, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
-import { initialize, terminate } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
+import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { NodeValidators, validateHierarchy } from "./HierarchyValidation.js";
 
 describe("Hierarchies", () => {
   before(async () => {

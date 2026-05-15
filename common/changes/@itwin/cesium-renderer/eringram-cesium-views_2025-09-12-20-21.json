@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/cesium-renderer",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/cesium-renderer"
+}

@@ -9,6 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
+    ColorDef,
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
   OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList,
   SilhouetteEdgeArgs,
@@ -61,6 +62,7 @@ export function createPolylineArgs(mesh: Mesh): PolylineArgs | undefined {
     points: mesh.points,
     colors,
     features,
+    cumulativeDistances: mesh.cumulativeDistances,
   };
 }
 
@@ -71,6 +73,7 @@ export class MeshArgsEdges {
   public polylines = new PolylineEdgeArgs();
   public width = 0;
   public linePixels = LinePixels.Solid;
+  public color?: ColorDef;
 
   public clear(): void {
     this.edges.clear();
@@ -87,7 +90,9 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
     return undefined;
 
   const texture = mesh.displayParams.textureMapping?.texture;
-  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
+  const useConstantLod = mesh.displayParams.textureMapping?.params?.useConstantLod;
+  const constantLodParams = mesh.displayParams.textureMapping?.params?.constantLodParams;
+  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams, useConstantLod, constantLodParams } : undefined;
 
   const colors = new ColorIndex();
   mesh.colorMap.toColorIndex(colors, mesh.colors);
@@ -98,17 +103,13 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
   let edges;
   if (mesh.edges) {
     edges = new MeshArgsEdges();
-    edges.width = mesh.displayParams.width;
-    edges.linePixels = mesh.displayParams.linePixels;
+    edges.width = mesh.edges.appearance?.width ?? mesh.displayParams.width;
+    edges.linePixels = mesh.edges.appearance?.linePixels ?? mesh.displayParams.linePixels;
     edges.edges.init(mesh.edges);
     edges.silhouettes.init(mesh.edges);
+    edges.color = mesh.edges.appearance?.color;
 
-    const polylines = [];
-    for (const meshPolyline of mesh.edges.polylines)
-      if (meshPolyline.indices.length > 0)
-        polylines.push(meshPolyline.indices);
-
-    edges.polylines.init(polylines);
+    edges.polylines.init(mesh.edges.polylineGroups);
   }
 
   return {
@@ -136,6 +137,7 @@ export class Mesh {
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
   public colors: number[] = [];
+  public cumulativeDistances?: Float32Array;
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
   public readonly type: MeshPrimitiveType;

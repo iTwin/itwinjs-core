@@ -93,7 +93,7 @@ export interface BasePropertyValue {
 
 // @beta
 export abstract class BaseQuantityDescription implements PropertyDescription {
-    constructor(name: string, displayLabel: string, iconSpec?: string);
+    constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     displayLabel: string;
     // (undocumented)
@@ -103,6 +103,8 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     // (undocumented)
     protected abstract formatValue(numberValue: number): string;
     // (undocumented)
+    kindOfQuantityName?: string;
+    // (undocumented)
     name: string;
     // (undocumented)
     parse: (userInput: string) => ParseResults;
@@ -110,8 +112,6 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     abstract get parseError(): string;
     // (undocumented)
     protected abstract parseString(userInput: string): ParseResults;
-    // (undocumented)
-    abstract get quantityType(): string;
     // (undocumented)
     typename: string;
 }
@@ -696,8 +696,10 @@ export interface PropertyDescription {
     editor?: PropertyEditorInfo;
     enum?: EnumerationChoicesInfo;
     hideCompositePropertyLabel?: boolean;
+    // @beta
+    kindOfQuantityName?: string;
     name: string;
-    // @alpha
+    // @alpha @deprecated
     quantityType?: string;
     renderer?: PropertyRendererInfo;
     typename: string;

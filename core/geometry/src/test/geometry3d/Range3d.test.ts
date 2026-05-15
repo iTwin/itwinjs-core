@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -11,11 +10,11 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range2d, Range3d, RangeBase } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
@@ -752,6 +751,69 @@ describe("Range3d", () => {
     const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
     const range = Range3d.createNull();
     arc.extendRange(range);
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("IntersectionWithMargin", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+
+    const maxCoordA = 1;
+    const rangeA = Range3d.createXYZXYZ(-maxCoordA, -maxCoordA, -maxCoordA, maxCoordA, maxCoordA, maxCoordA);
+    let radiusA = rangeA.diagonal().magnitude() / 2;
+
+    const maxCoordB = 0.5;
+    const rangeB = Range3d.createXYZXYZ(-maxCoordB, -maxCoordB, -maxCoordB, maxCoordB, maxCoordB, maxCoordB);
+    let radiusB = rangeB.diagonal().magnitude() / 2;
+
+    let displacementLength = radiusA + radiusB;
+    let margin = radiusB * 1.5;
+    const iters = 25;
+
+    for (let i = 0; i < iters; i++) {
+      const displacement = Vector3d.create(Math.random(), Math.random(), Math.random());
+      for (let j = 0; j < 3; j++)
+        displacement.setAt(j, Geometry.correctSmallFraction(displacement.at(j), 0.0) * ((Math.random() > 0.5) ? 1.0 : -1.0));
+      if (!displacement.scaleToLength(displacementLength, displacement))
+        continue;
+      const rangeC = rangeB.cloneTranslated(displacement);
+      const rangeD = rangeC.clone();
+      rangeD.expandInPlace(margin);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, [rangeA, rangeC, rangeD], x0, y0);
+      ck.testFalse(rangeA.intersectsRange(rangeC), "rangeA does not intersect rangeC");
+      ck.testTrue(rangeA.intersectsRange(rangeC, margin), "rangeA intersects rangeC with positive margin");
+      ck.testTrue(rangeA.intersectsRange(rangeD), "rangeA intersects rangeD");
+      ck.testFalse(rangeA.intersectsRange(rangeD, -margin), "rangeA does not intersect rangeD with negative margin");
+      x0 += 3 * displacementLength;
+    }
+
+    x0 = 0;
+    y0 += 3 * displacementLength
+
+    // cover xy variant
+    radiusA = Geometry.distanceXYXY(rangeA.low.x, rangeA.low.y, rangeA.high.x, rangeA.high.y) / 2;
+    radiusB = Geometry.distanceXYXY(rangeB.low.x, rangeB.low.y, rangeB.high.x, rangeB.high.y) / 2;
+    displacementLength = radiusA + radiusB;
+    margin = radiusB * 1.5;
+    for (let i = 0; i < iters; i++) {
+      const displacement = Vector3d.create(Math.random(), Math.random());
+      for (let j = 0; j < 3; j++)
+        displacement.setAt(j, Geometry.correctSmallFraction(displacement.at(j), 0.0) * ((Math.random() > 0.5) ? 1.0 : -1.0));
+      if (!displacement.scaleToLength(displacementLength, displacement))
+        continue;
+      const rangeC = rangeB.cloneTranslated(displacement);
+      const rangeD = rangeC.clone();
+      rangeD.expandInPlace(margin);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, [rangeA, rangeC, rangeD], x0, y0);
+      ck.testFalse(rangeA.intersectsRangeXY(rangeC), "rangeA does not xy-intersect rangeC");
+      ck.testTrue(rangeA.intersectsRangeXY(rangeC, margin), "rangeA xy-intersects rangeC with positive margin");
+      ck.testTrue(rangeA.intersectsRangeXY(rangeD), "rangeA xy-intersects rangeD");
+      ck.testFalse(rangeA.intersectsRangeXY(rangeD, -margin), "rangeA does not xy-intersect rangeD with negative margin");
+      x0 += 3 * displacementLength;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Range3d", "IntersectionWithMargin");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

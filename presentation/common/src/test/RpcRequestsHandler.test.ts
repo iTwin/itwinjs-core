@@ -2,32 +2,20 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { Id64, Logger } from "@itwin/core-bentley";
 import { CURRENT_REQUEST, IModelRpcProps, RpcInterface, RpcManager, RpcRequest } from "@itwin/core-common";
-import {
-  DescriptorOverrides,
-  DistinctValuesRpcRequestOptions,
-  KeySet,
-  KeySetJSON,
-  Paged,
-  PresentationError,
-  PresentationRpcInterface,
-  PresentationRpcRequestOptions,
-  PresentationRpcResponse,
-  PresentationStatus,
-  RpcRequestsHandler,
-  SelectionInfo,
-  SelectionScopeRequestOptions,
-} from "../presentation-common";
-import { FieldDescriptorType } from "../presentation-common/content/Fields";
-import { ItemJSON } from "../presentation-common/content/Item";
-import { ClientDiagnostics } from "../presentation-common/Diagnostics";
-import { InstanceKey } from "../presentation-common/EC";
-import { NodeKey } from "../presentation-common/hierarchy/Key";
+import { DescriptorOverrides, SelectionInfo } from "../presentation-common/content/Descriptor.js";
+import { FieldDescriptorType } from "../presentation-common/content/Fields.js";
+import { ItemJSON } from "../presentation-common/content/Item.js";
+import { ClientDiagnostics } from "../presentation-common/Diagnostics.js";
+import { InstanceKey } from "../presentation-common/EC.js";
+import { PresentationError, PresentationStatus } from "../presentation-common/Error.js";
+import { NodeKey } from "../presentation-common/hierarchy/Key.js";
+import { KeySet, KeySetJSON } from "../presentation-common/KeySet.js";
 import {
   ComputeSelectionRequestOptions,
   ContentDescriptorRequestOptions,
@@ -41,7 +29,9 @@ import {
   FilterByTextHierarchyRequestOptions,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
-} from "../presentation-common/PresentationManagerOptions";
+  Paged,
+  SelectionScopeRequestOptions,
+} from "../presentation-common/PresentationManagerOptions.js";
 import {
   ContentDescriptorRpcRequestOptions,
   ContentInstanceKeysRpcRequestOptions,
@@ -50,22 +40,27 @@ import {
   ContentSourcesRpcResult,
   DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions,
+  DistinctValuesRpcRequestOptions,
   FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-} from "../presentation-common/PresentationRpcInterface";
-import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
-import { createTestContentDescriptor } from "./_helpers/Content";
+  PresentationRpcInterface,
+  PresentationRpcRequestOptions,
+  PresentationRpcResponse,
+} from "../presentation-common/PresentationRpcInterface.js";
+import { RpcRequestsHandler } from "../presentation-common/RpcRequestsHandler.js";
+import { RulesetVariableJSON } from "../presentation-common/RulesetVariables.js";
+import { SelectionScope } from "../presentation-common/selection/SelectionScope.js";
+import { createTestContentDescriptor } from "./_helpers/Content.js";
 import {
-  createRandomECInstanceKey,
-  createRandomECInstancesNode,
-  createRandomECInstancesNodeKey,
-  createRandomLabelDefinition,
-  createRandomNodePathElement,
-  createRandomSelectionScope,
-} from "./_helpers/random";
-import { ResolvablePromise } from "./_helpers";
+  createTestECInstanceKey,
+  createTestECInstancesNode,
+  createTestECInstancesNodeKey,
+  createTestLabelDefinition,
+  createTestNodePathElement,
+  ResolvablePromise,
+} from "./_helpers/index.js";
 
 describe("RpcRequestsHandler", () => {
   let clientId: string;
@@ -84,7 +79,7 @@ describe("RpcRequestsHandler", () => {
   });
 
   beforeEach(() => {
-    clientId = faker.random.uuid();
+    clientId = "test-client-id";
     defaultRpcHandlerOptions = { imodel: token };
   });
 
@@ -121,13 +116,13 @@ describe("RpcRequestsHandler", () => {
 
     describe("when request succeeds", () => {
       it("returns result of the request", async () => {
-        const result = faker.random.number();
+        const result = 123;
         const actualResult = await handler.request(async () => successResponse(result), defaultRpcHandlerOptions);
         expect(actualResult).to.eq(result);
       });
 
       it("calls diagnostics handler if provided", async () => {
-        const result = faker.random.number();
+        const result = 123;
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
@@ -205,65 +200,80 @@ describe("RpcRequestsHandler", () => {
 
   describe("requests forwarding to PresentationRpcInterface", () => {
     let handler: RpcRequestsHandler;
-    let rpcInterfaceMock: moq.IMock<PresentationRpcInterface>;
+    let rpcInterfaceStub: ReturnType<typeof stubRpcInterface>;
+    let rpcInterface: PresentationRpcInterface;
+
+    function stubRpcInterface() {
+      return {
+        getNodesCount: sinon.stub(),
+        getPagedNodes: sinon.stub(),
+        getNodesDescriptor: sinon.stub(),
+        getFilteredNodePaths: sinon.stub(),
+        getNodePaths: sinon.stub(),
+        getContentSources: sinon.stub(),
+        getContentDescriptor: sinon.stub(),
+        getContentSetSize: sinon.stub(),
+        getPagedContent: sinon.stub(),
+        getPagedContentSet: sinon.stub(),
+        getPagedDistinctValues: sinon.stub(),
+        getContentInstanceKeys: sinon.stub(),
+        getDisplayLabelDefinition: sinon.stub(),
+        getPagedDisplayLabelDefinitions: sinon.stub(),
+        getSelectionScopes: sinon.stub(),
+        computeSelection: sinon.stub(),
+      };
+    }
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
-      rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-      sinon.stub(RpcManager, "getClientForInterface").returns(rpcInterfaceMock.object);
+      rpcInterfaceStub = stubRpcInterface();
+      rpcInterface = rpcInterfaceStub as unknown as PresentationRpcInterface;
+      sinon.stub(RpcManager, "getClientForInterface").returns(rpcInterface);
       sinon.stub(RpcRequest, "current").returns(undefined as any);
     });
 
     afterEach(() => {
-      rpcInterfaceMock.reset();
+      // Stubs are restored by sinon.restore() in the outer afterEach
     });
 
     it("forwards getNodesCount call for root nodes", async () => {
       const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
       };
       const rpcOptions: HierarchyRpcRequestOptions = {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
       };
-      const result = faker.random.number();
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getNodesCount(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result = 123;
+      rpcInterfaceStub.getNodesCount.returns(successResponse(result));
       expect(await handler.getNodesCount(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getNodesCount).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getNodesCount call for child nodes", async () => {
       const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKey(),
+        rulesetOrId: "test-ruleset",
+        parentKey: createTestECInstancesNodeKey(),
       };
       const rpcOptions: HierarchyRpcRequestOptions = {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         parentKey: handlerOptions.parentKey,
       };
-      const result = faker.random.number();
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getNodesCount(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result = 123;
+      rpcInterfaceStub.getNodesCount.returns(successResponse(result));
       expect(await handler.getNodesCount(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getNodesCount).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedNodes call", async () => {
       const handlerOptions: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         paging: { start: 1, size: 2 },
-        parentKey: createRandomECInstancesNodeKey(),
+        parentKey: createTestECInstancesNodeKey(),
       };
       const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
         clientId,
@@ -271,14 +281,10 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
         parentKey: handlerOptions.parentKey!,
       };
-      const result = { items: [createRandomECInstancesNode()], total: 1 };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getPagedNodes(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result = { items: [createTestECInstancesNode()], total: 1 };
+      rpcInterfaceStub.getPagedNodes.returns(successResponse(result));
       expect(await handler.getPagedNodes(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedNodes).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     describe("forwards getNodesDescriptor call", async () => {
@@ -286,7 +292,7 @@ describe("RpcRequestsHandler", () => {
         const handlerOptions: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
           imodel: token,
           rulesetOrId: "test-ruleset",
-          parentKey: createRandomECInstancesNodeKey(),
+          parentKey: createTestECInstancesNodeKey(),
         };
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
@@ -299,32 +305,24 @@ describe("RpcRequestsHandler", () => {
 
       it("when descriptor is sent as serialized JSON string", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
-        rpcInterfaceMock
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
-          .returns(async () => successResponse(JSON.stringify(result)))
-          .verifiable();
+        rpcInterfaceStub.getNodesDescriptor.returns(successResponse(JSON.stringify(result)));
         expect(await handler.getNodesDescriptor(handlerOptions)).to.deep.eq(result);
-        rpcInterfaceMock.verifyAll();
+        expect(rpcInterfaceStub.getNodesDescriptor).to.be.calledOnceWithExactly(token, rpcOptions);
       });
 
       it("when descriptor is sent as JSON", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
-        rpcInterfaceMock
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
-          .returns(async () => successResponse(result))
-          .verifiable();
+        rpcInterfaceStub.getNodesDescriptor.returns(successResponse(result));
         expect(await handler.getNodesDescriptor(handlerOptions)).to.deep.eq(result);
-        rpcInterfaceMock.verifyAll();
+        expect(rpcInterfaceStub.getNodesDescriptor).to.be.calledOnceWithExactly(token, rpcOptions);
       });
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const filterText = faker.random.word();
+      const filterText = "test-filter";
       const handlerOptions: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         filterText,
       };
       const rpcOptions: FilterByTextHierarchyRpcRequestOptions = {
@@ -332,22 +330,18 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: handlerOptions.rulesetOrId,
         filterText,
       };
-      const result = [createRandomNodePathElement()];
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result = [createTestNodePathElement()];
+      rpcInterfaceStub.getFilteredNodePaths.returns(successResponse(result));
       expect(await handler.getFilteredNodePaths(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getFilteredNodePaths).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getNodePaths call", async () => {
-      const paths = [[createRandomECInstanceKey()]];
-      const markedIndex = faker.random.number();
+      const paths = [[createTestECInstanceKey()]];
+      const markedIndex = 123;
       const handlerOptions: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         instancePaths: paths,
         markedIndex,
       };
@@ -357,14 +351,10 @@ describe("RpcRequestsHandler", () => {
         instancePaths: paths,
         markedIndex,
       };
-      const result = [createRandomNodePathElement()];
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getNodePaths(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result = [createTestNodePathElement()];
+      rpcInterfaceStub.getNodePaths.returns(successResponse(result));
       expect(await handler.getNodePaths(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getNodePaths).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentSources call", async () => {
@@ -392,22 +382,18 @@ describe("RpcRequestsHandler", () => {
           "0x123": { name: "class_name", label: "Class Label" },
         },
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getContentSources(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentSources.returns(successResponse(result));
       expect(await handler.getContentSources(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentSources).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentDescriptor call", async () => {
-      const displayType = faker.random.word();
+      const displayType = "test-display-type";
       const keys = new KeySet().toJSON();
-      const selectionInfo: SelectionInfo = { providerName: faker.random.word() };
+      const selectionInfo: SelectionInfo = { providerName: "selection-provider" };
       const handlerOptions: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         displayType,
         keys,
         selection: selectionInfo,
@@ -420,22 +406,18 @@ describe("RpcRequestsHandler", () => {
         selection: selectionInfo,
       };
       const result = createTestContentDescriptor({ fields: [] }).toJSON();
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getContentDescriptor(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentDescriptor.returns(successResponse(result));
       expect(await handler.getContentDescriptor(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentDescriptor).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentSetSize call", async () => {
       const descriptor = createTestContentDescriptor({ fields: [] }).toJSON();
       const keys = new KeySet().toJSON();
-      const result = faker.random.number();
+      const result = 123;
       const handlerOptions: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor,
         keys,
       };
@@ -445,13 +427,9 @@ describe("RpcRequestsHandler", () => {
         descriptor,
         keys,
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getContentSetSize(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentSetSize.returns(successResponse(result));
       expect(await handler.getContentSetSize(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentSetSize).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedContent call", async () => {
@@ -466,7 +444,7 @@ describe("RpcRequestsHandler", () => {
       };
       const handlerOptions: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor,
         keys,
         paging: { start: 1, size: 2 },
@@ -478,13 +456,9 @@ describe("RpcRequestsHandler", () => {
         keys,
         paging: { start: 1, size: 2 },
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getPagedContent(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedContent.returns(successResponse(result));
       expect(await handler.getPagedContent(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedContent).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedContentSet call", async () => {
@@ -496,7 +470,7 @@ describe("RpcRequestsHandler", () => {
       };
       const handlerOptions: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor,
         keys,
         paging: { start: 1, size: 2 },
@@ -508,19 +482,15 @@ describe("RpcRequestsHandler", () => {
         keys,
         paging: { start: 1, size: 2 },
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getPagedContentSet(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedContentSet.returns(successResponse(result));
       expect(await handler.getPagedContentSet(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedContentSet).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedDistinctValues call", async () => {
       const handlerOptions: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
         fieldDescriptor: {
@@ -551,19 +521,15 @@ describe("RpcRequestsHandler", () => {
           },
         ],
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getPagedDistinctValues(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedDistinctValues.returns(successResponse(result));
       expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedDistinctValues).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getContentInstanceKeys call", async () => {
       const handlerOptions: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         displayType: "test display type",
         keys: new KeySet().toJSON(),
       };
@@ -586,17 +552,13 @@ describe("RpcRequestsHandler", () => {
           },
         ]).toJSON(),
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getContentInstanceKeys(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getContentInstanceKeys.returns(successResponse(result));
       expect(await handler.getContentInstanceKeys(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getContentInstanceKeys).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {
-      const key = createRandomECInstanceKey();
+      const key = createTestECInstanceKey();
       const handlerOptions: DisplayLabelRequestOptions<IModelRpcProps, InstanceKey> = {
         imodel: token,
         key,
@@ -605,18 +567,14 @@ describe("RpcRequestsHandler", () => {
         clientId,
         key,
       };
-      const result = createRandomLabelDefinition();
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result = createTestLabelDefinition();
+      rpcInterfaceStub.getDisplayLabelDefinition.returns(successResponse(result));
       expect(await handler.getDisplayLabelDefinition(handlerOptions)).to.deep.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getDisplayLabelDefinition).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards getPagedDisplayLabelDefinitions call", async () => {
-      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const keys = [createTestECInstanceKey(), createTestECInstanceKey()];
       const handlerOptions: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKey> = {
         imodel: token,
         keys,
@@ -627,18 +585,13 @@ describe("RpcRequestsHandler", () => {
       };
       const result = {
         total: 2,
-        items: [createRandomLabelDefinition(), createRandomLabelDefinition()],
+        items: [createTestLabelDefinition(), createTestLabelDefinition()],
       };
-      rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup(async (x) => x.getPagedDisplayLabelDefinitions(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.getPagedDisplayLabelDefinitions.returns(successResponse(result));
       expect(await handler.getPagedDisplayLabelDefinitions(handlerOptions)).to.deep.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getPagedDisplayLabelDefinitions).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
-    /* eslint-disable @typescript-eslint/no-deprecated */
     it("forwards getSelectionScopes call", async () => {
       const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
         imodel: token,
@@ -646,13 +599,10 @@ describe("RpcRequestsHandler", () => {
       const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>> = {
         clientId,
       };
-      const result = [createRandomSelectionScope()];
-      rpcInterfaceMock
-        .setup(async (x) => x.getSelectionScopes(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      const result: SelectionScope[] = [{ id: "element", label: "Element" }];
+      rpcInterfaceStub.getSelectionScopes.returns(successResponse(result));
       expect(await handler.getSelectionScopes(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.getSelectionScopes).to.be.calledOnceWithExactly(token, rpcOptions);
     });
 
     it("forwards computeSelection call", async () => {
@@ -667,13 +617,9 @@ describe("RpcRequestsHandler", () => {
         scope: { id: "test scope" },
       };
       const result = new KeySet().toJSON();
-      rpcInterfaceMock
-        .setup(async (x) => x.computeSelection(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
+      rpcInterfaceStub.computeSelection.returns(successResponse(result));
       expect(await handler.computeSelection(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
+      expect(rpcInterfaceStub.computeSelection).to.be.calledOnceWithExactly(token, rpcOptions);
     });
-    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 });

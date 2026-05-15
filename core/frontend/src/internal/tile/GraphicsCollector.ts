@@ -17,6 +17,7 @@ export interface GraphicsCollector {
   addGraphic(graphic: RenderGraphic): void;
 }
 
+/** @internal*/
 export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   private _planes: FrustumPlanes;
   private _worldToViewMap: Map4d;
@@ -51,4 +52,6 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
 
     return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, args);
   }
+
+  public override get shouldCollectClassifierGraphics(): boolean { return false; }
 }

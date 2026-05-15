@@ -317,11 +317,37 @@ export class Matrix4d implements BeJSONFunctions {
   /**
    * Return the (affine, non-perspective) Transform with the upper 3 rows of this matrix
    * @return undefined if this Matrix4d has perspective effects in the w row.
+   * @see toTransform
    */
   public get asTransform(): Transform | undefined {
     if (this.hasPerspective)
       return undefined;
     return Transform.createRowValues(this._coffs[0], this._coffs[1], this._coffs[2], this._coffs[3], this._coffs[4], this._coffs[5], this._coffs[6], this._coffs[7], this._coffs[8], this._coffs[9], this._coffs[10], this._coffs[11]);
+  }
+  /**
+   * Populate a [[Transform]] from the instance, even if the transformations aren't equivalent.
+   * * A Transform cannot encode perspective, but this method returns one even if it isn't equivalent to the instance.
+   * * Compare to the [[asTransform]] property, which returns `undefined` when there is perspective.
+   * @param result optional preallocated object to populate and return.
+   * @returns derived `Transform` and a flag indicating its validity:
+   * * `transform` is filled with the top three rows of the instance's entries scaled by the reciprocal of nonzero [[weight]];
+   * if [[weight]] is zero, `transform` is set to the identity.
+   * * `isValid` is true if and only if the last row of the instance is essentially `[000w]` for nonzero `w` = [[weight]].
+   * @see asTransform
+   */
+  public toTransform(result?: Transform): { transform: Transform, isValid: boolean } {
+    const transform = Transform.createIdentity(result);
+    let isValid = false;
+    if (this.weight() !== 0.0) {
+      const scale = 1.0 / this.weight();
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++)
+          transform.matrix.setAt(i, j, scale * this.atIJ(i, j));
+      }
+      transform.origin.set(scale * this.atIJ(0, 3), scale * this.atIJ(1, 3), scale * this.atIJ(2, 3));
+      isValid = Geometry.isSmallMetricDistance(scale * (Math.abs(this.atIJ(3, 0) + Math.abs(this.atIJ(3, 1)) + Math.abs(this.atIJ(3, 2)))));
+    }
+    return { transform, isValid };
   }
   /** multiply this * other. */
   public multiplyMatrixMatrix(other: Matrix4d, result?: Matrix4d): Matrix4d {
@@ -731,19 +757,19 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[15] += scale * beta;
   }
   /**
-   * Multiply and replace contents of this matrix by A*this*AT where
-   * * A is a pure translation with final column [x,y,z,1]
-   * * this is this matrix.
-   * * AT is the transpose of A.
-   * @param ax x part of translation
-   * @param ay y part of translation
-   * @param az z part of translation
+   * Multiply and replace contents of ` this` matrix by `A*this*AT` where
+   * * `A` is a pure translation with final column [x,y,z,1].
+   * * `this` is this matrix.
+   * * `AT` is the transpose of A.
+   * @param ax x part of translation.
+   * @param ay y part of translation.
+   * @param az z part of translation.
    */
-  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) {
+  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) : void {
     const bx = this._coffs[3];
     const by = this._coffs[7];
     const bz = this._coffs[11];
-    // matrixB can be non-symmetric!!
+    // matrixB can be non-symmetric
     const cx = this._coffs[12];
     const cy = this._coffs[13];
     const cz = this._coffs[14];
@@ -770,6 +796,6 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[12] += axBeta;
     this._coffs[13] += ayBeta;
     this._coffs[14] += azBeta;
-    // coffs[15] is unchanged !!!
+    // coffs[15] is unchanged
   }
 }

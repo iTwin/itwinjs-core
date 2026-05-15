@@ -6,7 +6,7 @@ Object {
     "class": "Subject",
     "id": "0x1",
     "items": Object {
-      "@Presentation:selectedItems.categoryLabel@": Object {
+      "Selected Item(s)": Object {
         "items": Object {
           "Code": Object {
             "type": "primitive",

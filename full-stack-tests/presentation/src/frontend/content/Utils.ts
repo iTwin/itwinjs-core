@@ -7,9 +7,9 @@ import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
-import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
-import { TestIModelConnection } from "../../IModelSetupUtils";
-import { initialize, terminate, testLocalization } from "../../IntegrationTests";
+import { ECClassHierarchyInfo } from "../../ECClasHierarchy.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests.js";
 
 interface ContentTestSuiteParams {
   getDefaultSuiteIModel: () => Promise<IModelConnection>;

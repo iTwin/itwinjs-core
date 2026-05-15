@@ -4,15 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray } from "../../geometry3d/PointHelpers";
 import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 
 function verifyStrictlyIncreasingArraySearch(ck: Checker, data: number[], name: string) {
   for (let i0 = 0; i0 + 1 < data.length; i0++) {
     for (let k = data[i0]; k < data[i0 + 1]; k++) {
-      const i = IndexedPolyface.searchStrictlyIncreasingNumbers(data, k);
+      const i = NumberArray.searchStrictlyIncreasingNumbers(data, k);
       if (ck.testDefined(i, "expect searchStrictlyIncreasingNumbers to return defined"))
         ck.testExactNumber(i0, i, `searchStrictlyIncreasingNumbers(${k}) on ${name} indices returns the floor index`);
     }
@@ -92,6 +94,37 @@ describe("IndexedPolyfaceWalker", () => {
         numMatched++;
     }
     ck.testExactNumber(numMatched, 2 * numInteriorEdges, "# edgeMates is twice # interior edges");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("edgeMateSerialization", () => {
+    const ck = new Checker();
+    const pf = PolyfaceBuilder.pointsToTriangulatedPolyface([Point3d.createZero(), Point3d.create(1, 1, 0), Point3d.create(-1, 1, 0)]);
+    if (ck.testDefined(pf, "polyface is defined")) {
+      ck.testTrue(!pf.isEmpty, "polyface is nonempty");
+      IndexedPolyfaceWalker.buildEdgeMateIndices(pf);
+      if (ck.testDefined(pf.data.edgeMateIndex, "edgeMate array added")) {
+        ck.testTrue(pf.data.edgeMateIndex.length > 0, "edgeMate array nonempty");
+        const geomJson = IModelJson.Writer.toIModelJson(pf);
+        if (ck.testDefined(geomJson, "serialized the mesh"))
+          ck.testDefined(IModelJson.Reader.parse(geomJson), "deserialized the mesh");
+      }
+    }
+    const pfEmpty = IndexedPolyface.create();
+    if (ck.testDefined(pfEmpty, "default polyface is defined")) {
+      ck.testTrue(pfEmpty.isEmpty, "default polyface is empty");
+      for (const addEdgeMates of [false, true]) {
+        if (addEdgeMates) {
+          ck.testUndefined(pfEmpty.data.edgeMateIndex, "didn't previously add edgeMates");
+          IndexedPolyfaceWalker.buildEdgeMateIndices(pfEmpty);
+          ck.testUndefined(pfEmpty.data.edgeMateIndex, "edgeMate array is not added for empty polyface");
+          pfEmpty.data.edgeMateIndex = []; // add empty one anyway to verify graceful serialization
+        }
+        const geomJson = IModelJson.Writer.toIModelJson(pfEmpty);
+        if (ck.testDefined(geomJson, "serialized empty polyface"))
+          ck.testUndefined(IModelJson.Reader.parse(geomJson), "deserialization of empty polyface failed as expected");
+      }
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 });

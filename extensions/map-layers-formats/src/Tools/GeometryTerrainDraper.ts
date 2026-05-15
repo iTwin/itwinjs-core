@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { Logger } from "@itwin/core-bentley";
 import {
   CollectTileStatus, DisclosedTileTreeSet,
   GeometryTileTreeReference, IModelApp,
   Tile, TileGeometryCollector, TileUser, Viewport
 } from "@itwin/core-frontend";
 import { Angle, ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, IndexedPolyface, IndexedPolyfaceSubsetVisitor, Loop, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, PolygonOps, Range3d, Ray3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
-import { Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GeometryTerrainDraper";
 

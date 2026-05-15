@@ -6,19 +6,23 @@
 /** @packageDocumentation
  * @module Curve
  */
+
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
 import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
@@ -73,25 +77,117 @@ export abstract class CurveCollection extends GeometryQuery {
   public sumLengths(): number {
     return SumLengthsContext.sumLengths(this);
   }
-  /**
-   * Return the closest point on the contained curves.
-   * @param spacePoint point in space.
-   * @param _extend unused here (pass false), but applicable to overrides in [[Path]] and [[BagOfCurves]].
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
-   */
-  public closestPoint(
-    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  private computeClosestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail, xyOnly: boolean = false,
   ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
     const detailB = new CurveLocationDetail();
-    if (this.children !== undefined) {
-      for (const child of this.children) {
-        if (child.closestPoint(spacePoint, false, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+    let ext = this.isAnyRegion() ? false : extend;
+    for (let i = 0; i < this.children.length; i++) {
+      const child = this.children[i];
+      if (this.isPath()) {
+        // head only extends at start; tail only at end. NOTE: child may be both head and tail!
+        const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
+        const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
+        ext = [mode0, mode1];
+      }
+      const cp = xyOnly ? child.closestPointXY(spacePoint, ext, detailB) : child.closestPoint(spacePoint, ext, detailB);
+      if (cp) {
+        const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+        assert(undefined !== smaller, "expect defined because detailB is always defined");
+        detailA = result = smaller.clone(result);
       }
     }
     return detailA;
+  }
+  /**
+   * Return the closest point on the contained curves.
+   * @param spacePoint point in space.
+   * @param extend extend applicable only to [[Path]] and [[BagOfCurves]]. Default value `false`.
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    return this.computeClosestPoint(spacePoint, extend, result);
+  }
+  /**
+   * Return the closest point on the contained curves as viewed in the xy-plane (ignoring z).
+   * @param spacePoint point in space.
+   * @param extend (optional) extend applicable only to [[Path]] and [[BagOfCurves]]. Default value `false`.
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public closestPointXY(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    return this.computeClosestPoint(spacePoint, extend, result, true);
+  }
+  /**
+   * Announce all points `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to
+   * the contained curves in the view defined by `options.vectorToEye`.
+   * * Strictly speaking, each tangent line lies in the plane through `P` whose normal is the cross product of the curve
+   * tangent at `P` and `options.vectorToEye`. This is equivalent to tangency as seen in a view plane perpendicular to
+   * `options.vectorToEye`.
+   * @param spacePoint point in space.
+   * @param announceTangent callback to announce each computed tangent. The received [[CurveLocationDetail]] is reused
+   * internally, so it should be cloned in the callback if it needs to be saved.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   */
+  public emitTangents(
+    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
+  ): void {
+    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, options);
+    if (this.children !== undefined) {
+      for (const child of this.children) {
+        if (child instanceof CurvePrimitive)
+          child.emitStrokableParts(strokeHandler, options?.strokeOptions);
+        else if (child instanceof CurveCollection)
+          child.emitTangents(spacePoint, announceTangent, options);
+      }
+    }
+  }
+  /**
+   * Return all points `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to the
+   * contained curves in the view defined by `options.vectorToEye`.
+   * * See [[emitTangents]] for the definition of tangency employed.
+   * @param spacePoint point in space.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   * @returns an array of details of all tangent points or undefined if no tangent was found.
+   */
+  public allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined {
+    const tangents: CurveLocationDetail[] = [];
+    this.emitTangents(spacePoint, (t: CurveLocationDetail) => tangents.push(t.clone()), options);
+    return (tangents.length === 0) ? undefined : tangents;
+  }
+  /**
+   * Return the point `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to the
+   * contained curves in the view defined by `options.vectorToEye`, and `P` is closest to `options.hintPoint` in this view.
+   * * See [[emitTangents]] for the definition of tangency employed.
+   * @param spacePoint point in space.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   * @returns the detail of the closest tangent point or undefined if no tangent was found.
+   */
+  public closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined {
+    const hint = options?.hintPoint ?? spacePoint;
+    let toLocal: Matrix3d | undefined;
+    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({ x: 0, y: 0, z: 1 }))
+      toLocal = Matrix3d.createRigidViewAxesZTowardsEye(options.vectorToEye.x, options.vectorToEye.y, options.vectorToEye.z);
+    const measureHintDist2 = (pt: Point3d): number => { // measure distance to hint in view plane coordinates
+      return toLocal?.multiplyTransposeXYZ(hint.x - pt.x, hint.y - pt.y, hint.z - pt.z).magnitudeSquaredXY() ?? pt.distanceSquaredXY(hint);
+    };
+    let closestTangent: CurveLocationDetail | undefined;
+    let closestDist2 = Geometry.largeCoordinateResult;
+    const collectClosestTangent = (tangent: CurveLocationDetail) => {
+      const dist2 = measureHintDist2(tangent.point);
+      if (!closestTangent || dist2 < closestDist2) {
+        closestTangent = tangent.clone(closestTangent);
+        closestDist2 = dist2;
+      }
+    };
+    this.emitTangents(spacePoint, collectClosestTangent, options);
+    return closestTangent;
   }
   /** Reverse the collection's data so that each child curve's fractional stroking moves in the opposite direction. */
   public reverseInPlace(): void {
@@ -176,25 +272,34 @@ export abstract class CurveCollection extends GeometryQuery {
     return this.isAnyRegionType;
   }
   /**
-   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail
-   * @see isPath
+   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail.
+   * * This is NOT a test for (lack of) physical closure.
+   * @see [[isPath]], [[CurveChain.isPhysicallyClosedCurve]]
    */
   public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
   }
-  /** Type guard for Path */
+  /**
+   * Type guard for Path.
+   * * This is NOT a test for (lack of) physical closure.
+   * @see [[CurveChain.isPhysicallyClosedCurve]]
+   */
   public isPath(): this is Path {
     return this.isOpenPath;
   }
   /**
    * Return true for a single-loop planar region type, i.e. `Loop`.
-   * * This is NOT a test for physical closure of a `Path`.
-   * @see isLoop
+   * * This is NOT a test for physical closure.
+   * @see [[isLoop]], [[CurveChain.isPhysicallyClosedCurve]]
    */
   public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
-  /** Type guard for Loop */
+  /**
+   * Type guard for Loop.
+   * * This is NOT a test for physical closure.
+   * @see [[CurveChain.isPhysicallyClosedCurve]]
+   */
   public isLoop(): this is Loop {
     return this.isClosedPath;
   }
@@ -263,6 +368,19 @@ export abstract class CurveCollection extends GeometryQuery {
   public projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
+  /** Return the immediate parent of the input curve in the instance, or undefined if it is not a descendant. */
+  public findParentOfDescendant(descendant: AnyCurve): CurveCollection | undefined {
+    for (const child of this.children) {
+      if (child === descendant)
+        return this;
+      if (child instanceof CurveCollection) {
+        const parent = child.findParentOfDescendant(descendant);
+        if (parent)
+          return parent;
+      }
+    }
+    return undefined;
+  };
 }
 
 /**
@@ -304,6 +422,17 @@ export abstract class CurveChain extends CurveCollection {
       return undefined;
   }
   /**
+   * Whether the chain start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
+  }
+  /**
    * Return the start point and derivative of the first child of the curve chain.
    * * For queries interior to the chain, use [[CurveChainWithDistanceIndex.fractionToPointAndDerivative]].
    */
@@ -329,6 +458,7 @@ export abstract class CurveChain extends CurveCollection {
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
+   * @param cyclic whether to employ modulo operator for wrap-around indexing. Default is `true`.
    */
   public cyclicCurvePrimitive(index: number, cyclic: boolean = true): CurvePrimitive | undefined {
     const n = this.children.length;
@@ -491,26 +621,6 @@ export class BagOfCurves extends CurveCollection {
       }
     }
     return clone;
-  }
-  /**
-   * Return the closest point on the contained curves.
-   * @param spacePoint point in space.
-   * @param extend applicable only to children of type [[CurvePrimitive]], [[Path]], or [[BagOfCurves]]
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
-   */
-  public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
-  ): CurveLocationDetail | undefined {
-    let detailA: CurveLocationDetail | undefined;
-    const detailB = new CurveLocationDetail();
-    if (this.children !== undefined) {
-      for (const child of this.children) {
-        if (child.closestPoint(spacePoint, extend, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
-      }
-    }
-    return detailA;
   }
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves {

@@ -170,7 +170,11 @@ async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
   const isXvfbRunning = await isXvfbProcessRunning();
 
-  await ElectronHost.startup();
+  await ElectronHost.startup({
+    electronHost: {
+      webResourcesPath: path.join(__dirname, "..", "assets"),
+    },
+  });
 
   NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
   NativeHost.settingsStore.removeData(`windowSizeAndPos-${storeWindowName}`);
@@ -194,7 +198,7 @@ async function testWindowSizeSettings() {
   if (isXvfbRunning)
     window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
   else
-    await BeDuration.wait(100); // "maximize" event is not always emitted immediately
+    await BeDuration.wait(250); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
@@ -203,24 +207,34 @@ async function testWindowSizeSettings() {
   if (isXvfbRunning)
     window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
   else
-    await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
+    await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-  assert(!isMaximized);
+  assert(isMaximized === false);
 
   const width = 250;
   const height = 251;
   window.setSize(width, height);
   await BeDuration.wait(250); // wait for new size to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  for (let i = 0; i < 20 && (sizeAndPos?.width !== width || sizeAndPos?.height !== height); ++i) {
+    // Sometimes 250ms isn't enough, so keep trying for an additional 1 second (50ms * 20)
+    await BeDuration.wait(50);
+    sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  }
   assert(sizeAndPos?.width === width);
   assert(sizeAndPos?.height === height);
 
-  const x = 15;
-  const y = 25;
+  const x = 50;
+  const y = 75;
   window.setPosition(x, y);
   await BeDuration.wait(250); // wait for new position to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  for (let i = 0; i < 20 && (sizeAndPos?.x !== x || sizeAndPos?.y !== y); ++i) {
+    // Sometimes 250ms isn't enough, so keep trying for an additional 1 second (50ms * 20)
+    await BeDuration.wait(50);
+    sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  }
   assert(sizeAndPos?.x === x);
   assert(sizeAndPos?.y === y);
 }

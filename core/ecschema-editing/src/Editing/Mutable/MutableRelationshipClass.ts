@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttribute, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationProperty, RelationshipClass, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, LazyLoadedRelationshipConstraintClass, NavigationProperty, RelationshipClass, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 
 /**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
@@ -10,12 +10,12 @@ import { CustomAttribute, EntityClass, LazyLoadedRelationshipConstraintClass, Mi
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
-  public abstract override set multiplicity(multiplicity: RelationshipMultiplicity);
-  public abstract override set polymorphic(polymorphic: boolean);
-  public abstract override set roleLabel(roleLabel: string | undefined);
-  public abstract override set relationshipEnd(relationshipEnd: RelationshipEnd) ;
-  public abstract override set abstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined);
-  public abstract override removeClass(constraint: EntityClass | Mixin | RelationshipClass): void;
+  public abstract override removeClass(constraint: LazyLoadedRelationshipConstraintClass): void;
+  public abstract override setRoleLabel(roleLabel: string | undefined): void;
+  public abstract override setRelationshipEnd(relationshipEnd: RelationshipEnd): void;
+  public abstract override setPolymorphic(polymorphic: boolean): void;
+  public abstract override setMultiplicity(multiplicity: RelationshipMultiplicity): void;
+  public abstract override setAbstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined): void;
 }
 
 /**

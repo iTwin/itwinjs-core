@@ -15,9 +15,10 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../../Viewport";
 import { GltfWrapMode } from "../../common/gltf/GltfSchema";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
-  RealityTile, RealityTileContent, RealityTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, ProduceGeometryOption, readPointCloudTileContent,
+  RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "../../tile/internal";
+import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
@@ -32,7 +33,7 @@ export abstract class RealityTileLoader {
   public readonly preloadRealityParentDepth: number;
   public readonly preloadRealityParentSkip: number;
 
-  public constructor(private _produceGeometry?: boolean) {
+  public constructor(private _produceGeometry?: ProduceGeometryOption) {
     this.preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
     this.preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
   }
@@ -66,7 +67,7 @@ export abstract class RealityTileLoader {
     const blob = data;
     const streamBuffer = ByteStream.fromUint8Array(blob);
     const realityTile = tile as RealityTile;
-    return this._produceGeometry ? this.loadGeometryFromStream(realityTile, streamBuffer, system) : this.loadGraphicsFromStream(realityTile, streamBuffer, system, isCanceled);
+    return (this._produceGeometry && this._produceGeometry !== "no") ? this.loadGeometryFromStream(realityTile, streamBuffer, system) : this.loadGraphicsFromStream(realityTile, streamBuffer, system, isCanceled);
   }
 
   private _getFormat(streamBuffer: ByteStream) {
@@ -79,15 +80,60 @@ export abstract class RealityTileLoader {
 
   public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
-    if (format !== TileFormat.B3dm)
+    if (format !== TileFormat.B3dm && format !== TileFormat.Gltf) {
       return {};
+    }
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
-    const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
-    if (reader)
-      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+    let reader: GltfReader | undefined;
 
-    return { geometry: reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform) };
+    // Create final transform from tree's iModelTransform and transformToRoot
+    let transform = tile.tree.iModelTransform;
+    if (tile.transformToRoot) {
+      transform = transform.multiplyTransformTransform(tile.transformToRoot);
+    }
+
+    switch (format) {
+      case TileFormat.Gltf:
+        const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, tile.tree.baseUrl);
+
+        if (props) {
+          reader = new GltfGraphicsReader(props, {
+            iModel,
+            gltf: props.glTF,
+            contentRange: tile.contentRange,
+            transform: tile.transformToRoot,
+            hasChildren: !tile.isLeaf,
+            pickableOptions: { id: modelId },
+            idMap: this.getBatchIdMap()
+          });
+        }
+        break;
+      case TileFormat.B3dm:
+        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
+        if (reader)
+          reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+        break;
+    }
+    const geom = await reader?.readGltfAndCreateGeometry(transform);
+
+    // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
+    // xForm is defined in root tile CRS, while geom is defined in iModel CRS
+    const xForm = tile.reprojectionTransform;
+
+    if (tile.tree.reprojectGeometry && geom?.polyfaces?.length && xForm) {
+      // Transform from iModel/Db CRS -> root tile CRS
+      const dbToRoot = tile.tree.iModelTransform.inverse();
+
+      if (dbToRoot) {
+        // Conjugate xForm to apply it to polyfaces in iModel CRS:
+        // dbToRoot converts to root tile CRS, xForm applies reprojection, iModelTransform converts back
+        const polyfaceReprojectionTransform = tile.tree.iModelTransform.multiplyTransformTransform(xForm).multiplyTransformTransform(dbToRoot);
+        const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(polyfaceReprojectionTransform));
+        return { geometry: { polyfaces } };
+      }
+    }
+    return { geometry: geom };
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
@@ -97,6 +143,14 @@ export abstract class RealityTileLoader {
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     let reader: GltfReader | ImdlReader | undefined;
+
+    const ecefTransform = tile.tree.iModel.isGeoLocated ? tile.tree.iModel.getEcefTransform() : Transform.createIdentity();
+    const tileData: LayerTileData = {
+      ecefTransform,
+      range: tile.range,
+      layerClassifiers: tile.tree.layerHandler?.layerClassifiers,
+    };
+
     switch (format) {
       case TileFormat.IModel:
         reader = ImdlReader.create({
@@ -120,17 +174,20 @@ export abstract class RealityTileLoader {
           if (!tile.transformToRoot && rtcCenter)
             xform = Transform.createTranslation(rtcCenter);
           else {
+            if (undefined === tile.transformToRoot) {
+              throw new Error("RealityTileLoader.loadGraphicsFromStream: tile.transformToRoot is undefined");
+            }
             if (rtcCenter)
-              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
+              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot.origin), tile.transformToRoot.matrix);
             else
-              xform = tile.transformToRoot!;
+              xform = tile.transformToRoot;
           }
           graphic = system.createBranch(transformBranch, xform);
         }
 
         return { graphic };
       case TileFormat.B3dm:
-        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
+        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices, tileData);
         if (reader) {
           // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
           // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
@@ -140,10 +197,10 @@ export abstract class RealityTileLoader {
 
         break;
       case TileFormat.I3dm:
-        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
+        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices, tileData);
         break;
       case TileFormat.Gltf:
-        const tree = tile.tree as RealityTileTree;
+        const tree = tile.tree;
         const baseUrl = tree.baseUrl;
         const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, baseUrl);
         if (props) {
@@ -155,6 +212,7 @@ export abstract class RealityTileLoader {
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
             idMap: this.getBatchIdMap(),
+            tileData
           });
         }
         break;

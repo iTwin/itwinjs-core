@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
-import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
-import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
-import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery.js";
+import { ArcGisFeatureReader } from "./ArcGisFeatureReader.js";
+import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse.js";
+import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader.js";
+import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader.js";
+import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer.js";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology.js";
 
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
-import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
-import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
-import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**

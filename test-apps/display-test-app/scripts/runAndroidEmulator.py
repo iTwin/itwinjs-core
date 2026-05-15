@@ -232,7 +232,7 @@ def wait_for_first_render(wait_minutes: float) -> bool:
     log('Waiting for first render to finish...')
     start_time = time.time()
     while True:
-        result = subprocess.run([env.adb, '-e', 'logcat', '-d'], capture_output=True, text=True)
+        result = subprocess.run([env.adb, '-e', 'logcat', '-d'], capture_output=True, encoding='utf-8', errors='replace')
         if result.stdout.find('com.bentley.display_test_app: First render finished.') != -1:
             log('Success!')
             return True

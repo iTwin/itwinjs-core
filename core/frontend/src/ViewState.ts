@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, BeEvent, dispose, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, expectDefined, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
@@ -15,7 +15,7 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
   HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
-  ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
+  ModelClipGroups, Npc, RenderSchedule, resolveNavPropId, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -43,6 +43,24 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _scheduleScriptReference } from "./common/internal/Symbols";
+
+/** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
+ * display metadata such as its name and description.
+ * @see [[ViewState.getRealityModelTreeRefs]]
+ * @beta
+ */
+export interface ViewRealityModel {
+  /** The tile tree reference used for rendering, hit testing, and geometry collection. */
+  readonly treeRef: TileTreeReference;
+  /** Display name of the reality model, if available. For persistent reality models this comes from the
+   * [[ModelState]]; for context reality models, from the [[ContextRealityModelState]].
+   */
+  readonly name: string;
+  /** A description of the reality model suitable for display in a user interface, if available.
+   * Only context reality models provide a description; for persistent reality models this is always `undefined`.
+   */
+  readonly description: string | undefined;
+}
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -351,8 +369,15 @@ export abstract class ViewState extends ElementState {
   /** Convert to JSON representation. */
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
-    json.categorySelectorId = this.categorySelector.id;
-    json.displayStyleId = this.displayStyle.id;
+
+    json.categorySelector = { id: this.categorySelector.id };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.categorySelectorId = this.categorySelector.id; // for backward compatibility
+
+    json.displayStyle = { id: this.displayStyle.id };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.displayStyleId = this.displayStyle.id; // for backward compatibility
+
     json.isPrivate = this.isPrivate;
     json.description = this.description;
     return json;
@@ -411,7 +436,7 @@ export abstract class ViewState extends ElementState {
       }
     }
 
-  return true;
+    return true;
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
@@ -515,7 +540,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function against each [[TileTreeReference]] associated with this view.
    * This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
    * @note This method is inefficient (iteration cannot be aborted) and awkward (callback cannot be async nor return a value). Prefer to iterate using [[getTileTreeRefs]].
-   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this.getModelTreeRefs()) {
@@ -527,9 +552,41 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /** Iterate all [[TileTreeReference]]s associated with this view.
+   * This is a superset of [[getRealityModelTreeRefs]], it includes non-reality models as well.
+   * @see [[getRealityModelTreeRefs]] for only reality model tile tree references.
+   */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.getModelTreeRefs();
-    yield * this.displayStyle.getTileTreeRefs();
+    yield* this.getModelTreeRefs();
+    yield* this.displayStyle.getTileTreeRefs();
+  }
+
+  /** Iterate the reality models in this view, including both context reality models attached to the
+   * [[DisplayStyleState]] and persistent reality models. Each yielded [[ViewRealityModel]] provides the
+   * [[TileTreeReference]] along with a display name and description when available.
+   *
+   * Context reality models that are marked invisible are excluded. Persistent reality models whose
+   * tile trees have not yet loaded are also excluded.
+   * @see [[DisplayStyleState.realityModels]] for context reality models only.
+   * @see [[getTileTreeRefs]] for all tile tree references in this view.
+   * @beta
+   */
+  public * getRealityModelTreeRefs(): Iterable<ViewRealityModel> {
+    // Yield visible context reality models from the display style.
+    for (const model of this.displayStyle.realityModels) {
+      if (!model.invisible)
+        yield { treeRef: model.treeRef, name: model.name, description: model.description };
+    }
+
+    // Yield persistent reality models (e.g., ScalableMeshModel) from the model selector.
+    for (const ref of this.getModelTreeRefs()) {
+      const modelId = ref.treeOwner.tileTree?.modelId;
+      if (modelId !== undefined) {
+        const loadedModel = this.iModel.models.getLoaded(modelId);
+        if (loadedModel?.asSpatialModel?.isRealityModel)
+          yield { treeRef: ref, name: loadedModel.name, description: undefined };
+      }
+    }
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -715,7 +772,7 @@ export abstract class ViewState extends ElementState {
   }
 
   public calculateFocusCorners() {
-    const map = this.computeWorldToNpc().map!;
+    const map = expectDefined(this.computeWorldToNpc().map);
     const focusNpcZ = Geometry.clamp(map.transform0.multiplyPoint3dQuietNormalize(this.getTargetPoint()).z, 0, 1.0);
     const pts = [new Point3d(0.0, 0.0, focusNpcZ), new Point3d(1.0, 0.0, focusNpcZ), new Point3d(0.0, 1.0, focusNpcZ), new Point3d(1.0, 1.0, focusNpcZ)];
     map.transform1.multiplyPoint3dArrayQuietNormalize(pts);
@@ -1357,6 +1414,8 @@ export abstract class ViewState extends ElementState {
     this._unregisterCategorySelectorListeners.push(cats.onAdded.addListener(event));
     this._unregisterCategorySelectorListeners.push(cats.onDeleted.addListener(event));
     this._unregisterCategorySelectorListeners.push(cats.onCleared.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onBatchAdded.addListener(event));
+    this._unregisterCategorySelectorListeners.push(cats.onBatchDeleted.addListener(event));
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
@@ -1494,7 +1553,7 @@ export abstract class ViewState3d extends ViewState {
     val.cameraOn = this._cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
-    val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
+    val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)?.toJSON();
     val.camera = this.camera;
     return val;
   }
@@ -1587,12 +1646,12 @@ export abstract class ViewState3d extends ViewState {
     const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
-    const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
+    const targetPointCartographic = location !== undefined ? location.center.clone() : expectDefined(this.rootToCartographic(targetPoint));
     targetPointCartographic.height = 0.0;
-    targetPoint = this.cartographicToRoot(targetPointCartographic)!;
+    targetPoint = expectDefined(this.cartographicToRoot(targetPointCartographic));
 
     targetPointCartographic.height = eyeHeight;
-    const lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+    const lEyePoint = expectDefined(this.cartographicToRoot(targetPointCartographic));
     return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
@@ -1614,26 +1673,26 @@ export abstract class ViewState3d extends ViewState {
     const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
-    const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
+    const targetPointCartographic = location !== undefined ? location.center.clone() : expectDefined(this.rootToCartographic(targetPoint));
     targetPointCartographic.height = 0.0;
-    targetPoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    targetPoint = expectDefined(await this.cartographicToRootFromGcs(targetPointCartographic));
 
     targetPointCartographic.height = eyeHeight;
-    const lEyePoint = (await this.cartographicToRootFromGcs(targetPointCartographic))!;
+    const lEyePoint = expectDefined(await this.cartographicToRootFromGcs(targetPointCartographic));
     return this.finishLookAtGlobalLocation(targetPointCartographic, origEyePoint, lEyePoint, targetPoint, pitchAngleRadians);
   }
 
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, eyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
     targetPointCartographic.latitude += .001;
-    const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
-    let upVector = targetPoint.unitVectorTo(northOfEyePoint)!;
+    const northOfEyePoint = expectDefined(this.cartographicToRoot(targetPointCartographic));
+    let upVector = expectDefined(targetPoint.unitVectorTo(northOfEyePoint));
     if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 
     if (0 !== pitchAngleRadians) {
       const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, eyePoint));
       if (undefined !== pitchAxis) {
-        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians))!;
+        const pitchMatrix = expectDefined(Matrix3d.createRotationAroundVector(pitchAxis, Angle.createRadians(pitchAngleRadians)));
         const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
         eyePoint = pitchTransform.multiplyPoint3d(eyePoint);
         pitchMatrix.multiplyVector(upVector, upVector);
@@ -2175,13 +2234,14 @@ export abstract class ViewState3d extends ViewState {
     if (undefined !== vp) {
       const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
       const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+      assert(undefined !== xyPlane);
 
       // first determine whether the ground plane is displayed in the view
       const worldFrust = vp.getFrustum();
       for (const point of worldFrust.points) {
         viewRay.origin = point;   // We never modify the reference
         const xyzPoint = Point3d.create();
-        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        const param = viewRay.intersectionWithPlane(xyPlane, xyzPoint);
         if (param === undefined)
           return extents;   // View does not show ground plane
       }
@@ -2341,7 +2401,10 @@ export abstract class ViewState2d extends ViewState {
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
-    this._baseModelId = Id64.fromJSON(props.baseModelId);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
+
     this._details = new ViewDetails(this.jsonProperties);
   }
 
@@ -2350,7 +2413,11 @@ export abstract class ViewState2d extends ViewState {
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
-    val.baseModelId = this.baseModelId;
+    val.baseModel = { id: this.baseModelId };
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    val.baseModelId = this.baseModelId; // for backward compatibility
+
     return val;
   }
 
@@ -2426,7 +2493,13 @@ export abstract class ViewState2d extends ViewState {
   public allow3dManipulations(): boolean { return false; }
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y, Frustum2d.minimumZExtents.low); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y, Frustum2d.minimumZExtents.length()); }
-  public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+
+  public getRotation() {
+    const rot = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle);
+    assert(undefined !== rot, "rotation around unit vector always defined");
+    return rot;
+  }
+
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: Matrix3d) {

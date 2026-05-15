@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
+import { ResolvablePromise } from "@itwin/presentation-common/test-utils";
+import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator.js";
 
 describe("StreamedResponseGenerator", () => {
   /** Creates a response with the total item count and an array of items for the requested page. */

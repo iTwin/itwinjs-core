@@ -51,10 +51,12 @@ export class ContextRealityModelState extends ContextRealityModel {
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
         getDisplaySettings: () => this.displaySettings,
+        getBackgroundBase: () => displayStyle.settings.mapImagery.backgroundBase,
+        getBackgroundLayers: () => displayStyle.settings.mapImagery.backgroundLayers,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
-        orbitGtBlob: props.orbitGtBlob!,
+        orbitGtBlob: props.orbitGtBlob,
         rdSourceKey: this.rdSourceKey,
         name: props.name,
         classifiers: this.classifiers,
@@ -69,6 +71,11 @@ export class ContextRealityModelState extends ContextRealityModel {
 
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
+
+  /** @internal */
+  public detachLayerListeners(): void {
+    this._treeRef.detachLayerListeners();
+  }
 
   /** The set of available [[ActiveSpatialClassifier]]s that can be used to classify the reality model. */
   public override get classifiers(): SpatialClassifiersState {

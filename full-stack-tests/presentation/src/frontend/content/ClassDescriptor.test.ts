@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { ContentSpecificationTypes, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ECClassHierarchy } from "../../ECClasHierarchy";
-import { describeContentTestSuite, filterFieldsByClass, getFieldLabels } from "./Utils";
+import { ECClassHierarchy } from "../../ECClasHierarchy.js";
+import { describeContentTestSuite, filterFieldsByClass, getFieldLabels } from "./Utils.js";
 
 describeContentTestSuite("Class descriptor", ({ getDefaultSuiteIModel }) => {
   it("creates base class descriptor usable for subclasses", async () => {

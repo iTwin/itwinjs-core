@@ -14,9 +14,9 @@ import {
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { collect, getFieldByLabel } from "../../Utils";
-import { describeContentTestSuite, getDisplayValue } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { collect, getFieldByLabel } from "../../Utils.js";
+import { describeContentTestSuite, getDisplayValue } from "./Utils.js";
 
 describeContentTestSuite("Array properties", () => {
   const ruleset: Ruleset = {
@@ -56,7 +56,7 @@ describeContentTestSuite("Array properties", () => {
     const content = await getContent(imodel, elementKey);
     const field = getFieldByLabel(content.descriptor.fields, "Prop");
     const displayValue = getDisplayValue(content, [field]);
-    expect(displayValue).to.deep.eq([undefined, "test"]);
+    expect(displayValue).to.deep.eq(["", "test"]);
   });
 
   async function getContent(imodel: IModelConnection, key: InstanceKey): Promise<Content> {

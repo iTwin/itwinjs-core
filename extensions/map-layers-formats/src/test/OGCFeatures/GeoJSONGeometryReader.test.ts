@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import * as chai from "chai";
-import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
-import { MockGeometryRenderer } from "./Mocks";
 import { deflateCoordinates } from "@itwin/core-frontend";
+import chai from "chai";
+import sinon from "sinon";
+import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader.js";
+import { MockGeometryRenderer } from "./Mocks.js";
+
 describe("GeoJSONGeometryReader", () => {
 
   const sandbox = sinon.createSandbox();

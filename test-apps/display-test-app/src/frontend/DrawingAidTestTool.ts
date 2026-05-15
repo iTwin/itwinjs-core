@@ -5,8 +5,9 @@
 
 import { Angle, IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, GeometryStreamProps } from "@itwin/core-common";
-import { AccuDrawChangeModeTool, AccuDrawHintBuilder, AccuDrawRotateAxesTool, AccuDrawRotateCycleTool, AccuDrawRotateElementTool, AccuDrawRotateFrontTool, AccuDrawRotatePerpendicularTool, AccuDrawRotateSideTool, AccuDrawRotateTopTool, AccuDrawRotateViewTool, AccuDrawSetLockAngleTool, AccuDrawSetLockDistanceTool, AccuDrawSetLockIndexTool, AccuDrawSetLockSmartTool, AccuDrawSetLockXTool, AccuDrawSetLockYTool, AccuDrawSetLockZTool, AccuDrawSetOriginTool, AccuDrawShortcuts, AccuDrawSuspendToggleTool, AccuDrawViewportUI, BeButtonEvent, DecorateContext, DefineACSByElementTool, DefineACSByPointsTool, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, ScreenViewport, SnapStatus, ToolType } from "@itwin/core-frontend";
+import { AccuDrawChangeModeTool, AccuDrawHintBuilder, AccuDrawRotateAxesTool, AccuDrawRotateCycleTool, AccuDrawRotateElementTool, AccuDrawRotateFrontTool, AccuDrawRotateSideTool, AccuDrawRotateTopTool, AccuDrawRotateViewTool, AccuDrawSetLockAngleTool, AccuDrawSetLockDistanceTool, AccuDrawSetLockIndexTool, AccuDrawSetLockSmartTool, AccuDrawSetLockXTool, AccuDrawSetLockYTool, AccuDrawSetLockZTool, AccuDrawSetOriginTool, AccuDrawShortcuts, AccuDrawSuspendToggleTool, AccuDrawViewportUI, BeButtonEvent, DecorateContext, DefineACSByElementTool, DefineACSByPointsTool, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, ScreenViewport, SnapMode, SnapStatus, ToolType } from "@itwin/core-frontend";
 import { PlaceLineStringTool } from "./EditingTools";
+import { DisplayTestApp } from "./App";
 
 function toggleUILayout(): void {
   const accuDraw = IModelApp.accuDraw;
@@ -265,7 +266,6 @@ export class DisplayTestAppShortcutsUI {
       this.addShortcutForTool("C", AccuDrawRotateCycleTool, shortcutsForR);
       this.addShortcutForTool("Q", AccuDrawRotateAxesTool, shortcutsForR);
       this.addShortcutForTool("E", AccuDrawRotateElementTool, shortcutsForR);
-      this.addShortcutForTool("P", AccuDrawRotatePerpendicularTool, shortcutsForR);
     }
 
     const shortcutsForQ = this.addShortcutSubMenu("Q", this._shortcuts);
@@ -280,6 +280,7 @@ export class DisplayTestAppShortcutsUI {
       this.addShortcut("R", "Toggle Round Off", () => { toggleRoundOff(); }, shortcutsForQ);
       this.addShortcut("L", "Place Line String", () => { void IModelApp.tools.run(PlaceLineStringTool.toolId); }, shortcutsForQ);
       this.addShortcut("C", "Clear Saved Values", () => { AccuDrawShortcuts.clearSavedValues(); }, shortcutsForQ);
+      this.addShortcut("P", "Snap Perpendicular", () => { DisplayTestApp.setSnapModeOverride(SnapMode.PerpendicularPoint); }, shortcutsForQ);
     }
   }
 

@@ -2,14 +2,15 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager } from "@itwin/presentation-frontend";
-import { initialize, resetBackend, terminate } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, resetBackend, terminate } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
 
 describe("Hierarchies", () => {
   before(async () => {

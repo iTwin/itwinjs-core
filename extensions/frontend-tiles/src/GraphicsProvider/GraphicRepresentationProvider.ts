@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
-import { loggerCategory } from "../LoggerCategory";
 import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
+import { loggerCategory } from "../LoggerCategory.js";
 
 /** The expected format of the Graphic Representation
  * @beta
@@ -171,7 +171,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       const response = await fetch(url, { headers });
       result = await response.json() as ServiceJsonResponses;
     } catch (err) {
-      Logger.logException(loggerCategory, err);
+      Logger.logError(loggerCategory, err);
       Logger.logError(loggerCategory, `Failed loading Graphics Data for Source ${args.dataSource.id}`);
       break;
     }

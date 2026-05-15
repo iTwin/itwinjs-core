@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, WritableXYAndZ, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode, LinePixels } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
@@ -57,7 +57,7 @@ function accumulateFrustumPlaneDepthRange(frustum: Frustum, plane: Plane3dByOrig
 /** @internal */
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d {
   const eyePoint = frustum.getEyePoint(scratchEyePoint);
-  const viewRotation = frustum.getRotation(scratchViewRotation)!;
+  const viewRotation = expectDefined(frustum.getRotation(scratchViewRotation));
   const intersectRange = Range3d.createNull();
   accumulateFrustumPlaneDepthRange(frustum, plane, viewRotation, intersectRange, eyePoint);
 
@@ -161,11 +161,11 @@ export class BackgroundMapGeometry {
       result = Cartographic.createZero();
 
     if (this.globeMode === GlobeMode.Plane) {
-      const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
+      const mercatorFraction = expectDefined(this._mercatorFractionToDb.multiplyInversePoint3d(db));
       return this._mercatorTilingScheme.fractionToCartographic(mercatorFraction.x, mercatorFraction.y, result, mercatorFraction.z);
     } else {
-      const ecef = this._ecefToDb.multiplyInversePoint3d(db)!;
-      return Cartographic.fromEcef(ecef, result)!;
+      const ecef = expectDefined(this._ecefToDb.multiplyInversePoint3d(db));
+      return expectDefined(Cartographic.fromEcef(ecef, result));
     }
   }
 
@@ -237,7 +237,7 @@ export class BackgroundMapGeometry {
   }
 
   public getPlane(offset = 0) {
-    return Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this._bimElevationBias + offset), Vector3d.create(0, 0, 1))!;
+    return expectDefined(Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this._bimElevationBias + offset), Vector3d.create(0, 0, 1)));
   }
 
   public getRayIntersection(ray: Ray3d, positiveOnly: boolean): Ray3d | undefined {
@@ -283,7 +283,7 @@ export class BackgroundMapGeometry {
         return undefined;
 
       const distance = ellipsoid.radiansToPoint(projected.longitudeRadians, projected.latitudeRadians).distance(point);
-      const ellipsePoint = ellipsoid.transformRef.multiplyInversePoint3d(point, BackgroundMapGeometry._scratchPoint)!;
+      const ellipsePoint = expectDefined(ellipsoid.transformRef.multiplyInversePoint3d(point, BackgroundMapGeometry._scratchPoint));
       return ellipsePoint.magnitude() < 1 ? -distance : distance;
     } else {
       const plane = this.geometry as Plane3dByOriginAndUnitNormal;
@@ -325,7 +325,14 @@ export class BackgroundMapGeometry {
 
       for (const radiusOffset of radiusOffsets) {
         const ellipsoid = this.getEarthEllipsoid(radiusOffset);
-        const isInside = eyePoint && ellipsoid.worldToLocal(eyePoint)!.magnitude() < 1.0;
+        const eyeLocal = eyePoint ? ellipsoid.worldToLocal(eyePoint) : undefined;
+        if (eyePoint && undefined === eyeLocal) {
+          // If the globe transform cannot map the eye point into ellipsoid-local
+          // space, treat the globe as unavailable here and let the caller fall
+          // back to its extents-based depth fitting.
+          return Range1d.createNull();
+        }
+        const isInside = eyeLocal !== undefined && eyeLocal.magnitude() < 1.0;
         const center = ellipsoid.localToWorld(scratchZeroPoint, scratchCenterPoint);
         const clipPlaneCount = clipPlanes.planes.length;
 
@@ -355,9 +362,22 @@ export class BackgroundMapGeometry {
               if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
-            clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
+            // The silhouette arc is the horizon between the visible and hidden
+            // halves of the globe. Its perpendicular vector is the normal of the
+            // clip plane that keeps us on the visible side. If that plane cannot
+            // be constructed, fall back to a view-aligned plane through the
+            // ellipsoid center instead of pushing an invalid entry.
+            const silhouettePlane =
+              ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))
+              ?? ClipPlane.createNormalAndPoint(viewZ, center);
+            if (undefined === silhouettePlane)
+              return Range1d.createNull();
+            clipPlanes.planes.push(silhouettePlane);
           } else {
-            clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
+            const centerPlane = ClipPlane.createNormalAndPoint(viewZ, center);
+            if (undefined === centerPlane)
+              return Range1d.createNull();
+            clipPlanes.planes.push(centerPlane);
           }
         }
         if (!isInside || radiusOffset === radiusOffsets[0]) {
@@ -416,11 +436,11 @@ export class BackgroundMapGeometry {
     if (this.geometry instanceof Ellipsoid) {
       const ellipsoid = this.geometry;
       const clipPlanes = frustum.getRangePlanes(false, false, 0);
-      const viewRotation = frustum.getRotation()!;
+      const viewRotation = expectDefined(frustum.getRotation());
       const eyePoint = frustum.getEyePoint(scratchEyePoint);
       const viewZ = viewRotation.getRow(2);
       const eyePoint4d = eyePoint ? Point4d.createFromPointAndWeight(eyePoint, 1) : Point4d.createFromPointAndWeight(viewZ, 0);
-      const isInside = eyePoint && ellipsoid.worldToLocal(eyePoint)!.magnitude() < 1.0;
+      const isInside = eyePoint && expectDefined(ellipsoid.worldToLocal(eyePoint)).magnitude() < 1.0;
       const center = ellipsoid.localToWorld(scratchZeroPoint, scratchCenterPoint);
       const cartoRange = this.cartesianTransitionRange;
 
@@ -430,9 +450,9 @@ export class BackgroundMapGeometry {
           silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
           if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
             scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
-          clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
+          clipPlanes.planes.push(expectDefined(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))));
         } else {
-          clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
+          clipPlanes.planes.push(expectDefined(ClipPlane.createNormalAndPoint(viewZ, center)));
         }
 
         const ellipsoidColor = ColorDef.create(ColorByName.yellow);
@@ -507,6 +527,5 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
     return undefined;
   }
 
-  return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
+  return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse();
 }
-

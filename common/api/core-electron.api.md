@@ -16,7 +16,7 @@ import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import type { WebPreferences } from 'electron';
 
-// @beta
+// @beta @deprecated
 export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 
 // @beta

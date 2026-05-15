@@ -104,11 +104,11 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public [Symbol.dispose](): void { }
   /** @internal */
-  public reset(): void { }
+  public reset(_realityMapLayerChanged?: boolean): void { }
   /** @internal */
   public abstract changeScene(scene: Scene): void;
   /** @internal */
-  public abstract changeDynamics(dynamics?: GraphicList): void;
+  public abstract changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined): void;
   /** @internal */
   public abstract changeDecorations(decorations: Decorations): void;
   /** @internal */

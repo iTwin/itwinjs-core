@@ -1,0 +1,8 @@
+{
+  "spec": [
+  "lib/esm/test/**/*.test.js"
+],
+"reporter-options": [
+  "maxDiffSize=0"
+]
+}

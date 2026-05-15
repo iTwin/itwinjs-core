@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
-import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
-import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
+import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore, withEditTxn } from "@itwin/core-backend";
 import { IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";
@@ -44,15 +44,11 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async restartIModelHost(): Promise<void> {
     await IModelHost.shutdown();
-    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache"), implicitWriteEnforcement: "throw" });
   }
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
     return JSON.parse(IModelDb.findByKey(tokenProps.key)[_nativeDb].executeTest(testName, JSON.stringify(params)));
-  }
-
-  public async purgeCheckpoints(iModelId: string): Promise<void> {
-    IModelJsFs.removeSync(V1CheckpointManager.getFolder(iModelId));
   }
 
   public async purgeStorageCache(): Promise<void> {
@@ -79,7 +75,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     await initializeContainer(viewContainer);
     removeViewStore = SnapshotDb.onOpen.addListener((dbName) => {
       const db = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
-      db.views.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType });
+      withEditTxn(db, (txn) => txn.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType }));
       db.close();
     });
     AzuriteTest.userToken = "";
@@ -88,6 +84,16 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async stopViewStore(): Promise<void> {
     removeViewStore?.();
     IModelHost.authorizationClient = saveAuthClient;
+  }
+
+  public async writeTestOutputFile(filePath: string, content: string, appendToFile: boolean): Promise<void> {
+    const dir = path.dirname(filePath);
+    fs.mkdirSync(dir, { recursive: true });
+    if (appendToFile) {
+      fs.appendFileSync(filePath, content);
+    } else {
+      fs.writeFileSync(filePath, content);
+    }
   }
 }
 

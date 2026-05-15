@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveOps } from "../../curve/CurveOps";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -19,9 +19,11 @@ import { Angle } from "../../geometry3d/Angle";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -124,32 +126,71 @@ describe("FrameBuilder", () => {
 
   it("InterpolationCurve", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const builder = new FrameBuilder();
-    for (const points of [
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(0, 1, 0)],
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0),
-      Point3d.create(2, 1, 0)],
-      [Point3d.create(1, 2, -1),
-      Point3d.create(1, 3, 5),
-      Point3d.create(2, 4, 3),
-      Point3d.create(-2, 1, 7)],
-    ]) {
-      builder.clear();
-      const linestring = LineString3d.create(points);
+    const linestrings = [
+      [Point3d.create(), Point3d.create(1), Point3d.create(0, 1)], // xy-planar
+      [Point3d.create(), Point3d.create(1), Point3d.create(1, 1), Point3d.create(2, 1)], // xy-planar
+      [Point3d.create(0.4, 2.8, 5), Point3d.create(0.88, 3.16, 9), Point3d.create(2, 4, 3), Point3d.create(-2, 1, 7)],  // xy-colinear
+    ];
+    for (let i = 0; i < linestrings.length; ++i) {
+      const points = linestrings[i];
       const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({ fitPoints: points }));
+      if (ck.testDefined(curve, "InterpolationCurve3d created")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
+        ck.testUndefined(CurveOps.isColinear(curve), "curve is not colinear");
+        builder.clear();
+        builder.announce(curve);
+        const frameA = builder.getValidatedFrame();
+        builder.clear();
+        builder.announce(curve?.proxyCurve);
+        const frameB = builder.getValidatedFrame();
+        // FrameBuilder for InterpolationCurve3d now uses Frenet frame at 0.
+        if (ck.testDefined(frameA, "frame computed from InterpolationCurve3d")) {
+          if (ck.testDefined(frameB, "frame computed from B-spline curve proxy")) {
+            ck.testTransform(frameA, frameB, "Frame from interpolation curve vs. frame from proxy");
+            const normal = RegionOps.centroidAreaNormal(Loop.createPolygon(points))?.direction.normalize();
+            if (ck.testDefined(normal, "normal from points")) {
+              ck.testTrue(normal.isParallelTo(frameA.matrix.columnZ(), true), "frame normal matches points normal");
+              const localToWorld = CurveOps.isPlanar(curve);
+              if (ck.testDefined(localToWorld, "curve is planar")) {
+                ck.testTrue(normal.isParallelTo(localToWorld.matrix.columnZ(), true), "isPlanar returns expected normal");
+                if (i < 2)
+                  ck.testTrue(normal.isParallelTo(Vector3d.unitZ(), true), "isPlanar returns 00+-1 for xy-planar curve");
+              }
+            }
+          }
+        }
+        if (i === 2) {
+          const ray = CurveOps.isColinear(curve, { xyColinear: true });
+          if (ck.testDefined(ray, "last curve is xy-colinear")) {
+            const overlap = SmallSystem.lineSegmentXYUVOverlapUnbounded(points[0], points[1].minus(points[0]), ray.origin, ray.direction);
+            ck.testDefined(overlap, "last curve is xy-colinear in the expected direction");
+          }
+        }
+      }
+
+      // tests for variant 3D format
       builder.clear();
-      builder.announce(linestring);
-      const frameA = builder.getValidatedFrame();
+      builder.announce(points);
+      const frameC = builder.getValidatedFrame();
       builder.clear();
-      builder.announce(curve);
-      const frameB = builder.getValidatedFrame();
-      if (ck.testDefined(frameA) && ck.testDefined(frameB))
-        ck.testTransform(frameA, frameB, "Frame from linestring versus interpolation curve");
+      const pointsAs3ColumnNumberArray = Point3dArray.cloneDeepJSONNumberArrays(points);
+      builder.announce(pointsAs3ColumnNumberArray);
+      const frameD = builder.getValidatedFrame();
+      if (ck.testDefined(frameC, "valid frame from Point3d[]") && ck.testDefined(frameD, "valid frame from 3-column number[][]"))
+        ck.testTransform(frameC, frameD, "variant 3d point format yields same builder frame");
+
+      // tests for variant 2D format (needs default normal vector for xy-colinear case)
+      const defaultNormal = Vector3d.unitZ();
+      const pointsAs2ColumnNumberArray = pointsAs3ColumnNumberArray.map((p: number[]) => [p[0], p[1]]);
+      const frameE = FrameBuilder.createRightHandedFrame(defaultNormal, pointsAs2ColumnNumberArray);
+      const projectedPointsAs3dColumnNumberArray = pointsAs3ColumnNumberArray.map((p: number[]) => [p[0], p[1], 0]);
+      const frameF = FrameBuilder.createRightHandedFrame(Vector3d.unitZ(), projectedPointsAs3dColumnNumberArray);
+      if (ck.testDefined(frameE, "valid frame from 2-column number[][]") && ck.testDefined(frameF, "valid frame from projected 3-column number[][]"))
+        ck.testTransform(frameE, frameF, "variant 2d point format yields same builder frame");
     }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "InterpolationCurve");
     expect(ck.getNumErrors()).toBe(0);
   });
 

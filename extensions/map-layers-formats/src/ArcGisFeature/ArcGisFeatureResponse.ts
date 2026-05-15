@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats } from "./ArcGisFeatureQuery";
-import { esriPBuffer } from "./esriPBuffer.gen";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats } from "./ArcGisFeatureQuery.js";
+import { esriPBuffer } from "./esriPBuffer.gen.js";
 
 /** @internal */
 export interface ArcGisResponseData {

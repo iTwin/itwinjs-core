@@ -20,6 +20,32 @@ Array [
             "type": "primitive",
             "value": "Properties_60InstancesWithUrl2",
           },
+          "Source Information": Object {
+            "items": Object {
+              "Model Source": Object {
+                "items": Object {
+                  "Repository Link": Object {
+                    "type": "array",
+                    "valueType": "struct",
+                    "values": Array [
+                      Object {
+                        "Name": Object {
+                          "type": "primitive",
+                          "value": "Properties_60InstancesWithUrl2.dgn",
+                        },
+                        "Path": Object {
+                          "type": "primitive",
+                          "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+                        },
+                      },
+                    ],
+                  },
+                },
+                "type": "category",
+              },
+            },
+            "type": "category",
+          },
           "User Label": Object {
             "type": "primitive",
             "value": "",
@@ -190,6 +216,32 @@ Array [
           "Model": Object {
             "type": "primitive",
             "value": "Properties_60InstancesWithUrl2",
+          },
+          "Source Information": Object {
+            "items": Object {
+              "Model Source": Object {
+                "items": Object {
+                  "Repository Link": Object {
+                    "type": "array",
+                    "valueType": "struct",
+                    "values": Array [
+                      Object {
+                        "Name": Object {
+                          "type": "primitive",
+                          "value": "Properties_60InstancesWithUrl2.dgn",
+                        },
+                        "Path": Object {
+                          "type": "primitive",
+                          "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+                        },
+                      },
+                    ],
+                  },
+                },
+                "type": "category",
+              },
+            },
+            "type": "category",
           },
           "User Label": Object {
             "type": "primitive",
@@ -997,6 +1049,32 @@ Array [
             "type": "primitive",
             "value": "Properties_60InstancesWithUrl2",
           },
+          "Source Information": Object {
+            "items": Object {
+              "Model Source": Object {
+                "items": Object {
+                  "Repository Link": Object {
+                    "type": "array",
+                    "valueType": "struct",
+                    "values": Array [
+                      Object {
+                        "Name": Object {
+                          "type": "primitive",
+                          "value": "Properties_60InstancesWithUrl2.dgn",
+                        },
+                        "Path": Object {
+                          "type": "primitive",
+                          "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+                        },
+                      },
+                    ],
+                  },
+                },
+                "type": "category",
+              },
+            },
+            "type": "category",
+          },
           "User Label": Object {
             "type": "primitive",
             "value": "",
@@ -1167,6 +1245,32 @@ Array [
           "Model": Object {
             "type": "primitive",
             "value": "Properties_60InstancesWithUrl2",
+          },
+          "Source Information": Object {
+            "items": Object {
+              "Model Source": Object {
+                "items": Object {
+                  "Repository Link": Object {
+                    "type": "array",
+                    "valueType": "struct",
+                    "values": Array [
+                      Object {
+                        "Name": Object {
+                          "type": "primitive",
+                          "value": "Properties_60InstancesWithUrl2.dgn",
+                        },
+                        "Path": Object {
+                          "type": "primitive",
+                          "value": "file:///d|/temp/properties_60instanceswithurl2.dgn",
+                        },
+                      },
+                    ],
+                  },
+                },
+                "type": "category",
+              },
+            },
+            "type": "category",
           },
           "User Label": Object {
             "type": "primitive",

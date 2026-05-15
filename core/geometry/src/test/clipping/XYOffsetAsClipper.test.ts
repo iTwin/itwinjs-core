@@ -27,7 +27,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
 import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";

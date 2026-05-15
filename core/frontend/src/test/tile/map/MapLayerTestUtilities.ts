@@ -15,8 +15,7 @@ export const createFakeTileResponse = (contentType: string, data?: Uint8Array) =
   return (test as Response );
 };
 
-// TODO: Once we've upgraded to TS 5.5 and later, remove the type annotation https://github.com/microsoft/TypeScript/issues/42873#issuecomment-1941449175
-export const fakeTextFetch = (text: string): any => {
+export const fakeTextFetch = (text: string) => {
   return vi.spyOn(globalThis, "fetch").mockResolvedValue({
     text: async () => text,
     ok: true,

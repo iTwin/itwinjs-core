@@ -15,10 +15,11 @@ import {
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
-import { Entity } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _implicitTxn, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -52,6 +53,28 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
   elementProps: Readonly<ElementProps>;
 }
 
+/** Per-model element deletion data used inside [[OnBulkModelEventsArg]].
+ * @beta
+ */
+export interface OnBulkDeletedElementsArg extends OnModelIdArg {
+  /** The Ids of all Elements that were bulk-deleted from this Model instance. */
+  elementIds: Id64String[];
+}
+
+/** Argument for the `Model.onBulkModelEvents` static method.
+ * Passed once per distinct Model ECClass, combining both deleted sub-models and
+ * deleted-elements-by-model into a single callback.
+ * @beta
+ */
+export interface OnBulkModelEventsArg extends OnModelArg {
+  /** Ids of Models of this class that were deleted as sub-models. Present only if any sub-models
+   * of this class were deleted. */
+  deletedModelIds?: Id64String[];
+  /** Per-model lists of element Ids deleted from instances of this Model class. Present only if
+   * any elements were deleted from models of this class. */
+  deletedElementsByModel?: OnBulkDeletedElementsArg[];
+}
+
 /** Argument for the `Model.onXxxElement` static methods that supply the Id of an Element for a Model.
  * @beta
  */
@@ -63,7 +86,7 @@ export interface OnElementInModelIdArg extends OnModelIdArg {
 /** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
  * See [Creating models]($docs/learning/backend/CreateModels.md)
- * @public
+ * @public @preview
  */
 export class Model extends Entity {
   public static override get className(): string { return "Model"; }
@@ -84,6 +107,53 @@ export class Model extends Entity {
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
+  }
+
+  /**
+   * Model custom HandledProps includes 'isPrivate', 'isTemplate', and 'lastMod'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPrivate", source: "Class" },
+    { propertyName: "isTemplate", source: "Class" },
+    { propertyName: "lastMod", source: "Class" },
+  ];
+
+  /**
+   * Model deserializes 'isPrivate', and 'isTemplate', and sets the proper parentModel.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ModelProps {
+    const instance = props.row;
+    const modelProps = super.deserialize(props) as ModelProps;
+    const modeledElementProps = props.iModel.elements.tryGetElementProps(instance.modeledElement.id);
+    if (modeledElementProps) {
+      // ModeledElement may be undefined in the case of root Element
+      modelProps.name = JsonUtils.asString(modeledElementProps.code.value);
+      if (instance.parentModel !== undefined)
+        modelProps.parentModel = instance.parentModel.id;
+      else
+        modelProps.parentModel = modeledElementProps.model;
+    }
+    if (instance.isPrivate === true)
+      modelProps.isPrivate = true;
+    if (instance.isTemplate === true)
+      modelProps.isTemplate = true;
+    return modelProps;
+  }
+
+  /**
+   * Model serializes 'isPrivate', and 'isTemplate'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.isPrivate = props.isPrivate ?? false;
+    inst.isTemplate = props.isTemplate ?? false;
+    return inst;
   }
 
   public override toJSON(): ModelProps {
@@ -131,7 +201,8 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(_arg: OnModelIdArg): void {
+  protected static onUpdated(arg: OnModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
   }
 
   /** Called before a Model is deleted.
@@ -150,7 +221,36 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnModelIdArg): void { }
+  protected static onDeleted(arg: OnModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+    arg.iModel.elements[_cache].deleteWithModel(arg.id);
+  }
+
+  /** Called once per distinct Model ECClass after a bulk element delete operation, combining
+   * both sub-model deletions and element-deletions-by-model into a single callback.
+   *
+   * `arg.deletedModelIds` — present when models of this class were deleted as sub-model roots.
+   * The default implementation calls [[onDeleted]] for each.
+   *
+   * `arg.deletedElementsByModel` — present when elements were deleted from models of this class.
+   * The default implementation calls [[onDeleteElement]] and [[onDeletedElement]] for each element.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the Model class dispatched on.
+   * @beta
+   */
+  protected static onBulkModelEvents(arg: OnBulkModelEventsArg): void {
+    if (arg.deletedModelIds !== undefined)
+      for (const id of arg.deletedModelIds)
+        this.onDeleted({ iModel: arg.iModel, id });
+
+    if (arg.deletedElementsByModel !== undefined)
+      for (const entry of arg.deletedElementsByModel)
+        for (const elementId of entry.elementIds) {
+          this.onDeleteElement({ iModel: arg.iModel, id: entry.id, elementId });
+          this.onDeletedElement({ iModel: arg.iModel, id: entry.id, elementId });
+        }
+  }
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
@@ -165,7 +265,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onInsertedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
 
   /** Called when an Element in an instance of a Model of this class is about to be updated.
    * @note throw an exception to disallow the update
@@ -180,7 +282,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onUpdatedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @note throw an exception to disallow the delete
@@ -195,7 +299,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeletedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
@@ -216,12 +322,41 @@ export class Model extends Entity {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
-  /** Insert this Model in the iModel */
-  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
-  /** Update this Model in the iModel. */
-  public update() { this.iModel.models.updateModel(this.toJSON()); }
-  /** Delete this Model from the iModel. */
-  public delete() { this.iModel.models.deleteModel(this.id); }
+  /**
+   * Insert this Model in the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public insert(txn: EditTxn): Id64String;
+  /**
+   * Insert this Model in the iModel.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Model.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public insert(): Id64String;
+  public insert(txn?: EditTxn) { return this.id = (txn ?? this.iModel[_implicitTxn]).insertModel(this.toJSON()); }
+
+  /**
+   * Update this Model in the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public update(txn: EditTxn): void;
+  /**
+   * Update this Model in the iModel.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Model.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public update(): void;
+  public update(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).updateModel(this.toJSON()); }
+
+  /**
+   * Delete this Model from the iModel using the supplied EditTxn.
+   * @beta
+   */
+  public delete(txn: EditTxn): void;
+  /**
+   * Delete this Model from the iModel.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Model.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public delete(): void;
+  public delete(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).deleteModel(this.id); }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -232,7 +367,7 @@ export class Model extends Entity {
 }
 
 /** A container for persisting geometric elements.
- * @public
+ * @public @preview
  */
 export class GeometricModel extends Model {
   public geometryGuid?: GuidString;
@@ -259,7 +394,7 @@ export class GeometricModel extends Model {
 }
 
 /** A container for persisting 3d geometric elements.
- * @public
+ * @public @preview
  */
 export abstract class GeometricModel3d extends GeometricModel {
   /** If true, then the elements in this GeometricModel3d are expected to be in an XY plane.
@@ -281,6 +416,43 @@ export abstract class GeometricModel3d extends GeometricModel {
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
   }
 
+  /**
+   * GeometricModel3d custom HandledProps includes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPlanProjection", source: "Class" },
+    { propertyName: "isNotSpatiallyLocated", source: "Class" },
+  ];
+
+  /**
+   * GeometricModel3d deserializes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): GeometricModel3dProps {
+    const modelProps = super.deserialize(props) as GeometricModel3dProps;
+    const instance = props.row;
+    if (instance.isNotSpatiallyLocated === true || instance.isTemplate === true)
+      modelProps.isNotSpatiallyLocated = true;
+    if (instance.isPlanProjection === true)
+      modelProps.isPlanProjection = true;
+    return modelProps;
+  }
+
+  /**
+   * GeometricModel3d serializes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: GeometricModel3dProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.isNotSpatiallyLocated = props.isNotSpatiallyLocated ?? false;
+    inst.isPlanProjection = props.isPlanProjection ?? false;
+    return inst;
+  }
+
   public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
     if (this.isNotSpatiallyLocated)
@@ -294,7 +466,7 @@ export abstract class GeometricModel3d extends GeometricModel {
 }
 
 /** A container for persisting 2d geometric elements.
- * @public
+ * @public @preview
  */
 export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
@@ -316,7 +488,7 @@ export abstract class GeometricModel2d extends GeometricModel {
 }
 
 /** A container for persisting 2d graphical elements.
- * @public
+ * @public @preview
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
   public static override get className(): string { return "GraphicalModel2d"; }
@@ -325,14 +497,14 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
 /** A container for persisting GraphicalElement3d instances.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.8
  * @see [[GraphicalPartition3d]]
- * @public
+ * @public @preview
  */
 export abstract class GraphicalModel3d extends GeometricModel3d {
   public static override get className(): string { return "GraphicalModel3d"; }
 }
 
 /** A container for persisting 3d geometric elements that are spatially located.
- * @public
+ * @public @preview
  */
 export abstract class SpatialModel extends GeometricModel3d {
   public static override get className(): string { return "SpatialModel"; }
@@ -340,75 +512,87 @@ export abstract class SpatialModel extends GeometricModel3d {
 
 /** A container for persisting physical elements that model physical space.
  * @see [[PhysicalPartition]]
- * @public
+ * @public @preview
  */
 export class PhysicalModel extends SpatialModel {
   public static override get className(): string { return "PhysicalModel"; }
-  /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+  /** Insert a PhysicalPartition and a PhysicalModel that sub-models it using an explicit transaction.
+  * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
    * @param name The name of the PhysicalPartition that the new PhysicalModel will sub-model.
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use PhysicalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const iModelDb = txn.iModel;
     const partitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = txn.insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
       isPlanProjection,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return txn.insertModel(modelProps);
   }
 }
 
 /** A container for persisting spatial location elements.
  * @see [[SpatialLocationPartition]]
- * @public
+ * @public @preview
  */
 export class SpatialLocationModel extends SpatialModel {
   public static override get className(): string { return "SpatialLocationModel"; }
-  /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+  /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it using an explicit transaction.
+   * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
    * @param name The name of the SpatialLocationPartition that the new SpatialLocationModel will sub-model.
    * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted SpatialLocationPartition and SpatialLocationModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SpatialLocationModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const iModelDb = txn.iModel;
     const partitionProps: InformationPartitionElementProps = {
       classFullName: SpatialLocationPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: SpatialLocationPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = txn.insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
       isPlanProjection,
     };
-    return iModelDb.models.insertModel(modelProps);
+    return txn.insertModel(modelProps);
   }
 }
 
 /** A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
- * @public
+ * @public @preview
  */
 export class DrawingModel extends GraphicalModel2d {
   public static override get className(): string { return "DrawingModel"; }
 }
 
 /** A container for persisting section [[DrawingGraphic]]s.
- * @public
+ * @public @preview
  */
 export class SectionDrawingModel extends DrawingModel {
   public static override get className(): string { return "SectionDrawingModel"; }
@@ -417,21 +601,21 @@ export class SectionDrawingModel extends DrawingModel {
 /** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
  * A SheetModel is a digital representation of a *sheet of paper*. SheetModels are 2d models in bounded paper coordinates.
  * SheetModels may contain annotation Elements as well as references to 2d or 3d Views.
- * @public
+ * @public @preview
  */
 export class SheetModel extends GraphicalModel2d {
   public static override get className(): string { return "SheetModel"; }
 }
 
 /** A container for persisting role elements.
- * @public
+ * @public @preview
  */
 export class RoleModel extends Model {
   public static override get className(): string { return "RoleModel"; }
 }
 
 /** A container for persisting information elements.
- * @public
+ * @public @preview
  */
 export abstract class InformationModel extends Model {
   public static override get className(): string { return "InformationModel"; }
@@ -439,7 +623,7 @@ export abstract class InformationModel extends Model {
 
 /** A container for persisting group information elements.
  * @see [[GroupInformationPartition]]
- * @public
+ * @public @preview
  */
 export abstract class GroupInformationModel extends InformationModel {
   public static override get className(): string { return "GroupInformationModel"; }
@@ -451,22 +635,25 @@ export abstract class GroupInformationModel extends InformationModel {
 export class SheetIndexModel extends InformationModel {
   public static override get className(): string { return "SheetIndexModel"; }
 
-  /** Insert a SheetIndex and a SheetIndexModel that sub-models it.
- * @param iModelDb Insert into this iModel
- * @param parentSubjectId The SheetIndex will be inserted as a child of this Subject element.
- * @param name The name of the SheetIndex that the new SheetIndexModel will sub-model.
- * @returns The Id of the newly inserted SheetIndexModel.
- * @throws [[IModelError]] if there is an insert problem.
- */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const sheetIndex: InformationPartitionElementProps = {
+  /** Insert a [[SheetIndexPartition]] and a SheetIndexModel that sub-models it.
+  * @param txn The active EditTxn.
+   * @param parentSubjectId The SheetIndexPartition will be inserted as a child of this Subject element.
+   * @param name The name of the SheetIndexPartition that the new SheetIndexModel will sub-model.
+   * @returns The Id of the newly inserted SheetIndexModel.
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use SheetIndexModel.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const partitionId = txn.insertElement({
       classFullName: SheetIndexPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: SheetIndexPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb.elements.insertElement(sheetIndex);
-    return iModelDb.models.insertModel({
+      code: SheetIndexPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
@@ -475,27 +662,30 @@ export class SheetIndexModel extends InformationModel {
 
 /** A container for persisting Information Record Elements
  * @see [[InformationRecordPartition]]
- * @public
+ * @public @preview
  */
 export class InformationRecordModel extends InformationModel {
   public static override get className(): string { return "InformationRecordModel"; }
 
-  /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+  /** Insert an InformationRecordPartition and an InformationRecordModel that sub-models it using an explicit transaction.
+  * @param txn The EditTxn used to perform inserts.
    * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
    * @param name The name of the InformationRecordPartition that the new InformationRecordModel will sub-model.
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const partitionId = txn.insertElement({
       classFullName: InformationRecordPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: InformationRecordPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+      code: InformationRecordPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
@@ -504,27 +694,30 @@ export class InformationRecordModel extends InformationModel {
 
 /** A container for persisting definition elements.
  * @see [[DefinitionPartition]]
- * @public
+ * @public @preview
  */
 export class DefinitionModel extends InformationModel {
   public static override get className(): string { return "DefinitionModel"; }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+  * @param txn The active EditTxn.
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
    * @param name The name of the DefinitionPartition that the new DefinitionModel will sub-model.
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const partitionId = txn.insertElement({
       classFullName: DefinitionPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: DefinitionPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+      code: DefinitionPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
@@ -532,7 +725,7 @@ export class DefinitionModel extends InformationModel {
 }
 
 /** The singleton container of repository-related information elements.
- * @public
+ * @public @preview
  */
 export class RepositoryModel extends DefinitionModel {
   public static override get className(): string { return "RepositoryModel"; }
@@ -540,26 +733,30 @@ export class RepositoryModel extends DefinitionModel {
 
 /** Contains a list of document elements.
  * @see [[DocumentPartition]]
- * @public
+ * @public @preview
  */
 export class DocumentListModel extends InformationModel {
   public static override get className(): string { return "DocumentListModel"; }
-  /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
-   * @param iModelDb Insert into this iModel
+
+  /** Insert a [[DocumentPartition]] and a DocumentListModel that sub-models it.
+  * @param txn The active EditTxn.
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
    * @param name The name of the DocumentPartition that the new DocumentListModel will sub-model.
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
+    * @beta
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
-    const partitionProps: InformationPartitionElementProps = {
+  public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const partitionId = txn.insertElement({
       classFullName: DocumentPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: DocumentPartition.createCode(iModelDb, parentSubjectId, name),
-    };
-    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+      code: DocumentPartition.createCode(txn.iModel, parentSubjectId, name),
+    });
+    return txn.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
     });
@@ -568,21 +765,21 @@ export class DocumentListModel extends InformationModel {
 
 /** A container for persisting link elements.
  * @see [[LinkPartition]]
- * @public
+ * @public @preview
  */
 export class LinkModel extends InformationModel {
   public static override get className(): string { return "LinkModel"; }
 }
 
 /** The singleton container for repository-specific definition elements.
- * @public
+ * @public @preview
  */
 export class DictionaryModel extends DefinitionModel {
   public static override get className(): string { return "DictionaryModel"; }
 }
 
 /** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
- * @public
+ * @public @preview
  */
 export class WebMercatorModel extends SpatialModel {
   public static override get className(): string { return "WebMercatorModel"; }

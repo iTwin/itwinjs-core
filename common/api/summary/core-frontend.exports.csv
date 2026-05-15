@@ -12,7 +12,6 @@ beta;class;AccuDrawRotateAxesTool
 beta;class;AccuDrawRotateCycleTool
 beta;class;AccuDrawRotateElementTool
 beta;class;AccuDrawRotateFrontTool
-beta;class;AccuDrawRotatePerpendicularTool
 beta;class;AccuDrawRotateSideTool
 beta;class;AccuDrawRotateTopTool
 beta;class;AccuDrawRotateViewTool
@@ -85,6 +84,8 @@ public;interface;CanvasDecoration
 public;type;CanvasDecorationList
 public;function;canvasToImageBuffer
 public;function;canvasToResizedCanvasWithBars
+beta;interface;CatalogConnection
+beta;namespace;CatalogConnection
 public;class;CategorySelectorState
 public;enum;ChangeFlag
 public;class;ChangeFlags
@@ -93,6 +94,7 @@ public;interface;CheckboxFormatPropEditorSpec
 public;class;CheckpointConnection
 public;enum;ClipEventType
 public;class;Cluster
+internal;function;collectMaskRefs
 public;type;CollectTileStatus
 public;enum;CompassMode
 public;interface;ComputeChordToleranceArgs
@@ -111,6 +113,7 @@ public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
+beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
 beta;interface;CreateRenderInstancesParamsBuilderArgs
@@ -150,6 +153,7 @@ public;class;DrawingModelState
 public;class;DrawingViewState
 public;class;DynamicsContext
 public;interface;DynamicSpatialClassifier
+beta;interface;EditableCatalogConnection
 internal;interface;EditCommandHandler
 public;namespace;EditManipulator
 internal;const;ELEMENT_MARKED_FOR_REMOVAL
@@ -187,7 +191,9 @@ public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
 internal;function;formatAnimationBranchId
+internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+beta;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
@@ -211,6 +217,7 @@ public;class;GeometricModel2dState
 public;class;GeometricModel3dState
 public;class;GeometricModelState
 public;interface;GeometryTileTreeReference
+public;interface;GeometryTileTreeReferenceOptions
 public;class;GeoServices
 internal;type;GeoServicesOptions
 internal;interface;GetAttachmentViewportArgs
@@ -218,6 +225,7 @@ public;function;getCenteredViewRect
 public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getFrustumPlaneIntersectionDepthRange
+beta;function;getGoogle3dTilesUrl
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -234,6 +242,9 @@ internal;interface;GltfReaderArgs
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
+beta;class;Google3dTilesProvider
+beta;type;Google3dTilesProviderOptions
+internal;class;GoogleMapsDecorator
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
 public;class;GraphicalEditingScope
@@ -304,6 +315,7 @@ internal;class;IModelFrameLifecycle
 public;interface;IModelIdArg
 public;class;IModelRoutingContext
 internal;class;IModelTileTree
+internal;const;_implementationProhibited
 public;class;InputCollector
 public;enum;InputSource
 beta;interface;Instance
@@ -325,6 +337,8 @@ beta;interface;ITwinIdArg
 public;const;ITWINJS_CORE_VERSION
 public;enum;KeyinParseError
 internal;enum;KeyinStatus
+internal;class;LayerTileTreeHandler
+internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
 internal;function;linePlaneIntersect
 alpha;class;LocalExtensionProvider
@@ -337,6 +351,9 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+alpha;interface;LockService
+alpha;type;LockServiceFactory
+internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
 public;interface;LookAtOrthoArgs
@@ -373,6 +390,7 @@ public;enum;MapLayerSourceStatus
 public;interface;MapLayerSourceValidation
 beta;class;MapLayerTileTreeReference
 beta;interface;MapLayerTokenEndpoint
+internal;interface;MapLayerTreeSetting
 beta;interface;MapSubLayerFeatureInfo
 public;class;MapTile
 public;class;MapTileProjection
@@ -400,6 +418,7 @@ public;class;MeasureLengthTool
 public;class;MeasureLocationTool
 public;class;MeasureVolumeTool
 public;interface;MeshArgs
+public;type;MeshArgsPositions
 public;enum;MessageBoxIconType
 public;enum;MessageBoxType
 public;enum;MessageBoxValue
@@ -465,12 +484,14 @@ internal;enum;PrimitiveVisibility
 alpha;interface;PublisherProductInfo
 public;interface;PullChangesOptions
 public;class;QuadId
+public;interface;QuadIdProps
 public;interface;QuantityFormatOverridesChangedArgs
 public;interface;QuantityFormatsChangedArgs
 public;class;QuantityFormatter
 public;enum;QuantityType
 public;type;QuantityTypeArg
 public;interface;QuantityTypeDefinition
+internal;class;QuantityTypeFormatsProvider
 public;type;QuantityTypeKey
 public;interface;QueryScreenFeaturesOptions
 public;function;queryTerrainElevationOffset
@@ -495,8 +516,8 @@ alpha;function;createKeyFromBlobUrl
 alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
-alpha;interface;RealityDataSourceProvider
-alpha;class;RealityDataSourceProviderRegistry
+beta;interface;RealityDataSourceProvider
+beta;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams
 public;namespace;RealityMeshParams
 internal;function;fromGltfMesh
@@ -511,9 +532,11 @@ public;class;RealityTileTree
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
+internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
+internal;interface;RenderGeometry
 public;class;RenderGraphic
 public;class;RenderGraphicOwner
 beta;interface;RenderGraphicTileTreeArgs
@@ -528,6 +551,7 @@ internal;enum;BufferType
 internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
+internal;interface;RenderPlan
 public;class;RenderSystem
 public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
@@ -727,6 +751,7 @@ public;interface;ViewportGraphicBuilderOptions
 public;class;ViewPose
 public;class;ViewPose2d
 public;class;ViewPose3d
+beta;interface;ViewRealityModel
 public;class;ViewRect
 public;class;ViewRedoTool
 public;class;ViewState

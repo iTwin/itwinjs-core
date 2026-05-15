@@ -34,17 +34,17 @@ export interface LabelDefinition {
   typeName: string;
 }
 
+/** @internal */
+export const COMPOSITE_LABEL_DEFINITION_TYPENAME = "composite";
+
 /** @public */
 export namespace LabelDefinition {
-  /** @internal */
-  export const COMPOSITE_DEFINITION_TYPENAME = "composite";
-
   /**
    * Checks if provided [[LabelDefinition]] has raw value of type [[LabelCompositeValue]].
    * @public
    */
   export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & { rawValue: LabelCompositeValue } {
-    return def.typeName === COMPOSITE_DEFINITION_TYPENAME;
+    return def.typeName === COMPOSITE_LABEL_DEFINITION_TYPENAME;
   }
 
   /**

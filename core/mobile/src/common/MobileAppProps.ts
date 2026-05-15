@@ -33,7 +33,7 @@ export interface MobileNotifications {
 }
 
 /** @beta */
-export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged" | "online" | "offline";
 
 /**
 * The methods that may be invoked via Ipc from the frontend of a Mobile App that are implemented on its backend.

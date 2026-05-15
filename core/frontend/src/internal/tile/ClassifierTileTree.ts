@@ -188,8 +188,9 @@ export function createClassifierTileTreeReference(classifiers: SpatialClassifier
 }
 
 function createClassifierId(classifier: SpatialClassifier | undefined, source: ViewState | DisplayStyleState | undefined): ClassifierTreeId {
+  const disablePolyfaceDecimation = IModelApp.tileAdmin.disablePolyfaceDecimation;
   if (undefined === classifier)
-    return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
+    return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined, disablePolyfaceDecimation };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
   const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source ? source[_scheduleScriptReference] : undefined);
@@ -199,5 +200,6 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     expansion: classifier.expand,
     animationId: scriptInfo?.animationId,
     timeline: scriptInfo?.timeline,
+    disablePolyfaceDecimation,
   };
 }

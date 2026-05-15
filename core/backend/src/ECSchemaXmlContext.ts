@@ -23,7 +23,7 @@ export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
  * When a referenced schema needs to be located, the list of directories is searched in the order in which each was added.
  * Once located, the schema is cached to avoid performing repeated lookups in the file system.
  * @see [[readSchemaFromXmlFile]] to deserialize a schema.
- * @beta
+ * @public @preview
  */
 export class ECSchemaXmlContext {
   private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;

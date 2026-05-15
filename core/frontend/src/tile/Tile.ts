@@ -172,7 +172,7 @@ export abstract class Tile {
     this.disposeChildren();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -573,6 +573,14 @@ export abstract class Tile {
    * produce more accurate size calculation.
    */
   public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
+
+  /** @internal */
+  public clearLayers() {
+    this.disposeContents();
+    if (this.children)
+      for (const child of this.children)
+        (child).clearLayers();
+  }
 }
 
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].

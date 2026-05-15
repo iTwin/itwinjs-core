@@ -7,7 +7,7 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -18,11 +18,12 @@ import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
   Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
-  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement3d, PlacementProps, RenderSchedule, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -67,6 +68,7 @@ import { queryVisibleFeatures } from "./internal/render/QueryVisibileFeatures";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
+import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -435,6 +437,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
    * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   * Additionally, refresh the Reality Tile Tree to reflect changes in the map layer.
    */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
@@ -776,25 +779,33 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
    * @param display Whether or not elements on the specified categories should be displayed in the viewport.
    * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
+   * @param batchNotify If true, a single batch event is raised instead of one event per category. This is more efficient when changing many categories at once.
    */
-  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
+  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false, batchNotify: boolean = false): void {
     if (!display) {
-      this.view.categorySelector.dropCategories(categories);
+      if (batchNotify)
+        this.view.categorySelector.dropCategoriesBatched(categories);
+      else
+        this.view.categorySelector.dropCategories(categories);
       return;
     }
 
-    this.view.categorySelector.addCategories(categories);
+    if (batchNotify)
+      this.view.categorySelector.addCategoriesBatched(categories);
+    else
+      this.view.categorySelector.addCategories(categories);
     const categoryIds = Id64.toIdSet(categories);
 
     this.updateSubCategories(categoryIds, enableAllSubCategories);
   }
 
-  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
-    this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
-      if (enableAllSubCategories)
+  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean | undefined): void {
+    this.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
+      if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
-      this._changeFlags.setViewedCategories();
+      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded)
+        this._changeFlags.setViewedCategories();
     });
   }
 
@@ -832,6 +843,11 @@ export abstract class Viewport implements Disposable, TileUser {
   /** See [[DisplayStyleState.changeBackgroundMapProvider]] */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
     this.displayStyle.changeBackgroundMapProvider(props);
+  }
+
+  /** A reference to the [[TileTree]] used to display the background map in this viewport, if the background map is being displayed. */
+  public get backgroundMapTileTreeReference(): TileTreeReference | undefined {
+    return this.backgroundMap;
   }
 
   /** @internal */
@@ -1159,7 +1175,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.detachFromView();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -1185,6 +1201,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.registerViewListeners();
     this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
+
+    // ViewState.load loads all the subcategories for the categories in its category selector.
+    // But the set of categories may have changed since loading the view.
+    // Ensure we fill the cache for the current set of categories.
+    this.updateSubCategories(this.view.categorySelector.categories, undefined);
   }
 
   private registerViewListeners(): void {
@@ -1199,6 +1220,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
       this._changeFlags.setViewedCategories();
+      this.updateSubCategories(view.categorySelector.categories, undefined);
       this.maybeInvalidateScene();
     }));
 
@@ -1263,7 +1285,12 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
-    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener((previousModel, _newModel) => {
+      displayStyleChanged();
+      // When a reality model is removed or replaced, detach its layer listeners to prevent leaks.
+      if (previousModel instanceof ContextRealityModelState)
+        previousModel.detachLayerListeners();
+    }));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
@@ -1296,6 +1323,30 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
+
+
+    const scheduleEditingChanged = async (
+      changes: RenderSchedule.EditingChanges[]
+    ) => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        await tree?.onScheduleEditingChanged(changes);
+      }
+    };
+
+    const scheduleEditingCommitted = () => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        tree?.onScheduleEditingCommitted();
+      }
+    };
+
+    removals.push(
+      style.onScheduleEditingChanged.addListener((changes) => {
+        void scheduleEditingChanged(changes);
+      })
+    );
+    removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
@@ -1332,6 +1383,7 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
       removals.push(settings.onEnvironmentChanged.addListener(displayStyleChanged));
       removals.push(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onContoursChanged.addListener(displayStyleChanged));
     }
   }
 
@@ -1353,6 +1405,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private detachFromDisplayStyle(): void {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
+
+    // Detach layer listeners from reality model tree refs to prevent leaks.
+    if (this._view) {
+      for (const model of this.displayStyle.settings.contextRealityModels.models) {
+        if (model instanceof ContextRealityModelState)
+          model.detachLayerListeners();
+      }
+    }
 
     if (this._mapTiledGraphicsProvider) {
       this._mapTiledGraphicsProvider.detachFromDisplayStyle();
@@ -1580,7 +1640,7 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
-   * @deprecated in 5.0. Use [[mapTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[mapTileTreeRefs]] instead.
    */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
@@ -1594,7 +1654,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
-   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const ref of this.getTileTreeRefs()) {
@@ -1697,8 +1757,8 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** @internal */
-  public changeDynamics(dynamics: GraphicList | undefined): void {
-    this.target.changeDynamics(dynamics);
+  public changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void {
+    this.target.changeDynamics(dynamics, overlay);
     this.invalidateDecorations();
   }
 
@@ -1735,6 +1795,9 @@ export abstract class Viewport implements Disposable, TileUser {
     try {
       // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
       assert(undefined !== id || undefined !== previous);
+      // Note; we don't actually know that id is defined below, but since only current of previous needs to be
+      // defined, we only need to assert that one of them is defined. Either would work.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
     } finally {
       this._assigningFlashedId = false;
@@ -1788,7 +1851,9 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateController();
-    this.target.reset();
+
+    const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
+    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
@@ -2720,7 +2785,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
   * When using this overload, the returned image will not include canvas decorations if only one viewport is active.
   * If multiple viewports are active, the returned image will always include canvas decorations.
-  * @deprecated in 5.0 Use the overload accepting a ReadImageToCanvasOptions.
+  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the overload accepting a ReadImageToCanvasOptions.
   */
   public readImageToCanvas(): HTMLCanvasElement;
 
@@ -2729,7 +2794,6 @@ export abstract class Viewport implements Disposable, TileUser {
   * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
   * @param options Options for reading the image to the canvas.
   */
- // eslint-disable-next-line @typescript-eslint/unified-signatures
   public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
@@ -3216,10 +3280,16 @@ export class ScreenViewport extends Viewport {
       }
 
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
+
       const promises = new Array<Promise<void>>();
       for (const ref of this.getTileTreeRefs()) {
         promises.push(ref.addAttributions(logos, this));
       }
+
+      if (undefined !== IModelApp.applicationLogoCardFooter) {
+        logos.appendChild(IModelApp.applicationLogoCardFooter());
+      }
+
       await Promise.all(promises);
       ev.stopPropagation();
     };
@@ -3350,13 +3420,13 @@ export class ScreenViewport extends Viewport {
     locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
-      const hitDetail = this.picker.getHit(0)!;
+      const hitDetail = expectDefined(this.picker.getHit(0));
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
-        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
       else if (hitDetail.isMapHit)
-        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
-      return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())!, source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
+      return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())), source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
     }
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
@@ -3378,7 +3448,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== intersect) {
         const npcPt = this.worldToNpc(intersect.origin);
         if (npcPt.z < 1)    // Only if in front of eye.
-          return { plane: Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)!, source: DepthPointSource.BackgroundMap };
+          return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)), source: DepthPointSource.BackgroundMap };
       }
     }
     // returns true if there's an intersection that isn't behind the front plane
@@ -3393,12 +3463,12 @@ export class ScreenViewport extends Viewport {
     if (this.view.getDisplayStyle3d().environment.displayGround) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
       if (undefined !== groundPlane && boresiteIntersect(groundPlane))
-        return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())), source: DepthPointSource.GroundPlane };
     }
 
     const acsPlane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2));
     if (undefined !== acsPlane && boresiteIntersect(acsPlane))
-      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!, source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
+      return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())), source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
 
     const targetPointNpc = this.worldToNpc(this.view.getTargetPoint());
     if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
@@ -3407,7 +3477,7 @@ export class ScreenViewport extends Viewport {
     this.worldToNpc(pickPoint, projectedPt);
     projectedPt.z = targetPointNpc.z;
     this.npcToWorld(projectedPt, projectedPt);
-    return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
+    return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())), source: DepthPointSource.TargetPoint };
   }
 
   /** Queue an animation that interpolates between this viewport's previous [Frustum]($common) and its current frustum.
@@ -3565,7 +3635,7 @@ export class ScreenViewport extends Viewport {
      * we don't add a new entry to the view undo buffer.
      */
     const now = BeTimePoint.now();
-    if (Viewport.undoDelay.isZero || backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
+    if (Viewport.undoDelay.isZero || backStack.length < 1 || expectDefined(backStack[backStack.length - 1].undoTime).plus(Viewport.undoDelay).before(now)) {
       this._currentBaseline.undoTime = now; // save time we put this entry in undo buffer
       this._backStack.push(this._currentBaseline); // save previous state
       this._forwardStack.length = 0; // not possible to do redo after this
@@ -3580,6 +3650,8 @@ export class ScreenViewport extends Viewport {
       return;
 
     this._forwardStack.push(this._currentBaseline);
+    // Since stack length is guaranteed to be greater than 0, we can safely pop the last item.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._currentBaseline = this._backStack.pop()!;
     this.view.applyPose(this._currentBaseline);
     this.finishUndoRedo(animationTime);
@@ -3592,6 +3664,8 @@ export class ScreenViewport extends Viewport {
       return;
 
     this._backStack.push(this._currentBaseline);
+    // Since stack length is guaranteed to be greater than 0, we can safely pop the last item.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._currentBaseline = this._forwardStack.pop()!;
     this.view.applyPose(this._currentBaseline);
     this.finishUndoRedo(animationTime);
@@ -3775,7 +3849,7 @@ export class ScreenViewport extends Viewport {
 }
 
 function _clear2dCanvas(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext("2d", { alpha: true })!;
+  const ctx = expectNotNull(canvas.getContext("2d", { alpha: true }));
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
   ctx.clearRect(0, 0, canvas.width, canvas.height);

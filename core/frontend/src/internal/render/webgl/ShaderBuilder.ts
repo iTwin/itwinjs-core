@@ -819,13 +819,19 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline("  v_color = baseColor;");
     }
 
+    /*
+    There is currently a driver glitch which is known to affect much of the Intel Ultra 7 family of chipsets when using Intel driver from some point after driver version 32.0.101.6078 (9/13/2024).
+
+    The graphics driver will glitch when discarding triangles using the vertex shader (setting all vertices to the same value) if gl_Position was not initialized to a valid position beforehand.
+
+    The workaround for this bug involves ensuring that gl_Position is initialized to a valid position before attempting a discard using a degenerate triangle.
+    */
+    main.addline("  gl_Position = computePosition(rawPosition);");
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(vertexDiscard);
     }
-
-    main.addline("  gl_Position = computePosition(rawPosition);");
 
     const finalizePos = this.get(VertexShaderComponent.FinalizePosition);
     if (undefined !== finalizePos) {
@@ -905,6 +911,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply planar classifier.
   // vec4 applyPlanarClassification(vec4)
   ApplyPlanarClassifier,
+  // (Optional) Apply Draping.
+  // vec4 ApplyDraping(vec4)
+  ApplyDraping,
   // (Optional) Apply solar shadow map.
   // vec4 applySolarShadowMap(vec4)
   ApplySolarShadowMap,
@@ -1107,6 +1116,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (applyAtmosphericScattering) {
       prelude.addFunction("vec4 applyAtmosphericScattering(vec4 baseColor)", applyAtmosphericScattering);
       main.addline("  baseColor = applyAtmosphericScattering(baseColor);");
+    }
+
+    const applyDraping = this.get(FragmentShaderComponent.ApplyDraping);
+    if (undefined !== applyDraping) {
+      prelude.addFunction("vec4 applyDraping(vec4 baseColor)", applyDraping);
+      main.addline(`${clipIndent}  baseColor = applyDraping(baseColor);`);
     }
 
     const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);

@@ -48,13 +48,17 @@ export class DisableNativeAssertions implements Disposable {
     this._native = undefined;
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }
 }
 
 export class TestUtils {
+  private static shouldLogToConsole(): boolean {
+    return process.env.ITWINJS_CORE_BACKEND_TEST_LOG_TO_CONSOLE === "1";
+  }
+
   public static getCacheDir(fallback: string | undefined = undefined) {
     if (ProcessDetector.isMobileAppBackend) {
       return undefined; // Let the native side handle the cache.
@@ -73,6 +77,7 @@ export class TestUtils {
     const cfg = config ?? {};
     cfg.cacheDir = TestUtils.getCacheDir(cfg.cacheDir);
     cfg.allowSharedChannel ??= false; // Override default to test shared channel enforcement. Remove in version 5.0.
+    cfg.implicitWriteEnforcement ??= "throw";
     await IModelHost.startup(cfg);
   }
 
@@ -81,7 +86,10 @@ export class TestUtils {
   }
 
   public static setupLogging() {
-    Logger.initializeToConsole();
+    if (TestUtils.shouldLogToConsole())
+      Logger.initializeToConsole();
+    else
+      Logger.initialize();
     Logger.setLevelDefault(LogLevel.Error);
   }
 

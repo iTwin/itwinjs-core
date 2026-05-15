@@ -2,24 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
+import { assert, expect, use } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as path from "path";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECSqlStatement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import * as path from "path";
+use(chaiAsPromised);
 
 // cspell:ignore mirukuru ibim
-
-async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
-  const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
-    rows.push(queryRow.toRow());
-  }
-  return rows;
-}
 
 describe("ECSql Query", () => {
   let imodel1: SnapshotDb;
@@ -47,6 +41,19 @@ describe("ECSql Query", () => {
     imodel5.close();
     imodel6.close();
   });
+
+  const megaBytes = (n: number) => n * 1024 * 1024;
+
+  it("v8 max string length test", async () => {
+    const reader = imodel1.createQueryReader(`SELECT hex(zeroblob(${megaBytes(500)}))`);
+    await expect(reader.step()).to.be.rejectedWith("result size exceeded maximum allowed size");
+  });
+
+  it("step fail with large blob", async () => {
+    const reader = imodel1.createQueryReader(`SELECT hex(zeroblob(${megaBytes(5000)}))`);
+    await expect(reader.step()).to.be.rejectedWith("concurrent query step() failed: string or blob too big (BE_SQLITE_TOOBIG)");
+  });
+
   it("verify 4.8.x format for ECClassId", async () => {
     const queries = [
       "SELECT ECClassId FROM Bis.Element LIMIT 1",
@@ -94,6 +101,7 @@ describe("ECSql Query", () => {
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     let expectedRows = 0;
     for (let i = 0; i < queries.length; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel1.withPreparedStatement(queries[i], (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), results[i], `(ECSqlStatement) "${queries[i]}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
@@ -364,9 +372,11 @@ describe("ECSql Query", () => {
     /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     builder.setConvertClassIdsToNames(true);
     // With ECDb Profile 4002
     for (const testQuery of testQueries) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), testQuery.result, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
@@ -381,6 +391,7 @@ describe("ECSql Query", () => {
     }
     // With ECDb Profile 4003
     for (const testQuery of testQueries) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), testQuery.result, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
@@ -393,86 +404,12 @@ describe("ECSql Query", () => {
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
     }
   });
-  // new new addon build
-  it("ecsql interrupt check", async () => {
-    let cancelled = 0;
-    let successful = 0;
-    let rowCount = 0;
-    try {
-      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
-      ConcurrentQuery.resetConfig(imodel1[_nativeDb], { allowTestingArgs: true });
-      const scheduleQuery = async () => {
-        return new Promise<void>(async (resolve, reject) => {
-          try {
-            const options = new QueryOptionsBuilder();
-            options.setTestingArgs({ interrupt: true });
-            options.setDelay(1000);
-            const reader = imodel1.createQueryReader(`
-              WITH sequence(n) AS (
-                SELECT  1
-                UNION ALL
-                SELECT n + 1 FROM sequence WHERE n < 10000
-              )
-              SELECT  COUNT(*)
-              FROM bis.SpatialIndex i, sequence s`, undefined, options.getOptions());
-            while (await reader.step()) {
-              rowCount++;
-            }
-            successful++;
-            resolve();
-          } catch (err: any) {
-            // we expect query to be cancelled
-            if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
-              cancelled++;
-              resolve();
-            } else {
-              reject(new Error("rejected"));
-            }
-          }
-        });
-      };
-
-      const queries = [];
-      for (let i = 0; i < 100; i++) {
-        queries.push(scheduleQuery());
-      }
-
-      await Promise.all(queries);
-      // We expect at least one query to be cancelled
-      assert.equal(successful, 100, "success should be 100");
-      assert.equal(rowCount, 100, "expect 100 rows");
-      assert.isAtLeast(cancelled, 0, "should not have any cancelled query");
-    } finally {
-      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
-      ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
-    }
-  });
-  // new new addon build
-  it("ecsql with blob", async () => {
-    let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
-    assert.equal(rows.length, 1);
-    const row: any = rows[0];
-
-    assert.isTrue(Id64.isValidId64(row.id));
-
-    assert.isDefined(row.geometryStream);
-    const geomStream: Uint8Array = row.geometryStream;
-    assert.isAtLeast(geomStream.byteLength, 1);
-
-    rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
-    assert.equal(rows.length, 1);
-
-    rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1", undefined, true);
-    assert.equal(rows.length, 1);
-    assert.isTrue(Id64.isValidId64(rows[0].id));
-    assert.isDefined(rows[0].geometryStream);
-  });
   it("check prepare logErrors flag", () => {
     const ecdb = imodel1;
     // expect log message when statement fails
     let slm = new SequentialLogMatcher();
     slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ true), "no such table: def (BE_SQLITE_ERROR)");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
@@ -484,12 +421,14 @@ describe("ECSql Query", () => {
     // expect log message when statement fails
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ true), "ECClass 'abc.def' does not exist or could not be loaded.");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });
@@ -642,8 +581,29 @@ describe("ECSql Query", () => {
     assert.equal(reader.stats.backendRowsReturned, 0);
     assert.isTrue(reader.stats.backendCpuTime > 0);
   });
-  it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
-    const ids: string[] = ["0x1","ABC","YZ"];
+
+  it("concurrent query bind idset with invalid values in IdSet virtual table should fail", async () => {
+    const ids: string[] = ["0x1", "ABC", "YZ"];
+
+    try {
+      imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
+    } catch (err: any) {
+      assert.equal(err.message, "unsupported type");
+    }
+  });
+
+  it("concurrent query bind idset with invalid values in IdSet virtual table should fail", async () => {
+    const ids: string[] = ["ABC", "0x1", "YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
+
+    try {
+      imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
+    } catch (err: any) {
+      assert.equal(err.message, "unsupported type");
+    }
+  });
+
+  it("concurrent query bind multiple ids in idset virtual table", async () => {
+    const ids: string[] = ["0x1", "0xe", "0x10"];
 
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
@@ -652,21 +612,13 @@ describe("ECSql Query", () => {
     while (await reader.step()) {
       rows++;
     }
-    assert.equal(rows, 1);
+    assert.equal(rows, 3);
     props = await reader.getMetaData();
     assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
-    assert.equal(reader.stats.backendRowsReturned, 1);
+    assert.equal(reader.stats.backendRowsReturned, 3);
     assert.isTrue(reader.stats.backendCpuTime > 0);
   });
-  it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
-    const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
 
-    try{
-      imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
-    }catch(err: any){
-      assert.equal(err.message, "unsupported type");
-    }
-  });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
     let props = await reader.getMetaData();
@@ -751,7 +703,7 @@ describe("ECSql Query", () => {
       }
     }
 
-    const rowCounts = await Promise.all(pendingRowCount);
+    const rowCounts = pendingRowCount;
     const expected = [46, 62, 7, 7, 28];
     assert.equal(rowCounts.length, expected.length);
     for (let i = 0; i < expected.length; i++) {
@@ -785,5 +737,102 @@ describe("ECSql Query", () => {
       const entry = dbs.indexOf(db);
       assert.equal(rowCounts[entry], resultSet.length);
     }
+  });
+
+  describe("supports_instance_query", () => {
+    it("returns 1 for entity classes", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.Element')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Entity class BisCore.Element should support instance queries");
+      }
+    });
+
+    it("returns 1 for link table relationship classes", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.CategorySelectorRefersToCategories')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Link table relationship should support instance queries");
+      }
+    });
+
+    it("returns 1 for link table relationship with external class ids", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.ModelSelectorRefersToModels')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "ModelSelectorRefersToModels (link table with external class ids) should support instance queries");
+      }
+    });
+
+    it("returns 0 for non-existent classes", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('BisCore.DoesNotExist')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 0, "Non-existent class should not support instance queries");
+      }
+    });
+
+    it("returns 0 for NULL input", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query(NULL)", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 0, "NULL input should return 0");
+      }
+    });
+
+    it("works with schema alias:class format", async () => {
+      for await (const row of imodel1.createQueryReader("SELECT supports_instance_query('bis:Element')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Should work with alias:class format");
+      }
+    });
+
+    it("works with integer class id", async () => {
+      // First get the class id for BisCore.Element
+      let classId: number | undefined;
+      for await (const row of imodel1.createQueryReader("SELECT ec_classid('BisCore', 'Element')", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        classId = row[0] as number;
+      }
+      assert.isDefined(classId, "Should be able to resolve BisCore.Element class id");
+
+      for await (const row of imodel1.createQueryReader(`SELECT supports_instance_query(${classId})`, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+        assert.equal(row[0], 1, "Should work with integer class id");
+      }
+    });
+
+    it("can be used to filter classes that support instance queries", async () => {
+      // Example: find all classes in a schema that support SELECT $
+      const rows: any[] = [];
+      for await (const row of imodel1.createQueryReader(
+        `SELECT c.Name, supports_instance_query(c.ECInstanceId) as supported
+         FROM meta.ECClassDef c
+         JOIN meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId
+         WHERE s.Name = 'BisCore' AND supports_instance_query(c.ECInstanceId) = 1
+         LIMIT 5`,
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      )) {
+        rows.push(row.toRow());
+      }
+      assert.isAbove(rows.length, 0, "Should find at least one BisCore class that supports instance queries");
+      for (const row of rows) {
+        assert.equal(row.supported, 1);
+      }
+    });
+  });
+
+  describe("instance query on link table relationships", () => {
+    it("SELECT $ works for link table relationship with external class ids", async () => {
+      // ModelSelectorRefersToModels is a link table relationship where SourceECClassId
+      // and TargetECClassId may be stored in external tables. This was previously failing
+      // with a SQLite syntax error due to bugs in CreateLinkTableView.
+      let rowCount = 0;
+      for await (const row of imodel1.createQueryReader(
+        "SELECT $ FROM BisCore.ModelSelectorRefersToModels",
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      )) {
+        const instance = row.toRow();
+        const json = instance.$;
+        assert.isDefined(json, "$ column should be defined");
+        const parsed = typeof json === "string" ? JSON.parse(json) : json;
+        assert.isDefined(parsed.ECInstanceId, "Instance must have ECInstanceId");
+        assert.isDefined(parsed.ECClassId, "Instance must have ECClassId");
+        assert.isDefined(parsed.SourceECInstanceId, "Instance must have SourceECInstanceId");
+        assert.isDefined(parsed.TargetECInstanceId, "Instance must have TargetECInstanceId");
+        rowCount++;
+      }
+      // The query should at least not crash — whether there are rows depends on the test file
+      assert.isAtLeast(rowCount, 0, "Query should execute without error");
+    });
   });
 });

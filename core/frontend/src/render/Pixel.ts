@@ -64,18 +64,24 @@ export namespace Pixel {
       inSectionDrawingAttachment?: boolean;
       transformFromIModel?: Transform;
     }) {
-      if (args?.feature)
-        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
-
-      this.modelId = args?.feature?.modelId;
       this.distanceFraction = args?.distanceFraction ?? -1;
       this.type = args?.type ?? GeometryType.Unknown;
       this.planarity = args?.planarity ?? Planarity.Unknown;
-      this.iModel = args?.iModel;
-      this.tileId = args?.tileId;
-      this.viewAttachmentId = args?.viewAttachmentId;
       this.inSectionDrawingAttachment = true === args?.inSectionDrawingAttachment;
-      this.transformFromIModel = args?.transformFromIModel;
+
+      if (!args) {
+        return;
+      }
+
+      if (args.feature) {
+        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
+      }
+
+      this.modelId = args.feature?.modelId;
+      this.iModel = args.iModel;
+      this.tileId = args.tileId;
+      this.viewAttachmentId = args.viewAttachmentId;
+      this.transformFromIModel = args.transformFromIModel;
     }
 
     /** The Id of the element that produced the pixel. */

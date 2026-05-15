@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RuleBase } from "../Rule";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications.js";
+import { RuleBase } from "../Rule.js";
 
 /**
  * Sorting rules provide a way to either disable sorting or sort instances by specific properties.

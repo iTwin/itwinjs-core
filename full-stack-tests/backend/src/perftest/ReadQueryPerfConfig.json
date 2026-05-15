@@ -1,0 +1,9 @@
+{
+  "dbSizes": [1000, 5000, 10000],
+  "classNames": [
+    "PerfElement",
+    "PerfElementSub1",
+    "PerfElementSub2",
+    "PerfElementSub3"
+  ]
+}

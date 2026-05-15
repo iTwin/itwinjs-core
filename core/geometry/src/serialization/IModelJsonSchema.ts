@@ -135,7 +135,7 @@ export namespace IModelJson {
     // cspell:word bagof
     /**
      * A collection of curves with no required structure or connections
-     * @deprecated in 5.x. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+     * @deprecated in 5.0 - will not be removed until after 2026-06-13. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
     */
     bagofCurves?: [CurveCollectionProps];
     /** A collection of curves with no required structure or connections. */
@@ -263,12 +263,12 @@ export namespace IModelJson {
 
     /**
      * Optional section x-axis.
-     * @deprecated in 5.x. This property has never been written. Optional axes are specified by an AxesProps.
+     * @deprecated in 5.0 - will not be removed until after 2026-06-13. This property has never been written. Optional axes are specified by an AxesProps.
      */
     vectorX?: XYZProps;
     /**
      * Optional section y-axis.
-     * @deprecated in 5.x. This property has never been written. Optional axes are specified by an AxesProps.
+     * @deprecated in 5.0 - will not be removed until after 2026-06-13. This property has never been written. Optional axes are specified by an AxesProps.
      */
     vectorY?: XYZProps;
 
@@ -582,12 +582,20 @@ export namespace IModelJson {
     numPerFace?: number;
     /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
     expectedClosure?: number;
-    /** Optional flag indicating if mesh display must assume both sides are visible. */
+    /**
+     * The [[PolyfaceData.twoSided]] flag.
+     */
     twoSided?: boolean;
     /** Optional analytical data at the vertices of the mesh */
     auxData?: AuxDataProps;
     /** Optional array of tagged geometry (such as to request subdivision surface) */
     tags?: TaggedNumericDataProps;
+
+    /**
+     * Optional edge -> edgeMate map, parallel to the other index arrays.
+     * * Each entry is a zero-based index, or -1 face loop terminator, or -2 to indicate "no edge mate".
+     */
+    edgeMateIndex?: [number];
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -823,7 +831,7 @@ export namespace IModelJson {
     }
     /** Parse `transitionSpiral` content (right side) to TransitionSpiral3d. */
     public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
-      const axes = Reader.parseOrientation(data, true)!;
+      const axes = Reader.parseOrientation(data, true);
       const origin = Reader.parsePoint3dProperty(data, "origin");
       // the create method will juggle any 4 out of these 5 inputs to define the other ..
       const startBearing = Reader.parseAngleProperty(data, "startBearing");
@@ -839,7 +847,8 @@ export namespace IModelJson {
         interval = Reader.parseSegment1dProperty(data, "fractionInterval", undefined);
       if (!interval)
         interval = Reader.parseSegment1dProperty(data, "activeInterval", undefined);
-      const spiralType = Reader.parseStringProperty(data, "type", "clothoid")!;
+      const spiralType = Reader.parseStringProperty(data, "type", "clothoid");
+      assert(spiralType !== undefined, "expect defined because we passed a default value");
       // REMARK:  Our job is to parse and pass data along -- inscrutable validation happens in the implementation classes . . .
       if (origin) {
         let candidate: TransitionSpiral3d | undefined;
@@ -953,12 +962,10 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
-        if (data.hasOwnProperty("twoSided")) {
-          const q = data.twoSided;
-          if (q === true || q === false) {
-            polyface.twoSided = q;
-          }
-        }
+
+        // default value is true!!
+        polyface.twoSided = this.parseBooleanProperty(data, "twoSided", true) ?? true;
+
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
@@ -997,6 +1004,16 @@ export namespace IModelJson {
           (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
           () => { polyface.terminateFacet(false); });
 
+        if (data.hasOwnProperty("edgeMateIndex") && Array.isArray(data.edgeMateIndex)) {
+          const edgeMateIndex: Array<number | undefined> = [];
+          if (SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(data.edgeMateIndex, numPerFace,
+            SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+            (i: number | undefined) => edgeMateIndex.push(i),
+          )) {
+            polyface.data.edgeMateIndex = edgeMateIndex;
+          }
+        }
+
         if (!polyface.validateAllIndices())
           return undefined;
 
@@ -1006,6 +1023,7 @@ export namespace IModelJson {
         if (data.hasOwnProperty("tags"))
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
 
+        // NOTE: faceData is ignored
         return polyface;
       }
       return undefined;
@@ -1152,8 +1170,8 @@ export namespace IModelJson {
       const topX = Reader.parseNumberProperty(json, "topX", baseX);
       const topY = Reader.parseNumberProperty(json, "topY", baseY);
       const height = Reader.parseNumberProperty(json, "height", baseX);
-      const axes = Reader.parseOrientation(json, true)!;
-
+      const axes = Reader.parseOrientation(json, true);
+      assert(axes !== undefined, "expect defined because we passed true to return identity on failure");
       if (origin && !topOrigin && height)
         topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(origin, axes, Vector3d.create(0, 0, height));
 
@@ -1199,12 +1217,14 @@ export namespace IModelJson {
     }
     /** Parse TorusPipe props to TorusPipe instance. */
     public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
-      const axes = Reader.parseOrientation(json, true)!;  // force frame to be pure rotation (no scale or mirror)!
+      const axes = Reader.parseOrientation(json, true);  // force frame to be pure rotation (no scale or mirror)!
+      assert(axes !== undefined, "expect defined because we passed true to return identity on failure");
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
       const sweepAngle = Reader.parseAngleProperty(json, "sweepAngle", undefined);
-      const capped = Reader.parseBooleanProperty(json, "capped", false)!;
+      const capped = Reader.parseBooleanProperty(json, "capped", false);
+      assert(capped !== undefined, "expect defined because we passed a default value");
       if (center
         && radiusA !== undefined
         && radiusB !== undefined) {
@@ -1447,20 +1467,15 @@ export namespace IModelJson {
       const xySameLength = Geometry.isSameCoordinate(xMag, yMag);
       const axisVector = Vector3d.createStartEnd(centerA, centerB);
 
-      // special case of cylinder
-      if (Geometry.isSameCoordinate(radiusA, radiusB)
-        && vectorX.isPerpendicularTo(axisVector)
-        && vectorY.isPerpendicularTo(axisVector)
-        && xySameLength
-        && Geometry.isSameCoordinate(xMag, 1.0)) {
-        return {
-          cylinder: {
-            capped: data.capped,
-            start: centerA.toJSON(),
-            end: centerB.toJSON(),
-            radius: radiusA,
-          },
+      const cylinderRadius = data.cylinderRadius();
+      if (cylinderRadius > 0) {
+        const cylinderProps: CylinderProps = {
+          capped: data.capped,
+          start: centerA.toJSON(),
+          end: centerB.toJSON(),
+          radius: cylinderRadius,
         };
+        return { cylinder: cylinderProps };
       }
 
       const coneProps: ConeProps = {
@@ -1683,14 +1698,13 @@ export namespace IModelJson {
           topOrigin: box.getTopOrigin().toJSON(),
         },
       };
-
-      const outBox = out.box!;
+      const outBox = out.box;
+      assert(outBox !== undefined, "expect defined because we just created it");
       Writer.insertXYOrientation(outBox, box.getVectorX(), box.getVectorY(), true);
       if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX()))
         outBox.topX = box.getTopX();
       if (!Geometry.isSameCoordinate(box.getTopY(), box.getBaseY()))
         outBox.topY = box.getTopY();
-
       return out;
     }
 
@@ -1698,9 +1712,10 @@ export namespace IModelJson {
       assert(auxData === pf.data.auxData);
       const contents: AuxDataProps = { indices: [], channels: [] };
       const visitor = pf.createVisitor(0);
+      assert(visitor.auxData !== undefined, "expect visitor to have auxData because the polyface has auxData");
       while (visitor.moveToNextFacet()) {
         for (let i = 0; i < visitor.indexCount; i++)
-          contents.indices.push(visitor.auxData!.indices[i] + 1);
+          contents.indices.push(visitor.auxData.indices[i] + 1);
         contents.indices.push(0);  // facet terminator.
       }
       for (const inChannel of auxData.channels) {
@@ -1749,10 +1764,9 @@ export namespace IModelJson {
       const visitor = pf.createVisitor(0);
       let indexCounter = 0;
 
-      const normalIndex = [];
-      const paramIndex = [];
-      const colorIndex = [];
-
+      const normalIndex: number[] = [];
+      const paramIndex: number[] = [];
+      const colorIndex: number[] = [];
       let n;
       while (visitor.moveToNextFacet()) {
         n = visitor.indexCount;
@@ -1778,33 +1792,58 @@ export namespace IModelJson {
           colorIndex.push(0);
         }
       }
+
       let taggedNumericData;
       if (pf.data.taggedNumericData) {
         taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
-      // assemble the contents in alphabetical order.
+
+      let edgeMateIndex: number[] | undefined;
+      if (pf.data.edgeMateIndex) {
+        const edgeMateIndices: number[] = [];
+        if (SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex, pf.facetStart,
+          SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+          (i: number) => edgeMateIndices.push(i),
+        )) {
+          edgeMateIndex = edgeMateIndices;
+        }
+      }
+
       const contents: { [k: string]: any } = {};
+
       if (pf.expectedClosure !== 0)
         contents.expectedClosure = pf.expectedClosure;
-      if (pf.twoSided)
-        contents.twoSided = true;
+
+      contents.twoSided = pf.twoSided;
+
       if (pf.data.auxData)
         contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 
-      if (pf.data.color) contents.color = colors;
-      if (pf.data.colorIndex) contents.colorIndex = colorIndex;
+      if (pf.data.color)
+        contents.color = colors;
+      if (pf.data.colorIndex)
+        contents.colorIndex = colorIndex;
 
-      if (pf.data.normal) contents.normal = normals;
-      if (pf.data.normalIndex) contents.normalIndex = normalIndex;
+      if (pf.data.normal)
+        contents.normal = normals;
+      if (pf.data.normalIndex)
+        contents.normalIndex = normalIndex;
 
-      if (pf.data.param) contents.param = params;
-      if (pf.data.paramIndex) contents.paramIndex = paramIndex;
+      if (pf.data.param)
+        contents.param = params;
+      if (pf.data.paramIndex)
+        contents.paramIndex = paramIndex;
 
       contents.point = points;
       contents.pointIndex = pointIndex;
 
       if (taggedNumericData)
         contents.tags = taggedNumericData;
+
+      if (pf.data.edgeMateIndex)
+        contents.edgeMateIndex = edgeMateIndex;
+
+      // NOTE: pf.data.face is not persistent
       return { indexedMesh: contents };
     }
 

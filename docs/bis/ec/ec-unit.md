@@ -2,7 +2,7 @@
 
 Defines a Unit of Measure in terms of other Units allowing generation of a conversion factor between it and any other dimensionally compatible unit.  NOTE: Conversions are limited to units in the same Phenomenon.
 
-### Attributes
+### Unit Attributes
 
 **typeName** Defines the name of this Unit. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.
 
@@ -22,11 +22,27 @@ Defines a Unit of Measure in terms of other Units allowing generation of a conve
 
 **offset** The offset applied when converting between units.
 
+### Unit Example
+
+```xml
+    <Unit typeName="CM_PER_SEC_SQ" phenomenon="ACCELERATION" unitSystem="METRIC" definition="CM*S(-2)" displayLabel="cm/sec²" />
+```
+
+```json
+"CM_PER_SEC_SQ": {
+  "schemaItemType": "Unit",
+  "label": "cm/sec²",
+  "phenomenon": "Units.ACCELERATION",
+  "unitSystem": "Units.METRIC",
+  "definition": "CM*S(-2)"
+},
+```
+
 ## Inverted Unit
 
 Defines a Unit that is the inverse of another Unit.  Only valid for Units whose dimensional derivation is Unit-less (e.g., slope).
 
-### Attributes
+### Inverted Unit Attributes
 
 **typeName** Defines the name of this Unit. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.
 
@@ -37,3 +53,25 @@ Defines a Unit that is the inverse of another Unit.  Only valid for Units whose 
 **invertsUnit** The unit this is inverting.
 
 **unitSystem** The UnitSystem this is a member of.
+
+### Inverted Unit Example
+
+```xml
+<Unit typeName="VERTICAL_PER_HORIZONTAL" phenomenon="SLOPE" unitSystem="INTERNATIONAL" definition="M_PER_M" displayLabel="slope" />
+<InvertedUnit typeName="HORIZONTAL_PER_VERTICAL" invertsUnit="VERTICAL_PER_HORIZONTAL" unitSystem="INTERNATIONAL" />
+```
+
+```json
+"VERTICAL_PER_HORIZONTAL": {
+  "schemaItemType": "Unit",
+  "label": "slope",
+  "phenomenon": "Units.SLOPE",
+  "unitSystem": "Units.INTERNATIONAL",
+  "definition": "M_PER_M"
+},
+"HORIZONTAL_PER_VERTICAL": {
+  "schemaItemType": "InvertedUnit",
+  "invertsUnit": "Units.VERTICAL_PER_HORIZONTAL",
+  "unitSystem": "Units.INTERNATIONAL"
+},
+```

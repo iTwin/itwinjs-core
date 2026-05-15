@@ -402,29 +402,37 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
   }
   /**
    * Return the projection of spacePoint onto the plane.
-   * If the plane is degenerate to a ray, project to the ray.
-   * If the plane is degenerate to its origin, return the point
+   * * If the plane is degenerate to a ray, project to the ray.
+   * * If the plane is degenerate to its origin, return the point.
    */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /**
+   * Return the projection of (x,y,z) onto the plane.
+   * * If the plane is degenerate to a ray, project to the ray.
+   * * If the plane is degenerate to its origin, return the point.
+   */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
     const unitNormal = this.vectorU.unitCrossProduct(this.vectorV);
     if (unitNormal !== undefined) {
-      const w = unitNormal.dotProductStartEnd(this.origin, spacePoint);
-      return spacePoint.plusScaled(unitNormal, -w, result);
+      const scale = -unitNormal.dotProductStartEndXYZ(this.origin, x, y, z);
+      return Point3d.create(x + scale * unitNormal.x, y + scale * unitNormal.y, z + scale * unitNormal.z, result);
     }
-    // uh oh.   vectorU and vectorV are colinear or zero.
-    // project to ray defined by the longer one, or just to origin.
+    // vectorU and vectorV are colinear or zero.
+    // Project to ray defined by the longer one, or just to origin.
     const dotUU = this.vectorU.magnitudeSquared();
     const dotVV = this.vectorV.magnitudeSquared();
     if (dotUU >= dotVV) {
-      const dotUW = this.vectorU.dotProductStartEnd(this.origin, spacePoint);
+      const dotUW = this.vectorU.dotProductStartEndXYZ(this.origin, x, y, z);
       const f = Geometry.conditionalDivideCoordinate(dotUW, dotUU, 0.0);
       if (f !== undefined)
-        return spacePoint.plusScaled(this.vectorU, f, result);
+        return Point3d.create(x + f * this.vectorU.x, y + f * this.vectorU.y, z + f * this.vectorU.z, result);
     } else {
-      const dotVW = this.vectorV.dotProductStartEnd(this.origin, spacePoint);
+      const dotVW = this.vectorV.dotProductStartEndXYZ(this.origin, x, y, z);
       const f = Geometry.conditionalDivideCoordinate(dotVW, dotVV, 0.0);
       if (f !== undefined)
-        return spacePoint.plusScaled(this.vectorV, f, result);
+        return Point3d.create(x + f * this.vectorV.x, y + f * this.vectorV.y, z + f * this.vectorV.z, result);
     }
     return this.origin.clone(result);
   }

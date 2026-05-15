@@ -78,7 +78,7 @@ These two rules imply that a given class of Element cannot be both sub-modeled *
 
 ### ElementAspect
 
-[ElementAspects](../references/glossary.md#elementaspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. ElementAspects are not individually identifiable (thus relationships cannot point to them), but they may be the "source" of a relationship pointing to an Element.
+[ElementAspects](../references/glossary.md#elementaspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. ElementAspects are not individually identifiable so they can only be used in relationships where a [Navigation Property](../../ec/ec-property.md#ecnavigationproperty) exists on the aspect pointing to an Element.  For example every Aspect has a Navigation Property pointing to the Element that owns it.
 
 ### Identifiers
 
@@ -94,5 +94,6 @@ The [**FederationGuid**](../references/glossary.md#federationguid) is optional b
 **UserLabel** is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
 
 ---
+
 | Next: [BIS Organization](./bis-organization.md)
 |:---

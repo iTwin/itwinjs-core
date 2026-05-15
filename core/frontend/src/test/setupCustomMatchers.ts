@@ -42,26 +42,26 @@ expect.extend({
     }
     if (Array.isArray(received)) {
       if (expectedSize !== received.length) {
-        return { pass: false, message: () => `expected ${received} to be an Id64Arg with size ${expectedSize}, but it's size is ${received.length}` };
+        return { pass: false, message: () => `expected ${JSON.stringify(received)} to be an Id64Arg with size ${expectedSize}, but it's size is ${received.length}` };
       }
       for (const expectedId of Id64.iterable(expected)) {
         if (!received.includes(expectedId)) {
-          return { pass: false, message: () => `expected ${received} to contain ${expectedId}` };
+          return { pass: false, message: () => `expected ${JSON.stringify(received)} to contain ${expectedId}` };
         }
       }
       return PASS_RESULT;
     }
     if (received instanceof Set) {
       if (expectedSize !== received.size) {
-        return { pass: false, message: () => `expected ${[...received]} to be an Id64Arg with size ${expectedSize}, but it's size is ${received.size}` };
+        return { pass: false, message: () => `expected ${JSON.stringify([...received])} to be an Id64Arg with size ${expectedSize}, but it's size is ${received.size}` };
       }
       for (const expectedId of Id64.iterable(expected)) {
         if (!received.has(expectedId)) {
-          return { pass: false, message: () => `expected ${[...received]} to contain ${expectedId}` };
+          return { pass: false, message: () => `expected ${JSON.stringify([...received])} to contain ${expectedId}` };
         }
       }
       return PASS_RESULT;
     }
-    return { pass: false, message: () => `expected ${received} to be an Id64Arg` };
+    return { pass: false, message: () => `expected ${JSON.stringify(received)} to be an Id64Arg` };
   },
 });

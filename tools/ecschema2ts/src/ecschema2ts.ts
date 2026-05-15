@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
+  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass,
 } from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {
@@ -58,6 +58,13 @@ export class ECSchemaToTs {
     }
   }
 
+  private requireSchema(): Schema {
+    if (undefined === this._schema)
+      throw new Error("Schema must be set before conversion.");
+
+    return this._schema;
+  }
+
   /**
    * Given the schema, the function will converted it to typescript strings
    * @param schema The schema to be converted to typescript strings
@@ -83,7 +90,8 @@ export class ECSchemaToTs {
   private dependencyToFront(): void {
     const uniqueItemName: Set<string> = new Set<string>();
     const schemaItemsList: SchemaItem[] = [];
-    for (const schemaItem of this._schema!.getItems()) {
+    const schema = this.requireSchema();
+    for (const schemaItem of schema.getItems()) {
       // base class to the item list first;
       switch (schemaItem.schemaItemType) {
         case SchemaItemType.StructClass:
@@ -93,7 +101,7 @@ export class ECSchemaToTs {
           const baseList = this.getAllBaseClasses(ecClass);
           for (let i = baseList.length - 1; i >= 0; --i) {
             const base = baseList[i];
-            if (base.schema.schemaKey.compareByName(this._schema!.schemaKey) && !uniqueItemName.has(base.name)) {
+            if (base.schema.schemaKey.compareByName(schema.schemaKey) && !uniqueItemName.has(base.name)) {
               schemaItemsList.push(baseList[i]);
               uniqueItemName.add(base.name);
             }
@@ -116,7 +124,7 @@ export class ECSchemaToTs {
    * The function converts the schema meta data to typescript Schema class
    */
   private convertSchemaToTsClass(): string {
-    const schemaName = this._schema!.schemaKey.name;
+    const schemaName = this.requireSchema().schemaKey.name;
     let outputString: string = "";
 
     // import modules
@@ -206,7 +214,7 @@ export class ECSchemaToTs {
       return interfacesTs;
 
     // only generate props interface for entity if the class has properties
-    if (ecClass.schemaItemType === SchemaItemType.EntityClass && (!ecClass.properties || ecClass.properties.next().done))
+    if (ecClass.schemaItemType === SchemaItemType.EntityClass && !ecClass.hasLocalProperties)
       return interfacesTs;
 
     // convert description to typescript comment only for mixin or struct
@@ -290,8 +298,8 @@ export class ECSchemaToTs {
     // determine prop type to pass in the constructor
     let propsBaseTsType: string;
     const propsBase = this.getBaseClassWithProps(ecClass);
-    if (ecClass.fullName !== elementECClassName && ecClass.properties && !ecClass.properties.next().done) {
-      const moduleName: string = `${this._schema!.schemaKey.name}ElementProps`;
+    if (ecClass.fullName !== elementECClassName && ecClass.hasLocalProperties) {
+      const moduleName: string = `${this.requireSchema().schemaKey.name}ElementProps`;
       propsBaseTsType = this.addImportClass(classNameToModule, moduleName, `${ecClass.name}Props`);
     } else if (propsBase.length > 0)
       propsBaseTsType = this.addImportBasePropsClass(classNameToModule, propsBase[0], ecClass);
@@ -321,11 +329,11 @@ export class ECSchemaToTs {
    * @param classNameToModule Typescrip modules to be updated after the conversion
    */
   private convertPropsToTsVars(ecClass: ECClass, classNameToModule: Map<string, string>): string[] {
-    if (ecClass.properties === undefined || ecClass.properties.next().done)
+    if (!ecClass.hasLocalProperties)
       return [];
 
     const outputStrings: string[] = [];
-    for (const ecProperty of ecClass.properties) {
+    for (const ecProperty of ecClass.getPropertiesSync(true)) {
       // not generate ts variable declaration for property that has CustomHandledProperty ca
       if (ecProperty.customAttributes && ecProperty.customAttributes.has(customHandledPropertyCA))
         continue;
@@ -338,18 +346,18 @@ export class ECSchemaToTs {
           typeTs = this.convertExtendedTypeNameToTsType(ecProperty.extendedTypeName, classNameToModule);
         else if (ecProperty.isEnumeration()) {
           const ecEnumProperty = ecProperty as EnumerationProperty;
-          const ecEnum = ecEnumProperty.enumeration!;
+          const ecEnum = ecEnumProperty.enumeration;
+          if (undefined === ecEnum)
+            throw new Error(`Enumeration property ${ecProperty.fullName} is missing its enumeration.`);
           typeTs = this.addImportClass(classNameToModule, `${ecEnum.schemaKey.name}Elements`, ecEnum.name);
         } else {
-          const ecPrimitiveProperty = ecProperty as PrimitiveProperty;
-          typeTs = this.convertPrimitiveTypeToTsType(ecPrimitiveProperty.primitiveType, classNameToModule);
+          typeTs = this.convertPrimitiveTypeToTsType(ecProperty.primitiveType, classNameToModule);
         }
 
         varDeclarationLine += typeTs;
       } else if (ecProperty.isStruct()) {
         // import struct class if it is in different schema
-        const ecStructProperty = ecProperty as StructProperty;
-        const structClass = ecStructProperty.structClass;
+        const structClass = ecProperty.structClass;
         if (!structClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey))
           varDeclarationLine += this.addImportClass(classNameToModule, `${structClass.schema.schemaKey.name}ElementProps`, structClass.name);
         else
@@ -466,7 +474,11 @@ export class ECSchemaToTs {
       if (!moduleToTsTypes.has(moduleNames))
         moduleToTsTypes.set(moduleNames, new Set<string>());
 
-      moduleToTsTypes.get(moduleNames)!.add(className);
+      const classNames = moduleToTsTypes.get(moduleNames);
+      if (undefined === classNames)
+        throw new Error(`Unable to create import list for module ${moduleNames}.`);
+
+      classNames.add(className);
     });
 
     let outputString: string = "";
@@ -495,7 +507,7 @@ export class ECSchemaToTs {
     const visited: Set<string> = new Set<string>();
     visited.add(ecClass.fullName);
     this.traverseBaseClass(ecClass, visited, (base: ECClass) => {
-      if (base.properties && !base.properties.next().done) {
+      if (base.hasLocalProperties) {
         res.push(base);
         return false;
       }
@@ -564,8 +576,9 @@ export class ECSchemaToTs {
       return className;
 
     let resolvedPrefix: string = refModule;
-    if (this._tsBentleyModuleResolvedConflictNames.has(refModule))
-      resolvedPrefix = this._tsBentleyModuleResolvedConflictNames.get(refModule)!;
+    const resolvedConflictName = this._tsBentleyModuleResolvedConflictNames.get(refModule);
+    if (undefined !== resolvedConflictName)
+      resolvedPrefix = resolvedConflictName;
 
     const renameClassName = `${className} as ${resolvedPrefix}${className}`;
     if (!classNameToModule.has(renameClassName)) {

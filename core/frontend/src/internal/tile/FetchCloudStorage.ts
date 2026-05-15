@@ -15,7 +15,7 @@ export class FetchCloudStorage implements FrontendStorage {
     }
     if (!("authentication" in input.transferConfig))
       throw new Error("authentication missing in transferConfig");
-    const url = `${input.transferConfig.baseUrl}/${this.buildObjectKey(input.reference)}?${input.transferConfig.authentication}`;
+    const url = `${input.transferConfig.baseUrl}/${this.buildObjectKey(input.reference)}?${String(input.transferConfig.authentication)}`;
     const resp = await fetch(url);
     if (!resp.ok)
       throw new Error(resp.statusText);

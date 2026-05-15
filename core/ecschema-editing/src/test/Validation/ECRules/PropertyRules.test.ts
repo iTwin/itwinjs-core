@@ -38,7 +38,7 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
@@ -60,8 +60,9 @@ describe("PropertyRule tests", () => {
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
       await (testClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
+      (schema as MutableSchema).addItem(rootBaseClass);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
@@ -82,7 +83,7 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -92,7 +93,7 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -102,7 +103,7 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -112,7 +113,7 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createStructProperty("TestProperty", new StructClass(schema, "TestStruct"));
       await (testClass as ECClass as MutableClass).createStructProperty("TestProperty", new StructClass(schema, "TestStruct"));
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -122,7 +123,7 @@ describe("PropertyRule tests", () => {
       const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = [...entityClass.properties!];
+      const properties = Array.from(entityClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -134,7 +135,7 @@ describe("PropertyRule tests", () => {
       await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
@@ -156,8 +157,9 @@ describe("PropertyRule tests", () => {
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testBaseClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
+      (schema as MutableSchema).addItem(rootBaseClass);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
 
       let resultHasEntries = false;
@@ -179,7 +181,7 @@ describe("PropertyRule tests", () => {
       // different value type, but THIS rule should still pass
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = [...testClass.properties!];
+      const properties = Array.from(testClass.getPropertiesSync(true));
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -189,7 +191,7 @@ describe("PropertyRule tests", () => {
       const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = [...entityClass.properties!];
+      const properties = Array.from(entityClass.getPropertiesSync(true));
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -213,8 +215,8 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperties = [...testBaseClass.properties!];
-      const childProperties = [...testClass.properties!];
+      const baseProperties = Array.from(testBaseClass.getPropertiesSync(true));
+      const childProperties = Array.from(testClass.getPropertiesSync(true));
 
       const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
@@ -259,6 +261,8 @@ describe("PropertyRule tests", () => {
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
       await (testBaseClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
+      (schema as MutableSchema).addItem(rootBaseClass);
+
       const basePropJson = {
         name: "TestProperty",
         type: "PrimitiveProperty",
@@ -271,8 +275,8 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperties = [...rootBaseClass.properties!];
-      const childProperties = [...testClass.properties!];
+      const baseProperties = Array.from(rootBaseClass.getPropertiesSync(true));
+      const childProperties = Array.from(testClass.getPropertiesSync(true));
 
       const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
@@ -326,8 +330,8 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperties = [...testBaseClass.properties!];
-      const childProperties = [...testClass.properties!];
+      const baseProperties = Array.from(testBaseClass.getPropertiesSync(true));
+      const childProperties = Array.from(testClass.getPropertiesSync(true));
 
       const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
@@ -367,8 +371,8 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperties = [...testBaseClass.properties!];
-      const childProperties = [...testClass.properties!];
+      const baseProperties = Array.from(testBaseClass.getPropertiesSync(true));
+      const childProperties = Array.from(testClass.getPropertiesSync(true));
 
       const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
@@ -401,8 +405,8 @@ describe("PropertyRule tests", () => {
         type: "PrimitiveProperty",
       };
 
-      const baseProperties = [...testBaseClass.properties!];
-      const childProperties = [...testClass.properties!];
+      const baseProperties = Array.from(testBaseClass.getPropertiesSync(true));
+      const childProperties = Array.from(testClass.getPropertiesSync(true));
 
       const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);
@@ -431,8 +435,8 @@ describe("PropertyRule tests", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
 
-      const baseProperties = [...testBaseClass.properties!];
-      const childProperties = [...testClass.properties!];
+      const baseProperties = Array.from(testBaseClass.getPropertiesSync(true));
+      const childProperties = Array.from(testClass.getPropertiesSync(true));
 
       const baseProperty = baseProperties[0];
       await baseProperty.fromJSON(basePropJson);

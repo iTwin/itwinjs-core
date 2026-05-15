@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as path from "path";
 import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -38,6 +39,10 @@ describe("ChangedElements", () => {
     const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
+
+    const fileDir = path.dirname(filePath);
+    if (!IModelJsFs.existsSync(fileDir))
+      IModelJsFs.mkdirSync(fileDir);
 
     let cache = ChangedElementsDb.createDb(iModel, filePath);
     assert.isDefined(cache);

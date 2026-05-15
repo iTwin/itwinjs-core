@@ -32,3 +32,13 @@ export class ECStringConstants {
 
   public static readonly CONTAINERTYPE_ANY: string = "Any";
 }
+
+/**
+ * @internal
+ */
+export namespace ECSchemaNamespaceUris {
+  export const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
+  export const SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
+
+  export const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
+}

@@ -18,15 +18,15 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { collect, getFieldByLabel } from "../../Utils.js";
 import {
   buildTestIModelConnection,
   insertDocumentPartition,
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { describeContentTestSuite } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
   async function validatePagedDistinctValuesResponse(
@@ -299,6 +299,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
           ruleType: RuleTypes.RootNodes,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
               classes: [
                 {
@@ -317,6 +318,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
           condition: `ParentNode.IsOfClass("Model", "BisCore")`,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
               relationshipPaths: [
                 {
@@ -331,8 +333,10 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
         },
       ],
     };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const rootNodes = await Presentation.presentation.getNodesIterator({ imodel: testIModel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
     expect(rootNodes.length).to.eq(2);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
     assert(!!descriptor);
 

@@ -16,6 +16,7 @@ import { IpcHandler, IpcHost } from "./IpcHost";
 /** @internal */
 export interface LocalhostIpcHostOpts {
   socketPort?: number;
+  host?: string;
   noServer?: boolean;
 }
 
@@ -27,7 +28,7 @@ class LocalTransport extends IpcWebSocketTransport {
     super();
 
     if (!opts.noServer) {
-      this._server = new ws.Server({ port: opts.socketPort ?? 3002 });
+      this._server = new ws.Server({ port: opts.socketPort ?? 3002, host: opts.host ?? "127.0.0.1" });
       this._server.on("connection", (connection) => LocalhostIpcHost.connect(connection));
     }
   }

@@ -34,9 +34,9 @@ export class ViewStateHydrator {
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
     let modelProps;
     try {
-      modelProps = this._imodel.models.getModelJson({ id: baseModelId });
+      modelProps = this._imodel.models.getModelProps(baseModelId);
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.ViewStateHydrator, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
+      Logger.logError(BackendLoggerCategory.ViewStateHydrator, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({ error: BentleyError.getErrorProps(err) }));
     }
     response.baseModelProps = modelProps;
   }
@@ -47,7 +47,7 @@ export class ViewStateHydrator {
     const modelJsonArray: ModelProps[] = [];
     for (const id of decompressedModelIds) {
       try {
-        const modelProps = this._imodel.models.getModelJson({ id });
+        const modelProps = this._imodel.models.getModelProps(id);
         modelJsonArray.push(modelProps);
       } catch { }
     }
@@ -71,7 +71,7 @@ export class ViewStateHydrator {
     const attachmentProps: ViewAttachmentProps[] = [];
     for (const id of decompressedIds) {
       try {
-        attachmentProps.push(this._imodel.elements.getElementJson({ id }));
+        attachmentProps.push(this._imodel.elements.getElementProps({ id }));
       } catch { }
     }
 

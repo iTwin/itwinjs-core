@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ContentSpecificationBase } from "./ContentSpecification";
+import { ContentSpecificationBase } from "./ContentSpecification.js";
 
 /**
  * Returns content for selected (input) instances.

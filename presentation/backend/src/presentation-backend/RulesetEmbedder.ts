@@ -8,19 +8,8 @@
 
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
-import {
-  DefinitionElement,
-  DefinitionModel,
-  DefinitionPartition,
-  ECSqlStatement,
-  Element,
-  Entity,
-  IModelDb,
-  KnownLocations,
-  Model,
-  Subject,
-} from "@itwin/core-backend";
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
+import { DefinitionElement, DefinitionModel, DefinitionPartition, Element, Entity, IModelDb, KnownLocations, Model, Subject, withEditTxn } from "@itwin/core-backend";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
   Code,
@@ -36,9 +25,9 @@ import {
   SubjectProps,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
-import { PresentationRules } from "./domain/PresentationRulesDomain";
-import * as RulesetElements from "./domain/RulesetElements";
-import { normalizeVersion } from "./Utils";
+import { PresentationRules } from "./domain/PresentationRulesDomain.js";
+import * as RulesetElements from "./domain/RulesetElements.js";
+import { normalizeVersion } from "./Utils.js";
 
 /**
  * Interface for callbacks which will be called before and after Element/Model updates
@@ -196,7 +185,9 @@ export class RulesetEmbedder {
         rulesetsToRemove.push(entry.id);
       }
     });
-    this._imodel.elements.deleteElement(rulesetsToRemove);
+    if (rulesetsToRemove.length > 0) {
+      withEditTxn(this._imodel, (txn) => txn.deleteElement(rulesetsToRemove));
+    }
 
     // attempt to update ruleset with same ID and version
     const exactMatch = rulesetsWithSameId.find((curr) => curr.normalizedVersion === rulesetVersion);
@@ -216,8 +207,6 @@ export class RulesetEmbedder {
     existingRulesetElement.jsonProperties.jsonProperties = ruleset;
 
     await this.updateElement(existingRulesetElement, callbacks);
-
-    this._imodel.saveChanges();
     return existingRulesetElement.id;
   }
 
@@ -230,7 +219,6 @@ export class RulesetEmbedder {
     };
 
     const element = await this.insertElement(props, callbacks);
-    this._imodel.saveChanges();
     return element.id;
   }
 
@@ -243,14 +231,11 @@ export class RulesetEmbedder {
     }
 
     const rulesetList: Ruleset[] = [];
-    this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const row = statement.getRow();
-        const rulesetElement = this._imodel.elements.getElement({ id: row.id });
-        const ruleset = rulesetElement.jsonProperties.jsonProperties;
-        rulesetList.push(ruleset);
-      }
-    });
+    for await (const row of this._imodel.createQueryReader(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`)) {
+      const rulesetElement = this._imodel.elements.getElement({ id: row.id });
+      const ruleset = rulesetElement.jsonProperties.jsonProperties;
+      rulesetList.push(ruleset);
+    }
     return rulesetList;
   }
 
@@ -343,53 +328,57 @@ export class RulesetEmbedder {
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
-    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) {
-      return;
+    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) {
+      // import PresentationRules ECSchema
+      await this._imodel.importSchemas([this._schemaPath]);
     }
 
-    // import PresentationRules ECSchema
-    await this._imodel.importSchemas([this._schemaPath]);
-
-    // insert CodeSpec for ruleset elements
-    this._imodel.codeSpecs.insert(CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model));
-
-    this._imodel.saveChanges();
+    if (!this._imodel.codeSpecs.hasName(PresentationRules.CodeSpec.Ruleset)) {
+      // insert CodeSpec for ruleset elements
+      withEditTxn(this._imodel, (txn) => this._imodel.codeSpecs.insert(txn, CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model)));
+    }
   }
 
   private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks): Promise<Element> {
-    const element = this._imodel.elements.createElement(props);
-    // istanbul ignore next
-    await callbacks?.onBeforeInsert(element);
-    try {
-      return this._imodel.elements.getElement(element.insert());
-    } finally {
-      // istanbul ignore next
-      await callbacks?.onAfterInsert(element);
-    }
+    return withEditTxn(this._imodel, async (txn) => {
+      const element = this._imodel.elements.createElement(props);
+      /* c8 ignore next */
+      await callbacks?.onBeforeInsert(element);
+      try {
+        return this._imodel.elements.getElement(element.insert(txn));
+      } finally {
+        /* c8 ignore next */
+        await callbacks?.onAfterInsert(element);
+      }
+    });
   }
 
   private async insertModel(props: ModelProps, callbacks?: InsertCallbacks): Promise<Model> {
-    const model = this._imodel.models.createModel(props);
-    // istanbul ignore next
-    await callbacks?.onBeforeInsert(model);
-    try {
-      model.id = model.insert();
-      return model;
-    } finally {
-      // istanbul ignore next
-      await callbacks?.onAfterInsert(model);
-    }
+    return withEditTxn(this._imodel, async (txn) => {
+      const model = this._imodel.models.createModel(props);
+      /* c8 ignore next */
+      await callbacks?.onBeforeInsert(model);
+      try {
+        model.id = model.insert(txn);
+        return model;
+      } finally {
+        /* c8 ignore next */
+        await callbacks?.onAfterInsert(model);
+      }
+    });
   }
 
   private async updateElement(element: Element, callbacks?: UpdateCallbacks) {
-    // istanbul ignore next
-    await callbacks?.onBeforeUpdate(element);
-    try {
-      element.update();
-    } finally {
-      // istanbul ignore next
-      await callbacks?.onAfterUpdate(element);
-    }
+    await withEditTxn(this._imodel, async (txn) => {
+      /* c8 ignore next */
+      await callbacks?.onBeforeUpdate(element);
+      try {
+        element.update(txn);
+      } finally {
+        /* c8 ignore next */
+        await callbacks?.onAfterUpdate(element);
+      }
+    });
   }
 }
 

@@ -18,7 +18,7 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -408,6 +408,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const lowestPolygonPoint = Point3d.create(-4, -4, 2);
     const skewPlanePolygon = [Point3d.create(4, 4, 8), Point3d.create(-4, 4, 5), lowestPolygonPoint, Point3d.create(4, -4, 5)];
     const chainB = CurveChainWithDistanceIndex.createCapture(Loop.createPolygon(skewPlanePolygon));
+    GeometryCoreTestIO.captureGeometry(allGeometry, [chainA, chainB]);
     const pairs = CurveCurve.closeApproachProjectedXYPairs(chainA, chainB, 1.5);
     // known fractions of xy close approaches
     const arcFractionOfChain = semicircleCW.curveLength() / chainA.curveLength();
@@ -431,7 +432,7 @@ describe("CurveChainWithDistanceIndex", () => {
         else
           ck.announceError("unexpected close approach");
       }
-      GeometryCoreTestIO.captureGeometry(allGeometry, [chainA, chainB, LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point), LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point)]);
+      GeometryCoreTestIO.captureGeometry(allGeometry, [LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point), LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point)]);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainLoops");
     expect(ck.getNumErrors()).toBe(0);
@@ -675,8 +676,8 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     // second CurveChainWithDistanceIndex
-    const lineSegment2 = LineSegment3d.createXYZXYZ(-1, 0, 1, 3, 0, 1);
-    const lineString3 = LineString3d.create([3, 0, 1], [5, 0, 1], [5, -3, 1], [12, -3, 1]);
+    const lineSegment2 = LineSegment3d.createXYZXYZ(-1, 0, 1, 5, 0, 1);
+    const lineString3 = LineString3d.create([5, 0, 1], [5, -3, 1], [12, -3, 1]);
     const lineSegment3 = LineSegment3d.createXYZXYZ(12, -3, 1, 12, -3, 3);
     const path2 = Path.create();
     path2.tryAddChild(lineSegment2);

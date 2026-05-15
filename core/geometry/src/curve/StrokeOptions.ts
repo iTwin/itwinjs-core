@@ -21,14 +21,21 @@ import { Angle } from "../geometry3d/Angle";
  * * Nearly all stroke and facet use cases will apply an angle tolerance.
  *   * For curves, 15 degrees is typical
  *   * For facets, 22.5 degrees is typical.
- *   * Halving the angle tolerance will (roughly) make curves get twice as many strokes, and surfaces get 4 times as many facets.
- *   * The angle tolerance has the useful property that its effect is independent of scale of that data.  If data is suddenly scaled into millimeters rather than meters, the facet counts remain the same.
+ *   * Halving the angle tolerance will (roughly) make curves get twice as many strokes, and surfaces get 4 times as
+ * many facets.
+ *   * The angle tolerance has the useful property that its effect is independent of scale of that data.  If data is
+ * suddenly scaled into millimeters rather than meters, the facet counts remain the same.
  * * When creating output for devices such as 3D printing will want a chord tolerance.
- * * For graphics display, use an angle tolerance of around 15 degrees and an chord tolerance which is the size of several pixels.
+ * * For graphics display, use an angle tolerance of around 15 degrees and an chord tolerance which is the size of
+ * several pixels.
  * * Analysis meshes (e.g. Finite Elements) commonly need to apply maxEdgeLength.
- *   * Using maxEdgeLength for graphics probably produces too many facets.   For example, it causes long cylinders to get many nearly-square facets instead of the small number of long quads usually used for graphics.
- * * Facet tolerances are, as the Pirates' Code, guidelines, not absolute rules.   Facet and stroke code may ignore tolerances in awkward situations.
- * * If multiple tolerances are in effect, the actual count will usually be based on the one that demands the most strokes or facets, unless it is so high that it violates some upper limit on the number of facets on an arc or a section of a curve.
+ *   * Using maxEdgeLength for graphics probably produces too many facets. For example, it causes long cylinders to
+ * get many nearly-square facets instead of the small number of long quads usually used for graphics.
+ * * Facet tolerances are, as the Pirates' Code, guidelines, not absolute rules. Facet and stroke code may ignore
+ * tolerances in awkward situations.
+ * * If multiple tolerances are in effect, the actual count will usually be based on the one that demands the most
+ * strokes or facets, unless it is so high that it violates some upper limit on the number of facets on an arc or a
+ * section of a curve.
  * @public
  */
 export class StrokeOptions {
@@ -40,7 +47,7 @@ export class StrokeOptions {
   public maxEdgeLength?: number;
   /**
    * Caller expects convex facets.
-   * @deprecated in 4.x - never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
+   * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
    */
   public needConvexFacets?: boolean;
   /** Minimum strokes on a primitive. */
@@ -64,9 +71,14 @@ export class StrokeOptions {
   public set needNormals(value: boolean) {
     this._needNormals = value;
   }
-  /** Whether twoSided is requested. */
+  /**
+   * Whether to request facets that are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the requested facets are expected to form a closed volume with outward normals,
+   * indicating they are amenable to backface culling for improved display performance.
+   */
   public get needTwoSided(): boolean {
-    return this._needTwoSided !== undefined ? this._needTwoSided : false;
+    return this._needTwoSided !== undefined ? this._needTwoSided : true;
   }
   public set needTwoSided(value: boolean) {
     this._needTwoSided = value;

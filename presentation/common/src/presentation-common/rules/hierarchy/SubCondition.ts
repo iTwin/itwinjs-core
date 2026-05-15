@@ -2,12 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { RequiredSchemaSpecification } from "../SchemasSpecification";
-import { ChildNodeSpecification } from "./ChildNodeSpecification";
+import { RequiredSchemaSpecification } from "../SchemasSpecification.js";
+import { ChildNodeSpecification } from "./ChildNodeSpecification.js";
 
 /**
  * This is a sub-rule which shares *placement attributes* and
@@ -17,6 +18,8 @@ import { ChildNodeSpecification } from "./ChildNodeSpecification";
  *
  * @see [Sub-conditions reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-subconditions)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface SubCondition {
   /**

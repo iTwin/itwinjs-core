@@ -8,6 +8,7 @@ import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
 import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { withEditTxn } from "../../EditTxn";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
   const input = assetProps as any;
@@ -29,7 +30,7 @@ function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAs
 }
 
 function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
-  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor", "HasTransmit"] as const;
+  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor"] as const;
   for (const boolKey of boolKeys)
     if (undefined === assetProps[boolKey])
       assetProps[boolKey] = false;
@@ -53,7 +54,7 @@ describe("RenderMaterialElement", () => {
   function test(params: Omit<RenderMaterialElementParams, "paletteName">, expected?: RenderMaterialAssetProps): RenderMaterialElement {
     const name = `material${++materialNumber}`;
     const paletteName = "palette";
-    const id = RenderMaterialElement.insert(imodel, IModel.dictionaryId, name, { ...params, paletteName });
+    const id = withEditTxn(imodel, (txn) => RenderMaterialElement.insert(txn, IModel.dictionaryId, name, { ...params, paletteName }));
     expect(Id64.isValidId64(id)).to.be.true;
 
     const mat = imodel.elements.getElement<RenderMaterialElement>(id);
@@ -81,7 +82,7 @@ describe("RenderMaterialElement", () => {
     ]);
 
     const name = `texture${++textureNumber}`;
-    const textureId = Texture.insertTexture(imodel, IModel.dictionaryId, name, ImageSourceFormat.Png, pngData);
+    const textureId = withEditTxn(imodel, (txn) => Texture.insertTexture(txn, IModel.dictionaryId, name, ImageSourceFormat.Png, pngData));
     expect(Id64.isValidId64(textureId)).to.be.true;
     return textureId;
   }
@@ -97,6 +98,7 @@ describe("RenderMaterialElement", () => {
 
       const db = SnapshotDb.openFile(seedFileName);
       let id: Id64String;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       db.withStatement(`SELECT ECInstanceId from Bis.RenderMaterial`, (stmt) => {
         expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
         id = stmt.getRow().id;
@@ -126,20 +128,19 @@ describe("RenderMaterialElement", () => {
         GlowColor: { TextureId: 6 },
         Reflect: { TextureId: 7 },
         Specular: { TextureId: 8 },
-        TranslucencyColor: { OtherProp2: "test"}, // Should be unchanged, still present.
+        TranslucencyColor: { OtherProp2: "test" }, // Should be unchanged, still present.
         TransparentColor: { TextureId: 10, OtherProp: 1 }, // OtherProp should be unchanged, still present.
-        Displacement: { TextureId: "0x1"},
-        OtherProperty: { OtherProperty: "test"}, // Should be unchanged.
+        Displacement: { TextureId: "0x1" },
+        OtherProperty: { OtherProperty: "test" }, // Should be unchanged.
       } as any;
       /* eslint-enable @typescript-eslint/naming-convention */
       const material = test({});
       const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
       assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
       jsonProps.materialAssets.renderMaterial.Map = maps;
-      material.update();
+      withEditTxn(imodel, (txn) => material.update(txn));
 
       const pathName = imodel.pathName;
-      imodel.saveChanges();
       imodel.close(); // Need to close so we can load the element back in with strings instead of numbers.
 
       imodel = SnapshotDb.openForApplyChangesets(pathName);
@@ -177,6 +178,31 @@ describe("RenderMaterialElement", () => {
         reflectColor: [0, 0, 1],
       };
 
+      /* eslint-disable @typescript-eslint/naming-convention */
+      test(params, {
+        HasBaseColor: true, color: params.color,
+        HasSpecularColor: true, specular_color: params.specularColor,
+        HasFinish: true, finish: params.finish,
+        HasTransmit: true, transmit: params.transmit,
+        HasDiffuse: true, diffuse: params.diffuse,
+        HasSpecular: true, specular: params.specular,
+        HasReflect: true, reflect: params.reflect,
+        HasReflectColor: true, reflect_color: params.reflectColor,
+      });
+
+      params.transmit = undefined;
+      /* eslint-disable @typescript-eslint/naming-convention */
+      test(params, {
+        HasBaseColor: true, color: params.color,
+        HasSpecularColor: true, specular_color: params.specularColor,
+        HasFinish: true, finish: params.finish,
+        HasDiffuse: true, diffuse: params.diffuse,
+        HasSpecular: true, specular: params.specular,
+        HasReflect: true, reflect: params.reflect,
+        HasReflectColor: true, reflect_color: params.reflectColor,
+      });
+
+      params.transmit = 0.0;
       /* eslint-disable @typescript-eslint/naming-convention */
       test(params, {
         HasBaseColor: true, color: params.color,
@@ -370,7 +396,7 @@ describe("RenderMaterialElement", () => {
   });
 
   describe("clone", () => {
-    it("clone maps", () => {
+    it("clone maps", async () => {
       const textureId = insertTexture();
       const unknownTextureId = "0xffffff";
 
@@ -399,7 +425,7 @@ describe("RenderMaterialElement", () => {
       const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
       assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
       jsonProps.materialAssets.renderMaterial.Map = maps;
-      material.update();
+      withEditTxn(imodel, (txn) => material.update(txn));
 
       const context = {
         findTargetElementId: (sourceId: Id64String) => {
@@ -413,7 +439,7 @@ describe("RenderMaterialElement", () => {
       const targetProps = structuredClone(sourceProps);
 
       // eslint-disable-next-line @typescript-eslint/dot-notation
-      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
+      await RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
 
       expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.deep.equal({
         Pattern: { TextureId: "CLONED" },
@@ -433,16 +459,19 @@ describe("RenderMaterialElement", () => {
         NoTextureId: { OtherProp: 1 },
       });
 
-      jsonProps.materialAssets.renderMaterial.Map = {Pattern: undefined};
+      jsonProps.materialAssets.renderMaterial.Map = { Pattern: undefined };
       // eslint-disable-next-line @typescript-eslint/dot-notation
-      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
+      await RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
       // keep the sourceMap the same in targetProps
       expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.have.property("Pattern").that.is.undefined;
-      jsonProps.materialAssets.renderMaterial.Map = {Pattern: null as any};
+      jsonProps.materialAssets.renderMaterial.Map = { Pattern: null as any };
       // eslint-disable-next-line @typescript-eslint/dot-notation
-      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
+      await RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
       // keep the sourceMap the same in targetProps
       expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.have.property("Pattern").that.is.null;
     });
   });
 });
+
+
+

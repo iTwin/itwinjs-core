@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RuleBase } from "../Rule";
-import { ContentSpecification } from "./ContentSpecification";
+import { RuleBase } from "../Rule.js";
+import { ContentSpecification } from "./ContentSpecification.js";
 
 /**
  * Content rules are used to define content that is displayed for specific type of [input]($docs/presentation/content/Terminology.md#input-instance).

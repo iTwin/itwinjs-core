@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Topology
  */
-import { OrderedComparator, PriorityQueue } from "@itwin/core-bentley";
+import { assert, OrderedComparator, PriorityQueue } from "@itwin/core-bentley";
 import { HalfEdge } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
 
@@ -31,7 +31,8 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public popQueueToArray(): HalfEdge | undefined {
     if (this.priorityQueue.isEmpty)
       return undefined;
-    const x = this.priorityQueue.pop()!;
+    const x = this.priorityQueue.pop();
+    assert(x !== undefined, "expect defined because we just checked queue length");
     this.activeEdges.push(x);
     return x;
   }
@@ -42,8 +43,9 @@ export class HalfEdgePriorityQueueWithPartnerArray {
    */
   public popArrayToArrayIndex(i: number) {
     const n = this.activeEdges.length;
-    if (i < n) {
-      const x = this.activeEdges.pop()!;
+    if (0 <= i && i < n - 1 && n > 0) { // index must not point to last entry, which is about to disappear
+      const x = this.activeEdges.pop();
+      assert(x !== undefined, "expect defined because we just checked array length");
       this.activeEdges[i] = x;
     }
   }

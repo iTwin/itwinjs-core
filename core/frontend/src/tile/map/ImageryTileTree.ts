@@ -49,7 +49,7 @@ export class ImageryMapTile extends RealityTile {
   public override setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
     if (undefined === content.imageryTexture)
-      (this.parent! as ImageryMapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
+      this.setLeaf();   // No imagery here — don't traverse deeper, but leave siblings unaffected.
 
     this.setIsReady();
   }
@@ -57,13 +57,12 @@ export class ImageryMapTile extends RealityTile {
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
-    if ((this.isLeaf)           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
-      || isSmallerThanDrape
-      || this._anyChildNotFound) {
+    if ((this.isLeaf && !this.isNotFound)           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
+      || isSmallerThanDrape) {
       if (this.isOutOfLodRange) {
         drapeTiles.push(this);
         this.setIsReady();
-      } else if (this.isLeaf && !isSmallerThanDrape && !this._anyChildNotFound) {
+      } else if (this.isLeaf && !isSmallerThanDrape) {
         // These tiles are selected because we are beyond the max LOD of the tile tree,
         // might be used to display "stretched" tiles instead of having blank.
         highResolutionReplacementTiles.push(this);
@@ -80,8 +79,9 @@ export class ImageryMapTile extends RealityTile {
       if (undefined !== this.children) {
         for (const child of this.children) {
           const mapChild = child as ImageryMapTile;
-          if (mapChild.rectangle.intersectsRange(rectangleToDrape))
-            status = mapChild.selectCartoDrapeTiles(drapeTiles, highResolutionReplacementTiles, rectangleToDrape, drapePixelSize, args);
+          if (!mapChild.rectangle.intersectsRange(rectangleToDrape))
+            continue;
+          status = mapChild.selectCartoDrapeTiles(drapeTiles, highResolutionReplacementTiles, rectangleToDrape, drapePixelSize, args);
           if (TileTreeLoadStatus.Loaded !== status)
             break;
         }
@@ -209,7 +209,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
 
-    /** @deprecated in 5.0 Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryLoader.addLogoCards(cards, vp);
@@ -266,7 +266,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
 
-    /** @deprecated in 5.0 Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryProvider.addLogoCards(cards, vp);

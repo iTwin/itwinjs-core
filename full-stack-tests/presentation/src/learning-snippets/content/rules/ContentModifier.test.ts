@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../../IntegrationTests";
-import { collect, getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
-import { printRuleset } from "../../Utils";
-import { TestIModelConnection } from "../../../IModelSetupUtils";
+import { initialize, terminate } from "../../../IntegrationTests.js";
+import { collect, getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils.js";
+import { printRuleset } from "../../Utils.js";
+import { TestIModelConnection } from "../../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;

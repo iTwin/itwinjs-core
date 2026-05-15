@@ -231,7 +231,7 @@ export class ViewCreator3d {
     if (mergedDisplayProps.jsonProperties !== undefined) {
       mergedDisplayProps.jsonProperties.styles = {
         ...mergedDisplayProps.jsonProperties.styles,
-        ...viewStateProps.displayStyleProps.jsonProperties!.styles,
+        ...viewStateProps.displayStyleProps.jsonProperties?.styles,
       };
     }
 

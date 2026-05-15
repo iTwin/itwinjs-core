@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { assert } from "@itwin/core-bentley";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
+import { assert, ByteStream, utf8ToString } from "@itwin/core-bentley";
+import {
+  CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, FeatureTableHeader, GeometryStreamIterator, GltfHeader, ImdlHeader,
+} from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { LineSegment3d } from "@itwin/core-geometry";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
@@ -35,7 +38,7 @@ describe("ElementGraphics", () => {
       formatVersion: CurrentImdlVersion.Major,
     };
 
-    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request);
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -64,7 +67,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "json", data: element!.geom! },
     };
 
-    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request);
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -107,7 +110,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "flatbuffer", data: entries },
     };
 
-    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request);
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -115,6 +118,90 @@ describe("ElementGraphics", () => {
     expect(content).not.to.be.undefined;
     expect(content instanceof Uint8Array).to.be.true;
     expect(content.length).least(40);
+  });
+
+  it("supports an unlimited number of flatbuffer geometry stream entries", async () => {
+    async function getElementGraphics(numCopies: number): Promise<Uint8Array> {
+      const elementId = "0x29";
+      const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
+      expect(element).not.to.be.undefined;
+      expect(element).instanceof(GeometricElement3d);
+      expect(element?.geom).not.to.be.undefined;
+      expect(element?.placement).not.to.be.undefined;
+
+      const entries: ElementGeometryDataEntry[] = [];
+      const it = new GeometryStreamIterator(element!.geom!, element!.category);
+      for (const entry of it) {
+        if ("geometryQuery" !== entry.primitive.type)
+          continue;
+
+        for (let i = 0; i < numCopies; i++) {
+          const segment = LineSegment3d.createXYXY(i, i, i+1, i);
+          const geomEntry = ElementGeometry.fromGeometryQuery(segment);
+          expect(geomEntry).not.to.be.undefined;
+          entries.push(geomEntry!);
+        }
+
+        break;
+      }
+
+      const request: DynamicGraphicsRequest3dProps = {
+        id: "test",
+        elementId,
+        toleranceLog10: -2,
+        formatVersion: CurrentImdlVersion.Major,
+        type: "3d",
+        placement: element!.placement,
+        categoryId: element!.category,
+        geometry: { format: "flatbuffer", data: entries },
+      };
+
+      const result = await imodel[_nativeDb].generateElementGraphics(request);
+      expect(result.status).to.equal(ElementGraphicsStatus.Success);
+      assert(result.status === ElementGraphicsStatus.Success);
+
+      const content = result.content;
+      expect(content).not.to.be.undefined;
+      expect(content instanceof Uint8Array).to.be.true;
+      expect(content.length).least(40);
+
+      return content;
+    }
+
+    let prevGraphics: number[] = [];
+    let prevRangeDiagonalMagnitude = 0;
+    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2047,2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
+      const tileBytes = await getElementGraphics(numCopies);
+      const newGraphics = Array.from(tileBytes);
+
+      expect(newGraphics).not.to.deep.equal(prevGraphics);
+
+      // Extract metadata from the tile graphics.
+      const stream = ByteStream.fromUint8Array(tileBytes);
+      const header = new ImdlHeader(stream);
+
+      const featureTableStartPos = stream.curPos;
+      const featureTableHeader = FeatureTableHeader.readFrom(stream);
+      expect(featureTableHeader).not.to.be.undefined;
+      stream.curPos = featureTableStartPos + featureTableHeader!.length;
+      const gltfHeader = new GltfHeader(stream);
+      expect(gltfHeader.isValid).to.be.true;
+      stream.curPos = gltfHeader.scenePosition;
+      const sceneStrData = stream.nextBytes(gltfHeader.sceneStrLength);
+      const sceneStr = utf8ToString(sceneStrData);
+      expect(sceneStr).not.to.be.undefined;
+      const json = JSON.parse(sceneStr!);
+
+      // The tile should have two unique vertices per line segment in the input geometry stream.
+      expect(json.meshes.Mesh_Root.primitives[0].vertices.count).to.equal(numCopies * 2);
+
+      expect(header.contentRange.diagonal().magnitude()).greaterThan(prevRangeDiagonalMagnitude);
+      prevRangeDiagonalMagnitude = header.contentRange.diagonal().magnitude();
+
+      expect(newGraphics.length).greaterThan(prevGraphics.length);
+
+      prevGraphics = newGraphics;
+    }
   });
 
   it("produces expected errors", async () => {
@@ -144,7 +231,7 @@ describe("ElementGraphics", () => {
         ...testCase[1],
       };
 
-      const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
+      const result = await imodel[_nativeDb].generateElementGraphics(request);
       expect(result.status).to.equal(testCase[0]);
       if (result.status === ElementGraphicsStatus.Success)
         expect(result.content).not.to.be.undefined;

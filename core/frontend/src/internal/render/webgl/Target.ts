@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, expectNotNull, Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
+  AmbientOcclusion, AnalysisStyle, ContourDisplay, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
 import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
@@ -265,6 +265,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const drape = this.currentTextureDrape;
     return undefined === drape ? this.currentPlanarClassifier : drape;
   }
+  public get currentContours(): ContourDisplay | undefined { return this.currentBranch.contourLine; }
 
   public modelToView(modelPt: XYZ, result?: Point3d): Point3d {
     return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
@@ -372,10 +373,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public pushBatch(batch: Batch) {
-    this.uniforms.batch.setCurrentBatch(batch);
+    this.uniforms.batch.setCurrentBatch(batch, this.currentBranch);
   }
   public popBatch() {
-    this.uniforms.batch.setCurrentBatch(undefined);
+    this.uniforms.batch.clearCurrentBatch();
   }
 
   public addBatch(batch: Batch) {
@@ -467,9 +468,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._planarClassifiers = planarClassifiers;
   }
 
-  public changeDynamics(dynamics?: GraphicList) {
-    this.graphics.dynamics = dynamics;
+  public changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined) {
+    this.graphics.changeDynamics(foreground, overlay);
   }
+
   public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
@@ -527,7 +529,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       vf = vf.with("ambientOcclusion", false);
     }
 
-    this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
+    this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline, plan.contours);
 
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
 
@@ -558,12 +560,23 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
-  public override reset(): void {
+  public override reset(_realityMapLayerChanged?: boolean): void {
     this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
-    this.changePlanarClassifiers(undefined);
+    // Ensure that only necessary classifiers are removed. If the reality map layer has not changed,
+    // removing all classifiers would result in the loss of draping effects without triggering a refresh.
+    if (_realityMapLayerChanged) {
+      this.changePlanarClassifiers(undefined);
+    } else if (this._planarClassifiers) {
+        const filteredClassifiers = new Map(
+            [...this._planarClassifiers.entries()]
+                .filter(([key]) => key.toLowerCase().includes("maplayer"))
+        );
+        this.changePlanarClassifiers(filteredClassifiers.size > 0 ? filteredClassifiers : undefined);
+    }
+
     this.changeTextureDrapes(undefined);
 
     this._renderCommands.clear();
@@ -613,7 +626,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         return;
 
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-      this.performanceMetrics.completeFrameTimings(this._fbo!);
+      this.performanceMetrics.completeFrameTimings(expectDefined(this._fbo));
     }
   }
 
@@ -891,6 +904,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       edgeSettings: top.edgeSettings,
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
+      contourLine: top.contourLine,
     });
 
     this.pushState(state);
@@ -959,7 +973,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.beginOperation("Finish GPU Queue");
         const gl = this.renderSystem.context;
         const bytes = new Uint8Array(4);
-        this.renderSystem.frameBufferStack.execute(this._fbo!, true, false, () => {
+        this.renderSystem.frameBufferStack.execute(expectDefined(this._fbo), true, false, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
         this.performanceMetrics.endOperation();
@@ -1101,12 +1115,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
 
     if (overlayCanvas) {
-      const ctx = retCanvas.getContext("2d")!;
+      const ctx = expectNotNull(retCanvas.getContext("2d"));
       ctx.drawImage(overlayCanvas, 0, 0);
     }
 
     const pixelRatio = this.devicePixelRatio;
-    retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+    expectNotNull(retCanvas.getContext("2d")).scale(pixelRatio, pixelRatio);
 
     return retCanvas;
   }
@@ -1217,7 +1231,7 @@ class CanvasState {
     this.canvas.height = h;
 
     if (!this._isWebGLCanvas) {
-      const ctx = this.canvas.getContext("2d")!;
+      const ctx = expectNotNull(this.canvas.getContext("2d"));
       ctx.scale(pixelRatio, pixelRatio); // apply the pixelRatio as a scale on the 2d context for drawing of decorations, etc.
       ctx.save();
     }
@@ -1306,7 +1320,7 @@ export class OnScreenTarget extends Target {
 
     const tx = fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(expectDefined(tx.getHandle()), TechniqueId.CopyColorNoAlpha);
     if (undefined === this._blitGeom)
       this.disposeFbo();
 
@@ -1345,8 +1359,11 @@ export class OnScreenTarget extends Target {
     }
 
     this._scratchProgParams.init(target);
-    this._scratchDrawParams!.init(this._scratchProgParams, geom);
-    return this._scratchDrawParams!;
+    if (undefined === this._scratchDrawParams) {
+      throw new Error("OnScreenTarget.getDrawParams: this._scratchDrawParams is undefined");
+    }
+    this._scratchDrawParams.init(this._scratchProgParams, geom);
+    return this._scratchDrawParams;
   }
 
   protected _endPaint(): void {
@@ -1384,7 +1401,7 @@ export class OnScreenTarget extends Target {
   }
 
   protected override drawOverlayDecorations(): void {
-    const ctx = this._2dCanvas.canvas.getContext("2d", { alpha: true })!;
+    const ctx = expectNotNull(this._2dCanvas.canvas.getContext("2d", { alpha: true }));
     if (this._usingWebGLCanvas && this._2dCanvas.needsClear) {
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.

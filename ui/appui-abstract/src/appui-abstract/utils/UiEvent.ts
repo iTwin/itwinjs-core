@@ -10,6 +10,6 @@ import { BeUiEvent } from "@itwin/core-bentley";
 
 /** iTwin.js UI UiEvent class is a subclass of BeEvent with argument type safety.
  * @public
- * @deprecated in 4.2. This type is a duplicate of [[BeUiEvent]], which should be used instead.
+ * @deprecated in 4.2 - will not be removed until after 2026-06-13. This type is a duplicate of [[BeUiEvent]], which should be used instead.
  */
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> { }

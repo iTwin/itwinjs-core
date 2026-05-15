@@ -14,7 +14,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -288,6 +288,5 @@ function verifyAVectorsAtA(ck: Checker, detailA: CurveLocationDetail, detailB: C
         ck.testLE(d, curveA.fractionToPoint(fractionA).distance(detailB.curve!.fractionToPoint(fractionB)));
       }
     }
-
   }
 }

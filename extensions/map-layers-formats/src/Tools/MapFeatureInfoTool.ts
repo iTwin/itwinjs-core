@@ -6,6 +6,8 @@
  * @module MapLayersFormats
  */
 
+import { BeEvent, expectDefined } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
 import {
   BeButtonEvent,
   EventHandled,
@@ -25,10 +27,8 @@ import {
   ToolAssistanceSection,
   Viewport,
 } from "@itwin/core-frontend";
-import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
-import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
-import { mapInfoIcon } from "../Icons/MapInfoIcon";
+import { mapInfoIcon } from "../Icons/MapInfoIcon.js";
+import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator.js";
 
 /**
  * Data provided every time [[MapFeatureInfoTool]] retrieves feature information.
@@ -38,6 +38,12 @@ import { mapInfoIcon } from "../Icons/MapInfoIcon";
 export interface MapFeatureInfoToolData {
   hit: HitDetail;
   mapInfo?: MapFeatureInfo;
+}
+
+type NonEmptyArray<T> = [T, ...T[]];
+
+function isNonEmptyArray<T>(arr?: T[]): arr is NonEmptyArray<T> {
+  return !!arr && arr.length > 0;
 }
 
 class ActiveMapLayerState {
@@ -54,14 +60,18 @@ class ActiveMapLayerState {
   public isInRange: boolean = true;
   public existsInDisplayStyle: boolean = true;
 
-  public get hasMapLayers() { return (this.activeMapLayers && this.activeMapLayers.length > 0);}
+  public get hasMapLayers() { return this.hasActiveMapLayers(); }
+
+  public hasActiveMapLayers(): this is { activeMapLayers: NonEmptyArray<MapLayerInfoFromTileTree> } {
+    return isNonEmptyArray(this.activeMapLayers);
+  }
 
   public updateWithImagerySettings(imagery: MapImageryProps) {
     const result = {exists: false, hidden: false};
     this.existsInDisplayStyle = false;
     this.isVisible = false;
-    if (this.hasMapLayers) {
-      const oldMls = this._activeMapLayers![0];    // consider only first layer for now
+    if (this.hasActiveMapLayers()) {
+      const oldMls = this.activeMapLayers[0];    // consider only first layer for now
 
       let newMls: MapLayerProps|undefined;
       if (oldMls.isBaseLayer) {
@@ -84,10 +94,10 @@ class ActiveMapLayerState {
       const newJson = tmpNewMls ? JSON.stringify(tmpNewMls) : "";
       const oldJson = JSON.stringify(oldMls.settings.toJSON());
 
-      if (newJson === oldJson ) {
+      if (newJson === oldJson) {
         // We consider newMls and OldMls to be the same mapLayer instance.
         this.existsInDisplayStyle = true;
-        this.isVisible = newMls!.visible ? true : false;
+        this.isVisible = expectDefined(newMls).visible ? true : false;
       }
 
     }
@@ -95,8 +105,8 @@ class ActiveMapLayerState {
   }
 
   public updateWithScaleRangeVisibility(layerIndexes: MapLayerScaleRangeVisibility[]) {
-    if (this.hasMapLayers) {
-      const currentMls = this.activeMapLayers![0];    // consider only first layer for now
+    if (this.hasActiveMapLayers()) {
+      const currentMls = this.activeMapLayers[0];    // consider only first layer for now
       for (const scaleRangeVisibility of layerIndexes) {
         if (currentMls.index?.index === scaleRangeVisibility.index) {
           this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible || scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;

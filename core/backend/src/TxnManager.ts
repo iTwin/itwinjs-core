@@ -8,25 +8,30 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
+import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
-import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
+import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { ChangesetReader } from "./ChangesetReader";
+import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
 
 /** A string that identifies a Txn.
- * @public
+ * @public @preview
  */
 export type TxnIdString = string;
 
 /** An error generated during dependency validation.
  * @see [[TxnManager.validationErrors]].
- * @public
+ * @public @preview
  */
 export interface ValidationError {
   /** If true, txn is aborted. */
@@ -39,7 +44,7 @@ export interface ValidationError {
 
 /** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
  * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
- * @public
+ * @public @preview
  */
 export interface TxnChangedEntities {
   /** The entities that were inserted by the transaction. */
@@ -145,7 +150,7 @@ class ChangedEntitiesProc {
 
   public static maxPerEvent = 1000;
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+  public static process(iModel: BriefcaseDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
       // The iModel is being closed. Do not prepare new sqlite statements.
       return;
@@ -155,8 +160,9 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
+  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
     if (classIdsToLoad.length > 0) {
       const classIdsStr = classIdsToLoad.join(",");
@@ -164,6 +170,7 @@ class ChangedEntitiesProc {
       db.withPreparedSqliteStatement(sql, (stmt) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const classFullName = `${stmt.getValueString(2)}:${stmt.getValueString(0)}`;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           db.tryGetMetaData(classFullName);
         }
       });
@@ -172,6 +179,7 @@ class ChangedEntitiesProc {
     // Define array indices for the metadata array entries correlating to the class Ids in the input list.
     const nameToIndex = new Map<string, number>();
     for (const classId of classIds) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.classMetaDataRegistry.findByClassId(classId);
       nameToIndex.set(meta?.ecclass ?? "", nameToIndex.size);
     }
@@ -182,6 +190,7 @@ class ChangedEntitiesProc {
       const bases: number[] = [];
       result[index] = { name, bases };
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.tryGetMetaData(name);
       if (!meta) {
         return;
@@ -211,7 +220,7 @@ class ChangedEntitiesProc {
     return result;
   }
 
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private sendEvent(iModel: BriefcaseDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     if (this._currSize === 0)
       return;
 
@@ -247,7 +256,7 @@ class ChangedEntitiesProc {
     this._currSize = 0;
   }
 
-  private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private static processChanges(iModel: BriefcaseDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
@@ -291,18 +300,513 @@ interface IConflictHandler {
 }
 
 /**
- * @internal
- * Manages conflict resolution during a merge operation.
-*/
-export class ChangeMergeManager {
+ * @alpha
+ * Transaction modes
+ */
+export type TxnMode = "direct" | "indirect";
+
+/**
+ * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]].
+ *
+ * The `RebaseManager` coordinates the rebase of local transactions when pulling and merging changes from other sources,
+ * such as remote repositories or other users. It provides mechanisms to handle transaction conflicts, register custom conflict
+ * handlers, and manage the rebase workflow. This includes resuming rebases, invoking user-defined handlers for conflict resolution,
+ * and tracking the current merge/rebase state.
+ *
+ * Key responsibilities:
+ * - Orchestrates the rebase of local transactions after a pull/merge operation.
+ * - Allows registration and removal of custom conflict handlers to resolve changeset conflicts during rebase.
+ * - Provides methods to check the current merge/rebase state.
+ * - Raises events before and after each transaction is rebased.
+ * - Ensures changes are saved or aborted appropriately based on the outcome of the rebase process.
+ *
+ * @alpha
+ */
+export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
-  public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
-  public resume() {
-    this._iModel[_nativeDb].pullMergeResume();
+  private _customHandler?: RebaseHandler;
+  private _aborting: boolean = false;
+  private _disposed: boolean = false;
+
+  /** Event raised before pull merge process begins.
+   * @alpha
+   */
+  public readonly onPullMergeBegin = new BeEvent<(changeset: ChangesetIdWithIndex) => void>();
+
+  /** Event raised before a rebase operation begins.
+   * @alpha
+   */
+  public readonly onRebaseBegin = new BeEvent<(txns: TxnProps[]) => void>();
+
+  /** Event raised before a transaction is rebased.
+   * @alpha
+   */
+  public readonly onRebaseTxnBegin = new BeEvent<(txnProps: TxnProps) => void>();
+  /** Event raised after a transaction is rebased.
+   * @alpha
+   */
+  public readonly onRebaseTxnEnd = new BeEvent<(txnProps: TxnProps) => void>();
+
+  /** Event raised after a rebase operation ends.
+   * @alpha
+   */
+  public readonly onRebaseEnd = new BeEvent<(txns: TxnProps[]) => void>();
+  /** Event raised after pull merge process ends.
+   * @alpha
+   */
+  public readonly onPullMergeEnd = new BeEvent<(changeset: ChangesetIdWithIndex) => void>();
+
+  /** Event raised before applying incoming changes.
+   * @alpha
+   */
+  public readonly onApplyIncomingChangesBegin = new BeEvent<(changesets: ChangesetProps[]) => void>();
+
+  /** Event raised after applying incoming changes.
+   * @alpha
+   */
+  public readonly onApplyIncomingChangesEnd = new BeEvent<(changes: ChangesetProps[]) => void>();
+
+  /** Event raised before reversing local changes.
+  * @alpha
+   */
+  public readonly onReverseLocalChangesBegin = new BeEvent<() => void>();
+
+  /** Event raised after reversing local changes.
+   * @alpha
+   */
+  public readonly onReverseLocalChangesEnd = new BeEvent<(txns: TxnProps[]) => void>();
+
+  /** Event raised before downloading changesets.
+   * @alpha
+   */
+  public readonly onDownloadChangesetsBegin = new BeEvent<() => void>();
+
+  /** Event raised after downloading changesets.
+   * @alpha
+   */
+  public readonly onDownloadChangesetsEnd = new BeEvent<() => void>();
+
+
+  /** @internal */
+  public notifyPullMergeBegin(changeset: ChangesetIdWithIndex) {
+    this.onPullMergeBegin.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPullMergeBegin", changeset);
   }
+  /** @internal */
+  public notifyPullMergeEnd(changeset: ChangesetIdWithIndex) {
+    this.onPullMergeEnd.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPullMergeEnd", changeset);
+  }
+  /** @internal */
+  public notifyApplyIncomingChangesBegin(changes: ChangesetProps[]) {
+    this.onApplyIncomingChangesBegin.raiseEvent(changes);
+    IpcHost.notifyTxns(this._iModel, "notifyApplyIncomingChangesBegin", changes);
+  }
+  /** @internal */
+  public notifyApplyIncomingChangesEnd(changes: ChangesetProps[]) {
+    this.onApplyIncomingChangesEnd.raiseEvent(changes);
+    IpcHost.notifyTxns(this._iModel, "notifyApplyIncomingChangesEnd", changes);
+  }
+  /** @internal */
+  public notifyReverseLocalChangesBegin() {
+    this.onReverseLocalChangesBegin.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReverseLocalChangesBegin");
+  }
+  /** @internal */
+  public notifyReverseLocalChangesEnd(txns: TxnProps[]) {
+    this.onReverseLocalChangesEnd.raiseEvent(txns);
+    IpcHost.notifyTxns(this._iModel, "notifyReverseLocalChangesEnd", txns);
+  }
+  /** @internal */
+  public notifyDownloadChangesetsBegin() {
+    this.onDownloadChangesetsBegin.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyDownloadChangesetsBegin");
+  }
+  /** @internal */
+  public notifyDownloadChangesetsEnd() {
+    this.onDownloadChangesetsEnd.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyDownloadChangesetsEnd");
+  }
+  /** @internal */
+  public notifyRebaseBegin(txns: TxnProps[]) {
+    this.onRebaseBegin.raiseEvent(txns);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseBegin", txns);
+  }
+  /** @internal */
+  public notifyRebaseEnd(txns: TxnProps[]) {
+    this.onRebaseEnd.raiseEvent(txns);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseEnd", txns);
+  }
+  /** @internal */
+  public notifyRebaseTxnBegin(txnProps: TxnProps) {
+    this.onRebaseTxnBegin.raiseEvent(txnProps);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnBegin", txnProps);
+  }
+  /** @internal */
+  public notifyRebaseTxnEnd(txnProps: TxnProps) {
+    this.onRebaseTxnEnd.raiseEvent(txnProps);
+    IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnEnd", txnProps);
+  }
+
+  public constructor(private _iModel: BriefcaseDb) { }
+
+  /** Disposes of this RebaseManager, clearing all event listeners.
+   * Also calls [[RebaseHandler.dispose]] on the registered custom handler, if any.
+   * Subsequent calls are ignored.
+   * @alpha
+   */
+  public dispose(): void {
+    if (this._disposed)
+      return;
+    this._disposed = true;
+    this._customHandler?.dispose?.();
+    this.onPullMergeBegin.clear();
+    this.onRebaseBegin.clear();
+    this.onRebaseTxnBegin.clear();
+    this.onRebaseTxnEnd.clear();
+    this.onRebaseEnd.clear();
+    this.onPullMergeEnd.clear();
+    this.onApplyIncomingChangesBegin.clear();
+    this.onApplyIncomingChangesEnd.clear();
+    this.onReverseLocalChangesBegin.clear();
+    this.onReverseLocalChangesEnd.clear();
+    this.onDownloadChangesetsBegin.clear();
+    this.onDownloadChangesetsEnd.clear();
+  }
+
+  /**
+   * Resumes the rebase process for the current iModel, applying any pending local changes
+   * on top of the latest pulled changes from the remote source.
+   *
+   * This method performs the following steps:
+   * 1. Begins the rebase process using the native database.
+   * 2. Iterates through each transaction that needs to be rebased:
+   *    - Retrieves transaction properties.
+   *    - Raises events before and after rebasing each transaction.
+   *    - Optionally reinstates local changes based on the rebase handler.
+   *    - Optionally recomputes transaction data using the rebase handler.
+   *    - Updates the transaction in the native database.
+   * 3. Ends the rebase process and saves changes if the database is not read-only.
+   * 4. Drops any restore point associated with the pull-merge operation.
+   *
+   * If an error occurs during the process, the rebase is aborted and the error is rethrown.
+   *
+   * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
+   */
+  public async resume() {
+    const nativeDb = this._iModel[_nativeDb];
+    const txns = this._iModel.txns;
+    try {
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+      this.notifyRebaseBegin(reversedTxnProps);
+
+      let txnId = nativeDb.pullMergeRebaseNext();
+      while (txnId) {
+        const txnProps = txns.getTxnProps(txnId);
+        if (!txnProps) {
+          throw new Error(`Transaction ${txnId} not found`);
+        }
+        this.notifyRebaseTxnBegin(txnProps);
+        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
+        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
+        if (shouldReinstate) {
+          nativeDb.pullMergeRebaseReinstateTxn();
+          Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+        }
+
+        if (this._customHandler) {
+          await this._customHandler.recompute(txnProps);
+        }
+
+        nativeDb.pullMergeRebaseUpdateTxn();
+        this.notifyRebaseTxnEnd(txnProps);
+        txnId = nativeDb.pullMergeRebaseNext();
+      }
+
+      nativeDb.pullMergeRebaseEnd();
+      this.notifyRebaseEnd(reversedTxnProps);
+      if (!nativeDb.isReadonly) {
+        nativeDb.saveChanges("Merge.");
+      }
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      }
+      this.notifyPullMergeEnd(this._iModel.changeset);
+    } catch (err) {
+      nativeDb.pullMergeRebaseAbortTxn();
+      throw err;
+    }
+  }
+
+  /**
+   * Resumes the rebase process for the current iModel, applying any pending local changes
+   * on top of the latest pulled changes from the remote source.
+   *
+   * This method performs the following steps:
+   * 1. Begins the rebase process using the native database.
+   * 2. Iterates through each transaction that needs to be rebased:
+   *    - Retrieves transaction properties.
+   *    - Raises events before and after rebasing each transaction.
+   *    - Optionally reinstates local changes based on the rebase handler.
+   *    - Optionally recomputes transaction data using the rebase handler.
+   *    - Updates the transaction in the native database.
+   * 3. Ends the rebase process and saves changes if the database is not read-only.
+   * 4. Drops any restore point associated with the pull-merge operation.
+   *
+   * If an error occurs during the process, the rebase is aborted and the error is rethrown.
+   *
+   * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
+   */
+
+  public async resumeSemantic() {
+    const nativeDb = this._iModel[_nativeDb];
+    const txns = this._iModel.txns;
+    try {
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+      this.notifyRebaseBegin(reversedTxnProps);
+
+      let txnId = nativeDb.pullMergeRebaseNext();
+      while (txnId) {
+        const txnProps = txns.getTxnProps(txnId);
+        if (!txnProps) {
+          throw new IModelError(IModelStatus.NotFound, `Transaction ${txnId} not found`);
+        }
+
+        this.notifyRebaseTxnBegin(txnProps);
+        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
+        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
+        if (shouldReinstate) {
+          await this.reinstateSemanticChangeSet(txnProps);
+          Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+        }
+
+        if (this._customHandler) {
+          await this._customHandler.recompute(txnProps);
+        }
+
+        nativeDb.pullMergeRebaseUpdateTxn();
+        this.purgeSchemaFolderForNoopSchemaChange(txnProps);
+        this.notifyRebaseTxnEnd(txnProps);
+
+        txnId = nativeDb.pullMergeRebaseNext();
+      }
+
+      nativeDb.pullMergeRebaseEnd();
+      this.notifyRebaseEnd(reversedTxnProps);
+      if (!nativeDb.isReadonly) {
+        nativeDb.saveChanges("Merge.");
+      }
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      }
+      BriefcaseManager.deleteRebaseFolders(this._iModel, true); // clean up all rebase folders after successful rebase
+      this.notifyPullMergeEnd(this._iModel.changeset);
+    } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelDb, `Error during semantic rebase at transaction ${txns.getCurrentTxnId()}`, () => BentleyError.getErrorProps(err));
+      nativeDb.pullMergeRebaseAbortTxn();
+      throw err;
+    }
+  }
+
+  /**
+   * Checks if the transaction is a schema change and if it was a noop change during rebase, purges the local folder for that txn
+   * @param txnProps
+   * @internal
+   */
+  private purgeSchemaFolderForNoopSchemaChange(txnProps: TxnProps) {
+    if (txnProps.type === "ECSchema" || txnProps.type === "Schema") {
+      const newProps = this._iModel.txns.getTxnProps(txnProps.id);
+      if (newProps === undefined) { // if new props is undefined that means after importing the schemas it was a no op change so the txn is deleted from table and therefore we also donot need thwe local folder anymore
+        BriefcaseManager.deleteTxnSchemaFolder(this._iModel, txnProps.id); // delete the folder after importing
+      }
+    }
+  }
+  /**
+   * Reinstantes the semantic changeset data for the given txnProps, both schema as well as data changesets
+    * @param txnProps
+   * @throws IModelError if local folder for transaction does not exist
+   * @internal
+   */
+  private async reinstateSemanticChangeSet(txnProps: TxnProps) {
+    if (txnProps.type === "ECSchema" || txnProps.type === "Schema") {
+
+      if (!BriefcaseManager.semanticRebaseSchemaFolderExists(this._iModel, txnProps.id)) {
+        throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
+      }
+
+      const schemasToImport = BriefcaseManager.getSchemasForTxn(this._iModel, txnProps.id);
+      const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+        schemaLockHeld: true,
+      };
+      this._iModel[_nativeDb].importSchemasDuringSemanticRebase(schemasToImport, nativeImportOptions);
+      this._iModel.clearCaches();
+    }
+    else if (txnProps.type === "Ddl") {
+      // DDL changes are already applied by importSchemasDuringSemanticRebase above — skip native reinstatement
+      // to avoid UNIQUE constraint violations on ec_Property and similar schema tables.
+    }
+    else if (txnProps.type === "Data") {
+
+      if (!BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, txnProps.id)) {
+        throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
+      }
+
+      for await (const instance of BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id)) {
+        if (instance.$meta.isIndirectChange) {
+          this._iModel.txns.withIndirectTxnMode(() => {
+            this.applyInstancePatch(instance);
+          });
+          continue;
+        }
+        this.applyInstancePatch(instance);
+      }
+
+      BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
+    }
+    else {
+      this._iModel[_nativeDb].pullMergeRebaseReinstateTxn();
+    }
+  }
+
+  /**
+   * Applies instance patch during rebase
+   * @param instance
+   * @internal
+   */
+  private applyInstancePatch(instance: InstancePatch) {
+    const nativeDb = this._iModel[_nativeDb];
+    const { $meta, ...props } = instance;
+    switch ($meta.op) {
+      case "Inserted": {
+        if (!props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
+        const options = { forceUseId: true, useJsNames: true };
+        const id = nativeDb.insertInstance(props, options);
+        if (!Id64.isValidId64(id))
+          throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.id}`);
+        break;
+      }
+      case "Updated": {
+        if (!props)
+          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
+        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
+        break;
+      }
+      case "Deleted": {
+        const key = { id: props.id, classFullName: props.className };
+        const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
+        break;
+      }
+      default:
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
+    }
+  }
+
+  /**
+   * Determines whether the current transaction can be aborted.
+   *
+   * This method checks if a transaction is currently in progress and if a specific restore point,
+   * identified by `BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME`, exists in the briefcase manager.
+   *
+   * @returns {boolean} Returns `true` if a transaction is in progress and the required restore point exists; otherwise, returns `false`.
+   */
+  public canAbort() {
+    return this.inProgress() && BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+  }
+
+  /**
+   * Aborts the current transaction by restoring the iModel to a predefined restore point. This method will
+   * automatically discard any unsaved changes before performing the restore.
+   *
+   * If a restore point is available (as determined by `canAbort()`), this method restores the iModel
+   * to the state saved at the restore point named by `BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME`.
+   * If no restore point is available, an error is thrown.
+   *
+   * @returns A promise that resolves when the restore operation is complete.
+   * @throws {Error} If there is no restore point to abort to.
+   */
+  public async abort(): Promise<void> {
+    if (this.canAbort()) {
+      this._aborting = true;
+      try {
+
+        if (this._iModel.txns.hasUnsavedChanges) {
+          this._iModel[_nativeDb].abandonChanges();
+        }
+        await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      } finally {
+        this._aborting = false;
+      }
+    } else {
+      throw new Error("No restore point to abort to");
+    }
+  }
+
+  /**
+   * Sets the handler to be invoked for rebase operations.
+   *
+   * @param handler - The {@link RebaseHandler} to handle rebase events.
+   */
+  public setCustomHandler(handler: RebaseHandler) {
+    if (this._customHandler) {
+      Logger.logWarning(BackendLoggerCategory.IModelDb, "Rebase handler already set");
+    }
+    this._customHandler = handler;
+  }
+
+  /**
+   * Determines whether rebasing or merging is currently in progress. Same as calling `this.isRebasing || this.isMerging`.
+   * @returns {boolean} Returns `true` if this rebase manager is currently rebasing or merging changes; otherwise, `false`.
+   */
   public inProgress() {
-    return this._iModel[_nativeDb].pullMergeInProgress();
+    return this._iModel[_nativeDb].pullMergeGetStage() !== "None";
   }
+
+  /**
+   * Indicates whether the current transaction manager is in the process of aborting a transaction.
+   *
+   * @returns `true` if the transaction manager is currently aborting; otherwise, `false`.
+   */
+  public get isAborting(): boolean {
+    return this._aborting;
+  }
+
+  /**
+   * Indicates whether the current transaction manager is in the "Rebasing" stage.
+   *
+   * This property checks the internal native database's merge stage to determine if a rebase operation is in progress.
+   *
+   * @returns `true` if the transaction manager is currently rebasing; otherwise, `false`.
+   */
+  public get isRebasing() {
+    return this._iModel[_nativeDb].pullMergeGetStage() === "Rebasing";
+  }
+
+  /**
+   * Indicates whether the current iModel is in the process of merging changes from a pull operation.
+   *
+   * @returns `true` if the iModel is currently merging changes; otherwise, `false`.
+   */
+  public get isMerging() {
+    return this._iModel[_nativeDb].pullMergeGetStage() === "Merging";
+  }
+
+  /**
+   * Attempts to resolve a changeset conflict by invoking registered conflict handlers in sequence.
+   *
+   * Iterates through the linked list of conflict handlers, passing the provided conflict arguments to each handler.
+   * If a handler returns a defined resolution, logs the resolution and returns it immediately.
+   * If no handler resolves the conflict, returns `undefined`.
+   *
+   * @param args - The arguments describing the changeset conflict to resolve.
+   * @returns The conflict resolution provided by a handler, or `undefined` if no handler resolves the conflict.
+   */
   public onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
     let curr = this._conflictHandlers;
     while (curr) {
@@ -315,6 +819,19 @@ export class ChangeMergeManager {
     }
     return undefined
   }
+
+  /**
+   * Registers a new conflict handler for rebase changeset conflicts.
+   *
+   * @param args - An object containing:
+   *   - `id`: A unique identifier for the conflict handler.
+   *   - `handler`: A function that handles rebase changeset conflicts and returns a `DbConflictResolution` or `undefined`.
+   * @throws IModelError if a conflict handler with the same `id` already exists.
+   *
+   * @remarks
+   * Conflict handlers are used during changeset rebase operations to resolve conflicts.
+   * Each handler must have a unique `id`. Attempting to register a handler with a duplicate `id` will result in an error.
+   */
   public addConflictHandler(args: { id: string, handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined }) {
     const idExists = (id: string) => {
       let curr = this._conflictHandlers;
@@ -329,6 +846,15 @@ export class ChangeMergeManager {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Conflict handler with id ${args.id} already exists`);
     this._conflictHandlers = { ...args, next: this._conflictHandlers };
   }
+
+  /**
+   * Removes a conflict handler from the internal linked list by its identifier.
+   *
+   * @param id - The unique identifier of the conflict handler to remove.
+   *
+   * If the handler with the specified `id` exists in the list, it will be removed.
+   * If no handler with the given `id` is found, the method does nothing.
+   */
   public removeConflictHandler(id: string) {
     if (!this._conflictHandlers)
       return;
@@ -351,26 +877,28 @@ export class ChangeMergeManager {
   }
 }
 
-/** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
- * @public
+/** Manages local changes to a [[BriefcaseDb]] via [Txns]($docs/learning/InteractiveEditing.md)
+ * @public @preview
  */
 export class TxnManager {
   /** @internal */
   private _isDisposed = false;
-
+  /** @internal */
+  private _withIndirectChangeRefCounter = 0;
   /** @internal */
   public get isDisposed(): boolean {
     return this._isDisposed;
   }
 
   /** @internal */
-  public readonly changeMergeManager: ChangeMergeManager;
+  public readonly rebaser: RebaseManager;
 
   /** @internal */
-  constructor(private _iModel: BriefcaseDb | StandaloneDb) {
-    this.changeMergeManager = new ChangeMergeManager(_iModel);
+  constructor(private _iModel: BriefcaseDb) {
+    this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
+      this.rebaser.dispose();
     });
   }
 
@@ -379,7 +907,7 @@ export class TxnManager {
 
   private get _nativeDb() { return this._iModel[_nativeDb]; }
   private _getElementClass(elClassName: string): typeof Element {
-    return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
+    return this._iModel.getJsClass<typeof Element>(elClassName);
   }
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
@@ -397,19 +925,33 @@ export class TxnManager {
 
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
+    // as any necessary to access protected static method on Element and subclasses).
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onBeforeOutputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
+    // as any necessary to access protected static method on Element and subclasses).
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onAllInputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onRootChangedArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onDeletedDependencyArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
@@ -421,6 +963,19 @@ export class TxnManager {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
     // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
+  }
+
+  /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
+   * @internal */
+  protected _captureInstanceChanges(id: TxnIdString) {
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
+
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    while (reader.step()) {
+      pcu.appendFrom(reader);
+    }
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
@@ -462,6 +1017,8 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
+    // Should only clear instance caches, not all caches
+    this._iModel.clearCaches({ instanceCachesOnly: true });
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
@@ -480,12 +1037,20 @@ export class TxnManager {
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
 
-  private _onRebaseTxnBegin(txn: TxnArgs) {
-    this.onRebaseTxnBegin.raiseEvent(txn);
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesPushed(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesPushed.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPushedChanges", changeset);
   }
 
-  private _onRebaseTxnEnd(txn: TxnArgs) {
-    this.onRebaseTxnEnd.raiseEvent(txn);
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesPulled(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesPulled.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
   }
 
   private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
@@ -523,7 +1088,7 @@ export class TxnManager {
     }
 
     try {
-      const resolution = this.changeMergeManager.onConflict(args);
+      const resolution = this.rebaser.onConflict(args);
       if (resolution !== undefined)
         return resolution;
     } catch (err) {
@@ -558,11 +1123,47 @@ export class TxnManager {
     }
 
     if (args.cause === "Constraint") {
-      Logger.logInfo(BackendLoggerCategory.IModelDb, "Constraint voilation detected. Generally caused by db constraints like UNIQUE index. Skipping local change.", getChangeMetaData());
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "Constraint violation detected. Generally caused by db constraints like UNIQUE index. Skipping local change.", getChangeMetaData());
       return DbConflictResolution.Skip;
     }
 
     return DbConflictResolution.Replace;
+  }
+
+
+  /**
+   * @alpha
+   * Retrieves the txn properties for a given txn ID.
+   *
+   * @param id - The unique identifier of the transaction.
+   * @returns The properties of the transaction if found; otherwise, `undefined`.
+   */
+  public getTxnProps(id: TxnIdString): TxnProps | undefined {
+    return this._iModel[_nativeDb].getTxnProps(id);
+  }
+
+  /**
+   * @alpha
+   * Iterates over all transactions in the sequence, yielding each transaction's properties.
+   *
+   * @yields {TxnProps} The properties of each transaction in the sequence.
+   */
+  public *queryTxns(): Generator<TxnProps> {
+    let txn = this.getTxnProps(this.queryFirstTxnId());
+    while (txn) {
+      yield txn;
+      txn = txn.nextId ? this.getTxnProps(txn.nextId) : undefined;
+    }
+  }
+
+  /**
+   * @alpha
+   * Retrieves the properties of the last saved txn via `IModelDb.saveChanges()`, if available.
+   *
+   * @returns The properties of the last saved txn, or `undefined` if none exist.
+   */
+  public getLastSavedTxnProps(): TxnProps | undefined {
+    return this.getTxnProps(this.queryPreviousTxnId(this.getCurrentTxnId()));
   }
 
   /** Dependency handlers may call method this to report a validation error.
@@ -621,12 +1222,18 @@ export class TxnManager {
    */
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
-  /** @internal */
-  public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnArgs) => void>();
-  /** @internal */
-  public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnArgs) => void>();
+  /** Event raised after changes are pulled from iModelHub.
+   * @see [[BriefcaseDb.pullChanges]].
+   */
+  public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
+  /** Event raised after changes are pushed to iModelHub.
+   * @see [[BriefcaseDb.pushChanges]].
+   */
+  public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
   /**
-   * if handler is set and it does not return undefiend then default handler will not be called
+   * if handler is set and it does not return undefined then default handler will not be called
    * @internal
    * */
   public appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
@@ -643,7 +1250,7 @@ export class TxnManager {
   }
 
   /** Determine whether current txn is propagating indirect changes or not. */
-  public get isIndirectChanges(): boolean { return this._nativeDb.isIndirectChanges(); }
+  public get isIndirectChanges(): boolean { return this.getMode() === "indirect" }
 
   /** Determine if there are currently any reversible (undoable) changes from this editing session. */
   public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
@@ -676,6 +1283,7 @@ export class TxnManager {
   public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
+   * @note Consider using [[reverseTxnsAsync]] instead.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
    * @note If there are any outstanding uncommitted changes, they are reversed.
@@ -684,34 +1292,211 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
+    if (this._nativeDb.hasUnsavedChanges())
+      this._nativeDb.abandonChanges();
     return this._nativeDb.reverseTxns(numOperations);
   }
 
-  /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+  /** Reverse the most recent operation.
+   * @note Consider using [[reverseSingleTxnAsync]] instead.
+   */
+  public reverseSingleTxn(): IModelStatus {
+    return this.reverseTxns(1);
+  }
 
-  /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  /** Reverse all changes back to the beginning of the session.
+   * @note Consider using [[reverseAllTxnsAsync]] instead.
+   */
+  public reverseAll(): IModelStatus {
+    return this._nativeDb.reverseAll();
+  }
 
   /** Reverse all changes back to a previously saved TxnId.
+   * @note Consider using [[reverseToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.reverseTo(txnId);
+  }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
+   * @note Consider using [[cancelToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.cancelTo(txnId);
+  }
+
+  /** Reverse (undo) the most recent operation(s) to this IModelDb. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If you do not want to abandon any locks, set [ReverseTxnArgs.retainLocks]($common) to true.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If numOperations is too large only the operations are reversible are reversed.
+   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
+   *  be reinstated together when/if ReinstateTxn is called.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTxns(numOperations));
+  }
+
+  /** Reverse (undo) the most recent operation to this IModelDb. By default, this method also
+   * abandons the locks that were acquired for that operation.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even though this method reverses only one operation, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.reverseTxnsAsync(1, args);
+  }
+
+  /** Reverse (undo) all operations back to the beginning of the session. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseAll());
+  }
+
+  /** Reverse (undo) all operations back to a previously saved TxnId. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to abandon locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   * @see  [[getCurrentTxnId]] [[cancelTo]]
+   */
+  public async reverseToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTo(txnId));
+  }
+
+  /** Reverse and then cancel (make non-reinstatable) all operations back to a previous TxnId. By default, this
+   * method also abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to abandon locks.
+   * @returns A promise that resolves to success if the transactions were reversed and cleared, or rejects with an IModelError otherwise.
+   */
+  public async cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void> {
+    // First reverse and abandon locks. Only cancel if that succeeds.
+    // This is important because the locks would become unabandonable if we canceled first and
+    // _then_ the abandonment failed. We expect the call to cancelTo to return "NothingToUndo",
+    // but that's ok - it will still clear the already-reversed txns.
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTo(txnId));
+    const status = this._nativeDb.cancelTo(txnId);
+    if (status !== IModelStatus.Success && status !== IModelStatus.NothingToUndo)
+      throw new IModelError(status, IModelError.getErrorKey(status));
+    this._iModel.locks.clearTxnLockRecords(txnId);
+  }
+
+  private async withLockAbandonment(args: ReverseTxnArgs | undefined, doReverseCallback: () => IModelStatus): Promise<void> {
+    const result = doReverseCallback();
+    if (result === IModelStatus.Success) {
+      if (!args?.retainLocks) {
+        // Abandon locks for the earliest txn, which abandons locks for the later ones, too.
+        await this._iModel.locks.abandonLocksForReversedTxn(this.getCurrentTxnId());
+      }
+    } else {
+      throw new IModelError(result, IModelError.getErrorKey(result));
+    }
+  }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
+   * @note This method will return [[IModelStatus.LockNotHeld]] and will not reinstate the Txn if the locks
+   * originally acquired by the Txn have been abandoned. Use [[reinstateTxnAsync]] to re-acquire the locks
+   * and reinstate the Txn in a single operation.
    */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus {
+    // Verify that the locks required by this txn have not been abandoned.
+    // If so, this method has no way to re-acquire them because it is synchronous. This
+    // is basically a developer error, mixing reverseTxnAsync with reinstateTxn (non-Async).
+    const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
+    if (
+      this.isTxnIdValid(reinstateRange.firstTxnId) &&
+      !this._iModel.locks.holdsNecessaryLocksForReinstatingTxn(this.queryPreviousTxnId(reinstateRange.lastTxnId))
+    ) {
+      return IModelStatus.LockNotHeld;
+    }
+
+    return this._iModel.reinstateTxn();
+  }
+
+  /** Reinstate the most recently reversed transaction. This method will first attempt
+   * to re-acquire the required locks, if they were abandoned after the operation was reversed.
+   * Since at any time multiple transactions can be reversed, it may take multiple calls to this
+   * method to reinstate all reversed operations.
+   * @beta
+   * @note If there are any outstanding unsaved changes, they are canceled before the Txn is reinstated. Unless
+   * [ReinstateTxnArgs.retainLocks]($common) is true, the locks associated with the unsaved changes are also abandoned.
+   * @param args Optional arguments to control the behavior of the reinstate operation, such as whether to retain
+   * locks when abandoning unsaved changes.
+   * @returns A Promise that resolves to success if a reversed transaction was reinstated, or rejects with an IModelError otherwise.
+   */
+  public async reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void> {
+    // We must abandon any unsaved changes here because it will be too late
+    // when reinstateTxn does it.
+    if (this.hasUnsavedChanges) {
+      this._iModel.clearCaches({ instanceCachesOnly: true });
+      this._iModel[_nativeDb].abandonChanges();
+    }
+
+    if (!args?.retainLocks) {
+      await this._iModel.locks.abandonLocksForCurrentUnsavedTxn();
+    }
+
+    const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
+    if (!this.isTxnIdValid(reinstateRange.firstTxnId)) {
+      throw new IModelError(IModelStatus.NothingToRedo, IModelError.getErrorKey(IModelStatus.NothingToRedo));
+    }
+
+    // Reacquire locks for the latest txn in the range, which will reacquire locks for all earlier txns, too.
+    await this._iModel.locks.acquireLocksForReinstatingTxn(this.queryPreviousTxnId(reinstateRange.lastTxnId));
+
+    const status = this.reinstateTxn();
+    if (status !== IModelStatus.Success) {
+      throw new IModelError(status, IModelError.getErrorKey(status));
+    }
+  }
 
   /** Get the Id of the first transaction, if any.
    */
@@ -725,6 +1510,12 @@ export class TxnManager {
 
   /** Get the Id of the current (tip) transaction.  */
   public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
+
+  /**
+   * @alpha
+   * Get the Id of the current session.
+   */
+  public getCurrentSessionId(): number { return this._nativeDb.currentTxnSessionId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
   public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
@@ -744,6 +1535,12 @@ export class TxnManager {
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
   /**
+   * @alpha
+   * Query if there are any pending schema changes in this IModelDb.
+   */
+  public get hasPendingSchemaChanges(): boolean { return this._nativeDb.hasPendingSchemaChanges(); }
+
+  /**
    * Query if there are changes in memory that have not been saved to the iModelDb or if there are Txns that are waiting to be pushed.
    * @see [[IModelDb.saveChanges]]
    * @see [[IModelDb.pushChanges]]
@@ -752,7 +1549,7 @@ export class TxnManager {
 
   /** Destroy the record of all local changes that have yet to be saved and/or pushed.
    * This permanently eradicates your changes - use with caution!
-   * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
+   * Typically, callers will want to subsequently use [[LockControl.abandonAllLocks]].
    * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
    */
   public deleteAllTxns(): void {
@@ -775,5 +1572,81 @@ export class TxnManager {
   public getChangeTrackingMemoryUsed(): number {
     return this._iModel[_nativeDb].getChangeTrackingMemoryUsed();
   }
+
+  /**
+   * @alpha
+   * Get the current transaction mode.
+   * @returns The current transaction mode, either "direct" or "indirect".
+   */
+  public getMode(): TxnMode {
+    return this._nativeDb.getTxnMode();
+  }
+
+  /**
+   * @alpha
+   * Execute a series of changes in an indirect transaction.
+   * @param callback The function containing the changes to make.
+   */
+  public withIndirectTxnMode(callback: () => void): void {
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
+    try {
+      callback();
+    } finally {
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
+    }
+  }
+
+  /**
+   * @alpha
+   * Execute a series of changes in an indirect transaction.
+   * @param callback The function containing the changes to make.
+   */
+  public async withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void> {
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
+    try {
+      await callback();
+    } finally {
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
+    }
+  }
 }
 
+/**
+ * Interface for handling rebase operations on transactions.
+ * @alpha
+ */
+export interface RebaseHandler {
+  /**
+   * Determine whether a transaction should be reinstated during a rebase operation.
+   * @param txn The transaction to check.
+   *
+   * @alpha
+   */
+  shouldReinstate(txn: TxnProps): boolean;
+  /**
+   * Recompute the changes for a given transaction.
+   * @param txn The transaction to recompute.
+   *
+   * @alpha
+   */
+  recompute(txn: TxnProps): Promise<void>;
+  /**
+   * Called when the owning [[RebaseManager]] is disposed (e.g. when the iModel is closed).
+   * Override this method to unsubscribe from events or release resources held by this handler.
+   *
+   * @alpha
+   */
+  dispose?(): void;
+}

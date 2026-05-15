@@ -6,7 +6,7 @@ import * as fs from "fs";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition,
+  CategorySelector, DefinitionModel, DisplayStyle3d, EditTxn, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition, withEditTxn,
 } from "@itwin/core-backend";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 import {
@@ -41,9 +41,6 @@ export class OrbitGtContextIModelCreator {
   public async create(): Promise<void> {
     const { rdsUrl, accountName, containerName, blobFileName, sasToken } = this._props;
     try {
-      this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
-      this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
-
       if (Downloader.INSTANCE == null)
         Downloader.INSTANCE = new DownloaderNode();
       if (CRSManager.ENGINE == null)
@@ -78,30 +75,39 @@ export class OrbitGtContextIModelCreator {
 
         const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
         const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
-        const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
+        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5);
+        if (undefined === ecefCenter)
+          throw new TypeError("Unable to determine the OrbitGT ECEF center.");
+        const cartoCenter = Cartographic.fromEcef(ecefCenter);
+        if (undefined === cartoCenter)
+          throw new TypeError("Unable to convert the OrbitGT ECEF center to cartographic coordinates.");
         cartoCenter.height = 0;
         const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         this.iModelDb.setEcefLocation(ecefLocation);
-        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        const ecefToWorld = ecefLocation.getTransform().inverse();
+        if (undefined === ecefToWorld)
+          throw new TypeError("Unable to determine the OrbitGT world transform.");
         worldRange = ecefToWorld.multiplyRange(ecefRange);
         geoLocated = true;
       }
       const orbitGtBlob = { rdsUrl, containerName, blobFileName, accountName, sasToken };
-      this.insertSpatialView("OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], geoLocated);
-      this.iModelDb.updateProjectExtents(worldRange);
-      this.iModelDb.saveChanges();
+      await withEditTxn(this.iModelDb, "create orbitgt context", async (txn) => {
+        this.definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definitions");
+        this.physicalModelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "Empty Model");
+        this.insertSpatialView(txn, "OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], geoLocated);
+        txn.updateProjectExtents(worldRange);
+      });
     } catch (error) {
       process.stdout.write(`Error creating model from: ${blobFileName} Error: ${error}`);
     }
   }
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
-  protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
+  protected insertSpatialView(txn: EditTxn, viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, this.definitionModelId, viewName, [this.physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, this.definitionModelId, viewName, []);
     const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
-    return SpatialViewDefinition.insertWithCamera(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(txn, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
+    return SpatialViewDefinition.insertWithCamera(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
   }
 }

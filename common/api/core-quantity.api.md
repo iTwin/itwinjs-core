@@ -4,7 +4,14 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUnorderedUiEvent } from '@itwin/core-bentley';
+
+// @beta
+export interface AddFormattingSpecArgs extends FormattingSpecArgs {
+    formatProps?: FormatProps;
+}
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -77,7 +84,7 @@ export class BaseFormat {
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
-    loadFormatProperties(formatProps: FormatProps): void;
+    loadFormatProperties(formatProps: FormatProps | ResolvedFormatProps): void;
     // (undocumented)
     get minWidth(): number | undefined;
     set minWidth(minWidth: number | undefined);
@@ -91,6 +98,16 @@ export class BaseFormat {
     set precision(precision: DecimalPrecision | FractionalPrecision);
     // (undocumented)
     protected _precision: number;
+    // (undocumented)
+    get ratioFormatType(): RatioFormatType | undefined;
+    set ratioFormatType(ratioFormatType: RatioFormatType | undefined);
+    // (undocumented)
+    protected _ratioFormatType?: RatioFormatType;
+    // (undocumented)
+    get ratioSeparator(): string | undefined;
+    set ratioSeparator(ratioSeparator: string | undefined);
+    // (undocumented)
+    protected _ratioSeparator?: string;
     // (undocumented)
     get ratioType(): RatioType | undefined;
     set ratioType(ratioType: RatioType | undefined);
@@ -123,6 +140,10 @@ export class BaseFormat {
     protected _spacer: string;
     // (undocumented)
     get spacerOrDefault(): string;
+    get stationBaseFactor(): number | undefined;
+    set stationBaseFactor(stationBaseFactor: number | undefined);
+    // (undocumented)
+    protected _stationBaseFactor?: number;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     set stationOffsetSize(stationOffsetSize: number | undefined);
@@ -166,6 +187,14 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
+export class BasicUnitsProvider implements UnitsProvider {
+    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnitByName(unitName: string): Promise<UnitProps>;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+    getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
+}
+
+// @beta
 export interface CloneOptions {
     precision?: DecimalPrecision | FractionalPrecision;
     primaryUnit?: CloneUnit;
@@ -180,6 +209,15 @@ export interface CloneUnit {
     label?: string;
     // (undocumented)
     unit?: UnitProps;
+}
+
+// @beta
+export function createUnitsProvider(options?: CreateUnitsProviderOptions): UnitsProvider;
+
+// @beta
+export interface CreateUnitsProviderOptions {
+    bisUnitsPolicy?: "preferSchema" | "preferBundled";
+    primary?: UnitsProvider;
 }
 
 // @beta
@@ -218,20 +256,36 @@ export enum DecimalPrecision {
     Zero = 0
 }
 
+// @internal (undocumented)
+export interface DefinitionFragment {
+    // (undocumented)
+    constant: boolean;
+    // (undocumented)
+    exponent: number;
+    // (undocumented)
+    name: string;
+}
+
 // @beta
 export class Format extends BaseFormat {
     constructor(name: string);
     clone(options?: CloneOptions): Format;
+    // (undocumented)
+    static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
     protected _customProps?: any;
+    // (undocumented)
+    fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
     static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
+    // (undocumented)
+    toFullyResolvedJSON(): ResolvedFormatProps;
     toJSON(): FormatProps;
     // (undocumented)
     get units(): Array<[UnitProps, string | undefined]> | undefined;
@@ -240,45 +294,77 @@ export class Format extends BaseFormat {
 }
 
 // @beta
-export interface FormatProps {
+export interface FormatCompositeProps {
+    readonly includeZero?: boolean;
+    readonly spacer?: string;
+    readonly units: FormatUnitSpec[];
+}
+
+// @beta
+export interface FormatDefinition extends FormatProps {
     // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name?: string;
+}
+
+// @beta
+export interface FormatProps {
     readonly allowMathematicOperations?: boolean;
     readonly azimuthBase?: number;
     readonly azimuthBaseUnit?: string;
     readonly azimuthCounterClockwise?: boolean;
-    // (undocumented)
-    readonly composite?: {
-        readonly spacer?: string;
-        readonly includeZero?: boolean;
-        readonly units: Array<{
-            readonly name: string;
-            readonly label?: string;
-        }>;
-    };
-    // (undocumented)
+    readonly composite?: FormatCompositeProps;
     readonly decimalSeparator?: string;
-    // (undocumented)
     readonly formatTraits?: string | string[];
-    // (undocumented)
     readonly minWidth?: number;
-    // (undocumented)
     readonly precision?: number;
+    readonly ratioFormatType?: string;
+    readonly ratioSeparator?: string;
     readonly ratioType?: string;
     readonly revolutionUnit?: string;
-    // (undocumented)
     readonly roundFactor?: number;
     readonly scientificType?: string;
-    // (undocumented)
     readonly showSignOption?: string;
+    readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
-    // (undocumented)
     readonly stationSeparator?: string;
-    // (undocumented)
     readonly thousandSeparator?: string;
-    // (undocumented)
     readonly type: string;
-    // (undocumented)
     readonly uomSeparator?: string;
+}
+
+// @beta
+export interface FormatsChangedArgs {
+    formatsChanged: "all" | string[];
+    impliedUnitSystem?: UnitSystemKey;
+}
+
+// @beta
+export class FormatSpecHandle implements Disposable {
+    [Symbol.dispose](): void;
+    // @internal
+    constructor(args: FormatSpecHandleArgs);
+    format(value: number): string;
+    get formatterSpec(): FormatterSpec | undefined;
+    get koqName(): string;
+    get parserSpec(): ParserSpec | undefined;
+    get persistenceUnit(): string;
+    get system(): UnitSystemKey | undefined;
+}
+
+// @internal
+export interface FormatSpecHandleArgs extends FormattingSpecArgs {
+    provider: FormattingSpecProvider;
+}
+
+// @beta
+export interface FormatsProvider {
+    // (undocumented)
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
 // @internal
@@ -320,6 +406,35 @@ export class FormatterSpec {
     get unitConversions(): UnitConversionSpec[];
 }
 
+// @beta
+export class FormattingReadyCollector {
+    addPendingWork(work: Promise<void>): void;
+    // @internal
+    awaitAll(timeoutMs?: number): Promise<void>;
+}
+
+// @beta
+export interface FormattingSpecArgs {
+    name: string;
+    persistenceUnitName: string;
+    system?: UnitSystemKey;
+}
+
+// @beta
+export interface FormattingSpecEntry {
+    // (undocumented)
+    formatterSpec: FormatterSpec;
+    // (undocumented)
+    parserSpec: ParserSpec;
+}
+
+// @beta
+export interface FormattingSpecProvider {
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
+}
+
 // @beta (undocumented)
 export enum FormatTraits {
     ApplyRounding = 16,
@@ -354,6 +469,12 @@ export enum FormatType {
 export function formatTypeToString(type: FormatType): string;
 
 // @beta
+export interface FormatUnitSpec {
+    readonly label?: string;
+    readonly name: string;
+}
+
+// @beta
 export enum FractionalPrecision {
     // (undocumented)
     Eight = 8,
@@ -384,8 +505,17 @@ export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingle
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
 
+// @beta
+export interface MutableFormatsProvider extends FormatsProvider {
+    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    removeFormat(name: string): Promise<void>;
+}
+
 // @beta (undocumented)
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision;
+
+// @internal (undocumented)
+export function parseDefinition(definition: string): Map<string, DefinitionFragment>;
 
 // @beta
 export interface ParsedQuantity {
@@ -396,7 +526,11 @@ export interface ParsedQuantity {
 // @beta
 export enum ParseError {
     // (undocumented)
+    BearingAngleOutOfRange = 9,
+    // (undocumented)
     BearingPrefixOrSuffixMissing = 7,
+    // (undocumented)
+    InvalidMathResult = 10,
     // (undocumented)
     InvalidParserSpec = 6,
     // (undocumented)
@@ -447,6 +581,9 @@ export class Parser {
 }
 
 // @beta (undocumented)
+export function parseRatioFormatType(ratioFormatType: string, formatName: string): RatioFormatType;
+
+// @beta (undocumented)
 export function parseRatioType(ratioType: string, formatName: string): RatioType;
 
 // @beta
@@ -486,7 +623,7 @@ export interface PotentialParseUnit {
 // @beta
 export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
-    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined;
+    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
@@ -547,6 +684,13 @@ export class QuantityError extends BentleyError {
 }
 
 // @beta
+export enum QuantityLoggerCategory {
+    Formatting = "core-quantity.Formatting",
+    Package = "core-quantity",
+    Parsing = "core-quantity.Parsing"
+}
+
+// @beta
 export type QuantityParseResult = ParsedQuantity | ParseQuantityError;
 
 // @beta
@@ -588,11 +732,50 @@ export enum QuantityStatus {
 }
 
 // @beta
+export enum RatioFormatType {
+    Decimal = "Decimal",
+    Fractional = "Fractional"
+}
+
+// @beta
 export enum RatioType {
     NToOne = "NToOne",
     OneToN = "OneToN",
     UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
     ValueBased = "ValueBased"
+}
+
+// @beta
+export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
+    readonly units: ResolvedFormatUnitSpec[];
+};
+
+// @beta
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+    readonly azimuthBaseUnit?: UnitProps;
+    readonly revolutionUnit?: UnitProps;
+    readonly composite?: ResolvedFormatCompositeProps;
+    readonly custom?: any;
+};
+
+// @beta
+export interface ResolvedFormatUnitSpec {
+    readonly label?: string;
+    readonly unit: UnitProps;
+}
+
+// @internal
+export interface ResolvedUnit {
+    // (undocumented)
+    readonly conversion: UnitConversion;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly unitSystem: string;
 }
 
 // @beta
@@ -603,6 +786,93 @@ export enum ScientificType {
 
 // @beta @deprecated (undocumented)
 export function scientificTypeToString(scientificType: ScientificType): string;
+
+// @internal
+export const SERIALIZED_UNIT_SCHEMA_VERSION = "01.00.00";
+
+// @internal
+export interface SerializedConstant {
+    readonly definition: string;
+    readonly denominator?: number;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    readonly numerator?: number;
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly schemaItemType: "Constant";
+}
+
+// @internal
+export interface SerializedInvertedUnit {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly invertsUnit: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly schemaItemType: "InvertedUnit";
+    // (undocumented)
+    readonly unitSystem: string;
+}
+
+// @internal
+export interface SerializedPhenomenon {
+    readonly definition: string;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly schemaItemType: "Phenomenon";
+}
+
+// @internal
+export interface SerializedUnit {
+    readonly definition: string;
+    readonly denominator?: number;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    readonly numerator?: number;
+    readonly offset?: number;
+    // (undocumented)
+    readonly phenomenon: string;
+    // (undocumented)
+    readonly schemaItemType: "Unit";
+    // (undocumented)
+    readonly unitSystem: string;
+}
+
+// @internal
+export type SerializedUnitItem = SerializedConstant | SerializedUnit | SerializedInvertedUnit | SerializedUnitSystem | SerializedPhenomenon;
+
+// @internal
+export interface SerializedUnitSchema {
+    // (undocumented)
+    readonly alias: string;
+    // (undocumented)
+    readonly items: {
+        readonly [name: string]: SerializedUnitItem;
+    };
+    // (undocumented)
+    readonly name: string;
+    readonly sourceEcSchemaVersion: string;
+    readonly version: string;
+}
+
+// @internal
+export interface SerializedUnitSystem {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly schemaItemType: "UnitSystem";
+}
 
 // @beta
 export enum ShowSignOption {
@@ -615,6 +885,62 @@ export enum ShowSignOption {
 // @beta @deprecated (undocumented)
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
+// @internal
+export class UnitConversion {
+    constructor(factor?: number, offset?: number);
+    compose(conversion: UnitConversion): UnitConversion;
+    evaluate(x: number): number;
+    // (undocumented)
+    readonly factor: number;
+    static from(source: UnitConversionSource): UnitConversion;
+    // (undocumented)
+    static identity: UnitConversion;
+    inverse(): UnitConversion;
+    multiply(conversion: UnitConversion): UnitConversion;
+    // (undocumented)
+    readonly offset: number;
+    raise(power: number): UnitConversion;
+}
+
+// @internal (undocumented)
+export class UnitConversionGraph<T> {
+    constructor();
+    // (undocumented)
+    edge: (v: string, w: string) => {
+        exponent: number;
+    };
+    // (undocumented)
+    edgeCount: () => number;
+    // (undocumented)
+    edges: () => {
+        v: string;
+        w: string;
+    }[];
+    // (undocumented)
+    graph: () => string;
+    // (undocumented)
+    hasNode: (nodeKey: string) => boolean;
+    // (undocumented)
+    node: (nodeKey: string) => T;
+    // (undocumented)
+    nodeCount: () => number;
+    // (undocumented)
+    nodes: () => string[];
+    // (undocumented)
+    outEdges: (v: string) => {
+        v: string;
+        w: string;
+    }[];
+    // (undocumented)
+    setEdge: (v: string, w: string, value: {
+        exponent: number;
+    }) => void;
+    // (undocumented)
+    setGraph: (label: string) => UnitConversionGraph<T>;
+    // (undocumented)
+    setNode: (nodeKey: string, nodeValue: T) => void;
+}
+
 // @beta
 export enum UnitConversionInvert {
     InvertPostConversion = "InvertPostConversion",
@@ -623,9 +949,20 @@ export enum UnitConversionInvert {
 
 // @beta
 export interface UnitConversionProps {
+    error?: boolean;
     factor: number;
     inversion?: UnitConversionInvert;
     offset: number;
+}
+
+// @internal
+export interface UnitConversionSource {
+    // (undocumented)
+    readonly denominator: number;
+    // (undocumented)
+    readonly numerator: number;
+    // (undocumented)
+    readonly offset?: number;
 }
 
 // @beta
@@ -635,6 +972,12 @@ export interface UnitConversionSpec {
     name: string;
     parseLabels?: string[];
     system: string;
+}
+
+// @internal
+export class UnitDefinitionResolver {
+    constructor(schema: SerializedUnitSchema);
+    resolveAll(): Map<string, ResolvedUnit>;
 }
 
 // @alpha
@@ -660,7 +1003,6 @@ export interface UnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
-    // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;

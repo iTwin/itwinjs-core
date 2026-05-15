@@ -98,7 +98,10 @@ export class MapImagerySettings {
 
   /** @internal */
   public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps) {
-    const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+    const backgroundBase = imageryJson?.backgroundBase;
+    const baseLayer = undefined !== backgroundBase ?
+      BaseLayerSettings.fromJSON(backgroundBase) :
+      BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
 
     return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }

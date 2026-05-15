@@ -33,4 +33,5 @@ export class BentleyGeometryFlatBuffer {
   }
 }
 
+/** "bg0001fb" header, persisted in iModel FB geometry streams */
 const signatureBytes = new Uint8Array([98, 103, 48, 48, 48, 49, 102, 98]);

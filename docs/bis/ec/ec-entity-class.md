@@ -11,3 +11,44 @@ ECEntity classes inherit custom attributes from their base class and any mixins 
 ## Additional Sub-Elements
 
 [ECNavigationProperty](./ec-property.md#ecnavigationproperty) _(0..*)_
+
+## Example
+
+```xml
+<ECEntityClass typeName="Door">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECProperty propertyName="OverallHeight" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT"/>
+    <ECProperty propertyName="OverallWidth" typeName= "double" kindOfQuantity="AECU:LENGTH_SHORT"/>
+    <ECProperty propertyName="Description" typeName="string"/>
+</ECEntityClass>
+```
+
+```json
+"Door": {
+  "schemaItemType": "EntityClass",
+  "baseClass": "BisCore.PhysicalElement",
+  "properties": [
+    {
+      "name": "OverallHeight",
+      "type": "PrimitiveProperty",
+      "description": "Overall Height of the Door",
+      "label": "Overall Height",
+      "kindOfQuantity": "AecUnits.LENGTH_SHORT",
+      "typeName": "double"
+    },
+    {
+      "name": "OverallWidth",
+      "type": "PrimitiveProperty",
+      "description": "Overal1 Width of the Door",
+      "label": "Overall Width",
+      "kindOfQuantity": "AecUnits.LENGTH_SHORT",
+      "typeName": "double"
+    },
+    {
+      "name": "Description",
+      "type": "PrimitiveProperty",
+      "typeName": "string"
+    }
+  ]
+},
+```

@@ -190,6 +190,14 @@ export enum TextureUnit {
 
   // Contours texture.
   Contours = WebGLRenderingContext.TEXTURE14,
+
+  // Surface Draping textures.
+  SurfaceDraping0 = RealityMesh3,
+  SurfaceDraping1 = RealityMesh4,
+  SurfaceDraping2 = RealityMesh5,
+  SurfaceDraping3 = RealityMeshThematicGradient,
+  SurfaceDraping4 = WebGLRenderingContext.TEXTURE15,
+  SurfaceDraping5 = WebGLRenderingContext.TEXTURE16,
 }
 
 /**

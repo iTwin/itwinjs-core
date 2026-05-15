@@ -6,12 +6,16 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { _verifyChannel } from "./internal/Symbols";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
+import { _implicitTxn, _verifyChannel } from "./internal/Symbols";
+import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
+import { Sheet } from "./Element";
+import { ECVersion } from "@itwin/ecschema-metadata";
+import { EditTxn } from "./EditTxn";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -40,7 +44,7 @@ export interface OnAspectIdArg extends OnAspectArg {
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
- * @public
+ * @public @preview
  */
 export class ElementAspect extends Entity {
   public static override get className(): string { return "ElementAspect"; }
@@ -111,36 +115,179 @@ export class ElementAspect extends Entity {
   protected static onDeleted(_arg: OnAspectIdArg): void { }
 }
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
- * @public
+ * @public @preview
  */
 export class ElementUniqueAspect extends ElementAspect {
   public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
 /** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
- * @public
+ * @public @preview
  */
 export class ElementMultiAspect extends ElementAspect {
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
 /**
- * @public
+ * @public @preview
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
+   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
-    iModel.elements.insertAspect(props);
+    iModel[_implicitTxn].insertAspect(props);
+  }
+}
+
+const minimumBisCoreVersion = new ECVersion(1, 0, 25);
+
+/** An [[ElementUniqueAspect]] that captures common metadata about a single [[Sheet]].
+ * Use [[getSheetInformation]] to retrieve the metadata for a Sheet and [[setSheetInformation]] to create, update, or delete it.
+ * @beta
+ */
+export class SheetInformationAspect extends ElementUniqueAspect {
+  public static override get className() { return "SheetInformationAspect"; }
+
+  /** The sheet's metadata. */
+  public sheetInformation: SheetInformation;
+
+  protected static override onInsert(arg: OnAspectPropsArg): void {
+    super.onInsert(arg);
+
+    const sheet = arg.iModel.elements.tryGetElement<Sheet>(arg.props.element);
+    if (!(sheet instanceof Sheet)) {
+      throw new Error("SheetInformationAspect can only be applied to a Sheet element");
+    }
+  }
+
+  private constructor(props: SheetInformationAspectProps, iModel: IModelDb) {
+    super(props, iModel);
+
+    const designedDate = undefined !== props.designedDate ? new Date(props.designedDate) : undefined;
+
+    this.sheetInformation = {
+      designedBy: props.designedBy,
+      designedDate,
+      drawnBy: props.drawnBy,
+      checkedBy: props.checkedBy,
+    };
+  }
+
+  public override toJSON(): SheetInformationAspectProps {
+    const props = super.toJSON() as SheetInformationAspectProps;
+    for (const key of ["designedBy", "drawnBy", "checkedBy"] as const) {
+      const value = this.sheetInformation[key];
+      if (undefined !== value) {
+        props[key] = value;
+      }
+    }
+
+    if (undefined !== this.sheetInformation.designedDate) {
+      props.designedDate = this.sheetInformation.designedDate.toISOString();
+    }
+
+    return props;
+  }
+
+  private static findForSheet(sheetId: Id64String, iModel: IModelDb): SheetInformationAspect | undefined {
+    if (!iModel.meetsMinimumSchemaVersion("BisCore", minimumBisCoreVersion)) {
+      return undefined;
+    }
+
+    const aspects = iModel.elements.getAspects(sheetId, this.classFullName);
+    if (aspects[0]) {
+      assert(aspects[0] instanceof SheetInformationAspect);
+      return aspects[0];
+    }
+
+    return undefined;
+  }
+
+  /** Retrieves the metadata hosted by the aspect on the specified sheet, returning `undefined` if no such metadata could be retrieved.
+   * @see [[setSheetInformation]] to create, update, or delete the aspect.
+   */
+  public static getSheetInformation(sheetId: Id64String, iModel: IModelDb): SheetInformation | undefined {
+    const aspect = this.findForSheet(sheetId, iModel);
+    return aspect?.sheetInformation;
+  }
+
+  /** Sets the `information` for the [[Sheet]] element specified by ``sheetId`.
+   * If `information` is `undefined`, any existing aspect will be deleted.
+   * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use SheetInformationAspect.setSheetInformation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
+  public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
+
+  /** Sets the `information` for the [[Sheet]] element specified by `sheetId`, using an explicit EditTxn.
+   * If `information` is `undefined`, any existing aspect will be deleted.
+   * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   * @throws EditTxnError if the EditTxn is not active.
+   * @beta
+   */
+  public static setSheetInformation(txn: EditTxn, information: SheetInformation | undefined, sheetId: Id64String): void;
+  public static setSheetInformation(arg1: EditTxn | SheetInformation | undefined, arg2: SheetInformation | Id64String | undefined, arg3: Id64String | IModelDb): void {
+    let txn: EditTxn;
+    let information: SheetInformation | undefined;
+    let sheetId: Id64String;
+
+    if (arg1 instanceof EditTxn) {
+      txn = arg1;
+      information = arg2 as SheetInformation | undefined;
+      sheetId = arg3 as Id64String;
+    } else {
+      txn = (arg3 as IModelDb)[_implicitTxn];
+      information = arg1;
+      sheetId = arg2 as Id64String;
+    }
+
+    txn.iModel.requireMinimumSchemaVersion("BisCore", minimumBisCoreVersion, "SheetInformationAspect");
+
+    const aspect = this.findForSheet(sheetId, txn.iModel);
+    if (!information) {
+      if (aspect) {
+        txn.deleteAspect(aspect.id);
+      }
+
+      return;
+    }
+
+    if (aspect) {
+      aspect.sheetInformation = { ...information };
+      txn.updateAspect(aspect.toJSON());
+    } else {
+      const info = { ...information } as any;
+      for (const key of Object.keys(info)) {
+        if (info[key] === undefined) {
+          delete info[key];
+        }
+      }
+
+      if (undefined !== info.designedDate) {
+        info.designedDate = info.designedDate.toISOString();
+      }
+
+      const props: SheetInformationAspectProps = {
+        classFullName: this.classFullName,
+        element: {
+          id: sheetId,
+          relClassName: SheetOwnsSheetInformationAspect.classFullName,
+        },
+        ...info,
+      };
+
+      txn.insertAspect(props);
+    }
   }
 }
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
- * @public
+ * @public @preview
  */
 export class ExternalSourceAspect extends ElementMultiAspect {
   public static override get className(): string { return "ExternalSourceAspect"; }
@@ -181,23 +328,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated in 3.x. findAllBySource */
-  public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
-    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
-    let elementId: Id64String | undefined;
-    let aspectId: Id64String | undefined;
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("scope", scope);
-      statement.bindString("kind", kind);
-      statement.bindString("identifier", identifier);
-      if (DbResult.BE_SQLITE_ROW === statement.step()) {
-        elementId = statement.getValue(0).getId();
-        aspectId = statement.getValue(1).getId();
-      }
-    });
-    return { elementId, aspectId };
-  }
-
   /** Look up the elements that contain one or more ExternalSourceAspect with the specified Scope, Kind, and Identifier.
    * The result of this function is an array of all of the ExternalSourceAspects that were found, each associated with the owning element.
    * A given element could have more than one ExternalSourceAspect with the given scope, kind, and identifier.
@@ -213,6 +343,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("scope", scope);
       statement.bindString("kind", kind);
@@ -246,10 +377,10 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   }
 }
 
-/** @public */
+/** @public @preview */
 export namespace ExternalSourceAspect {
   /** Standard values for the `Kind` property of `ExternalSourceAspect`.
-   * @public
+   * @public @preview
    */
   export enum Kind {
     /** Indicates that the [[ExternalSourceAspect]] is storing [[Element]] provenance */

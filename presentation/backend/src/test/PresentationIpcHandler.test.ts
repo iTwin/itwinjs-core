@@ -2,92 +2,95 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
-import {
-  Id64sRulesetVariableJSON,
-  RulesetVariableJSON,
-  SetRulesetVariableParams,
-  StringRulesetVariable,
-  UnsetRulesetVariableParams,
-  VariableValueTypes,
-} from "@itwin/presentation-common";
-import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation } from "../presentation-backend/Presentation";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
-import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { Id64sRulesetVariableJSON, StringRulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { Presentation } from "../presentation-backend/Presentation.js";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler.js";
+import { PresentationManager } from "../presentation-backend/PresentationManager.js";
 
 describe("PresentationIpcHandler", () => {
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  let presentationManagerMock: ReturnType<typeof stubPresentationManager>;
 
   beforeEach(() => {
-    presentationManagerMock.reset();
-    sinon.stub(Presentation, "getManager").returns(presentationManagerMock.object);
+    presentationManagerMock = stubPresentationManager();
+    sinon.stub(Presentation, "getManager").returns(presentationManagerMock as unknown as PresentationManager);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("setRulesetVariable", () => {
     const testRulesetId = "test-ruleset-id";
-    const variablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
+    let variablesManagerMock: ReturnType<typeof stubRulesetVariablesManager>;
 
     beforeEach(() => {
-      presentationManagerMock.setup((x) => x.vars(testRulesetId)).returns(() => variablesManagerMock.object);
+      variablesManagerMock = stubRulesetVariablesManager();
+      presentationManagerMock.vars.withArgs(testRulesetId).returns(variablesManagerMock);
     });
 
     it("sets ruleset variable", async () => {
       const testVariable: StringRulesetVariable = { id: "var-id", type: VariableValueTypes.String, value: "test-val" };
-      variablesManagerMock.setup((x) => x.setValue(testVariable.id, testVariable.type, testVariable.value)).verifiable(moq.Times.once());
 
       const ipcHandler = new PresentationIpcHandler();
-      const params: SetRulesetVariableParams<RulesetVariableJSON> = {
+      await ipcHandler.setRulesetVariable({
         clientId: "test-client-id",
         rulesetId: testRulesetId,
         variable: testVariable,
-      };
-      await ipcHandler.setRulesetVariable(params);
-      variablesManagerMock.verifyAll();
+      });
+      expect(variablesManagerMock.setValue).to.be.calledOnceWithExactly(testVariable.id, testVariable.type, testVariable.value);
     });
 
     it("decompresses ids set before setting value variables", async () => {
-      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const ids = OrderedId64Iterable.sortArray(["0x123", "0x456"]);
       const testVariable: Id64sRulesetVariableJSON = {
         type: VariableValueTypes.Id64Array,
         id: "test",
         value: CompressedId64Set.compressIds(ids),
       };
 
-      variablesManagerMock.setup((x) => x.setValue(testVariable.id, testVariable.type, ids)).verifiable(moq.Times.once());
       const ipcHandler = new PresentationIpcHandler();
-      const params: SetRulesetVariableParams<RulesetVariableJSON> = {
+      await ipcHandler.setRulesetVariable({
         clientId: "test-client-id",
         rulesetId: testRulesetId,
         variable: testVariable,
-      };
-      await ipcHandler.setRulesetVariable(params);
-      variablesManagerMock.verifyAll();
+      });
+      expect(variablesManagerMock.setValue).to.be.calledOnceWithExactly(testVariable.id, testVariable.type, ids);
     });
   });
 
   describe("unsetRulesetVariable", () => {
     const testRulesetId = "test-ruleset-id";
-    const variablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
+    let variablesManagerMock: ReturnType<typeof stubRulesetVariablesManager>;
 
     beforeEach(() => {
-      presentationManagerMock.setup((x) => x.vars(testRulesetId)).returns(() => variablesManagerMock.object);
+      variablesManagerMock = stubRulesetVariablesManager();
+      presentationManagerMock.vars.withArgs(testRulesetId).returns(variablesManagerMock);
     });
 
     it("unsets ruleset variable", async () => {
-      variablesManagerMock.setup((x) => x.unset("test-id")).verifiable(moq.Times.once());
-
       const ipcHandler = new PresentationIpcHandler();
-      const params: UnsetRulesetVariableParams = {
+      await ipcHandler.unsetRulesetVariable({
         clientId: "test-client-id",
         rulesetId: testRulesetId,
         variableId: "test-id",
-      };
-      await ipcHandler.unsetRulesetVariable(params);
-      variablesManagerMock.verifyAll();
+      });
+      expect(variablesManagerMock.unset).to.be.calledOnceWithExactly("test-id");
     });
   });
 });
+
+function stubPresentationManager() {
+  return {
+    vars: sinon.stub(),
+  };
+}
+
+function stubRulesetVariablesManager() {
+  return {
+    setValue: sinon.stub(),
+    unset: sinon.stub(),
+  };
+}

@@ -2,15 +2,17 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../../IntegrationTests";
-import { printRuleset } from "../../Utils";
-import { collect } from "../../../Utils";
-import { TestIModelConnection } from "../../../IModelSetupUtils";
+import { initialize, terminate } from "../../../IntegrationTests.js";
+import { printRuleset } from "../../Utils.js";
+import { collect } from "../../../Utils.js";
+import { TestIModelConnection } from "../../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;

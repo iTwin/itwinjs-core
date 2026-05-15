@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite } from "./Utils";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Content instance keys", ({ getDefaultSuiteIModel }) => {
   it("retrieves content instance keys for given input", async () => {

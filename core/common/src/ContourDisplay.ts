@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { compareBooleans, compareNumbers, CompressedId64Set, NonFunctionPropertiesOf, OrderedId64Iterable } from "@itwin/core-bentley";
+import { compareArrays, compareBooleans, compareNumbers, compareStrings, CompressedId64Set, NonFunctionPropertiesOf, OrderedId64Iterable } from "@itwin/core-bentley";
 import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 
@@ -50,6 +50,11 @@ export class ContourStyle {
       return false;
     }
     return true;
+  }
+
+  /** Perform ordered comparison between this and another contour style. */
+  public compare(other: ContourStyle): number {
+    return ContourStyle.compare(this, other);
   }
 
   /** Performs ordered comparison of two contour styles.
@@ -164,11 +169,14 @@ export class Contour {
 
   public static readonly defaults = new Contour({});
 
+  /** Returns true if `this` is logically equivalent to `other`. */
   public equals(other: Contour): boolean {
-    if (!this.majorStyle.equals(other.majorStyle) || !this.minorStyle.equals(other.minorStyle) || this.minorInterval !== other.minorInterval  || this.majorIntervalCount !== other.majorIntervalCount || this.showGeometry !== other.showGeometry) {
-      return false;
-    }
-    return true;
+    return this.compare(other) === 0;
+  }
+
+  /** Performs ordered comparison between this and another contour. */
+  public compare(other: Contour): number {
+    return Contour.compare(this, other);
   }
 
   /** Performs ordered comparison of two contours.
@@ -296,19 +304,14 @@ export class ContourGroup {
     return this._subCategories === other._subCategories;
   }
 
+  /** Perform ordered comparison between this and another contour group. */
+  public compare(other: ContourGroup): number {
+    return compareStrings(this.name, other.name) || compareStrings(this._subCategories, other._subCategories) || this.contourDef.compare(other.contourDef);
+  }
+
   /** Returns true if `this` and `other` are logically equivalent, having the same styling, name, and set of subcategories. */
   public equals(other: ContourGroup | undefined): boolean {
-    if (this === undefined && other === undefined)
-      return true;
-    if (this === undefined || other === undefined)
-      return false;
-    if (!this.contourDef.equals(other.contourDef))
-      return false;
-    if (this._subCategories !== other._subCategories)
-      return false;
-    if (this.name !== other.name)
-      return false;
-    return true;
+    return undefined !== other && this.compare(other) === 0;
   }
 
   private constructor(props?: Partial<ContourGroupProperties>) {
@@ -392,6 +395,11 @@ export class ContourDisplay {
    * for display purposes.
    */
   public static readonly maxContourGroups = 5;
+
+  /** Perform ordered comparison between this and another `ContourDisplay`. */
+  public compare(other: ContourDisplay): number {
+    return compareBooleans(this.displayContours, other.displayContours) || compareArrays(this.groups, other.groups, (lhs, rhs) => lhs.compare(rhs));
+  }
 
   /** Returns true if `this` and `other` are logically equivalent, having the same groups and styling. */
   public equals(other: ContourDisplay): boolean {

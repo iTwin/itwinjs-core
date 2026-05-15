@@ -206,12 +206,12 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return result;
   }
   /** Return the start point of the curve. */
-  public override startPoint(): Point3d {
-    return this.evaluatePointInSpan(0, 0.0);
+  public override startPoint(result?: Point3d): Point3d {
+    return this.evaluatePointInSpan(0, 0.0, result);
   }
   /** Return the end point of the curve. */
-  public override endPoint(): Point3d {
-    return this.evaluatePointInSpan(this.numSpan - 1, 1.0);
+  public override endPoint(result?: Point3d): Point3d {
+    return this.evaluatePointInSpan(this.numSpan - 1, 1.0, result);
   }
   /**
    * Reverse the curve in place.
@@ -275,7 +275,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @returns details of the closest point.
    */
   public override closestPoint(
-    spacePoint: Point3d, _extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     // seed at start point; final point comes with final bezier perpendicular step
     const point = this.fractionToPoint(0);
@@ -311,7 +311,13 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @param fractionB end fraction.
    */
   public override clonePartialCurve(fractionA: number, fractionB: number): BSplineCurve3dBase {
-    const clone = this.clone();
+    let clone: BSplineCurve3dBase;
+    if (fractionA > fractionB) {
+      clone = this.clonePartialCurve(fractionB, fractionA);
+      clone.reverseInPlace();
+      return clone;
+    }
+    clone = this.clone();
     const origNumKnots = clone._bcurve.knots.knots.length;
     let knotA = clone._bcurve.knots.fractionToKnot(fractionA);
     let knotB = clone._bcurve.knots.fractionToKnot(fractionB);
@@ -353,7 +359,8 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     const minMax = Range1d.createNull();
     // put the altitudes of all the B-spline poles in one array
     for (let i = 0; i < numPole; i++) {
-      allCoffs[i] = plane.weightedAltitude(this.getPolePoint4d(i, point4d)!);
+      this.getPolePoint4d(i, point4d);
+      allCoffs[i] = plane.weightedAltitude(point4d);
       minMax.extendX(allCoffs[i]);
     }
     // A univariate B-spline through the altitude poles gives altitude as function of the B-spline knot.
@@ -370,7 +377,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
           minMax.extendArraySubset(allCoffs, spanIndex, order);
           if (minMax.containsX(0.0)) {
             // pack the B-spline support into a univariate bezier
-            univariateBezier = UnivariateBezier.createArraySubset(allCoffs, spanIndex, order, univariateBezier)!;
+            univariateBezier = UnivariateBezier.createArraySubset(allCoffs, spanIndex, order, univariateBezier);
             // saturate and solve the bezier
             Bezier1dNd.saturate1dInPlace(univariateBezier.coffs, this._bcurve.knots, spanIndex);
             const roots = univariateBezier.roots(0.0, true);
@@ -633,9 +640,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
   /** Evaluate the curve at a fractional position within a given span. */
-  public evaluatePointInSpan(spanIndex: number, spanFraction: number): Point3d {
+  public evaluatePointInSpan(spanIndex: number, spanFraction: number, result?: Point3d): Point3d {
     this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
-    return Point3d.createFrom(this._bcurve.poleBuffer);
+    return Point3d.createFrom(this._bcurve.poleBuffer, result);
   }
   /**
    * Evaluate the curve and derivative at a fractional position within a given span.

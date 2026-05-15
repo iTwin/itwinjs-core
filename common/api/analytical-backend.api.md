@@ -38,7 +38,6 @@ export class AnalyticalPartition extends InformationPartitionElement {
 export class AnalyticalSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
-    // (undocumented)
     static get schemaFilePath(): string;
     // (undocumented)
     static get schemaName(): string;
@@ -57,7 +56,6 @@ export abstract class AnalyticalType extends TypeDefinitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

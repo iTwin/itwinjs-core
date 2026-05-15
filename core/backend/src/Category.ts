@@ -11,11 +11,14 @@ import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** Defines the appearance for graphics in Geometric elements
- * @public
+ * @public @preview
  */
 export class SubCategory extends DefinitionElement {
   public static override get className(): string { return "SubCategory"; }
@@ -28,6 +31,48 @@ export class SubCategory extends DefinitionElement {
     super(props, iModel);
     this.appearance = new SubCategoryAppearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
+  }
+
+  /**
+   * SubCategory custom HandledProps include 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "description", source: "Class" },
+    { propertyName: "properties", source: "Class" },
+  ];
+
+  /**
+   * SubCategory deserializes 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): SubCategoryProps {
+    const elProps = super.deserialize(props) as SubCategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    if (props.row.properties !== '') {
+      elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
+    } else {
+      elProps.appearance = undefined;
+    }
+    return elProps;
+  }
+
+  /**
+   * SubCategory serialize 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (props.description !== undefined) {
+      inst.description = props.description;
+    }
+    if (props.appearance !== undefined) {
+      inst.properties = JSON.stringify(props.appearance);
+    }
+    return inst;
   }
 
   public override toJSON(): SubCategoryProps {
@@ -80,22 +125,31 @@ export class SubCategory extends DefinitionElement {
     return new SubCategory(subCategoryProps, iModelDb);
   }
 
-  /** Insert a new SubCategory
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a new SubCategory
+   * @param txn The EditTxn to use
    * @param parentCategoryId Insert the new SubCategory as a child of this Category
    * @param name The name of the SubCategory
    * @param appearance The appearance settings to use for this SubCategory
    * @returns The Id of the newly inserted SubCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
-    const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
-    return iModelDb.elements.insertElement(subCategory.toJSON());
+  public static insert(txn: EditTxn, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  /**
+   * Insert a new SubCategory
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SubCategory.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const subCategory = this.create(txn.iModel, parentCategoryId, name, appearance);
+    return subCategory.insert(txn);
   }
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]].
- * @public
+ * @public @preview
  */
 export class Category extends DefinitionElement {
   public static override get className(): string { return "Category"; }
@@ -108,6 +162,41 @@ export class Category extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
+  /**
+   * Category custom HandledProps include 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "rank", source: "Class" },
+    { propertyName: "description", source: "Class" },
+  ];
+
+  /**
+   * Category deserializes 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): CategoryProps {
+    const elProps = super.deserialize(props) as CategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    elProps.rank = JsonUtils.asInt(props.row.rank);
+    return elProps;
+  }
+
+  /**
+   * Category serialize 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.description) {
+      inst.description = props.description;
+    }
+    inst.rank = props.rank;
+    return inst;
+  }
   public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
@@ -119,19 +208,39 @@ export class Category extends DefinitionElement {
   /** Get the Id of the default SubCategory for this Category. */
   public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
 
-  /** Set the appearance of the default SubCategory for this Category */
-  public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void {
-    if (props instanceof SubCategoryAppearance)
-      props = props.toJSON();
+  /**
+   * Set the appearance of the default SubCategory for this Category
+   * @beta
+   */
+  public setDefaultAppearance(txn: EditTxn, props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
+  /**
+   * Set the appearance of the default SubCategory for this Category
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Category.setDefaultAppearance(txn, ...) instead.
+   */
+  public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
+  public setDefaultAppearance(txnOrProps: EditTxn | SubCategoryAppearance.Props | SubCategoryAppearance, props?: SubCategoryAppearance.Props | SubCategoryAppearance): void {
+    let txn: EditTxn;
+    let appearance: SubCategoryAppearance.Props | SubCategoryAppearance;
+    if (txnOrProps instanceof EditTxn) {
+      txn = txnOrProps;
+      if (props === undefined)
+        throw new Error("Invalid argument");
+      appearance = props;
+    } else {
+      txn = this.iModel[_implicitTxn];
+      appearance = txnOrProps;
+    }
+    if (appearance instanceof SubCategoryAppearance)
+      appearance = appearance.toJSON();
 
     const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
-    subCat.appearance = new SubCategoryAppearance(props);
-    this.iModel.elements.updateElement(subCat.toJSON());
+    subCat.appearance = new SubCategoryAppearance(appearance);
+    subCat.update(txn);
   }
 }
 
 /** Categorizes 2d GeometricElements.
- * @public
+ * @public @preview
  */
 export class DrawingCategory extends Category {
   public static override get className(): string { return "DrawingCategory"; }
@@ -175,25 +284,33 @@ export class DrawingCategory extends Category {
     return new DrawingCategory(categoryProps, iModelDb);
   }
 
-  /** Insert a new DrawingCategory
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a new DrawingCategory
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new DrawingCategory into this [[DefinitionModel]]
    * @param name The name of the DrawingCategory
    * @param defaultAppearance The appearance settings to use for the default SubCategory of this DrawingCategory
    * @returns The Id of the newly inserted DrawingCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
-    const category = this.create(iModelDb, definitionModelId, name);
-    const elements = iModelDb.elements;
-    category.id = elements.insertElement(category.toJSON());
-    category.setDefaultAppearance(defaultAppearance);
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  /**
+   * Insert a new DrawingCategory
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DrawingCategory.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const category = this.create(txn.iModel, definitionModelId, name);
+    category.id = category.insert(txn);
+    category.setDefaultAppearance(txn, defaultAppearance);
     return category.id;
   }
 }
 
 /** Categorizes SpatialElements. See [how to create a SpatialCategory]($docs/learning/backend/CreateElements.md#SpatialCategory).
- * @public
+ * @public @preview
  */
 export class SpatialCategory extends Category {
   public static override get className(): string { return "SpatialCategory"; }
@@ -236,18 +353,27 @@ export class SpatialCategory extends Category {
     return new SpatialCategory(categoryProps, iModelDb);
   }
 
-  /** Insert a new SpatialCategory
-   * @param iModelDb Insert into this iModel
+  /**
+   * Insert a new SpatialCategory
+   * @param txn The EditTxn to use
    * @param definitionModelId Insert the new SpatialCategory into this DefinitionModel
    * @param name The name of the SpatialCategory
    * @param defaultAppearance The appearance settings to use for the default SubCategory of this SpatialCategory
    * @returns The Id of the newly inserted SpatialCategory element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
-    const category = this.create(iModelDb, definitionModelId, name);
-    category.id = iModelDb.elements.insertElement(category.toJSON());
-    category.setDefaultAppearance(defaultAppearance);
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  /**
+   * Insert a new SpatialCategory
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SpatialCategory.insert(txn, ...) instead.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const category = this.create(txn.iModel, definitionModelId, name);
+    category.id = category.insert(txn);
+    category.setDefaultAppearance(txn, defaultAppearance);
     return category.id;
   }
 }

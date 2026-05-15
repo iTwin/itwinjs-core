@@ -36,7 +36,7 @@ export type TextBlockGeometryPropsEntry = {
 
 /**
  * JSON representation of the geometric primitives that can be used to display a [[TextBlock]].
- * @see [produceTextAnnotationGeometry]($backend) to convert an annotation to its geometric representation.
+ * @see [appendTextAnnotationGeometry]($backend) to convert an annotation to its geometric representation.
  * @see [[GeometryStreamBuilder.appendTextBlock]] to add a block of text to a [GeometryStream]($docs/learning/common/GeometryStream.md).
  * @beta
  */

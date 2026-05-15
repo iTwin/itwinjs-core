@@ -79,8 +79,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
     try {
       await locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, context);
     } catch (e) {
-      const error = e as EC.ECObjectsError;
-      assert.strictEqual(error.errorNumber, EC.ECObjectsStatus.InvalidECJson);
+      const error = e as EC.ECSchemaError;
+      assert.strictEqual(error.errorNumber, EC.ECSchemaStatus.InvalidECJson);
       return;
     }
 
@@ -93,8 +93,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
     try {
       await locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, context);
     } catch (e) {
-      const error = e as EC.ECObjectsError;
-      assert.strictEqual(error.errorNumber, EC.ECObjectsStatus.InvalidECJson);
+      const error = e as EC.ECSchemaError;
+      assert.strictEqual(error.errorNumber, EC.ECSchemaStatus.InvalidECJson);
       return;
     }
 

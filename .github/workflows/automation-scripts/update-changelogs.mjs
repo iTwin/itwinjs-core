@@ -112,6 +112,7 @@ await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -ex
 // if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
 if (commitMessage.endsWith(".0")) {
   const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
+  editFileInPlaceSynchronously(docsYamlPath, /master/g, currentBranch);
   editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
   // commit these changes to our release branch
   await $`git add ${docsYamlPath}`;

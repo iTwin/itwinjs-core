@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { ISchemaLocater, SchemaContext } from "./Context";
 import { SchemaProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
@@ -13,23 +12,37 @@ import { SchemaKey } from "./SchemaKey";
 /**
  * Gets the full schema Json for the input schema name or undefined if not found
  * @throws [Error] if the schema is found but json cannot be returned
- * @beta
+ * @public @preview
  */
 export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 /**
- * A  ISchemaLocater implementation for locating and retrieving EC Schema objects using a function
+ * An ISchemaLocater implementation for locating and retrieving EC Schema objects using a function
  * that returns the Schema Json for a given schema name
- * @beta
+ * @public @preview
  */
 export class SchemaJsonLocater implements ISchemaLocater {
-  public constructor(private _getSchema: SchemaPropsGetter) { }
+  private _getSchemaProps: SchemaPropsGetter;
+
+  public constructor(getSchemaProps: SchemaPropsGetter) {
+    // Since the getSchemaProps may throw an error, but the locater contract defines that
+    // getSchema should return undefined if the schema could not be located, we wrap the provided
+    // lookup function in a safe block.
+    this._getSchemaProps = (schemaName) => {
+      try {
+        return getSchemaProps(schemaName);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        return undefined;
+      }
+    };
+  }
 
   /** Get a schema by [SchemaKey]
    * @param schemaKey The [SchemaKey] that identifies the schema.
    * @param matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
-   * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
+   * @throws [ECSchemaError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
   public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
@@ -42,7 +55,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    const schemaProps = this._getSchema(schemaKey.name);
+    const schemaProps = this._getSchemaProps(schemaKey.name);
     if (!schemaProps)
       return undefined;
 
@@ -55,12 +68,12 @@ export class SchemaJsonLocater implements ISchemaLocater {
 
   /** Get a schema by [SchemaKey] synchronously.
    * @param schemaKey The [SchemaKey] that identifies the schema.
-   * * @param matchType The [SchemaMatchType] to used for comparing schema versions.
+   * @param matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [Error]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
   public getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
-    const schemaProps = this._getSchema(schemaKey.name);
+    const schemaProps = this._getSchemaProps(schemaKey.name);
     if (!schemaProps)
       return undefined;
 

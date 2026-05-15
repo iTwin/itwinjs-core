@@ -9,8 +9,8 @@
 
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-
-// cspell:word CCWXY, CWXY
+import { Range1d, Range2d } from "./Range";
+import { XAndY } from "./XYZProps";
 
 /**
  * Ray with xy origin and direction
@@ -25,9 +25,18 @@ export class Ray2d {
     this._direction = direction;
   }
   /** Copy coordinates from origin and direction. */
-  public set(origin: Point2d, direction: Vector2d): void {
+  public set(origin: XAndY, direction: XAndY): void {
     this._origin.setFrom(origin);
     this._direction.setFrom(direction);
+  }
+  /** Create a ray with all zeros. */
+  public static createZero(result?: Ray2d): Ray2d {
+    if (result) {
+      result.origin.setZero();
+      result.direction.setZero();
+      return result;
+    }
+    return new Ray2d(Point2d.createZero(), Vector2d.createZero());
   }
   /**
    * Create from `origin` and `target` points.
@@ -35,13 +44,13 @@ export class Ray2d {
    * @param target end of ray direction vector. The direction vector is `target - origin`.
    * @param result optional pre-allocated object to return
    */
-  public static createOriginAndTarget(origin: Point2d, target: Point2d, result?: Ray2d): Ray2d {
+  public static createOriginAndTarget(origin: XAndY, target: XAndY, result?: Ray2d): Ray2d {
     if (result) {
       result._origin.setFrom(origin);
       result._direction.set(target.x - origin.x, target.y - origin.y);
       return result;
     }
-    return new Ray2d(origin.clone(), origin.vectorTo(target));
+    return new Ray2d(Point2d.createFrom(origin), Vector2d.createStartEnd(origin, target));
   }
   /**
    * Create by copying coordinates from `origin` and `direction`.
@@ -49,12 +58,12 @@ export class Ray2d {
    * @param direction ray direction
    * @param result optional pre-allocated object to return
    */
-  public static createOriginAndDirection(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d {
+  public static createOriginAndDirection(origin: XAndY, direction: XAndY, result?: Ray2d): Ray2d {
     if (result) {
       result.set(origin, direction);
       return result;
     }
-    return new Ray2d(origin.clone(), direction.clone());
+    return new Ray2d(Point2d.createFrom(origin), Vector2d.createFrom(direction));
   }
   /** Create from captured `origin` and `direction`. */
   public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d {
@@ -121,9 +130,9 @@ export class Ray2d {
    * * `fraction`: ray parameter of intersection, or 0.0 if `!hasIntersection`. If the instance is normalized, this is the signed distance along the ray to the intersection point.
    * * `cross`: the 2D cross product `this.direction x (linePointB - linePointA)`, useful for determining orientation of the line and ray.
    */
-  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d): { hasIntersection: boolean, fraction: number, cross: number } {
-    const lineDirection = linePointA.vectorTo(linePointB);
-    const vector0 = linePointA.vectorTo(this._origin);
+  public intersectUnboundedLine(linePointA: XAndY, linePointB: XAndY): { hasIntersection: boolean, fraction: number, cross: number } {
+    const lineDirection = Vector2d.createStartEnd(linePointA, linePointB);
+    const vector0 = Vector2d.createStartEnd(linePointA, this._origin);
     const h0 = vector0.crossProduct(lineDirection);
     const dHds = this._direction.crossProduct(lineDirection);
     // h = h0 + s * dh
@@ -131,12 +140,25 @@ export class Ray2d {
     const hasIntersection = ff !== undefined;
     return { hasIntersection, fraction: hasIntersection ? ff : 0.0, cross: dHds };
   }
+  /**
+   * Find the intersection of the line defined by the ray with a Range2d.
+   * * Return the range of parameters (on the ray) which are "inside" the range.
+   * * Note that a range is always returned; if there is no intersection it is indicated by the test `result.isNull`.
+   */
+  public intersectionWithRange2d(range: Range2d, result?: Range1d): Range1d {
+    if (range.isNull)
+      return Range1d.createNull(result);
+    const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
+    interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x);
+    interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y);
+    return interval;
+  }
   /** Return the ray fraction where the given point projects onto the ray. */
-  public projectionFraction(point: Point2d): number {
+  public projectionFraction(point: XAndY): number {
     return this._origin.vectorTo(point).fractionOfProjectionToVector(this._direction);
   }
   /** Return the ray fraction where the given point projects onto the perpendicular ray. */
-  public perpendicularProjectionFraction(point: Point2d): number {
+  public perpendicularProjectionFraction(point: XAndY): number {
     const uv = this._direction.crossProduct(this._origin.vectorTo(point));
     const uu = this._direction.magnitudeSquared();
     // Want zero returned if failure case, not undefined

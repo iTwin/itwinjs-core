@@ -15,6 +15,7 @@ import { BeButton, BeButtonEvent } from "./tools/Tool";
 import { ViewHandleType, ViewManip } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
+import { expectDefined } from "@itwin/core-bentley";
 
 /**
  * @public
@@ -70,7 +71,7 @@ export class TentativePoint {
     if (this.getCurrSnap())
       IModelApp.viewManager.invalidateDecorationsAllViews();
     else
-      this.viewport!.invalidateDecorations();
+      this.viewport?.invalidateDecorations();
     this.isActive = false;
   }
 
@@ -83,9 +84,9 @@ export class TentativePoint {
   public showTentative(): void {
     if (this.isSnapped) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      IModelApp.accuSnap.displayToolTip(this._viewPoint, this.viewport!, undefined);
+      IModelApp.accuSnap.displayToolTip(this._viewPoint, expectDefined(this.viewport), undefined);
     } else {
-      this.viewport!.invalidateDecorations();
+      this.viewport?.invalidateDecorations();
     }
     this.isActive = true;
   }
@@ -168,12 +169,12 @@ export class TentativePoint {
 
     if (undefined === thisHit) {
       // search for elements around the current raw point (search should not be affected by locks!)
-      const aperture = (2.0 * this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
+      const aperture = (2.0 * expectDefined(this.viewport).pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
       const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
       const picker = IModelApp.locateManager.picker;
 
       options.hitSource = HitSource.TentativeSnap;
-      if (0 === picker.doPick(this.viewport!, this._rawPoint, aperture, options))
+      if (0 === picker.doPick(expectDefined(this.viewport), this._rawPoint, aperture, options))
         return undefined;
 
       this.tpHits = picker.getHitList(true);
@@ -212,7 +213,7 @@ export class TentativePoint {
     this.removeTentative(); // remove the TP cross if it is already on the screen
     const lastPtView = this._viewPoint.clone();
 
-    this.viewport = ev.viewport!;
+    this.viewport = expectDefined(ev.viewport);
     this._point.setFrom(ev.point);
     this._rawPoint.setFrom(ev.rawPoint);
     this._viewPoint.setFrom(ev.viewPoint);
@@ -228,7 +229,7 @@ export class TentativePoint {
         this.setCurrSnap(newSnap); // Adopt the snap as current
         IModelApp.accuSnap.clear(); // make sure there's no AccuSnap active after a tentative point (otherwise we continually snap to it).
         if (this.isSnapped)
-          this._point.setFrom(this.currSnap!.snapPoint);
+          this._point.setFrom(expectDefined(this.currSnap).snapPoint);
         else if (wasActive && newSearch)
           this._point.setFrom(ev.rawPoint);
         this.showTentative(); // show the TP cross
@@ -237,7 +238,7 @@ export class TentativePoint {
           IModelApp.toolAdmin.adjustSnapPoint();
         } else if (IModelApp.accuDraw.isActive) {
           const point = this.getPoint().clone();
-          const vp = ev.viewport!;
+          const vp = expectDefined(ev.viewport);
           if (vp.isSnapAdjustmentRequired) {
             IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
             const hit = new HitDetail({
@@ -264,7 +265,7 @@ export class TentativePoint {
             this.setPoint(point);
           }
         } else {
-          IModelApp.toolAdmin.adjustPoint(this.getPoint(), ev.viewport!);
+          IModelApp.toolAdmin.adjustPoint(this.getPoint(), expectDefined(ev.viewport));
         }
 
         IModelApp.accuDraw.onTentative();

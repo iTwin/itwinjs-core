@@ -47,8 +47,9 @@ export class ColorIndex {
   public get hasAlpha() { return !this._color.isOpaque; }
   /** Whether this index specifies a single uniform color for the entire mesh or polyline. */
   public get isUniform() { return this._color instanceof ColorDef; }
+  // Note: this.nonUniform will always return a value if this.isUniform is false.
   /** The number of colors in this index. */
-  public get numColors(): number { return this.isUniform ? 1 : this.nonUniform!.colors.length; }
+  public get numColors(): number { return this.isUniform ? 1 : this.nonUniform!.colors.length; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Construct a default index specifying a uniform white color. */
   public constructor() { this._color = ColorDef.white; }

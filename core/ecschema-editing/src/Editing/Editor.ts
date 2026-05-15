@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, ECSchemaError, ECSchemaStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -284,7 +284,7 @@ export class SchemaContextEditor {
       }
       schema.setAlias(alias);
     } catch(e: any) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
+      if (e instanceof ECSchemaError && e.errorNumber === ECSchemaStatus.InvalidECName) {
         throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),
           new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
       }

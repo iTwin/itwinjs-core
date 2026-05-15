@@ -2,12 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification.js";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification.js";
 
 /**
  * Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined
@@ -15,6 +16,8 @@ import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "
  *
  * @see [Related instance nodes specification reference documentation page]($docs/presentation/hierarchies/RelatedInstanceNodes.md)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */

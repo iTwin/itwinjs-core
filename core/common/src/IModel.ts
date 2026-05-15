@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
+import { assert, BeEvent, expectDefined, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, TransformProps, Vector3d, XYAndZ, XYZProps,
   YawPitchRollAngles, YawPitchRollProps,
@@ -111,6 +111,18 @@ export interface IModelProps {
  */
 export type IModelConnectionProps = IModelProps & IModelRpcProps;
 
+/** The properties returned by the backend when creating a new [[BriefcaseConnection]] from the frontend with Ipc.
+ * These properties describe the iModel held on the backend for thew newly formed connection and are used to construct a new
+ * [[BriefcaseConnection]] instance on the frontend to access it.
+ * @public
+ */
+export interface BriefcaseConnectionProps extends IModelConnectionProps {
+  /** The ID of the briefcase.
+   * @beta
+   */
+  readonly briefcaseId?: number;
+}
+
 /** The properties that can be supplied when creating a *new* iModel.
  * @public
  */
@@ -192,16 +204,26 @@ export interface CreateSnapshotIModelProps {
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
 /** Options that can be supplied when creating standalone iModels.
- * @internal
+ * @public
  */
 export interface CreateStandaloneIModelProps {
-  /** If present, file will allow local editing, but cannot be used to create changesets */
+  /** If present, file will allow local editing, but cannot be used to create changesets.
+   * @note This flag is a string for historical reasons. When specified, it will always be set to the required
+   * internal value `{ "txns": true }` regardless of the string content provided. This behavior ensures backwards
+   * compatibility while allowing users to enable transaction support.
+   * @note Consider using [[enableTransactions]] instead, which provides a cleaner boolean interface.
+   * @deprecated in 5.5 - will not be removed until after 2027-01-05. Use [[enableTransactions]] instead.
+   */
   readonly allowEdit?: string;
+  /** If true, enables transactions in the standalone iModel, allowing local editing. The iModel cannot be used to create changesets.
+   * This is the preferred way to enable editing. If both this and [[allowEdit]] are specified, either being truthy will enable transactions.
+   */
+  readonly enableTransactions?: boolean;
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.
- * @see [standalone.createEmpty]($backend)
- * @internal
+ * @see [StandaloneDb.createEmpty]($backend)
+ * @public
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
@@ -281,9 +303,9 @@ export class EcefLocation implements EcefLocationProps {
     const eastCarto = Cartographic.fromRadians({ longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height });
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
-    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();
-    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize();
-    const matrix = Matrix3d.createRigidFromColumns(xVector!, yVector!, AxisOrder.XYZ)!;
+    const xVector = expectDefined(Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize());
+    const yVector = expectDefined(Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize());
+    const matrix = expectDefined(Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ));
     if (angle !== undefined) {
       const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
       matrix.multiplyMatrixMatrix(north, matrix);
@@ -293,7 +315,7 @@ export class EcefLocation implements EcefLocationProps {
       ecefOrigin.addInPlace(delta);
     }
 
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
+    return new EcefLocation({ origin: ecefOrigin, orientation: expectDefined(YawPitchRollAngles.createFromMatrix3d(matrix)), cartographicOrigin: origin });
   }
 
   /** Construct ECEF Location from transform with optional position on the earth used to establish the ECEF origin and orientation. */
@@ -522,8 +544,8 @@ export abstract class IModel implements IModelProps {
       projectExtents: this.projectExtents.toJSON(),
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
-      geographicCoordinateSystem: this.geographicCoordinateSystem,
-      ... this._getRpcProps(),
+      geographicCoordinateSystem: this.geographicCoordinateSystem?.toJSON(),
+      ...this._getRpcProps(),
     };
   }
 
@@ -642,7 +664,7 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
+  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return expectDefined(this.getEcefTransform().multiplyInversePoint3d(ecef, result)); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
@@ -650,7 +672,7 @@ export abstract class IModel implements IModelProps {
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return expectDefined(Cartographic.fromEcef(this.spatialToEcef(spatial), result)); }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
    * @param cartographic A cartographic location

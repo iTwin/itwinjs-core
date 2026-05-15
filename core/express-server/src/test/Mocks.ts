@@ -5,7 +5,7 @@
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcProtocol, OpenAPIInfo } from "@itwin/core-common";
 import * as http from "http";
 import * as sinon from "sinon";
-import { IModelJsExpressServer } from "../ExpressServer";
+import { IModelJsExpressServer } from "../express-server";
 
 export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration {
 

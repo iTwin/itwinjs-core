@@ -243,7 +243,7 @@ describe("GraphicBuilder", () => {
 
         const verifyParams = (params: MeshParams) => {
           expect(undefined === params.edges).toEqual("none" === expected);
-          expect(params.edges?.polylines).toBeUndefined();
+          expect(params.edges?.polylineGroups).toBeUndefined();
           if (params.edges) {
             expect(undefined !== params.edges.segments).toEqual(expectSegments);
             expect(undefined !== params.edges.silhouettes).toEqual(expectSilhouettes);

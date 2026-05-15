@@ -86,7 +86,7 @@ export class SingularTechnique implements Technique {
     this.program[Symbol.dispose]();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }
@@ -160,7 +160,7 @@ export abstract class VariedTechnique implements Technique {
     this._isDisposed = true;
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }
@@ -1000,7 +1000,7 @@ export class Techniques implements WebGLDisposable {
     this._list.length = 0;
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }

@@ -8,7 +8,8 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
-import { PartialBy } from "./Utils";
+import { parseFullClassName } from "@itwin/presentation-shared";
+import { PartialBy } from "./Utils.js";
 
 /**
  * Type of an ECClass ID.
@@ -37,11 +38,17 @@ export interface InstanceKey {
 export namespace InstanceKey {
   /** Compare 2 instance keys */
   export function compare(lhs: InstanceKey, rhs: InstanceKey): number {
-    const classNameCompare = lhs.className.localeCompare(rhs.className);
+    const lhsClass = parseFullClassName(lhs.className);
+    const rhsClass = parseFullClassName(rhs.className);
+    const schemaNameCompare = lhsClass.schemaName.toLowerCase().localeCompare(rhsClass.schemaName.toLowerCase());
+    if (schemaNameCompare !== 0) {
+      return schemaNameCompare;
+    }
+    const classNameCompare = lhsClass.className.toLowerCase().localeCompare(rhsClass.className.toLowerCase());
     if (classNameCompare !== 0) {
       return classNameCompare;
     }
-    return lhs.id.localeCompare(rhs.id);
+    return lhs.id.toLowerCase().localeCompare(rhs.id.toLowerCase());
   }
 }
 

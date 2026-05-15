@@ -27,6 +27,8 @@ export enum SnapMode {
   Origin = 1 << 4,
   Bisector = 1 << 5,
   Intersection = 1 << 6,
+  PerpendicularPoint = 1 << 7,
+  TangentPoint = 1 << 8,
 }
 
 /**
@@ -249,7 +251,7 @@ export class HitDetail {
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
-  /** @deprecated in 4.1. Use the overload that takes a [[HitDetailProps]]. */
+  /** @deprecated in 4.1 - will not be removed until after 2026-06-13. Use the overload that takes a [[HitDetailProps]]. */
   public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
 
   /** @internal */
@@ -397,11 +399,18 @@ export class SnapDetail extends HitDetail {
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) {
     this.snapPoint.setFrom(point);
     this.adjustedPoint.setFrom(point);
     this.heat = heat;
+  }
+
+  /** Change the snap mode. */
+  public setSnapMode(snapMode: SnapMode) {
+    this.snapMode = snapMode;
+    this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
@@ -487,16 +496,19 @@ export class SnapDetail extends HitDetail {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
-      const path = Path.create(this.getCurvePrimitive(singleSegment)!);
+      const curvePrimitive = this.getCurvePrimitive(singleSegment);
+      if (curvePrimitive !== undefined) {
+        const path = Path.create(curvePrimitive);
 
-      builder.setSymbology(outline, outline, 6);
-      builder.addPath(path);
+        builder.setSymbology(outline, outline, 6);
+        builder.addPath(path);
 
-      builder.setSymbology(centerLine, centerLine, 2);
-      builder.addPath(path);
+        builder.setSymbology(centerLine, centerLine, 2);
+        builder.addPath(path);
 
-      context.addDecorationFromBuilder(builder);
-      return;
+        context.addDecorationFromBuilder(builder);
+        return;
+      }
     }
     super.draw(context);
   }
@@ -510,6 +522,8 @@ export class SnapDetail extends HitDetail {
       case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
       case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
       case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
+      case SnapMode.PerpendicularPoint: return `${IModelApp.publicPath}sprites/SnapPerpendicularPoint.png`;
+      case SnapMode.TangentPoint: return `${IModelApp.publicPath}sprites/SnapTangentPoint.png`;
     }
     return "";
   }
@@ -580,6 +594,8 @@ export class HitList<T extends HitDetail> {
   public setHit(i: number, p: T | undefined): void {
     if (i < 0 || i >= this.length)
       return;
+    // While messy, the following is obviously intentional based on the function comment.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.hits[i] = p!;
   }
 

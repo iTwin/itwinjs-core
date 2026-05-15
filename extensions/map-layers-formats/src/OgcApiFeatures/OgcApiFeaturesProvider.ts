@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
+import { base64StringToUint8Array, expectDefined, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
+import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
-import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
-import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import * as Geojson from "geojson";
-import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
-import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader";
-import { RandomMapColor } from "../Feature/RandomMapColor";
-import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon";
+import Geojson from "geojson";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer.js";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology.js";
+import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon.js";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
+import { RandomMapColor } from "../Feature/RandomMapColor.js";
+import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader.js";
 
 const loggerCategory = "MapLayersFormats.OgcApiFeatures";
 const dataUrlHeaderToken = "base64,";
@@ -277,7 +277,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
         json = await response.json();
         if (json?.features)
-          data!.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
+          data.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
         else
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
@@ -416,7 +416,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
       this._spatialIdx?.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
         (index: number) => {
-          filteredData.features.push(this._staticData!.features[index]);
+          filteredData.features.push(expectDefined(this._staticData).features[index]);
           return true;
         });
 
@@ -540,4 +540,3 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     featureInfos );
   }
 }
-

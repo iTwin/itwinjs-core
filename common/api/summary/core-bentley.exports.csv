@@ -16,10 +16,13 @@ public;enum;BentleyLoggerCategory
 public;enum;BentleyStatus
 public;class;BeTimePoint
 public;class;BeUiEvent
+beta;class;BeUnorderedEvent
+beta;class;BeUnorderedUiEvent
 public;enum;BriefcaseStatus
 public;class;ByteStream
 public;enum;ChangeSetStatus
 public;type;CloneFunction
+public;function;compareArrays
 public;function;compareBooleans
 public;function;compareBooleansOrUndefined
 public;function;compareNumbers
@@ -40,6 +43,8 @@ internal;enum;DbConflictResolution
 public;enum;DbOpcode
 public;enum;DbResult
 internal;enum;DbValueType
+public;type;DeepReadonlyObject
+public;type;DeepRequiredObject
 public;class;Dictionary
 public;interface;DictionaryEntry
 public;class;DisposableList
@@ -54,6 +59,8 @@ public;enum;DuplicatePolicy
 public;class;Entry
 public;interface;EntryContainer
 alpha;class;ErrorCategory
+internal;function;expectDefined
+internal;function;expectNotNull
 public;enum;GeoServiceStatus
 public;type;GetMetaDataFunction
 public;namespace;Guid
@@ -76,12 +83,16 @@ deprecated;function;isIDisposable
 public;function;isInstanceOf
 public;function;isProperSubclassOf
 public;function;isSubclassOf
+beta;interface;ITwinError
+beta;namespace;ITwinError
+beta;interface;ITwinErrorId
 public;interface;JSONSchema
 public;interface;JSONSchemaMap
 public;interface;JSONSchemaSnippet
 public;type;JSONSchemaType
 public;type;JSONSchemaTypeName
 public;namespace;JsonUtils
+beta;interface;LegacyITwinErrorWithNumber
 public;type;Listener
 public;type;ListenerType
 public;type;LogFunction
@@ -153,5 +164,6 @@ public;class;UnexpectedErrors
 public;function;using
 deprecated;function;using
 public;function;utf8ToString
+beta;function;wrapTimerCallback
 public;class;YieldManager
 public;interface;YieldManagerOptions

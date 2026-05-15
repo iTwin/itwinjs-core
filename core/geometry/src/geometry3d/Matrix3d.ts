@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
@@ -493,11 +494,12 @@ export class Matrix3d implements BeJSONFunctions {
    * This is for use by matrix * matrix multiplications which need to be sure the member is there to be
    * filled with method-specific content.
    */
-  private createInverseCoffsWithZeros() {
+  private createInverseCoffsWithZeros(): this is { inverseCoffs: Float64Array } {
     if (!this.inverseCoffs) {
       this.inverseState = InverseMatrixState.unknown;
       this.inverseCoffs = new Float64Array(9);
     }
+    return this.inverseCoffs !== undefined;
   }
   /**
    * Copy the transpose of the coffs to the inverseCoffs.
@@ -553,10 +555,11 @@ export class Matrix3d implements BeJSONFunctions {
       for (let i = 0; i < 9; i++)
         this.coffs[i] = other.coffs[i];
       if (other.inverseState === InverseMatrixState.inverseStored && other.inverseCoffs !== undefined) {
-        this.createInverseCoffsWithZeros();
-        for (let i = 0; i < 9; i++)
-          this.inverseCoffs![i] = other.inverseCoffs[i];
-        this.inverseState = InverseMatrixState.inverseStored;
+        if (this.createInverseCoffsWithZeros()) {
+          for (let i = 0; i < 9; i++)
+            this.inverseCoffs[i] = other.inverseCoffs[i];
+          this.inverseState = InverseMatrixState.inverseStored;
+        }
       } else if (other.inverseState !== InverseMatrixState.inverseStored) {
         this.inverseState = other.inverseState;
       } else {  // This is reached when other says stored but does not have coffs. This should not happen.
@@ -690,17 +693,18 @@ export class Matrix3d implements BeJSONFunctions {
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 0), vectorU);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 1), vectorV);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 2), vectorW);
+    target.inverseState = InverseMatrixState.unknown;
     return target;
   }
   /**
    * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * `vectorA1 = Normalized vectorA` is placed in the column specified by **first** letter in
+   * * `vectorA1 = Normalized vectorA` is placed in the column specified by the **first** letter in
    * the AxisOrder name.
-   * * Normalized `vectorC1 = vectorA1 cross vectorB` is placed in the column specified by **third**
+   * * Normalized `vectorC1 = vectorA1 cross vectorB` is placed in the column specified by the **third**
    * letter in the AxisOrder name.
-   * * Normalized  `vectorC1 cross vectorA` is placed in the column specified by **second**
+   * * Normalized  `vectorC1 cross vectorA` is placed in the column specified by the **second**
    * letter in the AxisOrder name.
-   * * This function internally uses createShuffledColumns.
+   * * This function internally uses [[createShuffledColumns]].
    */
   public static createRigidFromColumns(
     vectorA: Vector3d, vectorB: Vector3d, axisOrder: AxisOrder, result?: Matrix3d,
@@ -961,35 +965,40 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, -1, 0,
-          0, 0, -1);
+          0, 0, -1,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 90 degrees around Z
       case StandardViewIndex.Left:
         result = Matrix3d.createRowValues(
           0, -1, 0,
           0, 0, 1,
-          -1, 0, 0);
+          -1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by -90 degrees around Z
       case StandardViewIndex.Right:
         result = Matrix3d.createRowValues(
           0, 1, 0,
           0, 0, 1,
-          1, 0, 0);
+          1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X
       case StandardViewIndex.Front:
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, 0, 1,
-          0, -1, 0);
+          0, -1, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 180 degrees around Z
       case StandardViewIndex.Back:
         result = Matrix3d.createRowValues(
           -1, 0, 0,
           0, 0, 1,
-          0, 1, 0);
+          0, 1, 0,
+        );
         break;
       /**
        * Isometric view
@@ -1002,14 +1011,16 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           0.707106781186548, -0.70710678118654757, 0.00000000000000000,
           0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          -0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // Start with FRONT view, ccw rotation by 45 degrees around Y and by 35.264 degrees around X
       case StandardViewIndex.RightIso:
         result = Matrix3d.createRowValues(
           0.707106781186548, 0.70710678118654757, 0.00000000000000000,
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // no rotation
       case StandardViewIndex.Top:
@@ -1317,7 +1328,8 @@ export class Matrix3d implements BeJSONFunctions {
     } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
       column[0].scaleInPlace(1 / scale.x);
       column[1].scaleInPlace(1 / scale.y);
-      column[2] = column[0].unitCrossProduct(column[1], column[2])!;
+      const cross = column[0].unitCrossProduct(column[1], column[2]);
+      assert(cross !== undefined, "expect defined cross product because columns are perpendicular and non-zero");
       matrixV.setColumns(column[0], column[1], column[2]);
     } else if (!scaleXIsZero) { // rank 1
       matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
@@ -1442,6 +1454,10 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return the Z row magnitude  */
   public rowZMagnitude(): number {
     return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]);
+  }
+  /** Return the cross product of column X with column Y. */
+  public columnXCrossColumnY(result?: Vector3d): Vector3d {
+    return Geometry.crossProductXYZXYZ(this.coffs[0], this.coffs[3], this.coffs[6], this.coffs[1], this.coffs[4], this.coffs[7], result);
   }
   /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {
@@ -1657,7 +1673,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
    * `n` is the plane normal.
    * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix is a projection onto the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
@@ -2074,6 +2090,22 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
+   * Multiply the point by the inverse matrix, and return its xy-coordinates.
+   * @param result optional pre-allocated result to populate and return
+   * @returns xy-coordinates of the transformed point, or `undefined` if the instance is singular.
+   * @see [[multiplyInverseXYZAsPoint3d]]
+   */
+  public multiplyInverseXYZAsPoint2d(x: number, y: number, z: number, result?: Point2d): Point2d | undefined {
+    if (this.computeCachedInverse(true)) {
+      return Point2d.create(
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        result,
+      );
+    }
+    return undefined;
+  }
+  /**
    * Invoke a given matrix*matrix operation to compute the inverse matrix and set this.inverseCoffs
    * * If either input coffA or coffB is `undefined`, set state to `InverseMatrixState.unknown` but
    * leave the inverseCoffs untouched.
@@ -2084,10 +2116,9 @@ export class Matrix3d implements BeJSONFunctions {
     f: (factorA: Float64Array, factorB: Float64Array, result: Float64Array) => void, coffA?: Float64Array,
     coffB?: Float64Array,
   ): void {
-    if (coffA && coffB) {
-      this.createInverseCoffsWithZeros();
+    if (coffA && coffB && this.createInverseCoffsWithZeros()) {
       this.inverseState = InverseMatrixState.inverseStored;
-      f(coffA, coffB, this.inverseCoffs!); // call function f (which is provided by user) to compute the inverse.
+      f(coffA, coffB, this.inverseCoffs);
     } else {
       this.inverseState = InverseMatrixState.unknown;
     }
@@ -2123,7 +2154,7 @@ export class Matrix3d implements BeJSONFunctions {
     if (!other.computeCachedInverse(true))
       return undefined;
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs!, Matrix3d._productBuffer);
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs, Matrix3d._productBuffer);
     if (this.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.coffs, this.inverseCoffs);
     else
@@ -2138,8 +2169,8 @@ export class Matrix3d implements BeJSONFunctions {
   public multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined {
     if (!this.computeCachedInverse(true))
       return undefined;
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs, other.coffs, Matrix3d._productBuffer);
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs!, other.coffs, Matrix3d._productBuffer);
     if (other.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.inverseCoffs, this.coffs);
     else
@@ -2250,16 +2281,17 @@ export class Matrix3d implements BeJSONFunctions {
     if (result === this) {
       // swap the contents of this.coffs and this.inverseCoffs
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
-      PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
-      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
+      PackedMatrix3dOps.copy(this.inverseCoffs, this.coffs);
+      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs);
       return result;
     }
     if (result === undefined) {
       result = Matrix3d.createIdentity();
     }
     result.createInverseCoffsWithZeros();
-    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs!);
-    PackedMatrix3dOps.copy(this.inverseCoffs!, result.coffs);
+    assert(result.inverseCoffs !== undefined, "expect inverseCoffs defined by createInverseCoffsWithZeros");
+    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs);
+    PackedMatrix3dOps.copy(this.inverseCoffs, result.coffs);
     result.inverseState = this.inverseState;
     return result;
   }
@@ -2400,38 +2432,40 @@ export class Matrix3d implements BeJSONFunctions {
    * recompute the inverse.
    * @returns return `true` if the inverse is computed. Return `false` if matrix is singular.
    */
-  public computeCachedInverse(useCacheIfAvailable: boolean): boolean {
+  public computeCachedInverse(useCacheIfAvailable: boolean): this is { inverseCoffs: Float64Array } {
     if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
       Matrix3d.numUseCache++;
       return this.inverseState === InverseMatrixState.inverseStored;
     }
     this.inverseState = InverseMatrixState.unknown;
-    this.createInverseCoffsWithZeros();
-    const coffs = this.coffs;
-    const inverseCoffs = this.inverseCoffs!;
-    /**
-     * We calculate the inverse using cross products.
-     * Math details can be found at docs/learning/matrix/Matrix.md
-     *                    [   A   ]
-     * In summary, if M = [   B   ] then inverse of M = (1/det)[BxC   CxA   AxB] where
-     *                    [   C   ]
-     * det is the determinant of matrix M (which is equal to "A dot BxC").
-     */
-    Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
-    Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
-    Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
-    Matrix3d.numComputeCache++;
-    const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0); // A dot BxC
-    if (det === 0.0) {
-      this.inverseState = InverseMatrixState.singular;
-      this.inverseCoffs = undefined;
-      return false;
+    if (this.createInverseCoffsWithZeros()) {
+      const coffs = this.coffs;
+      const inverseCoffs = this.inverseCoffs;
+      /**
+       * We calculate the inverse using cross products.
+       * Math details can be found at docs/learning/matrix/Matrix.md
+       *                    [   A   ]
+       * In summary, if M = [   B   ] then inverse of M = (1/det)[BxC   CxA   AxB] where
+       *                    [   C   ]
+       * det is the determinant of matrix M (which is equal to "A dot BxC").
+       */
+      Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
+      Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
+      Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
+      Matrix3d.numComputeCache++;
+      const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0);  // A dot BxC
+      if (det === 0.0) {
+        this.inverseState = InverseMatrixState.singular;
+      } else {
+        const f = 1.0 / det;
+        for (let i = 0; i < 9; i++)
+          inverseCoffs[i] *= f;
+        this.inverseState = InverseMatrixState.inverseStored;
+        return true;
+      }
     }
-    const f = 1.0 / det;
-    for (let i = 0; i < 9; i++)
-      inverseCoffs[i] *= f;
-    this.inverseState = InverseMatrixState.inverseStored;
-    return true;
+    this.inverseCoffs = undefined;
+    return false;
   }
   /**
    * Convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order
@@ -2829,28 +2863,27 @@ export class Matrix3d implements BeJSONFunctions {
     return count === 3;
   }
   /**
-   * Adjust the matrix in place to make is a `rigid` matrix so that:
-   * * columns are perpendicular and have unit length.
-   * * transpose equals inverse.
-   * * mirroring is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
-   * @param axisOrder how to reorder the matrix columns
-   * @return whether the adjusted matrix is `rigid` on return
+   * Adjust the matrix in place to make it rigid:
+   * * Columns are perpendicular and have unit length.
+   * * Transpose equals inverse.
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @return whether the adjusted matrix is rigid on return
    */
   public makeRigid(axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
     const maxAbs = this.maxAbs();
     if (Geometry.isSmallMetricDistance(maxAbs))
       return false;
     const scale = 1.0 / maxAbs;
-    this.scaleColumnsInPlace(scale, scale, scale);
+    this.scaleColumnsInPlace(scale, scale, scale); // improve numerical stability
     this.axisOrderCrossProductsInPlace(axisOrder);
     return this.normalizeColumnsInPlace();
   }
   /**
-   * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * Columns are taken from the source Matrix3d in order indicated by the axis order.
-   * * Mirroring in the matrix is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
+   * Create a new orthogonal matrix by calling [[makeRigid]] on a clone of `source`.
+   * @param source input matrix
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @param result optional preallocated result to populate and return
+   * @returns rigid matrix, or `undefined` if the operation failed.
    */
   public static createRigidFromMatrix3d(
     source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d,

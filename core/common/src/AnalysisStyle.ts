@@ -260,12 +260,14 @@ export class AnalysisStyle {
 
     if ((undefined === this.displacement) !== (undefined === other.displacement))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     else if (this.displacement && !this.displacement.equals(other.displacement!))
       return false;
 
     if ((undefined === this.thematic) !== (undefined === other.thematic))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return undefined === this.thematic || this.thematic.equals(other.thematic!);
   }
 

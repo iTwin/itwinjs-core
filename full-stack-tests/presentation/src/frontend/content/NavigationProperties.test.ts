@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { assert, Guid } from "@itwin/core-bentley";
 import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { getFieldByLabel } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+import { getFieldByLabel } from "../../Utils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Navigation Properties", ({ getDefaultSuiteIModel }) => {
   it("creates navigation fields", async () => {

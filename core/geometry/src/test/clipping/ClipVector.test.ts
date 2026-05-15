@@ -20,7 +20,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
@@ -701,7 +701,7 @@ export function exerciseClipPrimitive(ck: Checker, allGeometry: GeometryQuery[],
   const range2 = Range3d.createArray(polygonToClip);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
   if (primitive instanceof ClipShape) {
-    if (primitive.transformIsValid) {
+    if (primitive.transformValid) {
       const transformedPolygon = primitive.transformFromClip!.multiplyPoint3dArray(primitive.polygon);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, transformedPolygon, x0, y0);
     } else {

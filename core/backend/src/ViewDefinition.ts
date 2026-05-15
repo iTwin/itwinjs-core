@@ -6,25 +6,27 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
-  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement, RelatedElementProps,
+  resolveNavProp, resolveNavPropId, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
+import { _implicitTxn } from "./internal/Symbols";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
- * See [how to create a ModelSelector]$(docs/learning/backend/CreateElements.md#ModelSelector).
- * @public
+ * @public @preview
  */
 export class ModelSelector extends DefinitionElement {
   public static override get className(): string { return "ModelSelector"; }
@@ -41,6 +43,35 @@ export class ModelSelector extends DefinitionElement {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
+  }
+
+  /**
+   * ModelSelector custom HandledProps includes 'models'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "models", source: "Class" },
+  ];
+
+  /**
+   * ModelSelector deserializes 'models'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ModelSelectorProps {
+    const elProps = super.deserialize(props) as ModelSelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.models = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -85,17 +116,22 @@ export class ModelSelector extends DefinitionElement {
    * @param models Array of models to select for display
    * @returns The Id of the newly inserted ModelSelector element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
-    const modelSelector = this.create(iModelDb, definitionModelId, name, models);
-    return iModelDb.elements.insertElement(modelSelector.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use ModelSelector.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const modelSelector = this.create(txn.iModel, definitionModelId, name, models);
+    return modelSelector.insert(txn);
   }
 }
 
 /** Holds a list of Ids of Categories to be displayed in a view.
  * @see [CategorySelectorState]($frontend)
- * See [how to create a CategorySelector]$(docs/learning/backend/CreateElements.md#CategorySelector).
- * @public
+ * See [how to create a CategorySelector]($docs/learning/backend/CreateElements.md#CategorySelector).
+ * @public @preview
  */
 export class CategorySelector extends DefinitionElement {
   public static override get className(): string { return "CategorySelector"; }
@@ -111,6 +147,35 @@ export class CategorySelector extends DefinitionElement {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
+  }
+
+  /**
+   * CategorySelector custom HandledProps includes 'categories'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categories", source: "Class" },
+  ];
+
+  /**
+   * CategorySelector deserializes 'categories'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): CategorySelectorProps {
+    const elProps = super.deserialize(props) as CategorySelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.categories = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -156,10 +221,15 @@ export class CategorySelector extends DefinitionElement {
    * @param categories Array of categories to select for display
    * @returns The Id of the newly inserted CategorySelector element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
-    const categorySelector = this.create(iModelDb, definitionModelId, name, categories);
-    return iModelDb.elements.insertElement(categorySelector.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use CategorySelector.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const categorySelector = this.create(txn.iModel, definitionModelId, name, categories);
+    return categorySelector.insert(txn);
   }
 }
 
@@ -168,31 +238,105 @@ export class CategorySelector extends DefinitionElement {
  * plus additional view-specific parameters in their [[Element.jsonProperties]].
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
- * @public
+ * @public @preview
  */
 export abstract class ViewDefinition extends DefinitionElement {
   public static override get className(): string { return "ViewDefinition"; }
-  /** The element Id of the [[CategorySelector]] for this ViewDefinition */
-  public categorySelectorId: Id64String;
-  /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
-  public displayStyleId: Id64String;
+
+  /** The Id of the [[CategorySelector]] for this ViewDefinition. */
+  public get categorySelectorId(): Id64String { return this.categorySelector.id; }
+  public set categorySelectorId(id: Id64String) { this.categorySelector = { ...this.categorySelector, id }; }
+
+  /** The Id of the [[DisplayStyle]] for this ViewDefinition. */
+  public get displayStyleId(): Id64String { return this.displayStyle.id; }
+  public set displayStyleId(id: Id64String) { this.displayStyle = { ...this.displayStyle, id }; }
+
+  /** The [[CategorySelector]] referenced by this ViewDefinition. */
+  public categorySelector: RelatedElementProps;
+
+  /** The [[DisplayStyle]] referenced by this ViewDefinition. */
+  public displayStyle: RelatedElementProps;
 
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
 
-    this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
-    if (!Id64.isValid(this.categorySelectorId))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const categorySelectorId = Id64.fromJSON(resolveNavPropId(props.categorySelector, props.categorySelectorId));
+    if (Id64.isInvalid(categorySelectorId))
       throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
+    this.categorySelector = { id: categorySelectorId, relClassName: props.categorySelector?.relClassName };
 
-    this.displayStyleId = Id64.fromJSON(props.displayStyleId);
-    if (!Id64.isValid(this.displayStyleId))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const displayStyleId = Id64.fromJSON(resolveNavPropId(props.displayStyle, props.displayStyleId));
+    if (Id64.isInvalid(displayStyleId))
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
+    this.displayStyle = { id: displayStyleId, relClassName: props.displayStyle?.relClassName };
+  }
+
+  /**
+   * ViewDefinition custom HandledProps includes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categorySelector", source: "Class" },
+    { propertyName: "categorySelectorId", source: "Class" },
+    { propertyName: "displayStyle", source: "Class" },
+    { propertyName: "displayStyleId", source: "Class" },
+  ];
+
+  /**
+   * ViewDefinition deserializes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinitionProps {
+    const elProps = super.deserialize(props) as ViewDefinitionProps;
+    const instance = props.row;
+    if (instance.isPrivate !== undefined)
+      elProps.isPrivate = instance.isPrivate;
+
+    elProps.categorySelector = instance.categorySelector;
+    if (elProps.categorySelector?.relClassName)
+      elProps.categorySelector.relClassName = elProps.categorySelector.relClassName.replace(":", ".");
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.categorySelectorId = instance.categorySelector.id;  // for backward compatibility
+
+    elProps.displayStyle = instance.displayStyle;
+    if (elProps.displayStyle?.relClassName)
+      elProps.displayStyle.relClassName = elProps.displayStyle.relClassName.replace(":", ".");
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.displayStyleId = instance.displayStyle.id;  // for backward compatibility
+
+    return elProps;
+  }
+
+  /**
+   * ViewDefinition serializes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.categoryselector = resolveNavProp(props.categorySelector, props.categorySelectorId);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.displayStyle = resolveNavProp(props.displayStyle, props.displayStyleId);
+    return inst;
   }
 
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
-    json.categorySelectorId = this.categorySelectorId;
-    json.displayStyleId = this.displayStyleId;
+    json.categorySelector = this.categorySelector;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.categorySelectorId = this.categorySelectorId;  // for backward compatibility
+
+    json.displayStyle = this.displayStyle;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.displayStyleId = this.displayStyleId;  // for backward compatibility
     return json;
   }
 
@@ -216,8 +360,8 @@ export abstract class ViewDefinition extends DefinitionElement {
   };
 
   /** @beta */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
-    super.onCloned(context, sourceElementProps, targetElementProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): Promise<void> {
+    await super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
       const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
       if (Id64.isValidId64(acsId)) {
@@ -268,7 +412,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 }
 
 /** Defines a view of one or more 3d models.
- * @public
+ * @public @preview
  */
 export abstract class ViewDefinition3d extends ViewDefinition {
   private readonly _details: ViewDetails3d;
@@ -292,6 +436,62 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     this.angles = YawPitchRollAngles.fromJSON(props.angles);
     this.camera = new Camera(props.camera);
     this._details = new ViewDetails3d(this.jsonProperties);
+  }
+
+  /**
+   * ViewDefinition3d custom HandledProps includes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "eyePoint", source: "Class" },
+    { propertyName: "focusDistance", source: "Class" },
+    { propertyName: "lensAngle", source: "Class" },
+    { propertyName: "yaw", source: "Class" },
+    { propertyName: "roll", source: "Class" },
+    { propertyName: "pitch", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "extents", source: "Class" },
+    { propertyName: "isCameraOn", source: "Class" },
+  ];
+
+  /**
+   * ViewDefinition3d deserializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinition3dProps {
+    const instance = props.row;
+    const elProps = super.deserialize(props) as ViewDefinition3dProps;
+    // ViewDefinition3dProps
+    elProps.cameraOn = instance.isCameraOn as boolean;
+    elProps.origin = [instance.origin.x, instance.origin.y, instance.origin.z];
+    elProps.extents = [instance.extents.x, instance.extents.y, instance.extents.z];
+    elProps.camera = { eye: [instance.eyePoint.x, instance.eyePoint.y, instance.eyePoint.z], focusDist: instance.focusDistance, lens: Angle.createRadians(instance.lensAngle).toJSON() };
+    elProps.angles = YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON();
+    return elProps;
+  }
+
+  /**
+   * ViewDefinition3d serializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ViewDefinition3dProps, _iModel: IModelDb): ECSqlRow {
+    const row = super.serialize(props, _iModel);
+    row.isCameraOn = props.cameraOn;
+    row.eyePoint = props.camera.eye;
+    row.focusDistance = props.camera.focusDist;
+    row.lensAngle = props.camera.lens;
+    if (props.angles) {
+      row.yaw = props.angles.yaw;
+      row.roll = props.angles.roll;
+      row.pitch = props.angles.pitch;
+    }
+    return row;
   }
 
   public override toJSON(): ViewDefinition3dProps {
@@ -321,18 +521,25 @@ export abstract class ViewDefinition3d extends ViewDefinition {
  *        * ModelIds  -------> SpatialModels    <----------GeometricElement3d.Model
  *    * CategorySelector
  *        * CategoryIds -----> SpatialCategories <----------GeometricElement3d.Category
- * @public
+ * @public @preview
  */
 export class SpatialViewDefinition extends ViewDefinition3d {
   public static override get className(): string { return "SpatialViewDefinition"; }
+
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
-  public modelSelectorId: Id64String;
+  public get modelSelectorId(): Id64String { return this.modelSelector.id; }
+  public set modelSelectorId(id: Id64String) { this.modelSelector = { ...this.modelSelector, id }; }
+
+  /** Navigation property identifying the [[ModelSelector]] element for this view. */
+  public modelSelector: RelatedElementProps;
 
   protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
-    this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
-    if (!Id64.isValid(this.modelSelectorId))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const modelSelectorId = Id64.fromJSON(resolveNavPropId(props.modelSelector, props.modelSelectorId));
+    if (Id64.isInvalid(modelSelectorId))
       throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
+    this.modelSelector = { id: modelSelectorId, relClassName: props.modelSelector?.relClassName };
   }
 
   /** Construct a SpatialViewDefinition from its JSON representation. */
@@ -342,8 +549,50 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
-    json.modelSelectorId = this.modelSelectorId;
+    json.modelSelector = this.modelSelector;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    json.modelSelectorId = this.modelSelectorId;  // for backward compatibility
     return json;
+  }
+
+  /**
+   * SpatialViewDefinition custom HandledProps includes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "modelSelector", source: "Class" },
+    { propertyName: "modelSelectorId", source: "Class" }
+  ];
+
+  /**
+   * SpatialViewDefinition deserializes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
+    const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
+    const instance = props.row;
+    elProps.modelSelector = instance.modelSelector;
+    if (elProps.modelSelector?.relClassName)
+      elProps.modelSelector.relClassName = elProps.modelSelector.relClassName.replace(":", ".");
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.modelSelectorId = instance.modelSelector.id;  // for backward compatibility
+
+    return elProps;
+  }
+
+  /**
+   * SpatialViewDefinition serializes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.modelSelector = resolveNavProp(props.modelSelector, props.modelSelectorId);
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -407,16 +656,21 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @see [[createWithCamera]] for details.
    * @returns The Id of the newly inserted SpatialViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
-  public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
-    const viewDefinition = this.createWithCamera(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+  public static insertWithCamera(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SpatialViewDefinition.insertWithCamera(txn, ...) instead. */
+  public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
+  public static insertWithCamera(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const viewDefinition = this.createWithCamera(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
+    return viewDefinition.insert(txn);
   }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
- * See [how to create a OrthographicViewDefinition]$(docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
- * @public
+ * See [how to create a OrthographicViewDefinition]($docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
+ * @public @preview
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   public static override get className(): string { return "OrthographicViewDefinition"; }
@@ -469,10 +723,15 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @param standardView Optionally defines the view's rotation
    * @returns The Id of the newly inserted OrthographicViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
-    const viewDefinition = this.create(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use OrthographicViewDefinition.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const viewDefinition = this.create(txn.iModel, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
+    return viewDefinition.insert(txn);
   }
 
   /** Set a new viewed range without changing the rotation or any other properties. */
@@ -486,14 +745,19 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view.
- * @public
+ * @public @preview
  */
 export class ViewDefinition2d extends ViewDefinition {
   private readonly _details: ViewDetails;
 
   public static override get className(): string { return "ViewDefinition2d"; }
+
   /** The Id of the Model displayed by this view. */
-  public baseModelId: Id64String;
+  public get baseModelId(): Id64String { return this.baseModel.id; }
+  public set baseModelId(id: Id64String) { this.baseModel = { ...this.baseModel, id }; }
+
+  /** The base model navigation property for this view, aligned with the EC schema name. */
+  public baseModel: RelatedElementProps;
   /** The lower-left corner of this view in Model coordinates. */
   public origin: Point2d;
   /** The delta (size) of this view, in meters, aligned with view x,y. */
@@ -503,7 +767,12 @@ export class ViewDefinition2d extends ViewDefinition {
 
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.baseModelId = Id64.fromJSON(props.baseModelId);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
+    if (Id64.isInvalid(baseModelId))
+      throw new IModelError(IModelStatus.BadArg, `baseModelId is invalid`);
+    this.baseModel = { id: baseModelId, relClassName: props.baseModel?.relClassName };
+
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
@@ -512,11 +781,64 @@ export class ViewDefinition2d extends ViewDefinition {
 
   public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
+    val.baseModel = this.baseModel;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     val.baseModelId = this.baseModelId;
+
     val.origin = this.origin;
     val.delta = this.delta;
     val.angle = this.angle;
     return val;
+  }
+
+  /**
+   * ViewDefinition2d custom HandledProps includes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "baseModel", source: "Class" },
+    { propertyName: "baseModelId", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "extents", source: "Class" },
+    { propertyName: "rotationAngle", source: "Class" },
+  ];
+
+  /**
+   * ViewDefinition2d deserializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps {
+    const elProps = super.deserialize(props) as ViewDefinition2dProps;
+    const instance = props.row;
+
+    elProps.baseModel = instance.baseModel;
+    if (elProps.baseModel?.relClassName)
+      elProps.baseModel.relClassName = elProps.baseModel.relClassName.replace(":", ".");
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.baseModelId = instance.baseModel.id;  // for backward compatibility
+
+    elProps.origin = [instance.origin.x, instance.origin.y];
+    elProps.delta = [instance.extents.x, instance.extents.y];
+    elProps.angle = instance.rotationAngle;
+    return elProps;
+  }
+
+  /**
+   * ViewDefinition2d serializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    inst.baseModel = resolveNavProp(props.baseModel, props.baseModelId);
+    inst.origin = props.origin;
+    inst.extents = props.delta;
+    inst.rotationAngle = props.angle;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -532,7 +854,7 @@ export class ViewDefinition2d extends ViewDefinition {
 }
 
 /** Defines a view of a [[DrawingModel]].
- * @public
+ * @public @preview
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
   public static override get className(): string { return "DrawingViewDefinition"; }
@@ -580,18 +902,83 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @param displayStyleId The [[DisplayStyle2d]] that this view should use
    * @param range Defines the view origin and extents
    * @throws [[IModelError]] if there is an insert problem.
+   * @beta
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
-    const viewDefinition = this.create(iModelDb, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+  public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DrawingViewDefinition.insert(txn, ...) instead. */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
+  public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+    const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
+    const viewDefinition = this.create(txn.iModel, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
+    return viewDefinition.insert(txn);
   }
 }
 
-/** Defines a view of a [[SheetModel]].
+/** Arguments to be passed in to [[SheetViewDefinition.create]]
  * @public
+*/
+export interface CreateSheetViewDefinitionArgs {
+  /** The iModel in which the sheet view will be created. */
+  iModel: IModelDb;
+  /** The  Id of the [[DefinitionModel]] into which the sheet view will be inserted. */
+  definitionModelId: Id64String;
+  /** The name to use as the view's Code value. */
+  name: string;
+  /** The Id of the sheet model whose contents will be displayed by this view. */
+  baseModelId: Id64String;
+  /** The [[CategorySelector]] that this view should use. */
+  categorySelectorId: Id64String;
+  /** The [[DisplayStyle2d]] that this view should use. */
+  displayStyleId: Id64String;
+  /** Defines the view origin and extents. */
+  range: Range2d;
+}
+
+/** Defines a view of a [[SheetModel]].
+ * @public @preview
  */
 export class SheetViewDefinition extends ViewDefinition2d {
   public static override get className(): string { return "SheetViewDefinition"; }
+
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+
+  /** Create a SheetViewDefinition */
+  public static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition {
+    const { baseModelId, categorySelectorId, displayStyleId, range } = args;
+    const props: ViewDefinition2dProps = {
+      classFullName: this.classFullName,
+      model: args.definitionModelId,
+      code: this.createCode(args.iModel, args.definitionModelId, args.name),
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      origin: { x: range.low.x, y: range.low.y },
+      delta: range.diagonal(),
+      angle: 0,
+    };
+
+    return new SheetViewDefinition(props, args.iModel);
+  }
+
+  /** Insert a SheetViewDefinition into an IModelDb
+   * @beta
+   */
+  public static insert(txn: EditTxn, args: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String;
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SheetViewDefinition.insert(txn, ...) instead. */
+  public static insert(args: CreateSheetViewDefinitionArgs): Id64String;
+  public static insert(txnOrArgs: EditTxn | CreateSheetViewDefinitionArgs, args?: Omit<CreateSheetViewDefinitionArgs, "iModel">): Id64String {
+    const txn = txnOrArgs instanceof EditTxn ? txnOrArgs : txnOrArgs.iModel[_implicitTxn];
+    const createArgs = txnOrArgs instanceof EditTxn ? { ...(args as Omit<CreateSheetViewDefinitionArgs, "iModel">), iModel: txn.iModel } : txnOrArgs;
+    const view = this.create(createArgs);
+    return view.insert(txn);
+  }
+
+  /** Create a SheetViewDefinition from JSON props */
+  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition {
+    return new SheetViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  }
 }
 
 /** A ViewDefinition used to display a 2d template model.
@@ -610,7 +997,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 
 /** An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
  * coordinate information in different units and/or orientations.
- * @public
+ * @public @preview
  */
 export abstract class AuxCoordSystem extends DefinitionElement {
   public static override get className(): string { return "AuxCoordSystem"; }
@@ -624,7 +1011,7 @@ export abstract class AuxCoordSystem extends DefinitionElement {
 }
 
 /** A 2d auxiliary coordinate system.
- * @public
+ * @public @preview
  */
 export class AuxCoordSystem2d extends AuxCoordSystem {
   public static override get className(): string { return "AuxCoordSystem2d"; }
@@ -648,7 +1035,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
 }
 
 /** A 3d auxiliary coordinate system.
- * @public
+ * @public @preview
  */
 export class AuxCoordSystem3d extends AuxCoordSystem {
   public static override get className(): string { return "AuxCoordSystem3d"; }
@@ -676,7 +1063,7 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
 }
 
 /** A spatial auxiliary coordinate system.
- * @public
+ * @public @preview
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
   public static override get className(): string { return "AuxCoordSystemSpatial"; }
@@ -692,7 +1079,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 }
 
 /** Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
- * @public
+ * @public @preview
  */
 export class ViewAttachment extends GraphicalElement2d {
   public static override get className(): string { return "ViewAttachment"; }

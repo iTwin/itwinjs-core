@@ -104,6 +104,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
 
   public override async processAgenda(ev: BeButtonEvent): Promise<void> {
     if (await this.applyAgendaOperation(ev))
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this.saveChanges();
   }
 }
@@ -194,6 +195,7 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
     if (ev.viewport)
       this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
 
+    this._graphicsProvider.modelId = elemProps.model;
     await this._graphicsProvider.createGraphic(elemProps.category, elemProps.placement, geometry);
   }
 

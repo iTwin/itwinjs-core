@@ -57,7 +57,11 @@ export class ChromeTestRunner {
     if (process.env.CI || process.env.TF_BUILD)
       (config.mochaOptions as any).forbidOnly = true;
 
-    const { failures, coverage } = await runTestsInPlaywright(config, process.env.CERTA_PORT!);
+    const port = process.env.CERTA_PORT;
+    if (undefined === port)
+      throw new Error("CERTA_PORT is not defined.");
+
+    const { failures, coverage } = await runTestsInPlaywright(config, port);
     webserverProcess.kill();
 
     // Save nyc/istanbul coverage file.
@@ -65,6 +69,7 @@ export class ChromeTestRunner {
       writeCoverageData(coverage);
 
     process.exitCode = failures;
+    (process as any).emit("chrome-test-runner-done");
   }
 }
 
@@ -81,7 +86,10 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
       page.on("dialog", async (dialog: any) => dialog.dismiss());
 
       // Re-throw any uncaught exceptions from the frontend in the backend
-      page.on("pageerror", reject);
+      page.on("pageerror", async (error) => {
+        await browser.close();
+        reject(error);
+      });
 
       // Expose some functions to the frontend that will execute _in the backend context_
       await page.exposeFunction("_CertaConsole", (type: ConsoleMethodName, args: any[]) => console[type](...args));
@@ -117,6 +125,7 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
         });
       });
     } catch (error) {
+      await browser.close();
       reject(error); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
     }
   });

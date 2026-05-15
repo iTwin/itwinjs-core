@@ -18,7 +18,7 @@ import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Transform } from "../../geometry3d/Transform";
 import { ClusterableArray } from "../../numerics/ClusterableArray";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
@@ -615,8 +615,8 @@ describe("GrowablePoint3dArray", () => {
     data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
 
-    const pt0 = Point3d.create(1,2,3);
-    const pt1 = Point3d.create(4,5,6);
+    const pt0 = Point3d.create(1, 2, 3);
+    const pt1 = Point3d.create(4, 5, 6);
     const pt0e = pt0.plusXYZ(Geometry.smallMetricDistance / 2);
     const points: Point3d[] = [];
     points.push(pt0.clone(), pt0e.clone());
@@ -943,6 +943,69 @@ describe("GrowableArray", () => {
       a3.resize(a3.length + 1, true);
       ck.testPoint3d(a3.back()!, Point3d.createZero(), "Resize > length fills with zero");
     }
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("GrowableArrayWithData", () => {
+    const ck = new Checker();
+
+    // GrowableXYArray
+    let capacity = 10; // can fit 5 xy points
+    let data = new Float64Array(capacity);
+    // no point in data
+    let numPoints = 0;
+    let arrXY = new GrowableXYArray(numPoints, undefined, data);
+    ck.testExactNumber(numPoints, arrXY.length);
+    // number of points same as data capacity
+    numPoints = 3;
+    data.set([1, 2, 3, 4, 5, 6]);
+    arrXY = new GrowableXYArray(numPoints, undefined, data);
+    ck.testExactNumber(numPoints, arrXY.length);
+    // number of points beyond data capacity
+    numPoints = 20;
+    arrXY = new GrowableXYArray(numPoints, undefined, data);
+    ck.testExactNumber(capacity / 2, arrXY.length);
+    // number of points is passed as undefined but actual number of points is less than default 8
+    numPoints = 2;
+    data = Float64Array.from([1, 2, 3, 4]);
+    arrXY = new GrowableXYArray(undefined, undefined, data);
+    ck.testExactNumber(numPoints, arrXY.length);
+    // number of points is passed as undefined but actual number of points is more than default 8
+    numPoints = 10;
+    data = Float64Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
+    ck.testExactNumber(numPoints, data.length / 2);
+    arrXY = new GrowableXYArray(undefined, undefined, data);
+    ck.testExactNumber(numPoints, arrXY.length);
+
+    // GrowableXYZArray
+    capacity = 15; // can fit 5 xyz points
+    data = new Float64Array(capacity);
+    // no point in data
+    numPoints = 0;
+    let arrXYZ = new GrowableXYZArray(numPoints, undefined, data);
+    ck.testExactNumber(numPoints, arrXYZ.length);
+    // number of points same as data capacity
+    numPoints = 3;
+    data.set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    arrXYZ = new GrowableXYZArray(numPoints, undefined, data);
+    ck.testExactNumber(numPoints, arrXYZ.length);
+    // number of points beyond data capacity
+    numPoints = 20;
+    arrXYZ = new GrowableXYZArray(numPoints, undefined, data);
+    ck.testExactNumber(capacity / 3, arrXYZ.length);
+    // number of points is passed as undefined but actual number of points is less than default 8
+    numPoints = 2;
+    data = Float64Array.from([1, 2, 3, 4, 5, 6]);
+    arrXYZ = new GrowableXYZArray(undefined, undefined, data);
+    ck.testExactNumber(numPoints, arrXYZ.length);
+    // number of points is passed as undefined but actual number of points is more than default 8
+    numPoints = 10;
+    data = Float64Array.from(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    );
+    ck.testExactNumber(numPoints, data.length / 3);
+    arrXYZ = new GrowableXYZArray(undefined, undefined, data);
+    ck.testExactNumber(numPoints, arrXYZ.length);
 
     expect(ck.getNumErrors()).toBe(0);
   });

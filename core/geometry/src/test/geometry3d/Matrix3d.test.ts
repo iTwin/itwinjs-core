@@ -12,7 +12,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -575,7 +575,7 @@ describe("AxisOrder.ShiftAxis", () => {
       const axis2 = Geometry.axisOrderToAxis(axisOrder, 2);
       // shift = 1 for AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY
       // shift = 2 for AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX
-      const shift = axisOrder as number <= 2 ? 1 : 2;
+      const shift = axisOrder <= 2 ? 1 : 2;
       ck.testExactNumber(axis1, Geometry.cyclic3dAxis(axis0 + shift));
       ck.testExactNumber(axis2, Geometry.cyclic3dAxis(axis1 + shift));
       ck.testExactNumber(axis0, Geometry.cyclic3dAxis(axis2 + shift));
@@ -1612,8 +1612,8 @@ function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | 
   if (matrix !== undefined) {
     if (Checker.noisy.matrixMultiplyAliasing) {
       GeometryCoreTestIO.consoleLog("-------------------------------");
-      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
-      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs}`);
+      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs.toString()}`, ` inverse state ${matrix.inverseState}        `);
+      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs?.toString()}`);
     }
     if (expectedInverseState !== undefined)
       ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);

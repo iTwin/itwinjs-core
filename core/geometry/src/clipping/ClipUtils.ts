@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
-import { BagOfCurves } from "../curve/CurveCollection";
+import { BagOfCurves, CurveChain } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
@@ -18,6 +18,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -30,8 +31,9 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
+import { LowAndHighXY, XAndY } from "../geometry3d/XYZProps";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { Voronoi } from "../topology/Voronoi";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPrimitive } from "./ClipPrimitive";
 import { ClipVector } from "./ClipVector";
@@ -85,7 +87,7 @@ export interface Clipper {
   /** Test if `point` is on or inside the Clipper's volume. */
   isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
   /**
-   * Find the parts of the line segment (if any) that is within the convex clip volume.
+   * Find the parts of the line segment that are inside the clipper.
    * * The line segment is defined by `pointA` and `pointB`.
    * * The input fractional interval from `fraction0` to `fraction1` (increasing) is the active part to consider.
    * * To clip to the usual bounded line segment, start with fractions (0,1).
@@ -95,19 +97,27 @@ export interface Clipper {
    * @param f1 fraction that is the initial upper fraction of the active interval (e.g., 1.0 for bounded segment).
    * @param pointA segment start (fraction 0)
    * @param pointB segment end (fraction 1)
-   * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
+   * @param announce function to be called to announce each fractional interval of the segment that lies inside the clipper.
    * @returns true if a segment was announced, false if entirely outside.
    */
   announceClippedSegmentIntervals(
     f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber
   ): boolean;
   /**
-   * Find the portion (or portions) of the arc (if any) that are within the convex clip volume.
-   * @param arc the arc to be clipped.
-   * @param announce function to be called to announce a fraction intervals that are within the convex clip volume.
+   * Find the portion (or portions) of the arc that are inside the clipper.
+   * @param arc the arc to be clipped, passed unmodified into `announce`.
+   * @param announce function to be called to announce each fractional interval of the arc that lies inside the clipper.
    * @returns true if one or more arcs portions were announced, false if entirely outside.
    */
   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+  /**
+   * Optional method to find the portion (or portions) of a general curve that are inside the clipper.
+   * @param curve the curve to be clipped, passed unmodified into `announce`.
+   * @param announce function to be called to announce each fractional interval of the curve that lies inside the clipper.
+   * @returns true if one or more curve portions were announced, false if entirely outside.
+   * @see [[announceClippedSegmentIntervals]], [[announceClippedArcIntervals]] for specific curve types.
+   */
+  announceClippedCurveIntervals?(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
   /**
    * Optional polygon clip method.
    * * This is expected to be implemented by planar clip structures.
@@ -131,7 +141,6 @@ type AppendPolygonClipFunction = (
   outsideFragments: GrowableXYZArray[],
   arrayCache: GrowableXYZArrayCache
 ) => void;
-
 /**
  * Interface for clipping convex polygons.
  * Supported by:
@@ -235,15 +244,13 @@ export class ClipUtilities {
    */
   public static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined {
     let result: UnionRegion | undefined;
-    // Create "local region" which is the result of rotating region to make
-    // it parallel to the xy-plane and then translating it to the xy-plane.
     const localToWorld = ClipUtilities._workTransform = FrameBuilder.createRightHandedFrame(undefined, region, ClipUtilities._workTransform);
     if (!localToWorld)
       return result;
     const worldToLocal = localToWorld?.inverse();
     if (!worldToLocal)
       return result;
-    const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion;
+    const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion; // parallel to xy-plane so we can ignore z
     if (!localRegion)
       return result;
     // We can only clip convex polygons with our clipper machinery, but the input region doesn't have to be
@@ -272,11 +279,13 @@ export class ClipUtilities {
         clippedLocalRegion.tryTransformInPlace(localToWorld);
         if (!result)
           result = (clippedLocalRegion instanceof UnionRegion) ? clippedLocalRegion : UnionRegion.create(clippedLocalRegion);
-        else if (!result.tryAddChild(clippedLocalRegion))
-          result.children.push(...(clippedLocalRegion as UnionRegion).children);
+        if (clippedLocalRegion instanceof UnionRegion)
+          result.children.push(...clippedLocalRegion.children); // avoid nested UnionRegions
+        else
+          result.tryAddChild(clippedLocalRegion);
       }
     }
-    return result;
+    return result ? RegionOps.simplifyRegion(result) : undefined;
   }
   /**
    * Compute and return portions of the input curve or region that are within the clipper.
@@ -391,8 +400,8 @@ export class ClipUtilities {
           if (ignoreInvisiblePlanes && plane.invisible)
             continue;
           const pointsClippedToRange = plane.intersectRange(range, true);
-          const finalPoints = new GrowableXYZArray();
           if (pointsClippedToRange) {
+            const finalPoints = new GrowableXYZArray();
             convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
             if (finalPoints.length > 0)
               loopFunction(finalPoints);
@@ -667,7 +676,7 @@ export class ClipUtilities {
       (f0: number, f1: number, cp: CurvePrimitive) => {
         intersection.extendPoint(cp.fractionToPoint(f0), localToWorld);
         intersection.extendPoint(cp.fractionToPoint(f1), localToWorld);
-        } : undefined;
+      } : undefined;
     let hasIntersection = false;
     if (points.length > 1) {
       const segment = LineSegment3d.createCapture(points[0], points[1]);
@@ -1110,6 +1119,27 @@ export class ClipUtilities {
       }
     }
     return UnionOfConvexClipPlaneSets.createConvexSets(newClippers);
+  }
+  /**
+   * Creates clippers for regions closest to the children of a curve chain.
+   * * For best results, each child should have length larger than `distanceTol`.
+   * @param curveChain A curve chain; xy-only (z-coordinate is ignored). Must have at least 2 children.
+   * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
+   * @param distanceTol Optional distance tolerance to use when comparing points; default is [[Geometry.smallMetricDistance]].
+   * @param boundingBox Optional nominal xy-bounding box for the clipper regions; default is maximal clipper regions.
+   * @returns An ordered array of clippers, each of which represents the region closest to the corresponding primitive in the
+   * input chain, or undefined if the input is invalid.
+   */
+  public static createClippersForRegionsClosestToCurvePrimitivesXY(
+    curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance, boundingBox?: LowAndHighXY
+  ): UnionOfConvexClipPlaneSets[] | undefined {
+    const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol, boundingBox);
+    if (!voronoi)
+      return undefined;
+    const superFaces = voronoi.computeVoronoiSuperFaces(curveChain.children.length);
+    if (superFaces === undefined || superFaces.length !== curveChain.children.length)
+      return undefined;
+    return voronoi.generateClippersFromVoronoiSuperFaces(superFaces);
   }
 }
 function moveFragments(

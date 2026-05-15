@@ -6,7 +6,7 @@
  * @module LocatingElements
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { expectDefined, Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -152,7 +152,7 @@ export class ElementPicker {
 
   /** return the HitList for the last Pick performed. Optionally allows the caller to take ownership of the list. */
   public getHitList(takeOwnership: boolean): HitList<HitDetail> {
-    const list = this.hitList!;
+    const list = expectDefined(this.hitList);
     if (takeOwnership)
       this.hitList = undefined;
     return list;
@@ -171,6 +171,7 @@ export class ElementPicker {
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
     const priority1 = pixel1.computeHitPriority();
     const priority2 = pixel2.computeHitPriority();
+
     if (priority1 < priority2)
       return -1;
     if (priority1 > priority2)
@@ -267,12 +268,13 @@ export class ElementPicker {
           distXY: testPointView.distance(elmPoint),
         });
 
-        this.hitList!.addHit(hit);
-        if (this.hitList!.hits.length > options.maxHits)
-          this.hitList!.hits.length = options.maxHits; // truncate array...
+        const hitList = expectDefined(this.hitList);
+        hitList.addHit(hit);
+        if (hitList.hits.length > options.maxHits)
+          hitList.hits.length = options.maxHits; // truncate array...
       }
 
-      result = this.hitList!.length;
+      result = expectDefined(this.hitList).length;
     };
 
     const args = {
@@ -292,7 +294,7 @@ export class ElementPicker {
     if (0 === this.doPick(vp, pickPointWorld, pickRadiusView, options))
       return false;
 
-    return this.hitList!.hits.some((thisHit) => hit.isSameHit(thisHit));
+    return expectDefined(this.hitList).hits.some((thisHit) => hit.isSameHit(thisHit));
   }
 }
 

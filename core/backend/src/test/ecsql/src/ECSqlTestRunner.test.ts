@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend";
+import { ECSqlRowArg, ECSqlStatement, ECSqlSyncReader, SnapshotDb } from "../../../core-backend";
 import { KnownTestLocations } from "../../KnownTestLocations";
-import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
+import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
 import * as path from "path";
 import * as fs from "fs";
@@ -31,30 +31,30 @@ describe("Markdown based ECDb test runner", async () => {
 
   after(() => {
     for (const key in snapshotDbs) {
-        if (snapshotDbs.hasOwnProperty(key)) {
-            (snapshotDbs[key as keyof typeof snapshotDbs])?.close();
-        }
+      if (snapshotDbs.hasOwnProperty(key)) {
+        (snapshotDbs[key as keyof typeof snapshotDbs])?.close();
+      }
     }
   });
   const tests: ECDbTestProps[] = ECDbMarkdownTestParser.parse();
 
   //TODO: Mechanism to run a single test, put something like it.only into the test md which causes this loop to only run those tests
   for (const test of tests) {
-    if(!test.dataset) {
+    if (!test.dataset) {
       logWarning(`Skipping test ${test.title} because it does not have a dataset`);
       continue;
     }
 
-    if(test.dataset.toLowerCase() !== TestDataset.AllProperties.toLowerCase()) {
+    if (test.dataset.toLowerCase() !== TestDataset.AllProperties.toLowerCase()) {
       logWarning(`Skipping test ${test.title} because dataset ${test.dataset} is not recognized`);
       continue;
     }
     const dataset = TestDataset.AllProperties;
 
-    if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.Statement) {
-      if(test.skip)
+    if (test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.Statement) {
+      if (test.skip)
         it(`${test.fileName}: ${test.title} (Statement) skipped. Reason: ${test.skip}`);
-      else if(test.only)
+      else if (test.only)
         it.only(`${test.fileName}: ${test.title} (Statement)`, () => {
           runECSqlStatementTest(test, dataset);
         });
@@ -62,19 +62,29 @@ describe("Markdown based ECDb test runner", async () => {
         it(`${test.fileName}: ${test.title} (Statement)`, () => {
           runECSqlStatementTest(test, dataset);
         });
-      }
+    }
 
-    if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.ConcurrentQuery) {
-      if(test.skip)
-        it(`${test.fileName}: ${test.title} (ConcurrentQuery) skipped. Reason: ${test.skip}`);
-      else if(test.only)
-        it.only(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
-          await runConcurrentQueryTest(test, dataset);
+    if (test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.QueryReader) {
+      if (test.skip) {
+        it(`${test.fileName}: ${test.title} (ECSqlReader) skipped. Reason: ${test.skip}`);
+        it(`${test.fileName}: ${test.title} (ECSqlSyncReader) skipped. Reason: ${test.skip}`);
+      }
+      else if (test.only) {
+        it.only(`${test.fileName}: ${test.title} (ECSqlReader)`, async () => {
+          await runECSqlReaderTest(test, dataset);
         });
-      else
-        it(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
-          await runConcurrentQueryTest(test, dataset);
+        it.only(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async () => {
+          await runECSqlSyncReaderTest(test, dataset);
         });
+      }
+      else {
+        it(`${test.fileName}: ${test.title} (ECSqlReader)`, async () => {
+          await runECSqlReaderTest(test, dataset);
+        });
+        it(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async () => {
+          await runECSqlSyncReaderTest(test, dataset);
+        });
+      }
     }
   }
 });
@@ -84,6 +94,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
   if (!imodel) {
     assert.fail(`Dataset ${dataset} is not loaded`);
   }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   let stmt: ECSqlStatement | undefined;
   if (test.sql === undefined) {
     assert.fail("Test does not have an ECSql statement");
@@ -91,26 +102,27 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
 
   try {
     // TODO: statement options should be exposed through the markdown
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     stmt = imodel.prepareStatement(test.sql); // TODO: Wire up logic for tests we expect to fail during prepare
   } catch (error: any) {
-    if(test.errorDuringPrepare)
+    if (test.errorDuringPrepare)
       return;
     else
       assert.fail(`Error during prepare of Statement: ${error.message}`);
   }
 
-  if(test.errorDuringPrepare)
+  if (test.errorDuringPrepare)
     assert.fail(`Statement is expected to fail during prepare`);
 
   try {
-    if(test.binders !== undefined) {
+    if (test.binders !== undefined) {
       for (const binder of test.binders) {
         // eslint-disable-next-line radix
         let id: number | string = Number.parseInt(binder.indexOrName);
         if (isNaN(id))
           id = binder.indexOrName;
 
-        switch(binder.type.toLowerCase()) { // TODO: replace props variables in binder.value
+        switch (binder.type.toLowerCase()) { // TODO: replace props variables in binder.value
           case "null":
             stmt.bindNull(id);
             break;
@@ -128,9 +140,9 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
             stmt.bindId(id, binder.value);
             break;
           case "idset":
-            const values: string[] = binder.value.slice(1,-1).split(",");
-            const trimmedValues = values.map((value:string)=>
-                value.trim()
+            const values: string[] = binder.value.slice(1, -1).split(",");
+            const trimmedValues = values.map((value: string) =>
+              value.trim()
             );
             stmt.bindIdSet(id, trimmedValues);
             break;
@@ -139,15 +151,19 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
             break;
           case "point2d":
             const parsedVal2d = JSON.parse(binder.value);
-            stmt.bindPoint2d(id, {x: parsedVal2d.X, y: parsedVal2d.Y});
+            stmt.bindPoint2d(id, { x: parsedVal2d.X, y: parsedVal2d.Y });
             break;
           case "point3d":
             const parsedVal3d = JSON.parse(binder.value);
-            stmt.bindPoint3d(id, {x: parsedVal3d.X, y: parsedVal3d.Y, z: parsedVal3d.Z});
+            stmt.bindPoint3d(id, { x: parsedVal3d.X, y: parsedVal3d.Y, z: parsedVal3d.Z });
+            break;
+          case "range3d":
+            const parsedRange3d = JSON.parse(binder.value);
+            stmt.bindRange3d(id, { low: { x: parsedRange3d.low.x, y: parsedRange3d.low.y, z: parsedRange3d.low.z }, high: { x: parsedRange3d.high.x, y: parsedRange3d.high.y, z: parsedRange3d.high.z } });
             break;
           case "blob":
-            const arrayValues: string[] = binder.value.slice(1,-1).split(",");
-            const numbers = arrayValues.map((value:string)=>
+            const arrayValues: string[] = binder.value.slice(1, -1).split(",");
+            const numbers = arrayValues.map((value: string) =>
               // eslint-disable-next-line radix
               parseInt(value.trim())
             );
@@ -198,10 +214,6 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
         let expectedResult = test.expectedResults[resultCount];
         expectedResult = buildBinaryData(expectedResult);
         const rowArgs: ECSqlRowArg = { rowFormat: getRowFormat(test.rowFormat), classIdsToClassNames: test.convertClassIdsToClassNames };
-        // TODO: abbreviate blobs is not supported here?
-        if(test.abbreviateBlobs)
-          logWarning("Abbreviate blobs is not supported for statement tests");
-
         const actualResult = stmt.getRow(rowArgs);
         checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
       }
@@ -219,13 +231,13 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
       assert.fail(`Expected ${test.expectedResults.length} rows but got ${resultCount}`);
     }
   } finally {
-    if(stmt !== undefined)
+    if (stmt !== undefined)
       stmt[Symbol.dispose]();
   }
 }
 
-function getRowFormat(rowFormat: ECDbTestRowFormat) : QueryRowFormat {
-  switch(rowFormat) {
+function getRowFormat(rowFormat: ECDbTestRowFormat): QueryRowFormat {
+  switch (rowFormat) {
     case ECDbTestRowFormat.ECSqlNames:
       return QueryRowFormat.UseECSqlPropertyNames;
     case ECDbTestRowFormat.ECSqlIndexes:
@@ -237,107 +249,95 @@ function getRowFormat(rowFormat: ECDbTestRowFormat) : QueryRowFormat {
   }
 }
 
-async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
-  const imodel = snapshotDbs[dataset];
-  if (!imodel) {
-    assert.fail(`Dataset ${dataset} is not loaded`);
-  }
+/** Builds a QueryBinder from the test's binder definitions. Returns undefined when the test has no binders. */
+function buildQueryBinder(test: ECDbTestProps): QueryBinder | undefined {
+  if (test.binders === undefined)
+    return undefined;
 
-  let reader: ECSqlReader;
-  if (test.sql === undefined) {
-    assert.fail("Test does not have an ECSql statement");
-  }
-  let params: QueryBinder | undefined;
-  if(test.binders !== undefined) {
-    params = new QueryBinder();
-    for (const binder of test.binders) {
-      // eslint-disable-next-line radix
-      let id: number | string = Number.parseInt(binder.indexOrName);
-      if (isNaN(id))
-        id = binder.indexOrName;
+  const params = new QueryBinder();
+  for (const binder of test.binders) {
+    // eslint-disable-next-line radix
+    let id: number | string = Number.parseInt(binder.indexOrName);
+    if (isNaN(id))
+      id = binder.indexOrName;
 
-      switch(binder.type.toLowerCase()) { // TODO: replace props variables in binder.value
-        case "null":
-          params.bindNull(id);
-          break;
-        case "string":
-          params.bindString(id, binder.value);
-          break;
-        case "int":
+    switch (binder.type.toLowerCase()) { // TODO: replace props variables in binder.value
+      case "null":
+        params.bindNull(id);
+        break;
+      case "string":
+        params.bindString(id, binder.value);
+        break;
+      case "int":
+        // eslint-disable-next-line radix
+        params.bindInt(id, Number.parseInt(binder.value));
+        break;
+      case "long":
+        // eslint-disable-next-line radix
+        params.bindLong(id, Number.parseInt(binder.value));
+        break;
+      case "double":
+        params.bindDouble(id, Number.parseFloat(binder.value));
+        break;
+      case "id":
+        params.bindId(id, binder.value);
+        break;
+      case "idset":
+        const values: string[] = binder.value.slice(1, -1).split(",");
+        const trimmedValues = values.map((value: string) =>
+          value.trim()
+        );
+        params.bindIdSet(id, trimmedValues);
+        break;
+      case "point2d":
+        const parsedVal2d = JSON.parse(binder.value);
+        params.bindPoint2d(id, new Point2d(parsedVal2d.X, parsedVal2d.Y));
+        break;
+      case "point3d":
+        const parsedVal3d = JSON.parse(binder.value);
+        params.bindPoint3d(id, new Point3d(parsedVal3d.X, parsedVal3d.Y, parsedVal3d.Z));
+        break;
+      case "range3d":
+        const parsedRange3d = JSON.parse(binder.value);
+        params.bindRange3d(id, { low: { x: parsedRange3d.low.x, y: parsedRange3d.low.y, z: parsedRange3d.low.z }, high: { x: parsedRange3d.high.x, y: parsedRange3d.high.y, z: parsedRange3d.high.z } });
+        break;
+      case "blob":
+        const arrayValues: string[] = binder.value.slice(1, -1).split(",");
+        const numbers = arrayValues.map((value: string) =>
           // eslint-disable-next-line radix
-          params.bindInt(id, Number.parseInt(binder.value));
-          break;
-        case "long":
-          // eslint-disable-next-line radix
-          params.bindLong(id, Number.parseInt(binder.value));
-          break;
-        case "double":
-          params.bindDouble(id, Number.parseFloat(binder.value));
-          break;
-        case "id":
-          params.bindId(id, binder.value);
-          break;
-        case "idset":
-          const values: string[] = binder.value.slice(1,-1).split(",");
-          const trimmedValues = values.map((value:string)=>
-              value.trim()
-          );
-          params.bindIdSet(id, trimmedValues);
-          break;
-        case "point2d":
-          const parsedVal2d = JSON.parse(binder.value);
-          params.bindPoint2d(id, new Point2d(parsedVal2d.X, parsedVal2d.Y));
-          break;
-        case "point3d":
-          const parsedVal3d = JSON.parse(binder.value);
-          params.bindPoint3d(id, new Point3d(parsedVal3d.X, parsedVal3d.Y, parsedVal3d.Z));
-          break;
-        case "blob":
-          const arrayValues: string[] = binder.value.slice(1,-1).split(",");
-          const numbers = arrayValues.map((value:string)=>
-              // eslint-disable-next-line radix
-              parseInt(value.trim())
-          );
-          params.bindBlob(id, Uint8Array.of(...numbers));
-          break;
-        case "struct":
-          params.bindStruct(id, JSON.parse(binder.value));
-          break;
-        default:
-          assert.fail(`Unsupported binder type ${binder.type}`);
-      } // switch binder.type
-    } // for binder
-  } // if test.binders
+          parseInt(value.trim())
+        );
+        params.bindBlob(id, Uint8Array.of(...numbers));
+        break;
+      case "struct":
+        params.bindStruct(id, JSON.parse(binder.value));
+        break;
+      default:
+        assert.fail(`Unsupported binder type ${binder.type}`);
+    } // switch binder.type
+  } // for binder
+  return params;
+}
 
+/** Builds the common query options object from the test configuration. */
+function buildReaderQueryOptions(test: ECDbTestProps): QueryOptions {
   const queryOptions: QueryOptions = {};
   queryOptions.rowFormat = getRowFormat(test.rowFormat);
   if (test.abbreviateBlobs)
     queryOptions.abbreviateBlobs = true;
-  if (test.convertClassIdsToClassNames)
+  if (test.convertClassIdsToClassNames) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     queryOptions.convertClassIdsToClassNames = true;
-
-  try {
-    reader = imodel.createQueryReader(test.sql, params, queryOptions); // TODO: Wire up logic for tests we expect to fail during prepare
-  } catch (error: any) {
-      assert.fail(`Error during creating QueryReader: ${error.message}`);
   }
+  return queryOptions;
+}
 
+/**
+ * Shared assertion logic for QueryReader tests that operates on the result rows and column metadata.
+ * Used by both ECSqlReader and ECSqlSyncReader test paths.
+ */
+function runResultAssertions(test: ECDbTestProps, rows: any, colMetaData: QueryPropertyMetaData[]) {
   let resultCount = 0;
-  let rows;
-  try{
-    rows = await reader.toArray();
-  }
-  catch (error: any) {
-    if(test.errorDuringPrepare)
-      return;
-    else
-      assert.fail(`Error during prepare of Concurrent Query: ${error.message}`);
-  }
-
-  if(test.errorDuringPrepare)
-    assert.fail(`Statement is expected to fail during prepare`);
-
-  const colMetaData = await reader.getMetaData();
   while (resultCount < rows.length) {
     if (resultCount === 0 && test.columnInfo) {
       // Verify the columns on the first result row (TODO: for dynamic columns we have to do this every item)
@@ -353,7 +353,7 @@ async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset)
           assert.strictEqual(colInfo.accessString, expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.accessString} for column index ${i}`);
         if (expectedColInfo.typeName !== undefined)
           assert.strictEqual(colInfo.typeName, expectedColInfo.typeName, `Expected type name ${expectedColInfo.typeName} but got ${colInfo.typeName} for column index ${i}`);
-        if(expectedColInfo.className !== undefined)
+        if (expectedColInfo.className !== undefined)
           assert.strictEqual(colInfo.className, expectedColInfo.className, `Expected class name ${expectedColInfo.className} but got ${colInfo.className} for column index ${i}`);
         assert.strictEqual(colInfo.extendedType, expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${colInfo.extendedType} for column index ${i}`);
         assert.strictEqual(colInfo.extendType, expectedColInfo.extendedType === undefined ? "" : expectedColInfo.extendedType, `Expected extend type ${expectedColInfo.extendedType === undefined ? "" : expectedColInfo.extendedType} but got ${colInfo.extendType} for column index ${i}`);  // eslint-disable-line @typescript-eslint/no-deprecated
@@ -365,39 +365,130 @@ async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset)
       // replace props in expected result, TODO: optimize this
       expectedResult = buildBinaryData(expectedResult);
 
-      const actualResult = rows[resultCount] // TODO: should we test getValue() as well?
+      const actualResult = rows[resultCount]; // TODO: should we test getValue() as well?
       checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
     }
     resultCount++;
   }
-
-  // if (resultCount === 0 && test.stepStatus) {
-  //   const stepResultString = DbResult[stepResult];
-  //   assert.strictEqual(stepResultString, test.stepStatus, `Expected step status ${test.stepStatus} but got ${stepResultString}`);
-  // }
 
   if (test.expectedResults && test.expectedResults.length !== resultCount) {
     assert.fail(`Expected ${test.expectedResults.length} rows but got ${resultCount}`);
   }
 }
 
-function checkingExpectedResults(rowFormat : ECDbTestRowFormat, actualResult: any, expectedResult: any,  indexesToInclude?: number[])
-{
-  if(rowFormat === ECDbTestRowFormat.ECSqlIndexes && indexesToInclude)
-  {
-    let i: any = 0;
-    for(const key of Object.keys(expectedResult))
-      {
-      assert.deepEqual(actualResult[indexesToInclude[i]], expectedResult[key], `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[indexesToInclude[i]])}`);
-      i++;
-      }
+/**
+ * Shared assertion logic that operates on an already-created ECSqlReader.
+ * Used by ECSqlReader test paths.
+ */
+async function runAssertionsOnReader(test: ECDbTestProps, reader: ECSqlReader, label: string): Promise<void> {
+  let rows;
+  try {
+    rows = await reader.toArray();
   }
-  else
-  {
-    for(const key of Object.keys(expectedResult))
-      {
-      assert.deepEqual(actualResult[key], expectedResult[key], `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[key])}`);
-      }
+  catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during execution of ${label}: ${error.message}`);
+  }
+
+  if (test.errorDuringPrepare)
+    assert.fail(`Statement is expected to fail during prepare`);
+
+  const colMetaData = await reader.getMetaData();
+  runResultAssertions(test, rows, colMetaData);
+}
+
+/**
+ * Shared assertion logic that operates on an already-created ECSqlReader.
+ * Used by ECSqlSyncReader test paths.
+ */
+function runAssertionsOnSyncReader(test: ECDbTestProps, reader: ECSqlSyncReader, label: string): void {
+  let rows;
+  try {
+    rows = reader.toArray();
+  }
+  catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during execution of ${label}: ${error.message}`);
+  }
+
+  if (test.errorDuringPrepare)
+    assert.fail(`Statement is expected to fail during prepare`);
+
+  const colMetaData = reader.getMetaData();
+  runResultAssertions(test, rows, colMetaData);
+}
+
+async function runECSqlReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
+  const imodel = snapshotDbs[dataset];
+  if (!imodel) {
+    assert.fail(`Dataset ${dataset} is not loaded`);
+  }
+
+  if (test.sql === undefined) {
+    assert.fail("Test does not have an ECSql statement");
+  }
+
+  const params = buildQueryBinder(test);
+  const queryOptions = buildReaderQueryOptions(test);
+
+  let reader: ECSqlReader;
+  try {
+    reader = imodel.createQueryReader(test.sql, params, queryOptions);
+  } catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during creating ECSqlReader: ${error.message}`);
+  }
+
+  await runAssertionsOnReader(test, reader, "ECSqlReader");
+}
+
+async function runECSqlSyncReaderTest(test: ECDbTestProps, dataset: TestDataset): Promise<void> {
+  const imodel = snapshotDbs[dataset];
+  if (!imodel) {
+    assert.fail(`Dataset ${dataset} is not loaded`);
+  }
+
+  if (test.sql === undefined) {
+    assert.fail("Test does not have an ECSql statement");
+  }
+
+  const params = buildQueryBinder(test);
+  const queryOptions = buildReaderQueryOptions(test);
+
+  try {
+    imodel.withQueryReader(test.sql, reader => {
+      runAssertionsOnSyncReader(test, reader, "ECSqlSyncReader");
+    }, params, queryOptions);
+  } catch (error: any) {
+    if (test.errorDuringPrepare)
+      return;
+    else
+      assert.fail(`Error during creating ECSqlSyncReader: ${error.message}`);
+  }
+}
+
+function checkingExpectedResults(rowFormat: ECDbTestRowFormat, actualResult: any, expectedResult: any, indexesToInclude?: number[]) {
+  if (rowFormat === ECDbTestRowFormat.ECSqlIndexes && indexesToInclude) {
+    let i: any = 0;
+    for (const key of Object.keys(expectedResult)) {
+      const expected = typeof expectedResult[key] === "string" ? expectedResult[key].trim() : expectedResult[key];
+      const actual = typeof actualResult[indexesToInclude[i]] === "string" ? actualResult[indexesToInclude[i]].trim() : actualResult[indexesToInclude[i]];
+      assert.deepEqual(actual, expected, `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[indexesToInclude[i]])}`);
+      i++;
+    }
+  }
+  else {
+    for (const key of Object.keys(expectedResult)) {
+      const expected = typeof expectedResult[key] === "string" ? expectedResult[key].trim() : expectedResult[key];
+      const actual = typeof actualResult[key] === "string" ? actualResult[key].trim() : actualResult[key];
+      assert.deepEqual(actual, expected, `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[key])}`);
+    }
   }
 }
 function logWarning(message: string) {

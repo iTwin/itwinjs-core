@@ -47,6 +47,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed at any time. */
   public abstract get treeOwner(): TileTreeOwner;
 
+  /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected from the referenced TileTree.
+   * @internal
+   */
+  public reprojectGeometry?: boolean;
+
   /** Force a new tree owner / tile tree to be created for the current tile tree reference
    * @internal
    */
@@ -261,7 +266,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div.
@@ -276,7 +281,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Return `undefined` if geometry collection is not supported.
    * @see [[createGeometryTreeReference]].
    */
-  protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+  protected _createGeometryTreeReference(_options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference | undefined {
     return undefined;
   }
 
@@ -304,13 +309,15 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Currently, only terrain and reality model tiles support geometry collection.
    * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
    */
-  public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+  public createGeometryTreeReference(options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference | undefined {
     if (this.collectTileGeometry) {
       // Unclear why compiler doesn't detect that `this` satisfies the GeometryTileTreeReference interface...it must be looking only at the types, not this particular instance.
-      return this as GeometryTileTreeReference;
+      const ref = this as GeometryTileTreeReference;
+      ref.reprojectGeometry = options?.reprojectGeometry;
+      return ref;
     }
 
-    return this._createGeometryTreeReference();
+    return this._createGeometryTreeReference(options);
   }
 
   /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
@@ -331,4 +338,15 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
     return tileTreeReferenceFromRenderGraphic(args);
   }
+}
+
+/** Options for creating a [[GeometryTileTreeReference]].
+ * @public
+ */
+export interface GeometryTileTreeReferenceOptions {
+  /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected from the referenced TileTree.
+   * Currently only applies to point clouds, reality meshes, and terrain.
+   * @beta
+   */
+  reprojectGeometry?: boolean;
 }

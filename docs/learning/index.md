@@ -19,7 +19,7 @@ With the [iTwin.js Software architecture](./SoftwareArchitecture.md), from the s
 
 This website is organized into sections by tabs at the top of each page.
 
-- The [BIS](../bis/index.md) section explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iTwin.js APIs. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iTwin.js.
+- The [BIS](../bis/guide/intro/overview.md) section explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iTwin.js APIs. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iTwin.js.
 - The _Learning_ tab (this page) introduces the building blocks of iTwin.js and provides step-by-step instructions for creating applications.
 - The [API Reference](../reference/index.md) tab explains the API in more detail with package/class/function level documentation.
 

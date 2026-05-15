@@ -14,12 +14,7 @@
  * @internal
  */
 export async function loadScript(jsUrl: string): Promise<any> {
-  // const module = await import(/* webpackIgnore: true */jsUrl);
-  // Webpack gives a warning:
-  // "Critical dependency: the request of a dependency is an expression"
-  // Because tsc transpiles "await import" to "require" (when compiled to is CommonJS).
-  // So use FunctionConstructor to avoid tsc.
-  const module = await Function("x","return import(x)")(jsUrl);
+  const module = await import(/* webpackIgnore: true */ /* @vite-ignore */ jsUrl);
   return execute(module);
 }
 

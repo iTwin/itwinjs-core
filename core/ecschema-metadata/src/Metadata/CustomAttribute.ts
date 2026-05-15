@@ -8,20 +8,26 @@
 
 import { Schema } from "./Schema";
 
-/** @beta */
+/** @public @preview */
 export interface CustomAttribute {
   className: string;
   [propName: string]: any;
 }
 
-/** @internal */
+/**
+* A collection of custom attributes, accessed by full class names in the format `SchemaName.ClassName`.
+* Iterates over, checks, and retrieves attributes. Class names are case-insensitive, separated by a dot (`.`).
+* @param className - The full class name.
+* @returns Iterator, boolean, or custom attribute.
+* @public @preview
+*/
 export interface CustomAttributeSet {
   [Symbol.iterator]: () => IterableIterator<[string, CustomAttribute]>;
   has(className: string): boolean;
   get(className: string): CustomAttribute | undefined;
 }
 
-/** @beta */
+/** @public @preview */
 export interface CustomAttributeContainerProps {
   customAttributes?: CustomAttributeSet;
   fullName: string;

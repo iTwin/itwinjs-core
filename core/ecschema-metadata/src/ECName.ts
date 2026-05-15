@@ -7,9 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 
-const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;
+const validECNameRegex = /^[a-zA-Z_]\w*$/i;
 const ecNameReplacerRegex = /__x([0-9a-fA-F]{4})__/g;
 const leadingDigits = ["0000", "000", "00", "0", ""];
 
@@ -37,11 +37,11 @@ export class ECName {
   private _name: string;
 
   /** Construct a new ECName from a valid EC name.
-   * throws ECObjectsError if `name` does not meet the criteria for a valid EC name.
+   * throws ECSchemaError if `name` does not meet the criteria for a valid EC name.
    */
   constructor(name: string) {
     if (!ECName.validate(name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECName);
 
     this._name = name;
   }
@@ -57,11 +57,11 @@ export class ECName {
   }
 
   /** Create an ECName from an arbitrary string, encoding any special characters as "__x####__" where "####" is the UTF-16 character code.
-   * @throws ECObjectsError if `input` is an empty string.
+   * @throws ECSchemaError if `input` is an empty string.
    */
   public static encode(input: string): ECName {
     if (0 === input.length)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECName);
 
     if (ECName.validate(input)) {
       // It's already a valid EC name.

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as fakeTimers from "@sinonjs/fake-timers";
 import * as sinon from "sinon";
 import { PresentationError } from "@itwin/presentation-common";
-import { FactoryBasedTemporaryStorage, FactoryBasedTemporaryStorageProps, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
+import { FactoryBasedTemporaryStorage, FactoryBasedTemporaryStorageProps, TemporaryStorage } from "../presentation-backend/TemporaryStorage.js";
 
 describe("TemporaryStorage", () => {
   let clock: fakeTimers.InstalledClock;

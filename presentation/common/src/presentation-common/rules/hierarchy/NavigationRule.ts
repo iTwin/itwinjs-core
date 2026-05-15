@@ -2,22 +2,25 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
 
-import { CustomizationRule } from "../customization/CustomizationRule";
-import { RuleBase } from "../Rule";
-import { ChildNodeRule } from "./ChildNodeRule";
-import { ChildNodeSpecification } from "./ChildNodeSpecification";
-import { RootNodeRule } from "./RootNodeRule";
-import { SubCondition } from "./SubCondition";
+import { CustomizationRule } from "../customization/CustomizationRule.js";
+import { RuleBase } from "../Rule.js";
+import { ChildNodeRule } from "./ChildNodeRule.js";
+import { ChildNodeSpecification } from "./ChildNodeSpecification.js";
+import { RootNodeRule } from "./RootNodeRule.js";
+import { SubCondition } from "./SubCondition.js";
 
 /**
  * Base class for all [[NavigationRule]] implementations.
  *
  * @see [Hierarchies reference documentation page]($docs/presentation/hierarchies/index.md)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface NavigationRuleBase extends RuleBase {
   /**
@@ -57,5 +60,7 @@ export interface NavigationRuleBase extends RuleBase {
  *
  * @see [Hierarchies reference documentation page]($docs/presentation/hierarchies/index.md)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type NavigationRule = RootNodeRule | ChildNodeRule;

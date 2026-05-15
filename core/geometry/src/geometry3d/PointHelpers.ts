@@ -138,9 +138,9 @@ export class NumberArray {
     return a;
   }
   /**
-   * Return an array with indicated start and end points, maximum step size internally
-   * @param low low value
-   * @param high high value
+   * Return an array with indicated start and end points, and maximum step size.
+   * @param low first value in returned array
+   * @param high last value in returned array
    * @param step max permitted step
    */
   public static createArrayWithMaxStepSize(low: number, high: number, step: number): number[] {
@@ -307,6 +307,28 @@ export class NumberArray {
     }
     return bytes[0] | bytes[1] | bytes[2] | bytes[3];
   }
+
+  /**
+   * Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal
+   * to `value`.
+   * * Get an initial estimate by proportions of `value` and the first and last entries.
+   * * Linear search from there for final value.
+   * * For regularly spaced numbers (e.g., `data` is the `_facetStart` indices for a triangulated [[IndexedPolyface]]),
+   * the proportional estimate will be immediately correct.
+   * @param data the array of strictly increasing numbers
+   * @param value the value to search for
+   */
+  public static searchStrictlyIncreasingNumbers(data: ReadonlyArray<number>, value: number): number | undefined {
+    const lastQ = data.length - 1;
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
+      return undefined;
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
+      q--;
+    while (data[q + 1] <= value)
+      q++;
+    return q;
+  }
 }
 
 /**
@@ -315,13 +337,30 @@ export class NumberArray {
  */
 export class Point2dArray {
   /** Return true if arrays have same length and matching coordinates. */
-  public static isAlmostEqual(dataA: undefined | Point2d[], dataB: undefined | Point2d[]): boolean {
+  public static isAlmostEqual(dataA: Point2d[] | Float64Array | undefined, dataB: Point2d[] | Float64Array | undefined, tolerance: number = Geometry.smallMetricDistance): boolean {
     if (dataA && dataB) {
-      if (dataA.length !== dataB.length)
-        return false;
-      for (let i = 0; i < dataA.length; i++) {
-        if (!dataA[i].isAlmostEqual(dataB[i]))
+      if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
+        if (dataA.length !== dataB.length)
           return false;
+        for (let i = 0; i < dataA.length; i++)
+          if (!Geometry.isSameCoordinate(dataA[i], dataB[i], tolerance))
+            return false;
+      } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
+        if (dataA.length !== dataB.length)
+          return false;
+        for (let i = 0; i < dataA.length; i++)
+          if (!dataA[i].isAlmostEqual(dataB[i], tolerance))
+            return false;
+      } else {  // different types
+        const points = dataA instanceof Float64Array ? dataB as Point2d[] : dataA;
+        const numbers = dataA instanceof Float64Array ? dataA : dataB as Float64Array;
+        if (numbers.length !== points.length * 2)
+          return false;
+        for (let iPoint = 0; iPoint < points.length; ++iPoint) {
+          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[2 * iPoint], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].y, numbers[2 * iPoint + 1], tolerance))
+            return false;
+        }
       }
       return true;
     }
@@ -360,13 +399,32 @@ export class Point2dArray {
  */
 export class Vector3dArray {
   /** Return true if arrays have same length and matching coordinates. */
-  public static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean {
+  public static isAlmostEqual(dataA: Vector3d[] | Float64Array | undefined, dataB: Vector3d[] | Float64Array | undefined, tolerance: number = Geometry.smallMetricDistance): boolean {
     if (dataA && dataB) {
-      if (dataA.length !== dataB.length)
-        return false;
-      for (let i = 0; i < dataA.length; i++)
-        if (!dataA[i].isAlmostEqual(dataB[i]))
+      if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
+        if (dataA.length !== dataB.length)
           return false;
+        for (let i = 0; i < dataA.length; i++)
+          if (!Geometry.isSameCoordinate(dataA[i], dataB[i], tolerance))
+            return false;
+      } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
+        if (dataA.length !== dataB.length)
+          return false;
+        for (let i = 0; i < dataA.length; i++)
+          if (!dataA[i].isAlmostEqual(dataB[i], tolerance))
+            return false;
+      } else {  // different types
+        const points = dataA instanceof Float64Array ? dataB as Vector3d[] : dataA;
+        const numbers = dataA instanceof Float64Array ? dataA : dataB as Float64Array;
+        if (numbers.length !== points.length * 3)
+          return false;
+        for (let iPoint = 0; iPoint < points.length; ++iPoint) {
+          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2], tolerance))
+            return false;
+        }
+      }
       return true;
     }
     return (dataA === undefined && dataB === undefined);
@@ -393,9 +451,8 @@ export class Point4dArray {
    * @return packed weighted point array
    */
   public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined {
-    let points: Point3d[] | Float64Array | number[];
     if (Array.isArray(data) && data[0] instanceof Point3d) {
-      points = data as Point3d[];
+      const points = data as Point3d[];
       if (points.length !== weights.length)
         return undefined;
       const numValues = 4 * points.length;
@@ -409,18 +466,18 @@ export class Point4dArray {
       }
       return result;
     }
-    points = data as (Float64Array | number[]);
+    const numericData = data as (Float64Array | number[]);
     const numPoints = weights.length;
-    if (points.length !== 3 * numPoints)
+    if (numericData.length !== 3 * numPoints)
       return undefined;
     const numValues1 = 4 * numPoints;
     if (!result || result.length < numValues1)
       result = new Float64Array(numValues1);
     for (let i = 0, k = 0; k < numPoints; k++) {
       const k0 = 3 * k;
-      result[i++] = points[k0];
-      result[i++] = points[k0 + 1];
-      result[i++] = points[k0 + 2];
+      result[i++] = numericData[k0];
+      result[i++] = numericData[k0 + 1];
+      result[i++] = numericData[k0 + 2];
       result[i++] = weights[k];
     }
     return result;
@@ -488,19 +545,19 @@ export class Point4dArray {
     }
   }
   /** Test arrays for near equality of all corresponding numeric values, treated as coordinates. */
-  public static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean {
+  public static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined, tolerance: number = Geometry.smallMetricDistance): boolean {
     if (dataA && dataB) {
       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
         if (dataA.length !== dataB.length)
           return false;
         for (let i = 0; i < dataA.length; i++)
-          if (!Geometry.isSameCoordinate(dataA[i], dataB[i]))
+          if (!Geometry.isSameCoordinate(dataA[i], dataB[i], tolerance))
             return false;
       } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
         if (dataA.length !== dataB.length)
           return false;
         for (let i = 0; i < dataA.length; i++)
-          if (!dataA[i].isAlmostEqual(dataB[i]))
+          if (!dataA[i].isAlmostEqual(dataB[i], tolerance))
             return false;
       } else {  // different types
         const points = dataA instanceof Float64Array ? dataB as Point4d[] : dataA;
@@ -508,10 +565,10 @@ export class Point4dArray {
         if (numbers.length !== points.length * 4)
           return false;
         for (let iPoint = 0; iPoint < points.length; ++iPoint) {
-          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[4 * iPoint]) ||
-            !Geometry.isSameCoordinate(points[iPoint].y, numbers[4 * iPoint + 1]) ||
-            !Geometry.isSameCoordinate(points[iPoint].z, numbers[4 * iPoint + 2]) ||
-            !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3]))
+          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[4 * iPoint], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].y, numbers[4 * iPoint + 1], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].z, numbers[4 * iPoint + 2], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3], tolerance))
             return false;
         }
       }
@@ -761,19 +818,19 @@ export class Point3dArray {
     }
   }
   /** Test arrays for near equality of all corresponding numeric values, treated as coordinates. */
-  public static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined): boolean {
+  public static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined, tolerance: number = Geometry.smallMetricDistance): boolean {
     if (dataA && dataB) {
       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
         if (dataA.length !== dataB.length)
           return false;
         for (let i = 0; i < dataA.length; i++)
-          if (!Geometry.isSameCoordinate(dataA[i], dataB[i]))
+          if (!Geometry.isSameCoordinate(dataA[i], dataB[i], tolerance))
             return false;
       } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
         if (dataA.length !== dataB.length)
           return false;
         for (let i = 0; i < dataA.length; i++)
-          if (!dataA[i].isAlmostEqual(dataB[i]))
+          if (!dataA[i].isAlmostEqual(dataB[i], tolerance))
             return false;
       } else {  // different types
         const points = dataA instanceof Float64Array ? dataB as Point3d[] : dataA;
@@ -781,9 +838,9 @@ export class Point3dArray {
         if (numbers.length !== points.length * 3)
           return false;
         for (let iPoint = 0; iPoint < points.length; ++iPoint) {
-          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint]) ||
-            !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1]) ||
-            !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2]))
+          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1], tolerance) ||
+            !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2], tolerance))
             return false;
         }
       }

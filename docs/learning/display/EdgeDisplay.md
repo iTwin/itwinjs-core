@@ -17,4 +17,4 @@ The latter two modes are somewhat old-fashioned; more visually pleasing results 
 
 A [DisplayStyleState]($frontend) can customize the appearance of the edges by overriding their color, width, and/or style using [HiddenLine.Settings]($common). Optionally, edges obscured by surfaces can also be displayed.
 
-The "Comic Book", "Schematic", "Illustration", and "Architectural: Monochrome" display styles in [this sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=display-styles-sample&imodel=Villa) demonstrate edge display in shaded views.
+The "Comic Book", "Schematic", "Illustration", and "Architectural: Monochrome" display styles in [this sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Display%20Styles/) demonstrate edge display in shaded views.

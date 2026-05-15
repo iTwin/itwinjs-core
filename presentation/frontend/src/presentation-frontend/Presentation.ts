@@ -9,12 +9,14 @@
 import { IModelApp } from "@itwin/core-frontend";
 import { Localization } from "@itwin/core-common";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
-import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
-import { FrontendLocalizationHelper } from "./LocalizationHelper";
-import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
-import { SelectionScopesManager } from "./selection/SelectionScopesManager";
+import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager.js";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage.js";
+import { FrontendLocalizationHelper } from "./LocalizationHelper.js";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager.js";
+import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager.js";
+import { SelectionScopesManager } from "./selection/SelectionScopesManager.js";
+import { imodelInitializationHandlers } from "./IModelConnectionInitialization.js";
+import { _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
 
 let localization: Localization | undefined;
 let presentationManager: PresentationManager | undefined;
@@ -34,7 +36,7 @@ export interface PresentationProps {
   /**
    * Props for [[SelectionManager]].
    *
-   * @deprecated in 5.0. The whole unified selection system in this package is deprecated in favor of the new
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. The whole unified selection system in this package is deprecated in favor of the new
    * [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -54,7 +56,7 @@ export interface PresentationProps {
  * @public
  */
 export class Presentation {
-  /* istanbul ignore next */
+  /* c8 ignore next */
   private constructor() {}
 
   /**
@@ -89,7 +91,7 @@ export class Presentation {
         scopes:
           props?.selection?.scopes ??
           new SelectionScopesManager({
-            rpcRequestsHandler: presentationManager.rpcRequestsHandler,
+            rpcRequestsHandler: presentationManager[_presentation_manager_rpcRequestsHandler],
             localeProvider: () => this.presentation.activeLocale,
           }),
       });
@@ -100,9 +102,6 @@ export class Presentation {
         storage: props?.favorites ? props.favorites.storage : createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop),
       });
     }
-
-    presentationManager.startIModelInitialization = (imodel) => favoritePropertiesManager?.startConnectionInitialization(imodel);
-    presentationManager.ensureIModelInitialized = async (imodel) => favoritePropertiesManager?.ensureInitialized(imodel);
 
     await FrontendLocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {
@@ -120,6 +119,8 @@ export class Presentation {
   public static terminate(): void {
     terminationHandlers.forEach((handler) => handler());
     terminationHandlers.length = 0;
+
+    imodelInitializationHandlers.clear();
 
     if (localization) {
       FrontendLocalizationHelper.unregisterNamespaces();
@@ -158,18 +159,10 @@ export class Presentation {
     return presentationManager;
   }
 
-  /** @internal */
-  public static setPresentationManager(value: PresentationManager) {
-    if (presentationManager) {
-      presentationManager[Symbol.dispose]();
-    }
-    presentationManager = value;
-  }
-
   /**
    * The singleton [[SelectionManager]].
    *
-   * @deprecated in 5.0. The whole unified selection system in this package is deprecated in favor of the new
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. The whole unified selection system in this package is deprecated in favor of the new
    * [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -180,29 +173,14 @@ export class Presentation {
     return selectionManager;
   }
 
-  /** @internal */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public static setSelectionManager(value: SelectionManager) {
-    selectionManager = value;
-  }
-
   /**
    * The singleton [[FavoritePropertiesManager]]
-   * @public
    */
   public static get favoriteProperties(): FavoritePropertiesManager {
     if (!favoritePropertiesManager) {
       throw new Error("Favorite Properties must be first initialized by calling Presentation.initialize");
     }
     return favoritePropertiesManager;
-  }
-
-  /** @internal */
-  public static setFavoritePropertiesManager(value: FavoritePropertiesManager) {
-    if (favoritePropertiesManager) {
-      favoritePropertiesManager[Symbol.dispose]();
-    }
-    favoritePropertiesManager = value;
   }
 
   /**
@@ -213,10 +191,5 @@ export class Presentation {
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
     }
     return localization;
-  }
-
-  /** @internal */
-  public static setLocalization(value: Localization) {
-    localization = value;
   }
 }

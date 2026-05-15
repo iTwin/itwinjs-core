@@ -38,7 +38,7 @@ const padStartEx = (str: string, targetLength: number, padString: string) => {
  * addition of two properties: fileName and schemaText.  The fileName contains the
  * full path to the file on disk and schemaText is the full string representation
  * of the Schema.
- * @beta
+ * @internal
  */
 export class FileSchemaKey extends SchemaKey {
   // The schema file associated with the SchemaKey
@@ -62,16 +62,18 @@ export class FileSchemaKey extends SchemaKey {
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
- * @beta - Needs further testing and possibly moved to a separate package.
+ * @public @preview
  */
 export abstract class SchemaFileLocater {
+  /** @internal */
   public searchPaths: string[];
 
   constructor() {
     this.searchPaths = [];
   }
 
-  public async readUtf8FileToString(filePath: string): Promise<string | undefined> {
+  /** @internal */
+  protected async readUtf8FileToString(filePath: string): Promise<string | undefined> {
     return new Promise<string | undefined>((resolve, reject) => {
       fs.readFile(filePath, "utf-8", (err, data) => {
         if (err)
@@ -82,11 +84,13 @@ export abstract class SchemaFileLocater {
     });
   }
 
-  public readUtf8FileToStringSync(filePath: string): string | undefined {
+  /** @internal */
+  protected readUtf8FileToStringSync(filePath: string): string | undefined {
     return fs.readFileSync(filePath, "utf-8");
   }
 
-  public async fileExists(filePath: string): Promise<boolean | undefined> {
+  /** @internal */
+  protected async fileExists(filePath: string): Promise<boolean | undefined> {
     return new Promise<boolean | undefined>((resolve) => {
       fs.access(filePath, fs.constants.F_OK, (err) => {
         resolve(err ? false : true);
@@ -94,7 +98,8 @@ export abstract class SchemaFileLocater {
     });
   }
 
-  public fileExistsSync(filePath: string): boolean | undefined {
+  /** @internal */
+  protected fileExistsSync(filePath: string): boolean | undefined {
     return fs.existsSync(filePath);
   }
 
@@ -191,6 +196,7 @@ export abstract class SchemaFileLocater {
    * @param desiredKey The SchemaKey to match.
    * @param matchType The SchemaMatchType.
    * @param format The type of file that the schema key refers to. json or xml
+   * @internal
    */
   protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
     const foundFiles = new Array<FileSchemaKey>();
@@ -242,6 +248,7 @@ export abstract class SchemaFileLocater {
    * left-hand version is less, -1 us returned.  If the versions are an exact match, 0 is returned.
    * @param lhs The 'left-hand' FileSchemaKey.
    * @param rhs The 'right-hand' FileSchemaKey.
+   * @internal
    */
   public compareSchemaKeyByVersion = (lhs: FileSchemaKey, rhs: FileSchemaKey): number => {
     return lhs.compareByVersion(rhs);

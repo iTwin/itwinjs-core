@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { LabelDefinition } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite, getFieldLabels } from "./Utils";
+import { describeContentTestSuite, getFieldLabels } from "./Utils.js";
 
 describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
   it("gets element properties with default content parser", async () => {
@@ -103,15 +103,41 @@ describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
             },
             ["True-False"]: {
               type: "primitive",
-              value: "False",
+              value: "Fàlsé",
             },
             ["True-False #2"]: {
               type: "primitive",
-              value: "True",
+              value: "Trµé",
             },
             ["User Label"]: {
               type: "primitive",
               value: "TestClass",
+            },
+            ["Source Information"]: {
+              items: {
+                ["Model Source"]: {
+                  items: {
+                    ["Repository Link"]: {
+                      type: "array",
+                      valueType: "struct",
+                      values: [
+                        {
+                          ["Name"]: {
+                            type: "primitive",
+                            value: "Properties_60InstancesWithUrl2.dgn",
+                          },
+                          ["Path"]: {
+                            type: "primitive",
+                            value: "file:///d|/temp/properties_60instanceswithurl2.dgn",
+                          },
+                        },
+                      ],
+                    },
+                  },
+                  type: "category",
+                },
+              },
+              type: "category",
             },
           },
           type: "category",

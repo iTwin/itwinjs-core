@@ -7,7 +7,7 @@
  */
 
 import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
-import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
+import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParams, PropertyEditorParamTypes } from "../properties/EditorParams";
 import { StandardTypeNames } from "../properties/StandardTypeNames";
 import { StandardEditorNames } from "../properties/StandardEditorNames";
 
@@ -20,19 +20,23 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public displayLabel: string;
   public typename: string;
   public editor: PropertyEditorInfo;
+  public kindOfQuantityName?: string;
 
-  constructor(name: string, displayLabel: string, iconSpec?: string) {
+  constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string) {
     this.name = name;
     this.displayLabel = displayLabel;
+    this.kindOfQuantityName = kindOfQuantityName;
     this.typename = StandardTypeNames.Number;
+
+    const editorParams: PropertyEditorParams[] = [{
+      type: PropertyEditorParamTypes.CustomFormattedNumber,
+      formatFunction: this.format,
+      parseFunction: this.parse,
+    } as CustomFormattedNumberParams];
+
     this.editor = {
       name: StandardEditorNames.NumberCustom,
-      params: [{
-        type: PropertyEditorParamTypes.CustomFormattedNumber,
-        formatFunction: this.format,
-        parseFunction: this.parse,
-      } as CustomFormattedNumberParams,
-      ],
+      params: editorParams,
     };
 
     // istanbul ignore else
@@ -41,7 +45,7 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
         type: PropertyEditorParamTypes.Icon,
         definition: { iconSpec },
       };
-      this.editor.params!.push(params);
+      editorParams.push(params);
     }
   }
 
@@ -55,8 +59,6 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public parse = (userInput: string): ParseResults => {
     return this.parseString(userInput);
   };
-
-  public abstract get quantityType(): string;
 
   public abstract get parseError(): string;
 

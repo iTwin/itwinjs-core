@@ -7,7 +7,7 @@ import { concat, concatAll, map, mergeMap, Observable, of, range, scan } from "r
 import { eachValueFrom } from "rxjs-for-await";
 import { SortedArray } from "@itwin/core-bentley";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
-import { MultipleValuesRequestOptions } from "./PresentationManager";
+import { MultipleValuesRequestOptions } from "./PresentationManager.js";
 
 /**
  * Properties for streaming the results.

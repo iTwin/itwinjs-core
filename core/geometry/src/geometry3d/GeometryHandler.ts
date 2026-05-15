@@ -7,6 +7,7 @@
  * @module ArraysAndInterfaces
  */
 
+import { compareWithTolerance, OrderedSet } from "@itwin/core-bentley";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
@@ -29,6 +30,7 @@ import { Path } from "../curve/Path";
 import { PointString3d } from "../curve/PointString3d";
 import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../curve/UnionRegion";
+import { Geometry } from "../Geometry";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { Box } from "../solid/Box";
 import { Cone } from "../solid/Cone";
@@ -98,7 +100,7 @@ export abstract class GeometryHandler {
   /** Handle strongly typed [[CurveChainWithDistanceIndex]] (base class method calls [[handlePath]] or [[handleLoop]]) */
   public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
     return this.handlePath(g.path);
-   }
+  }
   /** Handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;
   /** Handle strongly typed  Cone */
@@ -360,26 +362,25 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
 
 /**
  * IStrokeHandler is an interface with methods to receive data about curves being stroked.
- * CurvePrimitives emitStrokes () methods emit calls to a handler object with these methods.
+ * CurvePrimitives emitStrokes() methods emit calls to a handler object with these methods.
  * The various CurvePrimitive types are free to announce either single points (announcePoint), linear fragments,
  * or fractional intervals of the parent curve.
- * * handler.startCurvePrimitive (cp) -- announce the curve primitive whose strokes will follow.
- * * announcePointTangent (xyz, fraction, tangent) -- announce a single point on the curve.
- * * announceIntervalForUniformStepStrokes (cp, numStrokes, fraction0, fraction1) -- announce a fraction
- * interval in which the curve can be evaluated (e.g. the handler can call cp->fractionToPointAndDerivative ())
- * * announceSegmentInterval (cp, point0, point1, numStrokes, fraction0, fraction1) -- announce
- *    that the fractional interval fraction0, fraction1 is a straight line which should be broken into
- *    numStrokes strokes.
+ * * startCurvePrimitive(cp) -- announce the curve primitive whose strokes will follow.
+ * * announcePointTangent(xyz, fraction, tangent) -- announce a single point on the curve.
+ * * announceIntervalForUniformStepStrokes(cp, numStrokes, fraction0, fraction1) -- announce a fraction
+ * interval in which the curve can be evaluated (e.g., the handler can call cp->fractionToPointAndDerivative())
+ * * announceSegmentInterval(cp, point0, point1, numStrokes, fraction0, fraction1) -- announce that the
+ * fractional interval fraction0, fraction1 is a straight line which should be broken into numStrokes strokes.
  *   * A LineSegment would make a single call to this.
  *   * A LineString would make one call to this for each of its segments, with fractions indicating position
  * within the linestring.
- * * endCurvePrimitive (cp) -- announce the end of the curve primitive.
+ * * endCurvePrimitive(cp) -- announce the end of the curve primitive.
  * @public
  */
 export interface IStrokeHandler {
   /**
-   * Announce a parent curve primitive
-   * * startParentCurvePrimitive() ...endParentCurvePrimitive() are wrapped around startCurvePrimitive and
+   * Announce a parent curve primitive.
+   * * startParentCurvePrimitive() and endParentCurvePrimitive() are wrapped around startCurvePrimitive and
    * endCurvePrimitive when the interior primitive is a proxy.
    */
   startParentCurvePrimitive(cp: CurvePrimitive): void;
@@ -392,12 +393,11 @@ export interface IStrokeHandler {
    * structure rather than save the references.
    */
   announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void;
-
   /**
-   * Announce that curve primitive cp should be evaluated in the specified fraction interval.
+   * Announce that curve primitive `cp` should be evaluated in the specified fraction interval.
    * * Note that this method is permitted (expected) to provide pre-stroked data if available.
-   * * In th pre-stroked case, the cp passed to the handler will be the stroked image, not the original.
-   * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes
+   * * In the pre-stroked case, the `cp` passed to the handler will be the stroked image, not the original.
+   * * Callers that want primary (not cached) geometry should return `true` from [[needPrimaryGeometryForStrokes]].
   */
   announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
@@ -416,8 +416,8 @@ export interface IStrokeHandler {
   /** Announce that all data about the parent primitive has been announced. */
   endParentCurvePrimitive(cp: CurvePrimitive): void;
   /**
-   * Announce a bezier curve fragment.
-   * * this is usually a section of BsplineCurve
+   * OPTIONAL method to announce a bezier curve fragment.
+   * * This is usually a section of BsplineCurve.
    * * If this function is missing, the same interval will be passed to announceIntervalForUniformSteps.
    * @param bezier bezier fragment
    * @param numStrokes suggested number of strokes (uniform in bezier interval 0..1)
@@ -427,13 +427,79 @@ export interface IStrokeHandler {
    * @param fraction1 end fraction on parent curve
    */
   announceBezierCurve?(
-    bezier: BezierCurveBase,
-    numStrokes: number,
-    parent: CurvePrimitive,
-    spandex: number,
-    fraction0: number,
-    fraction1: number,
+    bezier: BezierCurveBase, numStrokes: number, parent: CurvePrimitive, spandex: number, fraction0: number, fraction1: number,
   ): void;
+}
+
+/**
+ * A handler that generates uniformly distributed fractions for stroking a CurvePrimitive.
+ * * [[claimFractions]] returns the fractions
+ * * [[claimLineString]] returns the strokes
+ * @public
+ */
+export class UniformStrokeCollector implements IStrokeHandler {
+  private _curve: CurvePrimitive | undefined;
+  private _fractions: OrderedSet<number>;
+  /** Constructor. Curve is optional and not needed for [[claimFractions]]. */
+  public constructor(cp?: CurvePrimitive, fractionTol: number = Geometry.smallFraction) {
+    this._curve = undefined;
+    if (cp)
+      this.startCurvePrimitive(cp);
+    this._fractions = new OrderedSet<number>((a: number, b: number) => compareWithTolerance(a, b, fractionTol));
+  }
+  /** Announce a parent curve primitive (ignored). */
+  public startParentCurvePrimitive(_c: CurvePrimitive): void { }
+  /** Announce the curve primitive that will be described in subsequent calls. */
+  public startCurvePrimitive(cp: CurvePrimitive): void {
+    this._curve = cp;
+  }
+  /** Announce a single fraction. */
+  public announcePointTangent(_p: Point3d, f: number, _v: Vector3d): void {
+    this._fractions.add(f);
+  }
+  /** Announce uniformly distributed fractions in the fractional interval. */
+  public announceIntervalForUniformStepStrokes(_c: CurvePrimitive, numStrokes: number, f0: number, f1: number): void {
+    if (numStrokes < 1)
+      numStrokes = 1;
+    this._fractions.add(f0);
+    const df = 1.0 / numStrokes;
+    for (let i = 1; i < numStrokes; i++)
+      this._fractions.add(Geometry.interpolate(f0, i * df, f1));
+    this._fractions.add(f1);
+  }
+  /** Request primary geometry to avoid cached strokes. */
+  public needPrimaryGeometryForStrokes(): boolean {
+    return true;
+  }
+  /** Announce the fractional span of the segment. */
+  public announceSegmentInterval(_c: CurvePrimitive, _p0: Point3d, _p1: Point3d, _numStrokes: number, f0: number, f1: number): void {
+    this._fractions.add(f0);
+    this._fractions.add(f1);
+  }
+  /** Announce that all data about the curve has been announced (ignored). */
+  public endCurvePrimitive(_c: CurvePrimitive): void { }
+  /** Announce that all data about the parent curve has been announced (ignored). */
+  public endParentCurvePrimitive(_c: CurvePrimitive): void { }
+  /** Retrieve the collected fractions, optionally removing 0 and 1 first. */
+  public claimFractions(remove01: boolean = false): number[] {
+    if (remove01) {
+      this._fractions.delete(0);
+      this._fractions.delete(1);
+    }
+    return [...this._fractions];
+  }
+  /** Create a [[LineString3d]] by evaluating the curve at the collected fractions. */
+  public claimLineString(result?: LineString3d): LineString3d | undefined {
+    if (!this._curve)
+      return undefined;
+    result ??= LineString3d.create();
+    const pt = Point3d.create();
+    for (const f of this._fractions) {
+      result.addPoint(this._curve.fractionToPoint(f, pt));
+      result.addFraction(f);
+    }
+    return result;
+  }
 }
 
 /**

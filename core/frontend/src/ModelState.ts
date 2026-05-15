@@ -6,7 +6,7 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { expectDefined, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement,
 } from "@itwin/core-common";
@@ -33,9 +33,9 @@ export class ModelState extends EntityState implements ModelProps {
 
   constructor(props: ModelProps, iModel: IModelConnection, state?: ModelState) {
     super(props, iModel, state);
-    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
+    this.modeledElement = expectDefined(RelatedElement.fromJSON(props.modeledElement));
     this.name = props.name ? props.name : "";
-    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
+    this.parentModel = expectDefined(Id64.fromJSON(props.parentModel)); // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
   }
@@ -119,9 +119,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
     const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
+    const getBackgroundBase = () => view.displayStyle.settings?.mapImagery.backgroundBase;
+    const getBackgroundLayers = () => view.displayStyle.settings?.mapImagery.backgroundLayers
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
+
       const treeRef = (!useOrbitGtTileTreeReference) ?
         createRealityTileTreeReference({
           rdSourceKey,
@@ -131,6 +134,8 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
           getDisplaySettings,
+          getBackgroundBase,
+          getBackgroundLayers,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -184,10 +189,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         getDisplaySettings,
-      });
+        getBackgroundBase,
+        getBackgroundLayers,
+    });
     }
 
-    return createPrimaryTileTreeReference(view, this);
+    return createPrimaryTileTreeReference(view, this, getBackgroundBase, getBackgroundLayers);
   }
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).

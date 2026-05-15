@@ -67,6 +67,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public get point1Ref(): Point3d {
     return this._point1;
   }
+  /** Return a copy of the start and end points in an array. */
+  public get points(): Point3d[] {
+    return [this._point0.clone(), this._point1.clone()];
+  }
   /** A LineSegment3d extends along its infinite line. */
   public override get isExtensibleFractionSpace(): boolean {
     return true;
@@ -203,13 +207,13 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Returns a curve location detail with both xyz and fractional coordinates of the closest point.
    * @param spacePoint point in space
-   * @param extend if false, only return points within the bounded line segment. If true, allow the point to be on
+   * @param extend if false (default), only return points within the bounded line segment. If true, allow the point to be on
    * the unbounded line that contains the bounded segment.
    * @param result optional pre-allocated object to populate and return
    * @returns detail, with `a` field set to the distance from `spacePoint` to the closest point
    */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
     fraction = CurveExtendOptions.correctFraction(extend, fraction);

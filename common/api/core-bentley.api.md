@@ -76,6 +76,7 @@ export class BentleyError extends Error {
     constructor(errorNumber: number, message?: string, metaData?: LoggingMetaData);
     // (undocumented)
     errorNumber: number;
+    static getErrorKey(errorNumber: number): string;
     static getErrorMessage(error: unknown): string;
     static getErrorMetadata(error: unknown): object | undefined;
     static getErrorProps(error: unknown): ErrorProps;
@@ -84,6 +85,15 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
+    // @beta
+    static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T;
+    get iTwinErrorId(): {
+        scope: string;
+        key: string;
+    };
+    // (undocumented)
+    static readonly iTwinErrorScope = "bentley-error";
+    get loggingMetadata(): object | undefined;
 }
 
 // @public
@@ -115,6 +125,20 @@ export class BeTimePoint {
 
 // @public
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
+    emit(args: TEventArgs): void;
+}
+
+// @beta
+export class BeUnorderedEvent<T extends Listener> {
+    addListener(listener: T, scope?: any): () => void;
+    addOnce(listener: T, scope?: any): () => void;
+    clear(): void;
+    get numberOfListeners(): number;
+    raiseEvent(...args: Parameters<T>): void;
+}
+
+// @beta
+export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
@@ -208,6 +232,9 @@ export enum ChangeSetStatus {
 
 // @public
 export type CloneFunction<T> = (value: T) => T;
+
+// @public
+export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number;
 
 // @public (undocumented)
 export function compareBooleans(a: boolean, b: boolean): number;
@@ -347,12 +374,14 @@ export enum DbResult {
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
     BE_SQLITE_ERROR_InvalidProfileVersion = 117440522,
     BE_SQLITE_ERROR_NoPropertyTable = 50331658,
+    BE_SQLITE_ERROR_NOTOPEN = 16777217,
     BE_SQLITE_ERROR_NoTxnActive = 83886090,
     BE_SQLITE_ERROR_ProfileTooNew = 201326602,
     BE_SQLITE_ERROR_ProfileTooNewForReadWrite = 184549386,
     BE_SQLITE_ERROR_ProfileTooOld = 167772170,
     BE_SQLITE_ERROR_ProfileTooOldForReadWrite = 150994954,
     BE_SQLITE_ERROR_ProfileUpgradeFailed = 134217738,
+    BE_SQLITE_ERROR_PropagateChangesFailed = 33554433,
     BE_SQLITE_ERROR_SchemaImportFailed = 335544330,
     BE_SQLITE_ERROR_SchemaLockFailed = 301989898,
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
@@ -449,6 +478,16 @@ export enum DbValueType {
     // (undocumented)
     TextVal = 3
 }
+
+// @public
+export type DeepReadonlyObject<T> = T extends object ? {
+    readonly [K in keyof T]: DeepReadonlyObject<T[K]>;
+} : T;
+
+// @public
+export type DeepRequiredObject<T> = T extends object ? {
+    [K in keyof T]-?: DeepRequiredObject<T[K]>;
+} : T;
 
 // @public
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
@@ -562,6 +601,12 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
+
+// @internal
+export function expectDefined<T>(value: T | undefined, message?: string): T;
+
+// @internal
+export function expectNotNull<T>(value: T | null, message?: string): T;
 
 // @public
 export enum GeoServiceStatus {
@@ -1014,6 +1059,24 @@ export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, 
 // @public
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
 
+// @beta
+export interface ITwinError extends Error {
+    readonly iTwinErrorId: ITwinErrorId;
+}
+
+// @beta (undocumented)
+export namespace ITwinError {
+    export function create<T extends ITwinError>(args: Omit<T, "name">): T;
+    export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T;
+    export function throwError<T extends ITwinError>(args: Omit<T, "name">): never;
+}
+
+// @beta
+export interface ITwinErrorId {
+    readonly key: string;
+    readonly scope: string;
+}
+
 // @public (undocumented)
 export interface JSONSchema {
     // (undocumented)
@@ -1163,9 +1226,18 @@ export namespace JsonUtils {
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
     export function isNonEmptyObject(value: any): value is object;
+    export function isObject(json: unknown): json is {
+        [key: string]: unknown;
+    };
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
+}
+
+// @beta
+export interface LegacyITwinErrorWithNumber extends ITwinError {
+    readonly errorNumber: number;
+    loggingMetadata?: object;
 }
 
 // @public
@@ -1193,8 +1265,10 @@ export class Logger {
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+    static logError(category: string, error: unknown, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logError: LogFunction | undefined;
+    // @deprecated
     static logException(category: string, err: any, log?: LogFunction): void;
     static logExceptionCallstacks: boolean;
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1327,9 +1401,13 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
+    addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
+    deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;
+    readonly onBatchAdded: BeEvent<() => void>;
+    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
@@ -1456,6 +1534,7 @@ export class ProcessDetector {
     static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
+    static get isIEBrowser(): boolean;
     static get isIOSAppBackend(): boolean;
     static get isIOSAppFrontend(): boolean;
     static get isIOSBrowser(): boolean;
@@ -1751,6 +1830,9 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
+
+// @beta
+export function wrapTimerCallback(timerPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
 
 // @public
 export class YieldManager {

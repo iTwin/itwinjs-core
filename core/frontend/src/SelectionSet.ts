@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 
@@ -33,7 +33,7 @@ export interface SelectAddEvent {
   type: SelectionSetEventType.Add;
   /**
    * The Ids of the elements added to the set.
-   * @deprecated in 5.0. Use the [[additions]] attribute instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[additions]] attribute instead.
    */
   added: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been added to selection set. */
@@ -51,7 +51,7 @@ export interface SelectRemoveEvent {
   type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
   /**
    * The element Ids removed from the set.
-   * @deprecated in 5.0. Use the [[removals]] attribute instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[removals]] attribute instead.
    */
   removed: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been removed from selection set. */
@@ -68,14 +68,14 @@ export interface SelectReplaceEvent {
   type: SelectionSetEventType.Replace;
   /**
    * The element Ids added to the set.
-   * @deprecated in 5.0. Use the [[additions]] attribute instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[additions]] attribute instead.
    */
   added: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been added to selection set. */
   additions: SelectableIds;
   /**
    * The element Ids removed from the set.
-   * @deprecated in 5.0. Use the [[removals]] attribute instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the [[removals]] attribute instead.
    */
   removed: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been removed from selection set. */
@@ -224,7 +224,8 @@ export class HiliteSet {
       this.#selectionChangesListener = set.onChanged.addListener((ev) => this.#processSelectionSetEvent(ev));
       this.add(set.active);
     } else {
-      this.#selectionChangesListener!();
+      assert(undefined !== this.#selectionChangesListener);
+      this.#selectionChangesListener();
       this.#selectionChangesListener = undefined;
     }
   }
@@ -304,7 +305,7 @@ export class HiliteSet {
   /** Toggle the hilited state of one or more elements.
    * @param arg the ID(s) of the elements whose state is to be toggled.
    * @param onOff True to add the elements to the hilited set, false to remove them.
-   * @deprecated in 5.0. Use [[add]], [[remove]], [[replace]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[add]], [[remove]], [[replace]] instead.
    */
   public setHilite(arg: Id64Arg, onOff: boolean): void {
     if (onOff) {
@@ -382,7 +383,7 @@ export class SelectionSet {
 
   /** Return true if elemId is in this `SelectionSet`.
    * @see [[isSelected]]
-   * @deprecated in 5.0. Use `SelectionSet.elements.has(elemId)` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionSet.elements.has(elemId)` instead.
    */
   public has(elemId?: string) {
     return !!elemId && this.elements.has(elemId);
@@ -390,7 +391,7 @@ export class SelectionSet {
 
   /** Query whether an Id is in the selection set.
    * @see [[has]]
-   * @deprecated in 5.0. Use `SelectionSet.elements.has(elemId)` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionSet.elements.has(elemId)` instead.
    */
   public isSelected(elemId?: Id64String): boolean {
     return !!elemId && this.elements.has(elemId);

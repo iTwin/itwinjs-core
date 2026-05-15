@@ -2,15 +2,15 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
-import * as faker from "faker";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -35,7 +35,7 @@ describe("Hierarchies", () => {
 
     it("correctly counts instances when key set contains grouping node keys", async () => {
       const ruleset: Ruleset = {
-        id: faker.random.word(),
+        id: "test ruleset id",
         rules: [
           {
             ruleType: RuleTypes.RootNodes,

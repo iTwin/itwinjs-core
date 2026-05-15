@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@itwin/core-common";
@@ -108,6 +108,8 @@ export class IModelTile extends Tile {
       return content;
 
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
+
+    const ecefTransform = this.tree.iModel.isGeoLocated ? this.tree.iModel.getEcefTransform() : Transform.createIdentity();
     try {
       content = await this.iModelTree.decoder.decode({
         stream: streamBuffer,
@@ -115,6 +117,11 @@ export class IModelTile extends Tile {
         system,
         isCanceled,
         sizeMultiplier,
+        tileData: {
+          ecefTransform,
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
     } catch {
       //
@@ -324,5 +331,10 @@ export class IModelTile extends Tile {
       args.insertMissing(this);
 
     return this.isParentDisplayable ? SelectParent.Yes : SelectParent.No;
+  }
+
+  public override clearLayers(): void {
+    super.clearLayers();
+    this.disposeChildren();
   }
 }

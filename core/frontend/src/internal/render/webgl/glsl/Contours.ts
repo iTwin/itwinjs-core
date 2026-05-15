@@ -87,8 +87,9 @@ const applyContours = `
   uint msk = 1u << uint(offset);
   contourAlpha *= (patterns[(lineCodeWt / 16) & 0xf] & msk) > 0u ? 1.0 : 0.0;
   contourAlpha = min(contourAlpha, 1.0);
+
   if (rgbfp.a / 65536.0 < 0.5) { // showGeometry == 0
-    if (contourAlpha < 0.5)
+    if (contourAlpha < 0.5) // not a contour line
       discard;
     return vec4(rgbf.rgb, 1.0);
   }

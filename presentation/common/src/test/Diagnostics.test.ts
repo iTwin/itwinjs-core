@@ -9,7 +9,7 @@ import {
   DiagnosticsLogEntry,
   DiagnosticsLogMessage,
   DiagnosticsScopeLogs,
-} from "../presentation-common/Diagnostics";
+} from "../presentation-common/Diagnostics.js";
 
 describe("DiagnosticsLogEntry", () => {
   const createMessage = (): DiagnosticsLogMessage => ({

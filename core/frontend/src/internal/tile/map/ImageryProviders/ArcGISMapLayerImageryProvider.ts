@@ -180,7 +180,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
-      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
+      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${String(error)}`);
       return undefined;
     }
   }
@@ -318,7 +318,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";
@@ -437,6 +437,8 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
 
       for ( const value of subLayers.values()) {
+        // layerInfo.subLayerInfos is initalized above to an empty array.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         layerInfo.subLayerInfos!.push(value);
       }
 

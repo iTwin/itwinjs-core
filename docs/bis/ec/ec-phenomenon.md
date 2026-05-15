@@ -11,3 +11,17 @@ Defines a type of measurable physical quantity.  Units that belong to the same P
 **description** A user-facing description of the Phenomenon. Localized and may be shown in a UI.
 
 **definition** The expression that defines this phenomenon in terms of other phenomena.  This expression defines the dimensionality of the phenomenon and is used to ensure the dimensionality of all units in this phenomenon match.
+
+## Example
+
+```xml
+<Phenomenon typeName="DENSITY" definition="MASS*VOLUME(-1)" displayLabel="Density" />
+```
+
+```json
+"DENSITY": {
+  "schemaItemType": "Phenomenon",
+  "label": "Density",
+  "definition": "MASS*VOLUME(-1)"
+},
+```

@@ -6,11 +6,12 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
-import { CurveFactory } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveChain } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { EllipticalArcApproximationContext, QuadrantFractions } from "../../curve/internalContexts/EllipticalArcApproximationContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -27,11 +28,12 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { SmallSystem } from "../../numerics/SmallSystem";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
 
 describe("Arc3d", () => {
   function sampleSweeps(): AngleSweep[] {
@@ -1052,7 +1054,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("EllipseSampler", { timeout: 80000 }, () => {
+  it("EllipseSampler", { timeout: 200000 /* only needed with enableLongTests */}, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
@@ -1356,11 +1358,11 @@ describe("ApproximateArc3d", () => {
     const eccentricities: number[] = [];
     if (GeometryCoreTestIO.enableLongTests) {
       eccentricities.push(...[0.000001, 0.00001, 0.0001]); // these are essentially circular thus invalid for approximating (not drawn below)
-      eccentricities.push(...[0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25]);
+      eccentricities.push(...[0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]);
     }
-    eccentricities.push(...[0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8]);
+    eccentricities.push(...[0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75]);
     if (GeometryCoreTestIO.enableLongTests) {
-      eccentricities.push(...[0.85, 0.9, 0.95, 0.99, 0.999]);
+      eccentricities.push(...[0.8, 0.85, 0.9, 0.95, 0.99, 0.999]);
       eccentricities.push(...[0.9999, 0.99999, 0.999999]); // these are essentially flat
     }
 
@@ -1413,13 +1415,13 @@ describe("ApproximateArc3d", () => {
       x += delta;
     }
 
-    // Observed: subdivision wins 90.9% of comparisons to n-sample methods (95.7% with enableLongTests)
+    // Observed: subdivision wins 91.7% of comparisons to n-sample methods (95.7% with enableLongTests)
     const winPct = 100 * Geometry.safeDivideFraction(nSubdivisionComparisonWins, nComparisons, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins ${nSubdivisionComparisonWins} of ${nComparisons} comparisons (${winPct}%).`);
     const targetWinPct = GeometryCoreTestIO.enableLongTests ? 90 : 85;
     ck.testLE(targetWinPct, winPct, `Subdivision is more accurate than another n-sample method over ${targetWinPct}% of the time.`);
 
-    // Observed: subdivision is most accurate method in 63.6% of ellipses tested (82.8% with enableLongTests)
+    // Observed: subdivision is most accurate method in 66.7% of ellipses tested (82.8% with enableLongTests)
     const winOverallPct = 100 * Geometry.safeDivideFraction(nEllipses - nSubdivisionLosses, nEllipses, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins overall for ${nEllipses - nSubdivisionLosses} of ${nEllipses} ellipses (${winOverallPct}%).`);
     const targetNSampleWinPct = GeometryCoreTestIO.enableLongTests ? 80 : 60;
@@ -1454,6 +1456,430 @@ describe("ApproximateArc3d", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "SubdivisionSampler");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+describe("Arc3dTangents", () => {
+  it("AllTangentsAndClosestTangent", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    let tangents: CurveLocationDetail[] | undefined;
+    let tangent: CurveLocationDetail | undefined;
+    let hintPoint: Point3d | undefined;
+
+    const captureGeometry = () => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
+      if (hintPoint)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
+      if (tangents)
+        for (const tng of tangents) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx, dy);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx, dy);
+        }
+      if (tangent) {
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangent.point, 0.1, dx, dy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tangent.point), dx, dy);
+      }
+    };
+
+    // tangents parallel to ellipse axes
+    let arc = Arc3d.createXYEllipse(Point3d.create(0, 0), 3, 2);
+    let spacePoint = Point3d.create(3, 2);
+    tangents = arc.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.25, tangents![0].fraction, "first tangent fraction");
+    ck.testCoordinate(0, tangents![1].fraction, "second tangent fraction");
+    captureGeometry();
+    dy += 7;
+    tangents = undefined;
+    spacePoint = Point3d.create(3, 2, 1);
+    hintPoint = Point3d.create(4, 0);
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0, tangent!.fraction, "closest tangent fraction is 0");
+    captureGeometry();
+    dy += 7;
+    spacePoint = Point3d.create(3, 2, 1);
+    hintPoint = Point3d.create(0, 3);
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
+    captureGeometry();
+
+    // 2 symmetrical tangents
+    dx += 10;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    spacePoint = Point3d.create(4, 0);
+    tangents = arc.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.11502672, tangents![0].fraction, "first tangent fraction");
+    ck.testCoordinate(1 - 0.11502672, tangents![1].fraction, "second tangent fraction");
+    captureGeometry();
+    dy += 7;
+    tangents = undefined;
+    spacePoint = Point3d.create(4, 0);
+    hintPoint = Point3d.create(4, 2, 1);
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.1150267, tangent!.fraction, "closest tangent fraction is 0.1150267");
+    captureGeometry();
+    dy += 7;
+    spacePoint = Point3d.create(4, 0, 1);
+    hintPoint = Point3d.create(4, -2, 1);
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(1 - 0.1150267, tangent!.fraction, "closest tangent fraction is 1 - 0.1150267");
+    captureGeometry();
+
+    // space point on ellipse; 1 tangent
+    dx += 10;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    spacePoint = Point3d.create(0, 2);
+    tangents = arc.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(1, tangents!.length, "1 tangent found");
+    ck.testCoordinate(0.25, tangents![0].fraction, "tangent fraction");
+    captureGeometry();
+    dy += 7;
+    tangents = undefined;
+    spacePoint = Point3d.create(0, 2, 1);
+    hintPoint = Point3d.create(0, -3);
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
+    captureGeometry();
+
+    // space point inside ellipse; no tangent
+    dx += 10;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    spacePoint = Point3d.create(1, 1);
+    tangents = arc.allTangents(spacePoint);
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 7;
+    tangents = undefined;
+    spacePoint = Point3d.create(1, 1, 2);
+    hintPoint = Point3d.create(0, 3);
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testUndefined(tangent, "tangent is undefined");
+    captureGeometry();
+
+    // tangents parallel to ellipse axes in 3d with view normal perpendicular to ellipse plane
+    dx += 10;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    arc = Arc3d.create(Point3d.create(0, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 0, 2));
+    spacePoint = Point3d.create(4, 0, 2);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 1, 0) });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.25, tangents![0].fraction, "first tangent fraction is 0.25");
+    ck.testCoordinate(0, tangents![1].fraction, "second tangent fraction is 0");
+    captureGeometry();
+    dy += 7;
+    tangents = undefined;
+    hintPoint = Point3d.create(5, 0, 1);
+    tangent = arc.closestTangent(spacePoint, { hintPoint, vectorToEye: Vector3d.create(0, 1, 0) });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0, tangent!.fraction, "closest tangent fraction is 0");
+    captureGeometry();
+    dy += 7;
+    spacePoint = Point3d.create(4, 1, 2);
+    hintPoint = Point3d.create(0, 1, 1);
+    tangent = arc.closestTangent(spacePoint, { hintPoint, vectorToEye: Vector3d.create(0, 1, 0) });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
+    captureGeometry();
+
+    // tangents in 3d with view normal = (-1, -1, 1), i.e., isometric view
+    dx += 10;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    arc = Arc3d.createXYEllipse(Point3d.create(0, 0), 3, 2);
+    spacePoint = Point3d.create(3, 2, 1);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(-1, -1, 1) });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.301335, tangents![0].fraction, "first tangent fraction is 0.301335");
+    ck.testCoordinate(0.967367, tangents![1].fraction, "second tangent fraction is 0.967367");
+    captureGeometry();
+    // tangents in 3d with view normal = (1, -1, 1), i.e., right isometric view
+    dy += 7;
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(1, -1, 1) });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.329181, tangents![0].fraction, "first tangent fraction is 0.329181");
+    ck.testCoordinate(0.037694, tangents![1].fraction, "second tangent fraction is 0.037694");
+    captureGeometry();
+    // tangents in 3d with view normal = (1, 1, 1); space point is inside ellipse from this view; no tangents
+    dy += 7;
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(1, 1, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+
+    // space point inside ellipse in 3d; no tangent
+    dx += 10;
+    dy = 0;
+    spacePoint = Point3d.create(2, 0, 0);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 1, 0) });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 7;
+    tangents = undefined;
+    spacePoint = Point3d.create(2, 1, 0);
+    hintPoint = Point3d.create(0, 4, 1);
+    tangent = arc.closestTangent(spacePoint, { hintPoint, vectorToEye: Vector3d.create(0, 1, 0) });
+    ck.testUndefined(tangent, "tangent is undefined");
+    captureGeometry();
+
+    // corner case: vectorToEye is in the arc plane making the arc viewed as a line segment
+    dx += 10;
+    dy = 0;
+    tangents = undefined;
+    hintPoint = undefined;
+    arc = Arc3d.create(Point3d.create(0, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 0, 2));
+    spacePoint = Point3d.create(5, 0, 0);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 0, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 7;
+    spacePoint = Point3d.create(5, 2, 0);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 0, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+
+    // test extend = false and true
+    dx += 12;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    arc = Arc3d.createXYEllipse(Point3d.create(0, 0), 3, 2, AngleSweep.createStartEndDegrees(180, 270));
+    spacePoint = Point3d.create(3, 2);
+    tangents = arc.allTangents(spacePoint, { extend: false });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 7;
+    tangents = arc.allTangents(spacePoint, { extend: [CurveExtendMode.None, CurveExtendMode.OnCurve] });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(2, tangents![0].fraction, tangents![1].fraction), "found first expected tangent");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(3, tangents![0].fraction, tangents![1].fraction), "found second expected tangent");
+    captureGeometry();
+    dx += 10;
+    dy = 0;
+    spacePoint = Point3d.create(4, 0);
+    tangents = arc.allTangents(spacePoint, { extend: false });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 7;
+    tangents = arc.allTangents(spacePoint, { extend: [CurveExtendMode.OnCurve, CurveExtendMode.None] });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(-2.460106912325232, tangents![0].fraction, tangents![1].fraction), "found first expected tangent");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(-1.5398930876747683, tangents![0].fraction, tangents![1].fraction), "found second expected tangent");
+    captureGeometry();
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "AllTangentsAndClosestTangent");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("LineTangentPointArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const sweep1 = AngleSweep.createStartEndDegrees(-40, 90);
+    const sweep2 = AngleSweep.createStartEndDegrees(125, 210);
+    const sweep3 = AngleSweep.createStartEndDegrees(215, 400);
+    const sweep4 = AngleSweep.createStartEndDegrees(185, 20);
+    const arc0 = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 0, 0.5, 4, 0);
+    const arcs = [];
+    for (const sweep of [sweep1, sweep2, sweep3, sweep4]) {
+      const arc = arc0.clone();
+      arc.sweep = sweep;
+      arcs.push(arc);
+    }
+    let dx = 0;
+    const arc1 = Arc3d.createXYZXYZXYZ(0, 0, 0, 15, 0, 0, 0, 8, 0);
+    let spacePoint = Point3d.create(0, 0, 0);
+    for (const arc of arcs) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx);
+      for (let fraction = 0; fraction < 1; fraction += 0.067) {
+        spacePoint = arc1.fractionToPoint(fraction);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx);
+        const tangents = arc.allTangents(spacePoint);
+        if (tangents)
+          for (const tng of tangents) {
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx);
+          }
+      }
+      dx += 40;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "LineTangentPointArc");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("LineTangentPointCircle", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const circleA = Arc3d.createUnitCircle();
+    const arcB = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 0, 0.5, 4, 0);
+    const pointP1 = Point3d.create(4, 0);
+    const pointP2 = Point3d.create(4, 4);
+    const pointP3 = Point3d.create(8, 0);
+    let dx = 0;
+    let dy = 0;
+    for (const arc of [circleA, arcB]) {
+      dy = 0;
+      for (const spacePoint of [pointP1, pointP2, pointP3]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
+        const tangents = arc.allTangents(spacePoint);
+        if (tangents)
+          for (const tng of tangents) {
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx, dy);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx, dy);
+          }
+        dy += 10;
+      }
+      dx += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "LineTangentPointCircle");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("TangentIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const testTangentIntersection = (arc0: Arc3d, expectedIntersection0: Point3d, dx: number, scale0: number) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc0, dx);
+      const intersection = arc0.computeTangentIntersection();
+      ck.testDefined(intersection, "intersection is defined");
+      ck.testPoint3d(
+        intersection!, expectedIntersection0, `intersection at (${JSON.stringify(expectedIntersection0.toJSON())})`,
+      );
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection!, 0.1, dx);
+      const ray0 = arc0.fractionToPointAndDerivative(0);
+      const ls0 = LineSegment3d.create(
+        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, -scale0),
+        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, scale0),
+      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls0, dx);
+      const ray1 = arc0.fractionToPointAndDerivative(1);
+      const ls1 = LineSegment3d.create(
+        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, -scale0),
+        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, scale0),
+      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls1, dx);
+    }
+
+    // unit circle
+    let x0 = 0;
+    let scale = 1;
+    let arc = Arc3d.createXY(Point3d.createZero(), 1, AngleSweep.createStartEndDegrees(0, 90));
+    let expectedIntersection = Point3d.create(1, 1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-circle");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(1, -1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // normal ellipse
+    x0 += 10;
+    scale = 4;
+    arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    expectedIntersection = Point3d.create(2, 3);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(2, -3);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // tilted ellipse
+    x0 += 10;
+    scale = 2;
+    arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(1, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    expectedIntersection = Point3d.create(2, 1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(179.99, 0);
+    expectedIntersection = Point3d.create(11460.15587355, 11459.15587355);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(0, -1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // non-xy ellipse
+    x0 += 10;
+    scale = 2;
+    arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    expectedIntersection = Point3d.create(1, 0, 1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(1, 0, -1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // special cases
+    ck.testUndefined(arc.computeTangentIntersection(0, 0), "no intersection for equal fractions");
+    ck.testUndefined(arc.computeTangentIntersection(0.5, 0.5), "no intersection for equal fractions");
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 0);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for zero sweep");
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 360);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for full sweep at default fractions");
+    ck.testUndefined(arc.computeTangentIntersection(0, 1.5), "no intersection for full sweep at fractions 0, 1.5");
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 1e-15);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for close fractions");
+
+    // fillet
+    x0 += 10;
+    const lineString = LineString3d.create([0, 0, -1], [2, 0], [5, 3], [5, 5, 1], [3, 5]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0);
+    for (const p of lineString.points)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p, 0.1, x0);
+    const radius = 1.0;
+    const chain = CurveFactory.createFilletsInLineString(lineString, radius)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
+    const filletIndicesInChain = [1, 3, 5];
+    const filletedIndicesInLineString = [1, 2, 3];
+    for (let i = 0; i < filletIndicesInChain.length; i++) {
+      const fillet = chain.children[filletIndicesInChain[i]] as Arc3d;
+      ck.testPoint3d(
+        lineString.points[filletedIndicesInLineString[i]],
+        fillet.computeTangentIntersection()!,
+        `fillet tangents at lineString point[${filletedIndicesInLineString[i]}]`,
+      );
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "TangentIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

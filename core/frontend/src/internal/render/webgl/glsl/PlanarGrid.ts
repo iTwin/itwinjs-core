@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { PlanarGridTransparency } from "../../../../render/RenderSystem";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
@@ -76,20 +77,20 @@ export default function createPlanarGridProgram(context: WebGL2RenderingContext)
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
   vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-      const planarGrid = params.geometry.asPlanarGrid!;
+      const planarGrid = expectDefined(params.geometry.asPlanarGrid);
       uniform.setUniform4fv(planarGrid.uvParams.params);
     });
   });
   frag.addUniform("u_gridColor", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_gridColor", (uniform, params) => {
-      const planarGrid = params.geometry.asPlanarGrid!;
+      const planarGrid = expectDefined(params.geometry.asPlanarGrid);
       const color = planarGrid.props.color.colors;
       uniform.setUniform3fv([color.r / 255, color.g / 255, color.b / 255]);
     });
   });
   frag.addUniform("u_gridProps", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_gridProps", (uniform, params) => {
-      const planarGridProps = params.geometry.asPlanarGrid!.props;
+      const planarGridProps = expectDefined(params.geometry.asPlanarGrid).props;
       const transparency = planarGridProps.transparency ? planarGridProps.transparency : defaultTransparency;
       uniform.setUniform4fv([planarGridProps.gridsPerRef,  1.0 - transparency.planeTransparency, 1.0 - transparency.lineTransparency, 1.0 - transparency.refTransparency]);
     });

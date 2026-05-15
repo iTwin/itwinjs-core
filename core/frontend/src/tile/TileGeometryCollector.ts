@@ -114,4 +114,9 @@ export interface GeometryTileTreeReference extends TileTreeReference {
    * @see [[TileGeometryCollector.isAllGeometryLoaded]] to determine if the list of polyfaces is fully populated.
    */
   collectTileGeometry: (collector: TileGeometryCollector) => void;
+  /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected from the referenced TileTree.
+   * Currently only applies to point clouds, reality meshes, and terrain.
+   * @internal
+   */
+  reprojectGeometry?: boolean;
 }

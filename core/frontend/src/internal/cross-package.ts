@@ -26,6 +26,7 @@ export {
  type ArcGISServiceMetadata,
  ArcGisUtilities,
  type ArcGisValidateSourceArgs,
+ collectMaskRefs,
  createSpatialTileTreeReferences,
  deflateCoordinates,
  type FeatureAttributeDrivenSymbology,
@@ -48,9 +49,17 @@ export {
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,
+ LayerTileTreeHandler, type MapLayerTreeSetting, LayerTileTreeReferenceHandler
 } from "../tile/internal";
+export { GoogleMapsDecorator, LogoDecoration } from "./GoogleMapsDecorator";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.
 // Remove once CommonJS is dropped.
 export { DebugShaderFile } from "./render/RenderSystemDebugControl";
 export { IModelTileTree } from "./tile/IModelTileTree";
+
+// Used by cesium-renderer
+export { type RenderPlan } from "./render/RenderPlan";
+export { type RenderAreaPattern } from "./render/RenderAreaPattern";
+export { type RenderGeometry } from "./render/RenderGeometry";
+export { _implementationProhibited } from "../common/internal/Symbols";

@@ -22,8 +22,6 @@ import { JointOptions, OffsetOptions } from "../OffsetOptions";
 import { Path } from "../Path";
 import { RegionOps } from "../RegionOps";
 
-// cspell:word CCWXY
-
 /**
  * Classification of how the joint is constructed.
  * @internal
@@ -313,7 +311,7 @@ class Joint {
       this.flexure = JointMode.Cap;
       this.fraction0 = 1.0;
     } else if (this.curve0 && this.curve1) { // joints at the middle of the chain
-      if (this.curve0.endPoint().isAlmostEqualXY(this.curve1.startPoint())) { // joint between colinear xy-segments
+      if (this.curve0.endPoint().isAlmostEqualXY(this.curve1.startPoint())) { // joint at shared endpoint
         this.fraction0 = 1.0;
         this.fraction1 = 0.0;
         this.flexure = JointMode.Trim;
@@ -358,16 +356,12 @@ class Joint {
   public static removeDegeneratePrimitives(
     start: Joint, options: JointOptions, maxTest: number,
   ): { newStart: Joint, numJointRemoved: number } {
-    /*
-    if (Checker.noisy.PolygonOffset)
-      GeometryCoreTestIO.consoleLog("\nENTER removeDegenerates");
-    */
     let jointA: Joint | undefined = start;
     let numRemoved = 0;
-    const maxRemove = 1;
     let numTest = 0;
     if (jointA) {
       while (jointA !== undefined && numTest++ < maxTest) {
+        // each iteration looks at the two curves f, g on either side of jointB
         const jointB = jointA.nextJoint;
         if (jointA
           && jointB
@@ -376,60 +370,41 @@ class Joint {
           && jointA.fraction1 !== undefined
           && jointB.fraction0 !== undefined
         ) {
+          // f0 and f1 are fractions on primitive f, between jointA and jointB.
           const f0 = jointA.fraction1;
           const f1 = jointB.fraction0;
+          // g0 and g1 are fractions on primitive g, between jointB and jointC.
           const g0 = jointB.fraction1;
           const g1 = jointB.nextJoint.fraction0;
-          // f0 and f1 are fractions on the single primitive between these joints.
-          /*
-            if (Checker.noisy.PolygonOffset) {
-              GeometryCoreTestIO.consoleLog("joint candidate");
-              GeometryCoreTestIO.consoleLog(prettyPrint(jointA.shallowExtract()));
-              GeometryCoreTestIO.consoleLog(prettyPrint(jointB.shallowExtract()));
-              GeometryCoreTestIO.consoleLog("FRACTIONS ", { fA1: f0, fB0: f1 });
-            }
-          */
           const eliminateF = f0 >= f1 || f0 > 1.0;
           const eliminateG = (g0 !== undefined && g0 > 1.0) || (g0 !== undefined && g1 !== undefined && g0 >= g1);
-          if (eliminateF && eliminateG) {
+          if (eliminateF && eliminateG) { // collapse jointA, jointB, and jointC into a new joint
             const jointC = jointB.nextJoint;
             const newJoint: Joint = new Joint(jointA.curve0, jointC.curve1, undefined);
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointC.nextJoint);
             newJoint.annotateJointMode(options);
-            newJoint.previousJoint!.annotateJointMode(options);
+            if (newJoint.previousJoint)
+              newJoint.previousJoint.annotateJointMode(options);
             if (newJoint.nextJoint)
               newJoint.nextJoint.annotateJointMode(options);
-            /*
-            if (Checker.noisy.PolygonOffset) {
-              GeometryCoreTestIO.consoleLog(" NEW DOUBLE CUT");
-              GeometryCoreTestIO.consoleLog(prettyPrint(newJoint.shallowExtract()));
-            }
-            */
-          } else if (eliminateF) {
+            numRemoved += 2;
+            if (jointA === start || jointB === start || jointC === start)
+              start = newJoint;
+            jointA = newJoint;
+          } else if (eliminateF) { // collapse jointA and jointB into a new joint
             const newJoint: Joint = new Joint(jointA.curve0, jointB.curve1, undefined);
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointB.nextJoint);
             newJoint.annotateJointMode(options);
-            newJoint.previousJoint!.annotateJointMode(options);
-            newJoint.nextJoint!.annotateJointMode(options);
-            /*
-            if (Checker.noisy.PolygonOffset) {
-              GeometryCoreTestIO.consoleLog(" NEW JOINT");
-              GeometryCoreTestIO.consoleLog(prettyPrint(newJoint.shallowExtract()));
-            }
-          */
+            if (newJoint.previousJoint)
+              newJoint.previousJoint.annotateJointMode(options);
+            if (newJoint.nextJoint)
+              newJoint.nextJoint.annotateJointMode(options);
             numRemoved++;
-            if (jointA === start)
+            if (jointA === start || jointB === start)
               start = newJoint;
             jointA = newJoint;
-            if (numRemoved >= maxRemove) {
-              /*
-              if (Checker.noisy.PolygonOffset)
-                GeometryCoreTestIO.consoleLog(" EXIT removeDegenerates at maxRemove\n");
-              */
-              return { newStart: start, numJointRemoved: numRemoved };
-            }
           }
         }
         jointA = jointA.nextJoint;
@@ -515,18 +490,12 @@ export class PolygonWireOffsetContext {
       joint0 = state.newStart;
       if (state.numJointRemoved === 0)
         break;
-      /*
-      if (Checker.noisy.PolygonOffset) {
-        GeometryCoreTestIO.consoleLog("  POST REMOVE DEGENERATES  " + state.numJointRemoved);
-        Joint.visitJointsOnChain(joint0, (joint: Joint) => { GeometryCoreTestIO.consoleLog(prettyPrint(joint.shallowExtract())); return true; });
-      }
-      */
     }
     const chain = LineString3d.create();
     Joint.collectStrokesFromChain(joint0, chain, numPoints);  // compute offset corners (by extension/trim)
     const n = chain.packedPoints.length;
     if (n > 1) {
-      if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
+      if (chain.packedPoints.almostEqualUncheckedIndexIndex(0, n - 1))
         return Loop.create(chain);
       else
         return Path.create(chain);
@@ -599,7 +568,7 @@ export class CurveChainWireOffsetContext {
     const wrap: boolean = curves instanceof Loop;
     const offsetOptions = OffsetOptions.create(offsetDistanceOrOptions);
     const simpleOffsets: CurvePrimitive[] = [];
-    /** traverse primitives (children of curves) and create simple offsets of each primitive as an array */
+    // traverse primitives (children of curves) and create simple offsets of each primitive as an array
     for (const c of curves.children) {
       const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, offsetOptions);
       if (c1 === undefined) {
@@ -613,7 +582,7 @@ export class CurveChainWireOffsetContext {
         }
       }
     }
-    /** create joints between array elements to make offsets as a linked list (joint0) */
+    // create joints between array elements to make offsets as a linked list (joint0)
     let fragment0;
     let newJoint;
     let previousJoint;
@@ -632,10 +601,19 @@ export class CurveChainWireOffsetContext {
     }
     if (joint0 && previousJoint && curves instanceof Loop)
       Joint.link(previousJoint, joint0);
-    /** annotateChain sets some of the joints attributes (including how to extend curves or fill the gap between curves) */
+    // annotateChain sets some of the joint attributes (including how to extend curves or fill the gap between curves)
     const numOffset = simpleOffsets.length;
     Joint.annotateChain(joint0, offsetOptions.jointOptions, numOffset);
-    /** turn the Joint linked list into a CurveCollection. trimming is done in collectCurvesFromChain */
+    if (joint0) {
+      // make limited passes through the Joint chain until no self-intersections are removed
+      for (let pass = 0; pass++ < 5;) {
+        const state = Joint.removeDegeneratePrimitives(joint0, offsetOptions.jointOptions, numOffset);
+        joint0 = state.newStart;
+        if (state.numJointRemoved === 0)
+          break;
+      }
+    }
+    // turn the Joint linked list into a CurveCollection. trimming is done in collectCurvesFromChain
     const outputCurves: CurvePrimitive[] = [];
     Joint.collectCurvesFromChain(joint0, outputCurves, numOffset);
     return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap, true);

@@ -9,19 +9,19 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeFunction, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { NodeXYZUV } from "../../topology/HalfEdgeNodeXYZUV";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
 import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Checker } from "../Checker";
 import { OutputManager } from "../clipping/ClipPlanes.test";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function logGraph(graph: HalfEdgeGraph, title: any): void {
   GeometryCoreTestIO.consoleLog(` == begin == ${title}`);
@@ -109,8 +109,8 @@ export class GraphChecker {
   }
   public static dumpGraph(
     graph: HalfEdgeGraph | undefined,
-    formatNode: NodeFunction = (node) => HalfEdge.nodeToIdXYString(node),
-    formatNodeWithoutCoordinates: NodeFunction = (node) => HalfEdge.nodeToId(node),
+    formatNode: HalfEdgeFunction = (node) => HalfEdge.nodeToIdXYString(node),
+    formatNodeWithoutCoordinates: HalfEdgeFunction = (node) => HalfEdge.nodeToId(node),
   ) {
     if (graph === undefined) {
       GeometryCoreTestIO.consoleLog("**** EMPTY GRAPH ****");
@@ -118,12 +118,12 @@ export class GraphChecker {
     }
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();
-    const faceData = [];
+    GeometryCoreTestIO.consoleLog(`**FACE LOOPS: ${faces.length}`);
     for (const f of faces) {
-      faceData.push(f.collectAroundFace(formatNode));
+      const nodes = f.collectAroundFace(formatNode);
+      GeometryCoreTestIO.consoleLog(`[face loop with ${nodes.length} nodes]`);
+      GeometryCoreTestIO.consoleLog(nodes);
     }
-    GeometryCoreTestIO.consoleLog(`**FACE LOOPS ${faces.length}`);
-    GeometryCoreTestIO.consoleLog(faceData);
 
     const vData = [];
     for (const v of vertices) {
@@ -134,7 +134,7 @@ export class GraphChecker {
       } else
         vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
-    GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS ${vertices.length}`);
+    GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS: ${vertices.length}`);
     GeometryCoreTestIO.consoleLog(vData);
 
   }
@@ -487,9 +487,9 @@ describe("VUGraph", () => {
     ck.testUndefined(q1);
     ck.testTrue(q instanceof HalfEdge && q === y0Edge);
     const fm = HalfEdge.horizontalScanFraction(y1Edge, ym);
-    ck.testTrue(Number.isFinite(fm as number) && Geometry.isSameCoordinate(f, fm as number));
+    ck.testTrue(Number.isFinite(fm) && Geometry.isSameCoordinate(f, fm as number));
     const f0 = HalfEdge.horizontalScanFraction(y1Edge, y0);
-    ck.testTrue(Number.isFinite(f0 as number) && Geometry.isSameCoordinate(0, f0 as number));
+    ck.testTrue(Number.isFinite(f0) && Geometry.isSameCoordinate(0, f0 as number));
     expect(ck.getNumErrors()).toBe(0);
   });
   it("CoordinatesOnEdges", () => {
@@ -719,9 +719,9 @@ describe("VUGraph", () => {
     ck.testExactNumber(3, graph.countFaceLoops());
     ck.testExactNumber(4, graph.countVertexLoops());
     const walker = HalfEdgePositionDetail.createEdgeAtFraction(edgeA, 0.4);
-    ck.testTrue(walker.isEdge, "start on edge");
+    ck.testTrue(walker.isEdge(), "start on edge");
     markPosition(outputManager, walker);
-    const context = InsertAndRetriangulateContext.create(graph);
+    const context = InsertAndRetriangulateContext.create(graph)!;
     moveAndMark(ck, outputManager, context, walker, pointP, HalfEdgeTopo.Face);
     moveAndMark(ck, outputManager, context, walker, pointQ, HalfEdgeTopo.Face);
     moveAndMark(ck, outputManager, context, walker, pointA, HalfEdgeTopo.Vertex);
@@ -752,16 +752,16 @@ describe("VUGraph", () => {
 function markPosition(out: OutputManager, p: HalfEdgePositionDetail | undefined) {
   const markerSize = 0.04;
   if (p) {
-    if (p.isFace)
+    if (p.isFace())
       out.drawPlus(p.clonePoint(), markerSize);
-    else if (p.isEdge) {
-      const nodeA = p.node!;
+    else if (p.isEdge()) {
+      const nodeA = p.node;
       const edgeVector = nodeA.getVector3dAlongEdge();
       const perpVector = edgeVector.unitPerpendicularXY();
       const edgePoint = p.clonePoint();
       out.drawLines([edgePoint, edgePoint.plusXYZ(markerSize * perpVector.x, markerSize * perpVector.y)]);
-    } else if (p.isVertex) {
-      const nodeA = p.node!;
+    } else if (p.isVertex()) {
+      const nodeA = p.node;
       const xyz = p.clonePoint();
       const edgeVectorA = nodeA.getVector3dAlongEdge();
       const edgeVectorB = nodeA.facePredecessor.getVector3dAlongEdge();
@@ -785,7 +785,7 @@ function moveAndMark(
   out.drawLines([xyz0, position.clonePoint()]);
   markPosition(out, position);
   if (expectedTopo !== undefined) {
-    ck.testExactNumber(expectedTopo as number, position.getTopo());
+    ck.testExactNumber(expectedTopo, position.topo);
   } else {
     ck.testTrue(position.isExteriorTarget, "expect exterior target setting");
   }

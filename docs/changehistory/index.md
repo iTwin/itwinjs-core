@@ -3,26 +3,27 @@
 
 Table of contents:
 
-- [Revert timeline changes](#revert-timeline-changes)
-- [Display](#display)
-  - [Instancing](#instancing)
-  - [Overriding line color](#overriding-line-color)
-  - [Context Reality model visibility](#context-reality-model-visibility)
-  - [Contour Display](#contour-display)
-- [Interactive Tools](#interactive-tools)
-  - [Element Locate](#element-locate)
-  - [Snapping within section drawings](#snapping-within-section-drawings)
-- [Presentation](#presentation)
-  - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
-- [Quantity](#quantity)
-- [Node 22 support](#node-22-support)
-- [Electron 33 support](#electron-33-support)
-- [API deprecations](#api-deprecations)
-  - [@itwin/appui-abstract](#itwinappui-abstract)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/core-quantity](#itwincore-quantity)
-  - [@itwin/presentation-common](#itwinpresentation-common)
+- [4.10.0 Change Notes](#4100-change-notes)
+  - [Revert timeline changes](#revert-timeline-changes)
+  - [Display](#display)
+    - [Instancing](#instancing)
+    - [Overriding line color](#overriding-line-color)
+    - [Context Reality model visibility](#context-reality-model-visibility)
+    - [Contour Display](#contour-display)
+  - [Interactive Tools](#interactive-tools)
+    - [Element Locate](#element-locate)
+    - [Snapping within section drawings](#snapping-within-section-drawings)
+  - [Presentation](#presentation)
+    - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+  - [Quantity](#quantity)
+  - [Node 22 support](#node-22-support)
+  - [Electron 33 support](#electron-33-support)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/core-quantity](#itwincore-quantity)
+    - [@itwin/presentation-common](#itwinpresentation-common)
 
 ## Revert timeline changes
 
@@ -104,7 +105,7 @@ Here is a sample screenshot of applying some contour display settings to a terra
 
 After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used to accept some elements that were obscured by another element. Previously Reset would only choose between visible elements within the locate aperture.
 
-![locate example](./element-locate.png "Example of using reset to accept obscured element")
+![locate example](./assets/element-locate.png "Example of using reset to accept obscured element")
 
 ### Snapping within section drawings
 

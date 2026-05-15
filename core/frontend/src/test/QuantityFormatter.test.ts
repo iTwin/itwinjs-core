@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import { ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
+import { FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
-import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
+import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
@@ -451,6 +451,97 @@ describe("Quantity formatter", async () => {
     expect(imperialFormattedValue).toBe("1076391.0417 ft²");
   });
 
+  it("creates a formatterSpec given a persistence unit name and a formatProps", async () => {
+    const formatProps = {
+      type: "Decimal",
+      precision: 2,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      decimalSeparator: ".",
+      thousandSeparator: ",",
+      uomSeparator: " ",
+      stationSeparator: "+",
+    };
+    const unitName = "Units.MILE";
+    const formatterSpec = await quantityFormatter.createFormatterSpec({
+      persistenceUnitName: "Units.MILE",
+      formatProps,
+      formatName: "mile",
+    });
+    expect(formatterSpec).toBeDefined();
+    expect(formatterSpec.name).toBe("mile_format_spec");
+    expect(formatterSpec.persistenceUnit.name).toBe(unitName);
+  });
+
+  it("creates a parserSpec given a persistence unit name and a formatProps", async () => {
+    const formatProps = {
+      type: "Decimal",
+      precision: 2,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      decimalSeparator: ".",
+      thousandSeparator: ",",
+      uomSeparator: " ",
+      stationSeparator: "+",
+    };
+    const unitName = "Units.MILE";
+    const parserSpec = await quantityFormatter.createParserSpec({
+      persistenceUnitName: "Units.MILE",
+      formatProps,
+      formatName: "mile",
+    });
+    expect(parserSpec).toBeDefined();
+    expect(parserSpec.format.name).toBe("mile");
+    expect(parserSpec.outUnit.name).toBe(unitName);
+  });
+
+  it("formats a quantity given a value, a persistence unit name and a koq name", async () => {
+    const quantityString = await quantityFormatter.formatQuantity({
+      value: 0.3048,
+      valueUnitName: "Units.M",
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
+    });
+
+    expect(quantityString).toBe("1'-0\"");
+  });
+
+  it("parses a quantity given a value, a persistence unit name and a koq name", async () => {
+    const parsedQuantity = await quantityFormatter.parseToQuantityValue({
+      value: "1'-0\"",
+      valueUnitName: "Units.M",
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
+    });
+
+    expect(parsedQuantity).toBeDefined();
+    expect(Parser.isParsedQuantity(parsedQuantity)).toBe(true);
+    if (Parser.isParsedQuantity(parsedQuantity))
+      expect(parsedQuantity.value).toBe(0.3048);
+  });
+
+  it("should be able to get formatSpec for DefaultToolsUnits.LENGTH_COORDINATE", async () => {
+    const specsMap = quantityFormatter.getSpecsByName("DefaultToolsUnits.LENGTH_COORDINATE");
+    expect(specsMap).toBeDefined();
+    const formatSpec = specsMap?.get("Units.M");
+    expect(formatSpec).toBeDefined();
+    expect(formatSpec?.formatterSpec).toBeDefined();
+    expect(formatSpec?.parserSpec).toBeDefined();
+
+    // Verify that the formatSpec can be used for formatting
+    const testValue = 1000.0; // 1000 meters
+    const formattedValue = quantityFormatter.formatQuantity(testValue, formatSpec?.formatterSpec);
+    expect(formattedValue).toBeDefined();
+    expect(typeof formattedValue).toBe("string");
+
+    // Verify that the parserSpec can be used for parsing
+    const parsedValue = quantityFormatter.parseToQuantityValue(formattedValue, formatSpec?.parserSpec);
+    expect(parsedValue.ok).toBe(true);
+    if (Parser.isParsedQuantity(parsedValue)) {
+      expect(withinTolerance(parsedValue.value, testValue, 0.01)).toBe(true);
+    }
+  });
+
   describe("Test native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
@@ -499,9 +590,70 @@ describe("Quantity formatter", async () => {
 
       // Exact values do not exist in document
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 0.3048006, "Units.M");
-      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 79200.0 / 3937.0, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
+    });
+  });
+
+  describe("FormatsProviderManager", async () => {
+
+    it("Should raise formatsChanged event when updating formatsProvider", () => {
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      const testProvider = new QuantityTypeFormatsProvider();
+      IModelApp.formatsProvider = testProvider;
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should raise formatsChanged event when calling resetFormatsProvider", () => {
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      IModelApp.resetFormatsProvider();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should raise formatsChanged event when underlying formatsProvider raises formatsChanged event", async () => {
+
+      const testProvider = new QuantityTypeFormatsProvider();
+      IModelApp.formatsProvider = testProvider;
+
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+      testProvider.onFormatsChanged.raiseEvent({ formatsChanged: ["foobar"]});
+
+
+      IModelApp.resetFormatsProvider();
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["foobar"] });
+      expect(spy.mock.calls[1][0]).toEqual({ formatsChanged: "all" });
+
+    });
+
+    it("should not leak listeners when formatsProvider is replaced multiple times", () => {
+      const provider1 = new QuantityTypeFormatsProvider();
+      const provider2 = new QuantityTypeFormatsProvider();
+
+      IModelApp.formatsProvider = provider1;
+      IModelApp.formatsProvider = provider2;
+
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      // Raising on provider1 should NOT fire — the old listener was removed
+      provider1.onFormatsChanged.raiseEvent({ formatsChanged: ["old"] });
+      expect(spy).toHaveBeenCalledTimes(0);
+
+      // Raising on provider2 SHOULD fire — it's the current provider
+      provider2.onFormatsChanged.raiseEvent({ formatsChanged: ["new"] });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["new"] });
     });
   });
 });
@@ -566,10 +718,10 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
     await testFormatting(QuantityType.LatLong, 0.2645, `15°9'17.0412"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
 
     await quantityFormatter.setActiveUnitSystem("metric");
     await testFormatting(QuantityType.Length, 1000.0, `1000 m`);
@@ -589,10 +741,10 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "10763.9104 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
 
     await quantityFormatter.setActiveUnitSystem("usSurvey");
     await testFormatting(QuantityType.Length, 1000.0, `3280.8333 ft`);
@@ -600,9 +752,706 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Area, 1000.0, "10763.8674 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.83 ft");
     await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
-    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8333 ft");
+    await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.83 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.83");
     await testFormatting(QuantityType.Volume, 1000.0, "35314.4548 ft³");
+  });
+});
+
+describe("Reload queue and onFormattingReady", () => {
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("onFormattingReady fires after onInitialized()", async () => {
+    const qf = new QuantityFormatter();
+    const spy = vi.fn();
+    qf.onFormattingReady.addListener(spy);
+    await qf.onInitialized();
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("isReady transitions from false to true after onInitialized()", async () => {
+    const qf = new QuantityFormatter();
+    expect(qf.isReady).toBe(false);
+    await qf.onInitialized();
+    expect(qf.isReady).toBe(true);
+  });
+
+  it("whenInitialized resolves after onInitialized()", async () => {
+    const qf = new QuantityFormatter();
+    let resolved = false;
+    const promise = qf.whenInitialized.then(() => { resolved = true; });
+    expect(resolved).toBe(false);
+    await qf.onInitialized();
+    await promise;
+    expect(resolved).toBe(true);
+  });
+
+  it("onFormattingReady fires after setActiveUnitSystem()", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    const spy = vi.fn();
+    qf.onFormattingReady.addListener(spy);
+    await qf.setActiveUnitSystem("metric");
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("setUnitsProvider triggers onFormattingReady", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    const spy = vi.fn();
+    qf.onFormattingReady.addListener(spy);
+    await qf.setUnitsProvider(qf.unitsProvider);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("onActiveFormattingUnitSystemChanged fires AFTER onFormattingReady", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    const callOrder: string[] = [];
+    qf.onActiveFormattingUnitSystemChanged.addListener(() => { callOrder.push("systemChanged"); });
+    qf.onFormattingReady.addListener(() => { callOrder.push("formattingReady"); });
+    await qf.setActiveUnitSystem("metric");
+    expect(callOrder).toEqual(["formattingReady", "systemChanged"]);
+  });
+
+  it("onActiveFormattingUnitSystemChanged deferred when reload already in-flight", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    const callOrder: string[] = [];
+    qf.onActiveFormattingUnitSystemChanged.addListener(() => { callOrder.push("systemChanged"); });
+    qf.onFormattingReady.addListener(() => { callOrder.push("formattingReady"); });
+
+    // Start a full reload (in-flight) without awaiting
+    const fullReload = qf.setUnitsProvider(qf.unitsProvider);
+    // While the full reload is running, request a unit system change — scheduleReload returns
+    // immediately because _reloadInFlight is true, so the emit must be deferred.
+    const systemChange = qf.setActiveUnitSystem("metric");
+
+    await fullReload;
+    await systemChange;
+
+    // systemChanged must still come after formattingReady, even though setActiveUnitSystem
+    // returned before the reload that processes it actually ran.
+    const readyIndices = callOrder.reduce<number[]>((acc, v, i) => { if (v === "formattingReady") acc.push(i); return acc; }, []);
+    const changedIndices = callOrder.reduce<number[]>((acc, v, i) => { if (v === "systemChanged") acc.push(i); return acc; }, []);
+    expect(changedIndices.length).toBe(1);
+    expect(readyIndices.length).toBeGreaterThanOrEqual(1);
+    // The system-changed event must fire after the last formattingReady
+    expect(changedIndices[0]).toBeGreaterThan(readyIndices[readyIndices.length - 1]);
+  });
+
+  describe("Composite-keyed spec registry", () => {
+    const simpleDecimalFormat = {
+      type: "Decimal" as const,
+      precision: 4,
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
+    };
+
+    it("same KoQ with two different persistence units are both retrievable", async () => {
+      const qf = new QuantityFormatter();
+      await qf.onInitialized();
+      // Register same KoQ name with two different persistence units
+      await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat });
+      await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.FT", formatProps: simpleDecimalFormat });
+      const entry1 = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M" });
+      const entry2 = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.FT" });
+      expect(entry1).toBeDefined();
+      expect(entry2).toBeDefined();
+      expect(entry1?.formatterSpec.persistenceUnit.name).toBe("Units.M");
+      expect(entry2?.formatterSpec.persistenceUnit.name).toBe("Units.FT");
+    });
+
+    it("re-registering same KoQ + persistence unit updates the entry", async () => {
+      const qf = new QuantityFormatter();
+      await qf.onInitialized();
+      await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat });
+      const entry1 = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M" });
+      expect(entry1).toBeDefined();
+      // Re-register — should update, not duplicate
+      await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat });
+      const entry2 = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M" });
+      expect(entry2).toBeDefined();
+      // The inner map should still only have one entry
+      const innerMap = qf.getSpecsByName("TestKoQ.LENGTH");
+      expect(innerMap?.size).toBe(1);
+    });
+  });
+});
+
+describe("FormatSpecHandle", () => {
+  const testFormatProps = {
+    type: "Decimal",
+    precision: 3,
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    decimalSeparator: ".",
+    uomSeparator: " ",
+  };
+
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("holds current spec after initialization", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    expect(handle.formatterSpec).toBeDefined();
+    expect(handle.parserSpec).toBeDefined();
+    expect(handle.koqName).toBe("TestKoQ.LENGTH");
+    expect(handle.persistenceUnit).toBe("Units.M");
+    handle[Symbol.dispose]();
+  });
+
+  it("format() returns formatted string", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    const result = handle.format(1.5);
+    expect(typeof result).toBe("string");
+    expect(result).not.toBe("1.5"); // Should be formatted with units, not raw toString
+    handle[Symbol.dispose]();
+  });
+
+  it("format() returns value.toString() fallback when spec not loaded", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    const handle = qf.getFormatSpecHandle("NonExistent.KOQ", "Units.M");
+    expect(handle.format(42)).toBe("42");
+    handle[Symbol.dispose]();
+  });
+
+  it("dispose is idempotent", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    expect(handle.formatterSpec).toBeDefined();
+    handle[Symbol.dispose]();
+    handle[Symbol.dispose](); // Should not throw
+    expect(handle.formatterSpec).toBeUndefined();
+  });
+
+  it("[Symbol.dispose] works", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    expect(handle.formatterSpec).toBeDefined();
+    handle[Symbol.dispose]();
+    expect(handle.formatterSpec).toBeUndefined();
+  });
+
+  it("listener count stays stable after create+dispose cycles", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
+
+    const initialCount = qf.onFormattingReady.numberOfListeners;
+    for (let i = 0; i < 10; i++) {
+      const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+      handle[Symbol.dispose]();
+    }
+    expect(qf.onFormattingReady.numberOfListeners).toBe(initialCount);
+  });
+
+  it("FormatSpecHandle reflects registry additions without waiting for onFormattingReady", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    // Create handle before registry is populated — specs should be undefined
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    expect(handle.formatterSpec).toBeUndefined();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
+
+    expect(handle.formatterSpec).toBeDefined();
+    expect(handle.parserSpec).toBeDefined();
+    handle[Symbol.dispose]();
+  });
+});
+
+describe("Failed reload recovery (Issue 5)", () => {
+  it("restores isReady if reload fails after a successful init", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    expect(qf.isReady).toBe(true);
+
+    // Spy on loadFormatAndParsingMapsForSystem to force it to throw
+    const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
+    let shouldThrow = true;
+    (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
+      if (shouldThrow) {
+        throw new Error("simulated reload failure");
+      }
+      return originalLoad(...args);
+    };
+
+    // setActiveUnitSystem triggers scheduleReload → calls loadFormatAndParsingMapsForSystem
+    await qf.setActiveUnitSystem("metric");
+
+    // After failure: isReady should be restored (stale-but-usable)
+    expect(qf.isReady).toBe(true);
+
+    // Verify that a successful reload still works after recovery
+    shouldThrow = false;
+    await qf.setActiveUnitSystem("imperial");
+    expect(qf.isReady).toBe(true);
+  });
+
+  it("isReady stays false if first init fails (was never ready)", async () => {
+    const qf = new QuantityFormatter();
+    // Override loadFormatAndParsingMapsForSystem before onInitialized
+    (qf as any).loadFormatAndParsingMapsForSystem = async function () {
+      throw new Error("simulated first load failure");
+    };
+
+    // Suppress the error to avoid noisy test output
+    await qf.onInitialized();
+
+    // First load failed, so isReady should stay false (no stale data to fall back on)
+    expect(qf.isReady).toBe(false);
+  });
+});
+
+describe("Multi-system KoQ registry", () => {
+  const simpleDecimalFormat = {
+    type: "Decimal" as const,
+    precision: 4,
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
+  };
+
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("getSpecsByNameAndUnit with explicit system returns system-specific entry", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+
+    const metricEntry = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
+    const imperialEntry = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", system: "imperial" });
+    expect(metricEntry).toBeDefined();
+    expect(imperialEntry).toBeDefined();
+    // Both entries are distinct objects in the registry
+    expect(metricEntry).not.toBe(imperialEntry);
+  });
+
+  it("getSpecsByNameAndUnit without system returns active system entry", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    // Active system defaults to "imperial"
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+
+    // No system param → returns active system
+    const entry = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M" });
+    const imperialEntry = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", system: "imperial" });
+    expect(entry).toBeDefined();
+    expect(entry).toBe(imperialEntry);
+  });
+
+  it("getSpecsByName returns only active system projection", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.FT", formatProps: simpleDecimalFormat, system: "imperial" });
+
+    const nameMap = qf.getSpecsByName("TestKoQ.LENGTH");
+    expect(nameMap).toBeDefined();
+    // Active system is "imperial", so should see both persistence units for imperial
+    expect(nameMap!.has("Units.M")).toBe(true);
+    expect(nameMap!.has("Units.FT")).toBe(true);
+  });
+
+  it("getSpecsByNameAndUnit returns undefined for unregistered system", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+    const entry = qf.getSpecsByNameAndUnit({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", system: "usCustomary" });
+    expect(entry).toBeUndefined();
+  });
+
+  it("FormatSpecHandle with explicit system returns pinned entry", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M", "metric");
+    expect(handle.system).toBe("metric");
+    expect(handle.formatterSpec).toBeDefined();
+    handle[Symbol.dispose]();
+  });
+
+  it("FormatSpecHandle with no system uses active system", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    expect(handle.system).toBeUndefined();
+    expect(handle.formatterSpec).toBeDefined();
+    handle[Symbol.dispose]();
+  });
+
+  it("FormatSpecHandle read inside onFormattingReady observes current system state", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+
+    const handleRef: { current: ReturnType<typeof qf.getFormatSpecHandle> | undefined } = { current: undefined };
+    const observedSpecs: Array<FormatterSpec | undefined> = [];
+    const removeReadyListener = qf.onFormattingReady.addListener(() => {
+      if (!handleRef.current)
+        throw new Error("Expected FormatSpecHandle to be created before onFormattingReady fired");
+
+      observedSpecs.push(handleRef.current.formatterSpec);
+    });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    handleRef.current = handle;
+    const imperialFormatterSpec = qf.getSpecsByNameAndUnit({
+      name: "TestKoQ.LENGTH",
+      persistenceUnitName: "Units.M",
+      system: "imperial",
+    })?.formatterSpec;
+    const metricFormatterSpec = qf.getSpecsByNameAndUnit({
+      name: "TestKoQ.LENGTH",
+      persistenceUnitName: "Units.M",
+      system: "metric",
+    })?.formatterSpec;
+
+    expect(imperialFormatterSpec).toBeDefined();
+    expect(metricFormatterSpec).toBeDefined();
+    expect(handle.formatterSpec).toBe(imperialFormatterSpec);
+
+    await qf.setActiveUnitSystem("metric");
+
+    expect(observedSpecs).toHaveLength(1);
+    expect(observedSpecs[0]).toBe(metricFormatterSpec);
+    expect(observedSpecs[0]).not.toBe(imperialFormatterSpec);
+
+    removeReadyListener();
+    handle[Symbol.dispose]();
+  });
+});
+
+describe("onBeforeFormattingReady collector", () => {
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("onBeforeFormattingReady fires before onFormattingReady", async () => {
+    const qf = new QuantityFormatter();
+    const callOrder: string[] = [];
+
+    qf.onBeforeFormattingReady.addListener(() => {
+      callOrder.push("before");
+    });
+    qf.onFormattingReady.addListener(() => {
+      callOrder.push("ready");
+    });
+
+    await qf.onInitialized();
+    expect(callOrder).toEqual(["before", "ready"]);
+  });
+
+  it("collector awaits provider promises before ready fires", async () => {
+    const qf = new QuantityFormatter();
+    let providerDone = false;
+
+    qf.onBeforeFormattingReady.addListener((collector: FormattingReadyCollector) => {
+      collector.addPendingWork(new Promise<void>((resolve) => {
+        setTimeout(() => {
+          providerDone = true;
+          resolve();
+        }, 50);
+      }));
+    });
+
+    const readySpy = vi.fn();
+    qf.onFormattingReady.addListener(readySpy);
+
+    await qf.onInitialized();
+    // Provider should have completed before ready fires
+    expect(providerDone).toBe(true);
+    expect(readySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("collector with rejected promise still fires ready", async () => {
+    const qf = new QuantityFormatter();
+
+    qf.onBeforeFormattingReady.addListener((collector: FormattingReadyCollector) => {
+      collector.addPendingWork(Promise.reject(new Error("provider failed")));
+    });
+
+    const readySpy = vi.fn();
+    qf.onFormattingReady.addListener(readySpy);
+
+    // Suppress console.warn from collector
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await qf.onInitialized();
+    warnSpy.mockRestore();
+
+    // Ready should still fire despite the rejection
+    expect(readySpy).toHaveBeenCalledTimes(1);
+    expect(qf.isReady).toBe(true);
+  });
+
+  it("collector with no pending work resolves immediately", async () => {
+    const qf = new QuantityFormatter();
+    const readySpy = vi.fn();
+
+    qf.onBeforeFormattingReady.addListener(() => {
+      // Provider listens but adds no work
+    });
+    qf.onFormattingReady.addListener(readySpy);
+
+    await qf.onInitialized();
+    expect(readySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("multiple providers can add work to the same collector", async () => {
+    const qf = new QuantityFormatter();
+    const completionOrder: string[] = [];
+
+    qf.onBeforeFormattingReady.addListener((collector: FormattingReadyCollector) => {
+      collector.addPendingWork(new Promise<void>((resolve) => {
+        setTimeout(() => {
+          completionOrder.push("provider1");
+          resolve();
+        }, 30);
+      }));
+    });
+
+    qf.onBeforeFormattingReady.addListener((collector: FormattingReadyCollector) => {
+      collector.addPendingWork(new Promise<void>((resolve) => {
+        setTimeout(() => {
+          completionOrder.push("provider2");
+          resolve();
+        }, 10);
+      }));
+    });
+
+    await qf.onInitialized();
+    // Both providers should complete before ready
+    expect(completionOrder).toContain("provider1");
+    expect(completionOrder).toContain("provider2");
+  });
+});
+
+describe("Deferred unit-system-changed emit (race condition validation)", () => {
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("emits onActiveFormattingUnitSystemChanged only after isReady is true (deferred path)", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    expect(qf.isReady).toBe(true);
+
+    let readyDuringEmit: boolean | undefined;
+    qf.onActiveFormattingUnitSystemChanged.addListener(() => {
+      readyDuringEmit = qf.isReady;
+    });
+
+    // Exercise the actual deferred emit path: formatsChanged with impliedUnitSystem
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+    await new Promise<void>((resolve) => { qf.onFormattingReady.addListener(resolve); });
+
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: "all", impliedUnitSystem: "metric" });
+    await new Promise<void>((resolve) => { qf.onFormattingReady.addListener(resolve); });
+
+    expect(readyDuringEmit).toBe(true);
+  });
+
+  it("only the winning reload's impliedUnitSystem fires the changed event (latest-wins)", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    expect(qf.isReady).toBe(true);
+    // Start at imperial
+    expect(qf.activeUnitSystem).toBe("imperial");
+
+    const systemChanges: string[] = [];
+    qf.onActiveFormattingUnitSystemChanged.addListener((args) => {
+      systemChanges.push(args.system);
+    });
+
+    // Fire two formatsChanged events rapidly — the first should be superseded by the second.
+    // We trigger this via the formatsProvider's onFormatsChanged event with impliedUnitSystem.
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for the initial "all" reload to settle
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+    systemChanges.length = 0; // clear any emissions from the provider swap
+
+    // Now fire two rapid events with different implied systems
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: "all", impliedUnitSystem: "usCustomary" });
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: "all", impliedUnitSystem: "metric" });
+
+    // Wait for the reload queue to drain
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // The first reload (usCustomary) should be superseded by the second (metric).
+    // Only the winning reload's system should be emitted, and it should be "metric".
+    expect(qf.activeUnitSystem).toBe("metric");
+    // The deferred emit should fire exactly once for the winning reload
+    expect(systemChanges).toEqual(["metric"]);
+  });
+
+  it("does not emit onActiveFormattingUnitSystemChanged when impliedUnitSystem is undefined", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    const spy = vi.fn();
+    qf.onActiveFormattingUnitSystemChanged.addListener(spy);
+
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for the initial "all" reload to settle
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+    spy.mockClear();
+
+    // Fire a formatsChanged event WITHOUT impliedUnitSystem
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: ["some-format"] });
+
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // No unit system change should have been emitted
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe("_rebuildRegistryFromProvider", () => {
+  const simpleDecimalFormat = {
+    type: "Decimal" as const,
+    precision: 4,
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    composite: { includeZero: true, units: [{ name: "Units.M", label: "m" }] },
+  };
+
+  beforeAll(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
+  afterAll(async () => {
+    await IModelApp.shutdown();
+  });
+
+  it("rebuilds registry when formatsProvider raises formatsChanged with 'all'", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    // Add a custom entry to the registry
+    await qf.addFormattingSpecsToRegistry({
+      name: "TestKoQ.CUSTOM",
+      persistenceUnitName: "Units.M",
+      formatProps: simpleDecimalFormat,
+      system: "metric",
+    });
+    const entryBefore = qf.getSpecsByNameAndUnit({ name: "TestKoQ.CUSTOM", persistenceUnitName: "Units.M", system: "metric" });
+    expect(entryBefore).toBeDefined();
+
+    // Trigger a formatsChanged "all" event — the provider returns undefined for our custom name,
+    // so the entry should be removed from the registry
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for reload to finish
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // Our custom KoQ is not in QuantityTypeFormatsProvider, so _rebuildRegistryFromProvider
+    // should have removed it (anySystemHadFormat === false → delete from registry)
+    const entryAfter = qf.getSpecsByNameAndUnit({ name: "TestKoQ.CUSTOM", persistenceUnitName: "Units.M", system: "metric" });
+    expect(entryAfter).toBeUndefined();
+  });
+
+  it("rebuilds only named formats when formatsChanged is a string array", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    // The default initialization creates entries for DefaultToolsUnits.LENGTH, etc.
+    const lengthBefore = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
+    expect(lengthBefore).toBeDefined();
+
+    const angleBefore = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
+    expect(angleBefore).toBeDefined();
+
+    // Create a provider and trigger a formatsChanged with only "DefaultToolsUnits.LENGTH"
+    const provider = new QuantityTypeFormatsProvider();
+    IModelApp.formatsProvider = provider;
+
+    // Wait for "all" reload
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // Now fire a targeted change event for just LENGTH
+    provider.onFormatsChanged.raiseEvent({ formatsChanged: ["DefaultToolsUnits.LENGTH"] });
+
+    await new Promise<void>((resolve) => {
+      qf.onFormattingReady.addListener(resolve);
+    });
+
+    // Both should still exist (the provider returns formats for both)
+    const lengthAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M", system: "metric" });
+    const angleAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
+    expect(lengthAfter).toBeDefined();
+    expect(angleAfter).toBeDefined();
   });
 });

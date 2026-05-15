@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ClipPrimitive } from "../../clipping/ClipPrimitive";
-import { ClipUtilities } from "../../clipping/ClipUtils";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
+import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveTypes";
 import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -19,7 +21,10 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../../curve/UnionRegion";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -27,10 +32,11 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 
 describe("ParityRegionSweep", () => {
   it("TriangleClip", () => {
@@ -86,6 +92,57 @@ describe("ParityRegionSweep", () => {
 });
 
 describe("ClipUtilities", () => {
+  function rangeOfGeometry(geometry: GeometryQuery[]): Range3d {
+    const range = Range3d.createNull();
+    for (const g of geometry)
+      range.extendRange(g.range());
+    return range;
+  }
+
+  function exerciseClipper(ck: Checker, allGeometry: GeometryQuery[], outerRange: Range3d, clipper: ConvexClipPlaneSet,
+    xy0: Point2d) {
+    const clipperLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, outerRange, true, false, true);
+    const rangeLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, outerRange, false, true, true);
+
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
+    xy0.y += 2;
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperLoops, xy0.x, xy0.y);
+    xy0.y += 2;
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeLoops, xy0.x, xy0.y);
+
+    const range100 = ClipUtilities.rangeOfClipperIntersectionWithRange(clipper, outerRange, false);
+    const range101 = rangeOfGeometry(clipperLoops.concat(rangeLoops));
+    ck.testRange3d(range100, range101);
+    xy0.y += 3;
+    const outerClipSet = ClipUtilities.createComplementaryClips(clipper);
+    const outerLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(outerClipSet, outerRange, true, false);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerLoops, xy0.x, xy0.y);
+    xy0.y += 3;
+    for (const cell of outerClipSet.convexSets) {
+      const loops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(cell, outerRange, true, false);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, xy0.x, xy0.y);
+      xy0.y += 1.5;
+    }
+    // to get coverage .. we expect that outer clip set to be the full range . . .
+    const range102 = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClipSet, outerRange, false);
+    ck.testRange3d(range102, outerRange, "complement set range is full range");
+    ck.testTrue(ClipUtilities.doesClipperIntersectRange(outerClipSet, outerRange));
+
+    const innerPrimitive = ClipPrimitive.createCapture(clipper);
+    const range103 = ClipUtilities.rangeOfClipperIntersectionWithRange(innerPrimitive, outerRange, false);
+    ck.testRange3d(range103, range100, "clipper buried in ClipPrimitive");
+    ck.testTrue(ClipUtilities.doesClipperIntersectRange(innerPrimitive, outerRange));
+
+    const innerVector = ClipVector.create([innerPrimitive]);
+    const range104 = ClipUtilities.rangeOfClipperIntersectionWithRange(innerVector, outerRange, false);
+    ck.testRange3d(range104, range100, "clipper buried in ClipVector");
+    ck.testTrue(ClipUtilities.doesClipperIntersectRange(innerVector, outerRange));
+  }
+
   it("ConvexClipPlaneSetComplement", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -147,227 +204,7 @@ describe("ClipUtilities", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ConvexClipPlaneSetComplement");
     expect(ck.getNumErrors()).toBe(0);
   });
-});
-
-function rangeOfGeometry(geometry: GeometryQuery[]): Range3d {
-  const range = Range3d.createNull();
-  for (const g of geometry)
-    range.extendRange(g.range());
-  return range;
-}
-
-function exerciseClipper(ck: Checker, allGeometry: GeometryQuery[], outerRange: Range3d, clipper: ConvexClipPlaneSet,
-  xy0: Point2d) {
-  const clipperLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, outerRange, true, false, true);
-  const rangeLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, outerRange, false, true, true);
-
-  GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
-  xy0.y += 2;
-  GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperLoops, xy0.x, xy0.y);
-  xy0.y += 2;
-  GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeLoops, xy0.x, xy0.y);
-
-  const range100 = ClipUtilities.rangeOfClipperIntersectionWithRange(clipper, outerRange, false);
-  const range101 = rangeOfGeometry(clipperLoops.concat(rangeLoops));
-  ck.testRange3d(range100, range101);
-  xy0.y += 3;
-  const outerClipSet = ClipUtilities.createComplementaryClips(clipper);
-  const outerLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(outerClipSet, outerRange, true, false);
-  GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerLoops, xy0.x, xy0.y);
-  xy0.y += 3;
-  for (const cell of outerClipSet.convexSets) {
-    const loops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(cell, outerRange, true, false);
-    GeometryCoreTestIO.captureRangeEdges(allGeometry, outerRange, xy0.x, xy0.y);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, xy0.x, xy0.y);
-    xy0.y += 1.5;
-  }
-  // to get coverage .. we expect that outer clip set to be the full range . . .
-  const range102 = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClipSet, outerRange, false);
-  ck.testRange3d(range102, outerRange, "complement set range is full range");
-  ck.testTrue(ClipUtilities.doesClipperIntersectRange(outerClipSet, outerRange));
-
-  const innerPrimitive = ClipPrimitive.createCapture(clipper);
-  const range103 = ClipUtilities.rangeOfClipperIntersectionWithRange(innerPrimitive, outerRange, false);
-  ck.testRange3d(range103, range100, "clipper buried in ClipPrimitive");
-  ck.testTrue(ClipUtilities.doesClipperIntersectRange(innerPrimitive, outerRange));
-
-  const innerVector = ClipVector.create([innerPrimitive]);
-  const range104 = ClipUtilities.rangeOfClipperIntersectionWithRange(innerVector, outerRange, false);
-  ck.testRange3d(range104, range100, "clipper buried in ClipVector");
-  ck.testTrue(ClipUtilities.doesClipperIntersectRange(innerVector, outerRange));
-}
-
-describe("ClipUtilities", () => {
-  it("ClipLineSegment", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    const shift = 30;
-    // primitive curve
-    const curve = LineSegment3d.create(Point3d.create(-10, -10, -5), Point3d.create(10, 10, 5));
-    GeometryCoreTestIO.captureGeometry(allGeometry, curve);
-    // clipper
-    const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
-    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-    // perform clip
-    const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
-    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-    // test XY length of clipped curve
-    const expectedXYLengthSqr = 200;
-    const start = (clippedCurve[0] as LineSegment3d).startPoint();
-    const end = (clippedCurve[0] as LineSegment3d).endPoint();
-    const len = start.distanceSquaredXY(end);
-    ck.testCoordinate(len, expectedXYLengthSqr);
-    // save all geometries
-    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineSegment");
-    expect(ck.getNumErrors()).toBe(0);
-  }),
-    it("ClipLineString", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // primitive curve
-      const curve = LineString3d.create([[-8, 0, 1], [2, 10, 0], [16, -2, 0], [2, -16, -1], [-8, 0, 1]]);
-      GeometryCoreTestIO.captureGeometry(allGeometry, curve);
-      // clipper
-      const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // test XY length of clipped curve elements
-      const expectedXYLengthSqr = 8;
-      let start = (clippedCurve[0] as LineSegment3d).startPoint();
-      let end = (clippedCurve[0] as LineSegment3d).endPoint();
-      let len = start.distanceSquaredXY(end);
-      ck.testCoordinate(len, expectedXYLengthSqr);
-      start = (clippedCurve[2] as LineSegment3d).startPoint();
-      end = (clippedCurve[2] as LineSegment3d).endPoint();
-      len = start.distanceSquaredXY(end);
-      ck.testCoordinate(len, expectedXYLengthSqr);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineString");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("ClipArc", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // primitive curve
-      const curve = Arc3d.createXYEllipse(Point3d.create(3, -3), 10, 5);
-      GeometryCoreTestIO.captureGeometry(allGeometry, curve);
-      // clipper
-      const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipArc");
-      expect(ck.getNumErrors()).toBe(0);
-    });
-});
-
-describe("ClipUtilities", () => {
-  it("ClipPath", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    const shift = 30;
-    // path
-    const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-141, 141));
-    const lineString1 = LineString3d.create([[-0.2, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
-    const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
-    const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [-0.2, -5]]);
-    const path = Path.create();
-    path.tryAddChild(arc);
-    path.tryAddChild(lineString1);
-    path.tryAddChild(lineSegment1);
-    path.tryAddChild(lineSegment2);
-    path.tryAddChild(lineString2);
-    GeometryCoreTestIO.captureGeometry(allGeometry, path);
-    // clipper
-    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
-    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-    // perform clip
-    const clippedCurve = ClipUtilities.clipAnyCurve(path, clipper);
-    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-    // save all geometries
-    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipPath");
-    expect(ck.getNumErrors()).toBe(0);
-  }),
-    it("ClipLoop1", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // loop
-      const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-141, 141));
-      const lineString1 = LineString3d.create([[-0.2, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
-      const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
-      const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-      const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [-0.2, -5]]);
-      const loop = Loop.create();
-      loop.tryAddChild(arc);
-      loop.tryAddChild(lineString1);
-      loop.tryAddChild(lineSegment1);
-      loop.tryAddChild(lineSegment2);
-      loop.tryAddChild(lineString2);
-      GeometryCoreTestIO.captureGeometry(allGeometry, loop);
-      // clipper
-      const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(loop, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop1");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("ClipLoop2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // loop
-      const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-90, 90));
-      const lineSegment1 = LineSegment3d.create(Point3d.create(6, 8), Point3d.create(-6, 8));
-      const lineSegment2 = LineSegment3d.create(Point3d.create(-6, 8), Point3d.create(-6, -8));
-      const lineSegment3 = LineSegment3d.create(Point3d.create(-6, -8), Point3d.create(6, -8));
-      const loop = Loop.create();
-      loop.tryAddChild(arc);
-      loop.tryAddChild(lineSegment1);
-      loop.tryAddChild(lineSegment2);
-      loop.tryAddChild(lineSegment3);
-      GeometryCoreTestIO.captureGeometry(allGeometry, loop);
-      // clipper
-      const range = Range3d.createXYZXYZ(0, -10, -3, 15, 10, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(loop, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(1);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
-      const expectedArea = (6 * 16) + (8 * 8 * Math.PI / 2);
-      ck.testCoordinate(area, expectedArea);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop2");
-      expect(ck.getNumErrors()).toBe(0);
-    });
-  it("ClipUtilities.LocalRangesIntersect", () => {
+  it("LocalRangesIntersect", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     interface TestCase {
@@ -412,7 +249,7 @@ describe("ClipUtilities", () => {
             localToWorld: Transform.createRefs(Point3d.create(-119.10528623043024, 43.39951280844136, 68.47662261522927), YawPitchRollAngles.createDegrees(-6.448039711171915, 15.000000000002194, 1.6754791257296069).toMatrix3d()),
           },
           {
-            localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14),
+            localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14), // a line segment
             localToWorld: Transform.createRefs(Point3d.create(-107.5899903512084, 42.11371219204531, 71.59835123713896), YawPitchRollAngles.createDegrees(173.55196028882585, -14.99999999999978, 2.0579703138818464e-16).toMatrix3d()),
           },
           {
@@ -520,7 +357,508 @@ describe("ClipUtilities", () => {
   });
 });
 
-describe("ClipUtilities", () => {
+describe("ClipAnyCurve", () => {
+  it("ClipLineSegment", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // primitive curve
+    const curve = LineSegment3d.create(Point3d.create(-10, -10, -5), Point3d.create(10, 10, 5));
+    GeometryCoreTestIO.captureGeometry(allGeometry, curve);
+    // clipper
+    const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // test XY length of clipped curve
+    const expectedXYLengthSqr = 200;
+    const start = (clippedCurve[0] as LineSegment3d).startPoint();
+    const end = (clippedCurve[0] as LineSegment3d).endPoint();
+    const len = start.distanceSquaredXY(end);
+    ck.testCoordinate(len, expectedXYLengthSqr);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineSegment");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipLineString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // primitive curve
+    const curve = LineString3d.create([[-8, 0, 1], [2, 10, 0], [16, -2, 0], [2, -16, -1], [-8, 0, 1]]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
+    // clipper
+    const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // test XY length of clipped curve elements
+    const expectedXYLengthSqr = 8;
+    let start = (clippedCurve[0] as LineSegment3d).startPoint();
+    let end = (clippedCurve[0] as LineSegment3d).endPoint();
+    let len = start.distanceSquaredXY(end);
+    ck.testCoordinate(len, expectedXYLengthSqr);
+    start = (clippedCurve[2] as LineSegment3d).startPoint();
+    end = (clippedCurve[2] as LineSegment3d).endPoint();
+    len = start.distanceSquaredXY(end);
+    ck.testCoordinate(len, expectedXYLengthSqr);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineString");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // primitive curve
+    const curve = Arc3d.createXYEllipse(Point3d.create(3, -3), 10, 5);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
+    // clipper
+    const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipArc");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipBspline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const bspline0 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(70, 50, 0),
+        Point3d.create(70, 30, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(30, -30, 0),
+        Point3d.create(30, -50, 0),
+      ],
+      3,
+    )!;
+    const bspline1 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(-30, 20, 0),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(120, -20, 0),
+      ],
+      3,
+    )!;
+    const bspline2 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(40, -40, 0),
+        Point3d.create(25, -10, 0),
+        Point3d.create(-30, 20, 0),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(120, -20, 0),
+        Point3d.create(90, 10, 0),
+        Point3d.create(80, 40, 0),
+      ],
+      3,
+    )!;
+    const bspline3 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(10, 20, 50),
+        Point3d.create(10, 20, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(80, -20, 0),
+        Point3d.create(80, -20, -50),
+      ],
+      3,
+    )!;
+
+    const polygon0 = [Point3d.create(0, -25), Point3d.create(100, -25), Point3d.create(100, 25), Point3d.create(0, 25)];
+    const range0 = Range3d.createArray(polygon0);
+    range0.extend(Point3d.create(0, -25, -30), Point3d.create(0, -25, 30));
+    const singleClipper = ConvexClipPlaneSet.createRange3dPlanes(range0);
+    const rangeA = Range3d.createXYZXYZ(0, -25, -30, 85, -10, 30);
+    const rangeB = Range3d.createXYZXYZ(15, 10, -30, 100, 25, 30);
+    const rangeC = Range3d.createXYZXYZ(40, -5, -30, 60, 5, 30);
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(rangeA);
+    const convexB = ConvexClipPlaneSet.createRange3dPlanes(rangeB);
+    const convexC = ConvexClipPlaneSet.createRange3dPlanes(rangeC);
+    const unionClipper = UnionOfConvexClipPlaneSets.createConvexSets([convexA, convexB, convexC]);
+    const clipPrimitive = ClipPrimitive.createCapture(unionClipper);
+    const clipShape0 = ClipShape.createShape(polygon0, -30, 30)!;
+    const polygon1 = [Point3d.create(-40, -5), Point3d.create(130, -5), Point3d.create(130, -40), Point3d.create(-40, -40)];
+    const range1 = Range3d.createArray(polygon1);
+    range1.extend(Point3d.create(-40, -5, -30), Point3d.create(-40, -5, 30));
+    const clipShape1 = ClipShape.createShape(polygon1, -30, 30)!;
+    const polygon2 = [Point3d.create(30, 40), Point3d.create(80, 40), Point3d.create(80, -20), Point3d.create(30, -20)];
+    const range2 = Range3d.createArray(polygon2);
+    range2.extend(Point3d.create(30, 40, -30), Point3d.create(30, 40, 30));
+    const clipShape2 = ClipShape.createShape(polygon2, -30, 30)!;
+    const clipVector = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
+    const clipShape3 = ClipShape.createShape(polygon0, -30, 30, Transform.createIdentity(), true)!;
+    const polygon4 = [Point3d.create(-20, 30), Point3d.create(120, 30), Point3d.create(120, -30), Point3d.create(-20, -30)];
+    const range4 = Range3d.createArray(polygon4);
+    range4.extend(Point3d.create(-20, 30, -30), Point3d.create(-20, 30, 30));
+    const clipShape4 = ClipShape.createShape(polygon4, -30, 30)!;
+    const clipVectorWithHole = ClipVector.createCapture([clipShape3, clipShape4]);
+
+    const expectedFractions0 = [
+      // singleClipper
+      0.22779173654820006, 0.13962038997193676, 0.03827845606158895, 0.3214285714285714, 0.8816532678934014, 0.07513444358617222,
+      // unionClipper
+      0.22779173654820006, 0.3333333333333333, 0.4444444444444444, 0.6111111111111112, 0.6666666666666666,
+      0.22570811482256825, 0.4194475377420195, 0.6666666666666666,
+      0.03827845606158895, 0.375, 0.4654775161751512, 0.5714285714285714, 0.9163162231961564,
+      0.16666666666666666, 0.4194475377420195, 0.6666666666666666,
+      //  clipPrimitive
+      0.22779173654820006, 0.3333333333333333, 0.4444444444444444, 0.6111111111111112, 0.6666666666666666,
+      0.22570811482256825, 0.4194475377420195, 0.6666666666666666,
+      0.03827845606158895, 0.375, 0.4654775161751512, 0.5714285714285714, 0.9163162231961564,
+      0.16666666666666666, 0.4194475377420195, 0.6666666666666666,
+      // clipShape0
+      0.22779173654820006, 0.13962038997193676, 0.03827845606158895, 0.3214285714285714, 0.8816532678934014, 0.07513444358617222,
+      // clipVector
+      0.5555555555555556, 0.5833333333333333, 0.5357142857142857, 0.5833333333333333,
+      // clipVectorWithHole
+      0.1786327949540818, 0.0430571022043431, 0.02489402023563518, 0.07513444358617222,
+    ];
+    const expectedFractions1 = [
+      // singleClipper
+      0.7722082634517999, 0.9088833053807199, 0.13629513183625738, 0.7142857142857142, 0.961721543938411, 0.9248655564138277,
+      // unionClipper
+      0.3333333333333333, 0.38888888888888884, 0.5555555555555556, 0.6666666666666666, 0.7722082634517999,
+      0.3333333333333333, 0.5833333333333333, 0.825677653808967,
+      0.08368377680384356, 0.42857142857142855, 0.5357142857142857, 0.6579358964948555, 0.961721543938411,
+      0.3333333333333333, 0.5833333333333333, 0.9248655564138277,
+      // clipPrimitive
+      0.3333333333333333, 0.38888888888888884, 0.5555555555555556, 0.6666666666666666, 0.7722082634517999,
+      0.3333333333333333, 0.5833333333333333, 0.825677653808967,
+      0.08368377680384356, 0.42857142857142855, 0.5357142857142857, 0.6579358964948555, 0.961721543938411,
+      0.3333333333333333, 0.5833333333333333, 0.9248655564138277,
+      // clipShape0
+      0.7722082634517999, 0.9088833053807199, 0.13629513183625738, 0.7142857142857142, 0.961721543938411, 0.9248655564138277,
+      // clipVector
+      0.7207592200561265, 0.7932652990377571, 0.6377288021625364, 0.9248655564138277,
+      // clipVectorWithHole
+      0.8213672050459182, 1, 0.9751059797643649, 0.9248655564138277,
+    ];
+    let callIndex = 0;
+    const runAndVisualizeOne = (bspline: BSplineCurve3d, clipper: Clipper, ranges: Range3d[]) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy);
+      const clippedCurve = ClipUtilities.clipAnyCurve(bspline, clipper);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx, dy + 100);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy + 100);
+      if (clipper.announceClippedCurveIntervals)
+        clipper.announceClippedCurveIntervals(bspline,
+          (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+            ck.testFraction(expectedFractions0[callIndex], fraction0, `fraction0 of call ${callIndex} should match expected`);
+            ck.testFraction(expectedFractions1[callIndex], fraction1, `fraction1 of call ${callIndex} should match expected`);
+            callIndex++;
+            const point0 = bspline.fractionToPoint(fraction0);
+            const point1 = bspline.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+            const point2 = bspline.fractionToPoint(fraction1);
+            ck.testTrue(clipper.isPointOnOrInside(point0), "interval start point is ON");
+            ck.testTrue(clipper.isPointOnOrInside(point1), "interval midpoint is IN");
+            ck.testTrue(clipper.isPointOnOrInside(point2), "interval end point is ON");
+          });
+    };
+    const runAndVisualizeAll = (clipper: Clipper, ranges: Range3d[]) => {
+      for (const bspline of [bspline0, bspline1, bspline2, bspline3]) {
+        runAndVisualizeOne(bspline, clipper, ranges);
+        dx += 200;
+      }
+      dx = 0;
+    };
+
+    runAndVisualizeAll(singleClipper, [range0]);
+    dy += 300;
+    runAndVisualizeAll(unionClipper, [rangeA, rangeB, rangeC]);
+    dy += 300;
+    runAndVisualizeAll(clipPrimitive, [rangeA, rangeB, rangeC]);
+    dy += 300;
+    runAndVisualizeAll(clipShape0, [range0]);
+    dy += 300;
+    runAndVisualizeAll(clipVector, [range0, range1, range2]);
+    dy += 300;
+    runAndVisualizeAll(clipVectorWithHole, [range0, range4]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBspline");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipSpiral", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const integratedSpirals: TransitionSpiral3d[] = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      integratedSpirals.push(
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(r0, r1),
+          AngleSweep.createStartEndDegrees(0, 320),
+          activeInterval,
+          Transform.createIdentity(),
+          integratedSpiralType,
+        ) as TransitionSpiral3d
+      );
+    }
+
+    const polygon0 = [Point3d.create(-80, 140), Point3d.create(300, 140), Point3d.create(300, -30), Point3d.create(-80, -30)];
+    const range0 = Range3d.createArray(polygon0);
+    range0.extend(Point3d.create(-80, -30, -30), Point3d.create(-80, -30, 30));
+    const singleClipper = ConvexClipPlaneSet.createRange3dPlanes(range0);
+    const rangeA = Range3d.createXYZXYZ(0, -25, -30, 280, 20, 30);
+    const rangeB = Range3d.createXYZXYZ(90, 50, -30, 200, 120, 30);
+    const rangeC = Range3d.createXYZXYZ(0, 150, -30, 300, 220, 30);
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(rangeA);
+    const convexB = ConvexClipPlaneSet.createRange3dPlanes(rangeB);
+    const convexC = ConvexClipPlaneSet.createRange3dPlanes(rangeC);
+    const unionClipper = UnionOfConvexClipPlaneSets.createConvexSets([convexA, convexB, convexC]);
+    const clipPrimitive = ClipPrimitive.createCapture(unionClipper);
+    const clipShape0 = ClipShape.createShape(polygon0, -30, 30)!;
+    const polygon1 = [Point3d.create(30, 230), Point3d.create(250, 230), Point3d.create(250, 40), Point3d.create(30, 40)];
+    const range1 = Range3d.createArray(polygon1);
+    range1.extend(Point3d.create(30, 40, -30), Point3d.create(30, 40, 30));
+    const clipShape1 = ClipShape.createShape(polygon1, -30, 30)!;
+    const polygon2 = [Point3d.create(90, 300), Point3d.create(280, 300), Point3d.create(280, -50), Point3d.create(90, -50)];
+    const range2 = Range3d.createArray(polygon2);
+    range2.extend(Point3d.create(90, -50, -30), Point3d.create(90, -50, 30));
+    const clipShape2 = ClipShape.createShape(polygon2, -30, 30)!;
+    const clipVector = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
+    const clipShape3 = ClipShape.createShape(polygon0, -30, 30, Transform.createIdentity(), true)!;
+    const polygon4 = [Point3d.create(-100, 160), Point3d.create(300, 160), Point3d.create(300, -50), Point3d.create(-100, -50)];
+    const range4 = Range3d.createArray(polygon4);
+    const clipShape4 = ClipShape.createShape(polygon4, -30, 30)!;
+    const clipVectorWithHole = ClipVector.createCapture([clipShape3, clipShape4]);
+
+    const expectedFractions0 = [
+      // singleClipper
+      0, 0.9424761079548543,
+      0, 0.9095257911295114,
+      0, 0.8937819694337779,
+      0, 0.8746118727712179,
+      0, 0.9051880421477267,
+      // unionClipper
+      0, 0.1614866040576614, 0.36868163874216553, 0.566779320682332, 0.6662096391320192, 0.9828374152161896,
+      0, 0.16116612670419453, 0.6451453906884888, 0.7803860489071314, 0.9456564159212176,
+      0, 0.16115556143752724, 0.3612620530473563, 0.669797508773506, 0.8099551432138486, 0.9300335809489925,
+      0, 0.16114567965532203, 0.3595234440119195, 0.7012830652115729, 0.8408009761786591, 0.9125369316079721,
+      0, 0.16116106617673023, 0.6525700579190455, 0.7892751126861227, 0.9412406769070548,
+      // clipPrimitive
+      0, 0.1614866040576614, 0.36868163874216553, 0.566779320682332, 0.6662096391320192, 0.9828374152161896,
+      0, 0.16116612670419453, 0.6451453906884888, 0.7803860489071314, 0.9456564159212176,
+      0, 0.16115556143752724, 0.3612620530473563, 0.669797508773506, 0.8099551432138486, 0.9300335809489925,
+      0, 0.16114567965532203, 0.3595234440119195, 0.7012830652115729, 0.8408009761786591, 0.9125369316079721,
+      0, 0.16116106617673023, 0.6525700579190455, 0.7892751126861227, 0.9412406769070548,
+      // clipShape0
+      0, 0.9424761079548543,
+      0, 0.9095257911295114,
+      0, 0.8937819694337779,
+      0, 0.8746118727712179,
+      0, 0.9051880421477267,
+      // clipVector
+      0.340991413324019, 0.9424761079548543,
+      0.4222863671007426, 0.9095257911295114,
+      0.44611685575181237, 0.8937819694337779,
+      0.8746118727712179,
+      0.42986277031034126, 0.9051880421477267,
+      // clipVectorWithHole
+      0, 0.9063909545607753,
+      0, 0.8713099637310674,
+      0, 0.8518678593406092,
+      0, 0.8217829453052364,
+      0, 0.8661785565858812,
+    ];
+    const expectedFractions1 = [
+      // singleClipper
+      0.5486137660826138, 1,
+      0.6258066710702493, 1,
+      0.6493064570114558, 1,
+      0.6778744151946616, 1,
+      0.6329634037249435, 1,
+      // unionClipper
+      0.1614866040576614, 0.2689810369610957, 0.3830276869207637, 0.6662096391320192, 0.9243305460054863, 1,
+      0.16116612670419453, 0.3503910906505541, 0.7803860489071314, 0.8911049414632376, 1,
+      0.16115556143752724, 0.3612620530473563, 0.3733459889168154, 0.8099551432138486, 0.8742101643208151, 1,
+      0.16114567965532203, 0.3595234440119195, 0.40948693908361034, 0.8408009761786591, 0.8521096666311518, 1,
+      0.16116106617673023, 0.35804735207848065, 0.7892751126861227, 0.8865243139513794, 1,
+      // clipPrimitive
+      0.1614866040576614, 0.2689810369610957, 0.3830276869207637, 0.6662096391320192, 0.9243305460054863, 1,
+      0.16116612670419453, 0.3503910906505541, 0.7803860489071314, 0.8911049414632376, 1,
+      0.16115556143752724, 0.3612620530473563, 0.3733459889168154, 0.8099551432138486, 0.8742101643208151, 1,
+      0.16114567965532203, 0.3595234440119195, 0.40948693908361034, 0.8408009761786591, 0.8521096666311518, 1,
+      0.16116106617673023, 0.35804735207848065, 0.7892751126861227, 0.8865243139513794, 1,
+      // clipShape0
+      0.5486137660826138, 1,
+      0.6258066710702493, 1,
+      0.6493064570114558, 1,
+      0.6778744151946616, 1,
+      0.6329634037249435, 1,
+      // clipVector
+      0.5486137660826138, 1,
+      0.4783663786038409, 1,
+      0.466068199399729, 1,
+      1,
+      0.4739664113956614, 1,
+      // clipVectorWithHole
+      0.585437453506292, 1,
+      0.6661155498156492, 1,
+      0.6932005350653767, 1,
+      0.732585172490807, 1,
+      0.674080028207841, 1,
+    ];
+    let callIndex = 0;
+    const runAndVisualizeOne = (spiral: TransitionSpiral3d, clipper: Clipper, ranges: Range3d[]) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, dx, dy);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy);
+      const clippedCurve = ClipUtilities.clipAnyCurve(spiral, clipper);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx, dy + 400);
+      for (const range of ranges)
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, dx, dy + 400);
+      if (clipper.announceClippedCurveIntervals)
+        clipper.announceClippedCurveIntervals(spiral,
+          (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+            ck.testFraction(expectedFractions0[callIndex], fraction0, `fraction0 of call ${callIndex} should match expected`);
+            ck.testFraction(expectedFractions1[callIndex], fraction1, `fraction1 of call ${callIndex} should match expected`);
+            callIndex++;
+            const point0 = spiral.fractionToPoint(fraction0);
+            const point1 = spiral.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+            const point2 = spiral.fractionToPoint(fraction1);
+            ck.testTrue(clipper.isPointOnOrInside(point0), "interval start point is ON");
+            ck.testTrue(clipper.isPointOnOrInside(point1), "interval midpoint is IN");
+            ck.testTrue(clipper.isPointOnOrInside(point2), "interval end point is ON");
+          });
+    };
+    const runAndVisualizeAll = (clipper: Clipper, ranges: Range3d[]) => {
+      for (const spiral of integratedSpirals) {
+        runAndVisualizeOne(spiral, clipper, ranges);
+        dx += 500;
+      }
+      dx = 0;
+    };
+
+    runAndVisualizeAll(singleClipper, [range0]);
+    dy += 1000;
+    runAndVisualizeAll(unionClipper, [rangeA, rangeB, rangeC]);
+    dy += 1000;
+    runAndVisualizeAll(clipPrimitive, [rangeA, rangeB, rangeC]);
+    dy += 1000;
+    runAndVisualizeAll(clipShape0, [range0]);
+    dy += 1000;
+    runAndVisualizeAll(clipVector, [range0, range1, range2]);
+    dy += 1000;
+    runAndVisualizeAll(clipVectorWithHole, [range0, range4]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipSpiral");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipPath", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // path
+    const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-141, 141));
+    const lineString1 = LineString3d.create([[-0.2, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
+    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [-0.2, -5]]);
+    const path = Path.create();
+    path.tryAddChild(arc);
+    path.tryAddChild(lineString1);
+    path.tryAddChild(lineSegment1);
+    path.tryAddChild(lineSegment2);
+    path.tryAddChild(lineString2);
+    GeometryCoreTestIO.captureGeometry(allGeometry, path);
+    // clipper
+    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(path, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipPath");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipLoop1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // loop
+    const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-141, 141));
+    const lineString1 = LineString3d.create([[-0.2, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
+    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [-0.2, -5]]);
+    const loop = Loop.create();
+    loop.tryAddChild(arc);
+    loop.tryAddChild(lineString1);
+    loop.tryAddChild(lineSegment1);
+    loop.tryAddChild(lineSegment2);
+    loop.tryAddChild(lineString2);
+    GeometryCoreTestIO.captureGeometry(allGeometry, loop);
+    // clipper
+    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(loop, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipLoop2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // loop
+    const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-90, 90));
+    const lineSegment1 = LineSegment3d.create(Point3d.create(6, 8), Point3d.create(-6, 8));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-6, 8), Point3d.create(-6, -8));
+    const lineSegment3 = LineSegment3d.create(Point3d.create(-6, -8), Point3d.create(6, -8));
+    const loop = Loop.create();
+    loop.tryAddChild(arc);
+    loop.tryAddChild(lineSegment1);
+    loop.tryAddChild(lineSegment2);
+    loop.tryAddChild(lineSegment3);
+    GeometryCoreTestIO.captureGeometry(allGeometry, loop);
+    // clipper
+    const range = Range3d.createXYZXYZ(0, -10, -3, 15, 10, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(loop, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // sanity tests
+    expect(clippedCurve.length).toBe(1);
+    const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
+    const expectedArea = (6 * 16) + (8 * 8 * Math.PI / 2);
+    ck.testCoordinate(area, expectedArea);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("ClipUnionRegion1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -547,101 +885,98 @@ describe("ClipUtilities", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
-    it("ClipUnionRegion2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // union region
-      const lineString1 = LineString3d.create([[-1, -2], [3, -2], [3, -5], [10, -5], [10, 5], [3, 5], [3, 2], [-1, 2], [-1, -2]]);
-      const loop1 = Loop.create();
-      loop1.tryAddChild(lineString1);
-      const lineString2 = LineString3d.create([[1, -2], [-3, -2], [-3, -5], [-10, -5], [-10, 5], [-3, 5], [-3, 2], [1, 2], [1, -2]]);
-      const loop2 = Loop.create();
-      loop2.tryAddChild(lineString2);
-      const unionRegion = UnionRegion.create();
-      unionRegion.tryAddChild(loop1);
-      unionRegion.tryAddChild(loop2);
-      GeometryCoreTestIO.captureGeometry(allGeometry, unionRegion);
-      // clipper
-      const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(unionRegion, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(1);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
-      const expectedArea = (4 * 10) + (6 * 4) + (4 * 10);
-      ck.testCoordinate(area, expectedArea);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion2");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("ClipParityRegion1", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // parity region
-      const arc1 = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-180, 180));
-      const loop1 = Loop.create();
-      loop1.tryAddChild(arc1);
-      const arc2 = Arc3d.createXY(Point3d.create(-6, 0), 8, AngleSweep.createStartEndDegrees(-180, 180));
-      const loop2 = Loop.create();
-      loop2.tryAddChild(arc2);
-      const parityRegion = ParityRegion.create();
-      parityRegion.tryAddChild(loop1);
-      parityRegion.tryAddChild(loop2);
-      GeometryCoreTestIO.captureGeometry(allGeometry, parityRegion);
-      // clipper
-      const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(parityRegion, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion1");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("ClipParityRegion2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // parity region
-      const lineString1 = LineString3d.create([[-1, -2], [-3, -2], [-3, -5], [10, -5], [10, 5], [3, 5], [3, 2], [-1, 2], [-1, -2]]);
-      const loop1 = Loop.create();
-      loop1.tryAddChild(lineString1);
-      const lineString2 = LineString3d.create([[1, 2], [3, 2], [3, 5], [-10, 5], [-10, -5], [-3, -5], [-3, -2], [1, -2], [1, 2]]);
-      const loop2 = Loop.create();
-      loop2.tryAddChild(lineString2);
-      const parityRegion = ParityRegion.create();
-      parityRegion.tryAddChild(loop1);
-      parityRegion.tryAddChild(loop2);
-      GeometryCoreTestIO.captureGeometry(allGeometry, parityRegion);
-      // clipper
-      const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(parityRegion, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(1);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
-      const expectedArea = (14 * 10) - 8;
-      ck.testCoordinate(area, expectedArea);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion2");
-      expect(ck.getNumErrors()).toBe(0);
-    });
-});
-
-describe("ClipUtilities", () => {
+  });
+  it("ClipUnionRegion2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // union region
+    const lineString1 = LineString3d.create([[-1, -2], [3, -2], [3, -5], [10, -5], [10, 5], [3, 5], [3, 2], [-1, 2], [-1, -2]]);
+    const loop1 = Loop.create();
+    loop1.tryAddChild(lineString1);
+    const lineString2 = LineString3d.create([[1, -2], [-3, -2], [-3, -5], [-10, -5], [-10, 5], [-3, 5], [-3, 2], [1, 2], [1, -2]]);
+    const loop2 = Loop.create();
+    loop2.tryAddChild(lineString2);
+    const unionRegion = UnionRegion.create();
+    unionRegion.tryAddChild(loop1);
+    unionRegion.tryAddChild(loop2);
+    GeometryCoreTestIO.captureGeometry(allGeometry, unionRegion);
+    // clipper
+    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(unionRegion, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // sanity tests
+    expect(clippedCurve.length).toBe(1);
+    const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
+    const expectedArea = (4 * 10) + (6 * 4) + (4 * 10);
+    ck.testCoordinate(area, expectedArea);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipParityRegion1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // parity region
+    const arc1 = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop1 = Loop.create();
+    loop1.tryAddChild(arc1);
+    const arc2 = Arc3d.createXY(Point3d.create(-6, 0), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop2 = Loop.create();
+    loop2.tryAddChild(arc2);
+    const parityRegion = ParityRegion.create();
+    parityRegion.tryAddChild(loop1);
+    parityRegion.tryAddChild(loop2);
+    GeometryCoreTestIO.captureGeometry(allGeometry, parityRegion);
+    // clipper
+    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(parityRegion, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("ClipParityRegion2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // parity region
+    const lineString1 = LineString3d.create([[-1, -2], [-3, -2], [-3, -5], [10, -5], [10, 5], [3, 5], [3, 2], [-1, 2], [-1, -2]]);
+    const loop1 = Loop.create();
+    loop1.tryAddChild(lineString1);
+    const lineString2 = LineString3d.create([[1, 2], [3, 2], [3, 5], [-10, 5], [-10, -5], [-3, -5], [-3, -2], [1, -2], [1, 2]]);
+    const loop2 = Loop.create();
+    loop2.tryAddChild(lineString2);
+    const parityRegion = ParityRegion.create();
+    parityRegion.tryAddChild(loop1);
+    parityRegion.tryAddChild(loop2);
+    GeometryCoreTestIO.captureGeometry(allGeometry, parityRegion);
+    // clipper
+    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(parityRegion, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // sanity tests
+    expect(clippedCurve.length).toBe(1);
+    const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
+    const expectedArea = (14 * 10) - 8;
+    ck.testCoordinate(area, expectedArea);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("ClipBagOfCurves1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -674,170 +1009,165 @@ describe("ClipUtilities", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
-    it("ClipBagOfCurves2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // curve primitive
-      const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
-      // curve collection
-      const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
-      const loop = Loop.create();
-      loop.tryAddChild(lineString1);
-      // bag of curves
-      const bag = BagOfCurves.create(lineSegment, loop);
-      GeometryCoreTestIO.captureGeometry(allGeometry, bag);
-      // clipper
-      const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(2);
-      const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
-      const expectedArea = (14 * 7 / 2);
-      ck.testCoordinate(area, expectedArea);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves2");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("BagOfCurvesInsideClip1", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // curve primitive
-      const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
-      // curve collection
-      const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
-      const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
-      const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-      const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [0, -5]]);
-      const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
-      const loop = Loop.create();
-      loop.tryAddChild(lineString1);
-      loop.tryAddChild(lineSegment1);
-      loop.tryAddChild(lineSegment2);
-      loop.tryAddChild(lineString2);
-      loop.tryAddChild(lineSegment3);
-      // bag of curves
-      const bag = BagOfCurves.create(loop, arc);
-      GeometryCoreTestIO.captureGeometry(allGeometry, bag);
-      // clipper
-      const range = Range3d.createXYZXYZ(-12, -12, -3, 12, 12, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip1");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("BagOfCurvesInsideClip2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 35;
-      // curve primitive
-      const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
-      // curve collection
-      const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
-      const loop = Loop.create();
-      loop.tryAddChild(lineString1);
-      // bag of curves
-      const bag = BagOfCurves.create(lineSegment, loop);
-      GeometryCoreTestIO.captureGeometry(allGeometry, bag);
-      // clipper
-      const range = Range3d.createXYZXYZ(-15, -15, -3, 15, 15, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(2);
-      const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
-      const expectedArea = 14 * 7;
-      ck.testCoordinate(area, expectedArea);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip2");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("BagOfCurvesOutsideClip1", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 50;
-      // curve primitive
-      const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
-      // curve collection
-      const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
-      const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
-      const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-      const lineString2 = LineString3d.create([
-        Point3d.create(-4, -5),
-        Point3d.create(-3, -10),
-        Point3d.create(-2, -5),
-        Point3d.create(-1, -10),
-        Point3d.create(0, -5),
-      ]);
-      const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
-      const loop = Loop.create();
-      loop.tryAddChild(lineString1);
-      loop.tryAddChild(lineSegment1);
-      loop.tryAddChild(lineSegment2);
-      loop.tryAddChild(lineString2);
-      loop.tryAddChild(lineSegment3);
-      // bag of curves
-      const bag = BagOfCurves.create(loop, arc);
-      GeometryCoreTestIO.captureGeometry(allGeometry, bag);
-      // clipper
-      const range = Range3d.createXYZXYZ(-20, -15, -3, -11, 7, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip1");
-      expect(ck.getNumErrors()).toBe(0);
-    }),
-    it("BagOfCurvesOutsideClip2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // curve primitive
-      const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
-      // curve collection
-      const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
-      const loop = Loop.create();
-      loop.tryAddChild(lineString1);
-      // bag of curves
-      const bag = BagOfCurves.create(lineSegment, loop);
-      GeometryCoreTestIO.captureGeometry(allGeometry, bag);
-      // clipper
-      const range = Range3d.createXYZXYZ(-15, 3, -3, 0, 15, 3);
-      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(1);
-      expect(clippedCurve[0].children?.length).toBe(0);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip2");
-      expect(ck.getNumErrors()).toBe(0);
-    });
-});
-
-describe("ClipUtilities", () => {
+  });
+  it("ClipBagOfCurves2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // curve primitive
+    const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
+    // curve collection
+    const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
+    const loop = Loop.create();
+    loop.tryAddChild(lineString1);
+    // bag of curves
+    const bag = BagOfCurves.create(lineSegment, loop);
+    GeometryCoreTestIO.captureGeometry(allGeometry, bag);
+    // clipper
+    const range = Range3d.createXYZXYZ(-7, -7, -3, 7, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // sanity tests
+    expect(clippedCurve.length).toBe(2);
+    const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
+    const expectedArea = (14 * 7 / 2);
+    ck.testCoordinate(area, expectedArea);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("BagOfCurvesInsideClip1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // curve primitive
+    const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
+    // curve collection
+    const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
+    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [0, -5]]);
+    const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
+    const loop = Loop.create();
+    loop.tryAddChild(lineString1);
+    loop.tryAddChild(lineSegment1);
+    loop.tryAddChild(lineSegment2);
+    loop.tryAddChild(lineString2);
+    loop.tryAddChild(lineSegment3);
+    // bag of curves
+    const bag = BagOfCurves.create(loop, arc);
+    GeometryCoreTestIO.captureGeometry(allGeometry, bag);
+    // clipper
+    const range = Range3d.createXYZXYZ(-12, -12, -3, 12, 12, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("BagOfCurvesInsideClip2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 35;
+    // curve primitive
+    const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
+    // curve collection
+    const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
+    const loop = Loop.create();
+    loop.tryAddChild(lineString1);
+    // bag of curves
+    const bag = BagOfCurves.create(lineSegment, loop);
+    GeometryCoreTestIO.captureGeometry(allGeometry, bag);
+    // clipper
+    const range = Range3d.createXYZXYZ(-15, -15, -3, 15, 15, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // sanity tests
+    expect(clippedCurve.length).toBe(2);
+    const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
+    const expectedArea = 14 * 7;
+    ck.testCoordinate(area, expectedArea);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("BagOfCurvesOutsideClip1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 50;
+    // curve primitive
+    const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
+    // curve collection
+    const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
+    const lineString2 = LineString3d.create([
+      Point3d.create(-4, -5),
+      Point3d.create(-3, -10),
+      Point3d.create(-2, -5),
+      Point3d.create(-1, -10),
+      Point3d.create(0, -5),
+    ]);
+    const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
+    const loop = Loop.create();
+    loop.tryAddChild(lineString1);
+    loop.tryAddChild(lineSegment1);
+    loop.tryAddChild(lineSegment2);
+    loop.tryAddChild(lineString2);
+    loop.tryAddChild(lineSegment3);
+    // bag of curves
+    const bag = BagOfCurves.create(loop, arc);
+    GeometryCoreTestIO.captureGeometry(allGeometry, bag);
+    // clipper
+    const range = Range3d.createXYZXYZ(-20, -15, -3, -11, 7, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("BagOfCurvesOutsideClip2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // curve primitive
+    const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
+    // curve collection
+    const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
+    const loop = Loop.create();
+    loop.tryAddChild(lineString1);
+    // bag of curves
+    const bag = BagOfCurves.create(lineSegment, loop);
+    GeometryCoreTestIO.captureGeometry(allGeometry, bag);
+    // clipper
+    const range = Range3d.createXYZXYZ(-15, 3, -3, 0, 15, 3);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    ck.testExactNumber(clippedCurve.length, 0, "clip result is empty because the entire input is clipped away");
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("ClipUnionForBagOfCurves1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -875,40 +1205,40 @@ describe("ClipUtilities", () => {
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionForBagOfCurves1");
     expect(ck.getNumErrors()).toBe(0);
-  }),
-    it("ClipUnionForBagOfCurves2", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const shift = 30;
-      // curve primitive
-      const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-5, 0));
-      // curve collection
-      const lineString = LineString3d.create([[0, 5], [10, 5], [10, -5], [0, -5], [0, 5]]);
-      const loop = Loop.create();
-      loop.tryAddChild(lineString);
-      // bag of curves
-      const bag = BagOfCurves.create(loop, lineSegment);
-      GeometryCoreTestIO.captureGeometry(allGeometry, bag);
-      // clipper (clip union)
-      const range1 = Range3d.createXYZXYZ(-12, -10, -3, 2, 10, 3);
-      const clipper1 = ConvexClipPlaneSet.createRange3dPlanes(range1);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range1);
-      const range2 = Range3d.createXYZXYZ(4, -10, -3, 12, 10, 3);
-      const clipper2 = ConvexClipPlaneSet.createRange3dPlanes(range2);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range2);
-      const clipper = UnionOfConvexClipPlaneSets.createConvexSets([clipper1, clipper2]);
-      // perform clip
-      const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
-      GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range1, shift);
-      GeometryCoreTestIO.captureRangeEdges(allGeometry, range2, shift);
-      // sanity tests
-      expect(clippedCurve.length).toBe(2);
-      const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
-      const expectedArea = (2 * 10) + (6 * 10);
-      ck.testCoordinate(area, expectedArea);
-      // save all geometries
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionForBagOfCurves2");
-      expect(ck.getNumErrors()).toBe(0);
-    });
+  });
+  it("ClipUnionForBagOfCurves2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const shift = 30;
+    // curve primitive
+    const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-5, 0));
+    // curve collection
+    const lineString = LineString3d.create([[0, 5], [10, 5], [10, -5], [0, -5], [0, 5]]);
+    const loop = Loop.create();
+    loop.tryAddChild(lineString);
+    // bag of curves
+    const bag = BagOfCurves.create(loop, lineSegment);
+    GeometryCoreTestIO.captureGeometry(allGeometry, bag);
+    // clipper (clip union)
+    const range1 = Range3d.createXYZXYZ(-12, -10, -3, 2, 10, 3);
+    const clipper1 = ConvexClipPlaneSet.createRange3dPlanes(range1);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range1);
+    const range2 = Range3d.createXYZXYZ(4, -10, -3, 12, 10, 3);
+    const clipper2 = ConvexClipPlaneSet.createRange3dPlanes(range2);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range2);
+    const clipper = UnionOfConvexClipPlaneSets.createConvexSets([clipper1, clipper2]);
+    // perform clip
+    const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range1, shift);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, range2, shift);
+    // sanity tests
+    expect(clippedCurve.length).toBe(2);
+    const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
+    const expectedArea = (2 * 10) + (6 * 10);
+    ck.testCoordinate(area, expectedArea);
+    // save all geometries
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionForBagOfCurves2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });

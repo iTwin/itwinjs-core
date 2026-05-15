@@ -111,7 +111,7 @@ describe("DgnDbWorker", () => {
     for (const worker of workers)
       worker.setReady();
 
-    await Promise.all(workers.map((x) => x.promise)); // eslint-disable-line @typescript-eslint/promise-function-async
+    await Promise.all(workers.map((x) => x.promise).filter((p): p is Promise<void> => p !== undefined)); // eslint-disable-line @typescript-eslint/promise-function-async
     expect(workers.every((x) => x.isOk)).to.be.true;
   });
 
@@ -190,7 +190,7 @@ describe("DgnDbWorker", () => {
 
     // Clear the worker thread pool so the snap request (now canceled) can be processed.
     blockers.forEach((w) => w.setReady());
-    await Promise.all(blockers.map(async (w) => w.promise));
+    await Promise.all(blockers.map(async (w) => w.promise).filter((p): p is Promise<void> => p !== undefined));
 
     await toBeRejected;
   });

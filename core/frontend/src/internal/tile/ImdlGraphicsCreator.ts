@@ -29,6 +29,7 @@ import { _implementationProhibited, _textures } from "../../common/internal/Symb
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl";
 import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 /** Options provided to [[decodeImdlContent]].
  */
@@ -37,6 +38,7 @@ export interface ImdlDecodeOptions {
   system: RenderSystem;
   iModel: IModelConnection;
   isCanceled?: () => boolean;
+  tileData?: LayerTileData;
 }
 
 async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, options: ImdlDecodeOptions): Promise<RenderTexture | undefined> {
@@ -118,6 +120,7 @@ interface GraphicsOptions {
   isCanceled?: () => boolean;
   textures: Map<string, RenderTexture>;
   patterns: Map<string, RenderGeometry[]>;
+  tileData?: LayerTileData;
 }
 
 function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
@@ -224,8 +227,17 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     diffuse: {color: params.diffuseColor, weight: params.diffuse},
     specular: {color: params.specularColor, weight: params.specular, exponent: params.specularExponent},
     alpha: params.alpha,
-    textureMapping: params.textureMapping
-   });;
+    textureMapping: params.textureMapping ? {
+      texture: params.textureMapping.texture,
+      transform: params.textureMapping.params.textureMatrix,
+      mode: params.textureMapping.params.mode,
+      weight: params.textureMapping.params.weight,
+      worldMapping: params.textureMapping.params.worldMapping,
+      useConstantLod: params.textureMapping.params.useConstantLod,
+      constantLodProps: params.textureMapping.params.constantLodParams,
+      normalMapParams: params.textureMapping.normalMapParams,
+    } : undefined,
+   });
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
@@ -259,6 +271,7 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
           indices: new VertexIndices(primitive.params.polyline.indices),
           prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
         },
+        hasCumulativeDistances: primitive.params.hasCumulativeDistances,
       }, viOrigin);
     case "mesh": {
       const surf = primitive.params.surface;
@@ -295,6 +308,7 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
           textureMapping,
           indices: new VertexIndices(primitive.params.surface.indices),
         },
+        tileData: options.tileData,
       }, viOrigin);
     }
   }
@@ -404,6 +418,7 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
 
   const patterns = new Map<string, RenderGeometry[]>();
   const graphicsOptions = { ...options, textures, patterns };
+  graphicsOptions.tileData = options.tileData;
 
   for (const [name, primitives] of options.document.patterns)
     patterns.set(name, createPatternGeometries(primitives, graphicsOptions));

@@ -17,10 +17,10 @@ const multiSnapModes = [
   SnapMode.Bisector,
 ];
 
-const multiSnapMode = -1;
+const multiSnapMode: number = -1;
 
 function changeSnapModes(value: SnapMode): void {
-  if (multiSnapMode !== (value as number)) {
+  if (multiSnapMode !== value) {
     DisplayTestApp.setActiveSnapMode(value);
   } else {
     DisplayTestApp.setActiveSnapModes(multiSnapModes);
@@ -40,6 +40,8 @@ export function addSnapModes(container: HTMLElement): HTMLElement {
       { name: "Center", value: SnapMode.Center },
       { name: "Origin", value: SnapMode.Origin },
       { name: "Intersection", value: SnapMode.Intersection },
+      { name: "Perpendicular Point", value: SnapMode.PerpendicularPoint },
+      { name: "Tangent Point", value: SnapMode.TangentPoint },
       { name: "Multi-snap", value: multiSnapMode },
     ],
   });

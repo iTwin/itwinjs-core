@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
-  Placement3dProps, QueryRowFormat, SubCategoryAppearance,
+  Placement3dProps, QueryRowFormat, RelatedElementProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
+import { _nativeDb, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, ECSqlStatement, IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory, SpatialViewDefinition } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { EntityClass, RelationshipClass } from "@itwin/ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -74,24 +76,24 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
   if (expectedValue.p2d) {
     assert.equal(actualValue.p2d?.x, expectedValue.p2d.x, "'Point2d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p2d?.y, expectedValue.p2d.y, "'Point2d.y' type property did not roundtrip as expected");
-  } else if(expectedValue.p2d === null) {
+  } else if (expectedValue.p2d === null) {
     assert.equal(actualValue.p2d, expectedValue.p2d, "'Point2d' type property did not roundtrip as expected.");
   }
   if (expectedValue.p3d) {
     assert.equal(actualValue.p3d?.x, expectedValue.p3d.x, "'Point3d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.y, expectedValue.p3d.y, "'Point3d.y' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.z, expectedValue.p3d.z, "'Point3d.z' type property did not roundtrip as expected");
-  } else if(expectedValue.p3d === null) {
+  } else if (expectedValue.p3d === null) {
     assert.equal(actualValue.p3d, expectedValue.p3d, "'Point3d' type property did not roundtrip as expected.");
   }
   if (expectedValue.bin) {
     assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
-  } else if(expectedValue.bin === null) {
+  } else if (expectedValue.bin === null) {
     assert.equal(actualValue.bin, expectedValue.bin, "'binary' type property did not roundtrip as expected.");
   }
   if (expectedValue.g) {
     expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
-  } else if(expectedValue.g === null) {
+  } else if (expectedValue.g === null) {
     assert.equal(actualValue.g, expectedValue.g, "'geometry' type property did not roundtrip as expected.");
   }
 }
@@ -100,13 +102,13 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
   if (expectedValue.array_bin) {
     assert.equal(actualValue.array_bin!.length, expectedValue.array_bin.length, "'binary[].length' array length mismatch");
     expectedValue.array_bin.forEach((value, index) => {
-      if(value) {
+      if (value) {
         assert.isTrue(blobEqual(actualValue.array_bin![index], value), "'binary[]' type property did not roundtrip as expected");
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_bin![index], value, "'binary[]' type property did not roundtrip as expected");
       }
     });
-  } else if(expectedValue.array_bin === null) {
+  } else if (expectedValue.array_bin === null) {
     assert.equal(actualValue.array_bin, expectedValue.array_bin, "'binary[]' type property did not roundtrip as expected.");
   }
 
@@ -115,7 +117,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_i.forEach((value, index) => {
       assert.equal(actualValue.array_i![index], value, "'integer[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_i === null) {
+  } else if (expectedValue.array_i === null) {
     assert.equal(actualValue.array_i, expectedValue.array_i, "'integer[]' type property did not roundtrip as expected.");
   }
 
@@ -124,7 +126,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_l.forEach((value, index) => {
       assert.equal(actualValue.array_l![index], value, "'long[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_l === null) {
+  } else if (expectedValue.array_l === null) {
     assert.equal(actualValue.array_l, expectedValue.array_l, "'long[]' type property did not roundtrip as expected.");
   }
 
@@ -133,7 +135,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_d.forEach((value, index) => {
       assert.equal(actualValue.array_d![index], value, "'double[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_d === null) {
+  } else if (expectedValue.array_d === null) {
     assert.equal(actualValue.array_d, expectedValue.array_d, "'double[]' type property did not roundtrip as expected.");
   }
 
@@ -142,7 +144,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_b.forEach((value, index) => {
       assert.equal(actualValue.array_b![index], value, "'boolean[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_b === null) {
+  } else if (expectedValue.array_b === null) {
     assert.equal(actualValue.array_b, expectedValue.array_b, "'boolean[]' type property did not roundtrip as expected.");
   }
 
@@ -151,20 +153,20 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_dt.forEach((value, index) => {
       assert.equal(actualValue.array_dt![index], value, "'dateTime[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_dt === null) {
+  } else if (expectedValue.array_dt === null) {
     assert.equal(actualValue.array_dt, expectedValue.array_dt, "'dateTime[]' type property did not roundtrip as expected.");
   }
 
   if (expectedValue.array_g) {
     assert.equal(actualValue.array_g!.length, expectedValue.array_g.length, "'geometry[].length' array length mismatch");
     expectedValue.array_g.forEach((value, index) => {
-      if(value) {
+      if (value) {
         expect(actualValue.array_g![index], "'geometry[]' type property did not roundtrip as expected").to.deep.equal(value);
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_g![index], value, "'geometry[]' type property did not roundtrip as expected");
       }
     });
-  } else if(expectedValue.array_g === null) {
+  } else if (expectedValue.array_g === null) {
     assert.equal(actualValue.array_g, expectedValue.array_g, "'geometry[]' type property did not roundtrip as expected.");
   }
 
@@ -173,7 +175,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_s.forEach((value, index) => {
       assert.equal(actualValue.array_s![index], value, "'string[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_s === null) {
+  } else if (expectedValue.array_s === null) {
     assert.equal(actualValue.array_s, expectedValue.array_s, "'string[]' type property did not roundtrip as expected.");
   }
 
@@ -187,22 +189,22 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
         assert.equal(actualValue.array_p2d![index], value, "'point2d[]' type property did not roundtrip as expected.");
       }
     });
-  } else if(expectedValue.array_p2d === null) {
+  } else if (expectedValue.array_p2d === null) {
     assert.equal(actualValue.array_p2d, expectedValue.array_p2d, "'point2d[]' type property did not roundtrip as expected.");
   }
 
   if (expectedValue.array_p3d) {
     assert.equal(actualValue.array_p3d!.length, expectedValue.array_p3d.length, "'point3d[].length' array length mismatch");
     expectedValue.array_p3d.forEach((value, index) => {
-      if(value) {
+      if (value) {
         assert.equal(actualValue.array_p3d![index].x, value.x, "'point3d[].x' type property did not roundtrip as expected");
         assert.equal(actualValue.array_p3d![index].y, value.y, "'point3d[].y' type property did not roundtrip as expected");
         assert.equal(actualValue.array_p3d![index].z, value.z, "'point3d[].z' type property did not roundtrip as expected");
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_p3d![index], value, "'point3d[]' type property did not roundtrip as expected.");
       }
     });
-  } else if(expectedValue.array_p3d === null) {
+  } else if (expectedValue.array_p3d === null) {
     assert.equal(actualValue.array_p3d, expectedValue.array_p3d, "'point3d[]' type property did not roundtrip as expected.");
   }
 }
@@ -212,7 +214,7 @@ function verifyPrimitive(actualValue: IPrimitive, expectedValue: IPrimitive) {
   if (expectedValue.st) {
     verifyPrimitive(actualValue.st!, expectedValue.st);
     verifyPrimitiveArray(actualValue.st!, expectedValue.st);
-  } else if(expectedValue.st === null) {
+  } else if (expectedValue.st === null) {
     assert.equal(actualValue.st, expectedValue.st, "'ComplexStruct' type property did not roundtrip as expected.");
   }
 }
@@ -225,7 +227,7 @@ function verifyPrimitiveArray(actualValue: IPrimitiveArray, expectedValue: IPrim
       verifyPrimitiveBase(lhs, expectedValue.array_st![i]);
       verifyPrimitiveArrayBase(lhs, expectedValue.array_st![i]);
     });
-  } else if(expectedValue.array_st === null) {
+  } else if (expectedValue.array_st === null) {
     assert.equal(actualValue.array_st, expectedValue.array_st, "'ComplexStruct[]' type property did not roundtrip as expected.");
   }
 }
@@ -526,13 +528,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas([testSchemaPath]);
     imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+      withEditTxn(imodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, categoryName,
+        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() })));
 
-    imodel.saveChanges();
     imodel.close();
   });
 
@@ -540,7 +541,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // create element with auto handled properties
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
@@ -552,9 +553,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     const expectedSystemProperty = {
       id,
@@ -564,8 +564,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         relClassName: `BisCore.ModelContainsElements`,
       }
     } as unknown as TestElement;
-
-    const relClassId = imodel.getMetaData("BisCore:ModelContainsElements").classId;
 
     // verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
@@ -580,6 +578,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
@@ -587,18 +586,24 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("select ECInstanceId, ECClassId, Model from ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
     });
 
+    const testElementMetaData = imodel.schemaContext.getSchemaItemSync("ElementRoundTripTest", "TestElement", EntityClass);
+    assert.isDefined(testElementMetaData);
+    const relClassMetaData = imodel.schemaContext.getSchemaItemSync("BisCore", "ModelContainsElements", RelationshipClass);
+    assert.isDefined(relClassMetaData);
+
     // Verify system properties via concurrent query
-    let reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, Model.Id, Model.RelECClassId FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let reader = imodel.createQueryReader("SELECT ECInstanceId, ec_classname(ECClassId, 's.c') as className, Model.Id, ec_classname(Model.RelECClassId, 's.c') as relClassName FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, id);
-    assert.equal(reader.current.ECClassId, geomElement.getClassMetaData()?.classId);
+    assert.equal(reader.current.className, testElementMetaData?.fullName);
     assert.equal(reader.current.Id, newModelId);
-    assert.equal(reader.current.RelECClassId, relClassId);
+    assert.equal(reader.current.relClassName, relClassMetaData?.fullName);
     assert.isFalse(await reader.step());
 
     // update the element autohandled properties
@@ -610,8 +615,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update element
-    imodel.elements.updateElement(actualValue);
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => txn.updateElement(actualValue));
 
     // verify updated values
     const updatedValue = imodel.elements.getElementProps<TestElement>(id);
@@ -626,6 +630,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
@@ -633,24 +638,25 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("select ECInstanceId, ECClassId, Model from ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
     });
 
     // Verify system properties via concurrent query
-    reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, Model.Id, Model.RelECClassId FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    reader = imodel.createQueryReader("SELECT ECInstanceId, ec_classname(ECClassId, 's.c') as className, Model.Id, ec_classname(Model.RelECClassId, 's.c') as relClassName FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, id);
-    assert.equal(reader.current.ECClassId, geomElement.getClassMetaData()?.classId);
+    assert.equal(reader.current.className, testElementMetaData?.fullName);
     assert.equal(reader.current.Id, newModelId);
-    assert.equal(reader.current.RelECClassId, relClassId);
+    assert.equal(reader.current.relClassName, relClassMetaData?.fullName);
     assert.isFalse(await reader.step());
 
     imodel.close();
   });
 
-  async function verifyElementAspect(elementAspectId: Id64String, elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]>{
+  async function verifyElementAspect(elementAspectId: Id64String, elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]> {
     // Verify updated values
     const updatedAspectValue: ElementAspectProps[] = iModel.elements.getAspects(elementId, expectedAspectFullName).map((x) => x.toJSON());
     assert.equal(updatedAspectValue.length, 1);
@@ -665,6 +671,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // Verify via an ECSql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await iModel.withPreparedStatement("SELECT * FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementAspect;
@@ -680,16 +687,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       },
     } as unknown as ElementAspectProps;
 
+    const aspectMetaData = await iModel.schemaContext.getSchemaItem("ElementRoundTripTest.TestElementAspect", EntityClass);
+    assert.isDefined(aspectMetaData);
+
+    const relMetaData = await iModel.schemaContext.getSchemaItem("BisCore.ElementOwnsUniqueAspect", RelationshipClass);
+    assert.isDefined(relMetaData);
+
     // Verify via a concurrent query
-    const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Element.Id, Element.RelECClassId FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    const reader = iModel.createQueryReader("SELECT ECInstanceId, ec_classname(ECClassId, 's.c') as className, Element.Id, ec_classname(Element.RelECClassId, 's.c') as relClassName FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, elementAspectId);
-    assert.equal(reader.current.ECClassId, iModel.getMetaData("ElementRoundTripTest:TestElementAspect").classId);
+    assert.equal(reader.current.className, aspectMetaData?.fullName);
     assert.equal(reader.current.Id, elementId);
-    assert.equal(reader.current.RelECClassId, iModel.getMetaData("BisCore:ElementOwnsUniqueAspect").classId);
+    assert.equal(reader.current.relClassName, relMetaData?.fullName);
     assert.isFalse(await reader.step());
 
     // Verify via an ECSql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId, Element FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElementAspect, expectedSystemProperty);
@@ -702,14 +716,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_apsect_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create an element to use with the ElementAspects
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const elId = imodel.elements.insertElement(geomElement.toJSON());
+    const elId = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(elId), "Element insertion succeeded");
 
     const expectedAspectValue = initElementAspectProps("TestElementAspect", imodel, elId, {
@@ -720,8 +734,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }) as TestElementAspect;
 
     // Insert an element aspect
-    const elementAspectId = imodel.elements.insertAspect(expectedAspectValue);
-    imodel.saveChanges();
+    const elementAspectId = withEditTxn(imodel, (txn) => {
+      return txn.insertAspect(expectedAspectValue);
+    });
 
     // Verify inserted element aspect properties
     const actualAspectValue = await verifyElementAspect(elementAspectId, expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
@@ -735,8 +750,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Update the element
-    imodel.elements.updateAspect(actualAspectValue[0]);
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => {
+      txn.updateAspect(actualAspectValue[0]);
+    });
 
     // Verify updated element aspect properties
     await verifyElementAspect(elementAspectId, actualAspectValue[0], elId, expectedAspectValue.classFullName, imodel);
@@ -755,17 +771,17 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_relationships_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // create elements to use
     const element1 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
     const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {}) as TestElement;
 
     const geomElement1 = imodel.elements.createElement(element1);
-    const elId1 = imodel.elements.insertElement(geomElement1.toJSON());
+    const elId1 = withEditTxn(imodel, (txn) => txn.insertElement(geomElement1.toJSON()));
     assert.isTrue(Id64.isValidId64(elId1), "insert of element 1 worked");
     const geomElement2 = imodel.elements.createElement(element2);
-    const elId2 = imodel.elements.insertElement(geomElement2.toJSON());
+    const elId2 = withEditTxn(imodel, (txn) => txn.insertElement(geomElement2.toJSON()));
     assert.isTrue(Id64.isValidId64(elId2), "insert of element 2 worked");
 
     // TODO: Skipping structs here, because of a bug that prevents querying from link tables that have an overflow table, by skipping the struct we reduce the amount of used columns
@@ -777,8 +793,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     const instance = expectedRelationshipValue; // imodel.relationships.createInstance(expectedRelationshipValue);
-    const relationshipId: Id64String = imodel.relationships.insertInstance(instance as any); // initElementRefersToElementsProps lies about return type.
-    imodel.saveChanges();
+    const relationshipId: Id64String = withEditTxn(imodel, (txn) => txn.insertRelationship(instance as any)); // initElementRefersToElementsProps lies about return type.
 
     // verify inserted properties
     const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
@@ -796,6 +811,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
@@ -811,21 +827,24 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       targetClassName: `ElementRoundTripTest.TestElement`,
     } as unknown as TestElementRefersToElements;
 
-    const classId = imodel.getMetaData("ElementRoundTripTest:TestElementRefersToElements").classId;
-    const testElementId = imodel.getMetaData("ElementRoundTripTest:TestElement").classId;
+    const classMetaData = await imodel.schemaContext.getSchemaItem("ElementRoundTripTest.TestElementRefersToElements", RelationshipClass);
+    assert.isDefined(classMetaData);
+    const elementMetaData = await imodel.schemaContext.getSchemaItem("ElementRoundTripTest.TestElement", EntityClass);
+    assert.isDefined(elementMetaData);
 
     // verify system properties via concurrent query
-    let reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    let reader = imodel.createQueryReader("SELECT ECInstanceId, ec_classname(ECClassId, 's.c') as className, SourceECInstanceId, ec_classname(SourceECClassId, 's.c') as srcClassName, TargetECInstanceid, ec_classname(TargetECClassId, 's.c') as trgtClassName FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, relationshipId);
-    assert.equal(reader.current.ECClassId, classId);
+    assert.equal(reader.current.className, classMetaData?.fullName);
     assert.equal(reader.current.SourceECInstanceId, elId1);
-    assert.equal(reader.current.SourceECClassId, testElementId);
+    assert.equal(reader.current.srcClassName, elementMetaData?.fullName);
     assert.equal(reader.current.TargetECInstanceid, elId2);
-    assert.equal(reader.current.TargetECClassId, testElementId);
+    assert.equal(reader.current.trgtClassName, elementMetaData?.fullName);
     assert.isFalse(await reader.step());
 
     // verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElementRefersToElements, expectedSystemProperties);
@@ -841,8 +860,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update
-    imodel.relationships.updateInstance(updatedExpectedValue.toJSON());
-    imodel.saveChanges();
+    withEditTxn(imodel, (txn) => txn.updateRelationship(updatedExpectedValue.toJSON()));
 
     // verify updated values
     const updatedValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
@@ -857,6 +875,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
@@ -864,17 +883,18 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // verify system properties via concurrent query
-    reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    reader = imodel.createQueryReader("SELECT ECInstanceId, ec_classname(ECClassId, 's.c') as className, SourceECInstanceId, ec_classname(SourceECClassId, 's.c') as srcClassName, TargetECInstanceid, ec_classname(TargetECClassId, 's.c') as trgtClassName FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, relationshipId);
-    assert.equal(reader.current.ECClassId, classId);
+    assert.equal(reader.current.className, classMetaData?.fullName);
     assert.equal(reader.current.SourceECInstanceId, elId1);
-    assert.equal(reader.current.SourceECClassId, testElementId);
+    assert.equal(reader.current.srcClassName, elementMetaData?.fullName);
     assert.equal(reader.current.TargetECInstanceid, elId2);
-    assert.equal(reader.current.TargetECClassId, testElementId);
+    assert.equal(reader.current.trgtClassName, elementMetaData?.fullName);
     assert.isFalse(await reader.step());
 
     // verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElementRefersToElements, expectedSystemProperties);
@@ -912,21 +932,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     ) => {
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
-      const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
-      const categoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "model", {});
+      const { objId } = withEditTxn(imodel, (txn) => {
+        const modelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "model");
+        const categoryId = SpatialCategory.insert(txn, IModelDb.dictionaryId, "model", {});
 
-      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
-
-      const objId = imodel.elements.insertElement({
-        classFullName: PhysicalObject.classFullName,
-        code: Code.createEmpty(),
-        model: modelId,
-        placement,
-        category: categoryId,
-        ...extraProps,
+        return {
+          objId: txn.insertElement({
+            classFullName: PhysicalObject.classFullName,
+            code: Code.createEmpty(),
+            model: modelId,
+            placement,
+            category: categoryId,
+            ...extraProps,
+          }),
+        };
       });
 
-      imodel.saveChanges();
+      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
       expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
@@ -1013,7 +1035,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_properties_null_update.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(imodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
 
     // Create an element to be used
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId, {
@@ -1025,9 +1047,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // Insert an element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = withEditTxn(imodel, (txn) => txn.insertElement(geomElement.toJSON()));
     assert.isTrue(Id64.isValidId64(id), "insert worked");
-    imodel.saveChanges();
 
     // Verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
@@ -1061,8 +1082,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       });
 
       // Update the element
-      imodel.elements.updateElement(actualValue);
-      imodel.saveChanges();
+      withEditTxn(imodel, (txn) => txn.updateElement(actualValue));
 
       // Verify updated value properties
       const updatedValue = imodel.elements.getElementProps<TestElement>(id);
@@ -1070,5 +1090,192 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }
 
     imodel.close();
+  });
+
+  describe("ECSQL to JS property name roundtrip tests", () => {
+    const testIModelPath = IModelTestUtils.prepareOutputFile(subDirName, "viewDefinition_nav_roundtrip.bim");
+    let imodel: SnapshotDb;
+
+    beforeEach(() => {
+      if (IModelJsFs.existsSync(testIModelPath))
+        IModelJsFs.removeSync(testIModelPath);
+      imodel = SnapshotDb.createEmpty(testIModelPath, { rootSubject: { name: "ViewDefinitionNavPropRoundtrip" } });
+    });
+
+    afterEach(() => {
+      if (imodel.isOpen) {
+        imodel.close();
+      }
+    });
+
+    function parseFullInstanceColumn(rawJson: any): any {
+      const parsed = typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+      parsed.classFullName = parsed.className.replace(".", ":");
+      return parsed;
+    }
+
+    function setupSpatialViewDefinitions() {
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
+      // Set up required definition elements
+      const definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definition");
+      const categoryId = SpatialCategory.insert(txn, definitionModelId, "SpatialCat", new SubCategoryAppearance());
+      const [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), false, IModelDb.rootSubjectId);
+      const modelSelectorId = ModelSelector.insert(txn, definitionModelId, "ModelSelector", [physicalModelId]);
+      const displayStyleId = DisplayStyle3d.insert(txn, definitionModelId, "DisplayStyle3d");
+      const categorySelectorId = CategorySelector.insert(txn, definitionModelId, "CategorySelector", [categoryId]);
+      const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
+
+      txn.end("save");
+      return { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange };
+    }
+
+    it("roundtrip categorySelector, displayStyle, and modelSelector properties from SpatialViewDefinition", async () => {
+      const { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange } = setupSpatialViewDefinitions();
+
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
+      const spatialView = SpatialViewDefinition.createWithCamera(
+        imodel, definitionModelId, "Test Spatial View",
+        modelSelectorId, categorySelectorId, displayStyleId, viewRange,
+      );
+      const elementId = txn.insertElement(spatialView.toJSON());
+      txn.end("save");
+
+      for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${elementId} OPTIONS USE_JS_PROP_NAMES`)) {
+        const parsed = parseFullInstanceColumn(row.toRow().$);
+
+        // Validate navigation properties in the ECSql result
+        assert.isDefined(parsed.categorySelector, "ECSQL $ should contain 'categorySelector'");
+        assert.isDefined(parsed.displayStyle, "ECSQL $ should contain 'displayStyle'");
+        assert.isDefined(parsed.modelSelector, "ECSQL $ should contain 'modelSelector'");
+
+        // Validate navigation property IDs
+        assert.isTrue(Id64.isValidId64((parsed.categorySelector as RelatedElementProps).id), "categorySelector.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.displayStyle as RelatedElementProps).id), "displayStyle.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.modelSelector as RelatedElementProps).id), "modelSelector.id should be a valid Id64");
+
+        // Try to reconstruct an element from the returned properties
+        const reconstructed = imodel.constructEntity<SpatialViewDefinition>(parsed);
+        assert.deepEqual(reconstructed.categorySelector, parsed.categorySelector);
+        assert.deepEqual(reconstructed.displayStyle, parsed.displayStyle);
+        assert.deepEqual(reconstructed.modelSelector, parsed.modelSelector);
+
+        // Deprecated Id64String props should also be valid (Backward compatibility)
+        assert.equal(reconstructed.categorySelectorId, categorySelectorId);
+        assert.equal(reconstructed.displayStyleId, displayStyleId);
+        assert.equal(reconstructed.modelSelectorId, modelSelectorId);
+
+        // Do a quick check of the setter to ensure RelClassName is preserved and only id gets overridden
+        reconstructed.categorySelectorId = "Id123";
+        reconstructed.modelSelectorId = "Id456";
+        reconstructed.displayStyleId = "Id789";
+
+        assert.deepEqual(reconstructed.categorySelector, { id: "Id123", relClassName: "BisCore.ViewDefinitionUsesCategorySelector" });
+        assert.deepEqual(reconstructed.modelSelector, { id: "Id456", relClassName: "BisCore.SpatialViewDefinitionUsesModelSelector" });
+        assert.deepEqual(reconstructed.displayStyle, { id: "Id789", relClassName: "BisCore.ViewDefinitionUsesDisplayStyle" });
+      }
+    });
+
+    it("roundtrip categorySelector, displayStyle, and modelSelector properties from OrthographicViewDefinition", async () => {
+      const { definitionModelId, modelSelectorId, displayStyleId, categorySelectorId, viewRange } = setupSpatialViewDefinitions();
+
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
+      const orthoViewId = OrthographicViewDefinition.insert(
+        txn, definitionModelId, "Test Ortho View",
+        modelSelectorId, categorySelectorId, displayStyleId, viewRange,
+      );
+      txn.end("save");
+
+      for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${orthoViewId} OPTIONS USE_JS_PROP_NAMES`)) {
+        const parsed = parseFullInstanceColumn(row.toRow().$);
+
+        // Validate navigation properties in the ECSql result
+        assert.isDefined(parsed.categorySelector, "ECSQL $ should contain 'categorySelector'");
+        assert.isDefined(parsed.displayStyle, "ECSQL $ should contain 'displayStyle'");
+        assert.isDefined(parsed.modelSelector, "ECSQL $ should contain 'modelSelector'");
+
+        // Validate navigation property IDs
+        assert.isTrue(Id64.isValidId64((parsed.categorySelector as RelatedElementProps).id), "categorySelector.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.displayStyle as RelatedElementProps).id), "displayStyle.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.modelSelector as RelatedElementProps).id), "modelSelector.id should be a valid Id64");
+
+        // Try to reconstruct an element from the returned properties
+        const reconstructed = imodel.constructEntity<OrthographicViewDefinition>(parsed);
+        assert.deepEqual(reconstructed.categorySelector, parsed.categorySelector);
+        assert.deepEqual(reconstructed.displayStyle, parsed.displayStyle);
+        assert.deepEqual(reconstructed.modelSelector, parsed.modelSelector);
+
+        // Deprecated Id64String props should also be valid (Backward compatibility)
+        assert.equal(reconstructed.categorySelectorId, categorySelectorId);
+        assert.equal(reconstructed.displayStyleId, displayStyleId);
+        assert.equal(reconstructed.modelSelectorId, modelSelectorId);
+
+        // Do a quick check of the setter to ensure RelClassName is preserved and only id gets overridden
+        reconstructed.categorySelectorId = "Id123";
+        reconstructed.modelSelectorId = "Id456";
+        reconstructed.displayStyleId = "Id789";
+
+        assert.deepEqual(reconstructed.categorySelector, { id: "Id123", relClassName: "BisCore.ViewDefinitionUsesCategorySelector" });
+        assert.deepEqual(reconstructed.modelSelector, { id: "Id456", relClassName: "BisCore.SpatialViewDefinitionUsesModelSelector" });
+        assert.deepEqual(reconstructed.displayStyle, { id: "Id789", relClassName: "BisCore.ViewDefinitionUsesDisplayStyle" });
+      }
+    });
+
+    it("roundtrip categorySelector, displayStyle, and modelSelector properties from DrawingViewDefinition", async () => {
+      const txn = new EditTxn(imodel, "roundTrip test");
+      txn.start();
+
+      const definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definition");
+      const drawingCategoryId = DrawingCategory.insert(txn, definitionModelId, "DrawingCat", new SubCategoryAppearance());
+      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), false, IModelDb.rootSubjectId);
+      const displayStyle2dId = DisplayStyle2d.insert(txn, definitionModelId, "DisplayStyle2d");
+      const categorySelectorId = CategorySelector.insert(txn, definitionModelId, "CategorySelector", [drawingCategoryId]);
+      const viewRange = new Range2d(0, 0, 100, 100);
+
+      const drawingViewId = DrawingViewDefinition.insert(
+        txn, definitionModelId, "Test Drawing View",
+        drawingModelId, categorySelectorId, displayStyle2dId, viewRange,
+      );
+      txn.end("save");
+
+      for await (const row of imodel.createQueryReader(`SELECT $ FROM bis.Element WHERE ECInstanceId = ${drawingViewId} OPTIONS USE_JS_PROP_NAMES`)) {
+        const parsed = parseFullInstanceColumn(row.toRow().$);
+
+        // Validate navigation properties in the ECSql result
+        assert.isDefined(parsed.categorySelector, "ECSQL $ should contain 'categorySelector'");
+        assert.isDefined(parsed.displayStyle, "ECSQL $ should contain 'displayStyle'");
+        assert.isDefined(parsed.baseModel, "ECSQL $ should contain 'baseModel'");
+
+        // Validate navigation property IDs
+        assert.isTrue(Id64.isValidId64((parsed.categorySelector as RelatedElementProps).id), "categorySelector.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.displayStyle as RelatedElementProps).id), "displayStyle.id should be a valid Id64");
+        assert.isTrue(Id64.isValidId64((parsed.baseModel as RelatedElementProps).id), "baseModel.id should be a valid Id64");
+
+        // Try to reconstruct an element from the returned properties
+        const reconstructed = imodel.constructEntity<DrawingViewDefinition>(parsed);
+        assert.deepEqual(reconstructed.categorySelector, parsed.categorySelector);
+        assert.deepEqual(reconstructed.displayStyle, parsed.displayStyle);
+        assert.deepEqual(reconstructed.baseModel, parsed.baseModel);
+
+        // Deprecated Id64String props should also be valid (Backward compatibility)
+        assert.equal(reconstructed.categorySelectorId, categorySelectorId);
+        assert.equal(reconstructed.displayStyleId, displayStyle2dId);
+        assert.equal(reconstructed.baseModelId, drawingModelId);
+
+        // Do a quick check of the setter to ensure RelClassName is preserved and only id gets overridden
+        reconstructed.categorySelectorId = "Id123";
+        reconstructed.baseModelId = "Id456";
+        reconstructed.displayStyleId = "Id789";
+
+        assert.deepEqual(reconstructed.categorySelector, { id: "Id123", relClassName: "BisCore.ViewDefinitionUsesCategorySelector" });
+        assert.deepEqual(reconstructed.baseModel, { id: "Id456", relClassName: "BisCore.BaseModelForView2d" });
+        assert.deepEqual(reconstructed.displayStyle, { id: "Id789", relClassName: "BisCore.ViewDefinitionUsesDisplayStyle" });
+      }
+    });
   });
 });

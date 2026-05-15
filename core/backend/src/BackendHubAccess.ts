@@ -8,11 +8,11 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
   LockState as CommonLockState, IModelError, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
+import { CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
 
 /** Exception thrown if lock cannot be acquired.
@@ -31,7 +31,7 @@ export class LockConflict extends IModelError {
 }
 
 /** The state of a lock. See [Acquiring locks on elements.]($docs/learning/backend/ConcurrencyControl.md#acquiring-locks-on-elements).
- * @deprecated in 4.7 Use [LockState]($common)
+ * @deprecated in 4.7 - will not be removed until after 2026-06-13. Use [LockState]($common)
  * @public
  */
 export enum LockState {
@@ -111,6 +111,8 @@ export interface IModelIdArg extends TokenArg {
 export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
   /** A string to be reported to other users to identify this briefcase, for example in the case of conflicts or lock collisions. */
   readonly briefcaseAlias?: string;
+  /** A string to represent the device that holds the briefcase. */
+  readonly deviceName?: string;
 }
 
 /** Argument for methods that must supply an IModel name and iTwinId
@@ -171,12 +173,6 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 }
 
 /**
- * @deprecated in 3.x. Use [[DownloadRequest]].
- * @internal
- */
-export type CheckpointArg = DownloadRequest;
-
-/**
  * Arguments to create a new iModel in iModelHub
  *  @public
  */
@@ -219,13 +215,6 @@ export interface BackendHubAccess {
   /** get an array of the briefcases assigned to a user. */
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
 
-  /**
-   * Download a v1 checkpoint
-   * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
-   * @internal
-   */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
-
   /** Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
 
@@ -235,11 +224,51 @@ export interface BackendHubAccess {
    */
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
+  /**
+   * Abandons the specified locks when none of the associated elements have
+   * been or will be modified. Depending on the {@link LockState} specified for the lock,
+   * it may be returned to the {@link LockState.Shared} state or released entirely. It is only
+   * valid to call this method when none of the elements protected by the locks have been edited, or if all edits
+   * have been reversed or abandoned without pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   *
+   * It is an error to specify {@link LockState.Exclusive} for any element, to specify {@link LockState.Shared}
+   * for an element where the Exclusive lock is not currently held, or to include any element for which no lock
+   * is currently held.
+   *
+   * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
+   * explicitly by an IModelHub, it will be implemented implicitly by calling
+   * {@link BackendHubAccess.acquireLocks} with the same locks and passing `changeset.id=""` and
+   * `changeset.index=0` in the first argument to indicate that the lock state should change without updating
+   * the changeset associated with the locks.
+   *
+   * @beta
+   */
+  abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
+
   /** Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests. */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** Release all currently held locks */
   releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
+
+  /**
+   * Abandons all currently held locks when none of the associated elements have been or will be modified.
+   * It is only valid to call this method when none of the elements protected by the locks have been edited,
+   * or if all edits have been reversed or abandoned without pushing them.
+   *
+   * The locks are released on the IModelHub, but the changeset associated with the locks is not updated.
+   *
+   * This method is optional, so not all IModelHubs will implement it. If this method is not implemented
+   * explicitly by an IModelHub, it will be implemented implicitly by calling
+   * {@link BackendHubAccess.releaseAllLocks}, passing `changeset.id=""` and `changeset.index=0` in the
+   * first argument to indicate that the lock state should change without updating the changeset associated
+   * with the locks.
+   *
+   * @beta
+   */
+  abandonAllLocks?: (arg: BriefcaseIdArg) => Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;

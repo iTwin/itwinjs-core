@@ -147,7 +147,6 @@ export class TemporaryStorage<T> implements Disposable {
 
   public notifyValueUsed(id: string) {
     const entry = this._values.get(id);
-    // istanbul ignore else
     if (entry) {
       entry.lastUsed = new Date();
     }
@@ -166,7 +165,6 @@ export class TemporaryStorage<T> implements Disposable {
 
   /** Deletes a value with given id. */
   public deleteValue(id: string) {
-    // istanbul ignore else
     if (this._values.has(id)) {
       this.deleteExistingEntry(id, false);
     }

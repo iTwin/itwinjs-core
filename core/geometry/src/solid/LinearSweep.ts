@@ -23,10 +23,9 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * A LinearSweep is a `SolidPrimitive` defined by
- * * A set of curves (any Loop, Path, or parityRegion)
+ * A LinearSweep is a `SolidPrimitive` defined by:
+ * * A set of curves (any Loop, Path, or parityRegion). If the object is "capped", the curves must be planar.
  * * A sweep vector
- * If the object is "capped", the curves must be planar.
  * @public
  */
 export class LinearSweep extends SolidPrimitive {
@@ -94,11 +93,16 @@ export class LinearSweep extends SolidPrimitive {
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
-    if (this._contour.tryTransformInPlace(transform)) {
-      transform.multiplyVector(this._direction, this._direction);
-      return true;
+    if (!this._contour.tryTransformInPlace(transform))
+      return false;
+    transform.multiplyVector(this._direction, this._direction);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse the sweep (origin and direction) to preserve outward normals
+      if (!this._contour.tryTransformInPlace(Transform.createTranslation(this._direction)))
+        return false;
+      this._direction.scaleInPlace(-1.0);
     }
-    return false;
+    return true;
   }
 
   /** Return a coordinate frame (right handed unit vectors)
@@ -134,9 +138,9 @@ export class LinearSweep extends SolidPrimitive {
    * Return the curves at a fraction along the sweep direction.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
+  public constantVSection(vFraction: number): CurveCollection {
     const section = this._contour.curves.clone();
-    if (section && vFraction !== 0.0)
+    if (vFraction !== 0.0)
       section.tryTransformInPlace(Transform.createTranslation(this._direction.scale(vFraction)));
     return section;
   }
@@ -153,6 +157,10 @@ export class LinearSweep extends SolidPrimitive {
       contourRange.high.addInPlace(this._direction);
     }
     rangeToExtend.extendRange(contourRange);
+  }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._direction.isParallelTo(this._contour.localToWorld.matrix.columnXCrossColumnY(), true, true);
   }
   /**
    * @return true if this is a closed volume.

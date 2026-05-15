@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
-import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider";
+import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
 export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {

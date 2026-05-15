@@ -84,7 +84,7 @@ export interface SqliteChange {
  * @beta
  */
 export class SqliteChangesetReader implements Disposable {
-  private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
+  private readonly _nativeReader = new IModelNative.platform.SqliteChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
@@ -130,6 +130,17 @@ export class SqliteChangesetReader implements Disposable {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Open in-memory changes for the given iModel.
+   * @param args - The arguments for opening in-memory changes.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openInMemory(args: SqliteChangesetReaderArgs & { db: IModelDb }): SqliteChangesetReader {
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false);
     return reader;
   }
   /**
@@ -229,7 +240,7 @@ export class SqliteChangesetReader implements Disposable {
    * @beta
    */
   public getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType;
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
 
   /**
@@ -306,7 +317,7 @@ export class SqliteChangesetReader implements Disposable {
    * @beta
    */
   public getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
-    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType | undefined;
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
 
   /**
@@ -416,5 +427,12 @@ export class SqliteChangesetReader implements Disposable {
    */
   public [Symbol.dispose](): void {
     this.close();
+  }
+  /**
+   * Get Data Definition Language changes
+   * @beta
+   */
+  public getDdlChanges(): string | undefined {
+    return this._nativeReader.getDdlChanges();
   }
 }

@@ -8,9 +8,9 @@ import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { Content, ContentSpecificationTypes, DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { buildTestIModelConnection, importSchema, insertDocumentPartition, insertElementAspect, insertPhysicalPartition } from "../../IModelSetupUtils";
-import { collect } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+import { buildTestIModelConnection, importSchema, insertDocumentPartition, insertElementAspect, insertPhysicalPartition } from "../../IModelSetupUtils.js";
+import { collect } from "../../Utils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Custom categories", () => {
   it("creates child class category", async function () {

@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { UnitSystem } from "../../Metadata/UnitSystem";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -19,16 +20,17 @@ describe("UnitSystem tests", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
-      expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
-      expect(testUnitSystem.schemaItemType).to.equal("UnitSystem");
+      expect(testUnitSystem.schemaItemType).toEqual(SchemaItemType.UnitSystem);
+      expect(testUnitSystem.schemaItemType).toEqual("UnitSystem");
     });
   });
 
   it("should get fullName", async () => {
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         testUnitSystem: {
           schemaItemType: "UnitSystem",
@@ -60,7 +62,7 @@ describe("UnitSystem tests", () => {
 
     let ecSchema: Schema;
 
-    before(async () => {
+    beforeAll(async () => {
       ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
       assert.isDefined(ecSchema);
     });
@@ -95,14 +97,14 @@ describe("UnitSystem tests", () => {
     });
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "UnitSystem",
         name: "IMPERIAL",
         label: "Imperial",
       };
       await testUnitSystem.fromJSON(json);
-      expect(testUnitSystem.label).to.equal("Imperial");
-      expect(testUnitSystem.description).to.be.undefined;
+      expect(testUnitSystem.label).toEqual("Imperial");
+      expect(testUnitSystem.description).toBeUndefined();
     });
 
     describe("Sync fromJson", () => {
@@ -112,14 +114,14 @@ describe("UnitSystem tests", () => {
       });
       it("Basic test", () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+          $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
           schemaItemType: "UnitSystem",
           name: "IMPERIAL",
           label: "Imperial",
         };
         testUnitSystem.fromJSONSync(json);
-        expect(testUnitSystem.label).to.equal("Imperial");
-        expect(testUnitSystem.description).to.be.undefined;
+        expect(testUnitSystem.label).toEqual("Imperial");
+        expect(testUnitSystem.description).toBeUndefined();
       });
     });
   });

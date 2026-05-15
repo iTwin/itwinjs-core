@@ -8,6 +8,7 @@ For more info and examples specific to running in the frontend and backend, chec
   - [Frontend ECSQL Code Examples](./frontend/ECSQLCodeExamples.md)
 - [Executing ECSQL in the Backend](./backend/ExecutingECSQL.md)
   - [Backend ECSQL Code Examples](./backend/ECSQLCodeExamples.md)
+  - [Backend `withQueryReader` Code Examples](./backend/WithQueryReaderCodeExamples.md) — synchronous, backend-only alternative to `createQueryReader`
 
 See also:
 
@@ -18,7 +19,7 @@ See also:
 
 All of the iModel classes above provide a `createQueryReader` method for executing ECSQL statements on an iModel and reading the results of the query. The execution and results are handled by the returned [ECSqlReader]($common).
 
-> For refererence, here are all three `createQueryReader` methods.
+> For reference, here are all three `createQueryReader` methods.
 >
 > - [IModelDb.createQueryReader]($backend)
 > - [ECDb.createQueryReader]($backend)

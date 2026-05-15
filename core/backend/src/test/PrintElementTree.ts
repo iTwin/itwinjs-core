@@ -33,7 +33,7 @@ export function printElementTree(loggerCategory: string, seen: Set<Id64String>, 
   const subModel = iModel.models.tryGetModel<Model>(elementId);
   if (subModel !== undefined) {
     Logger.logTrace(loggerCategory, `${"\t".repeat(indent)} subModel ${fmtModel(subModel)}:`);
-
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
       stmt.bindId(1, subModel.id);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {

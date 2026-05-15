@@ -2,20 +2,22 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import * as faker from "faker";
-import * as moq from "typemoq";
-import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
+import * as sinon from "sinon";
+import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common.js";
 
 describe("RegisteredRuleset", () => {
   let uniqueIdentifier: string;
-  const managerMock = moq.Mock.ofInstance(function remove(ruleset: RegisteredRuleset): void {
-    ruleset;
-  });
+  let disposeSpy: sinon.SinonSpy;
 
   beforeEach(() => {
-    managerMock.reset();
-    uniqueIdentifier = faker.random.uuid();
+    disposeSpy = sinon.spy();
+    uniqueIdentifier = "unique-id";
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("Ruleset implementation", () => {
@@ -23,29 +25,29 @@ describe("RegisteredRuleset", () => {
     let registered: RegisteredRuleset;
     beforeEach(() => {
       ruleset = {
-        id: faker.random.uuid(),
+        id: "test-ruleset",
         requiredSchemas: [
           {
-            name: faker.random.word(),
+            name: "TestSchema",
           },
         ],
         supplementationInfo: {
-          supplementationPurpose: faker.random.words(),
+          supplementationPurpose: "test-supplementation-purpose",
         },
         rules: [
           {
             ruleType: RuleTypes.RootNodes,
-            autoExpand: faker.random.boolean(),
+            autoExpand: false,
           },
         ],
         vars: [
           {
-            label: faker.random.words(),
+            label: "test label",
             vars: [],
           },
         ],
       };
-      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
+      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, disposeSpy);
     });
 
     it("returns wrapper ruleset properties", () => {
@@ -61,12 +63,12 @@ describe("RegisteredRuleset", () => {
   describe("dispose", () => {
     it("unregisters ruleset from IRulesetManager", () => {
       const ruleset: Ruleset = {
-        id: faker.random.uuid(),
+        id: "test-ruleset",
         rules: [],
       };
-      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
+      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, disposeSpy);
       registered[Symbol.dispose]();
-      managerMock.verify((x) => x(registered), moq.Times.once());
+      expect(disposeSpy).to.be.calledOnceWithExactly(registered);
     });
   });
 });

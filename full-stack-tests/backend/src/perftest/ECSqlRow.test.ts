@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
@@ -90,6 +90,7 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
@@ -100,6 +101,7 @@ function getCount(imodel: IModelDb, className: string) {
 
 function measureGetRowTime(imodel: IModelDb, className: string): number {
   let totalTime = 0.0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT * FROM ${className}`, (stmt: ECSqlStatement) => {
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const startTime = new Date().getTime();
@@ -142,22 +144,24 @@ describe("ECSqlRowPerformanceTests", () => {
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
-        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert worked");
-        }
+        withEditTxn(seedIModel, (txn) => {
+          for (let m = 0; m < size; ++m) {
+            const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
+          }
+        });
 
         assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
-        seedIModel.saveChanges();
         seedIModel.close();
       }
     }
@@ -212,23 +216,25 @@ describe("ECSqlRowPerformanceTests2d", () => {
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();
         codeProps.value = "DrawingModel";
-        const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(seedIModel, codeProps, true);
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = DrawingCategory.insert(seedIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          drawingCategoryId = withEditTxn(seedIModel, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-        for (let m = 0; m < size; ++m) {
-          const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
-          const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert worked");
-        }
+        withEditTxn(seedIModel, (txn) => {
+          for (let m = 0; m < size; ++m) {
+            const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
+            const geomElement = seedIModel.elements.createElement(elementProps);
+            const id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
+          }
+        });
 
-        seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, `PerfTestDomain:${name}`), size);
         seedIModel.close();
       }

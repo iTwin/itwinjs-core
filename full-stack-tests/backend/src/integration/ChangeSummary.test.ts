@@ -10,7 +10,7 @@ import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
+  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, EditTxn, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
@@ -36,6 +36,7 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
   const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, changeSummaryId);
   const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
     stmt.bindId(1, changeSummary.id);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -110,6 +111,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -121,6 +123,7 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 3);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -159,6 +162,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
@@ -188,6 +192,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
@@ -223,6 +228,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         let row: any = myStmt.getRow();
@@ -269,6 +275,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
@@ -295,6 +302,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT cset.WsgId changesetId FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id ORDER BY csum.ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -334,6 +342,7 @@ describe("ChangeSummary", () => {
         IModelJsFs.mkdirSync(outDir);
 
       const changeSummaries = new Array<ChangeSummary>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
         perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -350,6 +359,7 @@ describe("ChangeSummary", () => {
           IModelJsFs.unlinkSync(filePath);
 
         const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
           stmt.bindId(1, changeSummary.id);
           perfLogger = new PerfLogger(`ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary ${changeSummary.id}`);
@@ -410,28 +420,30 @@ describe("ChangeSummary", () => {
 
     // Populate the iModel with 3 elements
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: managerRequestContext, iTwinId: testITwinId, iModelId: testIModelId });
-    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
-    iModel.saveChanges("Added test model");
-    const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-    iModel.saveChanges("Added test category");
-    const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
-    const elementId2: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
-    const elementId3: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
-    iModel.saveChanges("Added test elements");
+    const txn = new EditTxn(iModel, "change summary test");
+    txn.start();
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
+    txn.saveChanges("Added test model");
+    const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+    txn.saveChanges("Added test category");
+    const elementId1: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    const elementId2: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    const elementId3: Id64String = txn.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    txn.saveChanges("Added test elements");
 
     // Setup the hierarchy as element3 -> element1
     const element3 = iModel.elements.getElement(elementId3);
     element3.parent = new ElementOwnsChildElements(elementId1);
-    iModel.elements.updateElement(element3.toJSON());
-    iModel.saveChanges("Updated element1 as the parent of element3");
+    txn.updateElement(element3.toJSON());
+    txn.saveChanges("Updated element1 as the parent of element3");
 
     // Push changes to the hub
     await iModel.pushChanges({ accessToken: managerRequestContext, description: "Setup test model" });
 
     // Modify the hierarchy to element3 -> element2
     element3.parent = new ElementOwnsChildElements(elementId2);
-    iModel.elements.updateElement(element3.toJSON());
-    iModel.saveChanges("Updated element2 as the parent of element3");
+    txn.updateElement(element3.toJSON());
+    txn.saveChanges("Updated element2 as the parent of element3");
 
     // Push changes to the hub
     await iModel.pushChanges({ accessToken: managerRequestContext, description: "Updated parent element" });
@@ -504,9 +516,10 @@ describe("ChangeSummary", () => {
     // const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryId);
     // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // eslint-disable-line
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(
-      "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId",
-      (sqlStatement: ECSqlStatement) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (sqlStatement: ECSqlStatement) => {
         sqlStatement.bindId(1, changeSummaryId);
         while (sqlStatement.step() === DbResult.BE_SQLITE_ROW) {
           const instanceChangeId = Id64.fromJSON(sqlStatement.getRow().id);
@@ -535,6 +548,7 @@ describe("ChangeSummary", () => {
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", (myStmt) => {
           myStmt.bindId(1, changeSummaryId);
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -558,6 +572,7 @@ describe("ChangeSummary", () => {
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", (myStmt) => {
           myStmt.bindId(1, changeSummaryId);
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -594,6 +609,7 @@ describe("ChangeSummary", () => {
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -604,6 +620,7 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 4);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -633,6 +650,7 @@ describe("ChangeSummary", () => {
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -643,6 +661,7 @@ describe("ChangeSummary", () => {
         assert.strictEqual(rowCount, 1);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {

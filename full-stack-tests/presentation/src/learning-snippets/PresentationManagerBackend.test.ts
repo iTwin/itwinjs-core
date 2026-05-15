@@ -2,11 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import { DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, traverseContentItem, Value } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
+import { createContentTraverser, DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, Value } from "@itwin/presentation-common";
+import { initialize, terminate } from "../IntegrationTests.js";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
+import { collect } from "../Utils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelDb;
@@ -110,18 +112,19 @@ describe("Learning Snippets", () => {
             return { rawValue, displayValue };
           }
         }
+        const propertiesBuilder = new PrimitivePropertiesBuilder();
+        const traverseContent = createContentTraverser(propertiesBuilder);
         const result = await Presentation.getManager().getElementProperties({
           imodel,
           contentParser(descriptor, item) {
-            const builder = new PrimitivePropertiesBuilder();
-            traverseContentItem(builder, descriptor, item);
-            return builder.getResult();
+            traverseContent(descriptor, [item]);
+            return propertiesBuilder.getResult();
           },
           elementClasses: ["BisCore:PhysicalPartition"],
         });
         // __PUBLISH_EXTRACT_END__
 
-        const batches = await fromAsync(result.iterator());
+        const batches = await collect(result.iterator());
         expect(batches).to.have.lengthOf(1);
         const firstBatch = batches[0];
         expect(firstBatch)
@@ -143,11 +146,3 @@ describe("Learning Snippets", () => {
     });
   });
 });
-
-async function fromAsync<T>(source: Iterable<T> | AsyncIterable<T>): Promise<T[]> {
-  const items: T[] = [];
-  for await (const item of source) {
-    items.push(item);
-  }
-  return items;
-}

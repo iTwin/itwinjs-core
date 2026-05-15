@@ -7,17 +7,19 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, GetMetaDataFunction, IModelStatus, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getITwinErrorMetaData, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
-  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, isITwinError, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  BriefcaseConnectionProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
+  StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
@@ -172,41 +174,63 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        let ret: IpcInvokeReturn;
-        let metadata: Exclude<LoggingMetaData, GetMetaDataFunction>;
-        if (isITwinError(err)) {
-          const { namespace, errorKey, message, stack, ...rest } = err;
-          if(rest.metadata)
-            metadata = getITwinErrorMetaData(err);
-          ret = {
-            iTwinError:
-            {
-              namespace,
-              errorKey,
-              message,
-              ...(metadata && { metadata }), // Include metadata only when defined
-              ...rest
-            },
-          };
-          if (!IpcHost.noStack)
-            ret.iTwinError.stack = stack;
-        } else {
-          metadata = BentleyError.getErrorMetadata(err);
+      } catch (err: unknown) {
 
-          ret = {
-            error:
-            {
-              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-              message: err.message ?? BentleyError.getErrorMessage(err),
-              errorNumber: err.errorNumber ?? 0,
-              ...(metadata && { metadata }), // Include metadata only when defined.
-            },
-          };
-          if (!IpcHost.noStack)
-            ret.error.stack = BentleyError.getErrorStack(err);
-        }
-        return ret;
+        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
+          return { error: err };
+
+        const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
+          if (visited.has(e))
+            return undefined;
+          visited.add(e);
+          try {
+            const serialized: any = { ...e };
+
+            for (const sym of Object.getOwnPropertySymbols(serialized))
+              delete serialized[sym]; // symbol-keyed properties cannot be structured-cloned
+
+            if (e instanceof Error) {
+              serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
+              if (includeStack)
+                serialized.stack = e.stack;
+
+              // Error.cause is typically non-enumerable and must be copied explicitly.
+              if (Object.prototype.hasOwnProperty.call(e, "cause"))
+                serialized.cause = (e as { cause?: unknown }).cause;
+            }
+
+            if (e instanceof BentleyError) {
+              serialized.iTwinErrorId = e.iTwinErrorId;
+              if (e.hasMetaData)
+                serialized.loggingMetadata = e.loggingMetadata;
+              delete serialized._metaData;
+            }
+
+            // Only recurse into Error instances and plain objects — not class instances like Date or Buffer.
+            const shouldRecurse = (val: any) => val instanceof Error || (JsonUtils.isObject(val) && Object.getPrototypeOf(val) === Object.prototype);
+            const isSerializableLeaf = (val: unknown): boolean => {
+              const t = typeof val;
+              return val === null || val === undefined || val instanceof Date
+                || t === "string" || t === "number" || t === "boolean";
+            };
+            for (const key of Object.keys(serialized)) {
+              const val = serialized[key];
+              if (Array.isArray(val))
+                serialized[key] = val.map((item) => shouldRecurse(item) ? serializeError(item, includeStack, visited) : isSerializableLeaf(item) ? item : undefined);
+              else if (shouldRecurse(val))
+                serialized[key] = serializeError(val, includeStack, visited);
+              else if (!isSerializableLeaf(val))
+                delete serialized[key]; // strip non-cloneable values (functions, class instances, etc.)
+            }
+
+            return serialized;
+          } finally {
+            // Remove from the stack so a sibling branch can still serialize this object.
+            visited.delete(e);
+          }
+        };
+
+        return { error: serializeError(err, !IpcHost.noStack) };
       }
     });
   }
@@ -243,7 +267,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
     return IModelDb.findByKey(key)[_nativeDb].cancelElementGraphicsRequests(requestIds);
   }
-  public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
+  public async openBriefcase(args: OpenBriefcaseProps): Promise<BriefcaseConnectionProps> {
     const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }
@@ -266,10 +290,10 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     IModelDb.findByKey(key).close();
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
-    IModelDb.findByKey(key).saveChanges(description);
+    IModelDb.findByKey(key)[_implicitTxn].saveChanges(description);
   }
   public async abandonChanges(key: string): Promise<void> {
-    IModelDb.findByKey(key).abandonChanges();
+    IModelDb.findByKey(key)[_implicitTxn].abandonChanges();
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
@@ -335,16 +359,31 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseTxns(numOperations);
+    return BriefcaseDb.findByKey(key).txns.reverseTxns(numOperations);
   }
+
+  public async reverseTxnsAsync(key: string, numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reverseTxnsAsync(numOperations, args);
+  }
+
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseAll();
+    return BriefcaseDb.findByKey(key).txns.reverseAll();
   }
+
+  public async reverseAllTxnsAsync(key: string, args?: ReverseTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reverseAllTxnsAsync(args);
+  }
+
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reinstateTxn();
+    return BriefcaseDb.findByKey(key).txns.reinstateTxn();
   }
+
+  public async reinstateTxnAsync(key: string, args?: ReinstateTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reinstateTxnAsync(args);
+  }
+
   public async restartTxnSession(key: string): Promise<void> {
-    return IModelDb.findByKey(key)[_nativeDb].restartTxnSession();
+    return IModelDb.findByKey(key).restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

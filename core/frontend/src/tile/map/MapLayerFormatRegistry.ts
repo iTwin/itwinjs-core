@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, Logger } from "@itwin/core-bentley";
+import { assert, expectDefined, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -170,7 +170,7 @@ export class MapLayerFormatRegistry {
       Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
       return undefined;
     }
-    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel);
   }
 
   /**
@@ -181,7 +181,7 @@ export class MapLayerFormatRegistry {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (this._configOptions[layerSettings.formatId] !== undefined) {
-      const keyValuePair = this._configOptions[layerSettings.formatId]!;
+      const keyValuePair = expectDefined(this._configOptions[layerSettings.formatId]);
       const key: MapLayerKey = { key: keyValuePair.key, value: keyValuePair.value };
       layerSettings = layerSettings.clone({ accessKey: key });
     }

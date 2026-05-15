@@ -17,6 +17,7 @@ import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./Cur
 import { GeometryQuery } from "./GeometryQuery";
 import { AppendPlaneIntersectionStrokeHandler } from "./internalContexts/AppendPlaneIntersectionStrokeHandler";
 import { ClosestPointStrokeHandler } from "./internalContexts/ClosestPointStrokeHandler";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CurveLengthContext } from "./internalContexts/CurveLengthContext";
 import { LineString3d } from "./LineString3d";
 
@@ -82,6 +83,40 @@ export type AnnounceNumberNumber = (a0: number, a1: number) => void;
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
 /**
+ * Options for computing tangents to a curve from a fixed point `P`.
+ * See [[CurvePrimitive.emitTangents]], [[CurvePrimitive.allTangents]], and [[CurvePrimitive.closestTangent]].
+ * @public
+ */
+export interface TangentOptions {
+  /**
+   * The tangent point returned by [[CurvePrimitive.closestTangent]] is nearest to this point as seen in the view plane.
+   * * Default value is the fixed point `P`.
+   */
+  hintPoint?: Point3d,
+  /**
+   * Tangents are computed as seen in a view plane perpendicular to this vector.
+   * * Default value is (0,0,1), i.e., tangents are computed as seen in the top view.
+   */
+  vectorToEye?: Vector3d,
+  /** Stroke options for default stroke-based implementations. */
+  strokeOptions?: StrokeOptions,
+  /**
+   * Compute tangents to the curve extended according to variant type.
+   * * This option is ignored for linear segments and linestrings.
+   * * Default value is `false`.
+   */
+  extend?: VariantCurveExtendParameter,
+  /**
+   * Distance tolerance, interpreted as follows:
+   * * Maximum distance of `P` from the tangent plane at curve point `Q` in order for `Q-P` to be considered a
+   * tangent to the curve.
+   * * Minimum length of a line/stroke segment for which to consider computing a tangent.
+   * * Default value is [[Geometry.smallMetricDistance]].
+   */
+  distanceTol?: number,
+}
+
+/**
  * A curve primitive is bounded.
  * A curve primitive maps fractions in 0..1 to points in space.
  * As the fraction proceeds from 0 towards 1, the point moves "forward" along the curve.
@@ -139,8 +174,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
   /**
    * Returns a ray whose origin is the curve point and direction is the unit tangent.
-   * @param fraction fractional position on the curve
+   * @param fraction fractional position on the curve.
    * @param result optional preallocated ray.
+   * @returns tangent ray with normalized direction or zero vector if the derivative vanishes.
    */
   public fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d {
     const ray = this.fractionToPointAndDerivative(fraction, result);
@@ -153,7 +189,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param fraction fractional position on the curve
    */
   public fractionToCurvature(fraction: number): number | undefined {
-    const data = this.fractionToPointAnd2Derivatives(fraction)!;
+    const data = this.fractionToPointAnd2Derivatives(fraction);
+    if (!data)
+      return undefined;
     const cross = data.vectorU.crossProduct(data.vectorV);
     const a = cross.magnitude();
     const b = data.vectorU.magnitude();
@@ -173,7 +211,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     fraction: number, result?: Plane3dByOriginAndVectors
   ): Plane3dByOriginAndVectors | undefined;
   /**
-   * Construct a frenet frame:
+   * Construct a Frenet frame:
    * * origin at the point on the curve
    * * x axis is unit vector along the curve (tangent)
    * * y axis is perpendicular and in the plane of the osculating circle. y axis is called "main normal"
@@ -377,8 +415,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * do not allow movement beyond the startPoint or endpoint
    * @param result optional result.
    * @returns A CurveLocationDetail annotated as above. Note that if the curve does not support the calculation, there is
-   * still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState`
-   * member
+   * still a result which contains the point at the input startFraction, with failure indicated in the `curveSearchStatus`
+   * member.
    */
   public moveSignedDistanceFromFraction(
     startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail,
@@ -528,31 +566,102 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
    * succeed.
    * @param spacePoint point in space.
-   * @param extend if applicable, compute the closest point to the curve extended according to variant type:
-   * * false: do not extend the curve
-   * * true: extend the curve at both start and end
-   * * CurveExtendOptions: extend the curve in the specified manner at both start and end
-   * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored
-   * @param result optional pre-allocated detail to populate and return.
-   * @returns details of the closest point.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details `d` of the closest point. The distance from spacePoint to the closest point is stored in `d.a`.
    */
   public closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
   }
   /**
-   * Find intervals of this curvePrimitive that are interior to a clipper
+   * Search for a point on the curve that is closest to `spacePoint`, ignoring z-coordinates.
+   * * This is equivalent to finding the closest point as seen in the top view.
+   * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
+   * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
+   * succeed.
+   * @param spacePoint point in space.
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false).
+   * @param result (optional) pre-allocated detail to populate and return.
+   * @returns details `d` of the closest point. The distance from spacePoint to the closest point is stored in `d.a`.
+   */
+  public closestPointXY(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result, true);
+    this.emitStrokableParts(strokeHandler);
+    return strokeHandler.claimResult();
+  }
+  /**
+   * Announce all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve in
+   * the view defined by `options.vectorToEye`.
+   * * Strictly speaking, each tangent line lies in the plane through `P` whose normal is the cross product of the curve
+   * tangent at `P` and `options.vectorToEye`. This is equivalent to tangency as seen in a view plane perpendicular to
+   * `options.vectorToEye`.
+   * @param spacePoint point in space.
+   * @param announceTangent callback to announce each computed tangent. The received [[CurveLocationDetail]] is reused
+   * internally, so it should be cloned in the callback if it needs to be saved.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   */
+  public emitTangents(
+    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
+  ): void {
+    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, options);
+    this.emitStrokableParts(strokeHandler, options?.strokeOptions);
+  }
+  /**
+   * Return all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve in
+   * the view defined by `options.vectorToEye`.
+   * * See [[emitTangents]] for the definition of tangency employed.
+   * @param spacePoint point in space.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   * @returns an array of details of all tangent points or undefined if no tangent was found.
+   */
+  public allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined {
+    const tangents: CurveLocationDetail[] = [];
+    this.emitTangents(spacePoint, (t: CurveLocationDetail) => tangents.push(t.clone()), options);
+    return (tangents.length === 0) ? undefined : tangents;
+  }
+  /**
+   * Return the point `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve in
+   * the view defined by `options.vectorToEye`, and `P` is closest to `options.hintPoint` in this view.
+   * * See [[emitTangents]] for the definition of tangency employed.
+   * @param spacePoint point in space.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   * @returns the detail of the closest tangent point or undefined if no tangent was found.
+   */
+  public closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined {
+    const hint = options?.hintPoint ?? spacePoint;
+    let toLocal: Matrix3d | undefined;
+    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({ x: 0, y: 0, z: 1 }))
+      toLocal = Matrix3d.createRigidViewAxesZTowardsEye(options.vectorToEye.x, options.vectorToEye.y, options.vectorToEye.z);
+    const measureHintDist2 = (pt: Point3d): number => { // measure distance to hint in view plane coordinates
+      return toLocal?.multiplyTransposeXYZ(hint.x - pt.x, hint.y - pt.y, hint.z - pt.z).magnitudeSquaredXY() ?? pt.distanceSquaredXY(hint);
+    };
+    let closestTangent: CurveLocationDetail | undefined;
+    let closestDist2 = Geometry.largeCoordinateResult;
+    const collectClosestTangent = (tangent: CurveLocationDetail) => {
+      const dist2 = measureHintDist2(tangent.point);
+      if (!closestTangent || dist2 < closestDist2) {
+        closestTangent = tangent.clone(closestTangent);
+        closestDist2 = dist2;
+      }
+    };
+    this.emitTangents(spacePoint, collectClosestTangent, options);
+    return closestTangent;
+  }
+  /**
+   * Find intervals of this curve that are interior to the clipper.
+   * * Default implementation calls `clipper.announceClippedCurveIntervals`; subclasses can implement more efficiently as necessary.
    * @param clipper clip structure (e.g. clip planes)
-   * @param announce (optional) function to be called announcing fractional intervals
-   * `announce(fraction0, fraction1, curvePrimitive)`
+   * @param announce (optional) called to announce each fractional interval: `announce(fraction0, fraction1, this)`
    * @returns true if any "in" segments are announced.
    */
-  public announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    // DEFAULT IMPLEMENTATION -- no interior parts
-    return false;
+  public announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return clipper.announceClippedCurveIntervals?.(this, announce) ?? false;
   }
   /** Return a deep clone. */
   public abstract override clone(): CurvePrimitive;
@@ -687,7 +796,19 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public endPoint(result?: Point3d): Point3d {
     return this.fractionToPoint(1.0, result);
   }
-  /** Add strokes to caller-supplied linestring (function updates `dest`) */
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
+  }
+
+  /** Append stroke points to caller-supplied linestring. */
   public abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
   /**
    * Ask the curve to announce points and simple subcurve fragments for stroking.
@@ -697,17 +818,17 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * Return the stroke count required for given options.
    * * This returns a single number
-   * * See computeComponentStrokeCountForOptions to get structured per-component counts and fraction mappings.
+   * * See [[computeAndAttachRecursiveStrokeCounts]] to get structured per-component counts and fraction mappings.
    * @param options StrokeOptions that determine count
    */
   public abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
   /**
    * Attach StrokeCountMap structure to this primitive (and recursively to any children)
-   * * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and attaches it.
-   * * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   * * Subdivided primitives (linestring, bspline curve) implement themselves and attach a StrokeCountMap containing the
+   * * Base class implementation (here) gets the simple count from [[computeStrokeCountForOptions]] and attaches it.
+   * * [[LineString3d]], [[Arc3d]], [[BezierCurve3d]], [[BezierCurve3dH]] accept that default.
+   * * Subdivided primitives ([[LineString3d]], [[BSplineCurve3d]]) implement themselves and attach a StrokeCountMap containing the
    *       total count, and also containing an array of StrokeCountMap per component.
-   * * For CurvePrimitiveWithDistanceIndex, the top level gets (only) a total count, and each child gets
+   * * For [[CurveChainWithDistanceIndex]], the top level gets (only) a total count, and each child gets
    *       its own StrokeCountMap with appropriate structure.
    * @param options StrokeOptions that determine count
    * @param parentStrokeMap optional map from parent.  Its count, curveLength, and a1 values are increased with count
@@ -724,11 +845,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /**
    * Evaluate strokes at fractions indicated in a StrokeCountMap.
-   *   * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and strokes at
+   *   * Base class implementation (here) gets the simple count from [[computeStrokeCountForOptions]] and strokes at
    * uniform fractions.
-   *   * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   *   * Subdivided primitives (linestring, bspline curve) implement themselves and evaluate within components.
-   *   * CurvePrimitiveWithDistanceIndex recurses to its children.
+   *   * [[LineString3d]], [[Arc3d]], [[BezierCurve3d]], [[BezierCurve3dH]] accept that default.
+   *   * Subdivided primitives ([[LineString3d]], [[BSplineCurve3d]]) implement themselves and evaluate within components.
+   *   * [[CurveChainWithDistanceIndex]] recurses to its children.
    * * if packedFraction and packedDerivative arrays are present in the LineString3d, fill them.
    * @param map = stroke count data.
    * @param linestring = receiver linestring.
@@ -759,7 +880,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * Return an array containing only the curve primitives.
    * * This DEFAULT implementation simply pushes `this` to the collectorArray.
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
-   * @param smallestPossiblePrimitives if true, a [[CurvePrimitiveWithDistanceIndex]] recurses on its (otherwise hidden)
+   * @param smallestPossiblePrimitives if true, a [[CurveChainWithDistanceIndex]] recurses on its (otherwise hidden)
    * children. If false, it returns only itself.
    * @param explodeLinestrings if true, push a [[LineSegment3d]] for each segment of a [[LineString3d]]. If false,
    * push only the [[LineString3d]].
@@ -774,8 +895,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * This DEFAULT implementation captures the optional collector and calls [[collectCurvePrimitivesGo]].
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without
    * clearing the array.)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true,
-   * it recurses to its (otherwise hidden) children.
+   * @param smallestPossiblePrimitives if false (default), a [[CurveChainWithDistanceIndex]] returns only itself;
+   * otherwise, it recurses to its (otherwise hidden) children.
+   * @param explodeLinestrings whether to return [[LineSegment3d]]s for a [[LineString3d]] (default false).
    */
   public collectCurvePrimitives(
     collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLinestrings: boolean = false,

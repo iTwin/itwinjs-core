@@ -14,7 +14,7 @@ import { DiagnosticCategory } from "../../Validation/Diagnostic";
 import { SchemaValidationVisitor } from "../../Validation/SchemaValidationVisitor";
 import { ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";
 
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+import * as sinon from "sinon";
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;
@@ -325,7 +325,7 @@ describe("SchemaValidationVisitor tests", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       const property = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      await visitor.visitProperty(property as AnyProperty);
+      await visitor.visitProperty(property);
 
       ruleSet.propertyRules.forEach((spy) => expect(spy.calledOnceWithExactly(property)).to.be.true);
     });
@@ -347,7 +347,7 @@ describe("SchemaValidationVisitor tests", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      const properties = [...entityClass.properties!];
+      const properties = Array.from(await entityClass.getProperties(true));
       await visitor.visitProperty(properties[0] as AnyProperty);
 
       const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(properties[0] as AnyProperty, ["Param1", "Param2"]);
@@ -363,7 +363,7 @@ describe("SchemaValidationVisitor tests", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      const properties = [...entityClass.properties!];
+      const properties = Array.from(await entityClass.getProperties(true));
       await visitor.visitProperty(properties[0] as AnyProperty);
 
       expect(reportSpy.notCalled).to.be.true;
@@ -380,7 +380,7 @@ describe("SchemaValidationVisitor tests", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      const properties = [...entityClass.properties!];
+      const properties = Array.from(await entityClass.getProperties(true));
       await visitor.visitProperty(properties[0] as AnyProperty);
 
       const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(properties[0] as AnyProperty, ["Param1", "Param2"]);
@@ -399,7 +399,7 @@ describe("SchemaValidationVisitor tests", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      const properties = [...entityClass.properties!];
+      const properties = Array.from(await entityClass.getProperties(true));
       await visitor.visitProperty(properties[0] as AnyProperty);
 
       const diagnostic = new TestDiagnostics.FailingPropertyDiagnostic(properties[0] as AnyProperty, ["Param1", "Param2"]);
@@ -934,8 +934,8 @@ describe("SchemaValidationVisitor tests", () => {
       const property = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
       (property as unknown as MutableProperty).addCustomAttribute({ className: "TestSchema.TestCA" });
 
-      const properties = [...entityClass.properties!];
-      await visitor.visitCustomAttributeContainer(properties[0] as AnyProperty);
+      const properties = Array.from(await entityClass.getProperties(true));
+      await visitor.visitCustomAttributeContainer(properties[0]);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(properties[0])).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(properties[0], property.customAttributes!.get("TestSchema.TestCA")!)).to.be.true);
@@ -948,8 +948,8 @@ describe("SchemaValidationVisitor tests", () => {
       const property = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
       (property as unknown as MutableProperty).addCustomAttribute({ className: "TestSchema.TestCA" });
 
-      const properties = [...entityClass.properties!];
-      await visitor.visitCustomAttributeContainer(properties[0] as AnyProperty);
+      const properties = Array.from(await entityClass.getProperties(true));
+      await visitor.visitCustomAttributeContainer(properties[0]);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.notCalled).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.notCalled).to.be.true);

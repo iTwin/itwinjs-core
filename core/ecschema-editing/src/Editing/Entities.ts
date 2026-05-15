@@ -40,7 +40,7 @@ export class Entities extends ECClasses {
       if (!(await (baseClass).is("Element", "BisCore"))) {
         throw new SchemaEditingError(ECEditingStatus.BaseClassIsNotElement, new ClassId(this.schemaItemType, baseClassKey));
       }
-    } catch(e: any){
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateElement, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
 
@@ -53,7 +53,7 @@ export class Entities extends ECClasses {
       if (!(await (baseClass).is("ElementUniqueAspect", "BisCore"))) {
         throw new SchemaEditingError(ECEditingStatus.BaseClassIsNotElementUniqueAspect, new ClassId(this.schemaItemType, baseClassKey));
       }
-    } catch(e: any){
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateElement, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
 
@@ -66,7 +66,7 @@ export class Entities extends ECClasses {
       if (!(await (baseClass).is("ElementMultiAspect", "BisCore"))) {
         throw new SchemaEditingError(ECEditingStatus.BaseClassIsNotElementMultiAspect, new ClassId(this.schemaItemType, baseClassKey));
       }
-    } catch(e: any){
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateElement, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
 
@@ -99,7 +99,7 @@ export class Entities extends ECClasses {
       const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createEntityClass.bind(schema), entityProps);
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, entityProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, entityProps.name ?? "Unknown", schemaKey), e);
     }
   }
 
@@ -108,7 +108,7 @@ export class Entities extends ECClasses {
       const entity = await this.getSchemaItem(entityKey, MutableEntityClass);
       const mixin = await this.getSchemaItem(mixinKey, Mixin);
       entity.addMixin(mixin);
-    } catch(e: any){
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddMixin, new ClassId(SchemaItemType.EntityClass, entityKey), e);
     }
   }
@@ -117,7 +117,7 @@ export class Entities extends ECClasses {
     try {
       const entity = await this.getSchemaItem(entityKey, MutableEntityClass);
       await entity.createNavigationProperty(name, relationship, direction);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.RelationshipClass, entityKey), e);
     }
   }
@@ -132,7 +132,7 @@ export class Entities extends ECClasses {
       const entity = await this.getSchemaItem(classKey, MutableEntityClass);
       const property = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
       await property.fromJSON(navigationProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromProps, new ClassId(SchemaItemType.EntityClass, classKey), e);
     }
   }

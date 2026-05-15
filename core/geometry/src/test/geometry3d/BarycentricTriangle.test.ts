@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -19,6 +18,7 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { getRandomNumber } from "../testFunctions";
 
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {
@@ -253,11 +253,6 @@ describe("BarycentricTriangle", () => {
   });
 });
 
-/** Return a random number between -100 and 100 */
-function getRandomNumber() {
-  return 200 * Math.random() - 100;
-}
-
 describe("BarycentricTriangle.intersectRay3d", () => {
   it("BarycentricTriangle.intersectRay3d", () => {
     const ck = new Checker();
@@ -273,8 +268,8 @@ describe("BarycentricTriangle.intersectRay3d", () => {
     let rotatedIntersectionPoint: TriangleLocationDetail; // rotate ray and triangle and then find intersection
     let rotatedOriginalIntersectionPoint = Point3d.createZero(); // find intersection and then rotate the intersection
     let rotationMatrix: Matrix3d;
-    const angle: Angle = Angle.createDegrees(getRandomNumber());
-    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber());
+    const angle: Angle = Angle.createDegrees(getRandomNumber(-100, 100));
+    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100));
     if (!rotationAxis.magnitude()) {
       rotationMatrix = Matrix3d.identity;
     } else {

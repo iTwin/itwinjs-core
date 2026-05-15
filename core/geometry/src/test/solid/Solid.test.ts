@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
-import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -23,9 +24,9 @@ import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
+import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
@@ -34,7 +35,33 @@ import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+
+type AnnouncePolyface = (source: GeometryQuery, polyface: IndexedPolyface) => void;
+
+// output the geometry, then its facets shifted vertically.
+// return the geometry range
+function transformAndFacet(allGeometry: GeometryQuery[],
+  g: GeometryQuery,
+  transform: Transform | undefined,
+  options: StrokeOptions | undefined,
+  x0: number, y0: number,
+  announcePolyface?: AnnouncePolyface): Range3d {
+  const g1 = transform ? g.cloneTransformed(transform) : g;
+  if (g1) {
+    const builder = PolyfaceBuilder.create(options);
+    builder.addGeometryQuery(g1);
+    const facets = builder.claimPolyface();
+    const range = g1.range();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0 + 2.0 * range.yLength());
+    if (announcePolyface !== undefined)
+      announcePolyface(g1, facets);
+    return range;
+  }
+  return Range3d.createNull();
+}
 
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
@@ -62,6 +89,7 @@ function exerciseUVToWorld(ck: Checker, s: SolidPrimitive, u: number, v: number,
       GeometryCoreTestIO.consoleLog(" V", vector01, plane00.vectorV);
   }
 }
+
 function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), Matrix3d.createUniformScale(2));
   for (const s of solids) {
@@ -120,6 +148,7 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
     }
   }
 }
+
 describe("Solids", () => {
   it("Cones", () => {
     const ck = new Checker();
@@ -354,35 +383,22 @@ describe("Solids", () => {
     const ck = new Checker();
     const sweeps = Sample.createSimpleRotationalSweeps();
     const transforms = [
-      Transform.createTranslationXYZ(10, 0, 0),
-      Transform.createTranslationXYZ(0, 20, 0),
-      Transform.createTranslationXYZ(20, 0, 0), // Maybe harder than first pass because dx changes?
-      Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(2)),
-      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2))];
+      Transform.createTranslationXYZ(5, 0, 0),
+      Transform.createTranslationXYZ(0, 10, 0),
+      Transform.createTranslationXYZ(0, 0, 10),
+      Transform.createOriginAndMatrix(Point3d.create(5, 0, 0), Matrix3d.createUniformScale(2)),
+      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2)),
+    ];
     const allGeometry: GeometryQuery[] = [];
     let dy = 0;
-    const unitBox = Sample.createRangeEdges(Range3d.createXYZXYZ(0, 0, 0, 1, 3, 0.25))!;
-    /*
-        for (const s of sweeps) {
-          GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
-        }
-        */
-    for (let sampleIndex = 0; sampleIndex < sweeps.length; sampleIndex += 2) {  // increment by 2 to skip cap variants
-      let dx = 100;
-      const s = sweeps[sampleIndex];
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0.5 * dx, dy);
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, 0.5 * dy);
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
-      GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone(), dx, dy);
-      const range = s.range();
-      const rangeEdges = Sample.createRangeEdges(range)!;
-      GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges, dx, dy);
-      for (let transformIndex = 0; transformIndex < 4; transformIndex++) {
-        const transform = transforms[transformIndex];
-        GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone(), dx, dy);
-        const s1 = s.cloneTransformed(transform);
+    for (let sweep = 0; sweep < sweeps.length; sweep += 2) { // increment by 2 to skip cap variants
+      let dx = 0;
+      const s = sweeps[sweep];
+      const rangeEdges = Sample.createRangeEdges(s.range())!;
+      for (const transform of transforms) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges.clone(), dx, dy);
         GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
+        const s1 = s.cloneTransformed(transform);
         GeometryCoreTestIO.captureGeometry(allGeometry, s1, dx, dy);
         /*
         GeometryCoreTestIO.captureGeometry(allGeometry, s.clone()!, dx, dy);
@@ -390,19 +406,31 @@ describe("Solids", () => {
           const section = s1.constantVSection(vFraction)!;
           GeometryCoreTestIO.captureGeometry(allGeometry, section, dx, dy);
         }
-
         const range1 = s1.range();
         const rangeEdges1 = Sample.createRangeEdges(range1)!;
         GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges1, dx, dy);
         */
-        dx += 100.0;
+        dx += 20.0;
       }
-      dy += 100.0;
+      dy += 30.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "RotationalSweep");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("RotationalSweepsIsAlmostEqual", () => {
+    const ck = new Checker();
 
+    const base = Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 0, 0), 2, 3));
+    const axis = Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0);
+    const sweep1 = RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!;
+    const sweep2 = RotationalSweep.create(base, axis, Angle.createDegrees(150.0), false)!;
+    const sweep3 = RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!;
+
+    ck.testFalse(sweep1.isAlmostEqual(sweep2), "sweep1 and sweep2 are not equal (different sweep angles)");
+    ck.testTrue(sweep1.isAlmostEqual(sweep3), "sweep1 and sweep2 are equal");
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("RuledSweeps", () => {
     const ck = new Checker();
     const sweeps = Sample.createRuledSweeps(true, true);
@@ -522,47 +550,185 @@ describe("Solids", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "DgnSolids");
     expect(ck.getNumErrors()).toBe(0);
   });
-});
 
-describe("CurveCurve", () => {
-  it("Mismatches", () => {
+  it("LinearSweepWithHoles", () => {
     const ck = new Checker();
-    const segment = LineSegment3d.createXYZXYZ(1, 2, 2, 4, 2, -1);
-    const arc = Arc3d.createUnitCircle();
-    const points = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)];
-    const bcurve = BSplineCurve3d.createUniformKnots(points, 3)!;
-    const linestring = LineString3d.create(points);
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, arc));
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, linestring));
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, bcurve));
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, linestring));
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(linestring, 0.5, arc));
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, bcurve));
-    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(bcurve, 0.5, segment));
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const outer = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3)));
+    const hole0 = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1)));
+    const hole1 = Loop.create(LineString3d.create(Sample.createRectangleXY(2.5, 0.5, 1, 1)));
+    const sweepVec = Vector3d.create(0, 0, 4);
+    const options = StrokeOptions.createForFacets();
+
+    const testSweepMesh = (sweep: LinearSweep | undefined, expectedNumVisibleEdges: number): void => {
+      if (ck.testDefined(sweep, "created sweep")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep, x0 += 10, y0);
+        const builder = PolyfaceBuilder.create(options);
+        builder.addLinearSweep(sweep);
+        const mesh = builder.claimPolyface(true);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0 += 10, y0);
+        ck.testTrue(PolyfaceQuery.isPolyfaceManifold(mesh), "faceted linear sweep has no boundary edges");
+        let numVisibleEdges = 0;  // double-counted
+        for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet(); )
+          numVisibleEdges += visitor.edgeVisible.filter((edgeIsVisible: boolean) => edgeIsVisible).length;
+        ck.testExactNumber(expectedNumVisibleEdges, numVisibleEdges / 2, "faceted linear sweep has no extraneous visible edges");
+      }
+    };
+
+    // regionBooleanXY used to create a split-washer whose meshed sweep had extraneous visible edges, and boundary edges
+    const puncturedShape = RegionOps.regionBooleanXY(outer, [hole0, hole1], RegionBinaryOpType.AMinusB);
+    if (ck.testDefined(puncturedShape, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, puncturedShape, x0, y0);
+      ck.testType(puncturedShape, ParityRegion, "boolean subtract resulted in a ParityRegion");
+      const sweep1 = LinearSweep.create(puncturedShape, sweepVec, true);
+      testSweepMesh(sweep1, 36);
+    }
+    x0 = 0;
+    y0 += 10;
+    // this mesh has no extraneous visible edges and no boundary edges
+    const parityRegion = RegionOps.sortOuterAndHoleLoopsXY([outer, hole0, hole1]);
+    if (ck.testDefined(parityRegion, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, parityRegion, x0, y0);
+      ck.testType(parityRegion, ParityRegion, "sortOuterAndHoleLoopsXY resulted in a ParityRegion");
+      const sweep2 = LinearSweep.create(parityRegion, sweepVec, true);
+      testSweepMesh(sweep2, 36);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "LinearSweepWithHoles");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("IsSkew", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.createZero();
+    const solids: SolidPrimitive[] = [];
+    let x0 = 0;
+
+    // ---- Cone.isSkew ----
+    // Non-skew: createAxisPoints always builds an orthogonal (rigid) local frame.
+    const nonSkewCone = Cone.createAxisPoints(origin, Point3d.create(0, 0, 5), 1, 2, false)!;
+    solids.push(nonSkewCone);
+    ck.testFalse(nonSkewCone.isSkew, "cone via createAxisPoints is not skew");
+    const nonSkewCylinder = Cone.createAxisPoints(origin, Point3d.create(0, 0, 5), 1, 1, true)!;
+    solids.push(nonSkewCylinder);
+    ck.testFalse(nonSkewCylinder.isSkew, "cylinder via createAxisPoints is not skew");
+
+    // Skew: createBaseAndTarget with vectorZ = (1,0,1), which is not perpendicular to the xy-plane normal (0,0,1).
+    const skewCone = Cone.createBaseAndTarget(origin, Point3d.create(1, 0, 1), Vector3d.unitX(), Vector3d.unitY(), 1, 2, false);
+    solids.push(skewCone);
+    ck.testTrue(skewCone.isSkew, "cone with oblique z-axis is skew");
+    const skewCylinder = Cone.createBaseAndTarget(origin, Point3d.create(1, 0, 1), Vector3d.unitX(), Vector3d.unitY(), 1, 1, false);
+    solids.push(skewCylinder);
+    ck.testTrue(skewCylinder.isSkew, "cylinder with oblique z-axis is skew");
+
+    // ---- Cone.cylinderRadius ----
+    // Non-skew cylinder: equal radii and equal column magnitudes → returns the radius.
+    ck.testCoordinate(1, nonSkewCylinder.cylinderRadius(), "non-skew cylinder: cylinderRadius = 1");
+
+    // Non-skew cone with unequal radii → 0.
+    ck.testCoordinate(0, nonSkewCone.cylinderRadius(), "non-skew cone with unequal radii: cylinderRadius = 0");
+
+    // Skew cylinder, allowSkew=false (default) → 0 because the skew check blocks it.
+    ck.testCoordinate(0, skewCylinder.cylinderRadius(), "skew cylinder, allowSkew=false: cylinderRadius = 0");
+
+    // Skew cylinder, allowSkew=true → skew check is skipped; equal radii and equal column magnitudes → 1.
+    ck.testCoordinate(1, skewCylinder.cylinderRadius(true), "skew cylinder, allowSkew=true: cylinderRadius = 1");
+
+    // Elliptical cross-section: unequal column X and Y magnitudes → 0 even though not skew.
+    const ellipticalCone = Cone.createBaseAndTarget(origin, Point3d.create(0, 0, 1), Vector3d.create(2, 0, 0), Vector3d.unitY(), 1, 1, false);
+    solids.push(ellipticalCone);
+    ck.testFalse(ellipticalCone.isSkew, "cone with unequal xy column scales is not skew");
+    ck.testCoordinate(0, ellipticalCone.cylinderRadius(), "elliptical cone: cylinderRadius = 0 (magX != magY)");
+
+    // ---- Box.isSkew ----
+    const nonSkewBox = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1), true)!;
+    solids.push(nonSkewBox);
+    ck.testFalse(nonSkewBox.isSkew, "axis-aligned box is not skew");
+
+    // Oblique z-axis: topOrigin displaced in X gives vectorZ = (1,0,1).
+    const skewBox = Box.createDgnBox(origin, Vector3d.unitX(), Vector3d.unitY(), Point3d.create(1, 0, 1), 1, 1, 1, 1, false)!;
+    solids.push(skewBox);
+    ck.testTrue(skewBox.isSkew, "box with oblique z-axis is skew");
+
+    // ---- LinearSweep.isSkew ----
+    // Sweep direction = z → parallel to the contour plane normal (0,0,1) → not skew.
+    const linearSweepNonSkew = LinearSweep.create(Loop.create(Arc3d.createXY(Point3d.create(3, 0, 0), 1)), Vector3d.unitZ(), false)!;
+    solids.push(linearSweepNonSkew);
+    ck.testFalse(linearSweepNonSkew.isSkew, "linear sweep along z is not skew");
+
+    // Sweep direction = (1,0,1) → not parallel to z → skew.
+    const linearSweepSkew = LinearSweep.create(Loop.create(Arc3d.createXY(Point3d.create(3, 0, 0), 1)), Vector3d.create(1, 0, 1), false)!;
+    solids.push(linearSweepSkew);
+    ck.testTrue(linearSweepSkew.isSkew, "linear sweep with oblique direction is skew");
+
+    // ---- RotationalSweep.isSkew ----
+    // Contour in xy-plane → contour normal ≈ z. Rotation about x: x ⊥ z → not skew.
+    const rotSweepNonSkew = RotationalSweep.create(
+      Loop.create(Arc3d.createXY(Point3d.create(3, 3, 0), 1)),
+      Ray3d.createXAxis(), Angle.create360(), false,
+    )!;
+    solids.push(rotSweepNonSkew);
+    ck.testFalse(rotSweepNonSkew.isSkew, "rotational sweep around x-axis (x perp to contour normal z) is not skew");
+
+    // Rotation about (1,1,1) NOT ⊥ contour z → skew.
+    const rotSweepSkew = RotationalSweep.create(
+      Loop.create(Arc3d.createXY(Point3d.create(3, 3, 0), 1, AngleSweep.createStartEndDegrees(30, -30))),
+      Ray3d.create(Point3d.create(0, 0, 0), Vector3d.create(1, 1, 1)), Angle.create360(), false,
+    )!;
+    solids.push(rotSweepSkew);
+    ck.testTrue(rotSweepSkew.isSkew, "rotational sweep around z-axis (z parallel to contour normal z) is skew");
+
+    // ---- RuledSweep.isSkew (inherits base class default, always false) ----
+    const ruledSweep = RuledSweep.create([
+      Loop.create(Arc3d.createXY(origin, 1)),
+      Loop.create(Arc3d.createXY(Point3d.create(0, 0, 2), 1.5)),
+      Loop.create(Arc3d.createXY(origin, 0.5)),
+    ], false)!;
+    solids.push(ruledSweep);
+    ck.testFalse(ruledSweep.isSkew, "ruled sweep always returns false for isSkew");
+
+    // ---- Sphere.isSkew ----
+    // Standard sphere: orthogonal local frame → not skew.
+    const nonSkewSphere = Sphere.createCenterRadius(origin, 1);
+    solids.push(nonSkewSphere);
+    ck.testFalse(nonSkewSphere.isSkew, "standard sphere is not skew");
+
+    // Oblique local frame: columnZ = (0.5,0,1) is not parallel to xy-plane normal (0,0,1) → skew.
+    const skewSphere = Sphere.createEllipsoid(
+      Transform.createOriginAndMatrixColumns(origin, Vector3d.unitX(), Vector3d.unitY(), Vector3d.create(0.5, 0, 1)),
+    )!;
+    solids.push(skewSphere);
+    ck.testTrue(skewSphere.isSkew, "sphere with oblique local frame is skew");
+
+    // ---- TorusPipe.isSkew ----
+    // Standard torus with identity frame: orthogonal → not skew.
+    const nonSkewTorus = TorusPipe.createInFrame(Transform.createIdentity(), 3, 1, Angle.createDegrees(360), false)!;
+    solids.push(nonSkewTorus);
+    ck.testFalse(nonSkewTorus.isSkew, "standard torus pipe is not skew");
+
+    // Oblique local frame: columnZ = (0.5,0,1) not perpendicular to xy → skew.
+    const skewTorus = TorusPipe.createInFrame(
+      Transform.createOriginAndMatrixColumns(origin, Vector3d.unitX(), Vector3d.unitY(), Vector3d.create(0.5, 0, 1)),
+      3, 1, Angle.createDegrees(360), false,
+    )!;
+    solids.push(skewTorus);
+    ck.testTrue(skewTorus.isSkew, "torus pipe with oblique local frame is skew");
+
+    // Collect all solids for visual inspection output. Stroke in case skew not supported by JSON viewer.
+    const options = StrokeOptions.createForFacets();
+    options.angleTol = Angle.createDegrees(5);
+    for (const solid of solids) {
+      const builder = PolyfaceBuilder.create(options);
+      builder.addGeometryQuery(solid);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, builder.claimPolyface(true, 1.0e-10), x0);
+      x0 += 10;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "IsSkew");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
 
-type AnnouncePolyface = (source: GeometryQuery, polyface: IndexedPolyface) => void;
-// output the geometry, then its facets shifted vertically.
-// return the geometry range
-function transformAndFacet(allGeometry: GeometryQuery[],
-  g: GeometryQuery,
-  transform: Transform | undefined,
-  options: StrokeOptions | undefined,
-  x0: number, y0: number,
-  announcePolyface?: AnnouncePolyface): Range3d {
-  const g1 = transform ? g.cloneTransformed(transform) : g;
-  if (g1) {
-    const builder = PolyfaceBuilder.create(options);
-    builder.addGeometryQuery(g1);
-    const facets = builder.claimPolyface();
-    const range = g1.range();
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0 + 2.0 * range.yLength());
-    if (announcePolyface !== undefined)
-      announcePolyface(g1, facets);
-    return range;
-  }
-  return Range3d.createNull();
-}
+

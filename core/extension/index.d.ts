@@ -451,6 +451,7 @@ export type {
 	DisplayStyleSettingsOptions,
 	DisplayStyleSettingsProps,
 	DisplayStyleSubCategoryProps,
+	DrawingProps,
 	DynamicGraphicsRequest2dProps,
 	DynamicGraphicsRequest3dProps,
 	DynamicGraphicsRequestProps,

@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
@@ -32,16 +32,18 @@ export class Formats extends SchemaItems {
 
       if (units !== undefined) {
         for (const unit of units) {
-          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem(unit);
+          const unitItem = await this.schemaEditor.schemaContext.getSchemaItem(unit);
           if (!unitItem) {
             throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
           }
 
-          if (!Unit.isUnit(unitItem) && !InvertedUnit.isInvertedUnit(unitItem)) {
+          if (Unit.isUnit(unitItem)) {
+            newFormat.addUnit(new DelayedPromiseWithProps(unitItem.key, async () => unitItem));
+          } else if (InvertedUnit.isInvertedUnit(unitItem)) {
+            newFormat.addUnit(new DelayedPromiseWithProps(unitItem.key, async () => unitItem));
+          } else {
             throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId(unitItem.schemaItemType, unitItem.key));
           }
-
-          newFormat.addUnit(unitItem);
         }
       }
 
@@ -66,7 +68,7 @@ export class Formats extends SchemaItems {
       const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), formatProps);
       return newFormat.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name ?? "Unknown", schemaKey), e);
     }
   }
 }

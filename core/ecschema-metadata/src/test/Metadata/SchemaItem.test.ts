@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItem } from "../../Metadata/SchemaItem";
 import { EntityClass } from "../../Metadata/EntityClass";
@@ -23,7 +23,7 @@ import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { Constant } from "../../Metadata/Constant";
 import { Phenomenon } from "../../Metadata/Phenomenon";
 import { UnitSystem } from "../../Metadata/UnitSystem";
-import { Format } from "../../ecschema-metadata";
+import { ECSchemaNamespaceUris, Format } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -32,14 +32,14 @@ describe("SchemaItem", () => {
     let baseClass: any;
     let schema;
 
-    before(() => {
+    beforeAll(() => {
       schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
 
     it("Serialize SchemaItem Standalone", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "ExampleSchema",
         version: "1.0.0",
         schemaItemType: "EntityClass",
@@ -51,7 +51,7 @@ describe("SchemaItem", () => {
       await (baseClass as EntityClass).fromJSON(propertyJson);
       const testClass = (baseClass as EntityClass).toJSON(true, true);
       expect(testClass).to.exist;
-      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schema, "ExampleSchema");
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
@@ -61,7 +61,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -78,7 +78,7 @@ describe("SchemaItem", () => {
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
-      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
       assert.strictEqual(testClass.name, "ExampleEntity");
@@ -87,7 +87,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem, standalone false", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -114,7 +114,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem, JSON stringify", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -147,7 +147,7 @@ describe("SchemaItem", () => {
     let schema: Schema;
     let newDom: Document;
 
-    before(() => {
+    beforeAll(() => {
       schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
@@ -158,7 +158,7 @@ describe("SchemaItem", () => {
 
     it("Serialize SchemaItem", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "ExampleSchema",
         version: "1.0.0",
         schemaItemType: "EntityClass",
@@ -182,53 +182,53 @@ describe("SchemaItemKey", () => {
 
   describe("matches", () => {
     it("should return false if names do not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinB", schemaKeyA))).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinB", schemaKeyA))).toBe(false);
     });
 
     it("should return false if types do not match", () => {
-      expect(new SchemaItemKey("Name", schemaKeyA).matches(new SchemaItemKey("Name", schemaKeyB))).to.be.false;
+      expect(new SchemaItemKey("Name", schemaKeyA).matches(new SchemaItemKey("Name", schemaKeyB))).toBe(false);
     });
 
     it("should return true if keys match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinA", schemaKeyA))).to.be.true;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinA", schemaKeyA))).toBe(true);
     });
   });
 
   describe("matchesFullName", () => {
     it("should return true if names match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinA")).to.be.true;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinA")).toBe(true);
     });
 
     it("should return false if schema does not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTestB.01.02.03.MixinA")).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTestB.01.02.03.MixinA")).toBe(false);
     });
 
     it("should return false if schema version does not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.00.MixinA")).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.00.MixinA")).toBe(false);
     });
 
     it("should return false if name does not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinB")).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinB")).toBe(false);
     });
   });
 
   describe("isSchemaItem", () => {
     it("should return false if schemaItem is undefined", () => {
       const undefinedSchemaItem = undefined;
-      expect(SchemaItem.isSchemaItem(undefinedSchemaItem)).to.be.false;
+      expect(SchemaItem.isSchemaItem(undefinedSchemaItem)).toBe(false);
     });
 
     it("should return true if object is of SchemaItem type", () => {
       const schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       const entityClass = new EntityClass(schema, "ExampleEntity");
       expect(entityClass).to.exist;
-      expect(SchemaItem.isSchemaItem(entityClass)).to.be.true;
+      expect(SchemaItem.isSchemaItem(entityClass)).toBe(true);
     });
 
     it("should return false if object is not of SchemaItem type", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
-      expect(SchemaItem.isSchemaItem(testSchema)).to.be.false;
-      expect(SchemaItem.isSchemaItem("A")).to.be.false;
+      expect(SchemaItem.isSchemaItem(testSchema)).toBe(false);
+      expect(SchemaItem.isSchemaItem("A")).toBe(false);
     });
   });
 
