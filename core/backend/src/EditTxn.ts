@@ -327,6 +327,12 @@ export class EditTxn {
     // Channel verification on the target model
     iModel.channels[_verifyChannel](targetModelId);
 
+    // Verify code with CodeService if a new code is provided
+    if (props.code) {
+      const elProps = iModel.elements.getElementProps({ id: props.id });
+      iModel.codeService?.verifyCode({ iModel, props: { code: props.code, federationGuid: elProps.federationGuid } });
+    }
+
     this._moveElementInternal(iModel, props, false);
   }
 
