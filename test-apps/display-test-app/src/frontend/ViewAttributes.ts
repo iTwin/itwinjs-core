@@ -564,8 +564,10 @@ export class ViewAttributes {
 
     toggleBGMapUI(this._vp.view.viewFlags.backgroundMap || !this.getDisplayingGoogle3dTiles());
 
+    const imageryProvidersDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(imageryProvidersDiv);
     const imageryProviders = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: imageryProvidersDiv,
       name: "Imagery: ",
       id: "viewAttr_MapProvider",
       entries: [
@@ -575,8 +577,10 @@ export class ViewAttributes {
       handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName, type: Number.parseInt(types.value, 10) }),
     }).select;
 
+    const typesDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(typesDiv);
     const types = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: typesDiv,
       name: "Type: ",
       id: "viewAttr_mapType",
       entries: [
@@ -587,8 +591,10 @@ export class ViewAttributes {
       handler: (select) => this.updateBackgroundMapProvider({ name: imageryProviders.value as BackgroundMapProviderName, type: Number.parseInt(select.value, 10) }),
     }).select;
 
+    const azureTypeDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(azureTypeDiv);
     const azureTypes = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: azureTypeDiv,
       name: "Azure Maps: ",
       id: "viewAttr_azureMapType",
       entries: [
@@ -598,6 +604,23 @@ export class ViewAttributes {
       ],
       handler: (select) => this.applyAzureBackgroundMap(Number.parseInt(select.value, 10)),
     }).select;
+
+    const toggleBasemapModeUi = (useAzureMaps: boolean) => {
+      imageryProviders.disabled = useAzureMaps;
+      types.disabled = useAzureMaps;
+      imageryProvidersDiv.style.opacity = useAzureMaps ? "0.5" : "1.0";
+      typesDiv.style.opacity = useAzureMaps ? "0.5" : "1.0";
+      azureTypeDiv.style.display = useAzureMaps ? "block" : "none";
+    };
+
+    const azureMapsToggle = this.addCheckbox("Use Azure Maps", (enabled: boolean) => {
+      toggleBasemapModeUi(enabled);
+      if (enabled)
+        this.applyAzureBackgroundMap(Number.parseInt(azureTypes.value, 10));
+      else
+        this.updateBackgroundMapProvider({ name: imageryProviders.value as BackgroundMapProviderName, type: Number.parseInt(types.value, 10) });
+    }, backgroundSettingsDiv);
+
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
       name: "Globe: ",
@@ -663,9 +686,12 @@ export class ViewAttributes {
       showOrHideSettings(checkbox.checked);
 
       const azureType = AzureMaps.getBackgroundMapType(view.displayStyle);
-      if (undefined !== azureType) {
+      const useAzureMaps = undefined !== azureType;
+      azureMapsToggle.checkbox.checked = useAzureMaps;
+      azureMapsToggle.label.style.fontWeight = useAzureMaps ? "bold" : "500";
+      toggleBasemapModeUi(useAzureMaps);
+      if (undefined !== azureType)
         azureTypes.value = azureType.toString();
-      }
 
       const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
       if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
