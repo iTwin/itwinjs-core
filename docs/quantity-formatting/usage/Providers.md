@@ -68,6 +68,10 @@ const meter = await provider.findUnitByName(Units.LENGTH.M);
 const lengthUnits = await provider.getUnitsByFamily(Phenomena.LENGTH);
 ```
 
+When you need a recommended built-in persistence unit for a bundled phenomenon, use [getDefaultPersistenceUnit]($quantity). For example, `getDefaultPersistenceUnit(Phenomena.LENGTH)` returns `Units.LENGTH.M`.
+
+> **Note:** `getDefaultPersistenceUnit(...)` intentionally does not accept `Phenomena.LENGTH_RATIO` yet, because the built-in default length-ratio unit is still unsettled.
+
 #### SchemaUnitProvider
 
 [SchemaUnitProvider]($ecschema-metadata) loads unit definitions from EC schemas using a [SchemaContext]($ecschema-metadata). It provides access to the extensive Units schema as well as custom units defined in domain schemas.

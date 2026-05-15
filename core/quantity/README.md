@@ -7,16 +7,19 @@ Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learnin
 ## Example
 
 ```ts
-import { UnitConversions, Units } from "@itwin/core-quantity";
+import { getDefaultPersistenceUnit, Phenomena, UnitConversions, Units } from "@itwin/core-quantity";
 
+const persistenceUnit = getDefaultPersistenceUnit(Phenomena.LENGTH);
 const feet = UnitConversions.convert(
-  Units.LENGTH.M,
+  persistenceUnit,
   Units.LENGTH.FT,
   1,
 );
 ```
 
 UnitConversions provides synchronous conversion helpers for the built-in canonical unit set generated from `@bentley/units-schema`.
+`getDefaultPersistenceUnit(...)` returns the recommended built-in default persistence unit for a supported built-in phenomenon.
+`Phenomena.LENGTH_RATIO` is intentionally not supported by that helper yet while the built-in default length-ratio unit remains unsettled.
 
 ## Contributing
 

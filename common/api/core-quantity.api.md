@@ -497,6 +497,9 @@ export enum FractionalPrecision {
     TwoHundredFiftySix = 256
 }
 
+// @beta
+export function getDefaultPersistenceUnit(phenomenon: Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>): UnitName;
+
 // @internal (undocumented)
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
 
