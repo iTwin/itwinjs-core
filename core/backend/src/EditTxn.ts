@@ -279,7 +279,7 @@ export class EditTxn {
    * Lock enforcement: requires exclusive lock on the element being moved, and shared locks on the target parent (if any) and the target model.
    * @param props The move parameters: element id, target model/parent, and optional new code.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[IModelError]] if the move fails (e.g., element has children, model type mismatch, duplicate code).
+   * @throws [[ITwinError]] if the move fails (e.g., element has children, model type mismatch, duplicate code).
    * @beta
    */
   public moveElement(props: MoveElementProps): void {
@@ -287,7 +287,7 @@ export class EditTxn {
     const iModel = this.iModel;
 
     if (!props.targetModelId && !props.targetElementId)
-      throw new IModelError(IModelStatus.BadArg, "moveElement requires at least one of targetModelId or targetElementId");
+      ITwinError.throwError({ message: "moveElement requires at least one of targetModelId or targetElementId", iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     // Lock enforcement: exclusive lock on element being moved
     iModel.locks.checkExclusiveLock(props.id, "element", "move");
@@ -301,7 +301,7 @@ export class EditTxn {
         "SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?",
         (reader) => {
           if (!reader.step())
-            throw new IModelError(IModelStatus.NotFound, `target element ${props.targetElementId} not found`);
+            ITwinError.throwError({ message: `target element ${props.targetElementId} not found`, iTwinErrorId: { scope: "imodel", key: "not-found" } });
           return reader.current[0] as Id64String;
         },
         QueryBinder.from([props.targetElementId!]),
@@ -328,7 +328,7 @@ export class EditTxn {
    * Lock enforcement: requires exclusive lock on the root element being moved, and shared locks on the target parent/model.
    * @param props The move parameters including optional callback for child code resolution.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[IModelError]] if the move fails.
+   * @throws [[ITwinError]] if the move fails.
    * @beta
    */
   public moveElementTree(props: MoveElementTreeProps): void {
@@ -336,7 +336,7 @@ export class EditTxn {
     const iModel = this.iModel;
 
     if (!props.targetModelId && !props.targetElementId)
-      throw new IModelError(IModelStatus.BadArg, "moveElementTree requires at least one of targetModelId or targetElementId");
+      ITwinError.throwError({ message: "moveElementTree requires at least one of targetModelId or targetElementId", iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     // Lock enforcement: exclusive lock on root element
     iModel.locks.checkExclusiveLock(props.id, "element", "move");
@@ -350,7 +350,7 @@ export class EditTxn {
         "SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?",
         (reader) => {
           if (!reader.step())
-            throw new IModelError(IModelStatus.NotFound, `target element ${props.targetElementId} not found`);
+            ITwinError.throwError({ message: `target element ${props.targetElementId} not found`, iTwinErrorId: { scope: "imodel", key: "not-found" } });
           return reader.current[0] as Id64String;
         },
         QueryBinder.from([props.targetElementId!]),
