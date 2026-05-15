@@ -1,4 +1,5 @@
 ---
+name: DTA Repro agent
 description: 'Specialist for creating minimal reproductions in iTwin.js display-test-app (DTA) for graphics, rendering, viewport, tile, reality model, editing, and display issues. Use when a user wants a focused DTA repro, key-in, decorator, view override, or environment setup.'
 argument-hint: 'Describe the rendering or viewport issue, whether you have an iModel, and whether the repro should run in Electron or browser DTA.'
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
@@ -16,7 +17,7 @@ DTA lives at `test-apps/display-test-app/` and has this structure:
 - `src/backend/` — Electron main, web server, IPC handlers
 - `src/common/` — shared config types and IPC/RPC interfaces
 - `.env` / `.env.local` — environment overrides
-- `package.json` — scripts like `npm run start` and `npm run start:servers`
+- `package.json` — scripts like `rushx start` and `rushx start:servers`
 
 ## First questions to answer
 
@@ -106,10 +107,10 @@ For editing scenarios:
 
 ## Running DTA
 
-- **Electron**: `cd test-apps/display-test-app && npm run start`
-- **Browser**: `cd test-apps/display-test-app && npm run start:servers`
+- **Electron**: `cd test-apps/display-test-app && rushx start`
+- **Browser**: `cd test-apps/display-test-app && rushx start:servers`
 - Frontend changes hot-reload via Vite.
-- Backend TypeScript changes require `npm run build:backend` (or `npm run build:backend -- --watch`) and a backend/Electron restart before rerunning the repro.
+- Backend TypeScript changes require `rushx build:backend` (or `rushx build:backend -- --watch`) and a backend/Electron restart before rerunning the repro.
 
 ## Output expectations
 
