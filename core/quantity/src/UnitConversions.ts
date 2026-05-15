@@ -8,6 +8,7 @@
 
 import { QuantityError, QuantityStatus } from "./Exception";
 import { UnitConversionInvert, type UnitConversionProps } from "./Interfaces";
+import type { UnitName } from "./generated/Units.generated";
 import { basicUnitConversionData } from "./internal/BasicUnitConversions.generated";
 import { convertValueOrThrow } from "./internal/UnitConversionMath";
 
@@ -42,7 +43,7 @@ function composeConversion(fromUnit: BasicUnitConversionEntry, toUnit: BasicUnit
   };
 }
 
-function getConversion(fromUnit: string, toUnit: string): UnitConversionProps {
+function getConversion(fromUnit: UnitName, toUnit: UnitName): UnitConversionProps {
   const from = getUnitEntry(fromUnit);
   const to = getUnitEntry(toUnit);
   const comparableFrom = getComparableEntry(from);
@@ -71,7 +72,7 @@ function getConversion(fromUnit: string, toUnit: string): UnitConversionProps {
   return composeConversion(from, to);
 }
 
-function convert(fromUnit: string, toUnit: string, value: number): number {
+function convert(fromUnit: UnitName, toUnit: UnitName, value: number): number {
   const conversion = getConversion(fromUnit, toUnit);
   if (conversion.error)
     throw new QuantityError(QuantityStatus.InvalidUnitConversion, `Cannot convert value from "${fromUnit}" to "${toUnit}" using invalid conversion metadata.`);
@@ -79,7 +80,7 @@ function convert(fromUnit: string, toUnit: string, value: number): number {
   return convertValueOrThrow(value, conversion);
 }
 
-function isCompatible(fromUnit: string, toUnit: string): boolean {
+function isCompatible(fromUnit: UnitName, toUnit: UnitName): boolean {
   const from = getComparableEntry(getUnitEntry(fromUnit));
   const to = getComparableEntry(getUnitEntry(toUnit));
   return from[0] === to[0];
@@ -94,10 +95,10 @@ function isCompatible(fromUnit: string, toUnit: string): boolean {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const UnitConversions: {
-  readonly getConversion: (fromUnit: string, toUnit: string) => UnitConversionProps;
-  readonly convert: (fromUnit: string, toUnit: string, value: number) => number;
+  readonly getConversion: (fromUnit: UnitName, toUnit: UnitName) => UnitConversionProps;
+  readonly convert: (fromUnit: UnitName, toUnit: UnitName, value: number) => number;
   readonly convertValue: (value: number, conversion: UnitConversionProps) => number;
-  readonly isCompatible: (fromUnit: string, toUnit: string) => boolean;
+  readonly isCompatible: (fromUnit: UnitName, toUnit: UnitName) => boolean;
 } = {
   getConversion,
   convert,

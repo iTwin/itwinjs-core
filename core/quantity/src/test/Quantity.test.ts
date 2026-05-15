@@ -7,7 +7,7 @@ import unitsSchema from "../assets/Units.json";
 import { BasicUnitsProvider } from "../BasicUnitsProvider";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
-import { Phenomena, Units, UnitSystems } from "../generated/Units.generated";
+import { Phenomena, type UnitName, Units, UnitSystems } from "../generated/Units.generated";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import { UnitConversions } from "../UnitConversions";
@@ -138,15 +138,16 @@ describe("Quantity", () => {
   });
 
   it("UnitConversions.isCompatible throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST", Units.LENGTH.FT)).toThrowError(QuantityError);
+    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT)).toThrowError(QuantityError);
   });
 
   it("UnitConversions lookup helpers reject inherited object property names as unknown units", () => {
     for (const unitName of ["__proto__", "constructor", "toString"]) {
+      const unknownUnitName = unitName as UnitName;
       for (const call of [
-        () => UnitConversions.getConversion(unitName, Units.LENGTH.FT),
-        () => UnitConversions.isCompatible(unitName, Units.LENGTH.FT),
-        () => UnitConversions.convert(unitName, Units.LENGTH.FT, 1),
+        () => UnitConversions.getConversion(unknownUnitName, Units.LENGTH.FT),
+        () => UnitConversions.isCompatible(unknownUnitName, Units.LENGTH.FT),
+        () => UnitConversions.convert(unknownUnitName, Units.LENGTH.FT, 1),
       ]) {
         let error: unknown;
         try {
@@ -181,8 +182,8 @@ describe("Quantity", () => {
     }
 
     for (const unitNames of unitsByPhenomenon.values()) {
-      for (const fromName of unitNames) {
-        for (const toName of unitNames) {
+      for (const fromName of unitNames as UnitName[]) {
+        for (const toName of unitNames as UnitName[]) {
           const actual = UnitConversions.getConversion(fromName, toName);
           const expected = await provider.getConversion(resolvedUnits.get(fromName)!, resolvedUnits.get(toName)!);
           expect(actual.inversion).toBe(expected.inversion);
@@ -199,12 +200,12 @@ describe("Quantity", () => {
   });
 
   it("UnitConversions.getConversion throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.getConversion("Units.DOES_NOT_EXIST", Units.LENGTH.FT))
+    expect(() => UnitConversions.getConversion("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT))
       .toThrowError(QuantityError);
   });
 
   it("UnitConversions.convert throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.convert("Units.DOES_NOT_EXIST", Units.LENGTH.FT, 1))
+    expect(() => UnitConversions.convert("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT, 1))
       .toThrowError(QuantityError);
   });
 
