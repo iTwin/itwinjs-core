@@ -2,6 +2,18 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.9.3",
+      "tag": "@itwin/core-backend_v5.9.3",
+      "date": "Fri, 15 May 2026 11:25:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.9.2",
       "tag": "@itwin/core-backend_v5.9.2",
       "date": "Fri, 08 May 2026 20:36:41 GMT",
