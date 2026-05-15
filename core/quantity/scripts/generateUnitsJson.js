@@ -182,6 +182,11 @@ function writeIfChanged(filePath, content) {
 
 function main() {
   const serializationVersion = readSerializationVersion();
+
+  // Build every artifact in memory before writing any file so generator bugs fail before we
+  // mutate the checked-in outputs. Each file is then updated independently only when its
+  // content actually changed, which avoids churn while still letting partial artifact updates
+  // land when a change is scoped to one generated output.
   const unitsJson = buildSerializedUnitsJson(schema, serializationVersion);
   const unitsJsonContent = `${JSON.stringify(unitsJson, null, 2)}\n`;
   const generatedTsContent = buildGeneratedUnitsModule(schema);
@@ -200,6 +205,11 @@ function main() {
 
   console.log(`Generated Units artifacts from @bentley/units-schema ${schema.version}`);
 }
+
+module.exports = {
+  buildGeneratedUnitsModule,
+  buildSerializedUnitsJson,
+};
 
 if (require.main === module) {
   main();

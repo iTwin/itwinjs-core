@@ -8,8 +8,9 @@
 
 import { QuantityError, QuantityStatus } from "./Exception";
 import { UnitConversionInvert, type UnitConversionProps } from "./Interfaces";
-import type { UnitName } from "./generated/Units.generated";
+import { Phenomena, type PhenomenonName, type UnitName } from "./generated/Units.generated";
 import { basicUnitConversionData } from "./internal/BasicUnitConversions.generated";
+import { defaultPersistenceUnits } from "./internal/DefaultPersistenceUnits.generated";
 import { convertValueOrThrow } from "./internal/UnitConversionMath";
 
 type BasicUnitConversionEntry = readonly [
@@ -84,6 +85,20 @@ function isCompatible(fromUnit: UnitName, toUnit: UnitName): boolean {
   const from = getComparableEntry(getUnitEntry(fromUnit));
   const to = getComparableEntry(getUnitEntry(toUnit));
   return from[0] === to[0];
+}
+
+/** Returns the recommended built-in default persistence unit for a bundled built-in phenomenon.
+ *
+ * This helper is intentionally limited to the built-in canonical unit set shipped with `@itwin/core-quantity`.
+ * `Phenomena.LENGTH_RATIO` is intentionally excluded until the built-in default length-ratio unit is settled.
+ * For schema-defined, custom, or iModel-specific persistence units, use a `UnitsProvider`-based workflow instead.
+ *
+ * @beta
+ */
+export function getDefaultPersistenceUnit(
+  phenomenon: Exclude<PhenomenonName, typeof Phenomena.LENGTH_RATIO>,
+): UnitName {
+  return defaultPersistenceUnits[phenomenon];
 }
 
 /** One-stop unit conversion helpers for the built-in canonical unit set generated from `@bentley/units-schema`.

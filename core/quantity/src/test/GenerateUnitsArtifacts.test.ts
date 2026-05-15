@@ -18,6 +18,13 @@ const { buildGeneratedBasicConversionModule, buildGeneratedDefaultPersistenceMod
     assertUniqueGeneratedKeys: (entries: Array<{ key: string }>, description: string) => void,
   ) => string;
 };
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { buildGeneratedUnitsModule, buildSerializedUnitsJson } = require("../../scripts/generateUnitsJson") as {
+  buildGeneratedUnitsModule: (schema: typeof unitsSchema) => string;
+  buildSerializedUnitsJson: (schema: typeof unitsSchema, serializationVersion: string) => unknown;
+};
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
 
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
@@ -83,6 +90,15 @@ describe("Generated Units artifacts", () => {
     expect(generatedDefaultPersistenceSource).toContain("[Phenomena.SLOPE]: Units.SLOPE.M_PER_M");
     expect(generatedDefaultPersistenceSource).toContain("Phenomena.LENGTH_RATIO is intentionally omitted");
     expect(generatedDefaultPersistenceSource).not.toContain("[Phenomena.LENGTH_RATIO]");
+  });
+
+  it("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
+    expect(buildGeneratedUnitsModule(unitsSchema)).toBe(generatedIdentifiersSource);
+  });
+
+  it("rebuilds the checked-in Units.json artifact exactly from the source schema", () => {
+    const rebuiltUnitsJson = `${JSON.stringify(buildSerializedUnitsJson(sourceUnitsSchema, unitsSchema.version), null, 2)}\n`;
+    expect(rebuiltUnitsJson).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
   });
 
   it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {

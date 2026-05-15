@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
 import { Phenomena, Units } from "../generated/Units.generated";
 import { defaultPersistenceUnits } from "../internal/DefaultPersistenceUnits.generated";
-import { getDefaultPersistenceUnit } from "../PersistenceUnits";
+import { getDefaultPersistenceUnit } from "../UnitConversions";
 
 const unitsSchemaItems = unitsSchema.items as Record<string, {
   schemaItemType: string;
