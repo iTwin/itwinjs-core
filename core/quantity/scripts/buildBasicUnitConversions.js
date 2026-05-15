@@ -198,6 +198,10 @@ function buildBasicConversionEntries(sourceSchema, assertUniqueGeneratedKeys) {
 function buildDefaultPersistenceUnitEntries(sourceSchema, assertUniqueGeneratedKeys) {
   const resolvedUnits = buildResolvedUnitMap(sourceSchema);
   const qualifiedSchemaItemName = (name) => `${sourceSchema.name}.${name}`;
+  // Default persistence units are generated when a phenomenon has exactly one built-in SI candidate.
+  // We keep a small explicit policy layer for the remaining cases where the built-in schema either
+  // has multiple plausible candidates (for example FORCE or SLOPE), has no SI-tagged candidate
+  // (for example CURRENCY, NUMBER, or PERCENTAGE), or has no built-in unit yet (LENGTH_RATIO).
   const unsupportedPhenomena = new Set(["LENGTH_RATIO"]);
   const overrides = new Map([
     ["CURRENCY", "US_DOLLAR"],
