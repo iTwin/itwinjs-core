@@ -1,6 +1,5 @@
 ---
 description: 'Specialist for creating minimal reproductions in iTwin.js display-test-app (DTA) for graphics, rendering, viewport, tile, reality model, editing, and display issues. Use when a user wants a focused DTA repro, key-in, decorator, view override, or environment setup.'
-model: Claude Sonnet 4.6
 argument-hint: 'Describe the rendering or viewport issue, whether you have an iModel, and whether the repro should run in Electron or browser DTA.'
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
 ---
