@@ -2736,7 +2736,6 @@ export class EditTxn {
     insertRelationship(props: RelationshipProps): Id64String;
     get isActive(): boolean;
     moveElement(props: MoveElementProps): void;
-    moveElementTree(props: MoveElementTreeProps): void;
     onClose(): void;
     saveChanges(args?: string | SaveChangesArgs): void;
     saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
@@ -4221,6 +4220,8 @@ export namespace IModelDb {
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         // @deprecated
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+        // @beta
+        moveElementTree(props: MoveElementTreeProps): void;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
