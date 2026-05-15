@@ -12,11 +12,11 @@ import { AzureMapsLayerImageryProvider } from "./AzureMapsImageryProvider.js";
 
 /**
  * Azure Maps imagery layer format.
- * @public
+ * @beta
  */
 export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
   /** Azure Maps imagery layer format.
-   * @public
+   * @beta
    */
   public static override formatId = "AzureMaps";
 

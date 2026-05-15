@@ -38,9 +38,9 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 
 ### Azure Maps basemap support is available through map-layers-formats
 
-`@itwin/map-layers-formats` now registers Azure Maps imagery support through `MapLayersFormats.initialize()` and exposes an `AzureMaps` helper for applying Azure Maps Street, Aerial, and Hybrid basemaps.
+`@itwin/map-layers-formats` now registers Azure Maps imagery support through `MapLayersFormats.initialize()` and exposes a beta `AzureMaps` helper for applying Azure Maps Street, Aerial, and Hybrid basemaps.
 
-Applications should continue to provide the Azure Maps key through `IModelApp.startup({ mapLayerOptions: { AzureMaps: { key: "subscription-key", value: ... } } })`, then import Azure-specific helper APIs from `@itwin/map-layers-formats` instead of `@itwin/core-frontend`.
+Applications configure the Azure Maps key once during `IModelApp.startup({ mapLayerOptions: { AzureMaps: { key: "subscription-key", value: ... } } })`. After initializing `@itwin/map-layers-formats`, code that wants Azure-specific basemap helpers can import `AzureMaps` from that package.
 
 ## Electron 42 support
 

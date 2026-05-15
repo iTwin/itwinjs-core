@@ -74,7 +74,7 @@ export const AzureMaps: {
     getBackgroundMapType: (displayStyle: DisplayStyleState) => BackgroundMapType | undefined;
 };
 
-// @public
+// @beta
 export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
     // @internal (undocumented)
     static createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
