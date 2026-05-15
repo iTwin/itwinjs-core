@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { Code, DisplayStyle3dProps, EmptyLocalization, GlobeMode, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { DisplayStyle3dState } from "../DisplayStyleState";
+import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
@@ -232,6 +234,59 @@ describe("DisplayStyleState", () => {
 
       await style.changeRenderTimeline("0x3");
       expect(style[_scheduleScriptReference]).toBeUndefined();
+    });
+  });
+
+  describe("getGlobalGeometryAndHeightRange", () => {
+    let iModel: IModelConnection;
+
+    beforeAll(async () => {
+      await IModelApp.startup({ localization: new EmptyLocalization() });
+      iModel = createBlankConnection();
+    });
+
+    afterAll(async () => {
+      await iModel.close();
+      await IModelApp.shutdown();
+    });
+
+    function makeStyle(): DisplayStyle3dState {
+      const props: DisplayStyle3dProps = {
+        id: "0xbeef",
+        code: Code.createEmpty(),
+        model: IModelConnection.dictionaryId,
+        classFullName: "BisCore:DisplayStyle3d",
+      };
+      return new DisplayStyle3dState(props, iModel);
+    }
+
+    it("does not construct an ellipsoid fallback when the iModel has no Earth anchor", () => {
+      const style = makeStyle();
+      expect(style.globeMode).toBe(GlobeMode.Ellipsoid);
+
+      const fakeGlobalModel = { isGlobal: true } as unknown as ContextRealityModelState;
+      vi.spyOn(style, "contextRealityModelStates", "get").mockReturnValue([fakeGlobalModel]);
+
+      expect(iModel.ecefLocation).toBeDefined();
+      expect(style.getGlobalGeometryAndHeightRange()).toBeDefined();
+
+      const originalEcefLocation = iModel.ecefLocation;
+      try {
+        (iModel as any).ecefLocation = undefined;
+
+        const oldFallback = (() => {
+          let geometry = style.getIsBackgroundMapVisible() ? style.getBackgroundMapGeometry() : undefined;
+          if (style.globeMode === GlobeMode.Ellipsoid && style.contextRealityModelStates.find((model) => model.isGlobal))
+            geometry ??= new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, iModel);
+
+          return geometry;
+        })();
+
+        expect(oldFallback).toBeDefined();
+        expect(style.getGlobalGeometryAndHeightRange()).toBeUndefined();
+      } finally {
+        (iModel as any).ecefLocation = originalEcefLocation;
+      }
     });
   });
 });

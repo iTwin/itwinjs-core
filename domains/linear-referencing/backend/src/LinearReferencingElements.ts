@@ -85,7 +85,7 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
   public static insertFromTo(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert a new `LinearLocation`.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
@@ -109,7 +109,7 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
    */
   public insertFromTo(txn: EditTxn, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert this `LinearLocation`.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearLocation.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
   public insertFromTo(txnOrIModel: EditTxn | IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
@@ -132,7 +132,7 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
   public static insertAt(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert a new `LinearLocation`.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
@@ -156,7 +156,7 @@ export class LinearLocation extends LinearLocationElement implements LinearlyLoc
    */
   public insertAt(txn: EditTxn, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   /** Insert this `LinearLocation`.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearLocation.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
   public insertAt(txnOrIModel: EditTxn | IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
@@ -237,7 +237,7 @@ export class Referent extends ReferentElement {
   public static insertAt(txn: EditTxn, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
   /** Insert a new `Referent`.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
@@ -255,7 +255,7 @@ export class Referent extends ReferentElement {
    */
   public insertAt(txn: EditTxn, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
   /** Insert this `Referent`.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use Referent.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
   public insertAt(txnOrIModel: EditTxn | IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
@@ -616,7 +616,7 @@ export class LinearlyLocated {
    * @param atPosition Linear position.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyLocated.insertAt(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String,
     atPosition: LinearlyReferencedAtLocationProps): Id64String;
@@ -651,7 +651,7 @@ export class LinearlyLocated {
    * @param fromToPosition Linear position.
    * @returns The newly inserted element's Id.
    * @throws [[IModelError]] if unable to insert the element.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyLocated.insertFromTo(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String,
     fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
@@ -734,7 +734,7 @@ export class LinearlyLocated {
    * @param linearLocationProps The properties to use to update the LinearlyReferencedAtLocation aspect.
    * @param aspectId The Id of the aspect to update. If not known, the first aspectId will be looked-up.
    * @throws [[IModelError]]
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.updateAtLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyLocated.updateAtLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps,
     aspectId?: Id64String): void;
@@ -777,7 +777,7 @@ export class LinearlyLocated {
    * @param linearLocationProps The properties to use to update the LinearlyReferencedFromToLocation aspect.
    * @param aspectId The Id of the aspect to update. If not known, the first aspectId will be looked-up.
    * @throws [[IModelError]]
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use LinearlyLocated.updateFromToLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyLocated.updateFromToLocation(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps,
     aspectId?: Id64String): void;
