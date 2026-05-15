@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.9.3",
+      "tag": "@itwin/core-frontend_v5.9.3",
+      "date": "Fri, 15 May 2026 11:25:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.9.2",
       "tag": "@itwin/core-frontend_v5.9.2",
       "date": "Fri, 08 May 2026 20:36:41 GMT",
@@ -47,6 +59,18 @@
         "minor": [
           {
             "comment": "Quantity Formatter: readiness events, serialized reload queue, multi-system caching, composite-keyed registry, FormatSpecHandle, listener leak fix."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.8.5",
+      "tag": "@itwin/core-frontend_v5.8.5",
+      "date": "Thu, 14 May 2026 19:12:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model."
           }
         ]
       }
