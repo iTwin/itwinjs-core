@@ -19,7 +19,7 @@ Two new `@beta` methods on [EditTxn]($backend) allow moving existing elements to
 - **`EditTxn.moveElement`** — moves a single leaf element (no children) to a new model and/or parent. Requires an exclusive lock on the element being moved and shared locks on the target model and parent.
 - **`EditTxn.moveElementTree`** — moves an element and its entire descendant subtree. Descendants are relocated bottom-up (leaves first), then parent-child relationships are re-established in the target model. An optional `onMoveChild` callback lets callers supply new codes for descendants whose code scope is model-based.
 
-Both methods accept a [MoveElementProps]($backend) object specifying the element id, target model, target parent, and optional new code.
+`EditTxn.moveElement` accepts [MoveElementProps]($backend), which specifies the element id, target model, target parent, and optional new code. `EditTxn.moveElementTree` accepts [MoveElementTreeProps]($backend), which includes those tree-move options plus the optional `onMoveChild` callback.
 
 ```typescript
 // Move a single element to a new model as a root element
