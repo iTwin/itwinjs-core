@@ -14,10 +14,10 @@ publish: false
 
 ### Move elements between models and parents
 
-Two new `@beta` methods on [EditTxn]($backend) allow moving existing elements to a different model and/or parent without deleting and re-inserting them:
+New `@beta` methods allow moving existing elements to a different model and/or parent without deleting and re-inserting them:
 
-- **`EditTxn.moveElement`** — moves a single leaf element (no children) to a new model and/or parent. Requires an exclusive lock on the element being moved and shared locks on the target model and parent.
-- **`EditTxn.moveElementTree`** — moves an element and its entire descendant subtree. Descendants are relocated bottom-up (leaves first), then parent-child relationships are re-established in the target model. An optional `onMoveChild` callback lets callers supply new codes for descendants whose code scope is model-based.
+- **`EditTxn.moveElement`** — moves a single leaf element (no children) to a new model and/or parent within an explicit editing transaction.
+- **`IModelDb.Elements.moveElementTree`** — moves an element and its entire descendant subtree atomically. The operation is wrapped in a transaction — either the entire subtree moves successfully, or all changes are abandoned.
 
 `EditTxn.moveElement` accepts [MoveElementProps]($backend), which specifies the element id, target model, target parent, and optional new code. `EditTxn.moveElementTree` accepts [MoveElementTreeProps]($backend), which includes those tree-move options plus the optional `onMoveChild` callback.
 
@@ -29,7 +29,7 @@ editTxn.moveElement({ id: elementId, targetModelId: newModelId });
 editTxn.moveElement({ id: elementId, targetElementId: newParentId });
 
 // Move an entire subtree, providing new codes for children with model-scoped codes
-editTxn.moveElementTree({
+iModelDb.elements.moveElementTree({
   id: rootElementId,
   targetModelId: newModelId,
   onMoveChild: (childProps) => {

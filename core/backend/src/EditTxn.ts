@@ -279,9 +279,10 @@ export class EditTxn {
    * The source and target models must be of the same class (classFullName must match exactly).
    * Channel verification is performed on both the source and target models.
    * Lock enforcement: requires exclusive lock on the element being moved, and shared locks on the target parent (if any) and the target model.
+   * If a new code is provided and a CodeService is configured, the code is verified before the move.
    * @param props The move parameters: element id, target model/parent, and optional new code.
    * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[ITwinError]] if the move fails (e.g., element has children, model type mismatch, duplicate code).
+   * @throws [[ITwinError]] if the move fails (e.g., element has children, model type mismatch, duplicate code, or code verification failure).
    * @beta
    */
   public moveElement(props: MoveElementProps): void {

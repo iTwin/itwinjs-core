@@ -162,7 +162,7 @@ export interface MoveElementProps {
   code?: CodeProps;
 }
 
-/** Options for [[EditTxn.moveElementTree]].
+/** Options for [[IModelDb.Elements.moveElementTree]].
  * Moves an element and its entire subtree to a new model/parent.
  * @note The caller should hold exclusive locks on all elements in the subtree, not just the root.
  * @beta
@@ -2962,9 +2962,11 @@ export namespace IModelDb {
      * Channel verification is performed on both the source and target models.
      * Lock enforcement: requires exclusive lock on the root element being moved, and shared locks on
      * the target parent (if any) and the target model.
+     * If new codes are provided (via `props.code` or the `onMoveChild` callback) and a CodeService is configured,
+     * codes are verified before each element is moved.
      * @note Callers should ensure exclusive locks are held on all descendant elements before calling this method.
      * @param props The move parameters including optional callback for child code resolution.
-     * @throws [[ITwinError]] if the move fails (e.g., model type mismatch, duplicate code, or unsaved changes exist).
+     * @throws [[ITwinError]] if the move fails (e.g., model type mismatch, duplicate code, code verification failure, or unsaved changes exist).
      * @beta
      */
     public moveElementTree(props: MoveElementTreeProps): void {
