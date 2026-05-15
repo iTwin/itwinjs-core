@@ -26,8 +26,8 @@ Before changing code, clarify:
 2. **What iTwin.js APIs are involved?** Decorators, ViewFlags, DisplayStyle, TileAdmin, RenderSchedule, reality models, editing tools, etc.
 3. **Is there an iModel already?**
    - **Yes**: prefer opening it automatically via `.env.local`.
-   - **No**: prefer a blank DTA repro if decorators or display logic are enough.
-   - **Needs writable repro data**: use a writable snapshot or backend-created blank iModel.
+   - **No persistent edits needed**: prefer DTA's blank connection/examples if decorators or display logic are enough.
+   - **Needs writable repro data**: set `IMJS_READ_WRITE=1` in `.env.local` and open a briefcase or editable standalone iModel.
 4. **Electron or browser?** Prefer the simpler target, but use Electron if filesystem access, native backend behavior, or editing requires it.
 
 ## Default strategy
@@ -60,7 +60,8 @@ Without the localization entry, the key-in will not resolve.
 For view flags, display styles, render modes, camera settings, and map settings:
 
 - Prefer modifying viewport state after open.
-- Use DTA configuration overrides for one-off settings.
+- Prefer `.env.local` and documented `IMJS_*` environment variables for user-specific paths, secrets, and startup settings.
+- Use DTA `configurationOverrides` only for throwaway local debugging; do not leave those overrides in committed repro code.
 - Reuse existing frontend-devtools key-ins where possible.
 
 ### 4. Environment repro
@@ -107,8 +108,8 @@ For editing scenarios:
 
 - **Electron**: `cd test-apps/display-test-app && npm run start`
 - **Browser**: `cd test-apps/display-test-app && npm run start:servers`
-- Frontend changes should hot-reload in browser mode.
-- Backend changes require restart and sometimes rebuild.
+- Frontend changes hot-reload via Vite.
+- Backend TypeScript changes require `npm run build:backend` (or `npm run build:backend -- --watch`) and a backend/Electron restart before rerunning the repro.
 
 ## Output expectations
 
