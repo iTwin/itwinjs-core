@@ -11,7 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
 
-describe("moveElement", () => {
+describe.only("moveElement", () => {
   let seedDb: SnapshotDb;
   let iModelDb: SnapshotDb;
   let modelAId: Id64String;
@@ -178,6 +178,75 @@ describe("moveElement", () => {
     expect(() => txn.moveElement({ id: leaf })).to.throw(/at least one/);
   });
 
+  it("throws when attempting to move a model element (element id equals model id)", () => {
+    // modelAId is also the partition element id — moving it would break the model relationship
+    expect(() => txn.moveElement({ id: modelAId, targetModelId: modelBId })).to.throw();
+  });
+
+  describe("code scope conflicts", () => {
+    it("moves an element with a model-scoped code to a different model (no conflict)", () => {
+      const elem = insertElement(modelAId, { codeScope: modelAId, codeValue: "UniqueInA" });
+
+      txn.moveElement({ id: elem, targetModelId: modelBId, code: { spec: codeSpecId, scope: modelBId, value: "UniqueInA" } });
+      txn.saveChanges();
+
+      const moved = iModelDb.elements.getElementProps(elem);
+      assert.equal(moved.model, modelBId, "model should change to ModelB");
+      assert.equal(moved.code.value, "UniqueInA", "code value should remain");
+      assert.equal(moved.code.scope, modelBId, "code scope should be updated to target model");
+    });
+
+    it("throws when moving an element to a model that already has the same code (unique constraint)", () => {
+      // Insert two elements with the same code value but scoped to different models
+      const elemInA = insertElement(modelAId, { codeScope: modelAId, codeValue: "DuplicateCode" });
+      insertElement(modelBId, { codeScope: modelBId, codeValue: "DuplicateCode" });
+
+      // Moving elemInA to modelB without remapping the code should fail due to unique constraint
+      expect(() => txn.moveElement({ id: elemInA, targetModelId: modelBId, code: { spec: codeSpecId, scope: modelBId, value: "DuplicateCode" } })).to.throw();
+    });
+
+    it("resolves unique constraint conflict by assigning a new code value during move", () => {
+      // Both models have an element with the same code value in their respective scope
+      const elemInA = insertElement(modelAId, { codeScope: modelAId, codeValue: "ConflictCode" });
+      insertElement(modelBId, { codeScope: modelBId, codeValue: "ConflictCode" });
+
+      // Fix: assign a new unique code value when moving to avoid the constraint violation
+      txn.moveElement({ id: elemInA, targetModelId: modelBId, code: { spec: codeSpecId, scope: modelBId, value: "ConflictCode_Remapped" } });
+      txn.saveChanges();
+
+      const moved = iModelDb.elements.getElementProps(elemInA);
+      assert.equal(moved.model, modelBId, "model should change to ModelB");
+      assert.equal(moved.code.value, "ConflictCode_Remapped", "code value should be remapped to avoid conflict");
+      assert.equal(moved.code.scope, modelBId, "code scope should be updated to target model");
+    });
+
+    it("moves element with parent-scoped code to a new parent (scope changes)", () => {
+      const parentA = insertElement(modelAId);
+      const elem = insertElement(modelAId, { parentId: parentA, codeScope: parentA, codeValue: "ChildCode" });
+      const parentB = insertElement(modelAId);
+
+      // Move to a new parent — provide code with updated scope
+      txn.moveElement({ id: elem, targetElementId: parentB, code: { spec: codeSpecId, scope: parentB, value: "ChildCode" } });
+      txn.saveChanges();
+
+      const moved = iModelDb.elements.getElementProps(elem);
+      assert.equal(moved.parent?.id, parentB, "parent should be parentB");
+      assert.equal(moved.code.value, "ChildCode", "code value preserved");
+      assert.equal(moved.code.scope, parentB, "code scope should be new parent");
+    });
+
+    it("throws when moving element to new parent that already has child with same code", () => {
+      const parentA = insertElement(modelAId);
+      const elem = insertElement(modelAId, { parentId: parentA, codeScope: parentA, codeValue: "SharedChildCode" });
+      const parentB = insertElement(modelAId);
+      // Insert a child under parentB with the same code
+      insertElement(modelAId, { parentId: parentB, codeScope: parentB, codeValue: "SharedChildCode" });
+
+      // Moving elem to parentB with the same code value should fail
+      expect(() => txn.moveElement({ id: elem, targetElementId: parentB, code: { spec: codeSpecId, scope: parentB, value: "SharedChildCode" } })).to.throw();
+    });
+  });
+
   describe("definition models", () => {
     const insertDefinitionElement = (modelId: Id64String, name: string, opts: { parentId?: Id64String } = {}): Id64String => {
       const props: DefinitionElementProps = {
@@ -225,6 +294,79 @@ describe("moveElement", () => {
       const defTarget = insertDefinitionElement(defModelAId, "DefTargetForPhys");
 
       expect(() => txn.moveElement({ id: physElem, targetElementId: defTarget })).to.throw();
+    });
+  });
+
+  describe("moveElementTree", () => {
+    it("moves an element with direct children to a new model", () => {
+      const parent = insertElement(modelAId);
+      const child1 = insertElement(modelAId, { parentId: parent });
+      const child2 = insertElement(modelAId, { parentId: parent });
+
+      txn.moveElementTree({ id: parent, targetModelId: modelBId });
+      txn.saveChanges();
+
+      const movedParent = iModelDb.elements.getElementProps(parent);
+      const movedChild1 = iModelDb.elements.getElementProps(child1);
+      const movedChild2 = iModelDb.elements.getElementProps(child2);
+
+      assert.equal(movedParent.model, modelBId, "parent should be in ModelB");
+      assert.equal(movedChild1.model, modelBId, "child1 should be in ModelB");
+      assert.equal(movedChild2.model, modelBId, "child2 should be in ModelB");
+      assert.equal(movedChild1.parent?.id, parent, "child1 should still be parented to the moved parent");
+      assert.equal(movedChild2.parent?.id, parent, "child2 should still be parented to the moved parent");
+    });
+
+    it("moves an element with nested children (depth 2) to a new model", () => {
+      const root = insertElement(modelAId);
+      const child = insertElement(modelAId, { parentId: root });
+      const grandchild = insertElement(modelAId, { parentId: child });
+
+      txn.moveElementTree({ id: root, targetModelId: modelBId });
+      txn.saveChanges();
+
+      const movedRoot = iModelDb.elements.getElementProps(root);
+      const movedChild = iModelDb.elements.getElementProps(child);
+      const movedGrandchild = iModelDb.elements.getElementProps(grandchild);
+
+      assert.equal(movedRoot.model, modelBId, "root should be in ModelB");
+      assert.equal(movedChild.model, modelBId, "child should be in ModelB");
+      assert.equal(movedGrandchild.model, modelBId, "grandchild should be in ModelB");
+      assert.equal(movedChild.parent?.id, root, "child parent preserved");
+      assert.equal(movedGrandchild.parent?.id, child, "grandchild parent preserved");
+    });
+
+    it("invokes onMoveChild callback and applies returned code", () => {
+      const parent = insertElement(modelAId);
+      const child = insertElement(modelAId, { parentId: parent });
+
+      const newChildCode = { spec: codeSpecId, scope: modelBId, value: "OverriddenCode" };
+
+      txn.moveElementTree({
+        id: parent,
+        targetModelId: modelBId,
+        onMoveChild: (_childProps) => newChildCode,
+      });
+      txn.saveChanges();
+
+      const movedChild = iModelDb.elements.getElementProps(child);
+      assert.equal(movedChild.model, modelBId, "child should be in ModelB");
+      assert.equal(movedChild.code.value, "OverriddenCode", "child code should be overridden by callback");
+    });
+
+    it("moves subtree without callback when codes are not model-scoped", () => {
+      const parent = insertElement(modelAId);
+      const child1 = insertElement(modelAId, { parentId: parent });
+      const child2 = insertElement(modelAId, { parentId: parent });
+
+      // No callback — all elements have empty codes (not model-scoped)
+      txn.moveElementTree({ id: parent, targetModelId: modelBId });
+      txn.saveChanges();
+
+      const movedChild1 = iModelDb.elements.getElementProps(child1);
+      const movedChild2 = iModelDb.elements.getElementProps(child2);
+      assert.equal(movedChild1.model, modelBId);
+      assert.equal(movedChild2.model, modelBId);
     });
   });
 });

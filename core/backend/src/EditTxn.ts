@@ -12,7 +12,7 @@ import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, Elem
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, MoveElementProps, UpdateModelOptions } from "./IModelDb";
+import type { IModelDb, InsertElementOptions, MoveElementProps, MoveElementTreeProps, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
@@ -318,17 +318,124 @@ export class EditTxn {
     // Channel verification on the target model
     iModel.channels[_verifyChannel](targetModel);
 
-    // Invalidate caches before mutation
+    this._moveElementInternal(iModel, props, false);
+  }
+
+  /** Move an element and its entire subtree to a different model and/or parent.
+   * At least one of `targetModelId` or `targetElementId` must be specified in props.
+   * The subtree is moved top-down (parent first, then children DFS). For each descendant,
+   * the optional `onMoveChild` callback is invoked to allow code overrides (needed when code scope is model-based).
+   * Lock enforcement: requires exclusive lock on the root element being moved, and shared locks on the target parent/model.
+   * @param props The move parameters including optional callback for child code resolution.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws [[IModelError]] if the move fails.
+   * @beta
+   */
+  public moveElementTree(props: MoveElementTreeProps): void {
+    this.verifyWriteable();
+    const iModel = this.iModel;
+
+    if (!props.targetModelId && !props.targetElementId)
+      throw new IModelError(IModelStatus.BadArg, "moveElementTree requires at least one of targetModelId or targetElementId");
+
+    // Lock enforcement: exclusive lock on root element
+    iModel.locks.checkExclusiveLock(props.id, "element", "move");
+
+    // Resolve the target model for lock/channel checks
+    let targetModel: Id64String;
+    if (props.targetModelId) {
+      targetModel = props.targetModelId;
+    } else {
+      targetModel = iModel.withQueryReader(
+        "SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?",
+        (reader) => {
+          if (!reader.step())
+            throw new IModelError(IModelStatus.NotFound, `target element ${props.targetElementId} not found`);
+          return reader.current[0] as Id64String;
+        },
+        QueryBinder.from([props.targetElementId!]),
+      );
+    }
+
+    // Shared lock on target element (new parent) if specified
+    if (props.targetElementId)
+      iModel.locks.checkSharedLock(props.targetElementId, "parent", "move");
+
+    // Shared lock on target model
+    iModel.locks.checkSharedLock(targetModel, "model", "move");
+
+    // Channel verification on the target model
+    iModel.channels[_verifyChannel](targetModel);
+
+    // Collect full subtree in DFS post-order (leaves first) so each element is a leaf when moved.
+    // Store each element's original parent for re-parenting in pass 2.
+    const subtreePostOrder: Array<{ id: Id64String; parentId: Id64String | undefined }> = [];
+    const collectPostOrder = (parentId: Id64String) => {
+      iModel.withPreparedSqliteStatement("SELECT Id FROM bis_Element WHERE ParentId=?", (stmt) => {
+        stmt.bindId(1, parentId);
+        while (stmt.nextRow()) {
+          const childId = stmt.getValueId(0);
+          collectPostOrder(childId); // recurse into grandchildren first
+          subtreePostOrder.push({ id: childId, parentId });
+        }
+      });
+    };
+    collectPostOrder(props.id);
+
+    // Pass 1: Move all descendants bottom-up (post-order) to the new model as root elements.
+    // Since we process leaves first, each element has no children when moved.
+    for (const entry of subtreePostOrder) {
+      const childProps = iModel.elements.getElementProps({ id: entry.id });
+      const newCode = props.onMoveChild?.(childProps);
+
+      this._moveElementInternal(iModel, { id: entry.id, targetModelId: targetModel, code: newCode }, false);
+    }
+
+    // Move the root element last (it now has no children since all were moved in pass 1)
+    this._moveElementInternal(iModel, props, false);
+
+    // Pass 2: Re-establish parent relationships within the new model (top-down order).
+    // Reverse the post-order array to get pre-order (parents first), so that when re-parenting
+    // a child, its parent hasn't yet acquired children (which would trigger the "has children" check).
+    for (let i = subtreePostOrder.length - 1; i >= 0; i--) {
+      const entry = subtreePostOrder[i];
+      if (entry.parentId) {
+        iModel.elements[_cache].delete({ id: entry.id });
+        iModel.elements[_instanceKeyCache].deleteById(entry.id);
+
+        const nativeProps = {
+          id: entry.id,
+          targetModelId: targetModel,
+          targetElementId: entry.parentId,
+        };
+
+        try {
+          iModel[_nativeDb].moveElement(nativeProps);
+        } catch (err: any) {
+          err.message = `Error re-parenting element [${err.message}], id: ${entry.id}, parent: ${entry.parentId}`;
+          err.metadata = { moveProps: props, childId: entry.id };
+          throw err;
+        }
+
+        iModel.elements[_cache].delete({ id: entry.id });
+        iModel.elements[_instanceKeyCache].deleteById(entry.id);
+      }
+    }
+  }
+
+  /** @internal Move a single element with allowChildren support. */
+  private _moveElementInternal(iModel: IModelDb, props: MoveElementProps, allowChildren: boolean): void {
+    // Invalidate caches
     iModel.elements[_cache].delete({ id: props.id });
     iModel.elements[_instanceKeyCache].deleteById(props.id);
 
-    // Build native props: if only targetModelId is specified (no parent), use it as targetElementId
-    // since in BIS model ID = partition element ID, and native detects the sub-model to make element root.
+    // Build native props
     const nativeProps = {
       id: props.id,
       targetModelId: props.targetModelId,
       targetElementId: props.targetElementId ?? props.targetModelId!,
       code: props.code,
+      allowChildren,
     };
 
     try {
@@ -341,7 +448,6 @@ export class EditTxn {
 
     // TODO: Remove this workaround once native addon is rebuilt with the _SetParentId fix in DgnElement.cpp.
     // Workaround: native _SetParentId has a bug where clearing parent (both args invalid) fails silently.
-    // If we moved to a model without a parent, ensure the parent is cleared via direct SQL.
     if (props.targetModelId && !props.targetElementId) {
       const curParent = iModel.withQueryReader(
         "SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=?",
@@ -356,7 +462,7 @@ export class EditTxn {
       }
     }
 
-    // Invalidate caches again after all mutations (including workaround SQL) are complete
+    // Invalidate caches after mutation
     iModel.elements[_cache].delete({ id: props.id });
     iModel.elements[_instanceKeyCache].deleteById(props.id);
   }
