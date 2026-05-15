@@ -8,11 +8,11 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, OpenMode } from "@itwin/core-bentley";
-import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, QueryBinder, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, MoveElementProps, MoveElementTreeProps, UpdateModelOptions } from "./IModelDb";
+import type { IModelDb, InsertElementOptions, MoveElementProps, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
 import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
@@ -276,6 +276,8 @@ export class EditTxn {
   /** Move an element to a different model and/or parent.
    * The element must be a leaf element (no children). If the element has children, this method will throw.
    * At least one of `targetModelId` or `targetElementId` must be specified in props.
+   * The source and target models must be of the same class (classFullName must match exactly).
+   * Channel verification is performed on both the source and target models.
    * Lock enforcement: requires exclusive lock on the element being moved, and shared locks on the target parent (if any) and the target model.
    * @param props The move parameters: element id, target model/parent, and optional new code.
    * @throws EditTxnError if this EditTxn is not active.
@@ -292,141 +294,40 @@ export class EditTxn {
     // Lock enforcement: exclusive lock on element being moved
     iModel.locks.checkExclusiveLock(props.id, "element", "move");
 
-    // Resolve the target model for lock/channel checks
-    let targetModel: Id64String;
+    // Resolve the source model (the model the element currently belongs to)
+    const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
+
+    // Channel verification on the source model
+    iModel.channels[_verifyChannel](sourceModelId);
+
+    // Resolve the target model for lock/channel checks.
+    // If targetElementId is a modeled element (partition), the element moves into its sub-model.
+    let targetModelId: Id64String;
     if (props.targetModelId) {
-      targetModel = props.targetModelId;
+      targetModelId = props.targetModelId;
+    } else if (iModel.models.tryGetModelProps(props.targetElementId!)) {
+      targetModelId = props.targetElementId!;
     } else {
-      targetModel = iModel.withQueryReader(
-        "SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?",
-        (reader) => {
-          if (!reader.step())
-            ITwinError.throwError({ message: `target element ${props.targetElementId} not found`, iTwinErrorId: { scope: "imodel", key: "not-found" } });
-          return reader.current[0] as Id64String;
-        },
-        QueryBinder.from([props.targetElementId!]),
-      );
+      targetModelId = iModel.elements.getElementProps({ id: props.targetElementId! }).model;
     }
+
+    // Model type check: source and target models must be the same class
+    const sourceModel = iModel.models.getModel(sourceModelId);
+    const targetModel = iModel.models.getModel(targetModelId);
+    if (sourceModel.classFullName !== targetModel.classFullName)
+      ITwinError.throwError({ message: `cannot move element from model of type '${sourceModel.classFullName}' to model of type '${targetModel.classFullName}'`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
 
     // Shared lock on target element (new parent) if specified
     if (props.targetElementId)
       iModel.locks.checkSharedLock(props.targetElementId, "parent", "move");
 
     // Shared lock on target model
-    iModel.locks.checkSharedLock(targetModel, "model", "move");
+    iModel.locks.checkSharedLock(targetModelId, "model", "move");
 
     // Channel verification on the target model
-    iModel.channels[_verifyChannel](targetModel);
+    iModel.channels[_verifyChannel](targetModelId);
 
     this._moveElementInternal(iModel, props, false);
-  }
-
-  /** Move an element and its entire subtree to a different model and/or parent.
-   * At least one of `targetModelId` or `targetElementId` must be specified in props.
-   * The subtree is moved in two passes: (1) all descendants are moved bottom-up (leaves first) as root elements
-   * in the target model, (2) parent-child relationships are re-established within the new model. For each descendant,
-   * the optional `onMoveChild` callback is invoked to allow code overrides (needed when code scope is model-based).
-   * Lock enforcement: requires exclusive lock on the root element being moved, and shared locks on the target parent/model.
-   * @note Callers should ensure exclusive locks are held on all descendant elements before calling this method.
-   * In a multi-user environment, failing to lock descendants could result in conflicts if another user modifies them concurrently.
-   * @param props The move parameters including optional callback for child code resolution.
-   * @throws EditTxnError if this EditTxn is not active.
-   * @throws [[ITwinError]] if the move fails.
-   * @beta
-   */
-  public moveElementTree(props: MoveElementTreeProps): void {
-    this.verifyWriteable();
-    const iModel = this.iModel;
-
-    if (!props.targetModelId && !props.targetElementId)
-      ITwinError.throwError({ message: "moveElementTree requires at least one of targetModelId or targetElementId", iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
-
-    // Lock enforcement: exclusive lock on root element
-    iModel.locks.checkExclusiveLock(props.id, "element", "move");
-
-    // Resolve the target model for lock/channel checks
-    let targetModel: Id64String;
-    if (props.targetModelId) {
-      targetModel = props.targetModelId;
-    } else {
-      targetModel = iModel.withQueryReader(
-        "SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?",
-        (reader) => {
-          if (!reader.step())
-            ITwinError.throwError({ message: `target element ${props.targetElementId} not found`, iTwinErrorId: { scope: "imodel", key: "not-found" } });
-          return reader.current[0] as Id64String;
-        },
-        QueryBinder.from([props.targetElementId!]),
-      );
-    }
-
-    // Shared lock on target element (new parent) if specified
-    if (props.targetElementId)
-      iModel.locks.checkSharedLock(props.targetElementId, "parent", "move");
-
-    // Shared lock on target model
-    iModel.locks.checkSharedLock(targetModel, "model", "move");
-
-    // Channel verification on the target model
-    iModel.channels[_verifyChannel](targetModel);
-
-    // Collect full subtree in DFS post-order (leaves first) so each element is a leaf when moved.
-    // Store each element's original parent for re-parenting in pass 2.
-    const subtreePostOrder: Array<{ id: Id64String; parentId: Id64String | undefined }> = [];
-    const collectPostOrder = (parentId: Id64String) => {
-      iModel.withQueryReader(
-        "SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?",
-        (reader) => {
-          while (reader.step()) {
-            const childId = reader.current[0] as Id64String;
-            collectPostOrder(childId); // recurse into grandchildren first
-            subtreePostOrder.push({ id: childId, parentId });
-          }
-        },
-        QueryBinder.from([parentId]),
-      );
-    };
-    collectPostOrder(props.id);
-
-    // Pass 1: Move all descendants bottom-up (post-order) to the new model as root elements.
-    // Since we process leaves first, each element has no children when moved.
-    for (const entry of subtreePostOrder) {
-      const childProps = iModel.elements.getElementProps({ id: entry.id });
-      const newCode = props.onMoveChild?.(childProps);
-
-      this._moveElementInternal(iModel, { id: entry.id, targetModelId: targetModel, code: newCode }, false);
-    }
-
-    // Move the root element last (it now has no children since all were moved in pass 1)
-    this._moveElementInternal(iModel, props, false);
-
-    // Pass 2: Re-establish parent relationships within the new model (top-down order).
-    // Reverse the post-order array to get pre-order (parents first), so that when re-parenting
-    // a child, its parent hasn't yet acquired children (which would trigger the "has children" check).
-    for (let i = subtreePostOrder.length - 1; i >= 0; i--) {
-      const entry = subtreePostOrder[i];
-      if (entry.parentId) {
-        iModel.elements[_cache].delete({ id: entry.id });
-        iModel.elements[_instanceKeyCache].deleteById(entry.id);
-
-        const nativeProps = {
-          id: entry.id,
-          targetModelId: targetModel,
-          targetElementId: entry.parentId,
-        };
-
-        try {
-          iModel[_nativeDb].moveElement(nativeProps);
-        } catch (err: any) {
-          err.message = `Error re-parenting element [${err.message}], id: ${entry.id}, parent: ${entry.parentId}`;
-          err.metadata = { moveProps: props, childId: entry.id };
-          throw err;
-        }
-
-        iModel.elements[_cache].delete({ id: entry.id });
-        iModel.elements[_instanceKeyCache].deleteById(entry.id);
-      }
-    }
   }
 
   /** @internal Move a single element with allowChildren support. */

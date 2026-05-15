@@ -293,7 +293,19 @@ describe("moveElement", () => {
       const physElem = insertElement(modelAId);
       const defTarget = insertDefinitionElement(defModelAId, "DefTargetForPhys");
 
-      expect(() => txn.moveElement({ id: physElem, targetElementId: defTarget })).to.throw();
+      expect(() => txn.moveElement({ id: physElem, targetElementId: defTarget })).to.throw("cannot move element from model of type");
+    });
+
+    it("rejects moving a physical element to a definition model by targetModelId", () => {
+      const physElem = insertElement(modelAId);
+
+      expect(() => txn.moveElement({ id: physElem, targetModelId: defModelAId })).to.throw("cannot move element from model of type");
+    });
+
+    it("rejects moving a definition element into a physical model", () => {
+      const defElem = insertDefinitionElement(defModelAId, "DefElemToMoveToPhys");
+
+      expect(() => txn.moveElement({ id: defElem, targetModelId: modelAId })).to.throw("cannot move element from model of type");
     });
   });
 
@@ -302,9 +314,9 @@ describe("moveElement", () => {
       const parent = insertElement(modelAId);
       const child1 = insertElement(modelAId, { parentId: parent });
       const child2 = insertElement(modelAId, { parentId: parent });
+      txn.end("save");
 
-      txn.moveElementTree({ id: parent, targetModelId: modelBId });
-      txn.saveChanges();
+      iModelDb.elements.moveElementTree({ id: parent, targetModelId: modelBId });
 
       const movedParent = iModelDb.elements.getElementProps(parent);
       const movedChild1 = iModelDb.elements.getElementProps(child1);
@@ -321,9 +333,9 @@ describe("moveElement", () => {
       const root = insertElement(modelAId);
       const child = insertElement(modelAId, { parentId: root });
       const grandchild = insertElement(modelAId, { parentId: child });
+      txn.end("save");
 
-      txn.moveElementTree({ id: root, targetModelId: modelBId });
-      txn.saveChanges();
+      iModelDb.elements.moveElementTree({ id: root, targetModelId: modelBId });
 
       const movedRoot = iModelDb.elements.getElementProps(root);
       const movedChild = iModelDb.elements.getElementProps(child);
@@ -339,15 +351,15 @@ describe("moveElement", () => {
     it("invokes onMoveChild callback and applies returned code", () => {
       const parent = insertElement(modelAId);
       const child = insertElement(modelAId, { parentId: parent });
+      txn.end("save");
 
       const newChildCode = { spec: codeSpecId, scope: modelBId, value: "OverriddenCode" };
 
-      txn.moveElementTree({
+      iModelDb.elements.moveElementTree({
         id: parent,
         targetModelId: modelBId,
         onMoveChild: (_childProps) => newChildCode,
       });
-      txn.saveChanges();
 
       const movedChild = iModelDb.elements.getElementProps(child);
       assert.equal(movedChild.model, modelBId, "child should be in ModelB");
@@ -358,15 +370,23 @@ describe("moveElement", () => {
       const parent = insertElement(modelAId);
       const child1 = insertElement(modelAId, { parentId: parent });
       const child2 = insertElement(modelAId, { parentId: parent });
+      txn.end("save");
 
       // No callback — all elements have empty codes (not model-scoped)
-      txn.moveElementTree({ id: parent, targetModelId: modelBId });
-      txn.saveChanges();
+      iModelDb.elements.moveElementTree({ id: parent, targetModelId: modelBId });
 
       const movedChild1 = iModelDb.elements.getElementProps(child1);
       const movedChild2 = iModelDb.elements.getElementProps(child2);
       assert.equal(movedChild1.model, modelBId);
       assert.equal(movedChild2.model, modelBId);
+    });
+
+    it("rejects moving a subtree to a different model type", () => {
+      const parent = insertElement(modelAId);
+      insertElement(modelAId, { parentId: parent });
+      txn.end("save");
+
+      expect(() => iModelDb.elements.moveElementTree({ id: parent, targetModelId: defModelAId })).to.throw("cannot move element from model of type");
     });
   });
 });

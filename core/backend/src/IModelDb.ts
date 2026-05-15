@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
+import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn, withEditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -69,7 +69,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb, _verifyChannel } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -2947,6 +2947,115 @@ export namespace IModelDb {
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
       return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
+    }
+
+    /** Move an element and its entire subtree to a different model and/or parent.
+     * This is the only supported entry point for moving element trees. The operation is atomic:
+     * either the entire subtree moves successfully and changes are committed, or all changes are
+     * abandoned — elements will never be left split across models.
+     *
+     * At least one of `targetModelId` or `targetElementId` must be specified in props.
+     * The source and target models must be of the same class (classFullName must match exactly).
+     * The subtree is moved in two passes: (1) all descendants are moved bottom-up as root elements
+     * in the target model, (2) parent-child relationships are re-established top-down.
+     *
+     * Channel verification is performed on both the source and target models.
+     * Lock enforcement: requires exclusive lock on the root element being moved, and shared locks on
+     * the target parent (if any) and the target model.
+     * @note Callers should ensure exclusive locks are held on all descendant elements before calling this method.
+     * @param props The move parameters including optional callback for child code resolution.
+     * @throws [[ITwinError]] if the move fails (e.g., model type mismatch, duplicate code, or unsaved changes exist).
+     * @beta
+     */
+    public moveElementTree(props: MoveElementTreeProps): void {
+      withEditTxn(this._iModel, "moveElementTree", (txn) => {
+        const iModel = this._iModel;
+
+        if (!props.targetModelId && !props.targetElementId)
+          ITwinError.throwError({ message: "moveElementTree requires at least one of targetModelId or targetElementId", iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
+
+        // Lock enforcement: exclusive lock on root element
+        iModel.locks.checkExclusiveLock(props.id, "element", "move");
+
+        // Resolve the source model (the model the element currently belongs to)
+        const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
+
+        // Channel verification on the source model
+        iModel.channels[_verifyChannel](sourceModelId);
+
+        // Resolve the target model for lock/channel checks.
+        // If targetElementId is a modeled element (partition), the element moves into its sub-model.
+        let targetModelId: Id64String;
+        if (props.targetModelId) {
+          targetModelId = props.targetModelId;
+        } else if (iModel.models.tryGetModelProps(props.targetElementId!)) {
+          targetModelId = props.targetElementId!;
+        } else {
+          targetModelId = iModel.elements.getElementProps({ id: props.targetElementId! }).model;
+        }
+
+        // Model type check: source and target models must be the same class
+        const sourceModel = iModel.models.getModel(sourceModelId);
+        const targetModel = iModel.models.getModel(targetModelId);
+        if (sourceModel.classFullName !== targetModel.classFullName)
+          ITwinError.throwError({ message: `cannot move element from model of type '${sourceModel.classFullName}' to model of type '${targetModel.classFullName}'`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
+
+        // Shared lock on target element (new parent) if specified
+        if (props.targetElementId)
+          iModel.locks.checkSharedLock(props.targetElementId, "parent", "move");
+
+        // Shared lock on target model
+        iModel.locks.checkSharedLock(targetModelId, "model", "move");
+
+        // Channel verification on the target model
+        iModel.channels[_verifyChannel](targetModelId);
+
+        // Collect full subtree in DFS post-order (leaves first) so each element is a leaf when moved.
+        const subtreePostOrder: Array<{ id: Id64String; parentId: Id64String | undefined }> = [];
+        const collectPostOrder = (parentId: Id64String) => {
+          for (const childId of iModel.elements.queryChildren(parentId)) {
+            collectPostOrder(childId);
+            subtreePostOrder.push({ id: childId, parentId });
+          }
+        };
+        collectPostOrder(props.id);
+
+        // Pass 1: Move all descendants bottom-up (post-order) to the new model as root elements.
+        for (const entry of subtreePostOrder) {
+          const childProps = iModel.elements.getElementProps({ id: entry.id });
+          const newCode = props.onMoveChild?.(childProps);
+          txn.moveElement({ id: entry.id, targetModelId, code: newCode });
+        }
+
+        // Move the root element last (it now has no children since all were moved in pass 1)
+        txn.moveElement(props);
+
+        // Pass 2: Re-establish parent relationships within the new model (top-down order).
+        for (let i = subtreePostOrder.length - 1; i >= 0; i--) {
+          const entry = subtreePostOrder[i];
+          if (entry.parentId) {
+            iModel.elements[_cache].delete({ id: entry.id });
+            iModel.elements[_instanceKeyCache].deleteById(entry.id);
+
+            const nativeProps = {
+              id: entry.id,
+              targetModelId,
+              targetElementId: entry.parentId,
+            };
+
+            try {
+              iModel[_nativeDb].moveElement(nativeProps);
+            } catch (err: any) {
+              err.message = `Error re-parenting element [${err.message}], id: ${entry.id}, parent: ${entry.parentId}`;
+              err.metadata = { moveProps: props, childId: entry.id };
+              throw err;
+            }
+
+            iModel.elements[_cache].delete({ id: entry.id });
+            iModel.elements[_instanceKeyCache].deleteById(entry.id);
+          }
+        }
+      });
     }
 
     /** Query for the child elements of the specified element.
