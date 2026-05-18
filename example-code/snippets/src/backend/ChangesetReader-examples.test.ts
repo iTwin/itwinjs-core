@@ -154,6 +154,25 @@ describe("ChangesetReader Examples", () => {
       }
     }
     // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThreshold
+    // When the total change data size exceeds spillThresholdInBytes, the reader
+    // transparently writes the data to a temporary on-disk file and streams from
+    // there instead of buffering everything in memory. This keeps peak memory
+    // usage bounded and makes the API suitable for low-memory conditions.
+    //
+    // The default is 50 MiB. Pass a smaller value to spill sooner:
+    using spillReader = ChangesetReader.openGroup({
+      db,
+      changesetFiles: [insertChangesetPath, updateChangesetPath],
+      spillThresholdInBytes: 1024 * 1024, // 1 MiB — spill to disk when change data exceeds 1 MiB
+    });
+    using spillPcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (spillReader.step())
+      spillPcu.appendFrom(spillReader);
+    for (const instance of spillPcu.instances)
+      expect(instance.ECInstanceId).to.exist;
+    // __PUBLISH_EXTRACT_END__
   });
 
   it("filter by table and op-code", () => {
@@ -293,7 +312,16 @@ describe("ChangesetReader Examples", () => {
     const instances = Array.from(pcu.instances);
     const changed = instances.find((i) => i.$meta.stage === "New");
     // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThresholdOpenTxn
+    // Pass spillThresholdInBytes to limit peak memory use (default 50 MiB):
+    using spillReader = ChangesetReader.openTxn({
+      db,
+      txnId,
+      spillThresholdInBytes: 4 * 1024 * 1024, // 4 MiB
+    });
+    // __PUBLISH_EXTRACT_END__
     void changed;
+    void spillReader;
   });
 
   it("useJsName row option", () => {
@@ -376,7 +404,15 @@ describe("ChangesetReader Examples", () => {
     // Pass includeInMemoryChanges: true to also include the in-memory (not yet saved) changes:
     using reader2 = ChangesetReader.openLocalChanges({ db, includeInMemoryChanges: true });
     // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThresholdOpenLocalChanges
+    // Pass spillThresholdInBytes to limit peak memory use (default 50 MiB):
+    using reader3 = ChangesetReader.openLocalChanges({
+      db,
+      spillThresholdInBytes: 4 * 1024 * 1024, // 4 MiB
+    });
+    // __PUBLISH_EXTRACT_END__
     void reader2;
+    void reader3;
   });
 
   it("openInMemoryChanges — read in-memory changes", async () => {
@@ -392,7 +428,15 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenInMemoryChanges
     using reader = ChangesetReader.openInMemoryChanges({ db });
     // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThresholdOpenInMemoryChanges
+    // Pass spillThresholdInBytes to limit peak memory use (default 50 MiB):
+    using spillReader = ChangesetReader.openInMemoryChanges({
+      db,
+      spillThresholdInBytes: 4 * 1024 * 1024, // 4 MiB
+    });
+    // __PUBLISH_EXTRACT_END__
     void reader;
+    void spillReader;
   });
 });
 

@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
+    - [ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use](#changesetreader-spillthresholdinbytes-controls-disk-spill-for-bounded-memory-use)
 
 ## @itwin/core-backend
 
@@ -23,3 +24,20 @@ SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonI
 ```
 
 This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
+
+### ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use
+
+[openGroup]($backend), [openTxn]($backend), [openLocalChanges]($backend), and [openInMemoryChanges]($backend) now accept a `spillThresholdInBytes` parameter. When the total size of the change data being read exceeds this threshold, the reader transparently writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory. This keeps peak memory usage bounded and makes these APIs usable under low-memory conditions.
+
+The default threshold is **50 MiB**. Set a lower value to spill to disk sooner:
+
+```typescript
+// Spill to disk when the merged changeset data exceeds 1 MiB
+using reader = ChangesetReader.openGroup({
+  db,
+  changesetFiles: [cs1, cs2, cs3],
+  spillThresholdInBytes: 1024 * 1024,
+});
+```
+
+The same parameter is available on `openTxn`, `openLocalChanges`, and `openInMemoryChanges`.

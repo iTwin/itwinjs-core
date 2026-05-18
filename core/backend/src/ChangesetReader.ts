@@ -35,6 +35,7 @@ import { AnyDb, SqliteChangeOp } from "./SqliteChangesetReader";
  * @beta
  */
 export class ChangesetReader implements Disposable, ChangeSource {
+  private static readonly defaultSpillThresholdInBytes = 50 * 1024 * 1024; // 50 MiB
   private readonly _nativeReader: IModelJsNative.ChangesetReader = new IModelNative.platform.ChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private _rowOptions?: RowFormatOptions;
@@ -144,9 +145,13 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @param args.db Database with schema at or ahead of the last changeset.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
+   * @param args.spillThresholdInBytes When the total size of the changeset data in the change group exceeds this threshold (in bytes),
+   * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
+   * This keeps peak memory usage bounded, making the API suitable for processing large changeset groups under low-memory conditions.
+   * Defaults to 50 MiB.
    * @beta
    */
-  public static openGroup(args: { readonly changesetFiles: string[] } & ChangesetReaderArgs): ChangesetReader {
+  public static openGroup(args: { readonly changesetFiles: string[], spillThresholdInBytes?: number } & ChangesetReaderArgs): ChangesetReader {
     if (args.changesetFiles.length === 0)
       throw new Error("changesetFiles must contain at least one file.");
     const reader = new ChangesetReader(args.db);
@@ -154,7 +159,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._propFilter);
+      reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     }
     catch (e) {
       reader.close();
@@ -169,17 +174,21 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @param args.includeInMemoryChanges Also include in-memory (not yet saved to disk) changes.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
+   * @param args.spillThresholdInBytes When the total size of all local un-pushed saved changes exceeds this threshold (in bytes),
+   * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
+   * This keeps peak memory usage bounded, making the API suitable for iModels with large local change backlogs under low-memory conditions.
+   * Defaults to 50 MiB.
    * @beta
    */
   public static openLocalChanges(
-    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean },
+    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean, spillThresholdInBytes?: number },
   ): ChangesetReader {
     const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._propFilter);
+      reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     } catch (e) {
       reader.close();
       throw e;
@@ -192,17 +201,21 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @param args.db Must be an [IModelDb]($backend).
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
+   * @param args.spillThresholdInBytes When the total size of the in-memory (unsaved) change data exceeds this threshold (in bytes),
+   * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
+   * This keeps peak memory usage bounded, making the API suitable for large in-memory transactions under low-memory conditions.
+   * Defaults to 50 MiB.
    * @beta
    */
   public static openInMemoryChanges(
-    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb },
+    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb, spillThresholdInBytes?: number },
   ): ChangesetReader {
     const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._propFilter);
+      reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     } catch (e) {
       reader.close();
       throw e;
@@ -216,17 +229,21 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @param args.txnId The id of the saved transaction to read.
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
+   * @param args.spillThresholdInBytes When the total size of the transaction's change data exceeds this threshold (in bytes),
+   * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
+   * This keeps peak memory usage bounded, making the API suitable for large transactions under low-memory conditions.
+   * Defaults to 50 MiB.
    * @beta
    */
   public static openTxn(
-    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String },
+    args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String, spillThresholdInBytes?: number },
   ): ChangesetReader {
     const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions ?? {};
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
     try {
-      reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._propFilter);
+      reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     } catch (e) {
       reader.close();
       throw e;

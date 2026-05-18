@@ -151,6 +151,34 @@ Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved
 
 ---
 
+## `spillThresholdInBytes` — bounding peak memory usage
+
+[openGroup]($backend), [openTxn]($backend), [openLocalChanges]($backend), and [openInMemoryChanges]($backend) all accept an optional `spillThresholdInBytes` argument. It controls whether the native reader buffers change data in memory or spills it to a temporary file on disk.
+
+| Scenario | Behaviour |
+|---|---|
+| Total change data **≤** `spillThresholdInBytes` | Changes are held in memory — fastest path |
+| Total change data **>** `spillThresholdInBytes` | Changes are written to a temporary file on disk and streamed from there — memory usage stays bounded |
+
+The default threshold is **50 MiB**. Reduce it when running in a memory-constrained environment or when processing an unusually large group of changesets:
+
+[[include:ChangesetReader.SpillThreshold]]
+
+The same parameter is available on the other open methods:
+
+**`openLocalChanges`:**
+[[include:ChangesetReader.SpillThresholdOpenLocalChanges]]
+
+**`openInMemoryChanges`:**
+[[include:ChangesetReader.SpillThresholdOpenInMemoryChanges]]
+
+**`openTxn`:**
+[[include:ChangesetReader.SpillThresholdOpenTxn]]
+
+> **Note:** [openFile]($backend) does not expose `spillThresholdInBytes` because it reads a single on-disk file sequentially and does not pre-buffer the change data.
+
+---
+
 ## Property filter — controlling which properties are returned
 
 All `open*` methods accept a `propFilter` argument that controls which properties are included:

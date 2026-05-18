@@ -4458,3 +4458,190 @@ describe("ChangesetReader: invalid inputs", () => {
   });
 });
 
+describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
+  interface SpillTestContext {
+    rwIModel: BriefcaseDb;
+    txn: EditTxn;
+    iModelId: string;
+    adminToken: string;
+  }
+
+  interface ModelSetup {
+    drawingModelId: Id64String;
+    drawingCategoryId: Id64String;
+  }
+
+  /** Boots HubMock, opens a briefcase, starts a txn, and tears everything down after `fn` resolves or throws. */
+  async function withSpillTestIModel(
+    hubName: string,
+    iModelName: string,
+    fn: (ctx: SpillTestContext) => Promise<void>,
+  ): Promise<void> {
+    HubMock.startup(hubName, KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: iModelName, accessToken: adminToken });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    const txn = startTestTxn(rwIModel, `ChangesetReader spill ${iModelName}`);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    try {
+      await fn({ rwIModel, txn, iModelId, adminToken });
+    } finally {
+      txn.end();
+      rwIModel.close();
+      HubMock.shutdown();
+    }
+  }
+
+  /** Pushes a drawing model + category as an initial setup changeset. Returns the ids. */
+  async function pushInitialModelSetup(ctx: SpillTestContext, catName: string): Promise<ModelSetup> {
+    const { rwIModel, txn, adminToken } = ctx;
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+    const drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, catName,
+      new SubCategoryAppearance({ color: ColorDef.fromString("rgb(0,128,255)").toJSON() }));
+    txn.saveChanges("setup");
+    await rwIModel.pushChanges({ description: "setup", accessToken: adminToken });
+    return { drawingModelId, drawingCategoryId };
+  }
+
+  /** Inserts a single BisCore:DrawingGraphic into the given model. */
+  function insertDrawingGraphic(txn: EditTxn, drawingModelId: Id64String, drawingCategoryId: Id64String): void {
+    txn.insertElement({
+      classFullName: "BisCore:DrawingGraphic",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+    } as any);
+  }
+
+  /** Reads all instances from a reader using an in-memory unifier cache. */
+  function drainReader(reader: ChangesetReader): ChangeInstance[] {
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (reader.step())
+      pcu.appendFrom(reader);
+    return Array.from(pcu.instances);
+  }
+
+  /** Sorts instances by a stable key for deterministic deep-equality comparisons. */
+  function sortInstances(instances: ChangeInstance[]): ChangeInstance[] {
+    return instances.slice().sort((a, b) =>
+      `${a.ECInstanceId}-${a.$meta.stage}`.localeCompare(`${b.ECInstanceId}-${b.$meta.stage}`),
+    );
+  }
+
+  /** Asserts that spill instances are non-empty and identical to the default instances after sorting. */
+  function assertSpillEquivalence(defaultInstances: ChangeInstance[], spillInstances: ChangeInstance[]): void {
+    const identityKeys = new Set(["ECInstanceId", "ECClassId", "$meta"]);
+    const hasExtraProps = (instances: ChangeInstance[]) =>
+      instances.some((inst) => Object.keys(inst).some((k) => !identityKeys.has(k)));
+
+    expect(defaultInstances.length).to.be.greaterThan(0, "defaultInstances should be non-empty");
+    expect(spillInstances.length).to.be.greaterThan(0, "spillInstances should be non-empty");
+    assert.isTrue(hasExtraProps(defaultInstances), "defaultInstances: expected at least one instance with properties beyond ECInstanceId, ECClassId, and $meta");
+    assert.isTrue(hasExtraProps(spillInstances), "spillInstances: expected at least one instance with properties beyond ECInstanceId, ECClassId, and $meta");
+    assert.deepEqual(sortInstances(spillInstances), sortInstances(defaultInstances));
+  }
+
+  // ---- openGroup ----
+
+  it("openGroup: spillThresholdInBytes = 1 (forces disk spill) yields same instances as default", async () => {
+    await withSpillTestIModel("ECChangesetSpillGroup", "spillGroup", async (ctx) => {
+      const { rwIModel, txn, iModelId, adminToken } = ctx;
+      const { drawingModelId, drawingCategoryId } = await pushInitialModelSetup(ctx, "SpillGroupCat");
+
+      await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+      // Push 1: insert element 1
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      txn.saveChanges("insert element 1");
+      await rwIModel.pushChanges({ description: "changeset 1: element 1", accessToken: adminToken });
+
+      await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+      // Push 2: insert element 2
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      txn.saveChanges("insert element 2");
+      await rwIModel.pushChanges({ description: "changeset 2: element 2", accessToken: adminToken });
+
+      const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+      const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+      assert.isAtLeast(changesets.length, 2);
+      const changesetPaths = changesets.map((cs) => cs.pathname);
+
+      assertSpillEquivalence(
+        drainReader(ChangesetReader.openGroup({ db: rwIModel, changesetFiles: changesetPaths })),
+        drainReader(ChangesetReader.openGroup({ db: rwIModel, changesetFiles: changesetPaths, spillThresholdInBytes: 1 })),
+      );
+    });
+  });
+
+  // ---- openTxn ----
+
+  it("openTxn: spillThresholdInBytes = 1 (forces disk spill) yields same instances as default", async () => {
+    await withSpillTestIModel("ECChangesetSpillTxn", "spillTxn", async (ctx) => {
+      const { rwIModel, txn } = ctx;
+      const { drawingModelId, drawingCategoryId } = await pushInitialModelSetup(ctx, "SpillTxnCat");
+
+      await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+      // Txn 1: insert element 1 (an earlier local txn)
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      txn.saveChanges("insert element 1");
+
+      // Txn 2: insert element 2 — the last txn, whose id is used for openTxn
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      txn.saveChanges("insert element 2");
+      const lastTxnId = rwIModel.txns.getLastSavedTxnProps()!.id;
+
+      assertSpillEquivalence(
+        drainReader(ChangesetReader.openTxn({ db: rwIModel, txnId: lastTxnId })),
+        drainReader(ChangesetReader.openTxn({ db: rwIModel, txnId: lastTxnId, spillThresholdInBytes: 1 })),
+      );
+    });
+  });
+
+  // ---- openLocalChanges ----
+
+  it("openLocalChanges: spillThresholdInBytes = 1 (forces disk spill) yields same instances as default", async () => {
+    await withSpillTestIModel("ECChangesetSpillLocal", "spillLocal", async (ctx) => {
+      const { rwIModel, txn } = ctx;
+      const { drawingModelId, drawingCategoryId } = await pushInitialModelSetup(ctx, "SpillLocalCat");
+
+      await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+      // Local txn 1: saved but not pushed
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      txn.saveChanges("local insert 1");
+
+      // Local txn 2: saved but not pushed
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      txn.saveChanges("local insert 2");
+
+      assertSpillEquivalence(
+        drainReader(ChangesetReader.openLocalChanges({ db: rwIModel })),
+        drainReader(ChangesetReader.openLocalChanges({ db: rwIModel, spillThresholdInBytes: 1 })),
+      );
+    });
+  });
+
+  // ---- openInMemoryChanges ----
+
+  it("openInMemoryChanges: spillThresholdInBytes = 1 (forces disk spill) yields same instances as default", async () => {
+    await withSpillTestIModel("ECChangesetSpillInMemory", "spillInMemory", async (ctx) => {
+      const { rwIModel, txn } = ctx;
+      const { drawingModelId, drawingCategoryId } = await pushInitialModelSetup(ctx, "SpillInMemoryCat");
+
+      await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+
+      // Insert without saveChanges — read raw in-memory changes
+      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+
+      assertSpillEquivalence(
+        drainReader(ChangesetReader.openInMemoryChanges({ db: rwIModel })),
+        drainReader(ChangesetReader.openInMemoryChanges({ db: rwIModel, spillThresholdInBytes: 1 })),
+      );
+    });
+  });
+});
+
