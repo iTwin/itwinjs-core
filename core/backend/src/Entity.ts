@@ -193,7 +193,7 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and iterate `view.getClass(entity.classFullName)?.getProperties()` instead. (`forEach` is also deprecated.)
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and iterate `view.findClass(entity.classFullName)?.getProperties()` instead. (`forEach` is also deprecated.)
    *
    * @example
    * ```typescript
@@ -220,12 +220,12 @@ export class Entity {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    * @throws Error if metadata for the class cannot be retrieved.
-   * @deprecated in 5.10 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and iterate `view.getClass(entity.classFullName)?.getProperties()` yourself. SchemaView does not expose the `BisCore.CustomHandledProperty` custom attribute, so the `includeCustom: false` filter must be replicated by the caller (query the custom-handled property set via ECSql) if needed.
+   * @deprecated in 5.10.0 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and iterate `view.findClass(entity.classFullName)?.getProperties()` yourself. SchemaView does not expose the `BisCore.CustomHandledProperty` custom attribute, so the `includeCustom: false` filter must be replicated by the caller (query the custom-handled property set via ECSql) if needed.
    *
    * @example
    * ```typescript
    * const view = await entity.iModel.getSchemaView();
-   * const cls = view.getClass(entity.classFullName);
+   * const cls = view.findClass(entity.classFullName);
    * if (cls) {
    *   for (const property of cls.getProperties()) {
    *     console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
@@ -261,7 +261,7 @@ export class Entity {
    * @throws [[IModelError]] if there is a problem querying the schema
    * @returns The metadata for the current entity
    * @public @preview
-   * @deprecated in 5.10 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.getClass(entity.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass | RelationshipClass` and offers a synchronous, snapshot-style API.
+   * @deprecated in 5.10.0 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(entity.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass | RelationshipClass` and offers a synchronous, snapshot-style API.
    */
   public async getMetaData(): Promise<EntityClass | RelationshipClass> {
     if (this._metadata) {
@@ -278,7 +278,7 @@ export class Entity {
   }
 
   /** @internal
-   * @deprecated in 5.10 - will not be removed until after 2027-06-01. Internal callers should obtain a `SchemaView` via `iModel.getSchemaView()` (or retain a pre-loaded one) and call `view.getClass(...)` instead. Note that `getSchemaView()` is async.
+   * @deprecated in 5.10.0 - will not be removed until after 2027-06-01. Internal callers should obtain a `SchemaView` via `iModel.getSchemaView()` (or retain a pre-loaded one) and call `view.findClass(...)` instead. Note that `getSchemaView()` is async.
    */
   public getMetaDataSync(): EntityClass | RelationshipClass {
     if (this._metadata) {

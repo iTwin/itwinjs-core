@@ -348,7 +348,7 @@ export class ClassRegistry {
  * Replacement:
  * ```ts
  * const view = await iModel.getSchemaView();
- * const cls = view.getClass("SchemaName:ClassName");
+ * const cls = view.findClass("SchemaName:ClassName");
  * ```
  */
 export class MetaDataRegistry {

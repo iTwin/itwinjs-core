@@ -53,7 +53,17 @@ class BinaryReader {
   /** Read a string-table reference (U32 index) and return the original string. */
   public readSRef(): string {
     const idx = this.readU32();
-    return idx < this._strings.length ? this._strings[idx] : "";
+    if (idx >= this._strings.length)
+      throw new Error(`SchemaView blob: string reference ${idx} out of range (string table size ${this._strings.length})`);
+    return this._strings[idx];
+  }
+
+  /** Validate a count-prefixed table header: the declared count cannot exceed what the remaining
+   *  buffer could plausibly hold. Each entry consumes at least `minBytesPerEntry` bytes. */
+  public validateCount(count: number, minBytesPerEntry: number, tableName: string): void {
+    const remaining = this._bytes.length - this._pos;
+    if (count > remaining / Math.max(1, minBytesPerEntry))
+      throw new Error(`SchemaView blob: ${tableName} count ${count} exceeds remaining buffer (${remaining} bytes)`);
   }
 
   /** Parse the string table at the given offset. */
@@ -207,6 +217,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // ---- PropertyDefTable ----
   expectTag(reader, Tag.PropertyDefTable);
   const defCount = reader.readU32();
+  // Each PreParsedDef consumes at least ~30 bytes (mix of u8/u16/u32 fields + string refs).
+  // Use a conservative lower bound of 8 bytes to catch wildly oversized counts on malformed blobs.
+  reader.validateCount(defCount, 8, "PropertyDefTable");
   const preParsedDefs: PreParsedDef[] = new Array(defCount);
   for (let i = 0; i < defCount; i++) {
     preParsedDefs[i] = {
@@ -231,6 +244,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // ---- SchemaTable ----
   expectTag(reader, Tag.SchemaTable);
   const schemaCount = reader.readU32();
+  reader.validateCount(schemaCount, 8, "SchemaTable");
   for (let i = 0; i < schemaCount; i++) {
     const name = reader.readSRef();
     const vRead = reader.readU16();
@@ -279,6 +293,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // ---- EnumTable ----
   expectTag(reader, Tag.EnumTable);
   const enumTotalCount = reader.readU32();
+  reader.validateCount(enumTotalCount, 8, "EnumTable");
   for (let i = 0; i < enumTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, i, schemaEnumStarts, schemaEnumCounts);
@@ -330,6 +345,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // ---- KoQTable ----
   expectTag(reader, Tag.KoQTable);
   const koqTotalCount = reader.readU32();
+  reader.validateCount(koqTotalCount, 8, "KoQTable");
   for (let i = 0; i < koqTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, i, schemaKoqStarts, schemaKoqCounts);
@@ -358,6 +374,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // ---- PropCatTable ----
   expectTag(reader, Tag.PropCatTable);
   const catTotalCount = reader.readU32();
+  reader.validateCount(catTotalCount, 8, "PropCatTable");
   for (let i = 0; i < catTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, i, schemaCatStarts, schemaCatCounts);
@@ -382,6 +399,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // ---- ClassTable ----
   expectTag(reader, Tag.ClassTable);
   const classTotalCount = reader.readU32();
+  reader.validateCount(classTotalCount, 8, "ClassTable");
   for (let i = 0; i < classTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, i, schemaClassStarts, schemaClassCounts);

@@ -589,7 +589,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.getClass(element.classFullName)` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` instead.
    *
    * @example
    * ```typescript
@@ -598,14 +598,14 @@ export class Element extends Entity {
    *
    * // Replacement:
    * const view = await element.iModel.getSchemaView();
-   * const cls = view.getClass(element.classFullName);
+   * const cls = view.findClass(element.classFullName);
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.
-   * @deprecated in 5.10 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.getClass(element.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass` and offers a synchronous, snapshot-style API.
+   * @deprecated in 5.10.0 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass` and offers a synchronous, snapshot-style API.
    */
   public override async getMetaData(): Promise<EntityClass> {
     if (this._metadata && EntityClass.isEntityClass(this._metadata)) {

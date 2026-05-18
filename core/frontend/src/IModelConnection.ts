@@ -699,22 +699,38 @@ export abstract class IModelConnection extends IModel {
   protected async invalidateSchemaViewIfChanged(): Promise<void> {
     if (!this._schemasPromise)
       return;
+    const existingPromise = this._schemasPromise;
+    let existing: SchemaView;
     try {
-      const existing = await this._schemasPromise;
-      if (!existing.schemaToken)
-        return;
+      existing = await existingPromise;
+    } catch {
+      // The cached promise itself failed; drop it so the next getSchemaView() retries.
+      if (this._schemasPromise === existingPromise)
+        this._schemasPromise = undefined;
+      return;
+    }
+    if (!existing.schemaToken)
+      return;
+    try {
       const reader = this.createQueryReader("PRAGMA checksum(ecdb_schema)");
       const result = await reader.next();
       if (result.done)
-        return;
+        throw new Error("PRAGMA checksum(ecdb_schema) returned no rows");
       const liveToken = result.value.sha3_256 as string;
       if (liveToken !== existing.schemaToken) {
         this._schemasPromise = undefined;
         existing.markOutdated();
       }
     } catch {
-      // If the checksum check fails, leave the cache as-is. A stale view is preferable
-      // to propagating an error from what is essentially a background housekeeping step.
+      // The checksum check is called right after operations that may have changed schemas
+      // (e.g., pullChanges). If we cannot verify the cached view is still current, drop it
+      // rather than risk returning stale metadata indefinitely. The next getSchemaView() call
+      // will reload. We also mark the existing view outdated so any retained references can
+      // observe the invalidation.
+      if (this._schemasPromise === existingPromise) {
+        this._schemasPromise = undefined;
+        existing.markOutdated();
+      }
     }
   }
 

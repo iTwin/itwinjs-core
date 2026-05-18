@@ -619,9 +619,16 @@ export namespace SchemaView {
      * Accepts a `SchemaView.Class` or a qualified name string ("SchemaName:ClassName").
      */
     public is(classOrName: Class | string): boolean {
-      const targetIdx = typeof classOrName === "string"
-        ? this._ctx.resolveClassIdx(classOrName)
-        : classOrName.idx;
+      let targetIdx: number;
+      if (typeof classOrName === "string") {
+        targetIdx = this._ctx.resolveClassIdx(classOrName);
+      } else if (classOrName._ctx === this._ctx) {
+        targetIdx = classOrName.idx;
+      } else {
+        // Cross-view input: indices are not comparable across SchemaView instances.
+        // Resolve by qualified name against this view.
+        targetIdx = this._ctx.resolveClassIdx(classOrName.fullName);
+      }
       if (targetIdx === -1) return false;
       if (this.idx === targetIdx) return true;
       return this._ctx.getTransitiveBases(this.idx).has(targetIdx);
