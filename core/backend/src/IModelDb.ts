@@ -4039,21 +4039,25 @@ export class BriefcaseDb extends IModelDb {
     }
 
     try {
-      await BriefcaseManager.revertTimelineChanges(this, arg);
-      this[_nativeDb].saveChanges("Revert changes");
-      if (!arg.description) {
-        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+      if (arg.useChangesetGroup) {
+        await this._revertWithChangesetGroup(arg, skipSchemaSyncPull);
+      } else {
+        await BriefcaseManager.revertTimelineChanges(this, arg);
+        this[_nativeDb].saveChanges("Revert changes");
+        if (!arg.description) {
+          arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+        }
+        const pushArgs = {
+          description: arg.description,
+          accessToken: arg.accessToken,
+          mergeRetryCount: arg.mergeRetryCount,
+          mergeRetryDelay: arg.mergeRetryDelay,
+          pushRetryCount: arg.pushRetryCount,
+          pushRetryDelay: arg.pushRetryDelay,
+          retainLocks: arg.retainLocks,
+        };
+        await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       }
-      const pushArgs = {
-        description: arg.description,
-        accessToken: arg.accessToken,
-        mergeRetryCount: arg.mergeRetryCount,
-        mergeRetryDelay: arg.mergeRetryDelay,
-        pushRetryCount: arg.pushRetryCount,
-        pushRetryDelay: arg.pushRetryDelay,
-        retainLocks: arg.retainLocks,
-      };
-      await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
     } catch (err) {
       if (!arg.retainLocks) {
@@ -4062,6 +4066,62 @@ export class BriefcaseDb extends IModelDb {
       }
     } finally {
       this[_nativeDb].abandonChanges();
+    }
+  }
+
+  /** Revert each changeset individually, pushing each within a changeset group.
+   * @internal
+   */
+  private async _revertWithChangesetGroup(arg: RevertChangesArgs, skipSchemaSyncPull: <T>(func: () => Promise<T>) => Promise<T>): Promise<void> {
+    const nativeDb = this[_nativeDb];
+    let currentIndex = this.changeset.index;
+    if (currentIndex === undefined)
+      currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: this.iModelId, changeset: { id: this.changeset.id } })).index;
+
+    // Download all changesets in range
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({
+      accessToken: arg.accessToken,
+      iModelId: this.iModelId,
+      range: { first: arg.toIndex, end: currentIndex },
+      targetDir: BriefcaseManager.getChangeSetsPath(this.iModelId),
+      progressCallback: arg.onProgress,
+    });
+
+    if (changesets.length === 0)
+      return;
+
+    // Reverse so we process from newest to oldest
+    changesets.reverse();
+
+    // Create the changeset group
+    await this.beginChangesetGroup(`Revert changesets from index ${currentIndex} to ${arg.toIndex}`);
+
+    try {
+      for (const changeset of changesets) {
+        this.clearCaches();
+        nativeDb.revertTimelineChanges([changeset], arg.skipSchemaChanges ?? false);
+        nativeDb.saveChanges(`Revert changeset ${changeset.index}`);
+
+        const description = `Reversed: { index: ${changeset.index}, id:'${changeset.id}' }`;
+        const pushArgs: PushChangesArgs = {
+          description,
+          accessToken: arg.accessToken,
+          mergeRetryCount: arg.mergeRetryCount,
+          mergeRetryDelay: arg.mergeRetryDelay,
+          pushRetryCount: arg.pushRetryCount,
+          pushRetryDelay: arg.pushRetryDelay,
+          retainLocks: arg.retainLocks,
+        };
+        await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
+
+        IModelJsFs.removeSync(changeset.pathname);
+      }
+
+      await this.endChangesetGroup();
+    } catch (err) {
+      // If we fail mid-way, still attempt to close the group so it doesn't stay open forever
+      try { await this.endChangesetGroup(); } catch { }
+      throw err;
     }
   }
 

@@ -797,4 +797,182 @@ describe("HubMock", () => {
       }
     });
   });
+
+  describe("revert timeline changes", () => {
+    const adminToken: AccessToken = "admin token for revert tests";
+    let revertIModelId: GuidString;
+
+    before(async () => {
+      revertIModelId = await IModelHost[_hubAccess].createNewIModel({
+        iTwinId,
+        iModelName: "revert timeline test imodel",
+        version0,
+      });
+    });
+
+    after(async () => {
+      await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId: revertIModelId });
+    });
+
+    /** Helper: push a schema changeset that adds a property to a dynamic schema */
+    async function pushSchemaChangeset(db: BriefcaseDb, schemaVersion: string, properties: string[]): Promise<void> {
+      const schema = `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="RevertTestDomain" alias="rtd" version="${schemaVersion}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+          <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
+          <ECCustomAttributes>
+            <DynamicSchema xmlns="CoreCustomAttributes.01.00.00"/>
+          </ECCustomAttributes>
+          <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            ${properties.map((p) => `<ECProperty propertyName="${p}" typeName="string"/>`).join("\n            ")}
+          </ECEntityClass>
+        </ECSchema>`;
+      await db.importSchemaStrings([schema]);
+      await db.pushChanges({ accessToken: adminToken, description: `schema v${schemaVersion}` });
+    }
+
+    /** Helper: push a data changeset that modifies the root subject label */
+    async function pushDataChangeset(db: BriefcaseDb, label: string): Promise<void> {
+      const rootId = db.elements.getRootSubject().id;
+      await db.locks.acquireLocks({ exclusive: rootId });
+      withEditTxn(db, (txn) => {
+        const root = db.elements.getRootSubject();
+        root.userLabel = label;
+        txn.updateElement(root.toJSON());
+      });
+      await db.pushChanges({ accessToken: adminToken, description: `data: ${label}` });
+    }
+
+    it("revertAndPushChanges without group reverts data+schema in a single changeset, second briefcase pulls", async () => {
+      // Create a fresh iModel for this test
+      const testIModelId = await IModelHost[_hubAccess].createNewIModel({
+        iTwinId,
+        iModelName: "revert no-group test",
+        version0,
+      });
+
+      // Download two briefcases
+      const bc1Props = await BriefcaseManager.downloadBriefcase({ accessToken: adminToken, iTwinId, iModelId: testIModelId });
+      const bc2Props = await BriefcaseManager.downloadBriefcase({ accessToken: adminToken, iTwinId, iModelId: testIModelId });
+      const bc1 = await BriefcaseDb.open({ fileName: bc1Props.fileName });
+      const bc2 = await BriefcaseDb.open({ fileName: bc2Props.fileName });
+      bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      try {
+        // Push a data changeset (index 1)
+        await pushDataChangeset(bc1, "data change 1");
+
+        // Push a schema changeset (index 2)
+        await pushSchemaChangeset(bc1, "01.00.00", ["PropA"]);
+
+        // Push another data changeset (index 3)
+        await pushDataChangeset(bc1, "data change 2");
+
+        const indexBeforeRevert = bc1.changeset.index;
+        assert.equal(indexBeforeRevert, 3);
+
+        // Revert WITHOUT group — reverts all back to index 0 in a single push
+        await bc1.revertAndPushChanges({ accessToken: adminToken, toIndex: 0 });
+
+        // bc1 should now be at index 4 (one revert changeset pushed)
+        assert.equal(bc1.changeset.index, 4);
+
+        // Verify the data was reverted
+        const rootAfterRevert = bc1.elements.getRootSubject();
+        assert.isUndefined(rootAfterRevert.userLabel);
+
+        // Verify only one new changeset was pushed (the batch revert)
+        const allChangesets = await IModelHost[_hubAccess].queryChangesets({ accessToken: adminToken, iModelId: testIModelId });
+        assert.equal(allChangesets.length, 4); // 3 original + 1 revert
+
+        // Second briefcase pulls the reverted timeline
+        await bc2.pullChanges({ accessToken: adminToken });
+        assert.equal(bc2.changeset.index, 4);
+
+        const rootOnBc2 = bc2.elements.getRootSubject();
+        assert.isUndefined(rootOnBc2.userLabel);
+      } finally {
+        bc1.close();
+        bc2.close();
+        await BriefcaseManager.deleteBriefcaseFiles(bc1Props.fileName);
+        await BriefcaseManager.deleteBriefcaseFiles(bc2Props.fileName);
+        await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId: testIModelId });
+      }
+    });
+
+    it("revertAndPushChanges with useChangesetGroup reverts each changeset individually, second briefcase pulls", async () => {
+      // Create a fresh iModel for this test
+      const testIModelId = await IModelHost[_hubAccess].createNewIModel({
+        iTwinId,
+        iModelName: "revert with-group test",
+        version0,
+      });
+
+      // Download two briefcases
+      const bc1Props = await BriefcaseManager.downloadBriefcase({ accessToken: adminToken, iTwinId, iModelId: testIModelId });
+      const bc2Props = await BriefcaseManager.downloadBriefcase({ accessToken: adminToken, iTwinId, iModelId: testIModelId });
+      const bc1 = await BriefcaseDb.open({ fileName: bc1Props.fileName });
+      const bc2 = await BriefcaseDb.open({ fileName: bc2Props.fileName });
+      bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      try {
+        // Push a data changeset (index 1)
+        await pushDataChangeset(bc1, "grouped data 1");
+
+        // Push a schema changeset (index 2)
+        await pushSchemaChangeset(bc1, "01.00.00", ["PropX"]);
+
+        // Push another data changeset (index 3)
+        await pushDataChangeset(bc1, "grouped data 2");
+
+        assert.equal(bc1.changeset.index, 3);
+
+        // Revert WITH group — each changeset reverted and pushed individually
+        await bc1.revertAndPushChanges({ accessToken: adminToken, toIndex: 0, useChangesetGroup: true });
+
+        // 3 original + 3 individual revert changesets = index 6
+        assert.equal(bc1.changeset.index, 6);
+
+        // Verify the data was reverted
+        const rootAfterRevert = bc1.elements.getRootSubject();
+        assert.isUndefined(rootAfterRevert.userLabel);
+
+        // Verify 3 new changesets were pushed (one per reverted changeset)
+        const allChangesets = await IModelHost[_hubAccess].queryChangesets({ accessToken: adminToken, iModelId: testIModelId });
+        assert.equal(allChangesets.length, 6);
+
+        // Verify descriptions follow the expected pattern
+        const revertChangesets = allChangesets.slice(3); // the last 3
+        assert.match(revertChangesets[0].description, /^Reversed: \{ index: 3, id:'.*' \}$/);
+        assert.match(revertChangesets[1].description, /^Reversed: \{ index: 2, id:'.*' \}$/);
+        assert.match(revertChangesets[2].description, /^Reversed: \{ index: 1, id:'.*' \}$/);
+
+        // Verify all revert changesets belong to the same group
+        const groupId = revertChangesets[0].groupId;
+        assert.isDefined(groupId);
+        assert.isNotEmpty(groupId);
+        assert.equal(revertChangesets[1].groupId, groupId);
+        assert.equal(revertChangesets[2].groupId, groupId);
+
+        // The changeset group should be closed (completed)
+        assert.isUndefined(bc1.currentChangesetGroup, "group should be cleared after revert completes");
+
+        // Second briefcase pulls all reverted changesets
+        await bc2.pullChanges({ accessToken: adminToken });
+        assert.equal(bc2.changeset.index, 6);
+
+        const rootOnBc2 = bc2.elements.getRootSubject();
+        assert.isUndefined(rootOnBc2.userLabel);
+      } finally {
+        bc1.close();
+        bc2.close();
+        await BriefcaseManager.deleteBriefcaseFiles(bc1Props.fileName);
+        await BriefcaseManager.deleteBriefcaseFiles(bc2Props.fileName);
+        await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId: testIModelId });
+      }
+    });
+  });
 });

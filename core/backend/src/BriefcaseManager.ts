@@ -119,6 +119,13 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
   toIndex: ChangesetIndex;
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
+  /**
+   * If present, each changeset is reverted and pushed individually within a Changeset Group.
+   * Each pushed changeset will have description `Reversed: { index: <changeset-index>, id:'<changeset-id>' }`.
+   * A new Changeset Group is created before the first push and closed after the last push.
+   * @beta
+   */
+  useChangesetGroup?: true;
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
