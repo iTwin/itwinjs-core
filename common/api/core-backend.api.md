@@ -694,7 +694,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
     // @internal
-    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<ChangeInstance>;
+    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch>;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
@@ -4207,6 +4207,8 @@ export namespace IModelDb {
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         // @deprecated
         deleteElement(ids: Id64Arg): void;
+        // @beta @deprecated
+        deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
@@ -4683,6 +4685,12 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
+// @internal
+export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
+    // (undocumented)
+    $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
+}
+
 // @beta
 export interface IntegrityCheckOptions {
     quickCheck?: boolean;
@@ -5139,6 +5147,7 @@ export class LocalHub {
     queryLocks(): LocksEntry[];
     // (undocumented)
     queryLockStatus(elementId: Id64String): LockStatus;
+    queryNearestCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex;
     queryPreviousCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex;
     // (undocumented)
     releaseAllLocks(arg: {

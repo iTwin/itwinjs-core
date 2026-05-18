@@ -262,6 +262,10 @@ export class Box extends SolidPrimitive {
       rangeToExtend.extendTransformedXYZ(boxTransform, bx, by, 1);
     }
   }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._localToWorld.matrix.columnZ().isParallelTo(this._localToWorld.matrix.columnXCrossColumnY(), true, true);
+  }
   /**
    * @return true if this is a closed volume.
    */

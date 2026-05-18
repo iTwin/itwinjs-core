@@ -2,6 +2,18 @@
   "name": "@itwin/map-layers-formats",
   "entries": [
     {
+      "version": "5.9.3",
+      "tag": "@itwin/map-layers-formats_v5.9.3",
+      "date": "Fri, 15 May 2026 11:25:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.9.2",
+      "tag": "@itwin/map-layers-formats_v5.9.2",
+      "date": "Fri, 08 May 2026 20:36:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.9.1",
       "tag": "@itwin/map-layers-formats_v5.9.1",
       "date": "Tue, 05 May 2026 17:43:30 GMT",
@@ -11,6 +23,12 @@
       "version": "5.9.0",
       "tag": "@itwin/map-layers-formats_v5.9.0",
       "date": "Mon, 04 May 2026 16:32:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.8.5",
+      "tag": "@itwin/map-layers-formats_v5.8.5",
+      "date": "Thu, 14 May 2026 19:12:21 GMT",
       "comments": {}
     },
     {

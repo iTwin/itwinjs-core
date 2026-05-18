@@ -7,6 +7,8 @@ publish: false
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
     - [ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use](#changesetreader-spillthresholdinbytes-controls-disk-spill-for-bounded-memory-use)
+    - [Schema changesets can be reversed](#schema-changesets-can-be-reversed)
+  - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
 
@@ -24,6 +26,16 @@ SELECT * FROM ts.Person p CROSS JOIN ts.Identifier i ON p.PersonalID = i.PersonI
 ```
 
 This is equivalent in result to an `INNER JOIN`, but the optimizer is not permitted to swap the table order, which can be important for performance-sensitive queries.
+
+### Schema changesets can be reversed
+
+This makes it possible to walk a changeset timeline backwards through interleaved schema and data changesets. After reversing a schema changeset, the EC metadata (class definitions, property mappings, schema version) reflects the state prior to that changeset.
+
+As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target changeset is older than the checkpoint and the range spans one or more schema changesets. Previously this would fail because schema changesets could not be reversed.
+
+## Electron 42 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 42](https://www.electronjs.org/blog/electron-42-0).
 
 ### ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use
 
