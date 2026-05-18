@@ -5,8 +5,7 @@
 
 import { DbResult } from "@itwin/core-bentley";
 import { IModelHost, SnapshotDb } from "../../core-backend";
-import { ClassModifier, ClassType, type SchemaView } from "@itwin/ecschema-metadata";
-import { ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
+import { ClassModifier, ClassType, ECClass, ECClassModifier, Enumeration, KindOfQuantity, Mixin, NavigationProperty, PrimitiveProperty, Property, PropertyCategory, RelationshipClass, SchemaItemType, type SchemaView, StructProperty } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as path from "path";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -484,6 +483,7 @@ describe("SchemaView cross-validation", () => {
 
         // The test.bim likely has at least some non-hidden properties
         assert.isAbove(visibleChecked, 0, "No visible properties checked - test setup issue");
+        assert.isAbove(hiddenChecked, 0, "No hidden properties checked - test setup issue");
       });
     });
   }

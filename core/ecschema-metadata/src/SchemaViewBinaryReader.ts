@@ -9,7 +9,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { SchemaView, SchemaViewBuilder } from "./SchemaView";
 import { StrengthDirection, StrengthType } from "./ECObjects";
-import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, SchemaViewPrimitiveType, schemaViewFormatVersion } from "./SchemaViewInterfaces";
+import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, schemaViewFormatVersion, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 
 /** Binary record tags for the SchemaView blob format.
  * Each tag marks a flat, count-prefixed table. Must stay in sync with the C++ writer. */

@@ -6,8 +6,7 @@
  * @module Schema
  */
 
-import { type ClassData, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, type PropertyRef, type RelConstraintData, type SchemaData } from "./SchemaViewInterfaces";
-import { ClassModifier, PropertyKind, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
+import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "./ECObjects";
 
