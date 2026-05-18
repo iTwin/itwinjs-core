@@ -6,11 +6,11 @@
 import { join } from "path";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetGroupProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetGroupArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
 import { CheckpointProps, DownloadRequest, MockCheckpoint, ProgressFunction, ProgressStatus, V2CheckpointManager } from "../CheckpointManager";
@@ -261,6 +261,16 @@ export class HubMock {
     if (this._createTipCheckpointOnPush)
       await this.createTipCheckpoint(arg.iModelId);
     return csIndex;
+  }
+
+  /** Create a new Changeset Group in the mock hub. @see [[BackendHubAccess.createChangesetGroup]] */
+  public static async createChangesetGroup(arg: IModelIdArg & { description?: string }): Promise<ChangesetGroupProps> {
+    return this.findLocalHub(arg.iModelId).createChangesetGroup(arg.description);
+  }
+
+  /** Close an open Changeset Group in the mock hub. @see [[BackendHubAccess.updateChangesetGroup]] */
+  public static async updateChangesetGroup(arg: ChangesetGroupArg): Promise<ChangesetGroupProps> {
+    return this.findLocalHub(arg.iModelId).updateChangesetGroup(arg.changesetGroupId);
   }
 
   /**

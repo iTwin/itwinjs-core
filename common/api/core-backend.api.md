@@ -34,6 +34,7 @@ import { ChangedModels } from '@itwin/core-common';
 import { ChangedValueState } from '@itwin/core-common';
 import { ChangeOpCode } from '@itwin/core-common';
 import { ChangesetFileProps } from '@itwin/core-common';
+import { ChangesetGroupProps } from '@itwin/core-common';
 import { ChangesetHealthStats } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
@@ -452,6 +453,10 @@ export interface BackendHubAccess {
     abandonLocks?: (arg: BriefcaseIdArg, locks: LockMap) => Promise<void>;
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
+    // @beta
+    createChangesetGroup?: (arg: IModelIdArg & {
+        description?: string;
+    }) => Promise<ChangesetGroupProps>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
@@ -474,6 +479,8 @@ export interface BackendHubAccess {
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
+    // @beta
+    updateChangesetGroup?: (arg: ChangesetGroupArg) => Promise<ChangesetGroupProps>;
 }
 
 // @public
@@ -598,12 +605,16 @@ export class BriefcaseDb extends IModelDb {
         openMode: OpenMode;
         briefcaseId: number;
     });
+    // @beta
+    beginChangesetGroup(description?: string): Promise<ChangesetGroupProps>;
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // @beta
     checkIfSchemaTxnExists(): boolean;
     // (undocumented)
     close(options?: CloseIModelArgs): void;
+    // @beta
+    get currentChangesetGroup(): ChangesetGroupProps | undefined;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
     // @preview
@@ -612,6 +623,8 @@ export class BriefcaseDb extends IModelDb {
     }): Promise<void>;
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
+    // @beta
+    endChangesetGroup(): Promise<ChangesetGroupProps>;
     // @internal
     executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
@@ -996,6 +1009,11 @@ export class ChangesetECAdaptor implements Disposable {
     // (undocumented)
     readonly reader: SqliteChangesetReader;
     step(): boolean;
+}
+
+// @beta
+export interface ChangesetGroupArg extends IModelIdArg {
+    readonly changesetGroupId: string;
 }
 
 // @internal (undocumented)
@@ -5082,6 +5100,7 @@ export class LocalHub {
     countLocks(): number;
     // (undocumented)
     countSharedLocks(): number;
+    createChangesetGroup(description?: string): ChangesetGroupProps;
     deleteNamedVersion(versionName: string): void;
     // (undocumented)
     readonly description?: string;
@@ -5158,6 +5177,7 @@ export class LocalHub {
     removeDir(dirName: string): void;
     // (undocumented)
     readonly rootDir: LocalDirName;
+    updateChangesetGroup(changesetGroupId: string): ChangesetGroupProps;
     uploadCheckpoint(arg: {
         changesetIndex: ChangesetIndex;
         localFile: LocalFileName;
@@ -5841,6 +5861,8 @@ export type PullChangesArgs = ToChangesetArgs & {
 
 // @public
 export interface PushChangesArgs extends TokenArg {
+    // @beta
+    changesetGroupId?: string;
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;

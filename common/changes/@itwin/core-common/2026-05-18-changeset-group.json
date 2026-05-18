@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added ChangesetGroupProps interface and ChangesetGroupState string union type. Added optional groupId field to ChangesetProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

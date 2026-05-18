@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { assert, DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, Guid, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
+  BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetGroupProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName, LockState,
 } from "@itwin/core-common";
 import { BriefcaseIdArg, LockConflict, LockMap, LockProps } from "./BackendHubAccess";
@@ -98,8 +98,9 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
-    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,uncompressedSize BIGINT,\
-                   FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
+    db.executeSQL("CREATE TABLE changesetGroups(id TEXT PRIMARY KEY NOT NULL,state TEXT NOT NULL,description TEXT)");
+    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,uncompressedSize BIGINT,groupId TEXT,\
+                   FOREIGN KEY(briefcaseId) REFERENCES briefcases(id),FOREIGN KEY(groupId) REFERENCES changesetGroups(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
     db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastExclusiveReleaseChangesetIndex INTEGER,lastSharedReleaseChangesetIndex INTEGER,briefcaseId INTEGER)");
@@ -227,9 +228,16 @@ export class LocalHub {
       throw new IModelError(IModelStatus.InvalidParent, "changeset parent is not latest changeset");
 
     this.getBriefcase(changeset.briefcaseId); // throws if invalid id
+
+    if (changeset.groupId !== undefined) {
+      const groupState = this.getChangesetGroupState(changeset.groupId);
+      if (groupState !== "inProgress")
+        throw new IModelError(IModelHubStatus.OperationFailed, `Changeset Group '${changeset.groupId}' is not in 'inProgress' state`);
+    }
+
     const db = this.db;
     changeset.index = this._latestChangesetIndex + 1;
-    db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId,uncompressedSize) VALUES (?,?,?,?,?,?,?,?,?)", (stmt) => {
+    db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId,uncompressedSize,groupId) VALUES (?,?,?,?,?,?,?,?,?,?)", (stmt) => {
       stmt.bindInteger(1, changeset.index);
       stmt.bindString(2, changeset.id);
       stmt.bindString(3, changeset.description);
@@ -239,6 +247,10 @@ export class LocalHub {
       stmt.bindString(7, changeset.userCreated ?? "");
       stmt.bindInteger(8, changeset.briefcaseId);
       stmt.bindInteger(9, changeset.uncompressedSize ?? 0);
+      if (changeset.groupId !== undefined)
+        stmt.bindString(10, changeset.groupId);
+      else
+        stmt.bindNull(10);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert changeset into mock db");
@@ -247,6 +259,71 @@ export class LocalHub {
     db.saveChanges();
     IModelJsFs.copySync(changeset.pathname, this.getChangesetFileName(changeset.index));
     return changeset.index;
+  }
+
+  /**
+   * Create a new Changeset Group in the mock hub with state `"inProgress"`.
+   * @returns The new group's properties.
+   * @internal
+   */
+  public createChangesetGroup(description?: string): ChangesetGroupProps {
+    const id = Guid.createValue();
+    this.db.withSqliteStatement("INSERT INTO changesetGroups(id,state,description) VALUES (?,?,?)", (stmt) => {
+      stmt.bindString(1, id);
+      stmt.bindString(2, "inProgress");
+      if (description !== undefined)
+        stmt.bindString(3, description);
+      else
+        stmt.bindNull(3);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't insert changeset group into mock db");
+    });
+    this.db.saveChanges();
+    return { id, state: "inProgress", description };
+  }
+
+  /**
+   * Close an open Changeset Group by setting its state to `"completed"`.
+   * @throws if the group does not exist or is already closed.
+   * @internal
+   */
+  public updateChangesetGroup(changesetGroupId: string): ChangesetGroupProps {
+    const state = this.getChangesetGroupState(changesetGroupId);
+    if (state !== "inProgress")
+      throw new IModelError(IModelHubStatus.OperationFailed, `Changeset Group '${changesetGroupId}' is already closed (state: '${state}')`);
+
+    this.db.withSqliteStatement("UPDATE changesetGroups SET state=? WHERE id=?", (stmt) => {
+      stmt.bindString(1, "completed");
+      stmt.bindString(2, changesetGroupId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't update changeset group in mock db");
+    });
+    this.db.saveChanges();
+
+    return this.db.withPreparedSqliteStatement("SELECT id,state,description FROM changesetGroups WHERE id=?", (stmt) => {
+      stmt.bindString(1, changesetGroupId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_ROW !== rc)
+        throw new IModelError(IModelHubStatus.OperationFailed, `Changeset Group '${changesetGroupId}' not found`);
+      return {
+        id: stmt.getValueString(0),
+        state: stmt.getValueString(1) as ChangesetGroupProps["state"],
+        description: stmt.isValueNull(2) ? undefined : stmt.getValueString(2),
+      };
+    });
+  }
+
+  /** Get the state of a Changeset Group, or throw if the group does not exist. @internal */
+  private getChangesetGroupState(changesetGroupId: string): ChangesetGroupProps["state"] {
+    return this.db.withPreparedSqliteStatement("SELECT state FROM changesetGroups WHERE id=?", (stmt) => {
+      stmt.bindString(1, changesetGroupId);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_ROW !== rc)
+        throw new IModelError(IModelHubStatus.OperationFailed, `Changeset Group '${changesetGroupId}' not found`);
+      return stmt.getValueString(0) as ChangesetGroupProps["state"];
+    });
   }
 
   public getIndexFromChangeset(changeset: ChangesetIndexOrId): ChangesetIndex {
@@ -300,7 +377,7 @@ export class LocalHub {
     if (index <= 0)
       return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0, uncompressedSize: 0 };
 
-    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId,uncompressedSize FROM timeline WHERE csIndex=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId,uncompressedSize,groupId FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindInteger(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -317,6 +394,7 @@ export class LocalHub {
         index,
         parentId: this.getParentId(index),
         uncompressedSize: stmt.getValueInteger(7),
+        groupId: stmt.isValueNull(8) ? undefined : stmt.getValueString(8),
       };
     });
   }

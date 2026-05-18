@@ -8,7 +8,7 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
+  BriefcaseId, ChangesetFileProps, ChangesetGroupProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
   LockState as CommonLockState, IModelError, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@itwin/core-common";
@@ -183,6 +183,15 @@ export interface CreateNewIModelProps extends IModelNameArg {
 }
 
 /**
+ * Argument for methods that must supply a Changeset Group Id.
+ * @beta
+ */
+export interface ChangesetGroupArg extends IModelIdArg {
+  /** The unique identifier of the Changeset Group. */
+  readonly changesetGroupId: string;
+}
+
+/**
  * Methods for accessing services of IModelHub from an iTwin.js backend.
  * Generally direct access to these methods should not be required, since higher-level apis are provided.
  * @public
@@ -278,4 +287,21 @@ export interface BackendHubAccess {
 
   /** delete an iModel */
   deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
+
+  /**
+   * Create a new Changeset Group. Changeset Groups allow logically grouping multiple changesets into a single
+   * operation (e.g. one synchronization run). After creating a group, push one or more changesets with
+   * [[PushChangesArgs.changesetGroupId]] set, then close the group with [[BackendHubAccess.updateChangesetGroup]].
+   * @returns The properties of the newly created group, whose `state` will be `"inProgress"`.
+   * @beta
+   */
+  createChangesetGroup?: (arg: IModelIdArg & { description?: string }) => Promise<ChangesetGroupProps>;
+
+  /**
+   * Close an open Changeset Group by setting its state to `"completed"`. Once closed, no further changesets
+   * may be pushed into this group.
+   * @returns The updated [[ChangesetGroupProps]] with `state` set to `"completed"`.
+   * @beta
+   */
+  updateChangesetGroup?: (arg: ChangesetGroupArg) => Promise<ChangesetGroupProps>;
 }

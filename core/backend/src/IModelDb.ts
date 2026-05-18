@@ -15,7 +15,7 @@ import {
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetGroupProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -3476,6 +3476,61 @@ export class BriefcaseDb extends IModelDb {
   /** @internal */
   public get skipSyncSchemasOnPullAndPush() { return this._skipSyncSchemasOnPullAndPush ?? false; }
 
+  private _currentChangesetGroup?: ChangesetGroupProps;
+
+  /**
+   * The currently active [[ChangesetGroupProps|Changeset Group]] opened by [[beginChangesetGroup]], or `undefined` if
+   * no group is in progress on this briefcase.
+   * @beta
+   */
+  public get currentChangesetGroup(): ChangesetGroupProps | undefined { return this._currentChangesetGroup; }
+
+  /**
+   * Create a new Changeset Group and mark it as the active group for this briefcase.
+   * Subsequent calls to [[pushChanges]] will automatically associate their changeset with this group until
+   * [[endChangesetGroup]] is called.
+   *
+   * @param description - An optional human-readable description of the group (e.g. "Synchronization run 2024-01-01").
+   * @returns The [[ChangesetGroupProps]] for the newly created group (state: `"inProgress"`).
+   * @throws if the hub access implementation does not support changeset groups or if a group is already in progress.
+   * @beta
+   */
+  public async beginChangesetGroup(description?: string): Promise<ChangesetGroupProps> {
+    if (this._currentChangesetGroup !== undefined)
+      throw new IModelError(IModelStatus.AlreadyLoaded, "A Changeset Group is already in progress. Call endChangesetGroup first.");
+
+    const hubAccess = IModelHost[_hubAccess];
+    if (!hubAccess.createChangesetGroup)
+      throw new IModelError(IModelStatus.BadRequest, "The current hub access implementation does not support Changeset Groups.");
+
+    const accessToken = await IModelHost.getAccessToken();
+    const group = await hubAccess.createChangesetGroup({ accessToken, iModelId: this.iModelId, description });
+    this._currentChangesetGroup = group;
+    return group;
+  }
+
+  /**
+   * Close the active Changeset Group that was previously opened with [[beginChangesetGroup]].
+   * Sets the group state to `"completed"` and clears [[currentChangesetGroup]].
+   *
+   * @returns The updated [[ChangesetGroupProps]] with `state === "completed"`.
+   * @throws if no group is currently in progress or if the hub access implementation does not support changeset groups.
+   * @beta
+   */
+  public async endChangesetGroup(): Promise<ChangesetGroupProps> {
+    if (this._currentChangesetGroup === undefined)
+      throw new IModelError(IModelStatus.NotOpen, "No Changeset Group is currently in progress. Call beginChangesetGroup first.");
+
+    const hubAccess = IModelHost[_hubAccess];
+    if (!hubAccess.updateChangesetGroup)
+      throw new IModelError(IModelStatus.BadRequest, "The current hub access implementation does not support Changeset Groups.");
+
+    const accessToken = await IModelHost.getAccessToken();
+    const updated = await hubAccess.updateChangesetGroup({ accessToken, iModelId: this.iModelId, changesetGroupId: this._currentChangesetGroup.id });
+    this._currentChangesetGroup = undefined;
+    return updated;
+  }
+
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -4012,6 +4067,8 @@ export class BriefcaseDb extends IModelDb {
 
   /**
    * Push changes to iModelHub.
+   * If [[beginChangesetGroup]] was previously called and a group is still in progress, the pushed changeset is
+   * automatically associated with that group (unless `arg.changesetGroupId` explicitly overrides it).
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    */
   public async pushChanges(arg: PushChangesArgs): Promise<void> {
@@ -4029,9 +4086,14 @@ export class BriefcaseDb extends IModelDb {
       return;
     }
 
+    // If no explicit group was supplied, use the active one started by beginChangesetGroup.
+    const effectiveArg: PushChangesArgs = (arg.changesetGroupId === undefined && this._currentChangesetGroup !== undefined)
+      ? { ...arg, changesetGroupId: this._currentChangesetGroup.id }
+      : arg;
+
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {
-      await BriefcaseManager.pullMergePush(this, arg);
+      await BriefcaseManager.pullMergePush(this, effectiveArg);
       this.initializeIModelDb("pullMerge");
     });
 

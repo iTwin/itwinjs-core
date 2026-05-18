@@ -57,6 +57,31 @@ export enum ChangesetType {
   SchemaSync = Schema | 64,
 }
 
+/**
+ * The state of a Changeset Group.
+ * - `"inProgress"` — the group is open; changesets can still be pushed into it.
+ * - `"completed"` — the group was explicitly closed by the creator via [[BackendHubAccess.updateChangesetGroup]].
+ * - `"timedOut"` — the group was automatically closed by the service because it was not completed within the allowed timeout.
+ * - `"forciblyClosed"` — the group was closed by the service before a clone operation on the iModel.
+ * @beta
+ */
+export type ChangesetGroupState = "inProgress" | "completed" | "timedOut" | "forciblyClosed";
+
+/**
+ * Properties of a Changeset Group, which logically groups one or more changesets into a single operation
+ * (e.g. one synchronization run). Created via [[BackendHubAccess.createChangesetGroup]] and closed via
+ * [[BackendHubAccess.updateChangesetGroup]].
+ * @beta
+ */
+export interface ChangesetGroupProps {
+  /** The unique identifier (GUID) of the changeset group. */
+  id: string;
+  /** The current state of the group. */
+  state: ChangesetGroupState;
+  /** An optional human-readable description of the group. */
+  description?: string;
+}
+
 /** Properties of a changeset
  * @public
  */
@@ -81,6 +106,11 @@ export interface ChangesetProps {
   size: number;
   /** The uncompressed size, in bytes, of this changeset */
   uncompressedSize?: number;
+  /**
+   * The id of the [[ChangesetGroupProps|Changeset Group]] this changeset belongs to, if any.
+   * @beta
+   */
+  groupId?: string;
 }
 
 /** Properties of a changeset file

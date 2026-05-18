@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { AccessToken, Guid, GuidString, Mutable } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType, LocalBriefcaseProps, LockState, RequestNewBriefcaseProps } from "@itwin/core-common";
-import { LockProps } from "../../BackendHubAccess";
+import { ChangesetGroupArg, LockProps } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -608,6 +608,193 @@ describe("HubMock", () => {
       // Once bc2 pulls, it can successfully acquire the model lock.
       await bc2.pullChanges({ accessToken: accessToken2 });
       await bc2.locks.acquireLocks({ exclusive: modelId });
+    });
+  });
+
+  describe("changeset group", () => {
+    const csGroupAccessToken: AccessToken = "fake token for group tests";
+    let csGroupIModelId: GuidString;
+
+    before(async () => {
+      csGroupIModelId = await IModelHost[_hubAccess].createNewIModel({
+        iTwinId,
+        iModelName: "changeset group test imodel",
+        version0,
+      });
+    });
+
+    after(async () => {
+      await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId: csGroupIModelId });
+    });
+
+    it("createChangesetGroup returns an inProgress group with a valid id", async () => {
+      const hubAccess = IModelHost[_hubAccess];
+      assert.isFunction(hubAccess.createChangesetGroup, "createChangesetGroup should be implemented by HubMock");
+
+      const group = await hubAccess.createChangesetGroup!({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId, description: "sync run A" });
+
+      assert.isString(group.id);
+      assert.isNotEmpty(group.id);
+      assert.equal(group.state, "inProgress");
+      assert.equal(group.description, "sync run A");
+    });
+
+    it("createChangesetGroup without description returns group with undefined description", async () => {
+      const hubAccess = IModelHost[_hubAccess];
+      const group = await hubAccess.createChangesetGroup!({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId });
+
+      assert.equal(group.state, "inProgress");
+      assert.isUndefined(group.description);
+    });
+
+    it("updateChangesetGroup sets state to completed", async () => {
+      const hubAccess = IModelHost[_hubAccess];
+      assert.isFunction(hubAccess.updateChangesetGroup, "updateChangesetGroup should be implemented by HubMock");
+
+      const group = await hubAccess.createChangesetGroup!({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId, description: "sync run B" });
+      assert.equal(group.state, "inProgress");
+
+      const arg: ChangesetGroupArg = { accessToken: csGroupAccessToken, iModelId: csGroupIModelId, changesetGroupId: group.id };
+      const updated = await hubAccess.updateChangesetGroup!(arg);
+
+      assert.equal(updated.id, group.id);
+      assert.equal(updated.state, "completed");
+    });
+
+    it("updateChangesetGroup throws when group is already closed", async () => {
+      const hubAccess = IModelHost[_hubAccess];
+      const group = await hubAccess.createChangesetGroup!({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId });
+
+      const arg: ChangesetGroupArg = { accessToken: csGroupAccessToken, iModelId: csGroupIModelId, changesetGroupId: group.id };
+      await hubAccess.updateChangesetGroup!(arg); // first close succeeds
+
+      // Second close should throw because the group is no longer inProgress
+      await expect(hubAccess.updateChangesetGroup!(arg)).to.be.rejectedWith(/already closed/i);
+    });
+
+    it("changesets pushed with a groupId are associated with the group (low-level API)", async () => {
+      const hubAccess = IModelHost[_hubAccess];
+
+      // Download a briefcase so we can push real changesets
+      const briefcaseProps = await BriefcaseManager.downloadBriefcase({
+        accessToken: csGroupAccessToken,
+        iTwinId,
+        iModelId: csGroupIModelId,
+      });
+      const db = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      try {
+        const group = await hubAccess.createChangesetGroup!({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId, description: "multi-cs sync" });
+
+        // Push first changeset into the group
+        const rootId = db.elements.getRootSubject().id;
+        await db.locks.acquireLocks({ exclusive: rootId });
+        withEditTxn(db, (txn) => {
+          const root = db.elements.getRootSubject();
+          root.userLabel = "first push";
+          txn.updateElement(root.toJSON());
+        });
+        await db.pushChanges({ accessToken: csGroupAccessToken, description: "cs 1 of 2", changesetGroupId: group.id });
+
+        // Push second changeset into the same group
+        await db.locks.acquireLocks({ exclusive: rootId });
+        withEditTxn(db, (txn) => {
+          const root = db.elements.getRootSubject();
+          root.userLabel = "second push";
+          txn.updateElement(root.toJSON());
+        });
+        await db.pushChanges({ accessToken: csGroupAccessToken, description: "cs 2 of 2", changesetGroupId: group.id });
+
+        // Both changesets should carry the group id
+        const changesets = await hubAccess.queryChangesets({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId });
+        const groupChangesets = changesets.filter((cs) => cs.groupId === group.id);
+        assert.equal(groupChangesets.length, 2, "both changesets should reference the group");
+
+        // Close the group
+        const arg: ChangesetGroupArg = { accessToken: csGroupAccessToken, iModelId: csGroupIModelId, changesetGroupId: group.id };
+        const closed = await hubAccess.updateChangesetGroup!(arg);
+        assert.equal(closed.state, "completed");
+
+        // No further changesets should be accepted into a closed group
+        await db.locks.acquireLocks({ exclusive: rootId });
+        withEditTxn(db, (txn) => {
+          const root = db.elements.getRootSubject();
+          root.userLabel = "after close";
+          txn.updateElement(root.toJSON());
+        });
+        await expect(db.pushChanges({ accessToken: csGroupAccessToken, description: "after close", changesetGroupId: group.id }))
+          .to.be.rejected; // group is completed
+
+      } finally {
+        if (db.txns.hasPendingTxns || db.txns.hasUnsavedChanges)
+          await db.discardChanges();
+        db.close();
+        await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName);
+      }
+    });
+
+    it("beginChangesetGroup / endChangesetGroup high-level API auto-associates pushChanges", async () => {
+      const briefcaseProps = await BriefcaseManager.downloadBriefcase({
+        accessToken: csGroupAccessToken,
+        iTwinId,
+        iModelId: csGroupIModelId,
+      });
+      const db = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
+      db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      try {
+        // No group active yet
+        assert.isUndefined(db.currentChangesetGroup, "no group should be active initially");
+
+        // Begin a group
+        const group = await db.beginChangesetGroup("high-level sync run");
+        assert.equal(group.state, "inProgress");
+        assert.equal(group.description, "high-level sync run");
+        assert.isDefined(db.currentChangesetGroup);
+        assert.equal(db.currentChangesetGroup!.id, group.id);
+
+        // beginChangesetGroup a second time should throw
+        await expect(db.beginChangesetGroup()).to.be.rejected;
+
+        // Push first changeset — no explicit groupId needed
+        const rootId = db.elements.getRootSubject().id;
+        await db.locks.acquireLocks({ exclusive: rootId });
+        withEditTxn(db, (txn) => {
+          const root = db.elements.getRootSubject();
+          root.userLabel = "hl push 1";
+          txn.updateElement(root.toJSON());
+        });
+        await db.pushChanges({ accessToken: csGroupAccessToken, description: "hl cs 1" });
+
+        // Push second changeset
+        await db.locks.acquireLocks({ exclusive: rootId });
+        withEditTxn(db, (txn) => {
+          const root = db.elements.getRootSubject();
+          root.userLabel = "hl push 2";
+          txn.updateElement(root.toJSON());
+        });
+        await db.pushChanges({ accessToken: csGroupAccessToken, description: "hl cs 2" });
+
+        // Both changesets should be in the group
+        const hubAccess = IModelHost[_hubAccess];
+        const changesets = await hubAccess.queryChangesets({ accessToken: csGroupAccessToken, iModelId: csGroupIModelId });
+        const groupChangesets = changesets.filter((cs) => cs.groupId === group.id);
+        assert.equal(groupChangesets.length, 2, "both changesets should have been associated with the group automatically");
+
+        // End the group — clears currentChangesetGroup and sets state to completed
+        const closed = await db.endChangesetGroup();
+        assert.equal(closed.state, "completed");
+        assert.equal(closed.id, group.id);
+        assert.isUndefined(db.currentChangesetGroup, "group should be cleared after endChangesetGroup");
+
+        // endChangesetGroup when no group is active should throw
+        await expect(db.endChangesetGroup()).to.be.rejected;
+
+      } finally {
+        db.close();
+        await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName);
+      }
     });
   });
 });

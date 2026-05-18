@@ -109,6 +109,8 @@ internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
 public;interface;ChangesetFileProps
+beta;interface;ChangesetGroupProps
+beta;type;ChangesetGroupState
 beta;interface;ChangesetHealthStats
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex

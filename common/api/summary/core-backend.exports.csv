@@ -54,6 +54,7 @@ deprecated;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
 deprecated;class;ChangesetECAdaptor
+beta;interface;ChangesetGroupArg
 internal;interface;ChangesetIndexArg
 public;interface;ChangesetRangeArg
 beta;class;ChangesetReader

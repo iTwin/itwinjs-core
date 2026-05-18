@@ -73,6 +73,13 @@ export interface PushChangesArgs extends TokenArg {
    * @internal
    */
   noFastForward?: true;
+  /**
+   * The id of a [[ChangesetGroupProps|Changeset Group]] to associate this changeset with.
+   * Create the group first via [[BackendHubAccess.createChangesetGroup]], then close it with
+   * [[BackendHubAccess.updateChangesetGroup]] after all related changesets have been pushed.
+   * @beta
+   */
+  changesetGroupId?: string;
 }
 
 /**
@@ -792,6 +799,8 @@ export class BriefcaseManager {
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
+    if (arg.changesetGroupId !== undefined)
+      changesetProps.groupId = arg.changesetGroupId;
     const fileSize = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
     if (!fileSize) // either undefined or 0 means error
       throw new IModelError(IModelStatus.NoContent, "error creating changeset");

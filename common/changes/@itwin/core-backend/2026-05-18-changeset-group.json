@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added optional beta methods createChangesetGroup and updateChangesetGroup to BackendHubAccess, ChangesetGroupArg interface, and changesetGroupId option to PushChangesArgs to support the iModels v2 Changeset Group API.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

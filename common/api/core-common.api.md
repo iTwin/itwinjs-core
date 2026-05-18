@@ -1202,6 +1202,16 @@ export interface ChangesetFileProps extends ChangesetProps {
 }
 
 // @beta
+export interface ChangesetGroupProps {
+    description?: string;
+    id: string;
+    state: ChangesetGroupState;
+}
+
+// @beta
+export type ChangesetGroupState = "inProgress" | "completed" | "timedOut" | "forciblyClosed";
+
+// @beta
 export interface ChangesetHealthStats {
     // (undocumented)
     changesetId: string;
@@ -1261,6 +1271,8 @@ export interface ChangesetProps {
     briefcaseId: number;
     changesType: ChangesetType;
     description: string;
+    // @beta
+    groupId?: string;
     id: ChangesetId;
     index: ChangesetIndex;
     parentId: ChangesetId;
