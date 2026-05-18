@@ -6,7 +6,6 @@ import type { SerializedUnitSchema } from "../SerializedUnitSchema";
 import { type BasicUnitsResolvedState, buildBasicUnitsResolvedState } from "./BasicUnitConversionData";
 
 // Shared module-level cache for the built-in basic-units indexes used by BasicUnitsProvider.
-// UnitConversions no longer uses this cache after moving to a compact generated basic-conversion artifact.
 let _resolvedState: BasicUnitsResolvedState | undefined;
 let _resolvePromise: Promise<BasicUnitsResolvedState> | undefined;
 let _permanentError: Error | undefined;
