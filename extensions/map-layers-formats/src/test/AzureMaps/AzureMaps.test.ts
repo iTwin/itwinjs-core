@@ -92,6 +92,24 @@ describe("AzureMaps", () => {
     expect(AzureMaps.getBackgroundMapType(style)).to.eq(BackgroundMapType.Aerial);
   });
 
+  it("preserves existing base-layer display state when applying an Azure basemap", () => {
+    const style = new FakeDisplayStyle() as unknown as Parameters<typeof AzureMaps.applyBackgroundMap>[0];
+    style.backgroundMapBase = BaseMapLayerSettings.fromJSON({
+      formatId: "ArcGIS",
+      url: "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer",
+      name: "ESRI World Imagery",
+      visible: false,
+      transparency: 0.35,
+      transparentBackground: false,
+    });
+
+    AzureMaps.applyBackgroundMap(style, BackgroundMapType.Hybrid);
+
+    expect(style.backgroundMapBase.visible).to.eq(false);
+    expect(style.backgroundMapBase.transparency).to.eq(0.35);
+    expect(style.backgroundMapBase.transparentBackground).to.eq(false);
+  });
+
   it("does not remove manually attached equivalent Azure road-label layers", () => {
     const style = new FakeDisplayStyle() as unknown as Parameters<typeof AzureMaps.applyBackgroundMap>[0];
     const manualRoadLabels = ImageMapLayerSettings.fromJSON({

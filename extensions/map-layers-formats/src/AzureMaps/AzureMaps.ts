@@ -50,11 +50,24 @@ export const AzureMaps = {
 
   /**
    * Applies the requested Azure Maps basemap to the supplied display style.
+   * Preserves the existing base-layer display state, such as visibility and transparency,
+   * while replacing the basemap source with the Azure Maps equivalent.
    * @beta
    */
   applyBackgroundMap: (displayStyle: DisplayStyleState, type: BackgroundMapType) => {
     AzureMaps.clearBackgroundLayers(displayStyle);
-    displayStyle.backgroundMapBase = AzureMaps.createBaseLayerSettings(type);
+
+    const azureBaseProps = AzureMapsUtils.createBaseLayerProps(type);
+    const previousBase = displayStyle.backgroundMapBase;
+    displayStyle.backgroundMapBase = previousBase instanceof BaseMapLayerSettings
+      ? BaseMapLayerSettings.fromJSON({
+          ...azureBaseProps,
+          visible: previousBase.visible,
+          transparency: previousBase.transparency,
+          transparentBackground: previousBase.transparentBackground,
+        })
+      : BaseMapLayerSettings.fromJSON(azureBaseProps);
+
     for (const layer of AzureMaps.createBackgroundLayers(type))
       displayStyle.attachMapLayer({ mapLayerIndex: { index: -1, isOverlay: false }, settings: layer });
   },
