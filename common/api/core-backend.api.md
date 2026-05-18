@@ -1027,17 +1027,21 @@ export class ChangesetReader implements Disposable, ChangeSource {
     } & ChangesetReaderArgs): ChangesetReader;
     static openGroup(args: {
         readonly changesetFiles: string[];
+        spillThresholdInBytes?: number;
     } & ChangesetReaderArgs): ChangesetReader;
     static openInMemoryChanges(args: Omit<ChangesetReaderArgs, "db"> & {
         db: IModelDb;
+        spillThresholdInBytes?: number;
     }): ChangesetReader;
     static openLocalChanges(args: Omit<ChangesetReaderArgs, "db"> & {
         db: IModelDb;
         includeInMemoryChanges?: boolean;
+        spillThresholdInBytes?: number;
     }): ChangesetReader;
     static openTxn(args: Omit<ChangesetReaderArgs, "db"> & {
         db: IModelDb;
         txnId: Id64String;
+        spillThresholdInBytes?: number;
     }): ChangesetReader;
     setClassNameFilters(classNames: Set<string>): void;
     setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
