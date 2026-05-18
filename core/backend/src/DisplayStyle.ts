@@ -203,7 +203,7 @@ export class DisplayStyle2d extends DisplayStyle {
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string): Id64String;
   /**
    * Insert a DisplayStyle2d for use by a ViewDefinition.
-   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use DisplayStyle2d.insert(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DisplayStyle2d.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string): Id64String {
@@ -356,7 +356,7 @@ export class DisplayStyle3d extends DisplayStyle {
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
   /**
    * Insert a DisplayStyle3d for use by a ViewDefinition.
-   * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use DisplayStyle3d.insert(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DisplayStyle3d.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {

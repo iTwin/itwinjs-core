@@ -731,9 +731,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return false;
   }
 
+  private get _hasEarthLocation(): boolean {
+    return undefined !== this.iModel.ecefLocation;
+  }
+
   /** @internal */
   public getIsBackgroundMapVisible(): boolean {
-    return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
+    return this._hasEarthLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
   /** @internal */
   public get backgroundMapElevationBias(): number | undefined {
@@ -757,7 +761,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
-    if (undefined === this.iModel.ecefLocation)
+    if (!this._hasEarthLocation)
       return undefined;
 
     const bimElevationBias = this.backgroundMapElevationBias;
@@ -785,7 +789,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     let geometry = this.getIsBackgroundMapVisible() ? this.getBackgroundMapGeometry() : undefined;
     const terrainRange = ApproximateTerrainHeights.instance.globalHeightRange;
     let heightRange = this.displayTerrain ? terrainRange : Range1d.createXX(-1, 1);
-    if (this.globeMode === GlobeMode.Ellipsoid && this.contextRealityModelStates.find((model) => model.isGlobal)) {
+    if (this.globeMode === GlobeMode.Ellipsoid && this._hasEarthLocation && this.contextRealityModelStates.find((model) => model.isGlobal)) {
       if (!geometry) {
         if (!this._ellipsoidMapGeometry)
           this._ellipsoidMapGeometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
