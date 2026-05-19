@@ -133,7 +133,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
       reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._propFilter);
     }
     catch (e) {
-      reader.close();
+      reader.handleCloseErrorWhileOpening(e);
       throw e;
     }
     return reader;
@@ -153,7 +153,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    */
   public static openGroup(args: { readonly changesetFiles: string[], spillThresholdInBytes?: number } & ChangesetReaderArgs): ChangesetReader {
     if (args.changesetFiles.length === 0)
-      throw new Error("changesetFiles must contain at least one file.");
+      throw new IModelError(IModelStatus.BadArg, "changesetFiles must contain at least one file.");
     const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
@@ -162,7 +162,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
       reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     }
     catch (e) {
-      reader.close();
+      reader.handleCloseErrorWhileOpening(e);
       throw e;
     }
     return reader;
@@ -190,7 +190,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     try {
       reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     } catch (e) {
-      reader.close();
+      reader.handleCloseErrorWhileOpening(e);
       throw e;
     }
     return reader;
@@ -217,7 +217,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     try {
       reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     } catch (e) {
-      reader.close();
+      reader.handleCloseErrorWhileOpening(e);
       throw e;
     }
     return reader;
@@ -245,10 +245,22 @@ export class ChangesetReader implements Disposable, ChangeSource {
     try {
       reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
     } catch (e) {
-      reader.close();
+      reader.handleCloseErrorWhileOpening(e);
       throw e;
     }
     return reader;
+  }
+
+  /** Handle errors that occur while auto closing the reader if there is also an error while opening the reader */
+  private handleCloseErrorWhileOpening(e: unknown): void {
+    try {
+      this.close();
+    } catch (closeError) {
+      throw new IModelError(IModelStatus.BadArg, `Failed to open ChangesetReader with error ${e instanceof Error ? e.message : String(e)}.
+      Additionally, that triggered an automatic closure of the reader
+      releasing native resources which also failed with failure ${closeError instanceof Error ? closeError.message : String(closeError)}.
+      Check native error logs for more details.`);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -404,6 +416,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
 
   /**
    * Close the reader and release all native resources.
+   * @throws if the native layer encounters an error during cleanup.
    * @beta
    */
   public close(): void {
@@ -419,6 +432,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
 
   /**
    * Implements the `Disposable` contract — calls [[close]].
+   * @throws if [[close]] throws.
    * @beta
    */
   public [Symbol.dispose](): void {

@@ -7,6 +7,7 @@ publish: false
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
     - [ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use](#changesetreader-spillthresholdinbytes-controls-disk-spill-for-bounded-memory-use)
+    - [ChangesetReader: `close` and `Symbol.dispose` can now throw](#changesetreader-close-and-symboldispose-can-now-throw)
     - [Schema changesets can be reversed](#schema-changesets-can-be-reversed)
   - [Electron 42 support](#electron-42-support)
 
@@ -53,3 +54,24 @@ using reader = ChangesetReader.openGroup({
 ```
 
 The same parameter is available on `openTxn`, `openLocalChanges`, and `openInMemoryChanges`.
+
+### ChangesetReader: `close` and `Symbol.dispose` can now throw
+
+[ChangesetReader.close]($backend) (and therefore `[Symbol.dispose]()`, which delegates to it) can now propagate errors thrown by the native layer during resource cleanup. Previously the method swallowed all errors silently.
+
+Code that calls `[Symbol.dispose]()` manually inside a `finally` block must guard against this to avoid silently suppressing subsequent cleanup calls:
+
+```typescript
+// Before — if reader[Symbol.dispose]() throws, pcu[Symbol.dispose]() is never called:
+finally {
+  reader[Symbol.dispose]();
+  pcu[Symbol.dispose]();
+}
+
+// After — nest the calls so each one runs regardless of whether the previous threw:
+finally {
+  try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
+}
+```
+
+Code using the `using` declaration is unaffected — the TypeScript runtime already handles multiple `using` disposals independently.

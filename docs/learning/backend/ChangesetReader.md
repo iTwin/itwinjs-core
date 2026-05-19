@@ -85,7 +85,7 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 
 [ChangesetReader]($backend) and [PartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
 
-The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
+The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown. Because the TypeScript runtime disposes each `using`-bound object independently, a throw from one disposal does not prevent the others from running:
 
 ```ts
 {
@@ -97,11 +97,11 @@ The preferred approach is the `using` declaration (TC39 Explicit Resource Manage
 
   for (const instance of pcu.instances)
     console.log(instance.$meta.op, instance.ECInstanceId);
-  // reader and pcu are disposed here automatically
+  // reader and pcu are disposed here automatically, each independently
 }
 ```
 
-If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly in a `finally` block:
+If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
 ```ts
 const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
@@ -112,8 +112,8 @@ try {
   for (const instance of pcu.instances)
     console.log(instance.$meta.op, instance.ECInstanceId);
 } finally {
-  reader[Symbol.dispose]();
-  pcu[Symbol.dispose]();
+  // Nest the disposals: even if reader throws, pcu is still disposed.
+  try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
 }
 ```
 
