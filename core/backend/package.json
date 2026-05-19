@@ -120,7 +120,7 @@
     "fs-extra": "^8.1.0",
     "json5": "^2.2.3",
     "linebreak": "^1.1.0",
-    "multiparty": "^4.2.1",
+    "multiparty": "^4.3.0",
     "semver": "^7.5.2",
     "touch": "^3.1.0",
     "ws": "^7.5.10"
