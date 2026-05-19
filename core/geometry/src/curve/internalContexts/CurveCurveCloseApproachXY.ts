@@ -82,7 +82,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     geometryB?: AnyCurve,
     xyTolerance: number = Geometry.smallMetricDistance,
     newtonTolerance: number = Geometry.smallNewtonStep,
-    newtonMaxIterations: number = 50
+    newtonMaxIterations: number = 50 // seen: 47
   ) {
     super();
     this._geometryB = geometryB instanceof ProxyCurve ? geometryB.proxyCurve : geometryB;

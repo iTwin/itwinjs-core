@@ -2808,7 +2808,6 @@ describe("CurveCurveIntersectXY", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
-    let dy = 0;
 
     const rotationTransform0 = Transform.createFixedPointAndMatrix(
       Point3d.create(70, 0),
@@ -2839,25 +2838,25 @@ describe("CurveCurveIntersectXY", () => {
     const bspline4 = bspline0.cloneTransformed(compositeTransform);
     const bsplines = [bspline0, bspline1, bspline2, bspline3, bspline4];
 
-    const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number, dy0: number) => {
+    const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number) => {
       const ray = bspline.fractionToPointAndDerivative(0.2);
       const seg = LineString3d.create(
         ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
       );
       const tangency = CurveCurve.intersectionXYPairs(bspline, false, seg, false);
       if (ck.testDefined(tangency, `found closest points between the bspline${index} and the line`)) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx0, dy0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0, dy0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0);
         for (const pair of tangency) {
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 5, dx0, dy0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 5, dx0);
           ck.testSmallRelative(pair.detailA.a, `bspline${index} closest point is an intersection`);
           ck.testSmallRelative(pair.detailB.a, `bspline${index} closest point is an intersection`);
-          ck.testPoint3d(ray.origin, pair.detailA.point, 10 * Geometry.smallMetricDistance, `bspline${index} closest point is at the tangency`);
+          ck.testPoint3d(ray.origin, pair.detailA.point, undefined, `bspline${index} closest point is at the tangency`);
         }
       }
     };
     for (let i = 0; i < bsplines.length; i++) {
-      testTangencyAtBsplineInterior(bsplines[i], i, dx, dy);
+      testTangencyAtBsplineInterior(bsplines[i], i, dx);
       dx += 200;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "BSplineIntersection");
