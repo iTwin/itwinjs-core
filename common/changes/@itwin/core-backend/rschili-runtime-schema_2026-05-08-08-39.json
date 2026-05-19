@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "add schemaView to iModelDb",
+      "comment": "Add SchemaView to iModelDb",
       "type": "none"
     }
   ],

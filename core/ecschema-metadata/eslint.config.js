@@ -15,8 +15,7 @@ module.exports = [
         "error",
         {
           "ignored-barrel-modules": [
-            "./src/ECObjects.ts",
-            "./src/SchemaViewInterfaces.ts"
+            "./src/ECObjects.ts"
           ]
         }
       ]

@@ -65,9 +65,7 @@ export enum SchemaViewPrimitiveType {
   IGeometry = 0xa01,
 }
 
-// StrengthType and StrengthDirection are re-used from ECObjects.ts (same values).
 import { StrengthDirection, StrengthType } from "./ECObjects";
-export { StrengthType, StrengthDirection } from "./ECObjects";
 
 /** Internal storage for a schema. Schemas own contiguous ranges of classes, enums, KoQs, and categories.
  * @internal
@@ -75,10 +73,10 @@ export { StrengthType, StrengthDirection } from "./ECObjects";
 export interface SchemaData {
   /** Row ID from ec_Schema - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId = ?`. */
   readonly ecInstanceId: number;
-  readonly nameSid: number;
-  readonly aliasSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
+  readonly nameStringIdx: number;
+  readonly aliasStringIdx: number;
+  readonly labelStringIdx: number;
+  readonly descriptionStringIdx: number;
   readonly versionRead: number;
   readonly versionWrite: number;
   readonly versionMinor: number;
@@ -100,9 +98,9 @@ export interface ClassData {
   /** Row ID from ec_Class - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`. */
   readonly ecInstanceId: number;
   readonly schemaIdx: number;
-  readonly nameSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
+  readonly nameStringIdx: number;
+  readonly labelStringIdx: number;
+  readonly descriptionStringIdx: number;
   readonly type: ClassType;
   readonly modifier: ClassModifier;
   readonly baseClassIdx: number;
@@ -138,11 +136,11 @@ export interface ClassData {
  * @internal
  */
 export interface PropertyDef {
-  readonly nameSid: number;
-  readonly descriptionSid: number;
+  readonly nameStringIdx: number;
+  readonly descriptionStringIdx: number;
   readonly kind: PropertyKind;
   readonly primitiveType: SchemaViewPrimitiveType;
-  readonly extTypeSid: number;
+  readonly extTypeStringIdx: number;
   readonly enumIdx: number;
   readonly koqIdx: number;
   readonly structClassIdx: number;
@@ -168,7 +166,7 @@ export interface PropertyRef {
   /** Row ID from ec_Property - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECPropertyDef WHERE ECInstanceId = ?`. */
   readonly ecInstanceId: number;
   readonly defIdx: number;
-  readonly labelSid: number;
+  readonly labelStringIdx: number;
   readonly priority: number;
 }
 
@@ -180,7 +178,7 @@ export interface RelConstraintData {
   readonly polymorphic: boolean;
   readonly multiplicityLower: number;
   readonly multiplicityUpper: number;
-  readonly roleLabelSid: number;
+  readonly roleLabelStringIdx: number;
   readonly classRefStart: number;
   readonly classRefCount: number;
 }
@@ -192,9 +190,9 @@ export interface EnumerationData {
   /** Row ID from ec_Enumeration - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECEnumerationDef WHERE ECInstanceId = ?`. */
   readonly ecInstanceId: number;
   readonly schemaIdx: number;
-  readonly nameSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
+  readonly nameStringIdx: number;
+  readonly labelStringIdx: number;
+  readonly descriptionStringIdx: number;
   readonly primitiveType: SchemaViewPrimitiveType;
   readonly isStrict: boolean;
   readonly enumeratorStart: number;
@@ -205,9 +203,9 @@ export interface EnumerationData {
  * @internal
  */
 export interface EnumeratorData {
-  readonly nameSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
+  readonly nameStringIdx: number;
+  readonly labelStringIdx: number;
+  readonly descriptionStringIdx: number;
   readonly value: number | string;
 }
 
@@ -218,11 +216,11 @@ export interface KoqData {
   /** Row ID from ec_KindOfQuantity - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECKindOfQuantityDef WHERE ECInstanceId = ?`. */
   readonly ecInstanceId: number;
   readonly schemaIdx: number;
-  readonly nameSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
-  readonly persistenceUnitSid: number;
-  readonly presentationFormatsSid: number;
+  readonly nameStringIdx: number;
+  readonly labelStringIdx: number;
+  readonly descriptionStringIdx: number;
+  readonly persistenceUnitStringIdx: number;
+  readonly presentationFormatsStringIdx: number;
   readonly relativeError: number;
 }
 
@@ -233,8 +231,8 @@ export interface PropCategoryData {
   /** Row ID from ec_PropertyCategory - use with ECDbMeta queries, e.g. `SELECT * FROM meta.ECPropertyCategoryDef WHERE ECInstanceId = ?`. */
   readonly ecInstanceId: number;
   readonly schemaIdx: number;
-  readonly nameSid: number;
-  readonly labelSid: number;
-  readonly descriptionSid: number;
+  readonly nameStringIdx: number;
+  readonly labelStringIdx: number;
+  readonly descriptionStringIdx: number;
   readonly priority: number;
 }

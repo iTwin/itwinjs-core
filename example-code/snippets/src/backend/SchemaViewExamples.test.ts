@@ -23,27 +23,27 @@ describe("SchemaView Examples", () => {
       iModel.close();
   });
 
-  it("obtaining the context", async () => {
+  it("obtaining the schema view", async () => {
     // __PUBLISH_EXTRACT_START__ SchemaView.obtain
     // Obtain the schema view (async, cached after first call)
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // Subsequent calls return the cached view instantly
     const same = await iModel.getSchemaView();
-    assert.strictEqual(ctx, same);
+    assert.strictEqual(view, same);
     // __PUBLISH_EXTRACT_END__
   });
 
   it("navigating schemas and classes", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.navigate-schemas
     // Look up a schema by name (case-insensitive)
-    const bis = ctx.getSchema("BisCore");
+    const bis = view.getSchema("BisCore");
     assert.isDefined(bis);
 
     // Iterate all schemas in the context
-    for (const schema of ctx.getSchemas()) {
+    for (const schema of view.getSchemas()) {
       // Every schema has a name, alias, and version
       assert.isNotEmpty(schema.name);
       assert.isNotEmpty(schema.alias);
@@ -51,8 +51,8 @@ describe("SchemaView Examples", () => {
     }
 
     // Look up a class by qualified name - both ":" and "." separators work
-    const element = ctx.findClass("BisCore:Element");
-    const alsoElement = ctx.findClass("BisCore.Element");
+    const element = view.findClass("BisCore:Element");
+    const alsoElement = view.findClass("BisCore.Element");
     assert.isDefined(element);
     assert.isDefined(alsoElement);
     assert.strictEqual(element!.fullName, alsoElement!.fullName);
@@ -65,12 +65,12 @@ describe("SchemaView Examples", () => {
   });
 
   it("class type guards and IS-A checks", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.class-type-checks
-    const element = ctx.findClass("BisCore:Element")!;
-    const geom3d = ctx.findClass("BisCore:GeometricElement3d")!;
-    const modelContains = ctx.findClass("BisCore:ModelContainsElements")!;
+    const element = view.findClass("BisCore:Element")!;
+    const geom3d = view.findClass("BisCore:GeometricElement3d")!;
+    const modelContains = view.findClass("BisCore:ModelContainsElements")!;
 
     // Type guards
     assert.isTrue(element.isEntity());
@@ -88,10 +88,10 @@ describe("SchemaView Examples", () => {
   });
 
   it("working with properties", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.properties
-    const element = ctx.findClass("BisCore:Element")!;
+    const element = view.findClass("BisCore:Element")!;
 
     // Get all properties including inherited (base-first order)
     const allProps = element.getProperties();
@@ -120,10 +120,10 @@ describe("SchemaView Examples", () => {
   });
 
   it("relationship constraints", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.relationships
-    const modelContains = ctx.findClass("BisCore:ModelContainsElements")!;
+    const modelContains = view.findClass("BisCore:ModelContainsElements")!;
     assert.isTrue(modelContains.isRelationship());
 
     // Narrow to SchemaView.RelationshipClass for access to constraints
@@ -147,11 +147,11 @@ describe("SchemaView Examples", () => {
   });
 
   it("enumerations", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.enumerations
     // Look up an enumeration within a schema
-    const bis = ctx.getSchema("BisCore")!;
+    const bis = view.getSchema("BisCore")!;
     for (const enumeration of bis.getEnumerations()) {
       // Enumerations have a name, primitiveType, and enumerators
       assert.isNotEmpty(enumeration.name);
@@ -163,11 +163,11 @@ describe("SchemaView Examples", () => {
   });
 
   it("kind of quantity and property categories", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.koq-and-categories
     // Some properties reference a KindOfQuantity
-    const bis = ctx.getSchema("BisCore")!;
+    const bis = view.getSchema("BisCore")!;
     for (const koq of bis.getKindOfQuantities()) {
       assert.isNotEmpty(koq.name);
       assert.isNotEmpty(koq.fullName); // "SchemaName:KoqName"
@@ -185,7 +185,7 @@ describe("SchemaView Examples", () => {
     }
 
     // Properties can reference a category
-    const element = ctx.findClass("BisCore:Element")!;
+    const element = view.findClass("BisCore:Element")!;
     for (const prop of element.getProperties()) {
       const koq = prop.isPrimitive() ? prop.kindOfQuantity : undefined;
       if (koq !== undefined) {
@@ -196,11 +196,11 @@ describe("SchemaView Examples", () => {
   });
 
   it("views", async () => {
-    const ctx = await iModel.getSchemaView();
+    const schemaView = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.views
     // Iterate views within a schema
-    for (const schema of ctx.getSchemas()) {
+    for (const schema of schemaView.getSchemas()) {
       for (const view of schema.getViews()) {
         assert.isNotEmpty(view.name);
         assert.isNotEmpty(view.fullName); // "SchemaName:ViewName"
@@ -213,15 +213,15 @@ describe("SchemaView Examples", () => {
     }
 
     // Look up a view by qualified name
-    // const view = ctx.findView("SomeSchema:SomeView");
+    // const view = schemaView.findView("SomeSchema:SomeView");
     // __PUBLISH_EXTRACT_END__
   });
 
   it("derived classes", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.derived-classes
-    const element = ctx.findClass("BisCore:Element")!;
+    const element = view.findClass("BisCore:Element")!;
 
     // Walk direct derived classes (reverse map built lazily on first call)
     const directDerived = element.derivedClasses;
@@ -235,14 +235,14 @@ describe("SchemaView Examples", () => {
   });
 
   it("derived classes and exhaustive walk", async () => {
-    const ctx = await iModel.getSchemaView();
+    const view = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.exhaustive-walk
     // Walk every class and every property in the entire context
     let totalClasses = 0;
     let totalProperties = 0;
 
-    for (const schema of ctx.getSchemas()) {
+    for (const schema of view.getSchemas()) {
       for (const cls of schema.getClasses()) {
         totalClasses++;
         const props = cls.getProperties(); // includes inherited
@@ -267,24 +267,24 @@ describe("SchemaView Examples", () => {
   });
 
   it("using context for presentation-style provider", async () => {
-    const ctx: SchemaView = await iModel.getSchemaView();
+    const view: SchemaView = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.presentation-adapter
     // Adapt SchemaView for use with presentation-style consumers
     // that need schema/class/property lookup.
-    function classDerivesFrom(ctx: SchemaView, classFullName: string, baseFullName: string): boolean {
-      const cls = ctx.findClass(classFullName);
+    function classDerivesFrom(view: SchemaView, classFullName: string, baseFullName: string): boolean {
+      const cls = view.findClass(classFullName);
       if (cls === undefined)
         return false;
       return cls.is(baseFullName);
     }
 
     // Check whether a class derives from BisCore:GeometricElement
-    const isGeometric = classDerivesFrom(ctx, "BisCore:GeometricElement3d", "BisCore:GeometricElement");
+    const isGeometric = classDerivesFrom(view, "BisCore:GeometricElement3d", "BisCore:GeometricElement");
     assert.isTrue(isGeometric);
 
     // Get the properties of a class for display
-    const element = ctx.findClass("BisCore:Element")!;
+    const element = view.findClass("BisCore:Element")!;
     const displayProps = element.getProperties()
       .filter((p) => !p.isHidden)
       .map((p) => ({ name: p.name, label: p.label, kind: p.kind }));

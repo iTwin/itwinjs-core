@@ -718,7 +718,8 @@ export abstract class IModelConnection extends IModel {
         throw new Error("PRAGMA checksum(ecdb_schema) returned no rows");
       const liveToken = result.value.sha3_256 as string;
       if (liveToken !== existing.schemaToken) {
-        this._schemasPromise = undefined;
+        if (this._schemasPromise === existingPromise)
+          this._schemasPromise = undefined;
         existing.markOutdated();
       }
     } catch {

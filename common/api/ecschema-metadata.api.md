@@ -97,11 +97,11 @@ export interface ClassData {
     // (undocumented)
     readonly baseClassIdx: number;
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     readonly ecInstanceId: number;
     readonly isHidden: boolean | undefined;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
     readonly mixinCount: number;
     // (undocumented)
@@ -109,7 +109,7 @@ export interface ClassData {
     // (undocumented)
     readonly modifier: ClassModifier;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
     readonly ownPropCount: number;
     // (undocumented)
@@ -714,7 +714,7 @@ export class EnumerationArrayProperty extends EnumerationArrayProperty_base {
 // @internal
 export interface EnumerationData {
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     readonly ecInstanceId: number;
     // (undocumented)
     readonly enumeratorCount: number;
@@ -723,9 +723,9 @@ export interface EnumerationData {
     // (undocumented)
     readonly isStrict: boolean;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
     readonly primitiveType: SchemaViewPrimitiveType;
     // (undocumented)
@@ -780,11 +780,11 @@ export interface Enumerator<T> {
 // @internal
 export interface EnumeratorData {
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
     readonly value: number | string;
 }
@@ -1082,16 +1082,16 @@ export interface KindOfQuantityProps extends SchemaItemProps {
 // @internal
 export interface KoqData {
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     readonly ecInstanceId: number;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
-    readonly persistenceUnitSid: number;
+    readonly persistenceUnitStringIdx: number;
     // (undocumented)
-    readonly presentationFormatsSid: number;
+    readonly presentationFormatsStringIdx: number;
     // (undocumented)
     readonly relativeError: number;
     // (undocumented)
@@ -1463,12 +1463,12 @@ export function primitiveTypeToString(type: PrimitiveType): string;
 // @internal
 export interface PropCategoryData {
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     readonly ecInstanceId: number;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
     readonly priority: number;
     // (undocumented)
@@ -1585,11 +1585,11 @@ export interface PropertyDef {
     // (undocumented)
     readonly categoryIdx: number;
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     // (undocumented)
     readonly enumIdx: number;
     // (undocumented)
-    readonly extTypeSid: number;
+    readonly extTypeStringIdx: number;
     // (undocumented)
     readonly isHidden: boolean;
     // (undocumented)
@@ -1599,7 +1599,7 @@ export interface PropertyDef {
     // (undocumented)
     readonly koqIdx: number;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
     readonly navDirection: StrengthDirection;
     // (undocumented)
@@ -1656,7 +1656,7 @@ export interface PropertyRef {
     readonly defIdx: number;
     readonly ecInstanceId: number;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
     readonly priority: number;
 }
@@ -1922,7 +1922,7 @@ export interface RelConstraintData {
     // (undocumented)
     readonly polymorphic: boolean;
     // (undocumented)
-    readonly roleLabelSid: number;
+    readonly roleLabelStringIdx: number;
 }
 
 // @internal
@@ -2165,7 +2165,7 @@ export class SchemaContext {
 // @internal
 export interface SchemaData {
     // (undocumented)
-    readonly aliasSid: number;
+    readonly aliasStringIdx: number;
     // (undocumented)
     readonly catCount: number;
     // (undocumented)
@@ -2175,7 +2175,7 @@ export interface SchemaData {
     // (undocumented)
     readonly classRangeStart: number;
     // (undocumented)
-    readonly descriptionSid: number;
+    readonly descriptionStringIdx: number;
     readonly ecInstanceId: number;
     // (undocumented)
     readonly enumCount: number;
@@ -2188,9 +2188,9 @@ export interface SchemaData {
     // (undocumented)
     readonly koqRangeStart: number;
     // (undocumented)
-    readonly labelSid: number;
+    readonly labelStringIdx: number;
     // (undocumented)
-    readonly nameSid: number;
+    readonly nameStringIdx: number;
     // (undocumented)
     readonly versionMinor: number;
     // (undocumented)
@@ -2525,29 +2525,13 @@ export class SchemaUnitProvider implements UnitsProvider {
 
 // @beta
 export class SchemaView {
+    // @internal (undocumented)
+    readonly [_storage]: SchemaViewStorage;
     // @internal
     constructor(data: SchemaViewData, schemaToken?: string);
     // @internal (undocumented)
     buildDerivedClassMap(): ReadonlyMap<number, readonly number[]>;
-    // @internal (undocumented)
-    readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-    // @internal (undocumented)
-    readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
     get classCount(): number;
-    // @internal (undocumented)
-    readonly classes: readonly ClassData[];
-    // @internal (undocumented)
-    readonly classMixins: readonly number[];
-    // @internal (undocumented)
-    readonly constraintClassRefs: readonly number[];
-    // @internal (undocumented)
-    derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
-    // @internal (undocumented)
-    readonly enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-    // @internal (undocumented)
-    readonly enumerations: readonly EnumerationData[];
-    // @internal (undocumented)
-    readonly enumerators: readonly EnumeratorData[];
     findClass(qualifiedName: string): SchemaView.Class | undefined;
     findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
     findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
@@ -2562,38 +2546,14 @@ export class SchemaView {
     // @internal (undocumented)
     getTransitiveBases(classIdx: number): ReadonlySet<number>;
     get isOutdated(): boolean;
-    // @internal (undocumented)
-    readonly koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-    // @internal (undocumented)
-    readonly koqs: readonly KoqData[];
-    // @internal (undocumented)
-    readonly lowerStrings: readonly string[];
     // @internal
     markOutdated(): void;
-    // @internal (undocumented)
-    readonly propCategories: readonly PropCategoryData[];
-    // @internal (undocumented)
-    readonly propDefs: readonly PropertyDef[];
-    // @internal (undocumented)
-    readonly propertyRefs: readonly PropertyRef[];
-    // @internal (undocumented)
-    readonly relConstraints: readonly RelConstraintData[];
     // @internal (undocumented)
     resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[];
     // @internal (undocumented)
     resolveClassIdx(qualifiedName: string): number;
-    // @internal (undocumented)
-    readonly schemaByAlias: ReadonlyMap<string, number>;
-    // @internal (undocumented)
-    readonly schemaByName: ReadonlyMap<string, number>;
     get schemaCount(): number;
-    // @internal (undocumented)
-    readonly schemas: readonly SchemaData[];
     get schemaToken(): string;
-    // @internal (undocumented)
-    readonly strings: readonly string[];
-    // @internal (undocumented)
-    readonly transitiveBaseCache: Map<number, ReadonlySet<number>>;
 }
 
 // @beta (undocumented)

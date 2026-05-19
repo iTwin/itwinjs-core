@@ -10,6 +10,22 @@ import { type ClassData, ClassModifier, ClassType, type EnumerationData, type En
 import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "./ECObjects";
 
+// Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
+// core-backend/src/internal/Symbols.ts (e.g. `_nativeDb` on IModelDb): the data is reachable
+// only by code in this module, since the symbol is not exported and not registered globally.
+// The flyweight view classes (SchemaView.Schema, SchemaView.Class, etc.) live in the same file
+// and access the storage through this symbol.
+const _storage = Symbol("SchemaView.storage");
+
+/** Internal runtime storage attached to a SchemaView instance. Carries the immutable data
+ * tables built by SchemaViewBuilder plus two mutable caches populated lazily at runtime.
+ * @internal
+ */
+interface SchemaViewStorage extends SchemaViewData {
+  readonly transitiveBaseCache: Map<number, ReadonlySet<number>>;
+  derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
+}
+
 /** A property reference paired with the index of the class that declared it. Used for
  * property inheritance resolution - the classIdx tracks where each property originates
  * (base class, mixin, or own) so consumers can discover the declaring class.
@@ -56,56 +72,19 @@ export interface SchemaViewData {
  * @beta
  */
 export class SchemaView {
-  /** @internal */ public readonly strings: readonly string[];
-  /** @internal */ public readonly lowerStrings: readonly string[];
-  /** @internal */ public readonly schemas: readonly SchemaData[];
-  /** @internal */ public readonly classes: readonly ClassData[];
-  /** @internal */ public readonly classMixins: readonly number[];
-  /** @internal */ public readonly propDefs: readonly PropertyDef[];
-  /** @internal */ public readonly propertyRefs: readonly PropertyRef[];
-  /** @internal */ public readonly relConstraints: readonly RelConstraintData[];
-  /** @internal */ public readonly constraintClassRefs: readonly number[];
-  /** @internal */ public readonly enumerations: readonly EnumerationData[];
-  /** @internal */ public readonly enumerators: readonly EnumeratorData[];
-  /** @internal */ public readonly koqs: readonly KoqData[];
-  /** @internal */ public readonly propCategories: readonly PropCategoryData[];
-
-  /** @internal */ public readonly schemaByName: ReadonlyMap<string, number>;
-  /** @internal */ public readonly schemaByAlias: ReadonlyMap<string, number>;
-  /** @internal */ public readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-
-  /** @internal */ public readonly transitiveBaseCache = new Map<number, ReadonlySet<number>>();
-  /** @internal */ public derivedClassMap: ReadonlyMap<number, readonly number[]> | undefined;
-
-  // Lookup caches for schema items by name within a schema
-  /** @internal */ public readonly enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-  /** @internal */ public readonly koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
-  /** @internal */ public readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+  /** @internal */
+  public readonly [_storage]: SchemaViewStorage;
 
   private _schemaToken: string;
   private _outdated = false;
 
   /** @internal */
   constructor(data: SchemaViewData, schemaToken?: string) {
-    this.strings = data.strings;
-    this.lowerStrings = data.lowerStrings;
-    this.schemas = data.schemas;
-    this.classes = data.classes;
-    this.classMixins = data.classMixins;
-    this.propDefs = data.propDefs;
-    this.propertyRefs = data.propertyRefs;
-    this.relConstraints = data.relConstraints;
-    this.constraintClassRefs = data.constraintClassRefs;
-    this.enumerations = data.enumerations;
-    this.enumerators = data.enumerators;
-    this.koqs = data.koqs;
-    this.propCategories = data.propCategories;
-    this.schemaByName = data.schemaByName;
-    this.schemaByAlias = data.schemaByAlias;
-    this.classByName = data.classByName;
-    this.enumByName = data.enumByName;
-    this.koqByName = data.koqByName;
-    this.catByName = data.catByName;
+    this[_storage] = {
+      ...data,
+      transitiveBaseCache: new Map<number, ReadonlySet<number>>(),
+      derivedClassMap: undefined,
+    };
     this._schemaToken = schemaToken ?? "";
   }
 
@@ -128,26 +107,26 @@ export class SchemaView {
   public markOutdated(): void { this._outdated = true; }
 
   /** Number of schemas in the view. */
-  public get schemaCount(): number { return this.schemas.length; }
+  public get schemaCount(): number { return this[_storage].schemas.length; }
 
   /** Number of classes across all schemas. */
-  public get classCount(): number { return this.classes.length; }
+  public get classCount(): number { return this[_storage].classes.length; }
 
   /** Get a schema by name (case-insensitive). */
   public getSchema(name: string): SchemaView.Schema | undefined {
-    const idx = this.schemaByName.get(name.toLowerCase());
+    const idx = this[_storage].schemaByName.get(name.toLowerCase());
     return idx !== undefined ? new SchemaView.Schema(this, idx) : undefined;
   }
 
   /** Get a schema by alias (case-insensitive). */
   public getSchemaByAlias(alias: string): SchemaView.Schema | undefined {
-    const idx = this.schemaByAlias.get(alias.toLowerCase());
+    const idx = this[_storage].schemaByAlias.get(alias.toLowerCase());
     return idx !== undefined ? new SchemaView.Schema(this, idx) : undefined;
   }
 
   /** Iterate all schemas. */
   public *getSchemas(): IterableIterator<SchemaView.Schema> {
-    for (let i = 0; i < this.schemas.length; i++)
+    for (let i = 0; i < this[_storage].schemas.length; i++)
       yield new SchemaView.Schema(this, i);
   }
 
@@ -171,7 +150,7 @@ export class SchemaView {
    * The namespace part matches schema name first, then alias. Case-insensitive.
    */
   public findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined {
-    const idx = this._resolveSchemaItemIdx(qualifiedName, this.enumByName);
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this[_storage].enumByName);
     return idx !== undefined ? new SchemaView.Enumeration(this, idx) : undefined;
   }
 
@@ -179,7 +158,7 @@ export class SchemaView {
    * The namespace part matches schema name first, then alias. Case-insensitive.
    */
   public findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined {
-    const idx = this._resolveSchemaItemIdx(qualifiedName, this.koqByName);
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this[_storage].koqByName);
     return idx !== undefined ? new SchemaView.KindOfQuantity(this, idx) : undefined;
   }
 
@@ -187,7 +166,7 @@ export class SchemaView {
    * The namespace part matches schema name first, then alias. Case-insensitive.
    */
   public findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined {
-    const idx = this._resolveSchemaItemIdx(qualifiedName, this.catByName);
+    const idx = this._resolveSchemaItemIdx(qualifiedName, this[_storage].catByName);
     return idx !== undefined ? new SchemaView.PropertyCategory(this, idx) : undefined;
   }
 
@@ -220,9 +199,9 @@ export class SchemaView {
     const ns = qualifiedName.substring(0, splitAt).toLowerCase();
     const itemName = qualifiedName.substring(splitAt + 1).toLowerCase();
 
-    let schemaIdx = this.schemaByName.get(ns);
+    let schemaIdx = this[_storage].schemaByName.get(ns);
     if (schemaIdx === undefined)
-      schemaIdx = this.schemaByAlias.get(ns);
+      schemaIdx = this[_storage].schemaByAlias.get(ns);
     if (schemaIdx === undefined) return undefined;
 
     return itemByName.get(schemaIdx)?.get(itemName);
@@ -238,29 +217,29 @@ export class SchemaView {
     const ns = qualifiedName.substring(0, splitAt).toLowerCase();
     const cn = qualifiedName.substring(splitAt + 1).toLowerCase();
 
-    let schemaIdx = this.schemaByName.get(ns);
+    let schemaIdx = this[_storage].schemaByName.get(ns);
     if (schemaIdx === undefined)
-      schemaIdx = this.schemaByAlias.get(ns);
+      schemaIdx = this[_storage].schemaByAlias.get(ns);
     if (schemaIdx === undefined) return -1;
 
-    const classMap = this.classByName.get(schemaIdx);
+    const classMap = this[_storage].classByName.get(schemaIdx);
     const classIdx = classMap?.get(cn);
     return classIdx ?? -1;
   }
 
   /** @internal */
   public getTransitiveBases(classIdx: number): ReadonlySet<number> {
-    const cached = this.transitiveBaseCache.get(classIdx);
+    const cached = this[_storage].transitiveBaseCache.get(classIdx);
     if (cached !== undefined) return cached;
 
     const result = new Set<number>();
     this._buildTransitiveBases(classIdx, result);
-    this.transitiveBaseCache.set(classIdx, result);
+    this[_storage].transitiveBaseCache.set(classIdx, result);
     return result;
   }
 
   private _buildTransitiveBases(classIdx: number, result: Set<number>): void {
-    const cls = this.classes[classIdx];
+    const cls = this[_storage].classes[classIdx];
     if (cls === undefined) return; // safety: dangling index from excluded schema
 
     if (cls.baseClassIdx !== -1 && !result.has(cls.baseClassIdx)) {
@@ -269,7 +248,7 @@ export class SchemaView {
     }
 
     for (let i = 0; i < cls.mixinCount; i++) {
-      const mixinIdx = this.classMixins[cls.mixinStartIdx + i];
+      const mixinIdx = this[_storage].classMixins[cls.mixinStartIdx + i];
       if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref
       if (!result.has(mixinIdx)) {
         result.add(mixinIdx);
@@ -280,13 +259,13 @@ export class SchemaView {
 
   /** @internal */
   public resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[] {
-    const cls = this.classes[classIdx];
+    const cls = this[_storage].classes[classIdx];
 
     if (cls.type === ClassType.View) {
       // Views don't participate in property inheritance - own properties only
       const result: ResolvedPropertyRef[] = [];
       for (let i = 0; i < cls.ownPropCount; i++) {
-        const ref = this.propertyRefs[cls.ownPropStart + i];
+        const ref = this[_storage].propertyRefs[cls.ownPropStart + i];
         result.push({ ref, classIdx: -1 });
       }
       return result;
@@ -301,7 +280,7 @@ export class SchemaView {
     classIdx: number,
     merged: Map<string, ResolvedPropertyRef>,
   ): void {
-    const cls = this.classes[classIdx];
+    const cls = this[_storage].classes[classIdx];
     if (cls === undefined) return; // safety: dangling index from excluded schema
 
     // 1. Base class (recursive, depth-first)
@@ -310,15 +289,15 @@ export class SchemaView {
 
     // 2. Mixins in declaration order
     for (let i = 0; i < cls.mixinCount; i++) {
-      const mixinIdx = this.classMixins[cls.mixinStartIdx + i];
+      const mixinIdx = this[_storage].classMixins[cls.mixinStartIdx + i];
       if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref
       this._collectMixinProperties(mixinIdx, merged);
     }
 
     // 3. Own properties - always override
     for (let i = 0; i < cls.ownPropCount; i++) {
-      const ref = this.propertyRefs[cls.ownPropStart + i];
-      const nameKey = this.lowerStrings[this.propDefs[ref.defIdx].nameSid];
+      const ref = this[_storage].propertyRefs[cls.ownPropStart + i];
+      const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
       merged.set(nameKey, { ref, classIdx });
     }
   }
@@ -327,7 +306,7 @@ export class SchemaView {
     mixinIdx: number,
     merged: Map<string, ResolvedPropertyRef>,
   ): void {
-    const mixin = this.classes[mixinIdx];
+    const mixin = this[_storage].classes[mixinIdx];
     if (mixin === undefined) return; // safety: dangling index from excluded schema
 
     // Walk mixin's own base chain (mixins can extend other mixins)
@@ -336,15 +315,15 @@ export class SchemaView {
 
     // Mixin's own mixins
     for (let i = 0; i < mixin.mixinCount; i++) {
-      const subMixinIdx = this.classMixins[mixin.mixinStartIdx + i];
+      const subMixinIdx = this[_storage].classMixins[mixin.mixinStartIdx + i];
       if (subMixinIdx === -1 || subMixinIdx === undefined) continue; // safety: dangling mixin ref
       this._collectMixinProperties(subMixinIdx, merged);
     }
 
     // Mixin's own properties - only set if not already present (first mixin wins)
     for (let i = 0; i < mixin.ownPropCount; i++) {
-      const ref = this.propertyRefs[mixin.ownPropStart + i];
-      const nameKey = this.lowerStrings[this.propDefs[ref.defIdx].nameSid];
+      const ref = this[_storage].propertyRefs[mixin.ownPropStart + i];
+      const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
       if (!merged.has(nameKey))
         merged.set(nameKey, { ref, classIdx: mixinIdx });
     }
@@ -352,11 +331,11 @@ export class SchemaView {
 
   /** @internal */
   public buildDerivedClassMap(): ReadonlyMap<number, readonly number[]> {
-    if (this.derivedClassMap !== undefined) return this.derivedClassMap;
+    if (this[_storage].derivedClassMap !== undefined) return this[_storage].derivedClassMap;
 
     const map = new Map<number, number[]>();
-    for (let i = 0; i < this.classes.length; i++) {
-      const baseIdx = this.classes[i].baseClassIdx;
+    for (let i = 0; i < this[_storage].classes.length; i++) {
+      const baseIdx = this[_storage].classes[i].baseClassIdx;
       if (baseIdx !== -1) {
         let arr = map.get(baseIdx);
         if (arr === undefined) {
@@ -366,7 +345,7 @@ export class SchemaView {
         arr.push(i);
       }
     }
-    this.derivedClassMap = map;
+    this[_storage].derivedClassMap = map;
     return map;
   }
 }
@@ -390,7 +369,7 @@ export namespace SchemaView {
       /** @internal */ public readonly idx: number,
     ) { }
 
-    private get _data() { return this._ctx.schemas[this.idx]; }
+    private get _data() { return this._ctx[_storage].schemas[this.idx]; }
 
     /** Row ID from ec_Schema. Matches `ECInstanceId` in ECDbMeta views, e.g.
      * `SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId = ?`.
@@ -400,15 +379,15 @@ export namespace SchemaView {
      * data not included in the schema view (custom attributes, schema references, etc.).
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
-    public get name(): string { return this._ctx.strings[this._data.nameSid]; }
-    public get alias(): string { return this._ctx.strings[this._data.aliasSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
+    public get alias(): string { return this._ctx[_storage].strings[this._data.aliasStringIdx]; }
     public get label(): string {
-      const sid = this._data.labelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : this.name;
+      const sid = this._data.labelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
     }
     public get description(): string {
-      const sid = this._data.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     public get readVersion(): number { return this._data.versionRead; }
     public get writeVersion(): number { return this._data.versionWrite; }
@@ -421,12 +400,12 @@ export namespace SchemaView {
     /** "SchemaName.RR.WW.mm" - dot-separated, matching the EC schema versioning convention. */
     public get fullName(): string {
       const d = this._data;
-      return `${this._ctx.strings[d.nameSid]}.${String(d.versionRead).padStart(2, "0")}.${String(d.versionWrite).padStart(2, "0")}.${String(d.versionMinor).padStart(2, "0")}`;
+      return `${this._ctx[_storage].strings[d.nameStringIdx]}.${String(d.versionRead).padStart(2, "0")}.${String(d.versionWrite).padStart(2, "0")}.${String(d.versionMinor).padStart(2, "0")}`;
     }
 
     /** Find a class by name within this schema (case-insensitive). */
     public getClass(name: string): Class | undefined {
-      const classMap = this._ctx.classByName.get(this.idx);
+      const classMap = this._ctx[_storage].classByName.get(this.idx);
       const classIdx = classMap?.get(name.toLowerCase());
       return classIdx !== undefined ? createClass(this._ctx, classIdx) : undefined;
     }
@@ -435,28 +414,28 @@ export namespace SchemaView {
     public *getClasses(): IterableIterator<Class> {
       const d = this._data;
       for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++) {
-        if (this._ctx.classes[i].type !== ClassType.View)
+        if (this._ctx[_storage].classes[i].type !== ClassType.View)
           yield createClass(this._ctx, i);
       }
     }
 
     /** Find an enumeration by name within this schema (case-insensitive). */
     public getEnumeration(name: string): Enumeration | undefined {
-      const map = this._ctx.enumByName.get(this.idx);
+      const map = this._ctx[_storage].enumByName.get(this.idx);
       const idx = map?.get(name.toLowerCase());
       return idx !== undefined ? new Enumeration(this._ctx, idx) : undefined;
     }
 
     /** Find a KindOfQuantity by name within this schema (case-insensitive). */
     public getKindOfQuantity(name: string): KindOfQuantity | undefined {
-      const map = this._ctx.koqByName.get(this.idx);
+      const map = this._ctx[_storage].koqByName.get(this.idx);
       const idx = map?.get(name.toLowerCase());
       return idx !== undefined ? new KindOfQuantity(this._ctx, idx) : undefined;
     }
 
     /** Find a PropertyCategory by name within this schema (case-insensitive). */
     public getPropertyCategory(name: string): PropertyCategory | undefined {
-      const map = this._ctx.catByName.get(this.idx);
+      const map = this._ctx[_storage].catByName.get(this.idx);
       const idx = map?.get(name.toLowerCase());
       return idx !== undefined ? new PropertyCategory(this._ctx, idx) : undefined;
     }
@@ -472,7 +451,7 @@ export namespace SchemaView {
     public *getViews(): IterableIterator<Class> {
       const d = this._data;
       for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++) {
-        if (this._ctx.classes[i].type === ClassType.View)
+        if (this._ctx[_storage].classes[i].type === ClassType.View)
           yield createClass(this._ctx, i);
       }
     }
@@ -512,26 +491,26 @@ export namespace SchemaView {
     ) { }
 
     /** @internal */
-    protected get _data() { return this._ctx.classes[this.idx]; }
+    protected get _data() { return this._ctx[_storage].classes[this.idx]; }
 
     /** Row ID from ec_Class. Matches `ECInstanceId` in ECDbMeta views, e.g.
      * `SELECT * FROM meta.ECClassDef WHERE ECInstanceId = ?`.
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
-    public get name(): string { return this._ctx.strings[this._data.nameSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get label(): string {
-      const sid = this._data.labelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : this.name;
+      const sid = this._data.labelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
     }
     public get description(): string {
-      const sid = this._data.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     /** "SchemaName:ClassName" - colon-separated, matching the EC class full name convention.
      * Use either ":" or "." as separator when passing to `findClass()`. */
     public get fullName(): string {
       const d = this._data;
-      return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
+      return `${this._ctx[_storage].strings[this._ctx[_storage].schemas[d.schemaIdx].nameStringIdx]}:${this._ctx[_storage].strings[d.nameStringIdx]}`;
     }
     public get schema(): Schema { return new Schema(this._ctx, this._data.schemaIdx); }
     public get type(): ClassType { return this._data.type; }
@@ -588,7 +567,7 @@ export namespace SchemaView {
         if (data.isHidden === false) return false; // explicit Show=true breaks the chain
         if (data.isHidden === true) return true;
         // undefined: walk to base class via internal array (avoids allocating Class objects)
-        data = data.baseClassIdx !== -1 ? this._ctx.classes[data.baseClassIdx] : undefined;
+        data = data.baseClassIdx !== -1 ? this._ctx[_storage].classes[data.baseClassIdx] : undefined;
       }
       return false;
     }
@@ -607,7 +586,7 @@ export namespace SchemaView {
       if (d.mixinCount === 0) return [];
       const result: Class[] = [];
       for (let i = 0; i < d.mixinCount; i++) {
-        const mixinIdx = this._ctx.classMixins[d.mixinStartIdx + i];
+        const mixinIdx = this._ctx[_storage].classMixins[d.mixinStartIdx + i];
         if (mixinIdx === -1 || mixinIdx === undefined) continue; // safety: dangling mixin ref from excluded schema
         result.push(createClass(this._ctx, mixinIdx));
       }
@@ -653,7 +632,7 @@ export namespace SchemaView {
       const allProps = this._ctx.resolveAllProperties(this.idx);
       const lowerName = name.toLowerCase();
       for (const rp of allProps) {
-        if (this._ctx.lowerStrings[this._ctx.propDefs[rp.ref.defIdx].nameSid] === lowerName)
+        if (this._ctx[_storage].lowerStrings[this._ctx[_storage].propDefs[rp.ref.defIdx].nameStringIdx] === lowerName)
           return createProperty(this._ctx, rp.ref, rp.classIdx);
       }
       return undefined;
@@ -670,7 +649,7 @@ export namespace SchemaView {
       const d = this._data;
       const result: Property[] = [];
       for (let i = 0; i < d.ownPropCount; i++) {
-        const ref = this._ctx.propertyRefs[d.ownPropStart + i];
+        const ref = this._ctx[_storage].propertyRefs[d.ownPropStart + i];
         result.push(createProperty(this._ctx, ref, this.idx));
       }
       return result;
@@ -699,7 +678,7 @@ export namespace SchemaView {
 
   /** @internal */
   export function createClass(ctx: SchemaView, idx: number): Class {
-    if (ctx.classes[idx].type === ClassType.Relationship)
+    if (ctx[_storage].classes[idx].type === ClassType.Relationship)
       return new RelationshipClass(ctx, idx);
     return new Class(ctx, idx);
   }
@@ -721,7 +700,7 @@ export namespace SchemaView {
     ) { }
 
     /** @internal */
-    protected get _def() { return this._ctx.propDefs[this._ref.defIdx]; }
+    protected get _def() { return this._ctx[_storage].propDefs[this._ref.defIdx]; }
 
     /** Row ID from ec_Property. Matches `ECInstanceId` in ECDbMeta views, e.g.
      * `SELECT * FROM meta.ECPropertyDef WHERE ECInstanceId = ?`.
@@ -730,16 +709,16 @@ export namespace SchemaView {
      * ec_Property row even when the structural definition is deduplicated.
      */
     public get ecInstanceId(): number { return this._ref.ecInstanceId; }
-    public get name(): string { return this._ctx.strings[this._def.nameSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._def.nameStringIdx]; }
     /** Display label. Falls back to the property name if no explicit label is set.
      * Labels are stored per-reference (not per-definition) because EC allows class overrides. */
     public get label(): string {
-      const labelSid = this._ref.labelSid;
-      return labelSid !== 0 ? this._ctx.strings[labelSid] : this.name;
+      const labelStringIdx = this._ref.labelStringIdx;
+      return labelStringIdx !== 0 ? this._ctx[_storage].strings[labelStringIdx] : this.name;
     }
     public get description(): string {
-      const sid = this._def.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._def.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     public get kind(): PropertyKind { return this._def.kind; }
     public get isReadOnly(): boolean { return this._def.isReadOnly; }
@@ -822,8 +801,8 @@ export namespace SchemaView {
   export class PrimitiveProperty extends Property {
     public get primitiveType(): SchemaViewPrimitiveType { return this._def.primitiveType; }
     public get extendedTypeName(): string | undefined {
-      const sid = this._def.extTypeSid;
-      return sid !== 0 ? this._ctx.strings[sid] : undefined;
+      const sid = this._def.extTypeStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : undefined;
     }
     public get enumeration(): Enumeration | undefined {
       const idx = this._def.enumIdx;
@@ -842,8 +821,8 @@ export namespace SchemaView {
   export class PrimitiveArrayProperty extends Property {
     public get primitiveType(): SchemaViewPrimitiveType { return this._def.primitiveType; }
     public get extendedTypeName(): string | undefined {
-      const sid = this._def.extTypeSid;
-      return sid !== 0 ? this._ctx.strings[sid] : undefined;
+      const sid = this._def.extTypeStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : undefined;
     }
     public get enumeration(): Enumeration | undefined {
       const idx = this._def.enumIdx;
@@ -914,14 +893,14 @@ export namespace SchemaView {
 
   /** @internal */
   export function createProperty(ctx: SchemaView, ref: PropertyRef, classIdx: number): Property {
-    const kind = ctx.propDefs[ref.defIdx].kind;
+    const kind = ctx[_storage].propDefs[ref.defIdx].kind;
     switch (kind) {
       case PropertyKind.Primitive: return new PrimitiveProperty(ctx, ref, classIdx);
       case PropertyKind.PrimitiveArray: return new PrimitiveArrayProperty(ctx, ref, classIdx);
       case PropertyKind.Struct: return new StructProperty(ctx, ref, classIdx);
       case PropertyKind.StructArray: return new StructArrayProperty(ctx, ref, classIdx);
       case PropertyKind.Navigation: return new NavigationProperty(ctx, ref, classIdx);
-      default: throw new Error(`Unknown PropertyKind ${kind as number} for property "${ctx.strings[ctx.propDefs[ref.defIdx].nameSid]}"`);
+      default: throw new Error(`Unknown PropertyKind ${kind as number} for property "${ctx[_storage].strings[ctx[_storage].propDefs[ref.defIdx].nameStringIdx]}"`);
     }
   }
 
@@ -935,25 +914,25 @@ export namespace SchemaView {
       /** @internal */ public readonly idx: number,
     ) { }
 
-    private get _data() { return this._ctx.enumerations[this.idx]; }
+    private get _data() { return this._ctx[_storage].enumerations[this.idx]; }
 
     /** Row ID from ec_Enumeration. Matches `ECInstanceId` in ECDbMeta views, e.g.
      * `SELECT * FROM meta.ECEnumerationDef WHERE ECInstanceId = ?`.
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
-    public get name(): string { return this._ctx.strings[this._data.nameSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get label(): string {
-      const sid = this._data.labelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : this.name;
+      const sid = this._data.labelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
     }
     public get description(): string {
-      const sid = this._data.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     /** "SchemaName:EnumName" - colon-separated. */
     public get fullName(): string {
       const d = this._data;
-      return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
+      return `${this._ctx[_storage].strings[this._ctx[_storage].schemas[d.schemaIdx].nameStringIdx]}:${this._ctx[_storage].strings[d.nameStringIdx]}`;
     }
     public get schema(): Schema { return new Schema(this._ctx, this._data.schemaIdx); }
     public get primitiveType(): SchemaViewPrimitiveType { return this._data.primitiveType; }
@@ -971,7 +950,7 @@ export namespace SchemaView {
       const lower = name.toLowerCase();
       const d = this._data;
       for (let i = d.enumeratorStart; i < d.enumeratorStart + d.enumeratorCount; i++) {
-        if (this._ctx.lowerStrings[this._ctx.enumerators[i].nameSid] === lower)
+        if (this._ctx[_storage].lowerStrings[this._ctx[_storage].enumerators[i].nameStringIdx] === lower)
           return new Enumerator(this._ctx, i);
       }
       return undefined;
@@ -981,7 +960,7 @@ export namespace SchemaView {
     public getEnumerator(value: number | string): Enumerator | undefined {
       const d = this._data;
       for (let i = d.enumeratorStart; i < d.enumeratorStart + d.enumeratorCount; i++) {
-        if (this._ctx.enumerators[i].value === value)
+        if (this._ctx[_storage].enumerators[i].value === value)
           return new Enumerator(this._ctx, i);
       }
       return undefined;
@@ -998,16 +977,16 @@ export namespace SchemaView {
       /** @internal */ public readonly idx: number,
     ) { }
 
-    private get _data() { return this._ctx.enumerators[this.idx]; }
+    private get _data() { return this._ctx[_storage].enumerators[this.idx]; }
 
-    public get name(): string { return this._ctx.strings[this._data.nameSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get label(): string {
-      const sid = this._data.labelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : this.name;
+      const sid = this._data.labelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
     }
     public get description(): string {
-      const sid = this._data.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     public get value(): number | string { return this._data.value; }
   }
@@ -1064,32 +1043,32 @@ export namespace SchemaView {
       /** @internal */ public readonly idx: number,
     ) { }
 
-    private get _data() { return this._ctx.koqs[this.idx]; }
+    private get _data() { return this._ctx[_storage].koqs[this.idx]; }
 
     /** Row ID from ec_KindOfQuantity. Matches `ECInstanceId` in ECDbMeta views, e.g.
      * `SELECT * FROM meta.ECKindOfQuantityDef WHERE ECInstanceId = ?`.
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
-    public get name(): string { return this._ctx.strings[this._data.nameSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get label(): string {
-      const sid = this._data.labelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : this.name;
+      const sid = this._data.labelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
     }
     public get description(): string {
-      const sid = this._data.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     /** "SchemaName:KoqName" - colon-separated. */
     public get fullName(): string {
       const d = this._data;
-      return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
+      return `${this._ctx[_storage].strings[this._ctx[_storage].schemas[d.schemaIdx].nameStringIdx]}:${this._ctx[_storage].strings[d.nameStringIdx]}`;
     }
     public get schema(): Schema { return new Schema(this._ctx, this._data.schemaIdx); }
     public get relativeError(): number { return this._data.relativeError; }
     /** Persistence unit as a full name string, e.g. "Units:M". */
     public get persistenceUnit(): string {
-      const sid = this._data.persistenceUnitSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.persistenceUnitStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     // EC XML serializes this as "presentationUnits"; we use "presentationFormats" to align with KindOfQuantity.presentationFormats in ecschema-metadata.
     /** Raw presentation format string as stored in ECDb (`ec_KindOfQuantity.PresentationUnits`).
@@ -1097,8 +1076,8 @@ export namespace SchemaView {
      * Prefer `presentationFormats` for structured access.
      */
     public get presentationFormatsRaw(): string {
-      const sid = this._data.presentationFormatsSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.presentationFormatsStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
 
     /** Presentation formats parsed into structured overrides. Each entry has the format name
@@ -1132,25 +1111,25 @@ export namespace SchemaView {
       /** @internal */ public readonly idx: number,
     ) { }
 
-    private get _data() { return this._ctx.propCategories[this.idx]; }
+    private get _data() { return this._ctx[_storage].propCategories[this.idx]; }
 
     /** Row ID from ec_PropertyCategory. Matches `ECInstanceId` in ECDbMeta views, e.g.
      * `SELECT * FROM meta.ECPropertyCategoryDef WHERE ECInstanceId = ?`.
      */
     public get ecInstanceId(): number { return this._data.ecInstanceId; }
-    public get name(): string { return this._ctx.strings[this._data.nameSid]; }
+    public get name(): string { return this._ctx[_storage].strings[this._data.nameStringIdx]; }
     public get label(): string {
-      const sid = this._data.labelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : this.name;
+      const sid = this._data.labelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : this.name;
     }
     public get description(): string {
-      const sid = this._data.descriptionSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.descriptionStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     /** "SchemaName:CategoryName" - colon-separated. */
     public get fullName(): string {
       const d = this._data;
-      return `${this._ctx.strings[this._ctx.schemas[d.schemaIdx].nameSid]}:${this._ctx.strings[d.nameSid]}`;
+      return `${this._ctx[_storage].strings[this._ctx[_storage].schemas[d.schemaIdx].nameStringIdx]}:${this._ctx[_storage].strings[d.nameStringIdx]}`;
     }
     public get schema(): Schema { return new Schema(this._ctx, this._data.schemaIdx); }
     public get priority(): number { return this._data.priority; }
@@ -1166,7 +1145,7 @@ export namespace SchemaView {
       private readonly _idx: number,
     ) { }
 
-    private get _data() { return this._ctx.relConstraints[this._idx]; }
+    private get _data() { return this._ctx[_storage].relConstraints[this._idx]; }
 
     public get abstractConstraint(): Class | undefined {
       const idx = this._data.abstractConstraintIdx;
@@ -1179,14 +1158,14 @@ export namespace SchemaView {
     public get multiplicityUpper(): number { return this._data.multiplicityUpper; }
     /** Role label string, or empty if not set. */
     public get roleLabel(): string {
-      const sid = this._data.roleLabelSid;
-      return sid !== 0 ? this._ctx.strings[sid] : "";
+      const sid = this._data.roleLabelStringIdx;
+      return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
     }
     public get constraintClasses(): readonly Class[] {
       const d = this._data;
       const result: Class[] = [];
       for (let i = 0; i < d.classRefCount; i++)
-        result.push(createClass(this._ctx, this._ctx.constraintClassRefs[d.classRefStart + i]));
+        result.push(createClass(this._ctx, this._ctx[_storage].constraintClassRefs[d.classRefStart + i]));
       return result;
     }
   }
@@ -1350,32 +1329,32 @@ export class SchemaViewBuilder {
     // Build schema lookup maps
     for (let i = 0; i < this._schemas.length; i++) {
       const s = this._schemas[i];
-      schemaByName.set(this._lowerStrings[s.nameSid], i);
-      if (s.aliasSid !== 0)
-        schemaByAlias.set(this._lowerStrings[s.aliasSid], i);
+      schemaByName.set(this._lowerStrings[s.nameStringIdx], i);
+      if (s.aliasStringIdx !== 0)
+        schemaByAlias.set(this._lowerStrings[s.aliasStringIdx], i);
 
       // Build class-by-name map for this schema
       const classMap = new Map<string, number>();
       for (let c = s.classRangeStart; c < s.classRangeStart + s.classCount; c++)
-        classMap.set(this._lowerStrings[this._classes[c].nameSid], c);
+        classMap.set(this._lowerStrings[this._classes[c].nameStringIdx], c);
       classByName.set(i, classMap);
 
       // Build enum-by-name map for this schema
       const eMap = new Map<string, number>();
       for (let e = s.enumRangeStart; e < s.enumRangeStart + s.enumCount; e++)
-        eMap.set(this._lowerStrings[this._enumerations[e].nameSid], e);
+        eMap.set(this._lowerStrings[this._enumerations[e].nameStringIdx], e);
       enumByName.set(i, eMap);
 
       // Build koq-by-name map for this schema
       const kMap = new Map<string, number>();
       for (let k = s.koqRangeStart; k < s.koqRangeStart + s.koqCount; k++)
-        kMap.set(this._lowerStrings[this._koqs[k].nameSid], k);
+        kMap.set(this._lowerStrings[this._koqs[k].nameStringIdx], k);
       koqByName.set(i, kMap);
 
       // Build category-by-name map for this schema
       const cMap = new Map<string, number>();
       for (let p = s.catRangeStart; p < s.catRangeStart + s.catCount; p++)
-        cMap.set(this._lowerStrings[this._propCategories[p].nameSid], p);
+        cMap.set(this._lowerStrings[this._propCategories[p].nameStringIdx], p);
       catByName.set(i, cMap);
     }
 
@@ -1407,6 +1386,6 @@ export class SchemaViewBuilder {
    * Uses SIDs (not lowercase strings) for name/description so that case-preserving names
    * stay distinct - matching the C++ writer's dedup behavior. */
   private _propDefSignature(def: PropertyDef): string {
-    return `${def.nameSid}|${def.kind}|${def.primitiveType}|${def.extTypeSid}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionSid}`;
+    return `${def.nameStringIdx}|${def.kind}|${def.primitiveType}|${def.extTypeStringIdx}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionStringIdx}`;
   }
 }

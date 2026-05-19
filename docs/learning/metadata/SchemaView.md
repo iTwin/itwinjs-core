@@ -52,15 +52,15 @@ The authoritative list lives in `IsExcludedSchema()` in `SchemaViewWriter.cpp` (
 
 When you do need data from an excluded schema, [SchemaContext]($ecschema-metadata) and ECDbMeta queries remain available. Examples of resolving units and formats are in [Resolving format and unit names](#resolving-format-and-unit-names).
 
-## Obtaining the context
+## Obtaining the schema view
 
-The context is obtained from [IModelDb]($backend) (backend) or [IModelConnection]($frontend) (frontend). The first call builds the cache; subsequent calls return it instantly.
+The schema view is obtained from [IModelDb]($backend) (backend) or [IModelConnection]($frontend) (frontend). The first call builds the cache; subsequent calls return it instantly.
 
 ```ts
 [[include:SchemaView.obtain]]
 ```
 
-The context is cached for the lifetime of the connection. Schema changes (via `importSchemas` or pulling changesets with schema changes) automatically invalidate the cache.
+The schema view is cached for the lifetime of the connection. Schema changes (via `importSchemas` or pulling changesets with schema changes) automatically invalidate the cache.
 
 ## Navigating schemas and classes
 
@@ -178,7 +178,7 @@ You can walk the class hierarchy downward via `derivedClasses`. The reverse map 
 
 ## Exhaustive walk
 
-You can iterate every schema, class, and property in the context efficiently. This is a common pattern for building indexes or validating metadata.
+You can iterate every schema, class, and property in the schema view efficiently. This is a common pattern for building indexes or validating metadata.
 
 ```ts
 [[include:SchemaView.exhaustive-walk]]
@@ -198,7 +198,7 @@ All schema, class, and property access is **synchronous** - the data is fully lo
 
 ## View objects and allocation
 
-`SchemaView.Schema`, `SchemaView.Class`, `SchemaView.Property`, and the other view types are lightweight wrappers holding only a context reference and an index. They do not cache data and are not identity-stable - calling `element.schema` twice returns two distinct objects that expose the same data. This means `===` comparison will fail; use `name` or `fullName` for equality checks.
+`SchemaView.Schema`, `SchemaView.Class`, `SchemaView.Property`, and the other view types are lightweight wrappers holding only a `SchemaView` reference and an index. They do not cache data and are not identity-stable - calling `element.schema` twice returns two distinct objects that expose the same data. This means `===` comparison will fail; use `name` or `fullName` for equality checks.
 
 Calling `getProperties()` allocates a new `SchemaView.Property` wrapper for each property on every call. For hot loops, consider caching the result in a local variable. The underlying data is shared - only the thin wrapper objects are allocated.
 

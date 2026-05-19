@@ -106,9 +106,9 @@ interface PendingClass {
   schemaIdx: number;
   classIdx: number;
   ecInstanceId: number;
-  nameSid: number;
-  labelSid: number;
-  descriptionSid: number;
+  nameStringIdx: number;
+  labelStringIdx: number;
+  descriptionStringIdx: number;
   type: ClassType;
   modifier: ClassModifier;
   relStrength: StrengthType;
@@ -125,7 +125,7 @@ interface PendingClass {
 interface PendingPropRef {
   preDefIdx: number; // index into preParsedDefs (mapped to builder defIdx during resolution)
   ecInstanceId: number;
-  labelSid: number;
+  labelStringIdx: number;
   priority: number;
 }
 
@@ -258,10 +258,10 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
 
     const schemaIdx = builder.addSchema({
       ecInstanceId,
-      nameSid: builder.internString(name),
-      aliasSid: builder.internString(alias),
-      labelSid: builder.internString(label),
-      descriptionSid: builder.internString(description),
+      nameStringIdx: builder.internString(name),
+      aliasStringIdx: builder.internString(alias),
+      labelStringIdx: builder.internString(label),
+      descriptionStringIdx: builder.internString(description),
       versionRead: vRead,
       versionWrite: vWrite,
       versionMinor: vMinor,
@@ -316,9 +316,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
           const value = v.IntValue !== undefined ? v.IntValue : (v.StringValue ?? "");
           const name = v.Name ?? (typeof value === "string" ? value : `${eName}${value}`);
           builder.addEnumerator({
-            nameSid: builder.internString(name),
-            labelSid: builder.internString(v.DisplayLabel),
-            descriptionSid: builder.internString(v.Description),
+            nameStringIdx: builder.internString(name),
+            labelStringIdx: builder.internString(v.DisplayLabel),
+            descriptionStringIdx: builder.internString(v.Description),
             value,
           });
           enumeratorCount++;
@@ -331,9 +331,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     const eIdx = builder.addEnumeration({
       ecInstanceId: eEcInstanceId,
       schemaIdx,
-      nameSid: builder.internString(eName),
-      labelSid: builder.internString(eLabel),
-      descriptionSid: builder.internString(eDesc),
+      nameStringIdx: builder.internString(eName),
+      labelStringIdx: builder.internString(eLabel),
+      descriptionStringIdx: builder.internString(eDesc),
       primitiveType: ePrimType as SchemaViewPrimitiveType,
       isStrict: eIsStrict,
       enumeratorStart,
@@ -361,11 +361,11 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     const kIdx = builder.addKoq({
       ecInstanceId: kEcInstanceId,
       schemaIdx,
-      nameSid: builder.internString(kName),
-      labelSid: builder.internString(kLabel),
-      descriptionSid: builder.internString(kDesc),
-      persistenceUnitSid: builder.internString(kPersUnit),
-      presentationFormatsSid: builder.internString(kPresUnits),
+      nameStringIdx: builder.internString(kName),
+      labelStringIdx: builder.internString(kLabel),
+      descriptionStringIdx: builder.internString(kDesc),
+      persistenceUnitStringIdx: builder.internString(kPersUnit),
+      presentationFormatsStringIdx: builder.internString(kPresUnits),
       relativeError: kRelError,
     });
     koqRowIdToIdx.set(kEcInstanceId, kIdx);
@@ -388,9 +388,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     const pcIdx = builder.addPropertyCategory({
       ecInstanceId: pcEcInstanceId,
       schemaIdx,
-      nameSid: builder.internString(pcName),
-      labelSid: builder.internString(pcLabel),
-      descriptionSid: builder.internString(pcDesc),
+      nameStringIdx: builder.internString(pcName),
+      labelStringIdx: builder.internString(pcLabel),
+      descriptionStringIdx: builder.internString(pcDesc),
       priority: pcPriority,
     });
     catRowIdToIdx.set(pcEcInstanceId, pcIdx);
@@ -438,7 +438,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     for (let p = 0; p < propRefCount; p++) {
       propRefs.push({
         preDefIdx: reader.readU32(),
-        labelSid: builder.internString(reader.readSRef()),
+        labelStringIdx: builder.internString(reader.readSRef()),
         priority: reader.readI32(),
         ecInstanceId: reader.readU32(),
       });
@@ -480,13 +480,13 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       }
     }
 
-    const nameSid = builder.internString(cName);
+    const nameStringIdx = builder.internString(cName);
     const classIdx = builder.addClass({
       ecInstanceId: cEcInstanceId,
       schemaIdx,
-      nameSid,
-      labelSid: builder.internString(cLabel),
-      descriptionSid: builder.internString(cDesc),
+      nameStringIdx,
+      labelStringIdx: builder.internString(cLabel),
+      descriptionStringIdx: builder.internString(cDesc),
       type: cType,
       modifier: cModifier,
       baseClassIdx: -1,
@@ -507,9 +507,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       schemaIdx,
       classIdx,
       ecInstanceId: cEcInstanceId,
-      nameSid,
-      labelSid: builder.internString(cLabel),
-      descriptionSid: builder.internString(cDesc),
+      nameStringIdx,
+      labelStringIdx: builder.internString(cLabel),
+      descriptionStringIdx: builder.internString(cDesc),
       type: cType,
       modifier: cModifier,
       relStrength,
@@ -587,11 +587,11 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       categoryIdx = catRowIdToIdx.get(prDef.catRowId) ?? -1;
 
     const def: PropertyDef = {
-      nameSid: builder.internString(prDef.name),
-      descriptionSid: builder.internString(prDef.description),
+      nameStringIdx: builder.internString(prDef.name),
+      descriptionStringIdx: builder.internString(prDef.description),
       kind: prDef.kind,
       primitiveType: prDef.primitiveType,
-      extTypeSid: builder.internString(prDef.extType),
+      extTypeStringIdx: builder.internString(prDef.extType),
       enumIdx,
       koqIdx,
       structClassIdx,
@@ -610,7 +610,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   // Resolve cross-references and finalize classes
   for (const pc of pendingClasses) {
     pc.baseClasses.sort((a, b) => a.ordinal - b.ordinal);
-    const classFullName = `${pc.schemaName}:${builder.getString(pc.nameSid)}`;
+    const classFullName = `${pc.schemaName}:${builder.getString(pc.nameStringIdx)}`;
 
     let baseClassIdx = -1;
     const mixinStartIdx = pc.baseClasses.length > 1 ? builder.classMixinCount : -1;
@@ -643,7 +643,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       builder.addPropertyRef({
         ecInstanceId: pr.ecInstanceId,
         defIdx,
-        labelSid: pr.labelSid,
+        labelStringIdx: pr.labelStringIdx,
         priority: pr.priority,
       });
     }
@@ -676,7 +676,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
         polymorphic: con.isPolymorphic,
         multiplicityLower: con.multiplicityLower,
         multiplicityUpper: con.multiplicityUpper,
-        roleLabelSid: builder.internString(con.roleLabel),
+        roleLabelStringIdx: builder.internString(con.roleLabel),
         classRefStart,
         classRefCount,
       });
@@ -690,9 +690,9 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     const updatedClass: ClassData = {
       ecInstanceId: pc.ecInstanceId,
       schemaIdx: pc.schemaIdx,
-      nameSid: pc.nameSid,
-      labelSid: pc.labelSid,
-      descriptionSid: pc.descriptionSid,
+      nameStringIdx: pc.nameStringIdx,
+      labelStringIdx: pc.labelStringIdx,
+      descriptionStringIdx: pc.descriptionStringIdx,
       type: pc.type,
       modifier: pc.modifier,
       baseClassIdx,
