@@ -38,7 +38,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.stub(IModelApp, "userPreferences").get(() => settingsAdmin);
 
     authorizationClientMock = stubAuthorizationClient();
-    authorizationClient = authorizationClientMock as unknown as AuthorizationClient;
+    authorizationClient = authorizationClientMock;
     IModelApp.authorizationClient = authorizationClient;
 
     storage = new IModelAppFavoritePropertiesStorage();

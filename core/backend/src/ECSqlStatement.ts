@@ -909,7 +909,7 @@ export class ECSqlValue {
 
   /** Get information about the query result's column this value refers to. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
+  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo(); }
 
   /** Get the value of this ECSQL value */
   public get value(): any { return ECSqlValueHelper.getValue(this); }

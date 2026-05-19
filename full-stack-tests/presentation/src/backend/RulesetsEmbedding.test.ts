@@ -125,11 +125,11 @@ describe("RulesEmbedding", () => {
 
     const actualRuleset = rulesets.find((value: Ruleset, _index: number, _obj: Ruleset[]): boolean => value.id === ruleset.id);
     expect(actualRuleset).to.not.be.undefined;
-    expect(ruleset).to.deep.eq(actualRuleset as Ruleset);
+    expect(ruleset).to.deep.eq(actualRuleset);
 
     const actualOtherRuleset = rulesets.find((value: Ruleset, _index: number, _obj: Ruleset[]): boolean => value.id === otherRuleset.id);
     expect(actualOtherRuleset).to.not.be.undefined;
-    expect(otherRuleset).to.deep.eq(actualOtherRuleset as Ruleset);
+    expect(otherRuleset).to.deep.eq(actualOtherRuleset);
   });
 
   it("locates rulesets", async () => {

@@ -1,6 +1,62 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 16 Apr 2026 11:06:21 GMT and should not be manually modified.
+This log was last generated on Fri, 15 May 2026 11:27:25 GMT and should not be manually modified.
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+### Updates
+
+- Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones.
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+### Updates
+
+- Semantic Rebase uses the new ChangesetReader api. Also while doing semantic rebase we now stream the changed instances onto the temp file while writing as well as stream changed instances from the file while reading.
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Expose unit on list of available GCS; allow filtering GCS by unit
+- Improve IdSet virtual table performance
+- Add dispose method to RebaseManager
+- Added IModelHost APIs to save and delete iTwin-scoped setting dictionaries in SettingsDb.
+- added EditTxn apis
+- Added the ability to release locks associated with reversed Txns.
+- Update integrityCheck to use primary connection
+- Updated TSDoc for Settings and IModelDb to reference current EditTxn APIs instead of deprecated methods.
+- Added deleteElements method for bulk element deletion with automatic cascade, constraint checking, and cleanup.
+- Optimized EditTxn.deleteElements for better performance and clearer reporting; added batch lifecycle callbacks Element.onBulkDeleted, Element.onBulkChildDeleted, and Model.onBulkModelEvents to avoid per-element notification overhead.
+- Added a beta api to allow schema xml serialization to any ECSpecVersion.
+- Added ECSql nav prop corresponding `RelatedElementProps` members to the backend `ViewDefinition`, `SpatialViewDefinition`, and `ViewDefinition2d` classes.
+- Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
+- Added ChangesetReader api(along with new unifier apis) and deprecated ChangesetECAdaptor apis(including unifier apis)
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:13 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
 
 ## 5.8.2
 Thu, 16 Apr 2026 11:05:01 GMT

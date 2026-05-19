@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-backend";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AuxCoordSystem2dProps, Camera, Code, CodeScopeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyle3dProps, DisplayStyle3dSettingsProps,
+  AuxCoordSystem2dProps, Camera, Code, CodeScopeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyle3dSettingsProps,
   Environment, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, LocalFileName, PlanProjectionSettings, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, ViewDefinition2dProps, ViewDefinitionProps,
 } from "@itwin/core-common";
@@ -267,7 +267,7 @@ describe("ViewStore", function (this: Suite) {
     };
 
     const dsEl = DisplayStyle3d.create(iModel, IModel.dictionaryId, "test style 1", displayStyleProps);
-    const styleProps = dsEl.toJSON() as DisplayStyle3dProps;
+    const styleProps = dsEl.toJSON();
     const dsId = withEditTxn(iModel, (txn) => txn.insertElement(styleProps));
     const ds1Row = await vs1locker.addDisplayStyle({ className: dsEl.classFullName, name: dsEl.code.value, settings: styleProps.jsonProperties!.styles! });
     expect(ds1Row).equals("@1");
@@ -336,9 +336,9 @@ describe("ViewStore", function (this: Suite) {
     expect(Id64.isValid(viewDefinitionId)).true;
 
     props = viewDefinition.toJSON();
-    props.categorySelectorId = cs1Row;
-    props.displayStyleId = ds1Row;
-    props.modelSelectorId = ms1Row;
+    props.categorySelector = { id: cs1Row };
+    props.displayStyle = { id: ds1Row };
+    props.modelSelector = { id: ms1Row };
     const v2Id = await vs1locker.addView({ viewDefinition: props, owner: "owner2", group: g1 });
     expect(v2Id).equals("@2");
 
@@ -405,8 +405,8 @@ describe("ViewStore", function (this: Suite) {
     const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.
     const dcs = await vs1locker.addCategorySelector({ selector: { ids: dv.categorySelectorProps.categories } });
     const dds = await vs1locker.addDisplayStyle({ className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
-    dv.viewDefinitionProps.categorySelectorId = dcs;
-    dv.viewDefinitionProps.displayStyleId = dds;
+    dv.viewDefinitionProps.categorySelector = { id: dcs };
+    dv.viewDefinitionProps.displayStyle = { id: dds };
     const dvId = await vs1locker.addView({ viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
     expect(dvId).equals("@4");
     const dFromVs = await iModel.views.getViewStateProps(dvId);
@@ -418,7 +418,7 @@ describe("ViewStore", function (this: Suite) {
     expect(dFromVs.modelExtents).to.deep.equal(dv.modelExtents);
     const v2dEl = dv.viewDefinitionProps as ViewDefinition2dProps;
     const v2dVs = dFromVs.viewDefinitionProps as ViewDefinition2dProps;
-    expect(v2dEl.baseModelId).equals(v2dVs.baseModelId);
+    expect(v2dEl.baseModel?.id).equals(v2dVs.baseModel?.id);
     expect(v2dEl.angle).to.deep.equal(v2dVs.angle);
     expect(v2dEl.origin).to.deep.equal(v2dVs.origin);
     expect(v2dEl.delta).to.deep.equal(v2dVs.delta);

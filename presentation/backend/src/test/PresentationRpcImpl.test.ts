@@ -249,7 +249,7 @@ describe("PresentationRpcImpl", () => {
         imodelToken: createIModelRpcProps(),
         imodelMock: stubIModelDb(),
         rulesetOrId: "test-ruleset-id",
-        pageOptions: { start: 123, size: 45 } as PageOptions,
+        pageOptions: { start: 123, size: 45 },
         displayType: "sample display type",
       };
       defaultRpcParams = { clientId: "test-client-id" };

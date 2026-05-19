@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
+import { createUnitsProvider } from "@itwin/core-quantity";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Unit_System_Configuration
@@ -27,7 +28,10 @@ export function addAlternateUnitLabels() {
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.SchemaUnitProvider_Registration
 /** Register SchemaUnitProvider when IModelConnection is opened */
 export async function registerSchemaUnitProvider(iModelConnection: IModelConnection) {
-  await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(iModelConnection.schemaContext));
+  // Wrap SchemaUnitProvider with createUnitsProvider so basic BIS units fill any gaps
+  await IModelApp.quantityFormatter.setUnitsProvider(
+    createUnitsProvider({ primary: new SchemaUnitProvider(iModelConnection.schemaContext) }),
+  );
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -35,7 +39,9 @@ export async function registerSchemaUnitProvider(iModelConnection: IModelConnect
 /** Register SchemaUnitProvider automatically when IModelConnection opens */
 export function setupIModelConnectionListener() {
   IModelConnection.onOpen.addListener(async (iModelConnection: IModelConnection) => {
-    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(iModelConnection.schemaContext));
+    await IModelApp.quantityFormatter.setUnitsProvider(
+      createUnitsProvider({ primary: new SchemaUnitProvider(iModelConnection.schemaContext) }),
+    );
   });
 }
 // __PUBLISH_EXTRACT_END__
@@ -142,7 +148,7 @@ export function useFormatSpecHandle() {
   const formatted = handle.format(1.5);
   assert(formatted.length > 0);
 
-  // Explicitly dispose when done to unsubscribe from reload events
+  // Explicitly dispose when done to invalidate the handle
   handle[Symbol.dispose]();
 }
 // __PUBLISH_EXTRACT_END__
@@ -155,7 +161,7 @@ export function useFormatSpecHandleWithUsing() {
     "Units.M",
   );
 
-  // The handle auto-refreshes when the formatter reloads
+  // The handle reads the current formatter state on access
   const formatted = handle.format(2.75);
   assert(formatted.length > 0);
   // handle is automatically disposed at end of scope

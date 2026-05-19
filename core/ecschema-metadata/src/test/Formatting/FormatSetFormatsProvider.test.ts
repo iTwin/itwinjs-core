@@ -454,7 +454,7 @@ describe("FormatSetFormatsProvider", () => {
       const providerWithReference = new FormatSetFormatsProvider({ formatSet: formatSetWithReference });
 
       // Add a string reference
-      await providerWithReference.addFormat("Schema.DISTANCE", "Schema.LENGTH" as unknown as FormatDefinition);
+      await providerWithReference.addFormat("Schema.DISTANCE", "Schema.LENGTH");
 
       // Should resolve the string reference and return the FormatDefinition
       const distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");
@@ -637,7 +637,7 @@ describe("FormatSetFormatsProvider", () => {
       expect(distanceFormat).toEqual(sampleFormat);
 
       // Update the reference to point to a different format
-      await providerWithReference.addFormat("Schema.DISTANCE", "Schema.WIDTH" as unknown as FormatDefinition);
+      await providerWithReference.addFormat("Schema.DISTANCE", "Schema.WIDTH");
 
       // Verify updated reference resolves to anotherFormat
       distanceFormat = await providerWithReference.getFormat("Schema.DISTANCE");

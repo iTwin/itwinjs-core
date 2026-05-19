@@ -166,7 +166,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
    * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
-   * @deprecated Use ElementDrivesTextAnnotation.updateFieldDependencies(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use ElementDrivesTextAnnotation.updateFieldDependencies(txn, ...) instead.
    */
   public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
 
