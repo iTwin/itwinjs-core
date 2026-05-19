@@ -28,6 +28,18 @@ describe("SettingsSchemas", () => {
     // can't add a group with no name
     expect(() => schemas.addGroup({} as any)).throws(`has no "schemaPrefix" member`);
 
+    schemas.addGroup({
+      schemaPrefix: "title-test",
+      title: "Title Test",
+      description: "schema with a user-facing title",
+      settingDefs: {
+        setting: {
+          type: "string",
+        },
+      },
+    });
+    expect(schemas.settingDefs.get("title-test/setting")!.type).equals("string");
+
     schemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     expect(schemas.settingDefs.get("testApp/list/openMode")!.type).equals("string");
     expect(schemas.settingDefs.get("testApp/list/openMode")!.default).equals("singleClick");
