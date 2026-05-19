@@ -28,12 +28,12 @@ function invert(input: number): number {
   return 1 / input;
 }
 
-/** Shared numeric conversion core used by both legacy `applyConversion(...)` and safe public helpers.
+/** Shared numeric conversion implementation used by both legacy `applyConversion(...)` and safe public helpers.
  * The `failOnInvalidConversion` switch preserves legacy compatibility while letting newer APIs throw
  * when conversion metadata is explicitly marked invalid.
  * @internal
  */
-export function applyConversionCore(value: number, props: UnitConversionProps, failOnInvalidConversion: boolean): number {
+export function applyConversionInternal(value: number, props: UnitConversionProps, failOnInvalidConversion: boolean): number {
   if (failOnInvalidConversion && props.error)
     throw new QuantityError(QuantityStatus.InvalidUnitConversion, "Cannot apply an invalid unit conversion.");
 
@@ -54,5 +54,5 @@ export function applyConversionCore(value: number, props: UnitConversionProps, f
  * @internal
  */
 export function convertValueOrThrow(value: number, conversion: UnitConversionProps): number {
-  return applyConversionCore(value, conversion, true);
+  return applyConversionInternal(value, conversion, true);
 }

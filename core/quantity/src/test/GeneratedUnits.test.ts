@@ -39,6 +39,10 @@ function resolveUnitPhenomenon(name: string): string {
   throw new Error(`Cannot resolve phenomenon for schema item type ${item.schemaItemType}: ${name}`);
 }
 
+function normalizeGeneratedUnitKey(name: string): string {
+  return name === "M_PER_DAy" ? "M_PER_DAY" : name;
+}
+
 function expectedGroupedUnitNames(): Record<string, string[]> {
   const grouped = new Map<string, string[]>();
 
@@ -48,7 +52,7 @@ function expectedGroupedUnitNames(): Record<string, string[]> {
 
     const phenomenon = resolveUnitPhenomenon(name);
     const names = grouped.get(phenomenon) ?? [];
-    names.push(name);
+    names.push(normalizeGeneratedUnitKey(name));
     grouped.set(phenomenon, names);
   }
 
@@ -63,6 +67,7 @@ describe("Generated Units identifiers", () => {
   it("exposes representative canonical values", () => {
     expect(Units.LENGTH.M).toBe("Units.M");
     expect(Units.SLOPE.HORIZONTAL_PER_VERTICAL).toBe("Units.HORIZONTAL_PER_VERTICAL");
+    expect(Units.VELOCITY.M_PER_DAY).toBe("Units.M_PER_DAy");
     expect(Phenomena.LENGTH).toBe("Units.LENGTH");
     expect(UnitSystems.USCUSTOM).toBe("Units.USCUSTOM");
   });

@@ -20,7 +20,8 @@ type BasicUnitConversionEntry = readonly [
   invertsUnitName?: string,
 ];
 
-const basicUnitConversionLookup = basicUnitConversionData as Record<string, BasicUnitConversionEntry>;
+const basicUnitConversionLookup: Record<string, BasicUnitConversionEntry> =
+  basicUnitConversionData satisfies Record<string, BasicUnitConversionEntry>;
 
 function throwUnknownUnit(unitName: string): never {
   throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitName}".`);
@@ -87,10 +88,10 @@ function isCompatible(fromUnit: UnitName, toUnit: UnitName): boolean {
   return from[0] === to[0];
 }
 
-/** Returns the recommended built-in default persistence unit for a bundled built-in phenomenon.
+/** Returns the package's default built-in persistence unit for a supported bundled built-in phenomenon.
  *
  * This helper is intentionally limited to the built-in canonical unit set shipped with `@itwin/core-quantity`.
- * `Phenomena.LENGTH_RATIO` is intentionally excluded until the built-in default length-ratio unit is settled.
+ * `Phenomena.LENGTH_RATIO` is intentionally excluded because the bundled built-in unit set does not yet provide an agreed default for that phenomenon.
  * For schema-defined, custom, or iModel-specific persistence units, use a `UnitsProvider`-based workflow instead.
  *
  * @beta
@@ -103,6 +104,9 @@ export function getDefaultPersistenceUnit(
 
 /** One-stop unit conversion helpers for the built-in canonical unit set generated from `@bentley/units-schema`.
  * This surface is synchronous and only supports built-in canonical unit names shipped with `core-quantity`.
+ * `getConversion(...)` returns `UnitConversionProps` and uses `error: true` as the compatibility sentinel for known-but-incompatible built-in units.
+ * `convert(...)` and `convertValue(...)` are the throwing application helpers to use when invalid conversion metadata should fail fast.
+ * `isCompatible(...)` is the explicit built-in compatibility check to use before applying a conversion when a non-throwing branch is preferred.
  * For schema-defined, custom, or provider-resolved units outside that built-in set, use a `UnitsProvider`-based workflow instead.
  * Exported as a plain module value so related helpers are discoverable from one ESM/CJS-friendly surface
  * without introducing a TypeScript namespace or static utility class.

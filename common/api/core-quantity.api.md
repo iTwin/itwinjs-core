@@ -1669,7 +1669,7 @@ export const Units: {
         readonly KM_PER_HR: "Units.KM_PER_HR";
         readonly KM_PER_SEC: "Units.KM_PER_SEC";
         readonly KNOT_INTERNATIONAL: "Units.KNOT_INTERNATIONAL";
-        readonly M_PER_DAy: "Units.M_PER_DAy";
+        readonly M_PER_DAY: "Units.M_PER_DAy";
         readonly M_PER_HR: "Units.M_PER_HR";
         readonly M_PER_MIN: "Units.M_PER_MIN";
         readonly M_PER_SEC: "Units.M_PER_SEC";

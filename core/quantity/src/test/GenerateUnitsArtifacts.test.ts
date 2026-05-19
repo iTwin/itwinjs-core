@@ -7,22 +7,13 @@ import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { buildGeneratedBasicConversionModule, buildGeneratedDefaultPersistenceModule } = require("../../scripts/buildBasicUnitConversions") as {
-  buildGeneratedBasicConversionModule: (
-    schema: typeof unitsSchema,
-    assertUniqueGeneratedKeys: (entries: Array<{ key: string }>, description: string) => void,
-  ) => string;
-  buildGeneratedDefaultPersistenceModule: (
-    schema: typeof unitsSchema,
-    assertUniqueGeneratedKeys: (entries: Array<{ key: string }>, description: string) => void,
-  ) => string;
-};
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { buildGeneratedUnitsModule, buildSerializedUnitsJson } = require("../../scripts/generateUnitsJson") as {
-  buildGeneratedUnitsModule: (schema: typeof unitsSchema) => string;
-  buildSerializedUnitsJson: (schema: typeof unitsSchema, serializationVersion: string) => unknown;
-};
+import {
+  buildGeneratedBasicConversionModule,
+  buildGeneratedDefaultPersistenceModule,
+  buildGeneratedUnitsModule,
+  buildSerializedUnitsJson,
+} from "../../scripts/generatedModuleBuilders";
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
 
@@ -30,7 +21,7 @@ const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Un
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
 const generatedDefaultPersistenceSource = readFileSync(require.resolve("../internal/DefaultPersistenceUnits.generated.ts"), "utf8");
 
-function assertUniqueGeneratedKeys(entries: Array<{ key: string }>, description: string): void {
+function assertUniqueGeneratedKeys(entries: ReadonlyArray<{ key: string }>, description: string): void {
   const seen = new Set<string>();
   for (const entry of entries) {
     if (seen.has(entry.key))
@@ -67,6 +58,7 @@ describe("Generated Units artifacts", () => {
   it("emits representative canonical identifiers in the generated module", () => {
     expect(generatedIdentifiersSource).toContain('    M: "Units.M"');
     expect(generatedIdentifiersSource).toContain('    HORIZONTAL_PER_VERTICAL: "Units.HORIZONTAL_PER_VERTICAL"');
+    expect(generatedIdentifiersSource).toContain('    M_PER_DAY: "Units.M_PER_DAy"');
     expect(generatedIdentifiersSource).toContain('  LENGTH: "Units.LENGTH"');
     expect(generatedIdentifiersSource).toContain('  SI: "Units.SI"');
   });
@@ -103,6 +95,20 @@ describe("Generated Units artifacts", () => {
 
   it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
     expect(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedBasicConversionsSource);
+  });
+
+  it("fails generation when a unit numerator is zero", () => {
+    const invalidSchema = JSON.parse(JSON.stringify(unitsSchema)) as typeof unitsSchema;
+    (invalidSchema.items as Record<string, unknown>).FT = { ...invalidSchema.items.FT, numerator: 0 };
+
+    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid numerator for "FT"/);
+  });
+
+  it("fails generation when a unit denominator is zero", () => {
+    const invalidSchema = JSON.parse(JSON.stringify(unitsSchema)) as typeof unitsSchema;
+    (invalidSchema.items as Record<string, unknown>).FT = { ...invalidSchema.items.FT, denominator: 0 };
+
+    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid denominator for "FT"/);
   });
 
   it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {

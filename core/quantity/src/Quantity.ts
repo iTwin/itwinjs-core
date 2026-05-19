@@ -8,7 +8,7 @@
 
 import { QuantityError, QuantityStatus } from "./Exception";
 import { QuantityProps, UnitConversionProps, UnitProps } from "./Interfaces";
-import { applyConversionCore, convertValueOrThrow, almostEqual as internalAlmostEqual, almostZero as internalAlmostZero } from "./internal/UnitConversionMath";
+import { applyConversionInternal, convertValueOrThrow, almostEqual as internalAlmostEqual, almostZero as internalAlmostZero } from "./internal/UnitConversionMath";
 
 /**
  * Checks if two numbers are approximately equal within given relative tolerance.
@@ -82,13 +82,15 @@ export function almostZero(value: number): boolean {
 
 /**
  * Applies a unit conversion to a given value.
+ * Does not throw when `props.error === true`; callers are expected to have already handled that contract.
+ * For the throwing apply helper, use `UnitConversions.convertValue(...)`.
  * @param value - The value to be converted.
  * @param props - The unit conversion properties.
  * @returns The converted value.
  * @internal
  */
 export function applyConversion(value: number, props: UnitConversionProps): number {
-  return applyConversionCore(value, props, false);
+  return applyConversionInternal(value, props, false);
 }
 
 

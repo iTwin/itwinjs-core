@@ -42,7 +42,7 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 
 [Units]($quantity) includes bundled BIS `InvertedUnit` identifiers inside their natural phenomenon buckets, removing magic-string cases for ratio-style units such as `Units.HORIZONTAL_PER_VERTICAL`.
 
-The package also now exposes beta [getDefaultPersistenceUnit]($quantity) for the recommended built-in default persistence unit of a supported bundled phenomenon. `Phenomena.LENGTH_RATIO` is intentionally excluded from that helper until the built-in default length-ratio unit is settled.
+The package also now exposes beta [getDefaultPersistenceUnit]($quantity) for the package's default built-in persistence unit of a supported bundled phenomenon. `Phenomena.LENGTH_RATIO` is intentionally excluded from that helper because the bundled built-in unit set does not currently provide an agreed default for that phenomenon.
 
 Additionally, [Quantity.convertTo]($quantity) now throws [QuantityError]($quantity) with [QuantityStatus.InvalidUnitConversion]($quantity) when given `UnitConversionProps` marked with `error: true`, matching the newer [UnitConversions]($quantity) throwing helpers. Callers that previously relied on `convertTo(...)` silently applying identity math for invalid conversions should update to handle this error explicitly.
 

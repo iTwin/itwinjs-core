@@ -2,7 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UnitConversions, Units } from "@itwin/core-quantity";
+import { BasicUnitsProvider, Quantity, UnitConversions, Units } from "@itwin/core-quantity";
+
+// __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Direct_Conversion
+/** Request a conversion directly from a UnitsProvider. */
+export async function convertMetersToFeetWithProvider() {
+  const provider = new BasicUnitsProvider();
+
+  const fromUnit = await provider.findUnitByName(Units.LENGTH.M);
+  const toUnit = await provider.findUnitByName(Units.LENGTH.FT);
+  const conversion = await provider.getConversion(fromUnit, toUnit);
+
+  return new Quantity(fromUnit, 1).convertTo(toUnit, conversion);
+}
+// __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Quantity_UnitConversion.Convert
 /** Convert a built-in canonical unit value synchronously. */

@@ -6,10 +6,10 @@ import type { UnitProps, UnitsProvider } from "./Interfaces";
 import type { SerializedUnitSchema } from "./SerializedUnitSchema";
 import { BadUnit } from "./Unit";
 import { getBasicUnitConversion } from "./internal/BasicUnitConversionData";
-import { _testResetBasicUnitsResolvedStateCache, resolveBasicUnitsResolvedState } from "./internal/BasicUnitsResolvedStateCache";
+import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData } from "./internal/BasicUnitsResolvedStateCache";
 
 async function resolveState() {
-  return resolveBasicUnitsResolvedState(async () => {
+  return resolveBasicUnitsData(async () => {
     // First caller pays the dynamic-import + schema-index build cost.
     // Concurrent callers await the same promise, and later callers reuse the resolved state.
     const { default: schema } = await import("./assets/Units.json");
@@ -19,7 +19,7 @@ async function resolveState() {
 
 /** @internal — test use only. Resets the shared module-level lazy cache. */
 export function _testResetUnitsCache(): void {
-  _testResetBasicUnitsResolvedStateCache();
+  _testResetResolvedBasicUnitsDataCache();
 }
 
 /**
@@ -28,6 +28,10 @@ export function _testResetUnitsCache(): void {
  * The bundled JSON is loaded lazily via dynamic `import()` on the first provider call and cached
  * at module scope — construction is essentially free, and multiple instances
  * share the same immutable lookup indexes.
+ *
+ * If that initial schema load fails, later provider calls will rethrow the same cached error for
+ * the lifetime of the module rather than retrying automatically. This is not expected in normal
+ * use; it primarily surfaces a broken asset load or module-resolution problem.
  *
  * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
  * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.

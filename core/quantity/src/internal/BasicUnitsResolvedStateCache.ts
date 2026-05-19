@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import type { SerializedUnitSchema } from "../SerializedUnitSchema";
-import { type BasicUnitsResolvedState, buildBasicUnitsResolvedState } from "./BasicUnitConversionData";
+import { buildResolvedBasicUnitsData, type ResolvedBasicUnitsData } from "./BasicUnitConversionData";
 
 // Shared module-level cache for the built-in basic-units indexes used by BasicUnitsProvider.
-let _resolvedState: BasicUnitsResolvedState | undefined;
-let _resolvePromise: Promise<BasicUnitsResolvedState> | undefined;
+let _resolvedData: ResolvedBasicUnitsData | undefined;
+let _resolvePromise: Promise<ResolvedBasicUnitsData> | undefined;
+// Cache the first load/build failure so later callers observe the same module-level failure
+// instead of silently retrying with a different partial-initialization state.
 let _permanentError: Error | undefined;
 
 function rememberFailure(err: unknown): never {
@@ -16,21 +18,21 @@ function rememberFailure(err: unknown): never {
   throw _permanentError;
 }
 
-/** Returns the shared resolved state for the built-in basic units, loading/building it asynchronously if needed.
+/** Returns the shared resolved data for the built-in basic units, loading/building it asynchronously if needed.
  * @internal
  */
-export async function resolveBasicUnitsResolvedState(loadSchema: () => Promise<SerializedUnitSchema>): Promise<BasicUnitsResolvedState> {
+export async function resolveBasicUnitsData(loadSchema: () => Promise<SerializedUnitSchema>): Promise<ResolvedBasicUnitsData> {
   if (_permanentError !== undefined)
     throw _permanentError;
 
-  if (_resolvedState !== undefined)
-    return _resolvedState;
+  if (_resolvedData !== undefined)
+    return _resolvedData;
 
   if (_resolvePromise === undefined) {
     _resolvePromise = loadSchema()
       .then((schema) => {
-        _resolvedState ??= buildBasicUnitsResolvedState(schema);
-        return _resolvedState;
+        _resolvedData ??= buildResolvedBasicUnitsData(schema);
+        return _resolvedData;
       })
       .catch(rememberFailure);
   }
@@ -42,8 +44,8 @@ export async function resolveBasicUnitsResolvedState(loadSchema: () => Promise<S
  * This stays in source rather than under a test folder because the public test seam
  * `BasicUnitsProvider._testResetUnitsCache()` lives in source and delegates here.
  */
-export function _testResetBasicUnitsResolvedStateCache(): void {
-  _resolvedState = undefined;
+export function _testResetResolvedBasicUnitsDataCache(): void {
+  _resolvedData = undefined;
   _resolvePromise = undefined;
   _permanentError = undefined;
 }

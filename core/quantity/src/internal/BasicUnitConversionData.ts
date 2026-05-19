@@ -12,7 +12,7 @@ interface IndexedUnit {
   readonly resolved: ResolvedUnit;
 }
 
-interface InvertedEntry {
+interface InvertedUnitSourceEntry {
   readonly props: UnitProps;
   readonly invertsUnitName: string;
 }
@@ -20,22 +20,22 @@ interface InvertedEntry {
 /** Immutable lookup indexes resolved from the bundled Units schema data.
  * @internal
  */
-export interface BasicUnitsResolvedState {
+export interface ResolvedBasicUnitsData {
   readonly nameMap: Map<string, IndexedUnit>;
   readonly labelMap: Map<string, IndexedUnit[]>;
   readonly phenomenonMap: Map<string, IndexedUnit[]>;
-  readonly invertedUnits: Map<string, InvertedEntry>;
+  readonly invertedUnitSources: Map<string, InvertedUnitSourceEntry>;
   readonly schemaName: string;
 }
 
 /** Builds lookup indexes and conversion metadata from a serialized Units schema.
  * @internal
  */
-export function buildBasicUnitsResolvedState(schema: SerializedUnitSchema): BasicUnitsResolvedState {
+export function buildResolvedBasicUnitsData(schema: SerializedUnitSchema): ResolvedBasicUnitsData {
   const nameMap = new Map<string, IndexedUnit>();
   const labelMap = new Map<string, IndexedUnit[]>();
   const phenomenonMap = new Map<string, IndexedUnit[]>();
-  const invertedUnits = new Map<string, InvertedEntry>();
+  const invertedUnitSources = new Map<string, InvertedUnitSourceEntry>();
 
   const resolver = new UnitDefinitionResolver(schema);
   const resolved = resolver.resolveAll();
@@ -88,7 +88,7 @@ export function buildBasicUnitsResolvedState(schema: SerializedUnitSchema): Basi
       system: unitSystem,
     };
 
-    invertedUnits.set(fullName, { props, invertsUnitName: invertsName });
+    invertedUnitSources.set(fullName, { props, invertsUnitName: invertsName });
 
     if (invertedSource) {
       const indexed: IndexedUnit = {
@@ -108,7 +108,7 @@ export function buildBasicUnitsResolvedState(schema: SerializedUnitSchema): Basi
     }
   }
 
-  return { nameMap, labelMap, phenomenonMap, invertedUnits, schemaName: schema.name };
+  return { nameMap, labelMap, phenomenonMap, invertedUnitSources, schemaName: schema.name };
 }
 
 /** Computes `UnitConversionProps` metadata between two units from the resolved basic-units state.
@@ -116,7 +116,7 @@ export function buildBasicUnitsResolvedState(schema: SerializedUnitSchema): Basi
  * `UnitConversions.convertValue(...)` or other higher-level helpers rather than using the raw factors directly.
  * @internal
  */
-export function getBasicUnitConversion(state: BasicUnitsResolvedState, fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps {
+export function getBasicUnitConversion(state: ResolvedBasicUnitsData, fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps {
   const from = state.nameMap.get(fromUnit.name);
   const to = state.nameMap.get(toUnit.name);
 
@@ -124,8 +124,8 @@ export function getBasicUnitConversion(state: BasicUnitsResolvedState, fromUnit:
     return { factor: 1.0, offset: 0.0, error: true };
   }
 
-  const fromInverted = state.invertedUnits.get(fromUnit.name);
-  const toInverted = state.invertedUnits.get(toUnit.name);
+  const fromInverted = state.invertedUnitSources.get(fromUnit.name);
+  const toInverted = state.invertedUnitSources.get(toUnit.name);
 
   const fromPhenomenon = fromInverted
     ? state.nameMap.get(fromInverted.invertsUnitName)?.props.phenomenon
