@@ -18,7 +18,7 @@ PRAGMA help
 | help                          | global | return list of pragma supported                                                 |
 | integrity_check               | global | performs integrity checks on ECDb                                               |
 | parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                                   |
-| schema_view                   | global | returns all schema metadata as a binary blob                                    |
+| schema_view                   | global | returns a curated subset of schema metadata as a binary blob                    |
 | disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                          |
 
 ## `PRAGMA checksum`
@@ -205,7 +205,7 @@ PRAGMA parse_tree ('SELECT ECClassId, CodeValue FROM bis.GeometricElement3d') EC
 
 ## `PRAGMA schema_view`
 
-Returns all EC schema metadata from the connection as a single compact binary blob. This is used internally by `SchemaView` to hydrate a lightweight, read-only schema cache in a single round-trip instead of loading each schema individually.
+Returns a curated subset of EC schema metadata from the connection as a single compact binary blob. This is used internally by `SchemaView` to hydrate a lightweight, read-only schema cache in a single round-trip instead of loading each schema individually. The subset is described in [SchemaView - What is included / excluded](../metadata/SchemaView.md#what-is-included).
 
 The pragma accepts an optional integer argument to select the binary format version. When omitted, the latest supported version is returned (currently v1).
 

@@ -2,7 +2,7 @@
 
 Every iModel includes the [ECDbMeta](../ECDbMeta.ecschema.md) ECSchema. It exposes the content of all schemas that the iModel contains. You can therefore use ECSQL against that schema to query for schemas, classes, properties etc.
 
-> For bulk traversal and repeated lookups rather than targeted SQL queries, consider [SchemaView](../metadata/SchemaView.md) which loads all schemas in a single call with synchronous access.
+> For bulk traversal and repeated lookups rather than targeted SQL queries, consider [SchemaView](../metadata/SchemaView.md) which loads a curated subset of schema metadata in a single call and provides synchronous access.
 
 ## Schema discovery workflow
 
