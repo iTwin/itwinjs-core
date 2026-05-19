@@ -73,7 +73,6 @@ public;class;ClipVector
 public;type;ClipVectorProps
 public;interface;Cloneable
 deprecated;interface;Cloneable
-public;interface;CloseApproachOptions
 internal;class;ClusterableArray
 internal;function;compareRange1dLexicalLowHigh
 internal;class;Complex
@@ -94,6 +93,7 @@ public;class;CurveCollection
 public;type;CurveCollectionType
 public;class;CurveCurve
 public;enum;CurveCurveApproachType
+public;interface;CurveCurveOptions
 public;enum;CurveExtendMode
 public;class;CurveExtendOptions
 public;class;CurveFactory

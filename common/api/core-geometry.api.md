@@ -1311,13 +1311,6 @@ export interface Cloneable<T> {
     clone(): T | undefined;
 }
 
-// @public
-export interface CloseApproachOptions {
-    maxDistance?: number;
-    newtonMaxIterations?: number;
-    newtonTolerance?: number;
-}
-
 // @internal
 export class ClusterableArray extends GrowableBlockedArray {
     constructor(numCoordinatePerPoint: number, numExtraDataPerPoint: number, initialBlockCapacity: number);
@@ -1709,8 +1702,8 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 // @public
 export class CurveCurve {
     static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance?: number): CurveLocationDetailPair[];
-    static closeApproachProjectedXYPairs(curveA: AnyCurve, curveB: AnyCurve, maxDistanceOrOptions: number | CloseApproachOptions): CurveLocationDetailPair[];
-    static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve, options?: CloseApproachOptions): CurveLocationDetailPair | undefined;
+    static closeApproachProjectedXYPairs(curveA: AnyCurve, curveB: AnyCurve, maxDistanceOrOptions?: number | CurveCurveOptions): CurveLocationDetailPair[];
+    static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve, options?: CurveCurveOptions): CurveLocationDetailPair | undefined;
     static intersectionProjectedXYPairs(worldToLocal: Matrix4d | undefined, curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     static intersectionXYPairs(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     static intersectionXYZPairs(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean): CurveLocationDetailPair[];
@@ -1722,6 +1715,14 @@ export enum CurveCurveApproachType {
     Intersection = 0,
     ParallelGeometry = 3,
     PerpendicularChord = 1
+}
+
+// @public
+export interface CurveCurveOptions {
+    maxDistance?: number;
+    maxIterations?: number;
+    newtonTolerance?: number;
+    xyTolerance?: number;
 }
 
 // @public
