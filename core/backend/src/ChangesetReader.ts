@@ -239,7 +239,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String, spillThresholdInBytes?: number },
   ): ChangesetReader {
     const reader = new ChangesetReader(args.db);
-    reader._rowOptions = args.rowOptions ?? {};
+    reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
     try {

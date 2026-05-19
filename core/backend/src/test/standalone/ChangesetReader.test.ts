@@ -4471,6 +4471,40 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
     drawingCategoryId: Id64String;
   }
 
+  const TEST_DOMAIN_SCHEMA = `<?xml version="1.0" encoding="UTF-8"?>
+  <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+      <ECStructClass typeName="RichPoint" modifier="Sealed">
+          <ECProperty propertyName="X"     typeName="double"/>
+          <ECProperty propertyName="Y"     typeName="double"/>
+          <ECProperty propertyName="Z"     typeName="double"/>
+          <ECProperty propertyName="Label" typeName="string"/>
+          <ECProperty propertyName="Pt2d"  typeName="point2d"/>
+          <ECProperty propertyName="Pt3d"  typeName="point3d"/>
+      </ECStructClass>
+      <ECRelationshipClass typeName="Test2dUsesElement" strength="referencing" modifier="None">
+          <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true"><Class class="Test2dElement"/></Source>
+          <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true"><Class class="bis:Element"/></Target>
+      </ECRelationshipClass>
+      <ECEntityClass typeName="Test2dElement">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="StrProp"        typeName="string"/>
+          <ECProperty propertyName="IntProp"        typeName="int"/>
+          <ECProperty propertyName="LongProp"       typeName="long"/>
+          <ECProperty propertyName="DblProp"        typeName="double"/>
+          <ECProperty propertyName="BoolProp"       typeName="boolean"/>
+          <ECProperty propertyName="DtProp"         typeName="dateTime"/>
+          <ECProperty propertyName="BinProp"        typeName="binary"/>
+          <ECProperty propertyName="Pt2dProp"       typeName="point2d"/>
+          <ECProperty propertyName="Pt3dProp"       typeName="point3d"/>
+          <ECStructProperty      propertyName="StructProp"    typeName="RichPoint"/>
+          <ECArrayProperty       propertyName="IntArrProp"    typeName="int"       minOccurs="0" maxOccurs="unbounded"/>
+          <ECArrayProperty       propertyName="StrArrProp"    typeName="string"    minOccurs="0" maxOccurs="unbounded"/>
+          <ECStructArrayProperty propertyName="StructArrProp" typeName="RichPoint" minOccurs="0" maxOccurs="unbounded"/>
+          <ECNavigationProperty propertyName="RelatedElem" relationshipName="Test2dUsesElement" direction="forward"/>
+      </ECEntityClass>
+  </ECSchema>`;
+
   /** Boots HubMock, opens a briefcase, starts a txn, and tears everything down after `fn` resolves or throws. */
   async function withSpillTestIModel(
     hubName: string,
@@ -4493,9 +4527,10 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
     }
   }
 
-  /** Pushes a drawing model + category as an initial setup changeset. Returns the ids. */
+  /** Imports TestDomain schema and pushes a drawing model + category as an initial setup changeset. Returns the ids. */
   async function pushInitialModelSetup(ctx: SpillTestContext, catName: string): Promise<ModelSetup> {
     const { rwIModel, txn, adminToken } = ctx;
+    await importSchemaStrings(txn, [TEST_DOMAIN_SCHEMA]);
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
     const drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, catName,
@@ -4505,13 +4540,38 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
     return { drawingModelId, drawingCategoryId };
   }
 
-  /** Inserts a single BisCore:DrawingGraphic into the given model. */
-  function insertDrawingGraphic(txn: EditTxn, drawingModelId: Id64String, drawingCategoryId: Id64String): void {
-    txn.insertElement({
-      classFullName: "BisCore:DrawingGraphic",
+  /** Inserts a TestDomain:Test2dElement with all EC primitive types populated and returns its id. */
+  function insertTestElement(txn: EditTxn, drawingModelId: Id64String, drawingCategoryId: Id64String): Id64String {
+    const geom: GeometryStreamProps = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+    ].map((a) => IModelJson.Writer.toIModelJson(a));
+    return txn.insertElement({
+      classFullName: "TestDomain:Test2dElement",
       model: drawingModelId,
       category: drawingCategoryId,
       code: Code.createEmpty(),
+      geom,
+      StrProp: "hello",
+      IntProp: 42,
+      LongProp: 9_007_199_254_740_991,
+      DblProp: 3.14159265358979,
+      BoolProp: true,
+      DtProp: "2024-01-15T12:00:00.000",
+      BinProp: new Uint8Array([1, 2, 3, 4]),
+      Pt2dProp: { x: 1.5, y: 2.5 },
+      Pt3dProp: { x: 3.0, y: 4.0, z: 5.0 },
+      StructProp: {
+        X: 1.0, Y: 2.0, Z: 3.0, Label: "origin",
+        Pt2d: { x: 0.5, y: 0.5 },
+        Pt3d: { x: 1.0, y: 2.0, z: 3.0 },
+      },
+      IntArrProp: [10, 20, 30],
+      StrArrProp: ["alpha", "beta", "gamma"],
+      StructArrProp: [
+        { X: 0.0, Y: 1.0, Z: 2.0, Label: "a", Pt2d: { x: 0.0, y: 0.0 }, Pt3d: { x: 0.0, y: 0.0, z: 0.0 } },
+        { X: 3.0, Y: 4.0, Z: 5.0, Label: "b", Pt2d: { x: 1.0, y: 1.0 }, Pt3d: { x: 1.0, y: 1.0, z: 1.0 } },
+      ],
+      RelatedElem: { id: drawingCategoryId, relClassName: "TestDomain:Test2dUsesElement" },
     } as any);
   }
 
@@ -4530,16 +4590,119 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
     );
   }
 
-  /** Asserts that spill instances are non-empty and identical to the default instances after sorting. */
-  function assertSpillEquivalence(defaultInstances: ChangeInstance[], spillInstances: ChangeInstance[]): void {
-    const identityKeys = new Set(["ECInstanceId", "ECClassId", "$meta"]);
-    const hasExtraProps = (instances: ChangeInstance[]) =>
-      instances.some((inst) => Object.keys(inst).some((k) => !identityKeys.has(k)));
-
+  /**
+   * Asserts that spill instances are non-empty, verifies the DrawingModel indirect-update fields
+   * and every field of each inserted Test2dElement one by one, then confirms the spill output is
+   * bit-for-bit identical to the default output.
+   */
+  function assertSpillEquivalence(
+    iModel: BriefcaseDb,
+    defaultInstances: ChangeInstance[],
+    spillInstances: ChangeInstance[],
+    elementIds: Id64String[],
+    drawingModelId: Id64String,
+    drawingCategoryId: Id64String,
+    isModelUpdated: boolean
+  ): void {
     expect(defaultInstances.length).to.be.greaterThan(0, "defaultInstances should be non-empty");
     expect(spillInstances.length).to.be.greaterThan(0, "spillInstances should be non-empty");
-    assert.isTrue(hasExtraProps(defaultInstances), "defaultInstances: expected at least one instance with properties beyond ECInstanceId, ECClassId, and $meta");
-    assert.isTrue(hasExtraProps(spillInstances), "spillInstances: expected at least one instance with properties beyond ECInstanceId, ECClassId, and $meta");
+
+    if (isModelUpdated) {
+      // --- DrawingModel Updated New (indirect side-effect of element insert) ---
+      const modelNew = spillInstances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+      expect(modelNew).to.exist;
+      assert.equal(modelNew!.ECInstanceId, drawingModelId);
+      assert.equal(iModel.getClassNameFromId(modelNew!.ECClassId), "BisCore:DrawingModel");
+      assert.isString(modelNew!.LastMod);
+      assert.isString(modelNew!.GeometryGuid);
+      assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+      assert.equal(modelNew!.$meta.op, "Updated");
+      assert.equal(modelNew!.$meta.stage, "New");
+      assert.deepEqual([...modelNew!.$meta.tables].sort(), ["bis_Model"].sort());
+      expect([...modelNew!.$meta.changeIndexes].length).to.be.greaterThan(0);
+      assert.isString(modelNew!.$meta.instanceKey);
+      assert.equal(modelNew!.$meta.instanceKey.split("-").length, 2);
+      assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
+      assert.deepEqual([...modelNew!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+      assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+      // --- DrawingModel Updated Old ---
+      const modelOld = spillInstances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+      expect(modelOld).to.exist;
+      assert.equal(modelOld!.ECInstanceId, drawingModelId);
+      assert.equal(iModel.getClassNameFromId(modelOld!.ECClassId), "BisCore:DrawingModel");
+      assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+      assert.equal(modelOld!.$meta.op, "Updated");
+      assert.equal(modelOld!.$meta.stage, "Old");
+      assert.deepEqual([...modelOld!.$meta.tables].sort(), ["bis_Model"].sort());
+      expect([...modelOld!.$meta.changeIndexes].length).to.be.greaterThan(0);
+      assert.isString(modelOld!.$meta.instanceKey);
+      assert.equal(modelOld!.$meta.instanceKey.split("-").length, 2);
+      assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
+      assert.deepEqual([...modelOld!.$meta.changeFetchedPropNames].sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+      assert.equal(modelOld!.$meta.isIndirectChange, true);
+    }
+
+    // --- Test2dElement Inserted New — assert every field for each inserted element ---
+    for (const elementId of elementIds) {
+      const elem = spillInstances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+      expect(elem).to.exist;
+      assert.equal(elem!.ECInstanceId, elementId);
+      assert.equal(iModel.getClassNameFromId(elem!.ECClassId), "TestDomain:Test2dElement");
+      assert.equal(elem!.Model.Id, drawingModelId);
+      assert.equal(iModel.getClassNameFromId(elem!.Model.RelECClassId), "BisCore:ModelContainsElements");
+      assert.isString(elem!.LastMod);
+      assert.equal(elem!.CodeSpec.Id, "0x1");
+      assert.equal(iModel.getClassNameFromId(elem!.CodeSpec.RelECClassId), "BisCore:CodeSpecSpecifiesCode");
+      assert.equal(elem!.CodeScope.Id, "0x1");
+      assert.equal(iModel.getClassNameFromId(elem!.CodeScope.RelECClassId), "BisCore:ElementScopesCode");
+      assert.isString(elem!.FederationGuid);
+      assert.equal(elem!.Category.Id, drawingCategoryId);
+      assert.equal(iModel.getClassNameFromId(elem!.Category.RelECClassId), "BisCore:GeometricElement2dIsInCategory");
+      assert.deepEqual(elem!.Origin, { X: 0, Y: 0 });
+      assert.equal(elem!.Rotation, 0);
+      assert.deepEqual(elem!.BBoxLow, { X: -5, Y: -5 });
+      assert.deepEqual(elem!.BBoxHigh, { X: 5, Y: 5 });
+      assert.include(String(elem!.GeometryStream), "\"bytes\"");
+      assert.include(String(elem!.BinProp), "\"bytes\"");
+      assert.equal(elem!.StrProp, "hello");
+      assert.equal(elem!.IntProp, 42);
+      assert.equal(elem!.LongProp, 9007199254740991);
+      assert.closeTo(elem!.DblProp as number, 3.14159265358979, 1e-10);
+      assert.equal(elem!.BoolProp, true);
+      assert.equal(elem!.DtProp, "2024-01-15T12:00:00.000");
+      assert.deepEqual(elem!.Pt2dProp, { X: 1.5, Y: 2.5 });
+      assert.deepEqual(elem!.Pt3dProp, { X: 3, Y: 4, Z: 5 });
+      assert.deepEqual(elem!.StructProp, { X: 1, Y: 2, Z: 3, Label: "origin", Pt2d: { X: 0.5, Y: 0.5 }, Pt3d: { X: 1, Y: 2, Z: 3 } });
+      assert.deepEqual(elem!.IntArrProp, [10, 20, 30]);
+      assert.deepEqual(elem!.StrArrProp, ["alpha", "beta", "gamma"]);
+      assert.deepEqual(elem!.StructArrProp, [
+        { X: 0, Y: 1, Z: 2, Label: "a", Pt2d: { X: 0, Y: 0 }, Pt3d: { X: 0, Y: 0, Z: 0 } },
+        { X: 3, Y: 4, Z: 5, Label: "b", Pt2d: { X: 1, Y: 1 }, Pt3d: { X: 1, Y: 1, Z: 1 } },
+      ]);
+      assert.equal(elem!.RelatedElem.Id, drawingCategoryId);
+      assert.equal(iModel.getClassNameFromId(elem!.RelatedElem.RelECClassId), "TestDomain:Test2dUsesElement");
+      assert.deepEqual(Object.keys(elem!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+      assert.equal(elem!.$meta.op, "Inserted");
+      assert.equal(elem!.$meta.stage, "New");
+      assert.deepEqual([...elem!.$meta.tables].sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
+      expect([...elem!.$meta.changeIndexes].length).to.be.greaterThan(0);
+      assert.isString(elem!.$meta.instanceKey);
+      assert.equal(elem!.$meta.instanceKey.split("-").length, 2);
+      assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
+      assert.deepEqual([...elem!.$meta.changeFetchedPropNames].sort(), [
+        "BBoxHigh", "BBoxLow", "BinProp", "BoolProp", "Category.Id", "CodeScope.Id",
+        "CodeSpec.Id", "CodeValue", "DblProp", "DtProp", "ECClassId", "ECInstanceId",
+        "FederationGuid", "GeometryStream", "IntArrProp", "IntProp", "JsonProperties",
+        "LastMod", "LongProp", "Model.Id", "Origin", "Parent", "Pt2dProp", "Pt3dProp",
+        "RelatedElem", "Rotation", "StrArrProp", "StrProp", "StructArrProp", "StructProp.Label",
+        "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X", "StructProp.Y", "StructProp.Z",
+        "TypeDefinition", "UserLabel",
+      ].sort());
+      assert.equal(elem!.$meta.isIndirectChange, false);
+    }
+
+    // --- spill output must exactly match default output ---
     assert.deepEqual(sortInstances(spillInstances), sortInstances(defaultInstances));
   }
 
@@ -4553,25 +4716,30 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
 
       // Push 1: insert element 1
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      const element1Id = insertTestElement(txn, drawingModelId, drawingCategoryId);
       txn.saveChanges("insert element 1");
       await rwIModel.pushChanges({ description: "changeset 1: element 1", accessToken: adminToken });
 
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
 
       // Push 2: insert element 2
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      const element2Id = insertTestElement(txn, drawingModelId, drawingCategoryId);
       txn.saveChanges("insert element 2");
       await rwIModel.pushChanges({ description: "changeset 2: element 2", accessToken: adminToken });
 
       const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
       const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
-      assert.isAtLeast(changesets.length, 2);
-      const changesetPaths = changesets.map((cs) => cs.pathname);
+      assert.equal(changesets.length, 3);
+      const changesetPaths = changesets.slice(1).map((cs) => cs.pathname); // The insert element changesets are the 2nd and 3rd changesets (1st is the initial setup)
 
       assertSpillEquivalence(
+        rwIModel,
         drainReader(ChangesetReader.openGroup({ db: rwIModel, changesetFiles: changesetPaths })),
         drainReader(ChangesetReader.openGroup({ db: rwIModel, changesetFiles: changesetPaths, spillThresholdInBytes: 1 })),
+        [element1Id, element2Id],
+        drawingModelId,
+        drawingCategoryId,
+        true
       );
     });
   });
@@ -4586,17 +4754,22 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
 
       // Txn 1: insert element 1 (an earlier local txn)
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      insertTestElement(txn, drawingModelId, drawingCategoryId);
       txn.saveChanges("insert element 1");
 
       // Txn 2: insert element 2 — the last txn, whose id is used for openTxn
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      const element2Id = insertTestElement(txn, drawingModelId, drawingCategoryId);
       txn.saveChanges("insert element 2");
       const lastTxnId = rwIModel.txns.getLastSavedTxnProps()!.id;
 
       assertSpillEquivalence(
+        rwIModel,
         drainReader(ChangesetReader.openTxn({ db: rwIModel, txnId: lastTxnId })),
         drainReader(ChangesetReader.openTxn({ db: rwIModel, txnId: lastTxnId, spillThresholdInBytes: 1 })),
+        [element2Id],
+        drawingModelId,
+        drawingCategoryId,
+        true
       );
     });
   });
@@ -4611,16 +4784,21 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
 
       // Local txn 1: saved but not pushed
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      const element1Id = insertTestElement(txn, drawingModelId, drawingCategoryId);
       txn.saveChanges("local insert 1");
 
       // Local txn 2: saved but not pushed
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      const element2Id = insertTestElement(txn, drawingModelId, drawingCategoryId);
       txn.saveChanges("local insert 2");
 
       assertSpillEquivalence(
+        rwIModel,
         drainReader(ChangesetReader.openLocalChanges({ db: rwIModel })),
         drainReader(ChangesetReader.openLocalChanges({ db: rwIModel, spillThresholdInBytes: 1 })),
+        [element1Id, element2Id],
+        drawingModelId,
+        drawingCategoryId,
+        true
       );
     });
   });
@@ -4635,11 +4813,16 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
       await rwIModel.locks.acquireLocks({ shared: drawingModelId });
 
       // Insert without saveChanges — read raw in-memory changes
-      insertDrawingGraphic(txn, drawingModelId, drawingCategoryId);
+      const elementId = insertTestElement(txn, drawingModelId, drawingCategoryId);
 
       assertSpillEquivalence(
+        rwIModel,
         drainReader(ChangesetReader.openInMemoryChanges({ db: rwIModel })),
         drainReader(ChangesetReader.openInMemoryChanges({ db: rwIModel, spillThresholdInBytes: 1 })),
+        [elementId],
+        drawingModelId,
+        drawingCategoryId,
+        false // saveChanges is not called, so DrawingModel should not be updated and thus no indirect changes
       );
     });
   });
