@@ -52,6 +52,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * `true` when the current row belongs to an EC-mapped table.
    * Valid only after a successful call to [[step]].
+   * @throws [[IModelError]] if called before a successful [[step]] call.
    * @beta
    */
   public get isECTable(): boolean {
@@ -63,6 +64,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Name of the SQLite table for the current change row.
    * Valid only after a successful call to [[step]].
+   * @throws [[IModelError]] if called before a successful [[step]] call.
    * @beta
    */
   public get tableName(): string {
@@ -74,6 +76,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * `true` when the current change was applied indirectly
    * Valid only after a successful call to [[step]].
+   * @throws [[IModelError]] if called before a successful [[step]] call.
    * @beta
    */
   public get isIndirectChange(): boolean {
@@ -122,6 +125,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @param args.invert When `true`, invert all operations (Insert↔Delete).
    * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
+   * @throws if the native layer fails to open the file.
    * @beta
    */
   public static openFile(args: { readonly fileName: string } & ChangesetReaderArgs): ChangesetReader {
@@ -149,6 +153,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
    * This keeps peak memory usage bounded, making the API suitable for processing large changeset groups under low-memory conditions.
    * Defaults to 50 MiB.
+   * @throws if `changesetFiles` is empty, or if the native layer fails to open
+   * the group.
    * @beta
    */
   public static openGroup(args: { readonly changesetFiles: string[], spillThresholdInBytes?: number } & ChangesetReaderArgs): ChangesetReader {
@@ -178,6 +184,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
    * This keeps peak memory usage bounded, making the API suitable for iModels with large local change backlogs under low-memory conditions.
    * Defaults to 50 MiB.
+   * @throws if the native layer
+   * fails to open the local changes.
    * @beta
    */
   public static openLocalChanges(
@@ -205,6 +213,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
    * This keeps peak memory usage bounded, making the API suitable for large in-memory transactions under low-memory conditions.
    * Defaults to 50 MiB.
+   * @throws if the native layer encounters an error while opening the in-memory changes.
    * @beta
    */
   public static openInMemoryChanges(
@@ -233,6 +242,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
    * This keeps peak memory usage bounded, making the API suitable for large transactions under low-memory conditions.
    * Defaults to 50 MiB.
+   * @throws if `txnId` is not found, or
+   * the native layer fails to open the transaction data.
    * @beta
    */
   public static openTxn(
@@ -272,6 +283,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * That means the rows for changes from other tables will be skipped entirely and won't be visible through the reader.
    * @param tableNames SQLite table names to include.
    * Note: Table names must be provided in the correct case for proper filtering.
+   * @throws [[IModelError]] if the native layer encounters an error while setting the filter.
    * @beta
    */
   public setTableNameFilters(tableNames: Set<string>): void {
@@ -282,6 +294,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Restrict iteration to changes with the given operation types.
    * That means the rows for changes with other operation types will be skipped entirely and won't be visible through the reader.
    * @param ops Operations to include.
+   * @throws [[IModelError]] if the native layer encounters an error while setting the filter.
    * @beta
    */
   public setOpCodeFilters(ops: Set<SqliteChangeOp>): void {
@@ -293,6 +306,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * That means the rows for changes from other EC classes will be skipped entirely and won't be visible through the reader.
    * @param classNames EC class names to include. The classNames should be in the full name format(i.e. "SchemaName:ClassName").
    * Note: Schema names and class names must be provided in the correct case for proper filtering. Derived classes are not automatically included, so they must be specified explicitly if needed.
+   * @throws if the native layer encounters an error while setting the filter.
    * @beta
    */
   public setClassNameFilters(classNames: Set<string>): void {
@@ -301,6 +315,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
 
   /**
    * Remove the table-name filters
+   * @throws if the native layer encounters an error.
    * @beta
    */
   public clearTableNameFilters(): void {
@@ -309,6 +324,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
 
   /**
    * Remove the op-code filters
+   * @throws if the native layer encounters an error.
    * @beta
    */
   public clearOpCodeFilters(): void {
@@ -317,6 +333,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
 
   /**
    * Remove the class-name filters
+   * @throws if the native layer encounters an error.
    * @beta
    */
   public clearClassNameFilters(): void {
@@ -330,6 +347,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Advance to the next change and populate `inserted` and/or `deleted`.
    * @returns `true` while positioned on a valid change; `false` when the stream is exhausted.
+   * @throws if the native layer encounters an error while reading or decoding
+   * the next change.
    * @beta
    */
   public step(): boolean {
@@ -402,6 +421,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * SQLite opcode of the current change.
    * Valid only after a successful call to [[step]].
+   * @throws [[IModelError]] if called before a successful [[step]] call.
    * @beta
    */
   public get op(): SqliteChangeOp {
@@ -416,7 +436,19 @@ export class ChangesetReader implements Disposable, ChangeSource {
 
   /**
    * Close the reader and release all native resources.
-   * @throws if the native layer encounters an error during cleanup.
+   *
+   * @throws if the native layer encounters an error during cleanup. Native resources
+   * may not have been fully released when this throws — check the native error
+   * logs for details.
+   *
+   * @note When calling `close()` (or `[Symbol.dispose]()`) manually inside a
+   * `finally` block alongside other disposables, nest the calls so a throw from
+   * the first does not skip the rest:
+   * ```ts
+   * try { reader.close(); } finally { pcu[Symbol.dispose](); }
+   * ```
+   * The `using` declaration avoids this entirely — the TypeScript runtime
+   * disposes each binding independently.
    * @beta
    */
   public close(): void {
@@ -431,8 +463,32 @@ export class ChangesetReader implements Disposable, ChangeSource {
   }
 
   /**
-   * Implements the `Disposable` contract — calls [[close]].
-   * @throws if [[close]] throws.
+   * Implements the `Disposable` contract — delegates to [[close]].
+   *
+   * @throws if the native layer fails to release its resources (re-thrown from [[close]]).
+   *
+   * **`SuppressedError` when used with `using`:** If the body of a `using` block
+   * throws *and* `[Symbol.dispose]()` also throws, the TypeScript runtime wraps
+   * both into a
+   * [`SuppressedError`](https://tc39.es/proposal-explicit-resource-management/#sec-suppressederror-objects)
+   * rather than propagating both independently:
+   *
+   * ```ts
+   * // .error      — the disposal error (what actually propagates)
+   * // .suppressed — the original body error (buried inside)
+   * try {
+   *   using reader = ChangesetReader.openFile({ db, fileName });
+   *   while (reader.step()) { ... } // throws BodyError
+   *   // reader is disposed here automatically — also throws CloseError
+   * } catch (err) {
+   *   if (err instanceof SuppressedError) {
+   *     console.error("disposal failed:", err.error);      // CloseError
+   *     console.error("original error:", err.suppressed);  // BodyError
+   *   }
+   * }
+   * ```
+   *
+   * When only one side throws, the error propagates directly with no wrapping.
    * @beta
    */
   public [Symbol.dispose](): void {

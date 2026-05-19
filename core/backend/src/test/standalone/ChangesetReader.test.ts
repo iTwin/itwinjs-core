@@ -50,7 +50,7 @@ async function importSchemaStrings(txn: EditTxn, schemas: string[]): Promise<voi
   await txn.iModel.importSchemaStrings(schemas);
 }
 
-describe.only("ChangesetReader insert-full", () => {
+describe("ChangesetReader insert-full", () => {
   let rwIModel: BriefcaseDb;
   let fullElementId: Id64String;
   let drawingModelId: Id64String;
@@ -1140,7 +1140,7 @@ describe.only("ChangesetReader insert-full", () => {
   });
 });
 
-describe.only("ChangesetReader insert-partial", () => {
+describe("ChangesetReader insert-partial", () => {
   let rwIModel: BriefcaseDb;
   let partialElementId: Id64String;
   let drawingModelId: Id64String;
@@ -1678,7 +1678,7 @@ describe.only("ChangesetReader insert-partial", () => {
 });
 
 
-describe.only("ChangesetReader update-full", () => {
+describe("ChangesetReader update-full", () => {
   let rwIModel: BriefcaseDb;
   let fullElementId: Id64String;
   let partialElementId: Id64String;
@@ -2344,7 +2344,7 @@ describe.only("ChangesetReader update-full", () => {
   });
 });
 
-describe.only("ChangesetReader delete-partial", () => {
+describe("ChangesetReader delete-partial", () => {
   let rwIModel: BriefcaseDb;
   let partialElementId: Id64String;
   let drawingModelId: Id64String;
@@ -2782,7 +2782,7 @@ describe.only("ChangesetReader delete-partial", () => {
   });
 });
 
-describe.only("ChangesetReader filters", () => {
+describe("ChangesetReader filters", () => {
   let rwIModel: BriefcaseDb;
   let fullElementId: Id64String;
   let drawingModelId: Id64String;
@@ -3067,9 +3067,15 @@ describe.only("ChangesetReader filters", () => {
     assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
     assert.equal(modelOld!.$meta.isIndirectChange, true);
   });
+
+  it("read txn1 to some extent not the entire txn from the spill file and then close should happen without any issue", () => {
+    using reader = ChangesetReader.openTxn({ db: rwIModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.close()).to.not.throw();
+  });
 });
 
-describe.only("ChangesetReader — openFile + openGroup", () => {
+describe("ChangesetReader — openFile + openGroup", () => {
   let rwIModel: BriefcaseDb;
   let rwIModelId: string;
   let drawingModelId: Id64String;
@@ -3304,7 +3310,7 @@ describe.only("ChangesetReader — openFile + openGroup", () => {
   });
 });
 
-describe.only("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
+describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
   let rwIModel: BriefcaseDb;
   let rwIModelId: string;
   let drawingModelId: Id64String;
@@ -3521,7 +3527,7 @@ describe.only("ChangesetReader — openLocalChanges + openInmemoryChanges", () =
   });
 });
 
-describe.only("ChangesetReader: behaviour in case imodel is not in sync with changeset file being read", async () => {
+describe("ChangesetReader: behaviour in case imodel is not in sync with changeset file being read", async () => {
   let rwIModel: BriefcaseDb;
   let rwIModelId: string;
   let elementId: Id64String;
@@ -3718,7 +3724,7 @@ describe.only("ChangesetReader: behaviour in case imodel is not in sync with cha
   });
 });
 
-describe.only("ChangesetReader: overflow table graceful recovery when ExclusiveRootClassId is NULL", () => {
+describe("ChangesetReader: overflow table graceful recovery when ExclusiveRootClassId is NULL", () => {
   let rwIModel: BriefcaseDb;
   let rwIModelId: string;
   let txn: EditTxn;
@@ -3854,7 +3860,7 @@ describe.only("ChangesetReader: overflow table graceful recovery when ExclusiveR
   });
 });
 
-describe.only("ChangesetReader: instance reused with a different class (class change in Updated row)", () => {
+describe("ChangesetReader: instance reused with a different class (class change in Updated row)", () => {
   it("openFile() correctly identifies ECClassId change from T1 to T2 in a buggy changeset", async () => {
     /**
      * Same scenario as ChangesetReader.test.ts: "Instance update to a different class (bug)".
@@ -4007,7 +4013,7 @@ describe.only("ChangesetReader: instance reused with a different class (class ch
   });
 });
 
-describe.only("ChangesetReader: overflow table insert and update and delete", () => {
+describe("ChangesetReader: overflow table insert and update and delete", () => {
   let rwIModel: BriefcaseDb;
   let elementId: Id64String;
   let drawingModelId: Id64String;
@@ -4291,7 +4297,7 @@ describe.only("ChangesetReader: overflow table insert and update and delete", ()
   });
 });
 
-describe.only("ChangesetReader: invalid inputs", () => {
+describe("ChangesetReader: invalid inputs", () => {
   let iModel: BriefcaseDb;
   let txn: EditTxn;
   let validChangesetPath: string;
@@ -4424,7 +4430,7 @@ describe.only("ChangesetReader: invalid inputs", () => {
   });
 });
 
-describe.only("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
+describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
   interface SpillTestContext {
     rwIModel: BriefcaseDb;
     txn: EditTxn;

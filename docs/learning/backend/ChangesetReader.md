@@ -101,6 +101,22 @@ The preferred approach is the `using` declaration (TC39 Explicit Resource Manage
 }
 ```
 
+> **`SuppressedError` — when both the body and disposal throw:** If the `using` block body throws *and* `[Symbol.dispose]()` also throws during cleanup, the TypeScript runtime wraps both into a [`SuppressedError`](https://tc39.es/proposal-explicit-resource-management/#sec-suppressederror-objects). The disposal error is what propagates to the caller; the original body error is accessible via `err.suppressed`. When only one side throws, the error propagates directly with no wrapping.
+> ```ts
+> try {
+>   using reader = ChangesetReader.openFile({ db, fileName });
+>   while (reader.step()) pcu.appendFrom(reader); // may throw BodyError
+>   // reader.close() called automatically here — may also throw CloseError
+> } catch (err) {
+>   if (err instanceof SuppressedError) {
+>     console.error("disposal error:", err.error);      // CloseError
+>     console.error("original error:", err.suppressed); // BodyError
+>   } else {
+>     throw err; // only one side threw — re-throw normally
+>   }
+> }
+> ```
+
 If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
 ```ts
