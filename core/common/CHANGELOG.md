@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 08 May 2026 20:37:55 GMT and should not be manually modified.
+This log was last generated on Fri, 15 May 2026 11:27:25 GMT and should not be manually modified.
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
 
 ## 5.9.2
 Fri, 08 May 2026 20:36:41 GMT
@@ -21,6 +26,11 @@ Mon, 04 May 2026 16:32:08 GMT
 - added EditTxn apis
 - Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
 - Added ECSql-compatible navigation-property fields to `ViewDefinitionProps`, `SpatialViewDefinitionProps`, and `ViewDefinition2dProps` interfaces. The flat Id64String fields (`categorySelectorId`, `displayStyleId`, `modelSelectorId`, `baseModelId`) are deprecated in favor of the new navigation-property objects but remain as getter/setter pairs instead for backward compatibility.
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:13 GMT
