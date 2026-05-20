@@ -284,13 +284,21 @@ Index 0 is always the empty string.
 
 ## Excluded Schemas
 
-The writer silently skips schemas that provide no value at runtime. Excluded schemas and all their items (classes, properties, enumerations, etc.) are omitted from the blob. The current exclusion list:
+The writer silently skips schemas that provide no value at runtime. Excluded schemas and all their items (classes, properties, enumerations, etc.) are omitted from the blob. The exclusion is the union of two sets:
 
-| Schema                                                                                                                                                         | Reason                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Units, Formats                                                                                                                                                 | Items (Unit, Format, Phenomenon, UnitSystem) are referenced only as strings from KoQ       |
-| ECDbSystem, ECDbMap, ECDbFileInfo, ECDbSchemaPolicies                                                                                                          | ECDb storage-layer internals                                                               |
-| CoreCustomAttributes, ECv3ConversionAttributes, EditorCustomAttributes, BisCustomAttributes, SchemaLocalizationCustomAttributes, SchemaUpgradeCustomAttributes | Pure CA schemas - only Struct/CA class types used for decoration; blob has no CA instances |
+**1. All "standard" schemas** as reported by ECObjects' `ECSchema::IsStandardSchema`:
+
+| Group                | Schemas                                                                                                                                                                                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| EC3 standards        | `CoreCustomAttributes`, `Units`, `Formats`, `ECDbMap`, `SchemaLocalizationCustomAttributes`, `EditorCustomAttributes`                                                                                                                                            |
+| Legacy EC2-era       | `Bentley_Standard_CustomAttributes`, `Bentley_Standard_Classes`, `Bentley_ECSchemaMap`, `Bentley_Common_Classes`, `Dimension_Schema`, `iip_mdb_customAttributes`, `KindOfQuantity_Schema`, `rdl_customAttributes`, `SIUnitSystemDefaults`, `Unit_Attributes`, `Units_Schema`, `USCustomaryUnitSystemDefaults` |
+
+**2. ECDb-specific additions** that are not in the standard list:
+
+| Schema                                                              | Reason                                                                            |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `ECDbSystem`, `ECDbFileInfo`, `ECDbSchemaPolicies`                  | ECDb storage-layer internals                                                      |
+| `BisCustomAttributes`, `ECv3ConversionAttributes`, `SchemaUpgradeCustomAttributes` | Pure CA schemas - blob has no CA instances, so the definitions add no value     |
 
 Note: **ECDbMeta is NOT excluded** - consumers use it for metadata ECSQL queries.
 

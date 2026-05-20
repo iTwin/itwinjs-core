@@ -44,11 +44,13 @@ The exclusion list is deliberate - it trades a small amount of breadth for a lar
 Currently excluded:
 
 - **Custom attribute instances** on schemas, classes, properties, and relationship constraints. Promote what you need to a first-class concept if it becomes widespread (see above).
-- **Units, Formats, Phenomena, UnitSystems, Constants** - the entire `Units` and `Formats` schemas are dropped. `KindOfQuantity` carries only the persistence-unit name and presentation-format strings; consumers resolve names against the dedicated units/formats APIs (today: `SchemaContext` or ECSQL - see [Resolving format and unit names](#resolving-format-and-unit-names)).
-- **ECDb-internal schemas** - `ECDbSystem`, `ECDbMap`, `ECDbFileInfo`, `ECDbSchemaPolicies`. These describe storage-layer mapping and are not relevant to runtime consumers. Note that `ECDbMeta` is *not* excluded - it remains queryable via ECSQL.
-- **Pure custom-attribute schemas** - `CoreCustomAttributes`, `BisCustomAttributes`, `EditorCustomAttributes`, `ECv3ConversionAttributes`, `SchemaLocalizationCustomAttributes`, `SchemaUpgradeCustomAttributes`. These contain only `CustomAttribute` and `Struct` definitions used for decoration; since CA instances are not transported, the definitions add little value.
+- **All "standard" schemas** as defined by ECObjects' `ECSchema::IsStandardSchema`. This covers:
+  - The EC3 standards: `CoreCustomAttributes`, `Units`, `Formats`, `ECDbMap`, `SchemaLocalizationCustomAttributes`, `EditorCustomAttributes`. `KindOfQuantity` carries only persistence-unit and presentation-format strings; consumers resolve names against the dedicated units/formats APIs (today: `SchemaContext` or ECSQL - see [Resolving format and unit names](#resolving-format-and-unit-names)).
+  - Legacy EC2-era schemas: `Bentley_Standard_CustomAttributes`, `Bentley_Standard_Classes`, `Bentley_ECSchemaMap`, `Bentley_Common_Classes`, `Dimension_Schema`, `iip_mdb_customAttributes`, `KindOfQuantity_Schema`, `rdl_customAttributes`, `SIUnitSystemDefaults`, `Unit_Attributes`, `Units_Schema`, `USCustomaryUnitSystemDefaults`. These predate EC3.2 and are not referenced structurally by modern domain schemas.
+- **ECDb-internal schemas** beyond the standard list - `ECDbSystem`, `ECDbFileInfo`, `ECDbSchemaPolicies`. These describe storage-layer mapping and are not relevant to runtime consumers. Note that `ECDbMeta` is *not* excluded - it remains queryable via ECSQL.
+- **Pure custom-attribute schemas** beyond the standard list - `BisCustomAttributes`, `ECv3ConversionAttributes`, `SchemaUpgradeCustomAttributes`. These contain only `CustomAttribute` and `Struct` definitions used for decoration; since CA instances are not transported, the definitions add little value.
 
-The authoritative list lives in `IsExcludedSchema()` in `SchemaViewWriter.cpp` (imodel-native).
+The authoritative logic lives in `IsExcludedSchema()` in `SchemaViewWriter.cpp` (imodel-native), which delegates the standard-schema check to `ECSchema::IsStandardSchema`.
 
 When you do need data from an excluded schema, [SchemaContext]($ecschema-metadata) and ECDbMeta queries remain available. Examples of resolving units and formats are in [Resolving format and unit names](#resolving-format-and-unit-names).
 
