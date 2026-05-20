@@ -171,7 +171,7 @@ export abstract class RenderSystem implements Disposable {
   public abstract get isValid(): boolean;
 
   public [Symbol.dispose]() {
-    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+    this.dispose();
   }
 
   /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Will be made protected in a future release. Use [Symbol.dispose] instead. */
