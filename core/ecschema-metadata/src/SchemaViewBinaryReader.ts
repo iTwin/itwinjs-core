@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Logger } from "@itwin/core-bentley";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { SchemaView, SchemaViewBuilder } from "./SchemaView";
 import { StrengthDirection, StrengthType } from "./ECObjects";
 import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, schemaViewFormatVersion, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
@@ -224,8 +224,8 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
   for (let i = 0; i < defCount; i++) {
     preParsedDefs[i] = {
       name: reader.readSRef(),
-      kind: reader.readU8() as PropertyKind,
-      primitiveType: reader.readU16() as SchemaViewPrimitiveType,
+      kind: reader.readU8(),
+      primitiveType: reader.readU16(),
       extType: reader.readSRef(),
       enumRowId: reader.readU32(),
       structClassRowId: reader.readU32(),
@@ -234,7 +234,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       arrayMinOccurs: readOptionalU32(reader),
       arrayMaxOccurs: readOptionalU32(reader),
       navRelClassRowId: reader.readU32(),
-      navDirection: reader.readU8() as StrengthDirection,
+      navDirection: reader.readU8(),
       isReadonly: reader.readU8() !== 0,
       isHidden: reader.readU8() !== 0,
       description: reader.readSRef(),
@@ -324,7 +324,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
           enumeratorCount++;
         }
       } catch (e) {
-        Logger.logWarning("ecschema-metadata.SchemaView", `Malformed EnumValues JSON for enumeration "${eName}": ${e}`);
+        Logger.logWarning("ecschema-metadata.SchemaView", `Malformed EnumValues JSON for enumeration "${eName}": ${BentleyError.getErrorMessage(e)}`);
       }
     }
 
@@ -334,7 +334,7 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
       nameStringIdx: builder.internString(eName),
       labelStringIdx: builder.internString(eLabel),
       descriptionStringIdx: builder.internString(eDesc),
-      primitiveType: ePrimType as SchemaViewPrimitiveType,
+      primitiveType: ePrimType,
       isStrict: eIsStrict,
       enumeratorStart,
       enumeratorCount,
@@ -406,15 +406,15 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
     const schemaInfo = schemaInfos[schemaIdx];
 
     const cName = reader.readSRef();
-    const cType = reader.readU8() as ClassType;
-    const cModifier = reader.readU8() as ClassModifier;
+    const cType = reader.readU8();
+    const cModifier = reader.readU8();
     const cLabel = reader.readSRef();
     const cDesc = reader.readSRef();
     let relStrength: StrengthType = StrengthType.Referencing;
     let relStrengthDir: StrengthDirection = StrengthDirection.Forward;
     if (cType === ClassType.Relationship) {
-      relStrength = reader.readU8() as StrengthType;
-      relStrengthDir = reader.readU8() as StrengthDirection;
+      relStrength = reader.readU8();
+      relStrengthDir = reader.readU8();
     }
     const cEcInstanceId = reader.readU32();
     // Tri-state hidden: 0=undefined (no CA, schema doesn't hide), 1=true (hidden), 2=false (explicitly shown)

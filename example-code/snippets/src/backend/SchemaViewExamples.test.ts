@@ -270,7 +270,7 @@ describe("SchemaView Examples", () => {
   });
 
   it("using context for presentation-style provider", async () => {
-    const view: SchemaView = await iModel.getSchemaView();
+    const schemaView: SchemaView = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.presentation-adapter
     // Adapt SchemaView for use with presentation-style consumers
@@ -283,11 +283,11 @@ describe("SchemaView Examples", () => {
     }
 
     // Check whether a class derives from BisCore:GeometricElement
-    const isGeometric = classDerivesFrom(view, "BisCore:GeometricElement3d", "BisCore:GeometricElement");
+    const isGeometric = classDerivesFrom(schemaView, "BisCore:GeometricElement3d", "BisCore:GeometricElement");
     assert.isTrue(isGeometric);
 
     // Get the properties of a class for display
-    const element = view.findClass("BisCore:Element")!;
+    const element = schemaView.findClass("BisCore:Element")!;
     const displayProps = element.getProperties()
       .filter((p) => !p.isHidden)
       .map((p) => ({ name: p.name, label: p.label, kind: p.kind }));
