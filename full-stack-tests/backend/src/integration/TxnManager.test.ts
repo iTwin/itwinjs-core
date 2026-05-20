@@ -4,6 +4,7 @@ import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import * as path from "path";
 import { setupIntegrationLogging } from "./StartupShutdown";
 
 describe("Discarding local txns test", async () => {
@@ -441,6 +442,98 @@ describe("Discarding local txns test", async () => {
       // This essentially ends with both briefcases out of sync with no direct means to resync as all record of txns were cleared !!
       testElement(firstBriefcase, el1Id, "Inserted"); // Element will still be present in the first briefcase
       testElement(secondBriefcase, el1Id);  // Element will be absent from the second briefcase
+    });
+  });
+
+  describe("revertAndPushChanges", () => {
+    it("should revert 2 changesets (data+schema+data) from second briefcase and verify on first", async () => {
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase, secondBriefcase] = briefcases;
+      const iModelId = firstBriefcase.iModelId;
+      const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+
+      // 1. First briefcase pushes a data changeset
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
+      await firstBriefcase.pushChanges({ description: "data: insert first element", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+
+      // 2. First briefcase pushes a schema changeset
+      await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="ElementName" typeName="string" />
+            <ECProperty propertyName="ElementState" typeName="string" />
+            <ECProperty propertyName="ExtraProp" typeName="string" />
+          </ECEntityClass>
+          <ECRelationshipClass typeName="ElementConnectsToElement" strength="referencing" modifier="Sealed">
+            <BaseClass>bis:ElementRefersToElements</BaseClass>
+            <Source multiplicity="(0..1)" roleLabel="connects to" polymorphic="false">
+              <Class class="TestElement"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="is connected to" polymorphic="false">
+              <Class class="TestElement"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>`]);
+      await firstBriefcase.pushChanges({ description: "schema: add ExtraProp", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+
+      // 3. First briefcase pushes another data changeset
+      const el2Id = await insertElement(firstBriefcase, "SecondElement");
+      await firstBriefcase.pushChanges({ description: "data: insert second element", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+
+      // Verify both elements exist on both briefcases before revert
+      testElement(firstBriefcase, el1Id, "Inserted");
+      testElement(firstBriefcase, el2Id, "Inserted");
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id, "Inserted");
+
+      // Verify changeset history on the hub before revert
+      let changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+      assert.equal(changesets.length, 4, "Expected 4 changesets: setup + data + schema + data");
+      assert.equal(changesets[1].description, "data: insert first element");
+      assert.equal(changesets[2].description, "schema: add ExtraProp");
+      assert.equal(changesets[3].description, "data: insert second element");
+
+      // 4. Second briefcase reverts the last 2 changesets (schema + data) from timeline and pushes
+      // Timeline: index 1 = setup, index 2 = data (el1), index 3 = schema, index 4 = data (el2)
+      // toIndex is inclusive in the revert range, so toIndex=3 reverts changesets 3 and 4,
+      // leaving the state at changeset 2 (el1 exists, schema change and el2 are gone)
+      const currentIndex = secondBriefcase.changeset.index!;
+      assert.equal(currentIndex, 4, "Expected current index to be 4");
+      await secondBriefcase.revertAndPushChanges({ toIndex: currentIndex - 1, description: "revert last 2 changesets" });
+
+      // Verify the revert changeset was pushed to the hub
+      changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+      assert.equal(changesets.length, 5, "Expected 5 changesets after revert push");
+      assert.equal(changesets[4].description, "revert last 2 changesets");
+
+      // 5. First briefcase pulls and verifies revert
+      await firstBriefcase.pullChanges();
+
+      // The first element should still exist (it was in the first data changeset, not reverted)
+      testElement(firstBriefcase, el1Id, "Inserted");
+      // The second element should be gone (it was in the last data changeset, which was reverted)
+      testElement(firstBriefcase, el2Id);
+
+      // The schema change (ExtraProp) should also be reverted
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const propsAfterRevert = Object.getOwnPropertyNames(firstBriefcase.getMetaData("TestSchema:TestElement").properties);
+      assert.include(propsAfterRevert, "elementName", "Original properties should still exist");
+      assert.include(propsAfterRevert, "elementState", "Original properties should still exist");
+      assert.notInclude(propsAfterRevert, "extraProp", "ExtraProp should be reverted");
+
+      // Verify second briefcase also reflects the reverted state
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const propsOnSecond = Object.getOwnPropertyNames(secondBriefcase.getMetaData("TestSchema:TestElement").properties);
+      assert.notInclude(propsOnSecond, "extraProp", "ExtraProp should be reverted on second briefcase too");
     });
   });
 

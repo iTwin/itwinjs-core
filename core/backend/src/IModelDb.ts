@@ -3963,7 +3963,67 @@ export class BriefcaseDb extends IModelDb {
     return this[_nativeDb].getAllChangesetHealthData() as ChangesetHealthStats[];
   }
 
-  /** Revert timeline changes and then push resulting changeset */
+  /**
+   * Whether file-based transactions are enabled for this briefcase.
+   *
+   * When enabled, transaction data is stored in temporary files on disk rather than in memory,
+   * reducing memory usage for large transactions at the cost of additional disk I/O.
+   * @see [[enableFileBasedTxns]] to enable, [[disableFileBasedTxns]] to disable.
+   * @internal
+   */
+  public get isFileBasedTxnsEnabled(): boolean {
+    return this[_nativeDb].queryLocalValue("fileBasedTxns") === "1";
+  }
+
+  /**
+   * Enable file-based transactions for this briefcase.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public enableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(true);
+  }
+
+  /**
+   * Disable file-based transactions for this briefcase, reverting to the default in-memory mode.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public disableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(false);
+  }
+
+  private _setFileBasedTxnsSetting(enabled: boolean): void {
+    if (this.isFileBasedTxnsEnabled === enabled)
+      return;
+
+    const nativeDb = this[_nativeDb];
+    if (nativeDb.hasUnsavedChanges())
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot change file-based transactions setting while there are unsaved changes");
+
+    if (nativeDb.hasPendingTxns())
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot change file-based transactions setting while there are pending transactions");
+
+    if (enabled)
+      nativeDb.saveLocalValue("fileBasedTxns", "1");
+    else
+      nativeDb.deleteLocalValue("fileBasedTxns");
+  }
+
+  /**
+   * Revert timeline changes and push the resulting changeset.
+   *
+   * Pulls the latest changes, acquires the schema lock, reverts the timeline to the specified
+   * changeset index, and pushes the revert as a new changeset. On failure, all local changes
+   * are reversed and discarded to restore the briefcase to a clean state.
+   *
+   * @param arg - Arguments specifying the target changeset index, push options, and access token.
+   * @throws IModelError with [[ChangeSetStatus.ApplyError]] if `toIndex` is not specified.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   */
   public async revertAndPushChanges(arg: RevertChangesArgs): Promise<void> {
     const nativeDb = this[_nativeDb];
     if (arg.toIndex === undefined) {
@@ -3996,9 +4056,12 @@ export class BriefcaseDb extends IModelDb {
       arg.skipSchemaChanges = true;
     }
 
+    // The native side enables file-based txns during revert. Restore the original setting afterward.
+    const wasFileBasedTxnsEnabled = this.isFileBasedTxnsEnabled;
+
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
-      this[_nativeDb].saveChanges("Revert changes");
+      nativeDb.saveChanges("Revert changes");
       if (!arg.description) {
         arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
@@ -4014,12 +4077,41 @@ export class BriefcaseDb extends IModelDb {
       await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
     } catch (err) {
+      const failureAction = arg.inCaseOfFailure ?? "revert";
+      try {
+        switch (failureAction) {
+          case "revert":
+            // Restore the briefcase to its pre-revert state: save any unsaved changes into txns,
+            // reverse all txns, then delete them.
+            nativeDb.saveChanges();
+            if (nativeDb.hasPendingTxns())
+              nativeDb.reverseAll();
+            nativeDb.deleteAllTxns();
+            break;
+          case "delete":
+            // Release the briefcase and delete the local file.
+            nativeDb.abandonChanges();
+            nativeDb.deleteAllTxns();
+            const filePath = this.pathName;
+            this.close();
+            await BriefcaseManager.deleteBriefcaseFiles(filePath, arg.accessToken);
+            break;
+          case "retain":
+            // Keep local changes as-is for caller inspection/recovery.
+            nativeDb.saveChanges();
+            break;
+        }
+      } catch (cleanupErr) {
+        Logger.logError(loggerCategory, `Failed to clean up after revert error (action=${failureAction}): ${String(cleanupErr)}`);
+      }
+
       if (!arg.retainLocks) {
         await this.locks.releaseAllLocks();
-        throw err;
       }
+      throw err;
     } finally {
-      this[_nativeDb].abandonChanges();
+      if (!wasFileBasedTxnsEnabled && !nativeDb.hasPendingTxns() && !nativeDb.hasUnsavedChanges())
+        this.disableFileBasedTxns();
     }
   }
 

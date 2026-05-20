@@ -112,6 +112,13 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
   toIndex: ChangesetIndex;
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
+  /**
+   * Specifies the action to take in case of failure during the revert operation. Default is `"revert"`.
+   * - `"revert"`: Reverse all local transactions and delete them, restoring the briefcase to its pre-revert state.
+   * - `"retain"`: Keep local changes as-is for caller inspection or manual recovery.
+   * - `"delete"`: Close the briefcase, release the briefcaseId from iModelHub, and delete the local file.
+   */
+  inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
