@@ -658,6 +658,7 @@ describe("PerformanceElementGetMetadata", () => {
 
       for (let i = 0; i < repeats; i++) {
         const start = performance.now();
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const metaData = await element.getMetaData()
         const end = performance.now() - start;
         assert.exists(metaData);
