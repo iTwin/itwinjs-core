@@ -20,6 +20,7 @@ const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 class SettingsSchemasImpl implements SettingsSchemas {
   public readonly [_implementationProhibited] = undefined;
   private readonly _allGroups = new Map<string, SettingGroupSchema>();
+  public get groups(): ReadonlyMap<string, SettingGroupSchema> { return this._allGroups; }
   /** a map of all registered Setting Definitions  */
   public readonly settingDefs = new Map<string, SettingSchema>();
   /** a map of all registered TypeDefs  */
