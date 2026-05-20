@@ -1223,6 +1223,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];

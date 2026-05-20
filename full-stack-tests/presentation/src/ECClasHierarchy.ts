@@ -36,6 +36,7 @@ export class ECClassHierarchy {
       JOIN
         meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
       `;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of imodel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const { classId, className, schemaName } = row;
       classInfosMap.set(classId, { id: classId, name: className, schemaName });
@@ -49,6 +50,7 @@ export class ECClassHierarchy {
       FROM
         meta.ClassHasBaseClasses h
       `;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of imodel.createQueryReader(hierarchyQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const { baseClassId, classId } = row;
 
@@ -104,6 +106,7 @@ export class ECClassHierarchy {
   public async getClassInfo(schemaName: string, className: string): Promise<ECClassHierarchyInfo> {
     const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
     const result = await this._imodel
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames })
       .toArray();
     const { id } = result[0];

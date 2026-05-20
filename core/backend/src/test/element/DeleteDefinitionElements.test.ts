@@ -1183,6 +1183,7 @@ describe("DeleteDefinitionElements", () => {
         "SELECT TypeDefinition FROM bis.GeometricElement3d WHERE ECInstanceId=?",
         (reader) => reader.step() ? reader.current[0]?.id : undefined,
         QueryBinder.from([elementId]),
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         { rowFormat: QueryRowFormat.UseJsPropertyNames },
       );
     };
@@ -1274,6 +1275,7 @@ describe("DeleteDefinitionElements", () => {
           "SELECT TypeDefinition FROM bis.GeometricElement2d WHERE ECInstanceId=?",
           (reader) => reader.step() ? reader.current[0]?.id : undefined,
           QueryBinder.from([elemId]),
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           { rowFormat: QueryRowFormat.UseJsPropertyNames },
         );
       };

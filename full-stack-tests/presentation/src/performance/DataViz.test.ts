@@ -163,6 +163,7 @@ describe("#performance DataViz requests", () => {
                   where h.sourceecinstanceid in (select ECClassId from BisCore.GeometricElement)
                 )
             `;
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               for await (const { classId } of iModel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
                 classes.push(await classHierarchy.getClassInfoById(classId));
               }
@@ -384,6 +385,7 @@ describe("#performance DataViz requests", () => {
               const [displayValue, rawValues] = distinctValuesEntry;
               // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
                 pushValues(displayValueEntries, displayValue, [
                   { contentClassId: classId, pathFromContentToPropertyClass, filteredProperty, rawValues: [...rawValues] },
