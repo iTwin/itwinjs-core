@@ -58,7 +58,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private _maxDistanceSquared: number;
   private _xyTolerance: number;
   private _newtonTolerance: number;
-  private _maxIterations: number = 50;
+  private _maxIterations: number;
   /**
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
    * both curves and their length is smaller than _maxDistanceToAccept.
