@@ -1065,7 +1065,12 @@ export namespace SchemaView {
     }
     public get schema(): Schema { return new Schema(this._ctx, this._data.schemaIdx); }
     public get relativeError(): number { return this._data.relativeError; }
-    /** Persistence unit as a full name string, e.g. "Units:M". */
+    /** Persistence unit as a full name string, e.g. "Units:M".
+     *
+     * On iModels still on ECDb profile `4.0.0.1` (predates the 2018 EC3.2 Units/Formats migration)
+     * this string is in legacy FUS format rather than the EC3.2 alias-qualified form.
+     * Upgrade the iModel's ECDb profile to get EC3.2 strings.
+     */
     public get persistenceUnit(): string {
       const sid = this._data.persistenceUnitStringIdx;
       return sid !== 0 ? this._ctx[_storage].strings[sid] : "";
@@ -1074,6 +1079,10 @@ export namespace SchemaView {
     /** Raw presentation format string as stored in ECDb (`ec_KindOfQuantity.PresentationUnits`).
      * This is a JSON array of format override strings. Empty string if none are defined.
      * Prefer `presentationFormats` for structured access.
+     *
+     * On iModels still on ECDb profile `4.0.0.1` (predates the 2018 EC3.2 Units/Formats migration)
+     * the strings are in legacy FUS format and will not parse via `presentationFormats`.
+     * Upgrade the iModel's ECDb profile to get EC3.2 strings.
      */
     public get presentationFormatsRaw(): string {
       const sid = this._data.presentationFormatsStringIdx;

@@ -237,4 +237,6 @@ Passing an unsupported format version returns an error:
 PRAGMA schema_view(99)
 ```
 
+The pragma works against any ECDb profile from `4.0.0.1` onward; older files do not need to be upgraded first. On profile `4.0.0.1` only, `KindOfQuantity` persistence and presentation strings are returned in legacy FUS format rather than EC3.2; all other data is unaffected. See [SchemaViewBinaryFormat - ECDb Profile Compatibility](../metadata/SchemaViewBinaryFormat.md#ecdb-profile-compatibility) for details.
+
 [ECSql Syntax](./index.md)

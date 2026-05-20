@@ -114,6 +114,8 @@ Properties can reference a kind of quantity (KoQ) or a property category. KoQs c
 
 Presentation format names use schema aliases (e.g. `"f"` for `Formats`, `"u"` for `Units`). The Units and Formats schemas are excluded from `SchemaView` because they will be accessed through a separate dedicated API in the future.
 
+> **Pre-EC3.2 iModels:** on the rare iModel still on ECDb profile `4.0.0.1` (predates the 2018 EC3.2 Units/Formats migration), `KindOfQuantity.persistenceUnit` and `presentationFormats` are returned in legacy FUS format and will not parse with the alias-qualified resolution patterns below. The fix is to upgrade the iModel's ECDb profile. See [SchemaViewBinaryFormat - ECDb Profile Compatibility](./SchemaViewBinaryFormat.md#ecdb-profile-compatibility).
+
 If you need the actual format definitions or unit details today, you can resolve the alias-qualified names via **ecschema-metadata** or **ECSQL**:
 
 #### Via ecschema-metadata (SchemaContext)

@@ -305,6 +305,14 @@ Note: **ECDbMeta is NOT excluded** - consumers use it for metadata ECSQL queries
 
 Row IDs (`schemaEcId`, `enumRowId`, `structClassRowId`, etc.) and name-based references (base classes, constraint classes) must be resolved by the reader after parsing. The writer does not scrub references to excluded schemas. Readers should handle unresolved references gracefully - see the TS reader for the resolution strategy (drop properties with broken structural refs, skip dangling mixin/constraint entries).
 
+## ECDb Profile Compatibility
+
+The pragma works against any ECDb profile from `4.0.0.1` onward without requiring an upgrade - all schema tables the writer queries exist in `4.0.0.1`. There is one degradation to be aware of:
+
+- **Profile `4.0.0.1`** (introduced 2017, superseded by `4.0.0.2` in 2018): the EC3.2 Units/Formats migration had not yet run, so `ec_KindOfQuantity.PersistenceUnit` and `PresentationUnits` still contain the legacy FUS (Fuse) format strings. The writer passes those strings through unchanged - `KoQTable.persistenceUnitSid` and `presentationFormatsSid` will reference FUS-format strings rather than the alias-qualified EC3.2 form (`"u:M"`, `"f:DefaultRealU"`). All other tables and fields are unaffected.
+
+In practice any iModel that has been opened by iTwin.js since mid-2018 has already been auto-upgraded to `4.0.0.2` or later. Profile versions `4.0.0.3`, `4.0.0.4`, and `4.0.0.5` made no changes to the `ec_*` tables, so they are equivalent to `4.0.0.2` from the writer's perspective. If a consumer encounters a KoQ string in FUS form, the recommended remediation is to upgrade the iModel's profile.
+
 ## Implementation References
 
 - **Writer (C++)**: `iModelCore/ECDb/ECDb/SchemaViewWriter.cpp` / `.h`
