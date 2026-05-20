@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Also added strict mode to changeset reader api which when enabled if the number of columns recorded in a change row differs  from the number of columns currently present in the live table, the reader throws an error  instead of processing that row",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

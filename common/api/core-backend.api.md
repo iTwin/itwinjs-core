@@ -1018,6 +1018,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
     close(): void;
     readonly db: AnyDb;
     deleted?: ChangeInstance;
+    disableStrictMode(): void;
+    enableStrictMode(): void;
     inserted?: ChangeInstance;
     get isECTable(): boolean;
     get isIndirectChange(): boolean;
