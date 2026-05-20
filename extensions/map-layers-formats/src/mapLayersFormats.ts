@@ -10,6 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat.js";
+import { AzureMapsMapLayerFormat } from "./AzureMaps/AzureMapsImageryFormat.js";
 import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat.js";
 import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat.js";
 import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool.js";
@@ -50,6 +51,7 @@ export class MapLayersFormats {
       IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
       IModelApp.mapLayerFormatRegistry.register(OgcApiFeaturesMapLayerFormat);
       IModelApp.mapLayerFormatRegistry.register(GoogleMapsMapLayerFormat);
+      IModelApp.mapLayerFormatRegistry.register(AzureMapsMapLayerFormat);
     }
 
     // register namespace containing localized strings for this package

@@ -7,6 +7,8 @@ publish: false
   - [@itwin/core-backend](#itwincore-backend)
     - [ECSQL CROSS JOIN now supports optional ON clause](#ecsql-cross-join-now-supports-optional-on-clause)
     - [Schema changesets can be reversed](#schema-changesets-can-be-reversed)
+  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
+    - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
   - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
@@ -31,6 +33,14 @@ This is equivalent in result to an `INNER JOIN`, but the optimizer is not permit
 This makes it possible to walk a changeset timeline backwards through interleaved schema and data changesets. After reversing a schema changeset, the EC metadata (class definitions, property mappings, schema version) reflects the state prior to that changeset.
 
 As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target changeset is older than the checkpoint and the range spans one or more schema changesets. Previously this would fail because schema changesets could not be reversed.
+
+## @itwin/map-layers-formats
+
+### Azure Maps basemap support is available through map-layers-formats
+
+`@itwin/map-layers-formats` now registers Azure Maps imagery support through `MapLayersFormats.initialize()` and exposes a beta `AzureMaps` helper for applying Azure Maps Street, Aerial, and Hybrid basemaps.
+
+Applications configure the Azure Maps key once during `IModelApp.startup({ mapLayerOptions: { AzureMaps: { key: "subscription-key", value: ... } } })`. After initializing `@itwin/map-layers-formats`, code that wants Azure-specific basemap helpers can import `AzureMaps` from that package.
 
 ## Electron 42 support
 

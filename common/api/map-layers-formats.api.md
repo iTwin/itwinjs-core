@@ -5,11 +5,13 @@
 ```ts
 
 import { ArcGISImageryProvider } from '@itwin/core-frontend';
+import { BackgroundMapType } from '@itwin/core-common';
 import { BaseMapLayerSettings } from '@itwin/core-common';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
+import { DisplayStyleState } from '@itwin/core-frontend';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
@@ -25,10 +27,12 @@ import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
 import { MapLayerImageryProvider } from '@itwin/core-frontend';
+import { MapLayerSourceValidation } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
 import { QuadIdProps } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
+import { ValidateSourceArgs } from '@itwin/core-frontend';
 
 // @internal
 export class ArcGisFeatureProvider extends ArcGISImageryProvider {
@@ -59,6 +63,24 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     serviceJson: any;
     // (undocumented)
     get tileSize(): number;
+}
+
+// @beta
+export const AzureMaps: {
+    createBaseLayerSettings: (type: BackgroundMapType) => BaseMapLayerSettings;
+    createBackgroundLayers: (type: BackgroundMapType) => ImageMapLayerSettings[];
+    clearBackgroundLayers: (displayStyle: DisplayStyleState) => void;
+    applyBackgroundMap: (displayStyle: DisplayStyleState, type: BackgroundMapType) => void;
+    getBackgroundMapType: (displayStyle: DisplayStyleState) => BackgroundMapType | undefined;
+};
+
+// @beta
+export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
+    // @internal (undocumented)
+    static createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
+    static formatId: string;
+    // (undocumented)
+    static validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
 }
 
 // @beta
