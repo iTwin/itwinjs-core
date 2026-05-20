@@ -199,9 +199,9 @@ describe("SchemaView Examples", () => {
     const schemaView = await iModel.getSchemaView();
 
     // __PUBLISH_EXTRACT_START__ SchemaView.views
-    // Iterate views within a schema
+    // Iterate views within a schema - pass ClassType.View to filter to views only.
     for (const schema of schemaView.getSchemas()) {
-      for (const view of schema.getViews()) {
+      for (const view of schema.getClasses(ClassType.View)) {
         assert.isNotEmpty(view.name);
         assert.isNotEmpty(view.fullName); // "SchemaName:ViewName"
 
@@ -212,8 +212,10 @@ describe("SchemaView Examples", () => {
       }
     }
 
-    // Look up a view by qualified name
-    // const view = schemaView.findView("SomeSchema:SomeView");
+    // Look up a view by qualified name - use findClass + isView() since views are
+    // just classes with ClassType.View.
+    // const cls = schemaView.findClass("SomeSchema:SomeView");
+    // const view = cls?.isView() ? cls : undefined;
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -248,14 +250,15 @@ describe("SchemaView Examples", () => {
         const props = cls.getProperties(); // includes inherited
         totalProperties += props.length;
 
-        // Every class must be one of these types
-        // (Views are accessed separately via schema.getViews(), not getClasses())
+        // Every class must be one of these types. Pass a ClassType to
+        // schema.getClasses(...) if you want to filter to one kind.
         assert.isTrue(
           cls.type === ClassType.Entity
           || cls.type === ClassType.Relationship
           || cls.type === ClassType.Struct
           || cls.type === ClassType.CustomAttribute
-          || cls.type === ClassType.Mixin,
+          || cls.type === ClassType.Mixin
+          || cls.type === ClassType.View,
         );
       }
     }

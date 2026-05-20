@@ -138,14 +138,6 @@ export class SchemaView {
     return idx !== -1 ? SchemaView.createClass(this, idx) : undefined;
   }
 
-  /** Find a class with `ClassType.View` by qualified name ("SchemaName:ViewName" or "SchemaName.ViewName").
-   * Convenience method - equivalent to `findClass()` with a type check.
-   */
-  public findView(qualifiedName: string): SchemaView.Class | undefined {
-    const cls = this.findClass(qualifiedName);
-    return cls !== undefined && cls.isView() ? cls : undefined;
-  }
-
   /** Find an enumeration by qualified name ("SchemaName:EnumName" or "SchemaName.EnumName").
    * The namespace part matches schema name first, then alias. Case-insensitive.
    */
@@ -410,11 +402,15 @@ export namespace SchemaView {
       return classIdx !== undefined ? createClass(this._ctx, classIdx) : undefined;
     }
 
-    /** Iterate all classes in this schema (excluding views - use `getViews()` for those). */
-    public *getClasses(): IterableIterator<Class> {
+    /** Iterate classes in this schema. Pass a `ClassType` to filter to a single kind
+     * (e.g. `getClasses(ClassType.View)`). Omit the argument to iterate every class
+     * regardless of type.
+     */
+    public *getClasses(filter?: ClassType): IterableIterator<Class> {
       const d = this._data;
+      const classes = this._ctx[_storage].classes;
       for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++) {
-        if (this._ctx[_storage].classes[i].type !== ClassType.View)
+        if (filter === undefined || classes[i].type === filter)
           yield createClass(this._ctx, i);
       }
     }
@@ -438,22 +434,6 @@ export namespace SchemaView {
       const map = this._ctx[_storage].catByName.get(this.idx);
       const idx = map?.get(name.toLowerCase());
       return idx !== undefined ? new PropertyCategory(this._ctx, idx) : undefined;
-    }
-
-    /** Find a view by name within this schema (case-insensitive).
-     * Views are classes with `ClassType.View` - this is a convenience filter over `getClass()`. */
-    public getView(name: string): Class | undefined {
-      const cls = this.getClass(name);
-      return cls !== undefined && cls.isView() ? cls : undefined;
-    }
-
-    /** Iterate all views in this schema. */
-    public *getViews(): IterableIterator<Class> {
-      const d = this._data;
-      for (let i = d.classRangeStart; i < d.classRangeStart + d.classCount; i++) {
-        if (this._ctx[_storage].classes[i].type === ClassType.View)
-          yield createClass(this._ctx, i);
-      }
     }
 
     /** Iterate all enumerations in this schema. */

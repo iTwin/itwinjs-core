@@ -24,7 +24,7 @@ export enum ClassType {
   CustomAttribute = 3,
   /** Not stored in ec_Class.Type - synthesized from IsMixin CA during cache population. */
   Mixin = 4,
-  /** Synthesized from QueryView CA (EC <3.3) or first-class ECView element (EC >=3.3). */
+  /** Synthesized from the QueryView custom attribute. */
   View = 5,
 }
 

@@ -33,7 +33,7 @@ Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you
 
 A small number of widely-used custom attributes are promoted to first-class concepts on the view objects:
 
-- **Views** - entity classes with the `QueryView` custom attribute are surfaced as `SchemaView.ViewClass` and iterable per schema.
+- **Views** - entity classes with the `QueryView` custom attribute are surfaced with `ClassType.View`, iterable via `schema.getClasses(ClassType.View)`.
 - **Mixin** - the mixin custom attribute is reflected in `classType` and is included in `applies-to`/`is-a` walks.
 - **Hidden** - hidden flags on schemas, classes, and properties are exposed directly (e.g. `schema.isHidden`).
 
@@ -166,7 +166,7 @@ for await (const row of iModel.createQueryReader(
 
 ## Views
 
-ECViews (entity classes with a `QueryView` custom attribute) are included in the runtime blob. You can iterate them per schema or look them up by qualified name. Views expose their own properties but do not participate in class inheritance.
+ECViews (entity classes with a `QueryView` custom attribute) are included in the runtime blob. They show up as classes with `ClassType.View` - use `schema.getClasses(ClassType.View)` to iterate just views, or `findClass(...)` + `isView()` to look one up by qualified name. Views expose their own properties but do not participate in class inheritance.
 
 ```ts
 [[include:SchemaView.views]]
