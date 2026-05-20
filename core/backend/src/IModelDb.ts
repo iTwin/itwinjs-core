@@ -4015,11 +4015,12 @@ export class BriefcaseDb extends IModelDb {
   /**
    * Revert timeline changes and push the resulting changeset.
    *
-   * Pulls the latest changes, acquires the schema lock, reverts the timeline to the specified
-   * changeset index, and pushes the revert as a new changeset. On failure, all local changes
-   * are reversed and discarded to restore the briefcase to a clean state.
+   * Pulls the latest changes, acquires the schema lock, reverts the inclusive range of
+   * changesets `[toIndex..current]`, and pushes the revert as a new changeset. On failure,
+   * follow the behavior specified by `arg.inCaseOfFailure`, which may discard local changes,
+   * retain local changes, or delete the briefcase.
    *
-   * @param arg - Arguments specifying the target changeset index, push options, and access token.
+   * @param arg - Arguments specifying the target changeset index, push options, access token, and failure handling behavior.
    * @throws IModelError with [[ChangeSetStatus.ApplyError]] if `toIndex` is not specified.
    * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
    * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
