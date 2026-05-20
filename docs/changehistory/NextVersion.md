@@ -91,5 +91,12 @@ finally {
   try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
 }
 ```
+OR order them appropriately if you are sure only the last disposal might throw:
+```typescript
+finally {
+  pcu[Symbol.dispose]();
+  reader[Symbol.dispose]();
+}
+```
 
 Code using the `using` declaration is unaffected — the TypeScript runtime already handles multiple `using` disposals independently.
