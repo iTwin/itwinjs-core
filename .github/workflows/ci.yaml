@@ -2,21 +2,16 @@
 #
 # Ported from: common/config/azure-pipelines/ci.yaml
 #
-# This build validates iTwin.js core on GitHub-hosted runners across
-# Windows, Linux, and macOS. It runs on a daily schedule and can be
-# triggered manually via workflow_dispatch.
+# This build validates iTwin.js core on GitHub-hosted runners for
+# Linux only as a focused larger-runner PoC. It runs on a daily schedule
+# and can be triggered manually via workflow_dispatch.
 #
 # For the main CI on self-hosted runners, see jobs/fast-ci.yaml (ADO, not yet ported).
 #
 # Runner tiers (controlled via workflow_dispatch input):
-#   8core (default): ubuntu-22.04-8core / windows-2022-8core / macos-latest
-#     Specs:    8 vCPU, 32 GB RAM, 300 GB SSD (Linux/Win); macOS stays standard
-#     Cost:     ~$0.022/min Linux, ~$0.042/min Windows (vs $0.008/$0.016 standard)
-#     Benefit:  doubles cores vs standard; 300 GB disk eliminates artifact pressure
-#   16core:    ubuntu-22.04-16core / windows-2022-16core / macos-latest
-#     Specs:    16 vCPU, 64 GB RAM, 600 GB SSD
-#     Cost:     ~$0.042/min Linux, ~$0.082/min Windows — step up if 8core still bottlenecks
-#   standard:  ubuntu-latest / windows-latest / macos-latest (free-tier, 4-core)
+#   8core (default): ubuntu-runner-8
+#     Purpose: focused Linux-only PoC on the newly added 8-core Ubuntu runner
+#   standard:  ubuntu-latest (free-tier baseline)
 #
 # ⚠ Prerequisites for the 'larger' tier (one-time org setup):
 #   1. Org admin enables larger runners: Settings → Actions → Runners → New larger runner
@@ -25,7 +20,8 @@
 #   If runners are unavailable, jobs queue indefinitely — fall back to 'standard' input.
 #
 # Note: this workflow covers the GHA-port subset of CI (not the full ADO fast-ci workload).
-# Treat results as a benchmark signal, not a complete self-hosted replacement proof.
+# Treat results as a benchmark signal for Linux runner performance, not a complete
+# self-hosted replacement proof.
 
 name: CI
 
@@ -35,13 +31,12 @@ on:
   workflow_dispatch:
     inputs:
       runner-tier:
-        description: "Runner tier: 8core = paid 8-core (default); 16core = paid 16-core; standard = free 4-core"
+        description: "Runner tier: 8core = Ubuntu 8-core PoC runner (default); standard = free 4-core baseline"
         required: false
         default: "8core"
         type: choice
         options:
           - 8core
-          - 16core
           - standard
 
 # Include runner-tier in concurrency key so manual A/B comparisons don't cancel each other.
@@ -62,14 +57,9 @@ jobs:
         run: |
           TIER="${{ inputs.runner-tier || '8core' }}"
           if [[ "$TIER" == "standard" ]]; then
-            echo 'matrix={"include":[{"runner":"ubuntu-latest","name":"Linux"},{"runner":"windows-latest","name":"Windows"},{"runner":"macos-latest","name":"macOS"}]}' >> "$GITHUB_OUTPUT"
-          elif [[ "$TIER" == "16core" ]]; then
-            # macOS larger runners cost $0.10–0.15/min — not justified for this workload.
-            echo 'matrix={"include":[{"runner":"ubuntu-22.04-16core","name":"Linux"},{"runner":"windows-2022-16core","name":"Windows"},{"runner":"macos-latest","name":"macOS"}]}' >> "$GITHUB_OUTPUT"
+            echo 'matrix={"include":[{"runner":"ubuntu-latest","name":"Linux"}]}' >> "$GITHUB_OUTPUT"
           else
-            # 8core default: 8 vCPU, 32 GB RAM, 300 GB SSD — good starting point for PoC
-            # macOS larger runners cost $0.10–0.15/min — not justified for this workload.
-            echo 'matrix={"include":[{"runner":"ubuntu-22.04-8core","name":"Linux"},{"runner":"windows-2022-8core","name":"Windows"},{"runner":"macos-latest","name":"macOS"}]}' >> "$GITHUB_OUTPUT"
+            echo 'matrix={"include":[{"runner":"ubuntu-runner-8","name":"Linux"}]}' >> "$GITHUB_OUTPUT"
           fi
 
   build:
