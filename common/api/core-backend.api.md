@@ -1484,6 +1484,8 @@ export namespace CloudSqlite {
     export function getBlobService(): BlobContainer.ContainerService;
     // (undocumented)
     export function getWriteLockHeldBy(container: CloudContainer): string | undefined;
+    // @alpha
+    export function hasLocalChanges(container: CloudContainer): boolean;
     // (undocumented)
     export function isSemverEditable(dbFullName: string, container: CloudContainer): boolean | readonly (string | number)[];
     // (undocumented)
@@ -5033,6 +5035,30 @@ export class LinkPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
+// @alpha
+export class LiteBriefcaseDb extends BriefcaseDb {
+    protected constructor(args: {
+        nativeDb: IModelJsNative.DgnDb;
+        key: string;
+        openMode: OpenMode;
+        briefcaseId: number;
+        container: CloudSqlite.CloudContainer;
+    });
+    close(options?: CloseIModelArgs): void;
+    // @internal (undocumented)
+    get cloudContainer(): CloudSqlite.CloudContainer;
+    get isLiteBriefcase(): boolean;
+    static openFromCheckpoint(args: LiteBriefcaseOpenArgs): Promise<LiteBriefcaseDb>;
+    // @internal
+    refreshContainerToken(accessToken?: AccessToken): Promise<void>;
+}
+
+// @alpha
+export interface LiteBriefcaseOpenArgs extends TokenArg {
+    readonly briefcaseId?: BriefcaseId;
+    readonly checkpoint: CheckpointProps;
+}
+
 // @internal (undocumented)
 export class LocalhostIpcHost {
     // (undocumented)
@@ -7735,6 +7761,11 @@ export class V2CheckpointManager {
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
         container: CloudSqlite.CloudContainer | undefined;
+    }>;
+    // @alpha
+    static attachForBriefcase(checkpoint: CheckpointProps): Promise<{
+        dbName: string;
+        container: CloudSqlite.CloudContainer;
     }>;
     // (undocumented)
     static cleanup(): void;

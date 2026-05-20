@@ -4124,8 +4124,185 @@ class RefreshV2CheckpointSas {
 
     return this._promise;
   }
-
 }
+
+/**
+ * Arguments to open a lite briefcase from a V2 checkpoint.
+ * @alpha
+ */
+export interface LiteBriefcaseOpenArgs extends TokenArg {
+  /** The checkpoint to attach to */
+  readonly checkpoint: CheckpointProps;
+  /** Optional pre-acquired briefcaseId. If not provided, one is acquired from iModelHub. */
+  readonly briefcaseId?: BriefcaseId;
+}
+
+/**
+ * A lightweight briefcase designed for short-lived edit sessions on a server or agent.
+ * Blocks are streamed on demand from a V2 checkpoint container — the full briefcase is never
+ * downloaded to disk. Local writes stay in a small local cache and are never uploaded back to
+ * the checkpoint container. Changesets can be pushed to iModelHub.
+ *
+ * This class is well-suited for agent and server-based workflows where only a small number of
+ * targeted edits are needed and full disk space for a traditional briefcase is not available or
+ * practical.
+ *
+ * **Constraints**:
+ * - Local changes must be pushed before close. Unpushed changes are lost on close or crash.
+ * - No block upload — the checkpoint blob container is never modified.
+ * - Pull/merge operations may cause on-demand block fetching from the cloud.
+ *
+ * @alpha
+ */
+export class LiteBriefcaseDb extends BriefcaseDb {
+  /** The cloud container backing this briefcase */
+  private _cloudContainer: CloudSqlite.CloudContainer;
+
+  /** @internal */
+  public override get cloudContainer(): CloudSqlite.CloudContainer { return this._cloudContainer; }
+
+  /** true if this is a lite briefcase (does not require full download)
+   * @alpha
+   */
+  public get isLiteBriefcase(): boolean { return true; }
+
+  private _refreshSas: RefreshV2CheckpointSas | undefined;
+
+  protected constructor(args: {
+    nativeDb: IModelJsNative.DgnDb;
+    key: string;
+    openMode: OpenMode;
+    briefcaseId: number;
+    container: CloudSqlite.CloudContainer;
+  }) {
+    super({ nativeDb: args.nativeDb, key: args.key, openMode: args.openMode, briefcaseId: args.briefcaseId });
+    this._cloudContainer = args.container;
+  }
+
+  /**
+   * Open a V2 checkpoint as a lite briefcase for lightweight, short-lived edits on a server or agent.
+   * The full briefcase is never downloaded — blocks stream on demand from the cloud container.
+   * Local writes stay in a small local cache and are never uploaded to the checkpoint container.
+   * Changesets can be pushed to iModelHub.
+   *
+   * This is the preferred method for agent/server workflows where only targeted edits are needed
+   * and full disk space for a traditional briefcase is not practical.
+   *
+   * @param args parameters specifying the checkpoint and optional briefcaseId
+   * @returns a new LiteBriefcaseDb
+   * @throws IModelError if the checkpoint cannot be attached or if a briefcaseId cannot be acquired
+   * @alpha
+   */
+  public static async openFromCheckpoint(args: LiteBriefcaseOpenArgs): Promise<LiteBriefcaseDb> {
+    const { checkpoint } = args;
+
+    // Acquire a briefcaseId if not provided. Track whether we acquired it so we can
+    // release it if a later step fails — prevents leaking hub resources.
+    const acquiredId = args.briefcaseId === undefined;
+    const briefcaseId = args.briefcaseId ?? await BriefcaseManager.acquireNewBriefcaseId({
+      accessToken: checkpoint.accessToken,
+      iModelId: checkpoint.iModelId,
+    });
+
+    try {
+      // Attach the V2 checkpoint container
+      const { dbName, container } = await V2CheckpointManager.attachForBriefcase(checkpoint);
+
+      const key = CheckpointManager.getKey(checkpoint);
+
+      // Open the database in read-write mode against the cloud container.
+      // Local writes go to the local cache; blocks are never uploaded.
+      // skipWriteLockCheck: we intentionally skip the container write lock since we will never upload blocks.
+      const file = { path: dbName, key };
+      const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+      IModelJsFs.recursiveMkDirSync(baseDir);
+      const openProps = { tempFileBase: join(baseDir, dbName), skipWriteLockCheck: true };
+      const nativeDb = new IModelNative.platform.DgnDb();
+      try {
+        nativeDb.openIModel(dbName, OpenMode.ReadWrite, undefined, openProps, container, {});
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to open cloud checkpoint as briefcase: ${err.message}`);
+      }
+
+      // Set the briefcaseId on the native db so that changeset operations work correctly.
+      // This writes to a local dirty page that will never be uploaded.
+      try {
+        nativeDb.resetBriefcaseId(briefcaseId);
+        nativeDb.saveChanges();
+      } catch (err: any) {
+        nativeDb.closeFile();
+        throw new IModelError(err.errorNumber ?? IModelStatus.BadRequest, `Failed to set briefcaseId on lite briefcase: ${err.message}`);
+      }
+
+      const db = new LiteBriefcaseDb({
+        nativeDb,
+        key: file.key ?? Guid.createValue(),
+        openMode: OpenMode.ReadWrite,
+        briefcaseId,
+        container,
+      });
+
+      db._iTwinId = checkpoint.iTwinId;
+
+      // Set up SAS token refresh
+      const v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
+      if (v2props?.sasToken) {
+        db._refreshSas = new RefreshV2CheckpointSas(v2props.sasToken, checkpoint.reattachSafetySeconds);
+      }
+
+      // Load workspace settings
+      await db.loadWorkspaceSettings();
+
+      // Create code service if available
+      if (CodeService.createForIModel) {
+        try {
+          db._codeService = await CodeService.createForIModel(db);
+          BriefcaseDb.onCodeServiceCreated.raiseEvent(db);
+        } catch (e: any) {
+          if ((e as CodeService.Error).errorId !== "NoCodeIndex") {
+            Logger.logWarning(loggerCategory, `CodeService not available for lite briefcase: ${e.message}`);
+          }
+        }
+      }
+
+      BriefcaseDb.onOpened.raiseEvent(db, { fileName: dbName });
+      return db;
+    } catch (err) {
+      // Release the briefcaseId we acquired so it doesn't leak on the hub.
+      if (acquiredId) {
+        try {
+          const token = args.accessToken ?? checkpoint.accessToken ?? "";
+          await BriefcaseManager.releaseBriefcase(token, { briefcaseId, iModelId: checkpoint.iModelId });
+        } catch { }
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Refresh the SAS token for the cloud container if it is about to expire.
+   * @internal
+   */
+  public async refreshContainerToken(accessToken?: AccessToken): Promise<void> {
+    if (this._refreshSas) {
+      const token = accessToken ?? await IModelHost.getAccessToken();
+      await this._refreshSas.refreshSas(token, this);
+    }
+  }
+
+  /** Override close to warn if there are unpushed local changes.
+   * LiteBriefcaseDb is designed for server/agent tasks where throwing an exception on close
+   * would cause more problems than it solves — the caller may not be able to recover at that point.
+   * Instead, we log a warning so operators can detect lost changes via telemetry.
+   */
+  public override close(options?: CloseIModelArgs) {
+    if (this.isOpen && this[_nativeDb].hasPendingTxns()) {
+      Logger.logWarning(loggerCategory, "Closing LiteBriefcaseDb with unpushed local changes. These changes will be lost.");
+    }
+    super.close(options);
+  }
+}
+
 /** A *snapshot* iModel database file that is used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)

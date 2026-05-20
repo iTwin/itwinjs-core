@@ -80,6 +80,7 @@ internal;interface;BcvHttpLog
 internal;interface;BcvHttpLogFilterOptions
 internal;interface;BcvStats
 internal;interface;BcvStatsFilterOptions
+alpha;function;hasLocalChanges
 internal;interface;LockAndOpenArgs
 internal;function;transferDb
 beta;interface;CloudSqliteContainer
@@ -410,6 +411,8 @@ public;class;LinkModel
 preview;class;LinkModel
 public;class;LinkPartition
 preview;class;LinkPartition
+alpha;class;LiteBriefcaseDb
+alpha;interface;LiteBriefcaseOpenArgs
 internal;class;LocalhostIpcHost
 internal;interface;LocalhostIpcHostOpts
 internal;class;LocalHub
