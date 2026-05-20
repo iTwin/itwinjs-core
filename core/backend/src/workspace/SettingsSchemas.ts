@@ -106,6 +106,9 @@ export interface SettingsSchemas {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
+  /** The map of each registered [[SettingGroupSchema]], accessed by its [[SettingGroupSchema.schemaPrefix]]. */
+  readonly groups: ReadonlyMap<string, SettingGroupSchema>;
+
   /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
   readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
 
