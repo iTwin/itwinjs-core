@@ -85,7 +85,7 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 
 [ChangesetReader]($backend) and [PartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
 
-The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
+The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown. Because the TypeScript runtime disposes each `using`-bound object independently, a throw from one disposal does not prevent the others from running:
 
 ```ts
 {
@@ -97,11 +97,11 @@ The preferred approach is the `using` declaration (TC39 Explicit Resource Manage
 
   for (const instance of pcu.instances)
     console.log(instance.$meta.op, instance.ECInstanceId);
-  // reader and pcu are disposed here automatically
+  // reader and pcu are disposed here automatically, each independently
 }
 ```
 
-If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly in a `finally` block:
+If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
 ```ts
 const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
@@ -112,8 +112,22 @@ try {
   for (const instance of pcu.instances)
     console.log(instance.$meta.op, instance.ECInstanceId);
 } finally {
-  reader[Symbol.dispose]();
+  // Nest the disposals: even if reader throws, pcu is still disposed.
+  try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
+}
+```
+OR order them appropriately if you are sure only the last disposal might throw:
+```ts
+const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+try {
+  while (reader.step())
+    pcu.appendFrom(reader);
+  for (const instance of pcu.instances)
+    console.log(instance.$meta.op, instance.ECInstanceId);
+} finally {
   pcu[Symbol.dispose]();
+  reader[Symbol.dispose]();
 }
 ```
 
@@ -148,6 +162,34 @@ Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved
 ### [ChangesetReader.openInMemoryChanges]($backend) — read only the in-memory (unsaved) changes
 
 [[include:ChangesetReader.OpenInMemoryChanges]]
+
+---
+
+## `spillThresholdInBytes` — bounding peak memory usage
+
+[openGroup]($backend), [openTxn]($backend), [openLocalChanges]($backend), and [openInMemoryChanges]($backend) all accept an optional `spillThresholdInBytes` argument. It controls whether the native reader buffers change data in memory or spills it to a temporary file on disk.
+
+| Scenario | Behaviour |
+|---|---|
+| Total change data **≤** `spillThresholdInBytes` | Changes are held in memory — fastest path |
+| Total change data **>** `spillThresholdInBytes` | Changes are written to a temporary file on disk and streamed from there — memory usage stays bounded |
+
+The default threshold is **50 MiB**. Reduce it when running in a memory-constrained environment or when processing an unusually large group of changesets:
+
+[[include:ChangesetReader.SpillThreshold]]
+
+The same parameter is available on the other open methods:
+
+**`openLocalChanges`:**
+[[include:ChangesetReader.SpillThresholdOpenLocalChanges]]
+
+**`openInMemoryChanges`:**
+[[include:ChangesetReader.SpillThresholdOpenInMemoryChanges]]
+
+**`openTxn`:**
+[[include:ChangesetReader.SpillThresholdOpenTxn]]
+
+> **Note:** [openFile]($backend) does not expose `spillThresholdInBytes` because it reads a single on-disk file sequentially and does not pre-buffer the change data.
 
 ---
 
@@ -243,6 +285,42 @@ reader.clearTableNameFilters();
 reader.clearOpCodeFilters();
 reader.clearClassNameFilters();
 ```
+
+---
+
+## Strict mode
+
+Strict mode controls how [ChangesetReader]($backend) handles a **column-count mismatch** between a change record and the corresponding live database table. A mismatch arises when columns have been added to a table after the changeset was written.
+
+When the reader processes a change row it first reads the table name, then compares the number of columns recorded in the change binary against the number of columns the table currently has in the live iModel:
+
+| Mode | Column-count mismatch behaviour |
+|---|---|
+| **Strict** (`enableStrictMode`) | Throws an error immediately — the row is not processed |
+| **Lenient** (`disableStrictMode`, the **default**) | Takes the **minimum** of the two counts and proceeds with that subset of columns |
+
+The lenient default is safe because SQLite only ever appends new columns at the end of a table and we never remove columns. An older change record therefore simply lacks the trailing columns that were added later; those missing columns are ignored and the rest of the mapping proceeds normally.
+
+### When to use strict mode
+
+Enable strict mode when you need a hard guarantee that every change row is interpreted against exactly the schema that was in effect when the changeset was written. Any schema evolution (added columns) that occurred between the changeset being created and it being read will surface as an error rather than being silently tolerated.
+
+```ts
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+reader.enableStrictMode(); // throw if column counts diverge between change record and live table
+
+while (reader.step()) {
+  // ...
+}
+```
+
+To return to the default lenient behaviour at any time:
+
+```ts
+reader.disableStrictMode();
+```
+
+Both methods can be called between [ChangesetReader.step]($backend) calls to toggle the mode mid-stream.
 
 ---
 
