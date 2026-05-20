@@ -3259,10 +3259,7 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
     }
 
-    // === openGroup: insert + update as a single stream ===
-    // After merging, the elem New key is shared between insert-New and update-New;
-    // the update-New wins on overlapping props, so the final New reflects the updated state.
-    // elem Old only comes from the update changeset.
+    // === openGroup: insert + update as a single stream becomes just insert ===
     {
       using reader = ChangesetReader.openGroup({ db: rwIModel, changesetFiles: [insertCs.pathname, updateCs.pathname], rowOptions: { abbreviateBlobs: false } });
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
@@ -3378,7 +3375,6 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     txn.saveChanges("insert element");
 
 
-    // === openFile: insert changeset ===
     {
       using reader = ChangesetReader.openLocalChanges({ db: rwIModel, rowOptions: { abbreviateBlobs: false } });
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
@@ -3421,7 +3417,6 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
     }
     // Wait so that LastMod on bis_Model gets a distinct timestamp before the update txn
     await new Promise((resolve) => setTimeout(resolve, 300));
-    // --- Push 3: update element — change all custom props ---
     await rwIModel.locks.acquireLocks({ exclusive: elementId });
     txn.updateElement({
       ...rwIModel.elements.getElementProps(elementId),
@@ -3432,7 +3427,6 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       ],
     });
 
-    // === openFile: update changeset ===
     {
       using reader = ChangesetReader.openInMemoryChanges({ db: rwIModel, rowOptions: { abbreviateBlobs: false } });
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
@@ -3476,10 +3470,7 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
     }
 
-    // === openGroup: insert + update as a single stream ===
-    // After merging, the elem New key is shared between insert-New and update-New;
-    // the update-New wins on overlapping props, so the final New reflects the updated state.
-    // elem Old only comes from the update changeset.
+    // === openLocalChanges: insert + update as a single stream so becomes insert ===
     {
       using reader = ChangesetReader.openLocalChanges({ db: rwIModel, includeInMemoryChanges: true, rowOptions: { abbreviateBlobs: false } });
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
@@ -5007,7 +4998,7 @@ describe("ChangesetReader: strict mode (column-count mismatch)", () => {
         }
       }
 
-      // Download all changesets. The last one is B2's element insert (binary has 3 cols).
+      // Download all changesets. The last one is B2's element insert.
       const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
       const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
       const newCs = changesets[changesets.length - 1];
@@ -5087,7 +5078,7 @@ describe("ChangesetReader: strict mode (column-count mismatch)", () => {
         assert.include(String(elemNew!.GeometryStream), "\"bytes\"");
         assert.equal(elemNew!.p1, "hi", "p1 from the txn binary must be readable in lenient mode");
         assert.equal(elemNew!.p2, "world", "p2 from the txn binary must be readable in lenient mode");
-        // Object.keys — p3 is absent because the txn binary predates the v2 schema upgrade
+        // Object.keys — p3, p4 are absent because the binary txn has them but the live table does not
         assert.deepEqual(Object.keys(elemNew!).sort(), [
           "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope",
           "FederationGuid", "Category", "Origin", "Rotation", "BBoxLow", "BBoxHigh",
