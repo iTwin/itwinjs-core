@@ -29,9 +29,8 @@ export function _testResetUnitsCache(): void {
  * at module scope — construction is essentially free, and multiple instances
  * share the same immutable lookup indexes.
  *
- * If that initial schema load fails, later provider calls will rethrow the same cached error for
- * the lifetime of the module rather than retrying automatically. This is not expected in normal
- * use; it primarily surfaces a broken asset load or module-resolution problem.
+ * If an initial schema load fails, later provider calls will retry the load instead of pinning the
+ * provider into a permanently failed module-level state.
  *
  * This is the zero-dependency default for backends, tools, and any frontend that doesn't need
  * iModel overrides. Equivalent to calling `createUnitsProvider()` with no arguments.

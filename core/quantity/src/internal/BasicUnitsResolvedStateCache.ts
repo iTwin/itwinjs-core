@@ -8,23 +8,16 @@ import { buildResolvedBasicUnitsData, type ResolvedBasicUnitsData } from "./Basi
 // Shared module-level cache for the built-in basic-units indexes used by BasicUnitsProvider.
 let _resolvedData: ResolvedBasicUnitsData | undefined;
 let _resolvePromise: Promise<ResolvedBasicUnitsData> | undefined;
-// Cache the first load/build failure so later callers observe the same module-level failure
-// instead of silently retrying with a different partial-initialization state.
-let _permanentError: Error | undefined;
 
-function rememberFailure(err: unknown): never {
-  _permanentError = err instanceof Error ? err : new Error(String(err));
+function clearFailedAttempt(err: unknown): never {
   _resolvePromise = undefined;
-  throw _permanentError;
+  throw err instanceof Error ? err : new Error(String(err));
 }
 
 /** Returns the shared resolved data for the built-in basic units, loading/building it asynchronously if needed.
  * @internal
  */
 export async function resolveBasicUnitsData(loadSchema: () => Promise<SerializedUnitSchema>): Promise<ResolvedBasicUnitsData> {
-  if (_permanentError !== undefined)
-    throw _permanentError;
-
   if (_resolvedData !== undefined)
     return _resolvedData;
 
@@ -34,7 +27,7 @@ export async function resolveBasicUnitsData(loadSchema: () => Promise<Serialized
         _resolvedData ??= buildResolvedBasicUnitsData(schema);
         return _resolvedData;
       })
-      .catch(rememberFailure);
+      .catch(clearFailedAttempt);
   }
 
   return _resolvePromise;
@@ -47,5 +40,4 @@ export async function resolveBasicUnitsData(loadSchema: () => Promise<Serialized
 export function _testResetResolvedBasicUnitsDataCache(): void {
   _resolvedData = undefined;
   _resolvePromise = undefined;
-  _permanentError = undefined;
 }

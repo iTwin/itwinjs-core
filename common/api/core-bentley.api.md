@@ -1390,7 +1390,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     reset(ids?: CompressedId64Set): void;
 }
 
-// @internal
+// @beta
 export type NestedValueOf<T> = ValueOf<{
     [K in keyof T]: ValueOf<T[K]>;
 }>;
@@ -1836,7 +1836,7 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
 
-// @internal
+// @beta
 export type ValueOf<T> = T[keyof T];
 
 // @beta

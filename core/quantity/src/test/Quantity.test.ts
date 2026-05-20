@@ -9,7 +9,9 @@ import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitConversionInvert } from "../Interfaces";
 import { Phenomena, type UnitName, Units, UnitSystems } from "../generated/Units.generated";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
+import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData } from "../internal/BasicUnitsResolvedStateCache";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
+import type { SerializedUnitSchema } from "../SerializedUnitSchema";
 import { UnitConversions } from "../UnitConversions";
 
 const unitsSchemaItems = unitsSchema.items as Record<string, { schemaItemType: string }>;
@@ -164,6 +166,26 @@ describe("Quantity", () => {
 
   it("generated basic conversion data covers every bundled Unit and InvertedUnit item", () => {
     expect(Object.keys(basicUnitConversionData).sort((a, b) => a.localeCompare(b))).toEqual(expectedBuiltInConversionUnitNames());
+  });
+
+  it("retries basic-units resolution after an initial load failure", async () => {
+    _testResetResolvedBasicUnitsDataCache();
+
+    let attempts = 0;
+    const loadSchema = async (): Promise<SerializedUnitSchema> => {
+      attempts += 1;
+      if (attempts === 1)
+        throw new Error("boom");
+      return unitsSchema as SerializedUnitSchema;
+    };
+
+    await expect(resolveBasicUnitsData(loadSchema)).rejects.toThrow("boom");
+
+    const resolved = await resolveBasicUnitsData(loadSchema);
+    expect(resolved.schemaName).toBe(unitsSchema.name);
+    expect(attempts).toBe(2);
+
+    _testResetResolvedBasicUnitsDataCache();
   });
 
   it("generated basic conversion data matches provider-backed conversions for every bundled same-phenomenon unit pair", async () => {

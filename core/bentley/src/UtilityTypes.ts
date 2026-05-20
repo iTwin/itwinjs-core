@@ -166,12 +166,12 @@ export type RequireAtLeastOne<T> = {
 }[keyof T];
 
 /** Extracts the union of all value types from the properties of `T`.
- * @internal
+ * @beta
  */
 export type ValueOf<T> = T[keyof T];
 
 /** Extracts the union of all nested value types from a two-level object `T`.
  * Intended for generated lookup objects whose first level groups literal values into sections.
- * @internal
+ * @beta
  */
 export type NestedValueOf<T> = ValueOf<{ [K in keyof T]: ValueOf<T[K]> }>;

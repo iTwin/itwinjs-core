@@ -108,7 +108,6 @@ export function getDefaultPersistenceUnit(
  * `convert(...)` and `convertValue(...)` are the throwing application helpers to use when invalid conversion metadata should fail fast.
  * `isCompatible(...)` is the explicit built-in compatibility check to use before applying a conversion when a non-throwing branch is preferred.
  * For schema-defined, custom, or provider-resolved units outside that built-in set, use a `UnitsProvider`-based workflow instead.
- * without introducing a TypeScript namespace or static utility class.
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
