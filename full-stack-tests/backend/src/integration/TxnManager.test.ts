@@ -1,7 +1,7 @@
 import { assert, expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
@@ -571,7 +571,7 @@ describe("Discarding local txns test", async () => {
       const [firstBriefcase] = briefcases;
 
       // Push a data changeset so we have something to revert
-      const el1Id = await insertElement(firstBriefcase, "Element1");
+      await insertElement(firstBriefcase, "Element1");
       await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
 
       // Stub pushChanges to simulate a push failure

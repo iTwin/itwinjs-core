@@ -3966,8 +3966,9 @@ export class BriefcaseDb extends IModelDb {
   /**
    * Whether file-based transactions are enabled for this briefcase.
    *
-   * When enabled, transaction data is stored in temporary files on disk rather than in memory,
-   * reducing memory usage for large transactions at the cost of additional disk I/O.
+   * When enabled, transaction data is stored in separate temporary `.txn` files rather than in the
+   * briefcase's internal transaction table. This avoids SQLite blob size limits and reduces memory
+   * pressure for very large changesets, at the cost of additional disk I/O.
    * @see [[enableFileBasedTxns]] to enable, [[disableFileBasedTxns]] to disable.
    * @internal
    */
@@ -3986,7 +3987,8 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
-   * Disable file-based transactions for this briefcase, reverting to the default in-memory mode.
+   * Disable file-based transactions for this briefcase, reverting to the default storage mode
+   * (transactions stored within the briefcase's internal transaction table).
    * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
    * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
    * @internal
@@ -4091,7 +4093,9 @@ export class BriefcaseDb extends IModelDb {
             nativeDb.deleteAllTxns();
             break;
           case "delete":
-            // Release the briefcase and delete the local file.
+            // Release locks before closing so they don't remain held.
+            if (!arg.retainLocks)
+              await this.locks.releaseAllLocks();
             nativeDb.abandonChanges();
             nativeDb.deleteAllTxns();
             const filePath = this.pathName;
