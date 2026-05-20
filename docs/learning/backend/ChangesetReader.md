@@ -101,12 +101,6 @@ The preferred approach is the `using` declaration (TC39 Explicit Resource Manage
 }
 ```
 
-> **`SuppressedError` — when both the body and disposal throw:** If the `using` block body throws *and* `[Symbol.dispose]()` also throws during cleanup, the TypeScript runtime wraps both into a [`SuppressedError`](https://tc39.es/proposal-explicit-resource-management/#sec-suppressederror-objects). The disposal error is what propagates to the caller; the original body error is accessible via `err.suppressed`. When only one side throws, the error propagates directly with no wrapping.
->
-> **Important — `typeof SuppressedError !== "undefined"` guard:** `SuppressedError` is a global introduced alongside the TC39 Explicit Resource Management proposal. It is available in Node.js ≥ 22 and in browsers that ship the proposal. In **older Node.js versions** (< 22) the global does not exist, so writing `err instanceof SuppressedError` directly would throw a `ReferenceError` at runtime before the check even executes. Always guard the check with `typeof SuppressedError !== "undefined"` first:
-
-[[include:ChangesetReader.SuppressedError]]
-
 If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
 ```ts
@@ -120,6 +114,20 @@ try {
 } finally {
   // Nest the disposals: even if reader throws, pcu is still disposed.
   try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
+}
+```
+OR order them appropriately if you are sure only the last disposal might throw:
+```ts
+const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+try {
+  while (reader.step())
+    pcu.appendFrom(reader);
+  for (const instance of pcu.instances)
+    console.log(instance.$meta.op, instance.ECInstanceId);
+} finally {
+  pcu[Symbol.dispose]();
+  reader[Symbol.dispose]();
 }
 ```
 

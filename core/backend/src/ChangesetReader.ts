@@ -491,6 +491,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * ```ts
    * try { reader.close(); } finally { pcu[Symbol.dispose](); }
    * ```
+   * or order them appropriately if you are sure only the last disposal might throw:
+   * ```ts
+   * pcu[Symbol.dispose](); reader.close();
+   * ```
    * The `using` declaration avoids this entirely — the TypeScript runtime
    * disposes each binding independently.
    * @beta
@@ -510,27 +514,6 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Implements the `Disposable` contract — delegates to [[close]].
    *
    * @throws if the native layer fails to release its resources (re-thrown from [[close]]).
-   *
-   * **`SuppressedError` when used with `using`:** If the body of a `using` block
-   * throws *and* `[Symbol.dispose]()` also throws, the TypeScript runtime wraps
-   * both into a
-   * [`SuppressedError`](https://tc39.es/proposal-explicit-resource-management/#sec-suppressederror-objects)
-   * rather than propagating both independently:
-   *
-   * ```ts
-   * // .error      — the disposal error (what actually propagates)
-   * // .suppressed — the original body error (buried inside)
-   * try {
-   *   using reader = ChangesetReader.openFile({ db, fileName });
-   *   while (reader.step()) { ... } // throws BodyError
-   *   // reader is disposed here automatically — also throws CloseError
-   * } catch (err) {
-   *   if (err instanceof SuppressedError) {
-   *     console.error("disposal failed:", err.error);      // CloseError
-   *     console.error("original error:", err.suppressed);  // BodyError
-   *   }
-   * }
-   * ```
    *
    * When only one side throws, the error propagates directly with no wrapping.
    * @beta

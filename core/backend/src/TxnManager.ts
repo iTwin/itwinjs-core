@@ -968,23 +968,14 @@ export class TxnManager {
   /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
    * @internal */
   protected _captureInstanceChanges(id: TxnIdString) {
-    let reader: ChangesetReader | undefined = undefined;
-    let pcu: PartialChangeUnifier | undefined = undefined;
-    try {
-      if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
 
-      reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
-      pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
-      while (reader.step()) {
-        pcu.appendFrom(reader);
-      }
-      BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
-    } catch (err) {
-      throw err;
-    } finally {
-      if (pcu) pcu[Symbol.dispose]();
-      if (reader) reader[Symbol.dispose]();
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    while (reader.step()) {
+      pcu.appendFrom(reader);
     }
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
