@@ -1,0 +1,34 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestProduct",
+  "version": "01.XX.XX",
+  "locale": "fr",
+  "label": "Schéma de test de produit",
+  "description": "Un schéma de test pour le catalogue de produits",
+  "classes": {
+    "Product": {
+      "label": "Produit",
+      "description": "Un article de produit",
+      "properties": {
+        "Name": {
+          "label": "Nom",
+          "description": "Le nom du produit"
+        },
+        "Price": {
+          "label": "Prix",
+          "description": "Le prix du produit"
+        }
+      }
+    },
+    "Category": {
+      "label": "Catégorie",
+      "description": "Une catégorie de produit",
+      "properties": {
+        "Name": {
+          "label": "Nom",
+          "description": "Le nom de la catégorie"
+        }
+      }
+    }
+  }
+}

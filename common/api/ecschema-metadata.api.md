@@ -838,6 +838,11 @@ export interface HasMixins {
     readonly mixins: ReadonlyArray<LazyLoadedMixin>;
 }
 
+// @beta
+export interface ILocalizationProvider {
+    getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
+}
+
 // @internal
 export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     constructor(options?: SchemaLocaterOptions);
@@ -1033,6 +1038,35 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 
 // @public @preview (undocumented)
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
+
+// @beta
+export class LocalizationProvider implements ILocalizationProvider {
+    constructor(_loader: (schemaName: string, locale: string) => Promise<SchemaLocalizationJson | undefined>);
+    clearCache(): void;
+    getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
+}
+
+// @beta
+export interface LocalizedClassText extends LocalizedText {
+    properties?: {
+        [propertyName: string]: LocalizedText;
+    };
+}
+
+// @beta
+export interface LocalizedEnumerationText extends LocalizedText {
+    enumerators?: {
+        [enumeratorName: string]: LocalizedText;
+    };
+}
+
+// @beta
+export interface LocalizedText {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    label?: string;
+}
 
 // @public @preview
 export class Mixin extends ECClass {
@@ -2177,6 +2211,64 @@ export class SchemaLoader {
     get context(): SchemaContext;
     getSchema(schemaName: string): Schema;
     tryGetSchema(schemaName: string): Schema | undefined;
+}
+
+// @beta
+export class SchemaLocalization {
+    constructor(provider: ILocalizationProvider, locale: string);
+    clearCache(): void;
+    getEnumeratorDescription(enumeration: Enumeration, enumeratorName: string): Promise<string | undefined>;
+    getEnumeratorLabel(enumeration: Enumeration, enumeratorName: string): Promise<string>;
+    getPropertyDescription(ecClass: ECClass, property: Property): Promise<string | undefined>;
+    getPropertyLabel(ecClass: ECClass, property: Property): Promise<string>;
+    getSchemaDescription(schema: Schema): Promise<string | undefined>;
+    getSchemaItemDescription(item: SchemaItem): Promise<string | undefined>;
+    getSchemaItemLabel(item: SchemaItem): Promise<string>;
+    getSchemaLabel(schema: Schema): Promise<string>;
+    // (undocumented)
+    get locale(): string;
+    set locale(value: string);
+    get provider(): ILocalizationProvider;
+}
+
+// @beta
+export interface SchemaLocalizationJson {
+    $schema?: string;
+    classes?: {
+        [className: string]: LocalizedClassText;
+    };
+    constants?: {
+        [constantName: string]: LocalizedText;
+    };
+    description?: string;
+    enumerations?: {
+        [enumerationName: string]: LocalizedEnumerationText;
+    };
+    formats?: {
+        [formatName: string]: LocalizedText;
+    };
+    invertedUnits?: {
+        [invertedUnitName: string]: LocalizedText;
+    };
+    kindOfQuantities?: {
+        [koqName: string]: LocalizedText;
+    };
+    label?: string;
+    locale: string;
+    name: string;
+    phenomena?: {
+        [phenomenonName: string]: LocalizedText;
+    };
+    propertyCategories?: {
+        [propertyCategoryName: string]: LocalizedText;
+    };
+    units?: {
+        [unitName: string]: LocalizedText;
+    };
+    unitSystems?: {
+        [unitSystemName: string]: LocalizedText;
+    };
+    version?: string;
 }
 
 // @beta

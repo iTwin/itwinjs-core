@@ -93,6 +93,7 @@ beta;class;FormatSetFormatsProvider
 internal;function;getFormatProps
 public;interface;HasMixins
 preview;interface;HasMixins
+beta;interface;ILocalizationProvider
 internal;class;IncrementalSchemaLocater
 public;class;InvertedUnit
 preview;class;InvertedUnit
@@ -139,6 +140,10 @@ public;type;LazyLoadedUnit
 preview;type;LazyLoadedUnit
 public;type;LazyLoadedUnitSystem
 preview;type;LazyLoadedUnitSystem
+beta;class;LocalizationProvider
+beta;interface;LocalizedClassText
+beta;interface;LocalizedEnumerationText
+beta;interface;LocalizedText
 public;class;Mixin
 preview;class;Mixin
 public;interface;MixinProps
@@ -237,6 +242,8 @@ preview;class;SchemaKey
 public;interface;SchemaKeyProps
 preview;interface;SchemaKeyProps
 beta;class;SchemaLoader
+beta;class;SchemaLocalization
+beta;interface;SchemaLocalizationJson
 beta;interface;SchemaLocaterOptions
 public;enum;SchemaMatchType
 preview;enum;SchemaMatchType

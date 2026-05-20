@@ -1,0 +1,20 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestPerson",
+  "version": "02.XX.XX",
+  "locale": "fr",
+  "label": "Schéma de test de personne",
+  "description": "Un schéma de test pour les données personnelles",
+  "classes": {
+    "Person": {
+      "label": "Personne",
+      "description": "Une entité personne",
+      "properties": {
+        "FirstName": {
+          "label": "Prénom",
+          "description": "Le prénom"
+        }
+      }
+    }
+  }
+}
