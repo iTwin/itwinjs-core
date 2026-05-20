@@ -125,6 +125,8 @@ const scratchViewZ = Vector3d.create();
 const scratchPoint = Point3d.create();
 const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint)];
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const scratchXRange = Range1d.createNull();
+const scratchYRange = Range1d.createNull();
 
 /** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
  * @public
@@ -550,23 +552,19 @@ export class MapTile extends RealityTile {
     // Project corners to view space. For MapTileTree, args.location is identity,
     // so the world-to-view transform applies directly.
     const tileToView = args.worldToViewMap.transform0;
-    let xMin = Number.MAX_VALUE, xMax = -Number.MAX_VALUE;
-    let yMin = Number.MAX_VALUE, yMax = -Number.MAX_VALUE;
+    scratchXRange.setNull();
+    scratchYRange.setNull();
 
     for (const corner of corners) {
       const viewCorner = tileToView.multiplyPoint3d(corner, 1);
       if (viewCorner.w < 0)
         return baseResult; // corner behind eye — fall back to base result
 
-      const x = viewCorner.x / viewCorner.w;
-      const y = viewCorner.y / viewCorner.w;
-      xMin = Math.min(xMin, x);
-      xMax = Math.max(xMax, x);
-      yMin = Math.min(yMin, y);
-      yMax = Math.max(yMax, y);
+      scratchXRange.extendX(viewCorner.x / viewCorner.w);
+      scratchYRange.extendX(viewCorner.y / viewCorner.w);
     }
 
-    const maxDimension = Math.max(xMax - xMin, yMax - yMin);
+    const maxDimension = Math.max(scratchXRange.length(), scratchYRange.length());
     if (maxDimension < 1e-3)
       return baseResult;
 
