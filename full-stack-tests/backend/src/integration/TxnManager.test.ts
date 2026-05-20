@@ -1,11 +1,16 @@
-import { assert, expect } from "chai";
-import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
+import { assert, expect, use as useFromChai } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as sinon from "sinon";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import * as path from "path";
+import * as fs from "fs";
 import { setupIntegrationLogging } from "./StartupShutdown";
+
+useFromChai(chaiAsPromised);
 
 describe("Discarding local txns test", async () => {
   let briefcases: BriefcaseDb[];
@@ -25,7 +30,7 @@ describe("Discarding local txns test", async () => {
   });
 
   afterEach(() => {
-    briefcases.forEach(briefcase => { briefcase.close(); });
+    briefcases.forEach(briefcase => { if (briefcase.isOpen) briefcase.close(); });
   });
 
   // Helper to setup schema/model/category without XML string
@@ -446,7 +451,7 @@ describe("Discarding local txns test", async () => {
   });
 
   describe("revertAndPushChanges", () => {
-    it("should revert 2 changesets (data+schema+data) from second briefcase and verify on first", async () => {
+    it("should revert last 2 changesets (schema + data) from second briefcase and verify on first", async () => {
       await setupTestSchemaAndModel();
       assert.equal(briefcases.length, 2, "Two briefcases should be opened");
 
@@ -534,6 +539,86 @@ describe("Discarding local txns test", async () => {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const propsOnSecond = Object.getOwnPropertyNames(secondBriefcase.getMetaData("TestSchema:TestElement").properties);
       assert.notInclude(propsOnSecond, "extraProp", "ExtraProp should be reverted on second briefcase too");
+    });
+
+    it("inCaseOfFailure='revert' should restore briefcase to pre-revert state on push failure", async () => {
+      await setupTestSchemaAndModel();
+      const [firstBriefcase] = briefcases;
+
+      // Push a data changeset so we have something to revert
+      const el1Id = await insertElement(firstBriefcase, "Element1");
+      await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
+
+      // Stub pushChanges to simulate a push failure
+      const pushStub = sinon.stub(BriefcaseDb.prototype, "pushChanges").rejects(new Error("Simulated push failure"));
+      try {
+        const currentIndex = firstBriefcase.changeset.index!;
+        await assert.isRejected(
+          firstBriefcase.revertAndPushChanges({ toIndex: currentIndex, inCaseOfFailure: "revert", accessToken: adminToken }),
+          "Simulated push failure",
+        );
+      } finally {
+        pushStub.restore();
+      }
+
+      // Briefcase should be restored — element should still exist and no pending txns
+      assert.isFalse(firstBriefcase[_nativeDb].hasPendingTxns(), "Should have no pending txns after revert cleanup");
+      testElement(firstBriefcase, el1Id, "Inserted");
+    });
+
+    it("inCaseOfFailure='retain' should keep local changes on push failure", async () => {
+      await setupTestSchemaAndModel();
+      const [firstBriefcase] = briefcases;
+
+      // Push a data changeset so we have something to revert
+      const el1Id = await insertElement(firstBriefcase, "Element1");
+      await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
+
+      // Stub pushChanges to simulate a push failure
+      const pushStub = sinon.stub(BriefcaseDb.prototype, "pushChanges").rejects(new Error("Simulated push failure"));
+      try {
+        const currentIndex = firstBriefcase.changeset.index!;
+        await assert.isRejected(
+          firstBriefcase.revertAndPushChanges({ toIndex: currentIndex, inCaseOfFailure: "retain", accessToken: adminToken }),
+          "Simulated push failure",
+        );
+      } finally {
+        pushStub.restore();
+      }
+
+      // Briefcase should still have local changes (pending txns from the revert)
+      assert.isTrue(firstBriefcase[_nativeDb].hasPendingTxns(), "Should retain pending txns");
+    });
+
+    it("inCaseOfFailure='delete' should close and delete the briefcase file on push failure", async () => {
+      await setupTestSchemaAndModel();
+      const [firstBriefcase] = briefcases;
+
+      // Push a data changeset so we have something to revert
+      await insertElement(firstBriefcase, "Element1");
+      await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
+
+      const filePath = firstBriefcase.pathName;
+      assert.isTrue(fs.existsSync(filePath), "Briefcase file should exist before revert");
+
+      // Stub pushChanges to simulate a push failure
+      const pushStub = sinon.stub(BriefcaseDb.prototype, "pushChanges").rejects(new Error("Simulated push failure"));
+      try {
+        const currentIndex = firstBriefcase.changeset.index!;
+        await assert.isRejected(
+          firstBriefcase.revertAndPushChanges({ toIndex: currentIndex, inCaseOfFailure: "delete", accessToken: adminToken }),
+          "Simulated push failure",
+        );
+      } finally {
+        pushStub.restore();
+      }
+
+      // Briefcase file should be deleted and it should no longer be open
+      assert.isFalse(firstBriefcase.isOpen, "Briefcase should be closed after delete");
+      assert.isFalse(fs.existsSync(filePath), "Briefcase file should be deleted");
+
+      // Remove from briefcases array so afterEach doesn't try to close it
+      briefcases = briefcases.filter((b) => b !== firstBriefcase);
     });
   });
 

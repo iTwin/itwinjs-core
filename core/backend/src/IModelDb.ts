@@ -4059,13 +4059,13 @@ export class BriefcaseDb extends IModelDb {
 
     // The native side enables file-based txns during revert. Restore the original setting afterward.
     const wasFileBasedTxnsEnabled = this.isFileBasedTxnsEnabled;
+    const preRevertIndex = this.changeset.index;
 
-    const preRevertChangesetIndex = this.changeset.index;
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
       nativeDb.saveChanges("Revert changes");
       if (!arg.description) {
-        arg.description = `Reverted changes from ${preRevertChangesetIndex} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+        arg.description = `Reverted changes from ${preRevertIndex} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
       const pushArgs = {
         description: arg.description,
@@ -4107,7 +4107,7 @@ export class BriefcaseDb extends IModelDb {
         Logger.logError(loggerCategory, `Failed to clean up after revert error (action=${failureAction}): ${String(cleanupErr)}`);
       }
 
-      if (!arg.retainLocks) {
+      if (!arg.retainLocks && this.isOpen) {
         await this.locks.releaseAllLocks();
       }
       throw err;
