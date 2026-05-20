@@ -4800,3 +4800,310 @@ describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {
   });
 });
 
+describe("ChangesetReader: strict mode (column-count mismatch)", () => {
+  const STRICT_MODE_SCHEMA_V1 = `<?xml version="1.0" encoding="UTF-8"?>
+  <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+      <ECEntityClass typeName="SimpleElement">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="p1" typeName="string"/>
+          <ECProperty propertyName="p2" typeName="string"/>
+      </ECEntityClass>
+  </ECSchema>`;
+
+  const STRICT_MODE_SCHEMA_V2 = `<?xml version="1.0" encoding="UTF-8"?>
+  <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+      <ECEntityClass typeName="SimpleElement">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="p1" typeName="string"/>
+          <ECProperty propertyName="p2" typeName="string"/>
+          <ECProperty propertyName="p3" typeName="string"/>
+          <ECProperty propertyName="p4" typeName="string"/>
+      </ECEntityClass>
+  </ECSchema>`;
+
+  it("openTxn: strict mode ON throws when txn was captured with fewer columns than the current live table, strict mode OFF does not throw", async () => {
+    HubMock.startup("StrictModeOldTxnStrict", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "strictOldTxn", description: "strict", accessToken: adminToken });
+    const db = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    const txn = startTestTxn(db, "strict mode scenario 1 strict");
+    db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    try {
+      // Setup: v1 schema + drawing model + category
+      await importSchemaStrings(txn, [STRICT_MODE_SCHEMA_V1]);
+      await db.locks.acquireLocks({ shared: IModel.dictionaryId });
+      const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+      const catId = DrawingCategory.insert(txn, IModel.dictionaryId, "Cat",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(128,0,128)").toJSON() }));
+      txn.saveChanges("setup");
+      await db.pushChanges({ description: "setup", accessToken: adminToken });
+
+      await db.locks.acquireLocks({ shared: modelId });
+      const geom: GeometryStreamProps = [Arc3d.createXY(Point3d.create(0, 0), 5)].map((a) => IModelJson.Writer.toIModelJson(a));
+      const elementId = txn.insertElement({ classFullName: "TestDomain:SimpleElement", model: modelId, category: catId, code: Code.createEmpty(), geom, p1: "hello", p2: "world" } as any);
+      txn.saveChanges("insert v1 element");
+      const txnId = db.txns.getLastSavedTxnProps()!.id;
+
+      // Upgrade schema to v2 — appends one column in the live DB.
+      await importSchemaStrings(txn, [STRICT_MODE_SCHEMA_V2]);
+
+      // Strict mode ON: binary has one column less than the live table.
+      {
+        using reader = ChangesetReader.openTxn({ db, txnId });
+        reader.enableStrictMode();
+        expect(() => { while (reader.step()) { /* drain */ } }).to.throw();
+      }
+      {
+        using reader = ChangesetReader.openTxn({ db, txnId });
+        reader.disableStrictMode(); // no-op when already off — verifies the API does not throw
+        using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+        while (reader.step())
+          pcu.appendFrom(reader);
+        const instances = Array.from(pcu.instances);
+        assert.equal(instances.length, 3, "should have 3 change instances: model (New + Old) + element (New)");
+
+        // --- Model indirect update — New stage ---
+        const modelNew = instances.find((i) => i.ECInstanceId === modelId && i.$meta.stage === "New");
+        expect(modelNew).to.exist;
+        assert.equal(modelNew!.ECInstanceId, modelId);
+        assert.equal(db.getClassNameFromId(modelNew!.ECClassId), "BisCore:DrawingModel");
+        assert.isString(modelNew!.LastMod);
+        assert.isString(modelNew!.GeometryGuid);
+        assert.deepEqual(Object.keys(modelNew!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "GeometryGuid", "$meta"].sort());
+        assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+        assert.equal(modelNew!.$meta.op, "Updated");
+        assert.equal(modelNew!.$meta.stage, "New");
+        assert.deepEqual(modelNew!.$meta.tables.sort(), ["bis_Model"].sort());
+        assert.deepEqual(modelNew!.$meta.changeIndexes.sort(), [3].sort());
+        assert.isString(modelNew!.$meta.instanceKey);
+        assert.equal(modelNew!.$meta.instanceKey.split("-").length, 2);
+        assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
+        assert.deepEqual(modelNew!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+        assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+        // --- Model indirect update — Old stage (only key columns, no data properties) ---
+        const modelOld = instances.find((i) => i.ECInstanceId === modelId && i.$meta.stage === "Old");
+        expect(modelOld).to.exist;
+        assert.equal(modelOld!.ECInstanceId, modelId);
+        assert.equal(db.getClassNameFromId(modelOld!.ECClassId), "BisCore:DrawingModel");
+        assert.isUndefined(modelOld!.LastMod, "Old stage carries only the key — no data properties");
+        assert.isUndefined(modelOld!.GeometryGuid, "Old stage carries only the key — no data properties");
+        assert.deepEqual(Object.keys(modelOld!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
+        assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+        assert.equal(modelOld!.$meta.op, "Updated");
+        assert.equal(modelOld!.$meta.stage, "Old");
+        assert.deepEqual(modelOld!.$meta.tables.sort(), ["bis_Model"].sort());
+        assert.deepEqual(modelOld!.$meta.changeIndexes.sort(), [3].sort());
+        assert.isString(modelOld!.$meta.instanceKey);
+        assert.equal(modelOld!.$meta.instanceKey.split("-").length, 2);
+        assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
+        assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+        assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+        // --- Element insert — New stage ---
+        const elemNew = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+        expect(elemNew).to.exist;
+        assert.equal(elemNew!.ECInstanceId, elementId);
+        assert.equal(db.getClassNameFromId(elemNew!.ECClassId), "TestDomain:SimpleElement");
+        assert.equal(elemNew!.Model.Id, modelId);
+        assert.equal(db.getClassNameFromId(elemNew!.Model.RelECClassId), "BisCore:ModelContainsElements");
+        assert.isString(elemNew!.LastMod);
+        assert.equal(elemNew!.CodeSpec.Id, "0x1");
+        assert.equal(db.getClassNameFromId(elemNew!.CodeSpec.RelECClassId), "BisCore:CodeSpecSpecifiesCode");
+        assert.equal(elemNew!.CodeScope.Id, "0x1");
+        assert.equal(db.getClassNameFromId(elemNew!.CodeScope.RelECClassId), "BisCore:ElementScopesCode");
+        assert.isString(elemNew!.FederationGuid);
+        assert.equal(elemNew!.Category.Id, catId);
+        assert.equal(db.getClassNameFromId(elemNew!.Category.RelECClassId), "BisCore:GeometricElement2dIsInCategory");
+        assert.deepEqual(elemNew!.Origin, { X: 0, Y: 0 });
+        assert.equal(elemNew!.Rotation, 0);
+        assert.deepEqual(elemNew!.BBoxLow, { X: -5, Y: -5 });
+        assert.deepEqual(elemNew!.BBoxHigh, { X: 5, Y: 5 });
+        assert.include(String(elemNew!.GeometryStream), "\"bytes\"");
+        assert.equal(elemNew!.p1, "hello", "p1 from the txn binary must be readable in lenient mode");
+        assert.equal(elemNew!.p2, "world", "p2 from the txn binary must be readable in lenient mode");
+        // Object.keys — p3 is absent because the txn binary predates the v2 schema upgrade
+        assert.deepEqual(Object.keys(elemNew!).sort(), [
+          "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope",
+          "FederationGuid", "Category", "Origin", "Rotation", "BBoxLow", "BBoxHigh",
+          "GeometryStream", "p1", "p2", "$meta",
+        ].sort());
+        // $meta keys
+        assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+        assert.equal(elemNew!.$meta.op, "Inserted");
+        assert.equal(elemNew!.$meta.stage, "New");
+        assert.deepEqual(elemNew!.$meta.tables.sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
+        assert.deepEqual(elemNew!.$meta.changeIndexes.sort(), [1, 2].sort());
+        assert.isString(elemNew!.$meta.instanceKey);
+        assert.equal(elemNew!.$meta.instanceKey.split("-").length, 2);
+        assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
+        assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+          "ECInstanceId", "ECClassId", "Model.Id", "LastMod", "CodeSpec.Id", "CodeScope.Id",
+          "CodeValue", "UserLabel", "Parent", "FederationGuid", "JsonProperties",
+          "Category.Id", "Origin", "Rotation", "BBoxLow", "BBoxHigh", "GeometryStream",
+          "TypeDefinition", "p1", "p2",
+        ].sort());
+        assert.equal(elemNew!.$meta.isIndirectChange, false);
+      }
+    } finally {
+      txn.end();
+      db.close();
+      HubMock.shutdown();
+    }
+  });
+
+  it("openFile: strict mode ON throws when changeset was created with more columns than the live table", async () => {
+    HubMock.startup("StrictModeNewCsStrict", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "strictNewCs", description: "strict", accessToken: adminToken });
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    const txn1 = startTestTxn(b1, "strict mode b1 strict");
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    try {
+      // Push 1 (B1): v1 schema + drawing model + category.
+      await importSchemaStrings(txn1, [STRICT_MODE_SCHEMA_V1]);
+      await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+      const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn1, Code.createEmpty(), true);
+      const catId = DrawingCategory.insert(txn1, IModel.dictionaryId, "Cat",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(128,0,128)").toJSON() }));
+      txn1.saveChanges("setup");
+      await b1.pushChanges({ description: "setup", accessToken: adminToken });
+
+      let elementId: Id64String;
+      // B2: open iModel (picks up B1's v1 schema + model + category), upgrade to v2, insert element, push.
+      {
+        const b2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+        const txn2 = startTestTxn(b2, "strict mode b2 strict");
+        b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+        try {
+          // Push 2 (B2): upgrade schema to v2 (appends a column).
+          await importSchemaStrings(txn2, [STRICT_MODE_SCHEMA_V2]);
+          await b2.pushChanges({ description: "schema v2", accessToken: adminToken });
+
+          // Push 3 (B2): insert element.
+          await b2.locks.acquireLocks({ shared: modelId });
+          const geom: GeometryStreamProps = [Arc3d.createXY(Point3d.create(0, 0), 5)].map((a) => IModelJson.Writer.toIModelJson(a));
+          elementId = txn2.insertElement({ classFullName: "TestDomain:SimpleElement", model: modelId, category: catId, code: Code.createEmpty(), geom, p1: "hi", p2: "world", p3: "!", p4: "?" } as any);
+          txn2.saveChanges("insert v2 element");
+          await b2.pushChanges({ description: "insert v2 element", accessToken: adminToken });
+        } finally {
+          txn2.end();
+          b2.close();
+        }
+      }
+
+      // Download all changesets. The last one is B2's element insert (binary has 3 cols).
+      const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+      const changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+      const newCs = changesets[changesets.length - 1];
+
+      // Strict mode ON: binary has more cols, throws.
+      {
+        using reader = ChangesetReader.openFile({ db: b1, fileName: newCs.pathname });
+        reader.enableStrictMode();
+        expect(() => { while (reader.step()) { /* drain */ } }).to.throw();
+      }
+      // Strict mode OFF: binary has more cols, does not throw.
+      {
+        using reader = ChangesetReader.openFile({ db: b1, fileName: newCs.pathname });
+        using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+        while (reader.step())
+          pcu.appendFrom(reader);
+        const instances = Array.from(pcu.instances);
+        assert.equal(instances.length, 3, "should have 3 change instances: model (New + Old) + element (New)");
+
+        // --- Model indirect update — New stage ---
+        const modelNew = instances.find((i) => i.ECInstanceId === modelId && i.$meta.stage === "New");
+        expect(modelNew).to.exist;
+        assert.equal(modelNew!.ECInstanceId, modelId);
+        assert.equal(b1.getClassNameFromId(modelNew!.ECClassId), "BisCore:DrawingModel");
+        assert.isString(modelNew!.LastMod);
+        assert.isString(modelNew!.GeometryGuid);
+        assert.deepEqual(Object.keys(modelNew!).sort(), ["ECInstanceId", "ECClassId", "LastMod", "GeometryGuid", "$meta"].sort());
+        assert.deepEqual(Object.keys(modelNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+        assert.equal(modelNew!.$meta.op, "Updated");
+        assert.equal(modelNew!.$meta.stage, "New");
+        assert.deepEqual(modelNew!.$meta.tables.sort(), ["bis_Model"].sort());
+        assert.deepEqual(modelNew!.$meta.changeIndexes.sort(), [3].sort());
+        assert.isString(modelNew!.$meta.instanceKey);
+        assert.equal(modelNew!.$meta.instanceKey.split("-").length, 2);
+        assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
+        assert.deepEqual(modelNew!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+        assert.equal(modelNew!.$meta.isIndirectChange, true);
+
+        // --- Model indirect update — Old stage (only key columns, no data properties) ---
+        const modelOld = instances.find((i) => i.ECInstanceId === modelId && i.$meta.stage === "Old");
+        expect(modelOld).to.exist;
+        assert.equal(modelOld!.ECInstanceId, modelId);
+        assert.equal(b1.getClassNameFromId(modelOld!.ECClassId), "BisCore:DrawingModel");
+        assert.isUndefined(modelOld!.LastMod, "Old stage carries only the key — no data properties");
+        assert.isUndefined(modelOld!.GeometryGuid, "Old stage carries only the key — no data properties");
+        assert.deepEqual(Object.keys(modelOld!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
+        assert.deepEqual(Object.keys(modelOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+        assert.equal(modelOld!.$meta.op, "Updated");
+        assert.equal(modelOld!.$meta.stage, "Old");
+        assert.deepEqual(modelOld!.$meta.tables.sort(), ["bis_Model"].sort());
+        assert.deepEqual(modelOld!.$meta.changeIndexes.sort(), [3].sort());
+        assert.isString(modelOld!.$meta.instanceKey);
+        assert.equal(modelOld!.$meta.instanceKey.split("-").length, 2);
+        assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
+        assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+        assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+        // --- Element insert — New stage ---
+        const elemNew = instances.find((i) => i.ECInstanceId === elementId && i.$meta.stage === "New");
+        expect(elemNew).to.exist;
+        assert.equal(elemNew!.ECInstanceId, elementId);
+        assert.equal(b1.getClassNameFromId(elemNew!.ECClassId), "TestDomain:SimpleElement");
+        assert.equal(elemNew!.Model.Id, modelId);
+        assert.equal(b1.getClassNameFromId(elemNew!.Model.RelECClassId), "BisCore:ModelContainsElements");
+        assert.isString(elemNew!.LastMod);
+        assert.equal(elemNew!.CodeSpec.Id, "0x1");
+        assert.equal(b1.getClassNameFromId(elemNew!.CodeSpec.RelECClassId), "BisCore:CodeSpecSpecifiesCode");
+        assert.equal(elemNew!.CodeScope.Id, "0x1");
+        assert.equal(b1.getClassNameFromId(elemNew!.CodeScope.RelECClassId), "BisCore:ElementScopesCode");
+        assert.isString(elemNew!.FederationGuid);
+        assert.equal(elemNew!.Category.Id, catId);
+        assert.equal(b1.getClassNameFromId(elemNew!.Category.RelECClassId), "BisCore:GeometricElement2dIsInCategory");
+        assert.deepEqual(elemNew!.Origin, { X: 0, Y: 0 });
+        assert.equal(elemNew!.Rotation, 0);
+        assert.deepEqual(elemNew!.BBoxLow, { X: -5, Y: -5 });
+        assert.deepEqual(elemNew!.BBoxHigh, { X: 5, Y: 5 });
+        assert.include(String(elemNew!.GeometryStream), "\"bytes\"");
+        assert.equal(elemNew!.p1, "hi", "p1 from the txn binary must be readable in lenient mode");
+        assert.equal(elemNew!.p2, "world", "p2 from the txn binary must be readable in lenient mode");
+        // Object.keys — p3 is absent because the txn binary predates the v2 schema upgrade
+        assert.deepEqual(Object.keys(elemNew!).sort(), [
+          "ECInstanceId", "ECClassId", "Model", "LastMod", "CodeSpec", "CodeScope",
+          "FederationGuid", "Category", "Origin", "Rotation", "BBoxLow", "BBoxHigh",
+          "GeometryStream", "p1", "p2", "$meta",
+        ].sort());
+        // $meta keys
+        assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
+        assert.equal(elemNew!.$meta.op, "Inserted");
+        assert.equal(elemNew!.$meta.stage, "New");
+        assert.deepEqual(elemNew!.$meta.tables.sort(), ["bis_Element", "bis_GeometricElement2d"].sort());
+        assert.deepEqual(elemNew!.$meta.changeIndexes.sort(), [1, 2].sort());
+        assert.isString(elemNew!.$meta.instanceKey);
+        assert.equal(elemNew!.$meta.instanceKey.split("-").length, 2);
+        assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
+        assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+          "ECInstanceId", "ECClassId", "Model.Id", "LastMod", "CodeSpec.Id", "CodeScope.Id",
+          "CodeValue", "UserLabel", "Parent", "FederationGuid", "JsonProperties",
+          "Category.Id", "Origin", "Rotation", "BBoxLow", "BBoxHigh", "GeometryStream",
+          "TypeDefinition", "p1", "p2",
+        ].sort());
+        assert.equal(elemNew!.$meta.isIndirectChange, false);
+      }
+    } finally {
+      txn1.end();
+      b1.close();
+      HubMock.shutdown();
+    }
+  });
+});
+

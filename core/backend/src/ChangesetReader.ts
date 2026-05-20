@@ -341,6 +341,50 @@ export class ChangesetReader implements Disposable, ChangeSource {
   }
 
   // ---------------------------------------------------------------------------
+  // Strict mode
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Enable strict mode on the reader.
+   *
+   * Strict mode affects how the reader handles a **column-count mismatch** between a change
+   * record and the corresponding live database table. Such a mismatch can occur when columns
+   * have been added to a table after the changeset was created.
+   *
+   * When strict mode is **enabled**: if the number of columns recorded in a change row differs
+   * from the number of columns currently present in the live table, the reader throws an error
+   * instead of processing that row.
+   *
+   * Use strict mode when you need to be certain that every change row is interpreted against
+   * exactly the schema that was in effect when the changeset was written.
+   *
+   * @see [[disableStrictMode]] — the default (lenient) behaviour.
+   * @throws if the native layer encounters an error.
+   * @beta
+   */
+  public enableStrictMode(): void {
+    this._nativeReader.enableStrictMode();
+  }
+
+  /**
+   * Disable strict mode on the reader (this is the default).
+   *
+   * When strict mode is **disabled**: if the number of columns recorded in a change row differs
+   * from the number of columns currently present in the live table, the reader takes the
+   * **minimum** of the two column counts and proceeds normally with that subset. This is safe
+   * because SQLite only ever appends new columns at the end of a table and never removes them —
+   * so older change records simply lack the trailing columns that were added later, and those
+   * missing columns are silently ignored.
+   *
+   * @see [[enableStrictMode]] — throw on column-count mismatches instead.
+   * @throws if the native layer encounters an error.
+   * @beta
+   */
+  public disableStrictMode(): void {
+    this._nativeReader.disableStrictMode();
+  }
+
+  // ---------------------------------------------------------------------------
   // Iteration
   // ---------------------------------------------------------------------------
 

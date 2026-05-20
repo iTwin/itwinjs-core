@@ -290,6 +290,42 @@ reader.clearClassNameFilters();
 
 ---
 
+## Strict mode
+
+Strict mode controls how [ChangesetReader]($backend) handles a **column-count mismatch** between a change record and the corresponding live database table. A mismatch arises when columns have been added to a table after the changeset was written.
+
+When the reader processes a change row it first reads the table name, then compares the number of columns recorded in the change binary against the number of columns the table currently has in the live iModel:
+
+| Mode | Column-count mismatch behaviour |
+|---|---|
+| **Strict** (`enableStrictMode`) | Throws an error immediately — the row is not processed |
+| **Lenient** (`disableStrictMode`, the **default**) | Takes the **minimum** of the two counts and proceeds with that subset of columns |
+
+The lenient default is safe because SQLite only ever appends new columns at the end of a table and we never remove columns. An older change record therefore simply lacks the trailing columns that were added later; those missing columns are ignored and the rest of the mapping proceeds normally.
+
+### When to use strict mode
+
+Enable strict mode when you need a hard guarantee that every change row is interpreted against exactly the schema that was in effect when the changeset was written. Any schema evolution (added columns) that occurred between the changeset being created and it being read will surface as an error rather than being silently tolerated.
+
+```ts
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+reader.enableStrictMode(); // throw if column counts diverge between change record and live table
+
+while (reader.step()) {
+  // ...
+}
+```
+
+To return to the default lenient behaviour at any time:
+
+```ts
+reader.disableStrictMode();
+```
+
+Both methods can be called between [ChangesetReader.step]($backend) calls to toggle the mode mid-stream.
+
+---
+
 ## Cache strategies
 
 By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:

@@ -38,6 +38,24 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 42](https://www.electronjs.org/blog/electron-42-0).
 
+### ChangesetReader: `enableStrictMode` and `disableStrictMode`
+
+[ChangesetReader]($backend) now exposes [ChangesetReader.enableStrictMode]($backend) and [ChangesetReader.disableStrictMode]($backend) to control how the reader handles a **column-count mismatch** between a change record and the corresponding live database table.
+
+When a row is read, the reader compares the number of columns recorded in the changeset binary against the number of columns the table currently has in the live iModel:
+
+- **Strict mode** (`enableStrictMode`): a mismatch causes an error to be thrown — the row is not processed.
+- **Lenient mode** (`disableStrictMode`, the **default**): a mismatch is resolved by taking the **minimum** of the two column counts and proceeding with that subset. This is safe because SQLite only ever appends new columns at the end of a table and we never remove columns, so older change records simply lack the trailing columns added later.
+
+```typescript
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+reader.enableStrictMode(); // throw if column counts diverge between change record and live table
+
+while (reader.step()) { /* ... */ }
+```
+
+Call `disableStrictMode()` to return to the default lenient behaviour. Both methods can be called between `step()` calls to toggle the mode mid-stream.
+
 ### ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use
 
 [openGroup]($backend), [openTxn]($backend), [openLocalChanges]($backend), and [openInMemoryChanges]($backend) now accept a `spillThresholdInBytes` parameter. When the total size of the change data being read exceeds this threshold, the reader transparently writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory. This keeps peak memory usage bounded and makes these APIs usable under low-memory conditions.
