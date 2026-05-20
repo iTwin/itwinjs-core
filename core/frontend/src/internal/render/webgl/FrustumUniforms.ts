@@ -89,7 +89,7 @@ export class FrustumUniforms {
 
   public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
   public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
-  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
+  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType]; }
   public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
   public get planFraction(): number { return this._planFraction; }
 
@@ -199,7 +199,7 @@ export class FrustumUniforms {
   protected setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
     this._frustumData[FrustumData.kNear] = nearPlane;
     this._frustumData[FrustumData.kFar] = farPlane;
-    this._frustumData[FrustumData.kType] = type as number;
+    this._frustumData[FrustumData.kType] = type;
 
     // If nearPlane is zero, we don't have a camera (or got very unlucky); in that case shader will compute linear depth.
     this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;

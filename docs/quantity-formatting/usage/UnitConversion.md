@@ -20,7 +20,7 @@ For most unit conversions (length, angle, area, etc.), only the factor is used (
 
 `UnitConversionSpec` objects are created from [UnitConversionProps]($quantity) returned by a [UnitsProvider]($quantity). The provider's `getConversion` method calculates conversion properties based on unit definitions:
 
-- **[BasicUnitsProvider]($frontend)** - Uses hardcoded conversion factors for common units
+- **[BasicUnitsProvider]($quantity)** - Resolves conversions from the bundled BIS Units schema. Default provider.
 - **[SchemaUnitProvider]($ecschema-metadata)** - Calculates conversions from EC schema unit definitions
 - **Custom providers** - Can implement custom conversion logic
 
@@ -89,7 +89,7 @@ To optimize conversion performance:
 1. **Reuse specs** - Create FormatterSpec and ParserSpec once and reuse them (e.g., store as class instance properties) rather than recreating on each operation
 2. **Batch operations** - Format/parse multiple values with the same spec
 3. **Cache providers** - Don't recreate UnitsProvider instances unnecessarily
-4. **Use schema providers** - SchemaUnitProvider is more comprehensive than BasicUnitsProvider
+4. **Use the default BasicUnitsProvider** - It covers the full BIS unit set; only switch to SchemaUnitProvider when you need custom domain-specific units
 
 ## Example: Direct Unit Conversion
 

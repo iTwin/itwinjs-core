@@ -40,13 +40,13 @@ export class ExternalSource extends InformationReferenceElement {
   }
 
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
-    return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
   /** Ensure the [[CodeSpec]] for ExternalSource elements exists, using an explicit transaction.
    * @param txn The active EditTxn.
    */
   public static ensureCodeSpec(txn: EditTxn): Id64String;
-  /** @deprecated Use ExternalSource.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use ExternalSource.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
   public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
     const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
@@ -110,13 +110,13 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   }
 
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type
-    return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
   /** Ensure the [[CodeSpec]] for ExternalSourceAttachment elements exists, using an explicit transaction.
    * @param txn The active EditTxn.
    */
   public static ensureCodeSpec(txn: EditTxn): Id64String;
-  /** @deprecated Use ExternalSourceAttachment.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use ExternalSourceAttachment.ensureCodeSpec(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static ensureCodeSpec(iModelDb: IModelDb): Id64String;
   public static ensureCodeSpec(txnOrIModel: EditTxn | IModelDb): Id64String {
     const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
@@ -168,7 +168,7 @@ export class SynchronizationConfigLink extends UrlLink {
   }
 
   public override toJSON(): SynchronizationConfigLinkProps { // This override only specializes the return type
-    return super.toJSON() as SynchronizationConfigLinkProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
 }
 

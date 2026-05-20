@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

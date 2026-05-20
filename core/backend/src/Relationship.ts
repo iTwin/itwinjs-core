@@ -82,7 +82,7 @@ export class Relationship extends Entity {
    * A subclass of ElementDrivesElement can re-implement this static method to take some action. onRootChanged may modify the output element only.
    * @param _props The ElementDrivesElement relationship instance.
    * @param _iModel The iModel
-   * @deprecated Use onRootChangedArg instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use onRootChangedArg instead.
    */
   public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
 
@@ -101,7 +101,7 @@ export class Relationship extends Entity {
    * A subclass of ElementDrivesElement can re-implement this static method to take some action.
    * @param _props The deleted ElementDrivesElement relationship instance.
    * @param _iModel The iModel
-   * @deprecated Use onDeletedDependencyArg instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use onDeletedDependencyArg instead.
    */
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
@@ -112,7 +112,7 @@ export class Relationship extends Entity {
   public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Relationship into the iModel.
-   * @deprecated Use Relationship.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use Relationship.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insert(): Id64String;
   public insert(txn?: EditTxn): Id64String { return this.id = (txn ?? this.iModel[_implicitTxn]).insertRelationship(this.toJSON()); }
@@ -124,7 +124,7 @@ export class Relationship extends Entity {
   public update(txn: EditTxn): void;
   /**
    * Update this Relationship in the iModel.
-   * @deprecated Use Relationship.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use Relationship.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public update(): void;
   public update(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).updateRelationship(this.toJSON()); }
@@ -136,7 +136,7 @@ export class Relationship extends Entity {
   public delete(txn: EditTxn): void;
   /**
    * Delete this Relationship from the iModel.
-   * @deprecated Use Relationship.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use Relationship.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public delete(): void;
   public delete(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).deleteRelationship(this.toJSON()); }
@@ -172,7 +172,7 @@ export class ElementRefersToElements extends Relationship {
    * @param sourceId The sourceId of the relationship, that is, the driver element.
    * @param targetId The targetId of the relationship, that is, the driven element.
    * @return The Id of the inserted Relationship.
-   * @deprecated Use ElementRefersToElements.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use ElementRefersToElements.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insert(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
   public static insert(txnOrIModel: EditTxn | IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
@@ -538,7 +538,7 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
-   * @deprecated Use EditTxn.insertRelationship instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.insertRelationship instead.
    */
   public insertInstance(props: RelationshipProps): Id64String {
     return this._iModel[_implicitTxn].insertRelationship(props);
@@ -546,14 +546,14 @@ export class Relationships {
 
   /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
-   * @deprecated Use EditTxn.updateRelationship instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateRelationship instead.
    */
   public updateInstance(props: RelationshipProps): void {
     this._iModel[_implicitTxn].updateRelationship(props);
   }
 
   /** Delete an Relationship instance from this iModel.
-   * @deprecated Use EditTxn.deleteRelationship instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.deleteRelationship instead.
    */
   public deleteInstance(props: RelationshipProps): void {
     this._iModel[_implicitTxn].deleteRelationship(props);
@@ -562,7 +562,7 @@ export class Relationships {
   /** Delete multiple Relationship instances from this iModel.
    * @param props The properties of the relationship instances to delete.
    * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
-   * @deprecated Use EditTxn.deleteRelationships instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.deleteRelationships instead.
    */
   public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
     this._iModel[_implicitTxn].deleteRelationships(props);
