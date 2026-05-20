@@ -144,8 +144,8 @@ export class CurveCurve {
     const maxDistance = optionIsNumber ? maxDistanceOrOptions : maxDistanceOrOptions.maxDistance ?? Geometry.largeCoordinateResult;
     const xyTolerance = optionIsNumber ? undefined : maxDistanceOrOptions.xyTolerance;
     const newtonTolerance = optionIsNumber ? undefined : maxDistanceOrOptions.newtonTolerance;
-    const newtonMaxIterations = optionIsNumber ? undefined : maxDistanceOrOptions.maxIterations;
-    const handler = new CurveCurveCloseApproachXY(curveB, xyTolerance, newtonTolerance, newtonMaxIterations);
+    const maxIterations = optionIsNumber ? undefined : maxDistanceOrOptions.maxIterations;
+    const handler = new CurveCurveCloseApproachXY(curveB, xyTolerance, newtonTolerance, maxIterations);
     handler.maxDistanceToAccept = maxDistance;
     curveA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
