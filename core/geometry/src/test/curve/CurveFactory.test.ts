@@ -324,6 +324,51 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygon");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("FilletsInPolygonClosureTolerance", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const points = [
+      Point3d.create(2, 4, 0),
+      Point3d.create(0, 0, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(2.05, 4, 0),
+    ];
+    const lineString = LineString3d.create(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0);
+    const radius = 0.2;
+
+    x0 += 6;
+    let filletOptions: CreateFilletsInLineStringOptions = { filletClosure: false, closureTolerance: 0.1 };
+    const chain0 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0);
+    ck.testFalse(chain0.startPoint()!.isAlmostEqual(chain0.endPoint()!), "chain0 must be open");
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, closureTolerance: 0.1 };
+    const chain1 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1, x0);
+    ck.testPoint3d(chain1.startPoint()!, chain1.endPoint()!, "chain1 must be closed");
+    ck.testExactNumber(chain1.children.length, 6, "expect 6 children in the filleted chain with looser closure tolerance");
+
+    x0 += 6;
+    filletOptions = { filletClosure: true }; // default closure tolerance
+    const chain2 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0);
+    ck.testPoint3d(chain2.startPoint()!, chain2.endPoint()!, "chain2 must be closed");
+    ck.testExactNumber(chain2.children.length, 8, "expect 8 children in the filleted chain with tighter closure tolerance");
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, allowCusp: false }; // default closure tolerance
+    const chain3 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain3, x0);
+    ck.testPoint3d(chain3.startPoint()!, chain3.endPoint()!, "chain3 must be closed");
+    ck.testExactNumber(chain3.children.length, 6, "expect 6 children in the filleted chain with tighter closure tolerance");
+
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygonClosureTolerance");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("fromFilletedLineString", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

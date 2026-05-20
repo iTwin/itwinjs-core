@@ -122,11 +122,16 @@ export interface CreateFilletsInLineStringOptions {
    * Whether to fillet the closure.
    * * If `true`, the input line string is treated as a polygon (closure point optional), and the output `Path` is
    * closed and has a fillet at its start point. If both first and last input points are identical, the last point's
-   * entry in the radius array is ignored.
+   * `entry in the radius array is ignored.
    * * If `false` (default), the first and last points receive no fillet and their respective entries in the radius
    * array are ignored.
    */
   filletClosure?: boolean;
+  /**
+   * Allowable distance between line string endpoints when `filletClosure` is `true`. In other words, it's the
+   * tolerance to consider line string as closed. Default value is `Geometry.smallMetricDistance`.
+   */
+  closureTolerance?: number;
 }
 
 /**
@@ -199,14 +204,16 @@ export class CurveFactory {
       return this.createFilletsInLineString(points.packedPoints, radius, allowCuspOrOptions);
     let allowCusp = true;
     let filletClosure = false;
+    let closureTolerance = Geometry.smallMetricDistance;
     if (typeof allowCuspOrOptions === "boolean") {
       allowCusp = allowCuspOrOptions;
     } else {
       allowCusp = allowCuspOrOptions.allowCusp ?? true;
       filletClosure = allowCuspOrOptions.filletClosure ?? false;
+      closureTolerance = allowCuspOrOptions.closureTolerance ?? Geometry.smallMetricDistance;
     }
     let n = points.length;
-    if (filletClosure && points.almostEqualIndexIndex(0, n - 1))
+    if (filletClosure && points.almostEqualIndexIndex(0, n - 1, closureTolerance))
       n--; // ignore closure point
     if (n <= 1)
       return undefined;
