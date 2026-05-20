@@ -130,9 +130,9 @@ export interface RegionBooleanXYOptions {
 export class RegionOps {
   /**
    * Return moment sums for a loop, parity region, or union region.
-   * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
-   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
-   * call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums);`
+   * * The input region should lie in a plane parallel to the xy-plane, as z-coords are ignored (assumed to be zero).
+   * * The caller can convert the return value `rawMomentData` to principal axes and moments with
+   * `principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums);`
    * * `rawMomentData.origin` is the centroid of `region`.
    * * `rawMomentData.sums.weight()` is the signed area of `region`.
    * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
@@ -177,9 +177,8 @@ export class RegionOps {
   }
   /**
    * Return MomentData with the sums of wire moments.
-   * * The input curve should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
-   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
-   * call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   * * The caller can convert the return value `rawMomentData` to principal axes and moments with
+   * `principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums);`
    * * `rawMomentData.origin` is the wire centroid of `curve`.
    * * `rawMomentData.sums.weight()` is the signed length of `curve`.
    * @param curve any [[CurveCollection]] or [[CurvePrimitive]].
@@ -219,6 +218,8 @@ export class RegionOps {
     const centroid = momentData.origin.clone(result?.origin);
     if (!regionIsXY) // rotate centroid back (area is unchanged)
       localToWorld.multiplyPoint3d(centroid, centroid);
+    else if (localToWorld.origin.z !== 0) // horizontal region needs vertical shift
+      centroid.z += localToWorld.origin.z;
 
     let area = momentData.sums.weight();
     if (area < 0.0) {
