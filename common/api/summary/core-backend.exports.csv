@@ -519,6 +519,7 @@ public;class;RepositoryModel
 preview;class;RepositoryModel
 public;interface;RequestNewBriefcaseArg
 public;type;RevertChangesArgs
+alpha;type;RevertToCheckpointArgs
 public;class;RoleElement
 preview;class;RoleElement
 public;class;RoleModel

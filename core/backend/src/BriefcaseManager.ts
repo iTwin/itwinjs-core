@@ -114,6 +114,27 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
   skipSchemaChanges?: true;
 };
 
+/** Arguments for [[BriefcaseDb.revertToCheckpoint]]
+ * Specifies the target checkpoint as either a local file path or a changeset index backed by a V2 checkpoint.
+ * @alpha
+ */
+export type RevertToCheckpointArgs = TokenArg & (
+  | {
+    /** The file path of the checkpoint to revert to.
+     * The file must be at the exact state you want to revert to.
+     */
+    fileName: LocalFileName;
+    changesetIndex?: never;
+  }
+  | {
+    /** The changeset index of the checkpoint to revert to.
+     * A V2 checkpoint must exist at or before this index, or the operation will fail.
+     */
+    changesetIndex: ChangesetIndex;
+    fileName?: never;
+  }
+);
+
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public
  */
