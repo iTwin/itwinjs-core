@@ -71,8 +71,8 @@ export class LocalizationProvider implements ILocalizationProvider {
         throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected locale "${expectedLocale}" but got "${localizationData.locale}"`);
       }
 
-      const cacheKey = `${schemaName}:${localizationData.locale}`;
-      this._localizationCache.set(cacheKey, localizationData);
+      const key = `${schemaName}:${localizationData.locale}`;
+      this._localizationCache.set(key, localizationData);
 
       return localizationData;
     }

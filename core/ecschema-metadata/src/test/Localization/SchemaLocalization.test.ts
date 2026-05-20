@@ -711,7 +711,7 @@ describe("SchemaLocalization", () => {
       const schemaLoader = async (_schemaName: string, locale: string) => {
         return {
           name: "testSchema",
-          locale: locale,
+          locale,
           label: "Test Label",
           description: "Test Description",
         };

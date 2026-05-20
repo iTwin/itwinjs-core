@@ -348,7 +348,7 @@ export class SchemaLocalization {
 
       default:
         // eslint-disable-next-line no-console
-        console.warn(`Localization not supported for schema item type: ${item.schemaItemType}`);
+        console.warn(`Localization not supported for schema item type: ${String(item.schemaItemType)}`);
         return undefined;
     }
   }
