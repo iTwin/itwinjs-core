@@ -4060,11 +4060,12 @@ export class BriefcaseDb extends IModelDb {
     // The native side enables file-based txns during revert. Restore the original setting afterward.
     const wasFileBasedTxnsEnabled = this.isFileBasedTxnsEnabled;
 
+    const preRevertChangesetIndex = this.changeset.index;
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
       nativeDb.saveChanges("Revert changes");
       if (!arg.description) {
-        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+        arg.description = `Reverted changes from ${preRevertChangesetIndex} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
       const pushArgs = {
         description: arg.description,
