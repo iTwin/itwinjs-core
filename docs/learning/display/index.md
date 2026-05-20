@@ -13,6 +13,7 @@ This documentation concerns itself primarily with the frontend portion of the di
 ## Features
 
 - [Tile-based rendering](./Tiles.md)
+- [Reality models](./RealityModels.md)
 - [Lighting, materials, and environment](./Lighting.md)
 - [Clipping and section-cut graphics](./Clipping.md)
 - [2d drawings and sheets](./DrawingsAndSheets.md)
