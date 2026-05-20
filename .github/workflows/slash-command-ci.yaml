@@ -150,6 +150,48 @@ jobs:
         shell: bash
         run: node common/scripts/install-run-rush.js webpack:test -v
 
+      # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
+      # Ensure the binary is present before configuring the AppArmor profile on Ubuntu 24.04.
+      - name: Ensure Electron binary is downloaded
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          ELECTRON_DIR=$(find "$PWD/common/temp/node_modules/.pnpm" -path "*/electron@*/node_modules/electron" -type d 2>/dev/null | head -n 1)
+          if [ ! -d "$ELECTRON_DIR" ]; then
+            echo "::warning::Unable to find Electron package directory"
+          elif [ -f "$ELECTRON_DIR/dist/electron" ]; then
+            echo "Electron binary already present"
+          elif [ -f "$ELECTRON_DIR/install.js" ]; then
+            echo "Downloading Electron binary..."
+            node "$ELECTRON_DIR/install.js"
+          else
+            echo "::warning::Unable to find Electron install script at $ELECTRON_DIR/install.js"
+          fi
+
+      # Ubuntu 24.04 restricts unprivileged user namespaces by default via AppArmor.
+      # Electron's sandbox requires user namespaces, so allow them for the test binary.
+      - name: Setup AppArmor profile for Electron
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          ELECTRON_PATH=$(find "$PWD/common/temp/node_modules/.pnpm" -path "*/electron@*/node_modules/electron/dist/electron" -type f 2>/dev/null | head -n 1)
+          if [ -x "$ELECTRON_PATH" ]; then
+            PROFILE_NAME="electron-test"
+            PROFILE_PATH="/etc/apparmor.d/${PROFILE_NAME}"
+            sudo tee "$PROFILE_PATH" > /dev/null <<EOF
+          abi <abi/4.0>,
+          include <tunables/global>
+
+          profile ${PROFILE_NAME} ${ELECTRON_PATH} flags=(unconfined) {
+            userns,
+          }
+          EOF
+            sudo apparmor_parser -r "$PROFILE_PATH"
+            echo "Loaded AppArmor profile for $ELECTRON_PATH"
+          else
+            echo "::warning::Unable to find Electron binary for AppArmor profile"
+          fi
+
       - name: Rush cover (Linux)
         if: runner.os == 'Linux'
         uses: nick-fields/retry@v3
