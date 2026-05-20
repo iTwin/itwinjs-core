@@ -8,7 +8,7 @@
 
 import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
-import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, Point4d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
@@ -127,6 +127,7 @@ const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratch
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchXRange = Range1d.createNull();
 const scratchYRange = Range1d.createNull();
+const scratchPoint4d = Point4d.create();
 
 /** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
  * @public
@@ -504,37 +505,18 @@ export class MapTile extends RealityTile {
     return this.isContentCulled(args);
   }
 
-  /** Non-planar (ECEF globe) map tiles have projected screen sizes that are poorly estimated by
-   * the default geometric mean `sqrt(xRange * yRange)`. On narrow viewports, the narrow dimension
-   * pulls the geometric mean far below the tile's actual screen coverage in the larger dimension,
-   * causing the system to stop refining prematurely. This override uses `max(xRange, yRange)` for
-   * non-planar tiles to correctly identify when a tile spans a large portion of the screen.
+  /** The default pixel-size calculation for reality tiles uses the geometric mean of the projected
+   * x and y ranges: `sqrt(xRange * yRange)`. For non-planar globe tiles, the projected surface corners
+   * can be significantly anisotropic, causing the geometric mean to underestimate screen coverage.
+   * Additionally, the projected pixel size scales linearly with viewport width-- on narrow viewports
+   * the reduced scale can push the geometric mean below `maximumSize`, stopping refinement at depth 3
+   * before reaching the planar imagery tiles at depth 8+.
+   *
+   * This override uses `max(xRange, yRange)` for non-planar tiles, which correctly reflects the tile's
+   * actual screen extent for LOD decisions.
    * @internal
    */
   public override computeVisibilityFactor(args: TileDrawArgs): number {
-    /********** Old solution (forced refinement — rejected for performance reasons) **********/
-    // if (this.isEmpty)
-    //   return -1;
-
-    // if (!this.isPlanar) {
-    //   const baseResult = super.computeVisibilityFactor(args);
-    //   if (baseResult >= 0) {
-    //     // Standard test passed — but force refinement since pixel size from ECEF boxes is unreliable.
-    //     return (0 === this.maximumSize) ? 0 : 0.5;
-    //   }
-
-    //   // Standard frustum test rejected this tile. Check if the tile's range contains
-    //   // the project center — if so, override the cull because the tile covers the area
-    //   // under the camera and must be traversed to reach displayable planar children.
-    //   if (this.range.containsPoint(this.mapTree.iModel.projectExtents.center))
-    //     return (0 === this.maximumSize) ? 0 : 0.5;
-
-    //   return -1;
-    // }
-
-    // return super.computeVisibilityFactor(args);
-    /********** End old solution **********/
-
     if (this.isPlanar)
       return super.computeVisibilityFactor(args);
 
@@ -556,9 +538,9 @@ export class MapTile extends RealityTile {
     scratchYRange.setNull();
 
     for (const corner of corners) {
-      const viewCorner = tileToView.multiplyPoint3d(corner, 1);
+      const viewCorner = tileToView.multiplyPoint3d(corner, 1, scratchPoint4d);
       if (viewCorner.w < 0)
-        return baseResult; // corner behind eye — fall back to base result
+        return baseResult; // corner behind eye, fall back to base result
 
       scratchXRange.extendX(viewCorner.x / viewCorner.w);
       scratchYRange.extendX(viewCorner.y / viewCorner.w);
