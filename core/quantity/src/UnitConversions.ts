@@ -34,6 +34,20 @@ function getUnitEntry(unitName: string): BasicUnitConversionEntry {
   return basicUnitConversionLookup[unitName];
 }
 
+/** Type guard verifying a string is a known canonical built-in unit name.
+ *
+ * Returns true only for unit names shipped in the bundled built-in canonical unit set.
+ * Use this at system boundaries (e.g. when ingesting unit names from JSON config,
+ * iModel metadata, user input, or other dynamic sources) before calling
+ * `UnitConversions.getConversion`, `convert`, or `isCompatible`. Narrows the input
+ * type to `UnitName` so subsequent calls type-check without casts.
+ *
+ * @beta
+ */
+export function isUnitName(value: string): value is UnitName {
+  return Object.prototype.hasOwnProperty.call(basicUnitConversionLookup, value);
+}
+
 function getComparableEntry(unit: BasicUnitConversionEntry): BasicUnitConversionEntry {
   return unit[3] ? getUnitEntry(unit[3]) : unit;
 }

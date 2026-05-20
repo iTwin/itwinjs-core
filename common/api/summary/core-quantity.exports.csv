@@ -42,6 +42,7 @@ beta;function;getDefaultPersistenceUnit
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
 beta;const;isCustomFormatProps
+beta;function;isUnitName
 beta;interface;MutableFormatsProvider
 beta;function;parseDecimalPrecision
 internal;function;parseDefinition

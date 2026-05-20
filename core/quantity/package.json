@@ -12,9 +12,10 @@
     "directory": "core/quantity"
   },
   "scripts": {
-    "build": "tsx scripts/generateUnitsJson.ts && npm run -s build:cjs && npm run -s build:esm",
+    "build": "tsx scripts/generateUnitsJson.ts && npm run -s build:cjs && npm run -s build:esm && npm run -s build:typecheck",
     "build:cjs": "tsc 1>&2 -p tsconfig.build.json --outDir lib/cjs",
     "build:esm": "tsc 1>&2 -p tsconfig.build.json --module ES2022 --outDir lib/esm",
+    "build:typecheck": "tsc 1>&2 -p tsconfig.json --noEmit",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",

@@ -510,6 +510,9 @@ export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingle
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
 
 // @beta
+export function isUnitName(value: string): value is UnitName;
+
+// @beta
 export interface MutableFormatsProvider extends FormatsProvider {
     addFormat(name: string, format: FormatDefinition): Promise<void>;
     removeFormat(name: string): Promise<void>;

@@ -12,7 +12,7 @@ import { basicUnitConversionData } from "../internal/BasicUnitConversions.genera
 import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData } from "../internal/BasicUnitsResolvedStateCache";
 import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import type { SerializedUnitSchema } from "../SerializedUnitSchema";
-import { UnitConversions } from "../UnitConversions";
+import { isUnitName, UnitConversions } from "../UnitConversions";
 
 const unitsSchemaItems = unitsSchema.items as Record<string, { schemaItemType: string }>;
 
@@ -123,6 +123,7 @@ describe("Quantity", () => {
 
   it("UnitConversions.getConversion supports repeated synchronous conversions", () => {
     const conversion = UnitConversions.getConversion(Units.LENGTH.M, Units.LENGTH.FT);
+
     expect(UnitConversions.convertValue(1, conversion)).toBeCloseTo(3.28084, 5);
     expect(UnitConversions.convertValue(2, conversion)).toBeCloseTo(6.56168, 5);
   });
@@ -243,5 +244,23 @@ describe("Quantity", () => {
     expect((error as QuantityError).errorNumber).toBe(QuantityStatus.InvalidUnitConversion);
     expect((error as QuantityError).message).toContain(Units.LENGTH.M);
     expect((error as QuantityError).message).toContain(Units.TIME.S);
+  });
+
+  it("isUnitName narrows known built-in unit names and rejects unknown strings", () => {
+    expect(isUnitName(Units.LENGTH.M)).toBe(true);
+    expect(isUnitName("Units.FT")).toBe(true);
+    expect(isUnitName("Units.NOT_A_UNIT")).toBe(false);
+    expect(isUnitName("")).toBe(false);
+    expect(isUnitName("hasOwnProperty")).toBe(false);
+    expect(isUnitName("__proto__")).toBe(false);
+
+    const dynamic: string = "Units.M";
+    if (isUnitName(dynamic)) {
+      // Narrowed to UnitName — safe to pass to getConversion without cast.
+      const conversion = UnitConversions.getConversion(dynamic, Units.LENGTH.FT);
+      expect(conversion.factor).toBeCloseTo(3.28084, 5);
+    } else {
+      throw new Error("expected isUnitName narrowing to succeed");
+    }
   });
 });
