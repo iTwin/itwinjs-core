@@ -72,7 +72,12 @@ export namespace BlobContainer {
    * Properties returned by queryContainersMetadata
    */
   export interface MetadataResponse extends Metadata {
+    /** The id of the container. */
     containerId: string;
+    /** The iTwinId that owns this container. */
+    iTwinId?: GuidString;
+    /** The parent iTwinId of the owning iTwin, if any. */
+    parentITwinId?: GuidString;
   }
 
   /** Properties returned by `Service.requestToken` */
@@ -158,6 +163,8 @@ export namespace BlobContainer {
     containerType?: GuidString;
     /** optional label of the containers to query */
     label?: GuidString;
+    /** Whether to include parent iTwins in the query. Defaults to `false`. */
+    includeParentITwins?: boolean;
   }
 
   /** Methods to create, delete, and access blob containers. */

@@ -451,6 +451,55 @@ describe("Cloud workspace containers", () => {
     }
   });
 
+  it("child iTwin settings override parent iTwin settings", async () => {
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+
+      await IModelHost.saveSettingDictionary(iTwin1Id, "app1/config", { "app1/max1": 17 });
+      await IModelHost.saveSettingDictionary(iTwin2Id, "org/defaults", { "app1/max1": 42, "app1/max2": 99 });
+      AzuriteTest.setParentITwin(iTwin1Id, iTwin2Id);
+
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      const workspace = await IModelHost.getITwinWorkspace(iTwin1Id);
+      try {
+        expect(workspace.settings.getNumber("app1/max1")).equal(17); // iTwin-priority overrides org
+        expect(workspace.settings.getNumber("app1/max2")).equal(99); // org-priority fallback
+      } finally {
+        workspace.close();
+      }
+    } finally {
+      AzuriteTest.clearParentITwins();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
+
+  it("child iTwin with no settings container inherits parent defaults", async () => {
+    const parentITwinId = Guid.createValue();
+    const childITwinId = Guid.createValue();
+
+    try {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+
+      // Only the parent iTwin has settings — the child has not customized yet.
+      await IModelHost.saveSettingDictionary(parentITwinId, "org/defaults", { "app1/max1": 77, "app1/max2": 88 });
+      AzuriteTest.setParentITwin(childITwinId, parentITwinId);
+
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+      const workspace = await IModelHost.getITwinWorkspace(childITwinId);
+      try {
+        expect(workspace.settings.getNumber("app1/max1")).equal(77);
+        expect(workspace.settings.getNumber("app1/max2")).equal(88);
+      } finally {
+        workspace.close();
+      }
+    } finally {
+      AzuriteTest.clearParentITwins();
+      AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    }
+  });
+
   it("iTwin workspace resolves nested settings via settingsWorkspaces", async () => {
     const testITwinId = Guid.createValue();
 

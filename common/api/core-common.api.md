@@ -5804,7 +5804,7 @@ export namespace ITwinSettingsError {
     scope = "itwin-settings";
     export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
     // (undocumented)
-    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export type Key = "failed-to-obtain-container-token" | "missing-container-itwinid" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
     export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 

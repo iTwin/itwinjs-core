@@ -60,6 +60,8 @@ export namespace SettingsContainers {
     iTwinId: GuidString;
     /** Optional label filter. */
     label?: string;
+    /** Whether to include settings containers from parent iTwins. Defaults to `false`. */
+    includeParentITwins?: boolean;
   }
 
   /**
@@ -92,8 +94,10 @@ export namespace SettingsContainers {
   }
 
   /**
-   * Look up the settings container for an iTwin and obtain a read-only access token.
-   * @returns container props needed by [[IModelHost.getITwinWorkspace]].
+   * Look up settings containers for an iTwin and its parent iTwins and obtain read-only access tokens.
+   * @returns Container props needed by [[IModelHost.getITwinWorkspace]]. The requested iTwin's settings
+   * container is returned at [[SettingsPriority.iTwin]]; any parent iTwin containers are returned at
+   * [[SettingsPriority.organization]].
    * @note Requires [[IModelHost.authorizationClient]] to be configured.
    * @note Requires [[BlobContainer.service]] to be configured.
    */
@@ -102,24 +106,41 @@ export namespace SettingsContainers {
       ITwinSettingsError.throwError("blob-service-unavailable", { message: "BlobContainer.service is not available." });
 
     const userToken = await IModelHost.getAccessToken();
-    const containers = await queryContainers({ iTwinId });
-    if (!containers || containers.length === 0) return undefined;
-    if (containers.length > 1) {
-      ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
-        message: `Multiple iTwin settings containers were found for '${iTwinId}', so a container cannot be automatically selected.`,
-        iTwinId,
+    const containers = await queryContainers({ iTwinId, includeParentITwins: true });
+    if (containers.length === 0) return undefined;
+
+    const seenITwins = new Set<string>();
+    const results: WorkspaceDbSettingsProps[] = [];
+    for (const container of containers) {
+      const ownerITwinId = container.iTwinId;
+      if (undefined === ownerITwinId) {
+        ITwinSettingsError.throwError("missing-container-itwinid", {
+          message: `Settings container '${container.containerId}' has no iTwinId. Please upgrade to a newer version of the BlobContainer service that populates iTwinId in query results.`,
+          iTwinId,
+        });
+      }
+      if (seenITwins.has(ownerITwinId)) {
+        ITwinSettingsError.throwError("multiple-itwin-settings-containers", {
+          message: `Multiple iTwin settings containers were found for '${ownerITwinId}', so a container cannot be automatically selected.`,
+          iTwinId: ownerITwinId,
+        });
+      }
+      seenITwins.add(ownerITwinId);
+
+      // All parent iTwin containers share organization priority regardless of depth in the hierarchy.
+      const priority = ownerITwinId === iTwinId ? SettingsPriority.iTwin : SettingsPriority.organization;
+      const tokenProps = await BlobContainer.service.requestToken({ containerId: container.containerId, accessLevel: "read", userToken });
+      results.push({
+        baseUri: tokenProps.baseUri,
+        containerId: container.containerId,
+        storageType: tokenProps.provider,
+        accessToken: tokenProps.token,
+        priority,
+        dbName: settingsWorkspaceDbName,
+        includePrerelease: true,
       });
     }
 
-    const tokenProps = await BlobContainer.service.requestToken({ containerId: containers[0].containerId, accessLevel: "read", userToken });
-    return [{
-      baseUri: tokenProps.baseUri,
-      containerId: containers[0].containerId,
-      storageType: tokenProps.provider,
-      accessToken: tokenProps.token,
-      priority: SettingsPriority.iTwin,
-      dbName: settingsWorkspaceDbName,
-      includePrerelease: true,
-    }];
+    return results;
   }
 }

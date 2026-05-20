@@ -54,11 +54,41 @@ describe("ITwin Workspace", () => {
       delete: async () => { },
       queryScope: async () => ({ iTwinId }),
       queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
-      queryContainersMetadata: async () => containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId })),
+      queryContainersMetadata: async () => containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId })),
       updateJson: async () => { },
       requestToken: async ({ containerId }) => ({
         token: "",
         scope: { iTwinId },
+        provider: "azure" as const,
+        expiration: new Date(Date.now() + 3600000),
+        metadata: { containerType: "settings", label: containerId },
+        baseUri: "",
+      }),
+    };
+  }
+
+  /** Creates a mock service that returns containers from both the child iTwin and a parent iTwin. */
+  function createParentSettingsContainerService(
+    childITwinId: string,
+    parentITwinId: string,
+    childContainerIds: string[],
+    parentContainerIds: string[],
+  ): BlobContainer.ContainerService {
+    return {
+      create: async () => ({ baseUri: "", containerId: childContainerIds[0], provider: "azure" as const }),
+      delete: async () => { },
+      queryScope: async () => ({ iTwinId: childITwinId }),
+      queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
+      queryContainersMetadata: async (_userToken, args): Promise<BlobContainer.MetadataResponse[]> => {
+        const results: BlobContainer.MetadataResponse[] = childContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: childITwinId, parentITwinId }));
+        if (args.includeParentITwins)
+          results.push(...parentContainerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId: parentITwinId })));
+        return results;
+      },
+      updateJson: async () => { },
+      requestToken: async ({ containerId }) => ({
+        token: "",
+        scope: { iTwinId: childITwinId },
         provider: "azure" as const,
         expiration: new Date(Date.now() + 3600000),
         metadata: { containerType: "settings", label: containerId },
@@ -275,5 +305,41 @@ describe("ITwin Workspace", () => {
 
     await expect(IModelHost.deleteSettingDictionary(iTwinId, "x")).to.be.rejectedWith("delete failed");
     expect(close.calledOnce).to.be.true;
+  });
+
+  it("loads parent iTwin settings at organization priority", async () => {
+    const childITwinId = Guid.createValue();
+    const parentITwinId = Guid.createValue();
+
+    createLocalSettingsDb("child-settings", {
+      "app/childOnly": "from-child",
+      "app/shared": "child-wins",
+    });
+    createLocalSettingsDb("parent-settings", {
+      "app/parentOnly": "from-parent",
+      "app/shared": "parent-loses",
+    });
+
+    BlobContainer.service = createParentSettingsContainerService(childITwinId, parentITwinId, ["child-settings"], ["parent-settings"]);
+    await IModelHost.startup(opts);
+
+    const workspace = await IModelHost.getITwinWorkspace(childITwinId);
+    // Child iTwin setting is present.
+    expect(workspace.settings.getString("app/childOnly")).to.equal("from-child");
+    // Parent iTwin setting is present (loaded at organization priority).
+    expect(workspace.settings.getString("app/parentOnly")).to.equal("from-parent");
+    // Child iTwin setting overrides parent iTwin setting for the same key.
+    expect(workspace.settings.getString("app/shared")).to.equal("child-wins");
+    workspace.close();
+  });
+
+  it("fails if multiple settings containers exist for the same parent iTwin", async () => {
+    const childITwinId = Guid.createValue();
+    const parentITwinId = Guid.createValue();
+
+    BlobContainer.service = createParentSettingsContainerService(childITwinId, parentITwinId, ["child-settings"], ["parent-a", "parent-b"]);
+    await IModelHost.startup(opts);
+
+    await expect(IModelHost.getITwinWorkspace(childITwinId)).to.be.rejectedWith("Multiple iTwin settings containers were found");
   });
 });
