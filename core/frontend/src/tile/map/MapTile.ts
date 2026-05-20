@@ -203,9 +203,17 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public override getSizeProjectionCorners(): Point3d[] | undefined {
-    // Use only the first 4 corners -- On terrain tiles the height is initially exagerated to world height range which can cause excessive tile loading.
-    const rangeCorners = this.getRangeCorners(scratchCorners);
-    return rangeCorners.slice(0, 4);
+    if (this._patch instanceof PlanarTilePatch) {
+      // Use only the first 4 corners -- On terrain tiles the height is initially exaggerated to world height range which can cause excessive tile loading.
+      const rangeCorners = this._patch.getRangeCorners(expectDefined(this.heightRange), scratchCorners);
+      return rangeCorners.slice(0, 4);
+    }
+    // For globe (non-planar) tiles, use actual surface points from _cornerRays instead of the inflated ECEF AABB.
+    // The AABB extends deep into the Earth's interior, causing unreliable pixel-size calculations, especially on narrow viewports.
+    if (this._cornerRays)
+      return [this._cornerRays[0].origin, this._cornerRays[1].origin, this._cornerRays[3].origin, this._cornerRays[2].origin];
+
+    return this.range.corners(scratchCorners).slice(0, 4);
   }
 
   /** @internal */
@@ -492,6 +500,77 @@ export class MapTile extends RealityTile {
   /** @internal */
   public override isRegionCulled(args: TileDrawArgs): boolean {
     return this.isContentCulled(args);
+  }
+
+  /** Non-planar (ECEF globe) map tiles have projected screen sizes that are poorly estimated by
+   * the default geometric mean `sqrt(xRange * yRange)`. On narrow viewports, the narrow dimension
+   * pulls the geometric mean far below the tile's actual screen coverage in the larger dimension,
+   * causing the system to stop refining prematurely. This override uses `max(xRange, yRange)` for
+   * non-planar tiles to correctly identify when a tile spans a large portion of the screen.
+   * @internal
+   */
+  public override computeVisibilityFactor(args: TileDrawArgs): number {
+    /********** Old solution (forced refinement — rejected for performance reasons) **********/
+    // if (this.isEmpty)
+    //   return -1;
+
+    // if (!this.isPlanar) {
+    //   const baseResult = super.computeVisibilityFactor(args);
+    //   if (baseResult >= 0) {
+    //     // Standard test passed — but force refinement since pixel size from ECEF boxes is unreliable.
+    //     return (0 === this.maximumSize) ? 0 : 0.5;
+    //   }
+
+    //   // Standard frustum test rejected this tile. Check if the tile's range contains
+    //   // the project center — if so, override the cull because the tile covers the area
+    //   // under the camera and must be traversed to reach displayable planar children.
+    //   if (this.range.containsPoint(this.mapTree.iModel.projectExtents.center))
+    //     return (0 === this.maximumSize) ? 0 : 0.5;
+
+    //   return -1;
+    // }
+
+    // return super.computeVisibilityFactor(args);
+    /********** End old solution **********/
+
+    if (this.isPlanar)
+      return super.computeVisibilityFactor(args);
+
+    // Let the base class handle frustum test and structural tiles.
+    const baseResult = super.computeVisibilityFactor(args);
+    if (baseResult <= 0)
+      return baseResult;
+
+    // baseResult > 0 means the tile passed the frustum test but pixel size used geometric mean.
+    // Recompute using max dimension of projected surface corners for a more accurate estimate.
+    const corners = this.getSizeProjectionCorners();
+    if (!corners || 0 === this.maximumSize)
+      return baseResult;
+
+    // Project corners to view space. For MapTileTree, args.location is identity,
+    // so the world-to-view transform applies directly.
+    const tileToView = args.worldToViewMap.transform0;
+    let xMin = Number.MAX_VALUE, xMax = -Number.MAX_VALUE;
+    let yMin = Number.MAX_VALUE, yMax = -Number.MAX_VALUE;
+
+    for (const corner of corners) {
+      const viewCorner = tileToView.multiplyPoint3d(corner, 1);
+      if (viewCorner.w < 0)
+        return baseResult; // corner behind eye — fall back to base result
+
+      const x = viewCorner.x / viewCorner.w;
+      const y = viewCorner.y / viewCorner.w;
+      xMin = Math.min(xMin, x);
+      xMax = Math.max(xMax, x);
+      yMin = Math.min(yMin, y);
+      yMax = Math.max(yMax, y);
+    }
+
+    const maxDimension = Math.max(xMax - xMin, yMax - yMin);
+    if (maxDimension < 1e-3)
+      return baseResult;
+
+    return this.maximumSize / args.context.adjustPixelSizeForLOD(maxDimension);
   }
 
   /** @internal */
