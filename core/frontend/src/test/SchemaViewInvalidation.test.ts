@@ -12,8 +12,8 @@ import { IpcApp } from "../IpcApp";
 const fakeBriefcaseProps = {
   key: "test-key",
   rootSubject: { name: "test" },
-  iTwinId: "00000000-0000-0000-0000-000000000000",
-  iModelId: "00000000-0000-0000-0000-000000000000",
+  iTwinId: "11111111-1111-1111-1111-111111111111",
+  iModelId: "22222222-2222-2222-2222-222222222222",
 };
 
 /** Open a BriefcaseConnection backed entirely by mocked IPC. */
