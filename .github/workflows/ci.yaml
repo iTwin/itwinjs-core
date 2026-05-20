@@ -8,16 +8,14 @@
 #
 # For the main CI on self-hosted runners, see jobs/fast-ci.yaml (ADO, not yet ported).
 #
-# Runner tiers (controlled via workflow_dispatch input):
-#   8core (default): ubuntu-runner-8
-#     Purpose: focused Linux-only PoC on the newly added 8-core Ubuntu runner
-#   standard:  ubuntu-latest (free-tier baseline)
+# Runner target for this PoC:
+#   ubuntu-runner-8
 #
-# ⚠ Prerequisites for the 'larger' tier (one-time org setup):
-#   1. Org admin enables larger runners: Settings → Actions → Runners → New larger runner
+# ⚠ Prerequisites for this runner:
+#   1. Org admin enables the runner / larger-runner backing capacity
 #   2. Repo granted access to the runner group
-#   3. Spending limit / billing enabled for Actions minutes
-#   If runners are unavailable, jobs queue indefinitely — fall back to 'standard' input.
+#   3. Spending limit / billing enabled for Actions minutes if applicable
+#   If the runner is unavailable, jobs will queue indefinitely.
 #
 # Note: this workflow covers the GHA-port subset of CI (not the full ADO fast-ci workload).
 # Treat results as a benchmark signal for Linux runner performance, not a complete
@@ -29,45 +27,14 @@ on:
   schedule:
     - cron: "0 5 * * *" # Daily 5:00 UTC
   workflow_dispatch:
-    inputs:
-      runner-tier:
-        description: "Runner tier: 8core = Ubuntu 8-core PoC runner (default); standard = free 4-core baseline"
-        required: false
-        default: "8core"
-        type: choice
-        options:
-          - 8core
-          - standard
 
-# Include runner-tier in concurrency key so manual A/B comparisons don't cancel each other.
 concurrency:
-  group: ci-${{ github.ref }}-${{ inputs.runner-tier || '8core' }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Emits a JSON matrix so the build job can switch runner labels at runtime.
-  # On scheduled runs inputs.runner-tier is empty; the explicit default keeps behavior consistent.
-  runner-config:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.pick.outputs.matrix }}
-    steps:
-      - id: pick
-        shell: bash
-        run: |
-          TIER="${{ inputs.runner-tier || '8core' }}"
-          if [[ "$TIER" == "standard" ]]; then
-            echo 'matrix={"include":[{"runner":"ubuntu-latest","name":"Linux"}]}' >> "$GITHUB_OUTPUT"
-          else
-            echo 'matrix={"include":[{"runner":"ubuntu-runner-8","name":"Linux"}]}' >> "$GITHUB_OUTPUT"
-          fi
-
   build:
-    needs: runner-config
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.runner-config.outputs.matrix) }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-runner-8
     timeout-minutes: 120
     permissions:
       checks: write
@@ -88,7 +55,7 @@ jobs:
         uses: mikepenz/action-junit-report@v5
         if: always()
         with:
-          check_name: "Test Results (${{ matrix.name }})"
+          check_name: "Test Results (Linux)"
           report_paths: "**/junit_results.xml"
           include_passed: false
           detailed_summary: true
