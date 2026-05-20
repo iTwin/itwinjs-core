@@ -232,6 +232,15 @@ export interface IModelHostOptions {
   useSemanticRebase?: boolean;
 
   /**
+   * Configuration controlling whether to use concurrent schema import during the rebase phase of pull-merge.
+   * When enabled, EcSchema transactions are rebased by replaying their original schema sessions
+   * rather than re-applying the old binary changeset. This is independent of [[useSemanticRebase]].
+   * Must be set before any pull-merge operations occur.
+   * @beta
+   */
+  useConcurrentSchemaImport?: boolean;
+
+  /**
     * Controls how writes through the implicit transaction are enforced.
     * See [[ImplicitWriteEnforcement]] for the allowed values.
     * Defaults to "allow" for backwards compatibility.
@@ -295,6 +304,13 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public useSemanticRebase?: boolean;
+  /**
+   * Configuration controlling whether to use concurrent schema import during the rebase phase of pull-merge.
+   * When enabled, EcSchema transactions are rebased by replaying their original schema sessions
+   * rather than re-applying the old binary changeset. This is independent of [[useSemanticRebase]].
+   * @beta
+   */
+  public useConcurrentSchemaImport?: boolean;
   /**
     * Controls how writes through the implicit transaction are enforced.
     * See [[IModelHostOptions.implicitWriteEnforcement]] for the meaning of each allowed value.
@@ -796,6 +812,14 @@ export class IModelHost {
    */
   public static get useSemanticRebase(): boolean {
     return undefined !== IModelHost.configuration && (IModelHost.configuration.useSemanticRebase ? true : false);
+  }
+
+  /**
+   * Whether to use concurrent schema import during the rebase phase of pull-merge.
+   * @internal
+   */
+  public static get useConcurrentSchemaImport(): boolean {
+    return undefined !== IModelHost.configuration && (IModelHost.configuration.useConcurrentSchemaImport ? true : false);
   }
 
   private static setupTileCache() {

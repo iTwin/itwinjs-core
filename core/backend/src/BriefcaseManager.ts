@@ -618,7 +618,7 @@ export class BriefcaseManager {
     if (!reverse) {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
-        const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
+        const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
         if (useSemanticRebase) {
           nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
         }
@@ -656,8 +656,11 @@ export class BriefcaseManager {
       if (briefcaseDb) {
         if (useSemanticRebase)
           await briefcaseDb.txns.rebaser.resumeSemantic();
-        else
+        else {
+          if (IModelHost.useConcurrentSchemaImport)
+            nativeDb.setAllowConcurrentSchemaImport(true);
           await briefcaseDb.txns.rebaser.resume();
+        }
       } else {
         // Only Briefcase has change management. Following is
         // for test related to standalone db with txn enabled.
