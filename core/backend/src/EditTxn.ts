@@ -12,9 +12,9 @@ import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, Elem
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
+import type { IModelDb, InsertElementOptions, MoveElementProps, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
-import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
@@ -271,6 +271,98 @@ export class EditTxn {
         throw err;
       }
     });
+  }
+
+  /** Move an element to a different model and/or parent.
+   * The element must be a leaf element (no children). If the element has children, this method will throw.
+   * At least one of `targetModelId` or `targetElementId` must be specified in props.
+   * The source and target models must be of the same class (classFullName must match exactly).
+   * Channel verification is performed on both the source and target models.
+   * Lock enforcement: requires exclusive lock on the element being moved, and shared locks on the target parent (if any) and the target model.
+   * If a new code is provided and a CodeService is configured, the code is verified before the move.
+   * @param props The move parameters: element id, target model/parent, and optional new code.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws [[ITwinError]] if the move fails (e.g., element has children, model type mismatch, duplicate code, or code verification failure).
+   * @beta
+   */
+  public moveElement(props: MoveElementProps): void {
+    this.verifyWriteable();
+    const iModel = this.iModel;
+
+    if (!props.targetModelId && !props.targetElementId)
+      ITwinError.throwError({ message: "moveElement requires at least one of targetModelId or targetElementId", iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
+
+    // Lock enforcement: exclusive lock on element being moved
+    iModel.locks.checkExclusiveLock(props.id, "element", "move");
+
+    // Resolve the source model (the model the element currently belongs to)
+    const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
+
+    // Channel verification on the source model
+    iModel.channels[_verifyChannel](sourceModelId);
+
+    // Resolve the target model for lock/channel checks.
+    // If targetElementId is a modeled element (partition), the element moves into its sub-model.
+    let targetModelId: Id64String;
+    if (props.targetModelId) {
+      targetModelId = props.targetModelId;
+    } else if (iModel.models.tryGetModelProps(props.targetElementId!)) {
+      targetModelId = props.targetElementId!;
+    } else {
+      targetModelId = iModel.elements.getElementProps({ id: props.targetElementId! }).model;
+    }
+
+    // Model type check: source and target models must be the same class
+    const sourceModel = iModel.models.getModel(sourceModelId);
+    const targetModel = iModel.models.getModel(targetModelId);
+    if (sourceModel.classFullName !== targetModel.classFullName)
+      ITwinError.throwError({ message: `cannot move element from model of type '${sourceModel.classFullName}' to model of type '${targetModel.classFullName}'`, iTwinErrorId: { scope: "imodel", key: "invalid-arguments" } });
+
+    // Shared lock on target element (new parent) if specified
+    if (props.targetElementId)
+      iModel.locks.checkSharedLock(props.targetElementId, "parent", "move");
+
+    // Shared lock on target model
+    iModel.locks.checkSharedLock(targetModelId, "model", "move");
+
+    // Channel verification on the target model
+    iModel.channels[_verifyChannel](targetModelId);
+
+    // Verify code with CodeService if a new code is provided
+    if (props.code) {
+      const elProps = iModel.elements.getElementProps({ id: props.id });
+      iModel.codeService?.verifyCode({ iModel, props: { code: props.code, federationGuid: elProps.federationGuid } });
+    }
+
+    this._moveElementInternal(iModel, props, false);
+  }
+
+  /** @internal Move a single element with allowChildren support. */
+  private _moveElementInternal(iModel: IModelDb, props: MoveElementProps, allowChildren: boolean): void {
+    // Invalidate caches
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
+
+    // Build native props
+    const nativeProps = {
+      id: props.id,
+      targetModelId: props.targetModelId,
+      targetElementId: props.targetElementId,
+      code: props.code,
+      allowChildren,
+    };
+
+    try {
+      iModel[_nativeDb].moveElement(nativeProps);
+    } catch (err: any) {
+      err.message = `Error moving element [${err.message}], id: ${props.id}`;
+      err.metadata = { moveProps: props };
+      throw err;
+    }
+
+    // Invalidate caches after mutation
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
   }
 
   /**
