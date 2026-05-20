@@ -482,21 +482,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Close the reader and release all native resources.
    *
    * @throws if the native layer encounters an error during cleanup. Native resources
-   * may not have been fully released when this throws — check the native error
+   * are not fully released when this throws — check the native error
    * logs for details.
-   *
-   * @note When calling `close()` (or `[Symbol.dispose]()`) manually inside a
-   * `finally` block alongside other disposables, nest the calls so a throw from
-   * the first does not skip the rest:
-   * ```ts
-   * try { reader.close(); } finally { pcu[Symbol.dispose](); }
-   * ```
-   * or order them appropriately if you are sure only the last disposal might throw:
-   * ```ts
-   * pcu[Symbol.dispose](); reader.close();
-   * ```
-   * The `using` declaration avoids this entirely — the TypeScript runtime
-   * disposes each binding independently.
    * @beta
    */
   public close(): void {
@@ -514,8 +501,6 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Implements the `Disposable` contract — delegates to [[close]].
    *
    * @throws if the native layer fails to release its resources (re-thrown from [[close]]).
-   *
-   * When only one side throws, the error propagates directly with no wrapping.
    * @beta
    */
   public [Symbol.dispose](): void {
