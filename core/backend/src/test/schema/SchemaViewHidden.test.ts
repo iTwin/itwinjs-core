@@ -119,7 +119,7 @@ describe("SchemaView hidden flags", () => {
       <ECEntityClass typeName="DerivedNoCA" modifier="Sealed" description="Derived from hidden base, no HiddenClass CA - should inherit hidden via isEffectivelyHidden">
         <BaseClass>HiddenBase</BaseClass>
       </ECEntityClass>
-      <ECEntityClass typeName="DerivedShown" modifier="Sealed" description="Derived from hidden base, HiddenClass(Show=true) breaks the chain">
+      <ECEntityClass typeName="DerivedShown" description="Derived from hidden base, HiddenClass(Show=true) breaks the chain">
         <BaseClass>HiddenBase</BaseClass>
         <ECCustomAttributes>
           <HiddenClass xmlns="CoreCustomAttributes.01.00.00">

@@ -99,10 +99,13 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
     const metaFormats = metaKoq!.presentationFormats;
     expect(metaFormats.length).to.equal(formats.length);
 
-    // ecschema-metadata resolves the formats fully - cross-check the format names
+    // ecschema-metadata resolves the formats fully - cross-check the format names.
+    // OverrideFormat.fullName includes override syntax (e.g. "Formats.DefaultRealU(2)[Units.M]"),
+    // so strip the override portion before extracting the base name.
     for (let i = 0; i < formats.length; i++) {
       const rtItemName = formats[i].name.split(":")[1];
-      const metaItemName = metaFormats[i].fullName.split(/[:.]/).pop();
+      const metaBaseFullName = metaFormats[i].fullName.split(/[([]/)[0];
+      const metaItemName = metaBaseFullName.split(".").pop();
       expect(rtItemName).to.equal(metaItemName, `format name mismatch at index ${i}`);
     }
 
@@ -136,7 +139,10 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
     // Query FormatDef to get the format's NumericSpec (= FormatProps JSON)
     let formatNumericSpec: any;
     for await (const row of iModel.createQueryReader(
-      `SELECT NumericSpec, CompositeSpec FROM meta.FormatDef WHERE Name = ? AND Schema.Name = 'Formats'`,
+      `SELECT f.NumericSpec, f.CompositeSpec
+       FROM meta.FormatDef f
+       JOIN meta.ECSchemaDef s USING meta.SchemaOwnsFormats
+       WHERE f.Name = ? AND s.Name = 'Formats'`,
       QueryBinder.from([formatItemName]),
       { rowFormat: QueryRowFormat.UseJsPropertyNames },
     )) {
@@ -159,7 +165,11 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
 
     let unitRow: any;
     for await (const row of iModel.createQueryReader(
-      `SELECT Name, DisplayLabel, UnitSystem.Name AS unitSystemName FROM meta.UnitDef WHERE Name = ? AND Schema.Name = 'Units'`,
+      `SELECT u.Name, u.DisplayLabel, us.Name AS unitSystemName
+       FROM meta.UnitDef u
+       JOIN meta.ECSchemaDef s USING meta.SchemaOwnsUnits
+       JOIN meta.UnitSystemDef us USING meta.UnitSystemHasUnits
+       WHERE u.Name = ? AND s.Name = 'Units'`,
       QueryBinder.from([unitItemName]),
       { rowFormat: QueryRowFormat.UseJsPropertyNames },
     )) {
@@ -180,9 +190,12 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
       if (dmsFormat) {
         const compositeUnits: Array<{ ordinal: number; unitName: string; label: string }> = [];
         for await (const row of iModel.createQueryReader(
-          `SELECT cu.Ordinal, cu.Unit.Name AS unitName, cu.Label
+          `SELECT cu.Ordinal, u.Name AS unitName, cu.Label
            FROM meta.FormatCompositeUnitDef cu
-           WHERE cu.Format.Name = 'AngleDMS' AND cu.Format.Schema.Name = 'Formats'
+           JOIN meta.FormatDef f USING meta.FormatOwnsCompositeUnits
+           JOIN meta.ECSchemaDef s USING meta.SchemaOwnsFormats
+           JOIN meta.UnitDef u USING meta.CompositeUnitRefersToUnit
+           WHERE f.Name = 'AngleDMS' AND s.Name = 'Formats'
            ORDER BY cu.Ordinal`,
           undefined,
           { rowFormat: QueryRowFormat.UseJsPropertyNames },

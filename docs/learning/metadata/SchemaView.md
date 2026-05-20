@@ -147,19 +147,29 @@ Query `meta.FormatDef` for the format's `NumericSpec` (a JSON object with type, 
 ```ts
 // Look up the base format definition
 for await (const row of iModel.createQueryReader(
-  "SELECT NumericSpec, CompositeSpec FROM meta.FormatDef WHERE Name = 'DefaultRealU' AND Schema.Name = 'Formats'",
+  `SELECT f.NumericSpec, f.CompositeSpec
+   FROM meta.FormatDef f
+   JOIN meta.ECSchemaDef s USING meta.SchemaOwnsFormats
+   WHERE f.Name = 'DefaultRealU' AND s.Name = 'Formats'`,
 )) { /* row.numericSpec is a JSON string with FormatProps */ }
 
 // Look up a unit and its unit system
 for await (const row of iModel.createQueryReader(
-  "SELECT Name, DisplayLabel, UnitSystem.Name FROM meta.UnitDef WHERE Name = 'M' AND Schema.Name = 'Units'",
+  `SELECT u.Name, u.DisplayLabel, us.Name AS unitSystemName
+   FROM meta.UnitDef u
+   JOIN meta.ECSchemaDef s USING meta.SchemaOwnsUnits
+   JOIN meta.UnitSystemDef us USING meta.UnitSystemHasUnits
+   WHERE u.Name = 'M' AND s.Name = 'Units'`,
 )) { /* row.name, row.displayLabel, row.unitSystemName */ }
 
 // For composite formats (like AngleDMS with degrees/minutes/seconds), query the composite units:
 for await (const row of iModel.createQueryReader(
-  `SELECT cu.Ordinal, cu.Unit.Name, cu.Label
+  `SELECT cu.Ordinal, u.Name AS unitName, cu.Label
    FROM meta.FormatCompositeUnitDef cu
-   WHERE cu.Format.Name = 'AngleDMS' AND cu.Format.Schema.Name = 'Formats'
+   JOIN meta.FormatDef f USING meta.FormatOwnsCompositeUnits
+   JOIN meta.ECSchemaDef s USING meta.SchemaOwnsFormats
+   JOIN meta.UnitDef u USING meta.CompositeUnitRefersToUnit
+   WHERE f.Name = 'AngleDMS' AND s.Name = 'Formats'
    ORDER BY cu.Ordinal`,
 )) { /* row.ordinal, row.unitName, row.label */ }
 ```
