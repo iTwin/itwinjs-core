@@ -40,14 +40,98 @@ jobs:
       checks: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/core-build
+      - name: Setup Node.js 24.x
+        uses: actions/setup-node@v4
         with:
           node-version: "24.x"
-          rush-build-cache-credential: ${{ secrets.RUSH_BUILD_CACHE_SAS }}
+
+      - name: Git config
+        shell: bash
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Rush check
+        shell: bash
+        run: node common/scripts/install-run-rush.js check
+
+      - name: Rush change verification
+        shell: bash
+        run: |
+          BRANCH_ARG=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            TARGET="${{ github.base_ref }}"
+            if [[ "$TARGET" == *"release"* ]]; then
+              BRANCH_ARG="-b origin/$TARGET"
+            fi
+          fi
+          node common/scripts/install-run-rush.js change -v $BRANCH_ARG
+
+      - name: Rush install
+        uses: nick-fields/retry@v3
+        with:
+          command: node common/scripts/install-run-rush.js install
+          max_attempts: 2
+          timeout_minutes: 10
+
+      - name: Rush audit
+        shell: bash
+        run: node common/scripts/install-run-rush.js audit
+        continue-on-error: true
+
+      - name: Set Rush build cache variables
+        shell: bash
+        run: |
+          WRITE_ALLOWED=0
+          if [ "$RUNNER_OS" = "Linux" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            WRITE_ALLOWED=1
+          fi
+          echo "RUSH_BUILD_CACHE_WRITE_ALLOWED=$WRITE_ALLOWED" >> "$GITHUB_ENV"
+
+      - name: Rush build
+        shell: bash
+        run: node common/scripts/install-run-rush.js build -v -p max
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: ${{ secrets.RUSH_BUILD_CACHE_SAS }}
+          RUSH_BUILD_CACHE_ENABLED: ${{ secrets.RUSH_BUILD_CACHE_SAS != '' && '1' || '0' }}
+          VITE_CI: "true"
+
+      - name: Rush lint
+        shell: bash
+        run: node common/scripts/install-run-rush.js lint
+
+      - name: Rush webpack:test
+        shell: bash
+        run: node common/scripts/install-run-rush.js webpack:test -v
+
+      - name: Rush cover (Linux)
+        if: runner.os == 'Linux'
+        uses: nick-fields/retry@v3
+        with:
+          command: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+          max_attempts: 2
+          timeout_minutes: 60
+        env:
+          NODE_ENV: development
+
+      - name: Rush cover (Windows/macOS)
+        if: runner.os != 'Linux'
+        uses: nick-fields/retry@v3
+        with:
+          command: node common/scripts/install-run-rush.js cover --verbose
+          max_attempts: 2
+          timeout_minutes: 60
+        env:
+          NODE_ENV: development
+
+      - name: Rush docs
+        shell: bash
+        run: node common/scripts/install-run-rush.js docs
 
       # Test result publishing — ADO ci.yaml doesn't do this (fast-ci does),
       # but it's useful signal and validates the reporting pattern for Phase 3.
