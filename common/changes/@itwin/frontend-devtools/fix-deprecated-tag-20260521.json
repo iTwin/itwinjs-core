@@ -1,0 +1,9 @@
+{
+  "changes": [
+    {
+      "comment": "Add eslint-disable-next-line no-deprecated for QueryRowFormat.UseJsPropertyNames usages",
+      "type": "none",
+      "packageName": "@itwin/frontend-devtools"
+    }
+  ]
+}
