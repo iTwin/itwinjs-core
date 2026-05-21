@@ -7,7 +7,8 @@
  */
 
 import { QuantityError, QuantityStatus } from "./Exception";
-import { QuantityProps, UnitConversionInvert, UnitConversionProps, UnitProps } from "./Interfaces";
+import { QuantityProps, UnitConversionProps, UnitProps } from "./Interfaces";
+import { applyConversionInternal, convertValueOrThrow, almostEqual as internalAlmostEqual, almostZero as internalAlmostZero } from "./internal/UnitConversionMath";
 
 /**
  * Checks if two numbers are approximately equal within given relative tolerance.
@@ -18,9 +19,7 @@ import { QuantityProps, UnitConversionInvert, UnitConversionProps, UnitProps } f
  * @internal
  */
 export function almostEqual(a: number, b: number, tolerance: number = 2.2204460492503131e-16): boolean {
-  const absDiff = Math.abs(a - b);
-  const scaledTolerance = Math.max(1, Math.abs(a), Math.abs(b)) * tolerance;
-  return absDiff <= scaledTolerance;
+  return internalAlmostEqual(a, b, tolerance);
 }
 
 /** The Quantity class is convenient container to specify both the magnitude and unit of a quantity. This class is commonly
@@ -56,17 +55,20 @@ export class Quantity implements QuantityProps {
    *  @param toUnit   The new unit for the quantity.
    *  @param conversion  Defines the information needed to convert the Quantity's magnitude from the current unit to another unit. This conversion info is usually
    *                     returned from the UnitsProvider.
+   *  @throws [[QuantityError]] with [[QuantityStatus.InvalidUnitConversion]] when `conversion.error === true`.
+   *  @throws [[QuantityError]] with [[QuantityStatus.InvertingZero]] when inversion would require dividing by zero or almost-zero.
    */
   public convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity {
-    const newMagnitude = applyConversion(this.magnitude, conversion);
+    if (conversion.error) {
+      throw new QuantityError(
+        QuantityStatus.InvalidUnitConversion,
+        `Cannot convert quantity from "${this.unit.name}" to "${toUnit.name}" using invalid conversion metadata.`,
+      );
+    }
+
+    const newMagnitude = convertValueOrThrow(this.magnitude, conversion);
     return new Quantity(toUnit, newMagnitude);
   }
-}
-
-function invert(input: number): number {
-  if (almostZero(input)) // mimic the behavior of native here. We don't want to invert those very small values
-    throw new QuantityError(QuantityStatus.InvertingZero, "Cannot invert zero value");
-  return 1 / input;
 }
 
 /** Determines if a value is almost zero. (less than 1e-16)
@@ -75,31 +77,20 @@ function invert(input: number): number {
  * @internal
  */
 export function almostZero(value: number): boolean {
-  return almostEqual(value, 0.0);
+  return internalAlmostZero(value);
 }
 
 /**
  * Applies a unit conversion to a given value.
+ * Does not throw when `props.error === true`; callers are expected to have already handled that contract.
+ * For the throwing apply helper, use `UnitConversions.convertValue(...)`.
  * @param value - The value to be converted.
  * @param props - The unit conversion properties.
  * @returns The converted value.
  * @internal
  */
 export function applyConversion(value: number, props: UnitConversionProps): number {
-  let convertedValue = value;
-
-  // Apply pre-conversion inversion if specified
-  if (props.inversion === UnitConversionInvert.InvertPreConversion) {
-    convertedValue = invert(convertedValue);
-  }
-
-  // Apply the conversion factor and offset
-  convertedValue = (convertedValue * props.factor) + props.offset;
-
-  // Apply post-conversion inversion if specified
-  if (props.inversion === UnitConversionInvert.InvertPostConversion) {
-    convertedValue = invert(convertedValue);
-  }
-
-  return convertedValue;
+  return applyConversionInternal(value, props, false);
 }
+
+
