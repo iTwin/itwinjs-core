@@ -4093,11 +4093,11 @@ export class BriefcaseDb extends IModelDb {
             nativeDb.deleteAllTxns();
             break;
           case "delete":
-            // Release locks before closing so they don't remain held.
-            if (!arg.retainLocks)
-              await this.locks.releaseAllLocks();
+            // Clear local changes first so lock release can succeed.
             nativeDb.abandonChanges();
             nativeDb.deleteAllTxns();
+            if (!arg.retainLocks)
+              await this.locks.releaseAllLocks();
             const filePath = this.pathName;
             this.close();
             await BriefcaseManager.deleteBriefcaseFiles(filePath, arg.accessToken);
@@ -4112,11 +4112,15 @@ export class BriefcaseDb extends IModelDb {
       }
 
       if (!arg.retainLocks && this.isOpen) {
-        await this.locks.releaseAllLocks();
+        try {
+          await this.locks.releaseAllLocks();
+        } catch (lockErr) {
+          Logger.logError(loggerCategory, `Failed to release locks after revert failure (action=${failureAction}): ${String(lockErr)}`);
+        }
       }
       throw err;
     } finally {
-      if (!wasFileBasedTxnsEnabled && !nativeDb.hasPendingTxns() && !nativeDb.hasUnsavedChanges())
+      if (this.isOpen && !wasFileBasedTxnsEnabled && !nativeDb.hasPendingTxns() && !nativeDb.hasUnsavedChanges())
         this.disableFileBasedTxns();
     }
   }
