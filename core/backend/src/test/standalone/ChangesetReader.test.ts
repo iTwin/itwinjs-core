@@ -4418,6 +4418,19 @@ describe("ChangesetReader: invalid inputs", () => {
     using reader = ChangesetReader.openFile({ db: iModel, fileName: validChangesetPath });
     expect(() => reader.isIndirectChange).to.throw();
   });
+
+  it("openGroup: should throw if spillThresholdInBytes is negative", () => {
+    expect(() => {
+      ChangesetReader.openGroup({ db: iModel, changesetFiles: [validChangesetPath, validChangesetPath], spillThresholdInBytes: -1 });
+    }).to.throw();
+  });
+
+  it("openGroup: should throw if spillThresholdInBytes is extremely large", () => {
+    // 2**64 is a very large value, even 1 TB = 1024**4 bytes, but that is just around 2**40.
+    expect(() => {
+      ChangesetReader.openGroup({ db: iModel, changesetFiles: [validChangesetPath, validChangesetPath], spillThresholdInBytes: 2 ** 64 });
+    }).to.throw();
+  });
 });
 
 describe("ChangesetReader — spillThresholdInBytes (spill-to-disk)", () => {

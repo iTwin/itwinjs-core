@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Also added strict mode to changeset reader api",
+      "comment": "Added strict mode to changeset reader api",
       "type": "none"
     }
   ],
