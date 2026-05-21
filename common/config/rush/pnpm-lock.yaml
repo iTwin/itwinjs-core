@@ -27,8 +27,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.10.22
-        version: 5.10.22
+        specifier: 5.10.24
+        version: 5.10.24
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -269,8 +269,8 @@ importers:
   ../../core/ecschema-editing:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -399,8 +399,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -477,8 +477,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -845,8 +845,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/appui-abstract':
         specifier: workspace:*
         version: link:../../ui/appui-abstract
@@ -1346,8 +1346,8 @@ importers:
   ../../core/quantity:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -1846,8 +1846,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -3796,8 +3796,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -4763,8 +4763,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.10.22':
-    resolution: {integrity: sha512-bhmbSCXRgkwUvcHKyhZY7cLfDDnC4jsVYIPiKs2+PYW1NHccR62AiqO1koESpe0kcOIDaixTmCAOmT2wWXVoGQ==}
+  '@bentley/imodeljs-native@5.10.24':
+    resolution: {integrity: sha512-Zz102OqVLUYm2nsBJgEOE43qOEeqTw5hKRzNViC6SFezN1IS3cNI4p+4aBGc7NvvC3nS/C12yaHX+QdynxfPcw==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -4793,8 +4793,8 @@ packages:
   '@bentley/structural-physical-schema@1.0.1':
     resolution: {integrity: sha512-ND+R4BwoZlOhq0nNgF82v87LhtVW9Oydl6+ExezqPn3G3CdBjoPkTzT7LDVyXX7cOOIQOD3efvwOWBiGh3sShQ==}
 
-  '@bentley/units-schema@1.0.9':
-    resolution: {integrity: sha512-kyfz9bQDB+1yJR5SgikkjFIKE+U8OuaClpwG0uxXN2zn9c4xKURhejC93XX7zUL4V1dqWXjhHJdkagxhDbMwQw==}
+  '@bentley/units-schema@1.0.10':
+    resolution: {integrity: sha512-Zv0viE/PnBeGnIhmqxjOg7CU/5eMCgIOavjKjlTa+Rk1t3DPtbbrumhoUtlgfN6SFf5B5CskzTfBQ/f3Tj91pg==}
 
   '@cesium/engine@20.0.1':
     resolution: {integrity: sha512-B2TQ9VtVb791dUJatgx6SCRZg3tFPcRi8QseWg9flovaFOHJY0o+LX5BN2J5plFKRO5r5v7g+M2OyjcUYwaRDQ==}
@@ -11468,7 +11468,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.10.22': {}
+  '@bentley/imodeljs-native@5.10.24': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11488,7 +11488,7 @@ snapshots:
 
   '@bentley/structural-physical-schema@1.0.1': {}
 
-  '@bentley/units-schema@1.0.9': {}
+  '@bentley/units-schema@1.0.10': {}
 
   '@cesium/engine@20.0.1':
     dependencies:
