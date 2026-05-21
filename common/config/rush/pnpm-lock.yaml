@@ -269,8 +269,8 @@ importers:
   ../../core/ecschema-editing:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -399,8 +399,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -477,8 +477,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -845,8 +845,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/appui-abstract':
         specifier: workspace:*
         version: link:../../ui/appui-abstract
@@ -1346,8 +1346,8 @@ importers:
   ../../core/quantity:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -1843,8 +1843,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -3793,8 +3793,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: ^1.0.10
+        version: 1.0.10
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -4790,8 +4790,8 @@ packages:
   '@bentley/structural-physical-schema@1.0.1':
     resolution: {integrity: sha512-ND+R4BwoZlOhq0nNgF82v87LhtVW9Oydl6+ExezqPn3G3CdBjoPkTzT7LDVyXX7cOOIQOD3efvwOWBiGh3sShQ==}
 
-  '@bentley/units-schema@1.0.9':
-    resolution: {integrity: sha512-kyfz9bQDB+1yJR5SgikkjFIKE+U8OuaClpwG0uxXN2zn9c4xKURhejC93XX7zUL4V1dqWXjhHJdkagxhDbMwQw==}
+  '@bentley/units-schema@1.0.10':
+    resolution: {integrity: sha512-Zv0viE/PnBeGnIhmqxjOg7CU/5eMCgIOavjKjlTa+Rk1t3DPtbbrumhoUtlgfN6SFf5B5CskzTfBQ/f3Tj91pg==}
 
   '@cesium/engine@20.0.1':
     resolution: {integrity: sha512-B2TQ9VtVb791dUJatgx6SCRZg3tFPcRi8QseWg9flovaFOHJY0o+LX5BN2J5plFKRO5r5v7g+M2OyjcUYwaRDQ==}
@@ -11319,7 +11319,7 @@ snapshots:
 
   '@bentley/structural-physical-schema@1.0.1': {}
 
-  '@bentley/units-schema@1.0.9': {}
+  '@bentley/units-schema@1.0.10': {}
 
   '@cesium/engine@20.0.1':
     dependencies:
