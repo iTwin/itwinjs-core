@@ -1583,6 +1583,9 @@ export class CoordinateXYZ extends GeometryQuery {
 // @public
 export interface CreateFilletsInLineStringOptions {
     allowCusp?: boolean;
+    closureTolerance?: number;
+    cuspLineSegments?: boolean;
+    cuspTolerance?: number;
     filletClosure?: boolean;
 }
 

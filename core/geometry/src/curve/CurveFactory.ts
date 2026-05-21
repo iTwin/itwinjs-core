@@ -132,6 +132,15 @@ export interface CreateFilletsInLineStringOptions {
    * tolerance to consider line string as closed. Default value is `Geometry.smallMetricDistance`.
    */
   closureTolerance?: number;
+  /**
+   * Allowable length of the line segment joining an arc to its neighbor in a cusp configuration. Default value
+   * is `Geometry.smallMetricDistance`.
+   */
+  cuspTolerance?: number;
+  /**
+   * Allow line segments at cusps. Default value is `true`.
+   */
+  cuspLineSegments?: boolean;
 }
 
 /**
@@ -205,12 +214,16 @@ export class CurveFactory {
     let allowCusp = true;
     let filletClosure = false;
     let closureTolerance = Geometry.smallMetricDistance;
+    let cuspTolerance = Geometry.smallMetricDistance;
+    let cuspLineSegments = true;
     if (typeof allowCuspOrOptions === "boolean") {
       allowCusp = allowCuspOrOptions;
     } else {
       allowCusp = allowCuspOrOptions.allowCusp ?? true;
       filletClosure = allowCuspOrOptions.filletClosure ?? false;
       closureTolerance = allowCuspOrOptions.closureTolerance ?? Geometry.smallMetricDistance;
+      cuspTolerance = allowCuspOrOptions.cuspTolerance ?? Geometry.smallMetricDistance;
+      cuspLineSegments = allowCuspOrOptions.cuspLineSegments ?? true;
     }
     let n = points.length;
     if (filletClosure && points.almostEqualIndexIndex(0, n - 1, closureTolerance))
@@ -236,24 +249,43 @@ export class CurveFactory {
       }
     }
     assert(blendArray.length === n);
-    if (!allowCusp) {
-      // suppress arcs that overlap a neighboring arc, or that consume the entire segment
-      for (let i = 0; i < n; i++) {
-        const bB = blendArray[i];
-        if (!bB.arc)
-          continue;
-        const bA = blendArray[Geometry.modulo(i - 1, n)];
-        const bC = blendArray[Geometry.modulo(i + 1, n)];
-        if (bB.fraction10 > 1 || bB.fraction12 > 1 || bB.fraction10 + bA.fraction12 > 1 || bB.fraction12 + bC.fraction10 > 1) {
+    const suppressFullCuspIndices: number[] = [];
+    const suppressCuspLineSegmentIndices: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const bB = blendArray[i];
+      if (!bB.arc)
+        continue;
+      const bA = blendArray[Geometry.modulo(i - 1, n)];
+      const bC = blendArray[Geometry.modulo(i + 1, n)];
+      if (bB.fraction10 > 1 || bB.fraction12 > 1 || bB.fraction10 + bA.fraction12 > 1 || bB.fraction12 + bC.fraction10 > 1) {
+        if (!allowCusp) {
+          // suppress arcs that overlap a neighboring arc, or that consume the entire segment
           bB.fraction10 = bB.fraction12 = 0;
           bB.arc = undefined;
+        } else if (bA.point && bB.point && bC.point) {
+          const overlapBA = bB.fraction10 + bA.fraction12 - 1;
+          const cuspLenBA = overlapBA > 0 ? overlapBA * bB.point.distance(bA.point) : 0;
+          const overlapBC = bB.fraction12 + bC.fraction10 - 1;
+          const cuspLenBC = overlapBC > 0 ? overlapBC * bB.point.distance(bC.point) : 0;
+          if (cuspLenBA > cuspTolerance || cuspLenBC > cuspTolerance) {
+            suppressFullCuspIndices.push(i); // save index to suppress full cusp later
+          } else if (!cuspLineSegments && (bB.fraction12 > 1 || bB.fraction12 + bC.fraction10 > 1)) {
+            suppressCuspLineSegmentIndices.push(i); // save index to suppress cusp line segment later
+          }
         }
       }
+    }
+    // suppress cusps that their line segment length exceeds the cusp tolerance
+    for (const i of suppressFullCuspIndices) {
+      blendArray[i].fraction10 = blendArray[i].fraction12 = 0;
+      blendArray[i].arc = undefined;
     }
     const path = Path.create();
     for (let i = 0; i < n; i++) {
       const b0 = blendArray[i];
       path.tryAddChild(b0.arc);
+      if (suppressCuspLineSegmentIndices.includes(i))
+        continue; // skip adding line segment for this cusp
       if (i + 1 < n || filletClosure) {
         const b1 = blendArray[Geometry.modulo(i + 1, n)];
         this.addPartialSegment(path, allowCusp, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
