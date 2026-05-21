@@ -6345,6 +6345,7 @@ export interface SettingGroupSchema {
     readonly settingDefs?: {
         [name: string]: SettingSchema | undefined;
     };
+    readonly title?: string;
     readonly typeDefs?: {
         [name: string]: SettingSchema | undefined;
     };
@@ -6481,6 +6482,7 @@ export interface SettingsSchemas {
     addFile(fileName: LocalFileName): void;
     addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
     addJson(settingSchema: string): void;
+    readonly groups: ReadonlyMap<string, SettingGroupSchema>;
     readonly onSchemaChanged: BeEvent<() => void>;
     removeGroup(schemaPrefix: string): void;
     readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
