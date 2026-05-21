@@ -923,6 +923,15 @@ export namespace CloudSqlite {
   }
 
   /**
+   * Check whether a cloud container has local uncommitted changes that have not been published as a changeset.
+   * This is useful for lite briefcases to verify state before closing.
+   * @alpha
+   */
+  export function hasLocalChanges(container: CloudContainer): boolean {
+    return container.hasLocalChanges;
+  }
+
+  /**
    * Parse the name of a Db stored in a CloudContainer into the dbName and version number. A single CloudContainer may hold
    * many versions of the same Db. The name of the Db in the CloudContainer is in the format "name:version". This
    * function splits them into separate strings.
