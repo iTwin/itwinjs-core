@@ -76,7 +76,7 @@ jobs:
         persistCredentials: true
       - task: UseNode@1
         inputs:
-          version: "24.x"
+          version: "24.15.0"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
