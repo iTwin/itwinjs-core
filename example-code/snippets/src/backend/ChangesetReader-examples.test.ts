@@ -131,6 +131,60 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
+  it("disposal — using declaration (preferred)", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.DisposalUsing
+    {
+      using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+
+      while (reader.step())
+        pcu.appendFrom(reader);
+
+      for (const instance of pcu.instances) {
+        expect(instance.$meta.op).to.exist;
+        expect(instance.ECInstanceId).to.exist;
+      }
+      // reader and pcu are disposed here automatically, each independently
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("disposal — nested try/finally", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.DisposalNested
+    const reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    try {
+      while (reader.step())
+        pcu.appendFrom(reader);
+      for (const instance of pcu.instances) {
+        expect(instance.$meta.op).to.exist;
+        expect(instance.ECInstanceId).to.exist;
+      }
+    } finally {
+      // Nest the disposals: even if reader throws, pcu is still disposed.
+      try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("disposal — ordered try/finally", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.DisposalOrdered
+    const reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    try {
+      while (reader.step())
+        pcu.appendFrom(reader);
+      for (const instance of pcu.instances) {
+        expect(instance.$meta.op).to.exist;
+        expect(instance.ECInstanceId).to.exist;
+      }
+    } finally {
+      pcu[Symbol.dispose]();
+      reader[Symbol.dispose]();
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
   it("openGroup — multiple changesets as one stream", () => {
     // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenGroup
     // openGroup merges insert + update into a single logical stream.

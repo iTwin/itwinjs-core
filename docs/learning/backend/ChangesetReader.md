@@ -87,49 +87,15 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 
 The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown. Because the TypeScript runtime disposes each `using`-bound object independently, a throw from one disposal does not prevent the others from running:
 
-```ts
-{
-  using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-  using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-
-  while (reader.step())
-    pcu.appendFrom(reader);
-
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-  // reader and pcu are disposed here automatically, each independently
-}
-```
+[[include:ChangesetReader.DisposalUsing]]
 
 If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
-```ts
-const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-try {
-  while (reader.step())
-    pcu.appendFrom(reader);
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-} finally {
-  // Nest the disposals: even if reader throws, pcu is still disposed.
-  try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
-}
-```
+[[include:ChangesetReader.DisposalNested]]
+
 OR order them appropriately if you are sure only the last disposal might throw:
-```ts
-const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-try {
-  while (reader.step())
-    pcu.appendFrom(reader);
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-} finally {
-  pcu[Symbol.dispose]();
-  reader[Symbol.dispose]();
-}
-```
+
+[[include:ChangesetReader.DisposalOrdered]]
 
 > **Important:** The same rule applies to [ChangeCache]($backend) instances created via [ChangeUnifierCache.createSqliteBackedCache]($backend) — they wrap a SQLite connection and must also be disposed.
 
