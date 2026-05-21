@@ -13,7 +13,7 @@ import type { ParserSpec } from "./ParserSpec";
 import type { UnitSystemKey } from "./Interfaces";
 
 /** Arguments for constructing a [[FormatSpecHandle]].
- * @internal
+ * @beta
  */
 export interface FormatSpecHandleArgs extends FormattingSpecArgs {
   /** The provider that supplies current formatting spec lookups. */
@@ -36,7 +36,6 @@ export class FormatSpecHandle implements Disposable {
   private readonly _persistenceUnit: string;
   private readonly _system: UnitSystemKey | undefined;
 
-  /** @internal */
   constructor(args: FormatSpecHandleArgs) {
     this._provider = args.provider;
     this._koqName = args.name;
