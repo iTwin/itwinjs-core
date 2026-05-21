@@ -76,7 +76,7 @@ jobs:
         persistCredentials: true
       - task: UseNode@1
         inputs:
-          version: "24.x"
+          version: "24.15.0"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
@@ -218,12 +218,12 @@ jobs:
         retryCountOnTaskFailure: 1
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 
