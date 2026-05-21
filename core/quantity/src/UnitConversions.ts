@@ -20,8 +20,19 @@ type BasicUnitConversionEntry = readonly [
   invertsUnitName?: string,
 ];
 
+interface BasicUnitConversionFields {
+  readonly phenomenon: string;
+  readonly factor: number;
+  readonly offset: number;
+  readonly invertsUnitName?: string;
+}
+
 const basicUnitConversionLookup: Record<string, BasicUnitConversionEntry> =
   basicUnitConversionData satisfies Record<string, BasicUnitConversionEntry>;
+
+function getUnitEntryFields([phenomenon, factor, offset, invertsUnitName]: BasicUnitConversionEntry): BasicUnitConversionFields {
+  return { phenomenon, factor, offset, invertsUnitName };
+}
 
 function throwUnknownUnit(unitName: string): never {
   throw new QuantityError(QuantityStatus.UnknownUnit, `Unknown unit "${unitName}".`);
@@ -49,13 +60,17 @@ export function isUnitName(value: string): value is UnitName {
 }
 
 function getComparableEntry(unit: BasicUnitConversionEntry): BasicUnitConversionEntry {
-  return unit[3] ? getUnitEntry(unit[3]) : unit;
+  const { invertsUnitName } = getUnitEntryFields(unit);
+  return invertsUnitName ? getUnitEntry(invertsUnitName) : unit;
 }
 
 function composeConversion(fromUnit: BasicUnitConversionEntry, toUnit: BasicUnitConversionEntry): UnitConversionProps {
+  const { factor: fromFactor, offset: fromOffset } = getUnitEntryFields(fromUnit);
+  const { factor: toFactor, offset: toOffset } = getUnitEntryFields(toUnit);
+
   return {
-    factor: toUnit[1] / fromUnit[1],
-    offset: toUnit[2] - ((toUnit[1] * fromUnit[2]) / fromUnit[1]),
+    factor: toFactor / fromFactor,
+    offset: toOffset - ((toFactor * fromOffset) / fromFactor),
   };
 }
 
@@ -64,21 +79,25 @@ function getConversion(fromUnit: UnitName, toUnit: UnitName): UnitConversionProp
   const to = getUnitEntry(toUnit);
   const comparableFrom = getComparableEntry(from);
   const comparableTo = getComparableEntry(to);
+  const fromFields = getUnitEntryFields(from);
+  const toFields = getUnitEntryFields(to);
+  const comparableFromFields = getUnitEntryFields(comparableFrom);
+  const comparableToFields = getUnitEntryFields(comparableTo);
 
-  if (comparableFrom[0] !== comparableTo[0])
+  if (comparableFromFields.phenomenon !== comparableToFields.phenomenon)
     return { factor: 1.0, offset: 0.0, error: true };
 
-  if (from[3] && to[3])
+  if (fromFields.invertsUnitName && toFields.invertsUnitName)
     return composeConversion(comparableFrom, comparableTo);
 
-  if (from[3]) {
+  if (fromFields.invertsUnitName) {
     return {
       ...composeConversion(comparableFrom, to),
       inversion: UnitConversionInvert.InvertPreConversion,
     };
   }
 
-  if (to[3]) {
+  if (toFields.invertsUnitName) {
     return {
       ...composeConversion(from, comparableTo),
       inversion: UnitConversionInvert.InvertPostConversion,
@@ -99,7 +118,9 @@ function convert(fromUnit: UnitName, toUnit: UnitName, value: number): number {
 function isCompatible(fromUnit: UnitName, toUnit: UnitName): boolean {
   const from = getComparableEntry(getUnitEntry(fromUnit));
   const to = getComparableEntry(getUnitEntry(toUnit));
-  return from[0] === to[0];
+  const { phenomenon: fromPhenomenon } = getUnitEntryFields(from);
+  const { phenomenon: toPhenomenon } = getUnitEntryFields(to);
+  return fromPhenomenon === toPhenomenon;
 }
 
 /** Returns the package's default built-in persistence unit for a supported bundled built-in phenomenon.

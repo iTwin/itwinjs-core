@@ -198,10 +198,10 @@ describe("Quantity", () => {
       resolvedUnits.set(unitName, await provider.findUnitByName(unitName));
     }));
 
-    for (const [unitName, entry] of Object.entries(basicUnitConversionData)) {
-      const byPhenomenon = unitsByPhenomenon.get(entry[0]) ?? [];
+    for (const [unitName, [phenomenon]] of Object.entries(basicUnitConversionData)) {
+      const byPhenomenon = unitsByPhenomenon.get(phenomenon) ?? [];
       byPhenomenon.push(unitName);
-      unitsByPhenomenon.set(entry[0], byPhenomenon);
+      unitsByPhenomenon.set(phenomenon, byPhenomenon);
     }
 
     for (const unitNames of unitsByPhenomenon.values()) {

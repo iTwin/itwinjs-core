@@ -73,7 +73,7 @@ describe("Generated Units artifacts", () => {
     expect(generatedBasicConversionsSource).toContain('"Units.FT": ["Units.LENGTH"');
     expect(generatedBasicConversionsSource).toContain('"Units.CELSIUS": ["Units.TEMPERATURE"');
     expect(generatedBasicConversionsSource).toContain('"Units.HORIZONTAL_PER_VERTICAL": ["Units.SLOPE"');
-    expect(basicUnitConversionData["Units.HORIZONTAL_PER_VERTICAL"][3]).toBe("Units.VERTICAL_PER_HORIZONTAL");
+    expect(basicUnitConversionData["Units.HORIZONTAL_PER_VERTICAL"]).toEqual(["Units.SLOPE", 1, 0, "Units.VERTICAL_PER_HORIZONTAL"]);
   });
 
   it("emits representative default persistence entries and omits LENGTH_RATIO", () => {
