@@ -647,6 +647,7 @@ export const Phenomena: {
     readonly FREQUENCY: "Units.FREQUENCY";
     readonly HEAT_FLUX_DENSITY: "Units.HEAT_FLUX_DENSITY";
     readonly HEAT_TRANSFER: "Units.HEAT_TRANSFER";
+    readonly HORIZONTAL_DIRECTION: "Units.HORIZONTAL_DIRECTION";
     readonly ILLUMINANCE: "Units.ILLUMINANCE";
     readonly KINEMATIC_VISCOSITY: "Units.KINEMATIC_VISCOSITY";
     readonly LENGTH: "Units.LENGTH";
@@ -1300,6 +1301,15 @@ export const Units: {
         readonly W_PER_SQ_M_CELSIUS: "Units.W_PER_SQ_M_CELSIUS";
         readonly W_PER_SQ_M_K: "Units.W_PER_SQ_M_K";
     };
+    readonly HORIZONTAL_DIRECTION: {
+        readonly HORIZONTAL_DIR_ARC_DEG: "Units.HORIZONTAL_DIR_ARC_DEG";
+        readonly HORIZONTAL_DIR_ARC_MINUTE: "Units.HORIZONTAL_DIR_ARC_MINUTE";
+        readonly HORIZONTAL_DIR_ARC_SECOND: "Units.HORIZONTAL_DIR_ARC_SECOND";
+        readonly HORIZONTAL_DIR_GRAD: "Units.HORIZONTAL_DIR_GRAD";
+        readonly HORIZONTAL_DIR_MILLIRAD: "Units.HORIZONTAL_DIR_MILLIRAD";
+        readonly HORIZONTAL_DIR_RAD: "Units.HORIZONTAL_DIR_RAD";
+        readonly HORIZONTAL_DIR_REVOLUTION: "Units.HORIZONTAL_DIR_REVOLUTION";
+    };
     readonly ILLUMINANCE: {
         readonly LUMEN_PER_SQ_FT: "Units.LUMEN_PER_SQ_FT";
         readonly LUX: "Units.LUX";
@@ -1704,6 +1714,7 @@ export const Units: {
         readonly GALLON_IMPERIAL: "Units.GALLON_IMPERIAL";
         readonly LITRE: "Units.LITRE";
         readonly MICROLITRE: "Units.MICROLITRE";
+        readonly MILLILITRE: "Units.MILLILITRE";
         readonly MILLION_GALLON: "Units.MILLION_GALLON";
         readonly MILLION_LITRE: "Units.MILLION_LITRE";
         readonly THOUSAND_GALLON: "Units.THOUSAND_GALLON";
