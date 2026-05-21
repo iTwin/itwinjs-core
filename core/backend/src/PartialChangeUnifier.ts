@@ -202,8 +202,8 @@ class SqliteBackedCache implements ChangeCache {
  *
  * **Usage:**
  * ```ts
- * const reader = ChangesetReader.openFile({ fileName, db });
- * const unifier = new PartialChangeUnifier();
+ * using reader = ChangesetReader.openFile({ fileName, db });
+ * using unifier = new PartialChangeUnifier();
  * while (reader.step()) {
  *   unifier.appendFrom(reader);
  * }
