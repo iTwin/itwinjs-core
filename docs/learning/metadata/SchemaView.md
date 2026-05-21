@@ -15,7 +15,7 @@ Use `SchemaView` when you need fast, synchronous, repeated lookups at runtime:
 - Presentation rules and adapter layers
 - Iterating properties (including inherited) of a class
 
-Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you are *working with schemas as schemas*: authoring, editing, validating, serializing to XML/JSON, or accessing data that `SchemaView` deliberately omits (see [What is included](#what-is-included)). `SchemaContext` is the more expensive option - one async RPC per schema, full object graph with cross-references, slow to load - so use it when its completeness is what you actually need.
+Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you are: authoring, validating, serializing to XML/JSON, or accessing data that `SchemaView` deliberately omits (see [What is included](#what-is-included)). `SchemaContext` is the more expensive option - a full object graph with cross-references - use it when its completeness is what you actually need.
 
 |                       | SchemaView                                                              | SchemaContext                                            |
 | --------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -50,7 +50,7 @@ Currently excluded:
 - **ECDb-internal schemas** beyond the standard list - `ECDbSystem`, `ECDbFileInfo`, `ECDbSchemaPolicies`. These describe storage-layer mapping and are not relevant to runtime consumers. Note that `ECDbMeta` is *not* excluded - it remains queryable via ECSQL.
 - **Pure custom-attribute schemas** beyond the standard list - `BisCustomAttributes`, `ECv3ConversionAttributes`, `SchemaUpgradeCustomAttributes`. These contain only `CustomAttribute` and `Struct` definitions used for decoration; since CA instances are not transported, the definitions add little value.
 
-The authoritative logic lives in `IsExcludedSchema()` in `SchemaViewWriter.cpp` (imodel-native), which delegates the standard-schema check to `ECSchema::IsStandardSchema`.
+The authoritative logic lives in `IsExcludedSchema()` in [SchemaViewWriter](https://github.com/iTwin/imodel-native/blob/main/iModelCore/ECDb/ECDb/SchemaViewWriter.cpp), which delegates the standard-schema check to `ECSchema::IsStandardSchema`.
 
 When you do need data from an excluded schema, [SchemaContext]($ecschema-metadata) and ECDbMeta queries remain available. Examples of resolving units and formats are in [Resolving format and unit names](#resolving-format-and-unit-names).
 
