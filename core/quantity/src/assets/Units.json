@@ -1,6 +1,6 @@
 {
   "version": "01.00.00",
-  "sourceEcSchemaVersion": "01.00.09",
+  "sourceEcSchemaVersion": "01.00.10",
   "name": "Units",
   "alias": "u",
   "label": "Units",
@@ -399,6 +399,11 @@
       "schemaItemType": "Phenomenon",
       "label": "Angle",
       "definition": "ANGLE"
+    },
+    "HORIZONTAL_DIRECTION": {
+      "schemaItemType": "Phenomenon",
+      "label": "Horizontal Direction",
+      "definition": "HORIZONTAL_DIRECTION"
     },
     "SOLIDANGLE": {
       "schemaItemType": "Phenomenon",
@@ -1283,6 +1288,58 @@
       "phenomenon": "Units.ANGLE",
       "unitSystem": "Units.METRIC",
       "definition": "[TWO_PI]*RAD"
+    },
+    "HORIZONTAL_DIR_ARC_DEG": {
+      "schemaItemType": "Unit",
+      "label": "°",
+      "description": "1/180",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.METRIC",
+      "definition": "[PI]*HORIZONTAL_DIR_RAD",
+      "denominator": 180
+    },
+    "HORIZONTAL_DIR_ARC_MINUTE": {
+      "schemaItemType": "Unit",
+      "label": "'",
+      "description": "1/60",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.METRIC",
+      "definition": "HORIZONTAL_DIR_ARC_DEG",
+      "denominator": 60
+    },
+    "HORIZONTAL_DIR_ARC_SECOND": {
+      "schemaItemType": "Unit",
+      "label": "''",
+      "description": "1/3600",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.METRIC",
+      "definition": "HORIZONTAL_DIR_ARC_DEG",
+      "denominator": 3600
+    },
+    "HORIZONTAL_DIR_GRAD": {
+      "schemaItemType": "Unit",
+      "label": "grad",
+      "description": "1/200",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.METRIC",
+      "definition": "[PI]*HORIZONTAL_DIR_RAD",
+      "denominator": 200
+    },
+    "HORIZONTAL_DIR_MILLIRAD": {
+      "schemaItemType": "Unit",
+      "label": "mrad",
+      "description": "1/1000",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.METRIC",
+      "definition": "[PI]*HORIZONTAL_DIR_RAD",
+      "denominator": 1000
+    },
+    "HORIZONTAL_DIR_REVOLUTION": {
+      "schemaItemType": "Unit",
+      "label": "r",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.METRIC",
+      "definition": "[TWO_PI]*HORIZONTAL_DIR_RAD"
     },
     "SQ_M": {
       "schemaItemType": "Unit",
@@ -3795,6 +3852,13 @@
       "unitSystem": "Units.METRIC",
       "definition": "[MEGA]*LITRE"
     },
+    "MILLILITRE": {
+      "schemaItemType": "Unit",
+      "label": "mL",
+      "phenomenon": "Units.VOLUME",
+      "unitSystem": "Units.METRIC",
+      "definition": "[MILLI]*LITRE"
+    },
     "MICROLITRE": {
       "schemaItemType": "Unit",
       "label": "µliter",
@@ -4060,6 +4124,13 @@
       "phenomenon": "Units.ANGLE",
       "unitSystem": "Units.SI",
       "definition": "RAD"
+    },
+    "HORIZONTAL_DIR_RAD": {
+      "schemaItemType": "Unit",
+      "label": "rad",
+      "phenomenon": "Units.HORIZONTAL_DIRECTION",
+      "unitSystem": "Units.SI",
+      "definition": "HORIZONTAL_DIR_RAD"
     },
     "STERAD": {
       "schemaItemType": "Unit",
