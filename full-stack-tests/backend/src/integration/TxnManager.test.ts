@@ -450,7 +450,7 @@ describe("Discarding local txns test", async () => {
     });
   });
 
-  describe.only("revertAndPushChanges", () => {
+  describe("revertAndPushChanges", () => {
     it("should revert last 2 changesets (schema + data) from second briefcase and verify on first", async () => {
       await setupTestSchemaAndModel();
       assert.equal(briefcases.length, 2, "Two briefcases should be opened");
