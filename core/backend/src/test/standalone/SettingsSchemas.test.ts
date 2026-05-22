@@ -50,4 +50,106 @@ describe("SettingsSchemas", () => {
     expect(schemas.settingDefs.get("testApp/tree/blah")!.default).equals(true);
   });
 
+  it("resolveSchema resolves object extends chains recursively", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-object";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test object resolution",
+      typeDefs: {
+        nestedBase: {
+          type: "object",
+          required: ["nestedReq"],
+          properties: {
+            nestedReq: { type: "integer" },
+            nestedBaseOnly: { type: "string" },
+          },
+        },
+        baseThing: {
+          type: "object",
+          required: ["baseReq"],
+          properties: {
+            baseReq: { type: "string" },
+            overridden: { type: "string" },
+            baseOnly: { type: "number" },
+            nested: {
+              type: "object",
+              extends: `${prefix}/nestedBase`,
+              properties: {
+                nestedChildOnly: { type: "boolean" },
+              },
+            },
+          },
+        },
+      },
+      settingDefs: {
+        thing: {
+          type: "object",
+          extends: `${prefix}/baseThing`,
+          required: ["derivedReq"],
+          properties: {
+            derivedReq: { type: "boolean" },
+            overridden: { type: "number" },
+          },
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!);
+      expect(resolved.type).to.equal("object");
+      expect(resolved).to.not.have.property("extends");
+      expect(resolved.required).to.have.members(["baseReq", "derivedReq"]);
+      expect(resolved.properties).to.include.keys("baseReq", "baseOnly", "derivedReq", "overridden", "nested");
+      expect(resolved.properties?.overridden.type).to.equal("number");
+      expect(resolved.properties?.baseOnly.type).to.equal("number");
+
+      const nested = resolved.properties?.nested;
+      expect(nested?.type).to.equal("object");
+      expect(nested).to.not.have.property("extends");
+      expect(nested?.required).to.have.members(["nestedReq"]);
+      expect(nested?.properties).to.include.keys("nestedReq", "nestedBaseOnly", "nestedChildOnly");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
+  it("resolveSchema resolves array items through extends", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-array";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test array resolution",
+      typeDefs: {
+        stringList: {
+          type: "array",
+          items: { type: "string" },
+        },
+      },
+      settingDefs: {
+        names: {
+          type: "array",
+          extends: `${prefix}/stringList`,
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
+      expect(resolved.type).to.equal("array");
+      expect(resolved).to.not.have.property("extends");
+      expect(resolved.items?.type).to.equal("string");
+      expect(resolved.items).to.not.have.property("extends");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
+  it("resolveSchema throws when an extends target cannot be found", () => {
+    const schemas = IModelHost.settingsSchemas;
+    expect(() => schemas.resolveSchema({ type: "object", extends: "missing/type" })).to.throw("typeDef missing/type does not exist");
+  });
+
 });

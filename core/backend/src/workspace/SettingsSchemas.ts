@@ -147,4 +147,14 @@ export interface SettingsSchemas {
 
   /** Unregisters all [[settingDefs]] and [[typeDefs]] with the specified [[SettingGroupSchema.schemaPrefix]]. */
   removeGroup(schemaPrefix: string): void;
+
+  /**
+   * Resolves a setting schema's `extends` chain using the currently registered [[typeDefs]].
+   * If the schema does not have an `extends` property, it is returned as-is.
+   * Otherwise, the schema is recursively merged with the schema(s) it extends,
+   * with properties from this schema taking precedence over those from the extended schema(s).
+   *
+   * @throws Error if a referenced [[typeDefs]] cannot be found or the schema cannot be resolved.
+   */
+  resolveSchema(schema: Readonly<SettingSchema>): SettingSchema;
 }

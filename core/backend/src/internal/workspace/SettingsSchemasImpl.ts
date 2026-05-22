@@ -172,6 +172,43 @@ class SettingsSchemasImpl implements SettingsSchemas {
     this.onSchemaChanged.raiseEvent();
   }
 
+  public resolveSchema(schema: Readonly<SettingSchema>, scope = ""): SettingSchema {
+    const resolve = (current: Readonly<SettingSchema>, currentScope: string): SettingSchema => {
+      const { extends: _extends, ...resolved } = current;
+
+      switch (current.type) {
+        case "object": {
+          const { required, properties } = this.getObjectProperties(current, currentScope);
+
+          return {
+            ...resolved,
+            required,
+            properties: Object.fromEntries(
+              Object.entries(properties).map(([key, value]) => [
+                key,
+                resolve(value, currentScope ? `${currentScope}.${key}` : key),
+              ])
+            ),
+          };
+        }
+
+        case "array":
+          return {
+            ...resolved,
+            items: resolve(
+              this.getArrayItems(current, currentScope),
+              currentScope ? `${currentScope}.items` : "items"
+            ),
+          };
+
+        default:
+          return resolved;
+      }
+    };
+
+    return resolve(schema, scope);
+  }
+
   private doAdd(settingsGroup: SettingGroupSchema[]) {
     settingsGroup.forEach((group) => {
       if (undefined === group.schemaPrefix)
