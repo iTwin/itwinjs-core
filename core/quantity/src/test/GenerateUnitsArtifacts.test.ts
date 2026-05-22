@@ -112,6 +112,7 @@ describe("Generated Units artifacts", () => {
   });
 
   // Disabled because the string compare can fail on different platforms due to differences in line endings.
+  // Tracking Issue: https://github.com/iTwin/itwinjs-backlog/issues/2099
   it.skip("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
     expect(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedDefaultPersistenceSource);
   });
