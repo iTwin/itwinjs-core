@@ -173,40 +173,36 @@ class SettingsSchemasImpl implements SettingsSchemas {
   }
 
   public resolveSchema(schema: Readonly<SettingSchema>, scope = ""): SettingSchema {
-    const resolve = (current: Readonly<SettingSchema>, currentScope: string): SettingSchema => {
-      const { extends: _extends, ...resolved } = current;
+    const { extends: _extends, ...resolved } = schema;
 
-      switch (current.type) {
-        case "object": {
-          const { required, properties } = this.getObjectProperties(current, currentScope);
+    switch (schema.type) {
+      case "object": {
+        const { required, properties } = this.getObjectProperties(schema, scope);
 
-          return {
-            ...resolved,
-            required,
-            properties: Object.fromEntries(
-              Object.entries(properties).map(([key, value]) => [
-                key,
-                resolve(value, currentScope ? `${currentScope}.${key}` : key),
-              ])
-            ),
-          };
-        }
-
-        case "array":
-          return {
-            ...resolved,
-            items: resolve(
-              this.getArrayItems(current, currentScope),
-              currentScope ? `${currentScope}.items` : "items"
-            ),
-          };
-
-        default:
-          return resolved;
+        return {
+          ...resolved,
+          required,
+          properties: Object.fromEntries(
+            Object.entries(properties).map(([key, value]) => [
+              key,
+              this.resolveSchema(value, scope ? `${scope}.${key}` : key),
+            ])
+          ),
+        };
       }
-    };
 
-    return resolve(schema, scope);
+      case "array":
+        return {
+          ...resolved,
+          items: this.resolveSchema(
+            this.getArrayItems(schema, scope),
+            scope ? `${scope}.items` : "items"
+          ),
+        };
+
+      default:
+        return resolved;
+    }
   }
 
   private doAdd(settingsGroup: SettingGroupSchema[]) {
