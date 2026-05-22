@@ -84,7 +84,9 @@ describe("Generated Units artifacts", () => {
     expect(generatedDefaultPersistenceSource).not.toContain("[Phenomena.LENGTH_RATIO]");
   });
 
-  it("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
+  // Disabled because the string compare can fail on different platforms due to differences in line endings.
+  // Tracking Issue: https://github.com/iTwin/itwinjs-backlog/issues/2099
+  it.skip("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
     expect(buildGeneratedUnitsModule(unitsSchema)).toBe(generatedIdentifiersSource);
   });
 
@@ -93,7 +95,9 @@ describe("Generated Units artifacts", () => {
     expect(rebuiltUnitsJson).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
   });
 
-  it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
+  // Disabled because the string compare can fail on different platforms due to differences in line endings.
+  // Tracking Issue: https://github.com/iTwin/itwinjs-backlog/issues/2099
+  it.skip("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
     expect(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedBasicConversionsSource);
   });
 
