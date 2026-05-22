@@ -60,7 +60,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
+        throw new Error(`typeDef ${propDef.extends} does not exist${scope ? ` for ${scope}` : ""}`);
       const expanded = this.getObjectProperties(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends);
       if (expanded.required)
         required = required ? [...new Set([...required, ...expanded.required])] : expanded.required;
@@ -78,7 +78,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     if (undefined === items && propDef.extends) {
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
+        throw new Error(`typeDef ${propDef.extends} does not exist${scope ? ` for ${scope}` : ""}`);
       items = typeDef.items;
     }
     if (undefined === items)
@@ -205,7 +205,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
           const typeDef = this.typeDefs.get(schema.extends);
           if (undefined === typeDef)
-            throw new Error(`typeDef ${schema.extends} does not exist for ${scope}`);
+            throw new Error(`typeDef ${schema.extends} does not exist${scope ? ` for ${scope}` : ""}`);
 
           const inheritedProps = this.resolveSchema(typeDef, scope ? `${scope}.${schema.extends}` : schema.extends);
           resolvedSchema = { ...inheritedProps, ...resolvedSchema };
