@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added spillThresholdInBytes parameter to openGroup, openLocalChanges, openInMemoryChanges, openTxn methods of ChangesetReader api",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
