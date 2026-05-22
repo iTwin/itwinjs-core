@@ -6485,6 +6485,7 @@ export interface SettingsSchemas {
     readonly groups: ReadonlyMap<string, SettingGroupSchema>;
     readonly onSchemaChanged: BeEvent<() => void>;
     removeGroup(schemaPrefix: string): void;
+    resolveSchema(schema: Readonly<SettingSchema>): SettingSchema;
     readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
     readonly typeDefs: ReadonlyMap<SettingName, SettingSchema>;
     validateSetting<T>(value: T, settingName: SettingName): T;
