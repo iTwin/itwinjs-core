@@ -10,6 +10,8 @@ publish: false
     - [ChangesetReader: `enableStrictMode` and `disableStrictMode`](#changesetreader-enablestrictmode-and-disablestrictmode)
     - [ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use](#changesetreader-spillthresholdinbytes-controls-disk-spill-for-bounded-memory-use)
     - [ChangesetReader: `close` and `Symbol.dispose` can now throw](#changesetreader-close-and-symboldispose-can-now-throw)
+  - [@itwin/core-quantity](#itwincore-quantity)
+    - [Generated unit identifiers and sync built-in conversion helpers](#generated-unit-identifiers-and-sync-built-in-conversion-helpers)
   - [Electron 42 support](#electron-42-support)
 
 ## @itwin/core-backend
@@ -46,6 +48,18 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 ### ChangesetReader: `close` and `Symbol.dispose` can now throw
 
 [ChangesetReader.close]($backend) (and `[Symbol.dispose]()`) can now propagate errors from the native layer; previously they were silently swallowed. Code using manual `[Symbol.dispose]()` calls in a `finally` block may need updating — see [Disposal](../learning/backend/ChangesetReader.md#disposal--always-close-the-reader-and-unifier) for the safe patterns. Code using `using` is unaffected.
+
+## @itwin/core-quantity
+
+### Generated unit identifiers and sync built-in conversion helpers
+
+`@itwin/core-quantity` now exposes beta [Units]($quantity), [Phenomena]($quantity), [UnitSystems]($quantity), and [UnitConversions]($quantity) helpers for the built-in canonical unit set shipped with the package. This gives callers discoverable package-owned identifiers instead of magic strings, grouped unit browsing by phenomenon, and a synchronous built-in conversion path for canonical bundled units.
+
+[Units]($quantity) includes bundled BIS `InvertedUnit` identifiers inside their natural phenomenon buckets, removing magic-string cases for ratio-style units such as `Units.HORIZONTAL_PER_VERTICAL`.
+
+The package also now exposes beta [getDefaultPersistenceUnit]($quantity) for the package's default built-in persistence unit of a supported bundled phenomenon. `Phenomena.LENGTH_RATIO` is intentionally excluded from that helper because the bundled built-in unit set does not currently provide an agreed default for that phenomenon.
+
+Additionally, [Quantity.convertTo]($quantity) now throws [QuantityError]($quantity) with [QuantityStatus.InvalidUnitConversion]($quantity) when given `UnitConversionProps` marked with `error: true`, matching the newer [UnitConversions]($quantity) throwing helpers. Callers that previously relied on `convertTo(...)` silently applying identity math for invalid conversions should update to handle this error explicitly.
 
 ## Electron 42 support
 
