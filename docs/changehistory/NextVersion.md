@@ -43,7 +43,7 @@ As a result, `CheckpointManager.downloadCheckpoint` now succeeds when the target
 
 ### ChangesetReader: `spillThresholdInBytes` controls disk spill for bounded memory use
 
-[openGroup]($backend), [openTxn]($backend), [openLocalChanges]($backend), and [openInMemoryChanges]($backend) now accept `spillThresholdInBytes` to bound peak memory by spilling change data to a temporary file on disk when the threshold is exceeded (default **50 MiB**). See [`spillThresholdInBytes`](../learning/backend/ChangesetReader.md#spillthresholdinbytes--bounding-peak-memory-usage) for details.
+[ChangesetReader.openGroup]($backend), [ChangesetReader.openTxn]($backend), [ChangesetReader.openLocalChanges]($backend), and [ChangesetReader.openInMemoryChanges]($backend) now accept `spillThresholdInBytes` to bound peak memory by spilling change data to a temporary file on disk when the threshold is exceeded (default **50 MiB**). See [`spillThresholdInBytes`](../learning/backend/ChangesetReader.md#spillthresholdinbytes--bounding-peak-memory-usage) for details.
 
 ### ChangesetReader: `close` and `Symbol.dispose` can now throw
 
