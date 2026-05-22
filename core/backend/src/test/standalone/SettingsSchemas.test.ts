@@ -269,6 +269,41 @@ describe("SettingsSchemas", () => {
     }
   });
 
+  it("resolveSchema resolves array items through multi-level typedef inheritance", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-array-multilevel";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test multi-level array typedef inheritance",
+      typeDefs: {
+        c: {
+          type: "array",
+          combineArray: true,
+          items: { type: "string" },
+        },
+        b: {
+          type: "array",
+          extends: `${prefix}/c`,
+        },
+      },
+      settingDefs: {
+        names: {
+          type: "array",
+          extends: `${prefix}/b`,
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
+      expect(resolved.combineArray).to.equal(true);
+      expect(resolved.items?.type).to.equal("string");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
   it("resolveSchema resolves built-in workspaceDb and workspaceDbList typedefs", () => {
     const schemas = IModelHost.settingsSchemas;
 
