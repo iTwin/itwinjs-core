@@ -85,7 +85,6 @@ describe("Generated Units artifacts", () => {
   });
 
   // Disabled because the string compare can fail on different platforms due to differences in line endings.
-  // Tracking Issue: https://github.com/iTwin/itwinjs-backlog/issues/2099
   it.skip("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
     expect(buildGeneratedUnitsModule(unitsSchema)).toBe(generatedIdentifiersSource);
   });
@@ -96,7 +95,6 @@ describe("Generated Units artifacts", () => {
   });
 
   // Disabled because the string compare can fail on different platforms due to differences in line endings.
-  // Tracking Issue: https://github.com/iTwin/itwinjs-backlog/issues/2099
   it.skip("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
     expect(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedBasicConversionsSource);
   });
@@ -116,7 +114,6 @@ describe("Generated Units artifacts", () => {
   });
 
   // Disabled because the string compare can fail on different platforms due to differences in line endings.
-  // Tracking Issue: https://github.com/iTwin/itwinjs-backlog/issues/2099
   it.skip("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
     expect(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedDefaultPersistenceSource);
   });
