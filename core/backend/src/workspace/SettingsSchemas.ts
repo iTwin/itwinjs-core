@@ -152,11 +152,9 @@ export interface SettingsSchemas {
   removeGroup(schemaPrefix: string): void;
 
   /**
-   * Resolves a setting schema's `extends` chain using the currently registered [[typeDefs]].
-   * If the schema does not have an `extends` property, it is returned as-is.
-   * Otherwise, the schema is recursively merged with the schema(s) it extends,
-   * with properties from this schema taking precedence over those from the extended schema(s).
-   *
+   * Resolves a setting schema using the currently registered [[typeDefs]].
+   * Any `extends` chain on the schema, its object properties, or its array item schema is recursively resolved,
+   * with properties from the supplied schema taking precedence over those from the extended schema(s).
    * @example
    * ```ts
    * const schema = IModelHost.settingsSchemas.settingDefs.get("app/font");
