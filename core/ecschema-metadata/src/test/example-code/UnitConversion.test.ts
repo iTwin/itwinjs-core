@@ -2,7 +2,6 @@ import { Quantity } from "@itwin/core-quantity";
 import { SchemaContext } from "../../Context";
 import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import * as path from "path";
 import * as fs from "fs";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -13,9 +12,7 @@ describe("Unit Conversion examples", () => {
     schemaContext = new SchemaContext();
 
     // Load Units schema
-    const unitSchemaPackageJson = require.resolve("@bentley/units-schema/package.json");
-    const unitSchemaDir = path.dirname(unitSchemaPackageJson);
-    const unitSchemaFile = path.join(unitSchemaDir, "Units.ecschema.xml");
+    const unitSchemaFile = require.resolve("@bentley/units-schema/Units.ecschema.xml");
     const unitsXml = fs.readFileSync(unitSchemaFile, "utf-8");
     deserializeXmlSync(unitsXml, schemaContext);
   });

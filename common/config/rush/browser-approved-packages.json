@@ -891,6 +891,10 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "tsx",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "tty-browserify",
       "allowedCategories": [ "internal" ]
     },
