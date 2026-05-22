@@ -97,7 +97,7 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!);
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/thing`)!;
       expect(resolved.type).to.equal("object");
       expect(resolved).to.not.have.property("extends");
       expect(resolved.required).to.have.members(["baseReq", "derivedReq"]);
@@ -143,7 +143,7 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!);
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/thing`)!;
       expect(resolved.properties).to.include.keys("inheritedName", "inheritedEnabled", "localCount");
       expect(resolved.properties?.inheritedName.type).to.equal("string");
       expect(resolved.properties?.inheritedEnabled.type).to.equal("boolean");
@@ -185,7 +185,7 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!);
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/thing`)!;
       expect(resolved.required).to.have.members(["sharedReq", "baseReq", "derivedReq"]);
       expect(resolved.required?.filter((name) => name === "sharedReq")).to.have.lengthOf(1);
     } finally {
@@ -218,7 +218,7 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/names`)!;
       expect(resolved.type).to.equal("array");
       expect(resolved).to.not.have.property("extends");
       expect(resolved.combineArray).to.equal(true);
@@ -259,7 +259,7 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/names`)!;
       expect(resolved.combineArray).to.equal(false);
       expect(resolved.minItems).to.equal(3);
       expect(resolved.description).to.equal("derived array schema");
@@ -296,9 +296,44 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/names`)!;
       expect(resolved.combineArray).to.equal(true);
       expect(resolved.items?.type).to.equal("string");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
+  it("getResolvedSettingDef returns a resolved setting schema by name", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-setting-schema";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test resolved setting schema lookup",
+      typeDefs: {
+        stringList: {
+          type: "array",
+          combineArray: true,
+          items: { type: "string" },
+        },
+      },
+      settingDefs: {
+        names: {
+          type: "array",
+          extends: `${prefix}/stringList`,
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.getResolvedSettingDef(`${prefix}/names`);
+      expect(resolved).to.not.be.undefined;
+      expect(resolved?.type).to.equal("array");
+      expect(resolved).to.not.have.property("extends");
+      expect(resolved?.combineArray).to.equal(true);
+      expect(resolved?.items?.type).to.equal("string");
+      expect(schemas.getResolvedSettingDef(`${prefix}/missing`)).to.be.undefined;
     } finally {
       schemas.removeGroup(prefix);
     }
@@ -310,7 +345,7 @@ describe("SettingsSchemas", () => {
     const workspaceDb = schemas.typeDefs.get("itwin/core/workspace/workspaceDb");
     expect(workspaceDb).to.not.be.undefined;
 
-    const resolvedWorkspaceDb = schemas.resolveSchema(workspaceDb!);
+    const resolvedWorkspaceDb = (schemas as any).resolveSchema(workspaceDb!);
     expect(resolvedWorkspaceDb.type).to.equal("object");
     expect(resolvedWorkspaceDb.required).to.have.members(["containerId", "baseUri"]);
     expect(resolvedWorkspaceDb.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType");
@@ -319,7 +354,7 @@ describe("SettingsSchemas", () => {
     const workspaceDbList = schemas.typeDefs.get("itwin/core/workspace/workspaceDbList");
     expect(workspaceDbList).to.not.be.undefined;
 
-    const resolvedWorkspaceDbList = schemas.resolveSchema(workspaceDbList!);
+    const resolvedWorkspaceDbList = (schemas as any).resolveSchema(workspaceDbList!);
     expect(resolvedWorkspaceDbList.type).to.equal("array");
     expect(resolvedWorkspaceDbList.combineArray).to.equal(true);
     expect(resolvedWorkspaceDbList.items?.type).to.equal("object");
@@ -360,7 +395,7 @@ describe("SettingsSchemas", () => {
     });
 
     try {
-      expect(() => schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!)).to.throw("circular typeDef reference detected");
+      expect(() => schemas.getResolvedSettingDef(`${prefix}/thing`)).to.throw("circular typeDef reference detected");
     } finally {
       schemas.removeGroup(prefix);
     }
@@ -368,7 +403,7 @@ describe("SettingsSchemas", () => {
 
   it("resolveSchema throws when an extends target cannot be found", () => {
     const schemas = IModelHost.settingsSchemas;
-    expect(() => schemas.resolveSchema({ type: "object", extends: "missing/type" })).to.throw("typeDef missing/type does not exist");
+    expect(() => (schemas as any).resolveSchema({ type: "object", extends: "missing/type" })).to.throw("typeDef missing/type does not exist");
   });
 
 });

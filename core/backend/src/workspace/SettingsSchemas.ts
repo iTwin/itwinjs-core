@@ -152,16 +152,14 @@ export interface SettingsSchemas {
   removeGroup(schemaPrefix: string): void;
 
   /**
-   * Resolves a setting schema using the currently registered [[typeDefs]].
-   * Any `extends` chain on the schema, its object properties, or its array item schema is recursively resolved,
-   * with properties from the supplied schema taking precedence over those from the extended schema(s).
+   * Looks up a setting schema in [[settingDefs]] and returns its resolved form.
+   * Resolution uses the [[typeDefs]] currently registered with this [[SettingsSchemas]] instance.
+   * @returns The resolved schema for `settingName`, or `undefined` if no schema has been registered for that setting.
    * @example
    * ```ts
-   * const schema = IModelHost.settingsSchemas.settingDefs.get("app/font");
-   * const resolved = IModelHost.settingsSchemas.resolveSchema(schema);
+   * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef("app/font");
    * ```
-   *
-   * @throws Error if a referenced [[typeDefs]] cannot be found or the schema cannot be resolved.
    */
-  resolveSchema(schema: Readonly<SettingSchema>): SettingSchema;
+  getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
+
 }

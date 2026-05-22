@@ -48,6 +48,11 @@ class SettingsSchemasImpl implements SettingsSchemas {
     return value;
   }
 
+  public getResolvedSettingDef(settingName: string): SettingSchema | undefined {
+    const schema = this.settingDefs.get(settingName);
+    return schema ? this.resolveSchema(schema, settingName) : undefined;
+  }
+
   /** @internal */
   public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string, visited: string[] = []): { required?: string[], properties: { [name: string]: SettingSchema } } {
     let required = propDef.required;
@@ -178,7 +183,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     this.onSchemaChanged.raiseEvent();
   }
 
-  public resolveSchema(schema: Readonly<SettingSchema>, scope = "", visited: string[] = []): SettingSchema {
+  private resolveSchema(schema: Readonly<SettingSchema>, scope = "", visited: string[] = []): SettingSchema {
     const { extends: _extends, ...resolved } = schema;
 
     switch (schema.type) {
