@@ -86,29 +86,6 @@ class SettingsSchemasImpl implements SettingsSchemas {
     return items;
   }
 
-  /** @internal */
-  public getArrayProperties(propDef: Readonly<SettingSchema>, scope: string): { items: SettingSchema, schema: SettingSchema } {
-    const { extends: _extends, ...resolved } = propDef;
-    let schema: SettingSchema = resolved;
-
-    if (propDef.extends) {
-      if (scope.split(".").includes(propDef.extends))
-        throw new Error(`circular typeDef reference detected: ${scope}.${propDef.extends}`);
-
-      const typeDef = this.typeDefs.get(propDef.extends);
-      if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
-
-      const { items: _items, ...typeDefSchema } = this.resolveSchema(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends);
-      schema = { ...typeDefSchema, ...schema };
-    }
-
-    return {
-      schema,
-      items: this.getArrayItems(propDef, scope),
-    };
-  }
-
   private validateProperty<T>(val: T, propDef: Readonly<SettingSchema>, path: string) {
     switch (propDef.type) {
       case "boolean":
@@ -218,9 +195,24 @@ class SettingsSchemasImpl implements SettingsSchemas {
       }
 
       case "array": {
-        const { schema: arraySchema, items } = this.getArrayProperties(schema, scope);
+        const items = this.getArrayItems(schema, scope);
+        const { extends: _extends, ...schemaProps } = schema;
+        let resolvedSchema = schemaProps;
+
+        if (schema.extends) {
+          if (scope.split(".").includes(schema.extends))
+            throw new Error(`circular typeDef reference detected: ${scope}.${schema.extends}`);
+
+          const typeDef = this.typeDefs.get(schema.extends);
+          if (undefined === typeDef)
+            throw new Error(`typeDef ${schema.extends} does not exist for ${scope}`);
+
+          const inheritedProps = this.resolveSchema(typeDef, scope ? `${scope}.${schema.extends}` : schema.extends);
+          resolvedSchema = { ...inheritedProps, ...resolvedSchema };
+        }
+
         return {
-          ...arraySchema,
+          ...resolvedSchema,
           items: this.resolveSchema(items, scope ? `${scope}.items` : "items"),
         };
       }

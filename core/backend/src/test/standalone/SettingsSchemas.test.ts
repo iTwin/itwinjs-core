@@ -191,6 +191,44 @@ describe("SettingsSchemas", () => {
     }
   });
 
+  it("resolveSchema lets derived array schema properties override inherited typedef properties", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-array-overrides";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test array override precedence",
+      typeDefs: {
+        stringList: {
+          type: "array",
+          combineArray: true,
+          minItems: 1,
+          description: "base array typedef",
+          items: { type: "string" },
+        },
+      },
+      settingDefs: {
+        names: {
+          type: "array",
+          extends: `${prefix}/stringList`,
+          combineArray: false,
+          minItems: 3,
+          description: "derived array schema",
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
+      expect(resolved.combineArray).to.equal(false);
+      expect(resolved.minItems).to.equal(3);
+      expect(resolved.description).to.equal("derived array schema");
+      expect(resolved.items?.type).to.equal("string");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
   it("resolveSchema resolves built-in workspaceDb and workspaceDbList typedefs", () => {
     const schemas = IModelHost.settingsSchemas;
 
