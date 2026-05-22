@@ -63,7 +63,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
         throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
       const expanded = this.getObjectProperties(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends);
       if (expanded.required)
-        required = required ? [...required, ...expanded.required] : expanded.required;
+        required = required ? [...new Set([...required, ...expanded.required])] : expanded.required;
       if (expanded.properties) {
         properties = properties ? { ...expanded.properties, ...properties } : expanded.properties;
       }
