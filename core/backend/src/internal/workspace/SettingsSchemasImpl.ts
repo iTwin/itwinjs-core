@@ -241,7 +241,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     }
     if (undefined !== group?.typeDefs) {
       for (const key of Object.keys(group.typeDefs))
-        this.settingDefs.delete(makeSettingKey(schemaPrefix, key));
+        this.typeDefs.delete(makeSettingKey(schemaPrefix, key));
     }
     this._allGroups.delete(schemaPrefix);
   }
