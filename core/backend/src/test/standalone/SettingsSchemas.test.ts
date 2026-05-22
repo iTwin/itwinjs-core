@@ -153,6 +153,45 @@ describe("SettingsSchemas", () => {
     }
   });
 
+  it("resolveSchema deduplicates required properties inherited from object typedefs", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-object-required";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test required property deduplication",
+      typeDefs: {
+        baseThing: {
+          type: "object",
+          required: ["sharedReq", "baseReq"],
+          properties: {
+            sharedReq: { type: "string" },
+            baseReq: { type: "boolean" },
+            derivedReq: { type: "integer" },
+          },
+        },
+      },
+      settingDefs: {
+        thing: {
+          type: "object",
+          extends: `${prefix}/baseThing`,
+          required: ["sharedReq", "derivedReq"],
+          properties: {
+            derivedReq: { type: "integer" },
+          },
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!);
+      expect(resolved.required).to.have.members(["sharedReq", "baseReq", "derivedReq"]);
+      expect(resolved.required?.filter((name) => name === "sharedReq")).to.have.lengthOf(1);
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
   it("resolveSchema resolves array items through extends", () => {
     const schemas = IModelHost.settingsSchemas;
     const prefix = "resolve-schema-array";
