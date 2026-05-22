@@ -196,8 +196,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
       case "array": {
         const items = this.getArrayItems(schema, scope);
-        const { extends: _extends, ...schemaProps } = schema;
-        let resolvedSchema = schemaProps;
+        let resolvedSchema = resolved;
 
         if (schema.extends) {
           if (scope.split(".").includes(schema.extends))

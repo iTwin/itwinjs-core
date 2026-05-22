@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added SettingsSchemas.resolveSchema for resolving nested object properties and array items",
+      "comment": "Added `SettingsSchemas.resolveSchema` for resolving nested object properties and array items",
       "type": "none"
     }
   ],
