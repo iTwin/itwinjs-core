@@ -12,7 +12,9 @@ A single EC entity may typically map to multiple tables or a single table.
 
 ### The reader–unifier pipeline
 
+```ts
 [[include:ChangesetReader.BasicPipeline]]
+```
 
 After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables.
 
@@ -44,7 +46,9 @@ interface ChangeMeta {
 
 Each [ChangeInstance]($backend) carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
 
+```ts
 [[include:ChangesetReader.ChangeFetchedPropNames]]
+```
 
 #### Naming rules
 
@@ -75,7 +79,9 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 - The `"New"` instance **has** `Position`(Point3d property) as a key (non-null value).
 - The `"Old"` instance does **not** have `Position` as a key (was NULL), but `"Position"` **is** listed in `changeFetchedPropNames` for both stages because the binary recorded the full transition.
 
+```ts
 [[include:ChangesetReader.NullValuedPoint3d]]
+```
 
 **Rule of thumb:** Use `changeFetchedPropNames` to determine *which* properties changed. Use `"propName" in instance` (or optional chaining) to distinguish "changed to/from a non-null value" from "changed to/from null".
 
@@ -85,36 +91,22 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 
 [ChangesetReader]($backend) and [PartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
 
-The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
+The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown. Because the TypeScript runtime disposes each `using`-bound object independently, a throw from one disposal does not prevent the others from running:
 
 ```ts
-{
-  using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-  using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-
-  while (reader.step())
-    pcu.appendFrom(reader);
-
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-  // reader and pcu are disposed here automatically
-}
+[[include:ChangesetReader.DisposalUsing]]
 ```
 
-If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly in a `finally` block:
+If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
 ```ts
-const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-try {
-  while (reader.step())
-    pcu.appendFrom(reader);
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-} finally {
-  reader[Symbol.dispose]();
-  pcu[Symbol.dispose]();
-}
+[[include:ChangesetReader.DisposalNested]]
+```
+
+OR order them appropriately if you are sure only the last disposal might throw:
+
+```ts
+[[include:ChangesetReader.DisposalOrdered]]
 ```
 
 > **Important:** The same rule applies to [ChangeCache]($backend) instances created via [ChangeUnifierCache.createSqliteBackedCache]($backend) — they wrap a SQLite connection and must also be disposed.
@@ -125,29 +117,77 @@ try {
 
 ### [ChangesetReader.openFile]($backend) — read a single pushed changeset file
 
+```ts
 [[include:ChangesetReader.BasicPipeline]]
+```
 
 ### [ChangesetReader.openGroup]($backend) — read multiple changesets as a single stream
 
 [ChangesetReader.openGroup]($backend) concatenates multiple changeset files into one logical stream. The unifier merges them across the whole group — an element that was inserted in changeset 1 and updated in changeset 2 surfaces as a single `"Inserted"` `"New"` instance reflecting its final state.
 
+```ts
 [[include:ChangesetReader.OpenGroup]]
+```
 
 ### [ChangesetReader.openTxn]($backend) — read a saved (not yet pushed) local transaction
 
+```ts
 [[include:ChangesetReader.OpenTxn]]
+```
 
 ### [ChangesetReader.openLocalChanges]($backend) — read all local un-pushed saved changes
 
+```ts
 [[include:ChangesetReader.OpenLocalChanges]]
+```
 
 Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved) changes on top:
 
+```ts
 [[include:ChangesetReader.OpenLocalChangesIncludeInMemory]]
+```
 
 ### [ChangesetReader.openInMemoryChanges]($backend) — read only the in-memory (unsaved) changes
 
+```ts
 [[include:ChangesetReader.OpenInMemoryChanges]]
+```
+
+---
+
+## `spillThresholdInBytes` — bounding peak memory usage
+
+[ChangesetReader.openGroup]($backend), [ChangesetReader.openTxn]($backend), [ChangesetReader.openLocalChanges]($backend), and [ChangesetReader.openInMemoryChanges]($backend) all accept an optional `spillThresholdInBytes` argument. It controls whether the native reader buffers change data in memory or spills it to a temporary file on disk.
+
+| Scenario | Behaviour |
+|---|---|
+| Total change data **≤** `spillThresholdInBytes` | Changes are held in memory — fastest path |
+| Total change data **>** `spillThresholdInBytes` | Changes are written to a temporary file on disk and streamed from there — memory usage stays bounded |
+
+The default threshold is **50 MiB**. Reduce it when running in a memory-constrained environment or when processing an unusually large group of changesets:
+
+```ts
+[[include:ChangesetReader.SpillThreshold]]
+```
+
+The same parameter is available on the other open methods:
+
+**`openLocalChanges`:**
+```ts
+[[include:ChangesetReader.SpillThresholdOpenLocalChanges]]
+```
+
+**`openInMemoryChanges`:**
+```ts
+[[include:ChangesetReader.SpillThresholdOpenInMemoryChanges]]
+```
+
+**`openTxn`:**
+```ts
+[[include:ChangesetReader.SpillThresholdOpenTxn]]
+```
+
+> **Note:** [ChangesetReader.openFile]($backend) does not expose `spillThresholdInBytes` because it reads a single on-disk file sequentially and does not pre-buffer the change data.
 
 ---
 
@@ -161,7 +201,9 @@ All `open*` methods accept a `propFilter` argument that controls which propertie
 | `BisCoreElement` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
 | `InstanceKey` | Only `ECInstanceId` and `ECClassId` |
 
+```ts
 [[include:ChangesetReader.ModeInstanceKey]]
+```
 
 The active filter is stored as a `PropertyFilter` enum value in `instance.$meta.propFilter`:
 
@@ -186,15 +228,21 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 
 ### Example — `classIdsToClassNames`
 
+```ts
 [[include:ChangesetReader.RowOptionsClassNames]]
+```
 
 ### Example — `useJsName`
 
+```ts
 [[include:ChangesetReader.UseJsName]]
+```
 
 ### Example — reading full binary blobs
 
+```ts
 [[include:ChangesetReader.RowOptionsAbbreviateBlobs]]
+```
 
 ---
 
@@ -204,7 +252,9 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 
 This means you must always check `changeFetchedPropNames` using the schema-level EC property name, not the JS name:
 
+```ts
 [[include:ChangesetReader.UseJsNameAndChangeFetchedPropNames]]
+```
 
 In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changeFetchedPropNames`.
 
@@ -228,11 +278,15 @@ Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling t
 
 ### Example — only yield inserts and updates for a specific table
 
+```ts
 [[include:ChangesetReader.FilterTable]]
+```
 
 ### Example — only yield changes for a known set of EC class names
 
+```ts
 [[include:ChangesetReader.FilterClassNames]]
+```
 
 ### Clearing filters at runtime
 
@@ -246,11 +300,49 @@ reader.clearClassNameFilters();
 
 ---
 
+## Strict mode
+
+Strict mode controls how [ChangesetReader]($backend) handles a **column-count mismatch** between a change record and the corresponding live database table. A mismatch arises when columns have been added to a table after the changeset was written.
+
+When the reader processes a change row it first reads the table name, then compares the number of columns recorded in the change binary against the number of columns the table currently has in the live iModel:
+
+| Mode | Column-count mismatch behaviour |
+|---|---|
+| **Strict** (`enableStrictMode`) | Throws an error immediately — the row is not processed |
+| **Lenient** (`disableStrictMode`, the **default**) | Takes the **minimum** of the two counts and proceeds with that subset of columns |
+
+The lenient default is safe because SQLite only ever appends new columns at the end of a table and we never remove columns. An older change record therefore simply lacks the trailing columns that were added later; those missing columns are ignored and the rest of the mapping proceeds normally.
+
+### When to use strict mode
+
+Enable strict mode when you need a hard guarantee that every change row is interpreted against exactly the schema that was in effect when the changeset was written. Any schema evolution (added columns) that occurred between the changeset being created and it being read will surface as an error rather than being silently tolerated.
+
+```ts
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+reader.enableStrictMode(); // throw if column counts diverge between change record and live table
+
+while (reader.step()) {
+  // ...
+}
+```
+
+To return to the default lenient behaviour at any time:
+
+```ts
+reader.disableStrictMode();
+```
+
+Both methods can be called between [ChangesetReader.step]($backend) calls to toggle the mode mid-stream.
+
+---
+
 ## Cache strategies
 
 By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
 
+```ts
 [[include:ChangesetReader.CacheStrategies]]
+```
 
 ---
 
@@ -258,7 +350,9 @@ By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For
 
 The following example imports a custom schema, inserts an element, pushes a second update, and demonstrates reading each changeset independently and then together as a group:
 
+```ts
 [[include:ChangesetReader.WorkedExample]]
+```
 
 ---
 
