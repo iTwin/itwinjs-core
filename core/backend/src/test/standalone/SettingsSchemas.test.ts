@@ -115,6 +115,44 @@ describe("SettingsSchemas", () => {
     }
   });
 
+  it("resolveSchema includes inherited properties from object typedefs", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-object-inherited-props";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test inherited object properties",
+      typeDefs: {
+        baseThing: {
+          type: "object",
+          properties: {
+            inheritedName: { type: "string" },
+            inheritedEnabled: { type: "boolean" },
+          },
+        },
+      },
+      settingDefs: {
+        thing: {
+          type: "object",
+          extends: `${prefix}/baseThing`,
+          properties: {
+            localCount: { type: "integer" },
+          },
+        },
+      },
+    });
+
+    try {
+      const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!);
+      expect(resolved.properties).to.include.keys("inheritedName", "inheritedEnabled", "localCount");
+      expect(resolved.properties?.inheritedName.type).to.equal("string");
+      expect(resolved.properties?.inheritedEnabled.type).to.equal("boolean");
+      expect(resolved.properties?.localCount.type).to.equal("integer");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
   it("resolveSchema resolves array items through extends", () => {
     const schemas = IModelHost.settingsSchemas;
     const prefix = "resolve-schema-array";
@@ -125,6 +163,9 @@ describe("SettingsSchemas", () => {
       typeDefs: {
         stringList: {
           type: "array",
+          combineArray: true,
+          minItems: 1,
+          description: "base array typedef",
           items: { type: "string" },
         },
       },
@@ -140,6 +181,9 @@ describe("SettingsSchemas", () => {
       const resolved = schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/names`)!);
       expect(resolved.type).to.equal("array");
       expect(resolved).to.not.have.property("extends");
+      expect(resolved.combineArray).to.equal(true);
+      expect(resolved.minItems).to.equal(1);
+      expect(resolved.description).to.equal("base array typedef");
       expect(resolved.items?.type).to.equal("string");
       expect(resolved.items).to.not.have.property("extends");
     } finally {
@@ -169,6 +213,44 @@ describe("SettingsSchemas", () => {
     expect(resolvedWorkspaceDbList.items).to.not.have.property("extends");
     expect(resolvedWorkspaceDbList.items?.required).to.have.members(["containerId", "baseUri"]);
     expect(resolvedWorkspaceDbList.items?.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType");
+  });
+
+  it("resolveSchema throws on circular typedef references", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-cycle";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test circular typedef resolution",
+      typeDefs: {
+        a: {
+          type: "object",
+          extends: `${prefix}/b`,
+          properties: {
+            aOnly: { type: "string" },
+          },
+        },
+        b: {
+          type: "object",
+          extends: `${prefix}/a`,
+          properties: {
+            bOnly: { type: "string" },
+          },
+        },
+      },
+      settingDefs: {
+        thing: {
+          type: "object",
+          extends: `${prefix}/a`,
+        },
+      },
+    });
+
+    try {
+      expect(() => schemas.resolveSchema(schemas.settingDefs.get(`${prefix}/thing`)!)).to.throw("circular typeDef reference detected");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
   });
 
   it("resolveSchema throws when an extends target cannot be found", () => {

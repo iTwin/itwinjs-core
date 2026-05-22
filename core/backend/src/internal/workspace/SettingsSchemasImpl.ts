@@ -55,10 +55,13 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
     // if this object extends a typeDef, add typeDef's properties and required values, recursively
     if (propDef.extends !== undefined) {
+      if (scope.split(".").includes(propDef.extends))
+        throw new Error(`circular typeDef reference detected: ${scope}.${propDef.extends}`);
+
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
         throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
-      const expanded = this.getObjectProperties(typeDef, `${scope}.${propDef.extends}`);
+      const expanded = this.getObjectProperties(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends);
       if (expanded.required)
         required = required ? [...required, ...expanded.required] : expanded.required;
       if (expanded.properties) {
@@ -81,6 +84,29 @@ class SettingsSchemasImpl implements SettingsSchemas {
     if (undefined === items)
       throw new Error(`array ${scope} has no items definition`);
     return items;
+  }
+
+  /** @internal */
+  public getArrayProperties(propDef: Readonly<SettingSchema>, scope: string): { items: SettingSchema, schema: SettingSchema } {
+    const { extends: _extends, ...resolved } = propDef;
+    let schema: SettingSchema = resolved;
+
+    if (propDef.extends) {
+      if (scope.split(".").includes(propDef.extends))
+        throw new Error(`circular typeDef reference detected: ${scope}.${propDef.extends}`);
+
+      const typeDef = this.typeDefs.get(propDef.extends);
+      if (undefined === typeDef)
+        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
+
+      const { items: _items, ...typeDefSchema } = this.resolveSchema(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends);
+      schema = { ...typeDefSchema, ...schema };
+    }
+
+    return {
+      schema,
+      items: this.getArrayItems(propDef, scope),
+    };
   }
 
   private validateProperty<T>(val: T, propDef: Readonly<SettingSchema>, path: string) {
@@ -192,13 +218,9 @@ class SettingsSchemasImpl implements SettingsSchemas {
       }
 
       case "array": {
-        const items = this.getArrayItems(schema, scope);
-        const typeDef = schema.extends ? this.typeDefs.get(schema.extends) : undefined;
-        const base = typeDef ? this.resolveSchema(typeDef) : undefined;
-
+        const { schema: arraySchema, items } = this.getArrayProperties(schema, scope);
         return {
-          ...base,
-          ...resolved,
+          ...arraySchema,
           items: this.resolveSchema(items, scope ? `${scope}.items` : "items"),
         };
       }
