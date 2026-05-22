@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added SettingsSchemas.resolveSchema for resolving nexted object properties and array items",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
