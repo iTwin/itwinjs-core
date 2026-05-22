@@ -177,6 +177,7 @@ describe("SettingsSchemas", () => {
           extends: `${prefix}/baseThing`,
           required: ["sharedReq", "derivedReq"],
           properties: {
+            sharedReq: { type: "string" },
             derivedReq: { type: "integer" },
           },
         },
