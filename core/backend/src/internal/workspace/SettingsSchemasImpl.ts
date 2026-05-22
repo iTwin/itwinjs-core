@@ -191,14 +191,17 @@ class SettingsSchemasImpl implements SettingsSchemas {
         };
       }
 
-      case "array":
+      case "array": {
+        const items = this.getArrayItems(schema, scope);
+        const typeDef = schema.extends ? this.typeDefs.get(schema.extends) : undefined;
+        const base = typeDef ? this.resolveSchema(typeDef) : undefined;
+
         return {
+          ...base,
           ...resolved,
-          items: this.resolveSchema(
-            this.getArrayItems(schema, scope),
-            scope ? `${scope}.items` : "items"
-          ),
+          items: this.resolveSchema(items, scope ? `${scope}.items` : "items"),
         };
+      }
 
       default:
         return resolved;
