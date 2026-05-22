@@ -109,7 +109,10 @@ export interface SettingsSchemas {
   /** The map of each registered [[SettingGroupSchema]], accessed by its [[SettingGroupSchema.schemaPrefix]]. */
   readonly groups: ReadonlyMap<string, SettingGroupSchema>;
 
-  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
+  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]).
+   * Schemas in this map may include an [[SettingSchema.extends]] property referring to a registered type definition.
+   * Use [[resolveSchema]] to obtain the fully expanded schema.
+   */
   readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
 
   /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],
@@ -153,6 +156,12 @@ export interface SettingsSchemas {
    * If the schema does not have an `extends` property, it is returned as-is.
    * Otherwise, the schema is recursively merged with the schema(s) it extends,
    * with properties from this schema taking precedence over those from the extended schema(s).
+   *
+   * @example
+   * ```ts
+   * const schema = IModelHost.settingsSchemas.settingDefs.get("app/font");
+   * const resolved = IModelHost.settingsSchemas.resolveSchema(schema);
+   * ```
    *
    * @throws Error if a referenced [[typeDefs]] cannot be found or the schema cannot be resolved.
    */
