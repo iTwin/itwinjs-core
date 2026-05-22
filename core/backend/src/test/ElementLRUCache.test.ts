@@ -290,10 +290,10 @@ describe('ElementLruCache', () => {
       },
     };
 
-    // Simulate the pre-insert cache invalidation for elemWithEmptyCode2 (id not yet assigned).
+    // Simulate the pre-insert cache invalidation for anotherElementWithEmptyCode (id not yet assigned).
     cache.delete({ id: undefined, federationGuid: undefined, code: anotherElementWithEmptyCode.elProps.code });
 
-    // elemWithEmptyCode1 must NOT have been evicted — the delete should have been a no-op.
+    // elementWithEmptyCode must NOT have been evicted — the delete should have been a no-op.
     const firstElement = cache.get({ id: elementWithEmptyCode.elProps.id });
     expect(firstElement, "first element should still be in cache after pre-insert delete of second empty-code element").to.equal(elementWithEmptyCode);
   });
