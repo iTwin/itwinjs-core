@@ -147,6 +147,30 @@ describe("SettingsSchemas", () => {
     }
   });
 
+  it("resolveSchema resolves built-in workspaceDb and workspaceDbList typedefs", () => {
+    const schemas = IModelHost.settingsSchemas;
+
+    const workspaceDb = schemas.typeDefs.get("itwin/core/workspace/workspaceDb");
+    expect(workspaceDb).to.not.be.undefined;
+
+    const resolvedWorkspaceDb = schemas.resolveSchema(workspaceDb!);
+    expect(resolvedWorkspaceDb.type).to.equal("object");
+    expect(resolvedWorkspaceDb.required).to.have.members(["containerId", "baseUri"]);
+    expect(resolvedWorkspaceDb.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType");
+    expect(resolvedWorkspaceDb.properties?.storageType.default).to.equal("azure");
+
+    const workspaceDbList = schemas.typeDefs.get("itwin/core/workspace/workspaceDbList");
+    expect(workspaceDbList).to.not.be.undefined;
+
+    const resolvedWorkspaceDbList = schemas.resolveSchema(workspaceDbList!);
+    expect(resolvedWorkspaceDbList.type).to.equal("array");
+    expect(resolvedWorkspaceDbList.combineArray).to.equal(true);
+    expect(resolvedWorkspaceDbList.items?.type).to.equal("object");
+    expect(resolvedWorkspaceDbList.items).to.not.have.property("extends");
+    expect(resolvedWorkspaceDbList.items?.required).to.have.members(["containerId", "baseUri"]);
+    expect(resolvedWorkspaceDbList.items?.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType");
+  });
+
   it("resolveSchema throws when an extends target cannot be found", () => {
     const schemas = IModelHost.settingsSchemas;
     expect(() => schemas.resolveSchema({ type: "object", extends: "missing/type" })).to.throw("typeDef missing/type does not exist");
