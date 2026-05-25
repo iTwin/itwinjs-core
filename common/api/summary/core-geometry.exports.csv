@@ -93,6 +93,7 @@ public;class;CurveCollection
 public;type;CurveCollectionType
 public;class;CurveCurve
 public;enum;CurveCurveApproachType
+public;interface;CurveCurveOptions
 public;enum;CurveExtendMode
 public;class;CurveExtendOptions
 public;class;CurveFactory
