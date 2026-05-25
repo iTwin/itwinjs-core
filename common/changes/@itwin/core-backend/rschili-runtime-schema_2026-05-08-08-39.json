@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add SchemaView to iModelDb",
+      "comment": "Added `IModelDb.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc.",
       "type": "none"
     }
   ],
