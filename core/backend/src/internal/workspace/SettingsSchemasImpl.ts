@@ -196,7 +196,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
           properties: Object.fromEntries(
             Object.entries(properties).map(([key, value]) => [
               key,
-              this.resolveSchema(value, scope ? `${scope}.${key}` : key),
+              this.resolveSchema(value, scope ? `${scope}.${key}` : key, visited),
             ])
           ),
         };
@@ -220,7 +220,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
         return {
           ...resolvedSchema,
-          items: this.resolveSchema(items, scope ? `${scope}.items` : "items"),
+          items: this.resolveSchema(items, scope ? `${scope}.items` : "items", visited),
         };
       }
 

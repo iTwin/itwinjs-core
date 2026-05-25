@@ -155,6 +155,7 @@ export interface SettingsSchemas {
    * Looks up a setting schema in [[settingDefs]] and returns its resolved form.
    * Resolution uses the [[typeDefs]] currently registered with this [[SettingsSchemas]] instance.
    * @returns The resolved schema for `settingName`, or `undefined` if no schema has been registered for that setting.
+   * @throws Error if a registered setting schema cannot be resolved because a referenced type definition is missing or circular.
    * @example
    * ```ts
    * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef("app/font");

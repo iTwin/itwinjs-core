@@ -339,31 +339,20 @@ describe("SettingsSchemas", () => {
     }
   });
 
-  it("resolveSchema resolves built-in workspaceDb and workspaceDbList typedefs", () => {
+  it("getResolvedSettingDef resolves built-in workspace settings schemas", () => {
     const schemas = IModelHost.settingsSchemas;
 
-    const workspaceDb = schemas.typeDefs.get("itwin/core/workspace/workspaceDb");
-    expect(workspaceDb).to.not.be.undefined;
-
-    const resolvedWorkspaceDb = (schemas as any).resolveSchema(workspaceDb!);
-    expect(resolvedWorkspaceDb.type).to.equal("object");
-    expect(resolvedWorkspaceDb.required).to.have.members(["containerId", "baseUri"]);
-    expect(resolvedWorkspaceDb.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType");
-    expect(resolvedWorkspaceDb.properties?.storageType.default).to.equal("azure");
-
-    const workspaceDbList = schemas.typeDefs.get("itwin/core/workspace/workspaceDbList");
-    expect(workspaceDbList).to.not.be.undefined;
-
-    const resolvedWorkspaceDbList = (schemas as any).resolveSchema(workspaceDbList!);
-    expect(resolvedWorkspaceDbList.type).to.equal("array");
-    expect(resolvedWorkspaceDbList.combineArray).to.equal(true);
-    expect(resolvedWorkspaceDbList.items?.type).to.equal("object");
-    expect(resolvedWorkspaceDbList.items).to.not.have.property("extends");
-    expect(resolvedWorkspaceDbList.items?.required).to.have.members(["containerId", "baseUri"]);
-    expect(resolvedWorkspaceDbList.items?.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType");
+    const resolved = schemas.getResolvedSettingDef("itwin/core/workspace/settingsWorkspaces");
+    expect(resolved).to.not.be.undefined;
+    expect(resolved?.type).to.equal("array");
+    expect(resolved?.items?.type).to.equal("object");
+    expect(resolved?.items).to.not.have.property("extends");
+    expect(resolved?.items?.required).to.have.members(["containerId", "baseUri"]);
+    expect(resolved?.items?.properties).to.include.keys("dbName", "baseUri", "containerId", "storageType", "resourceName", "priority");
+    expect(resolved?.items?.properties?.storageType.default).to.equal("azure");
   });
 
-  it("resolveSchema throws on circular typedef references", () => {
+  it("getResolvedSettingDef throws on circular typedef references", () => {
     const schemas = IModelHost.settingsSchemas;
     const prefix = "resolve-schema-cycle";
     schemas.removeGroup(prefix);
@@ -401,9 +390,59 @@ describe("SettingsSchemas", () => {
     }
   });
 
-  it("resolveSchema throws when an extends target cannot be found", () => {
+  it("getResolvedSettingDef throws on nested recursive typedef references", () => {
     const schemas = IModelHost.settingsSchemas;
-    expect(() => (schemas as any).resolveSchema({ type: "object", extends: "missing/type" })).to.throw("typeDef missing/type does not exist");
+    const prefix = "resolve-schema-nested-cycle";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test nested recursive typedef resolution",
+      typeDefs: {
+        node: {
+          type: "object",
+          properties: {
+            child: {
+              type: "object",
+              extends: `${prefix}/node`,
+            },
+          },
+        },
+      },
+      settingDefs: {
+        root: {
+          type: "object",
+          extends: `${prefix}/node`,
+        },
+      },
+    });
+
+    try {
+      expect(() => schemas.getResolvedSettingDef(`${prefix}/root`)).to.throw("circular typeDef reference detected");
+    } finally {
+      schemas.removeGroup(prefix);
+    }
+  });
+
+  it("getResolvedSettingDef throws when an extends target cannot be found", () => {
+    const schemas = IModelHost.settingsSchemas;
+    const prefix = "resolve-schema-missing-typedef";
+    schemas.removeGroup(prefix);
+    schemas.addGroup({
+      schemaPrefix: prefix,
+      description: "schema used to test missing typedef resolution",
+      settingDefs: {
+        thing: {
+          type: "object",
+          extends: `${prefix}/missingType`,
+        },
+      },
+    });
+
+    try {
+      expect(() => schemas.getResolvedSettingDef(`${prefix}/thing`)).to.throw(`typeDef ${prefix}/missingType does not exist`);
+    } finally {
+      schemas.removeGroup(prefix);
+    }
   });
 
 });
