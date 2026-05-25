@@ -54,9 +54,10 @@ class SettingsSchemasImpl implements SettingsSchemas {
   }
 
   /** @internal */
-  public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string, visited: string[] = []): { required?: string[], properties: { [name: string]: SettingSchema } } {
+  public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string, visited: string[] = []): { required?: string[], properties: { [name: string]: SettingSchema }, visited: string[] } {
     let required = propDef.required;
     let properties = propDef.properties;
+    let nextVisited = visited;
 
     // if this object extends a typeDef, add typeDef's properties and required values, recursively
     if (propDef.extends !== undefined) {
@@ -67,6 +68,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
       if (undefined === typeDef)
         throw new Error(`typeDef ${propDef.extends} does not exist${scope ? ` for ${scope}` : ""}`);
       const expanded = this.getObjectProperties(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends, [...visited, propDef.extends]);
+      nextVisited = expanded.visited;
       if (expanded.required)
         required = required ? [...new Set([...required, ...expanded.required])] : expanded.required;
       if (expanded.properties) {
@@ -74,7 +76,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
       }
     }
     properties = properties ?? {};
-    return { required, properties };
+    return { required, properties, visited: nextVisited };
   }
 
   /** @internal */
@@ -188,7 +190,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
     switch (schema.type) {
       case "object": {
-        const { required, properties } = this.getObjectProperties(schema, scope, visited);
+        const { required, properties, visited: resolvedVisited } = this.getObjectProperties(schema, scope, visited);
 
         return {
           ...resolved,
@@ -196,7 +198,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
           properties: Object.fromEntries(
             Object.entries(properties).map(([key, value]) => [
               key,
-              this.resolveSchema(value, scope ? `${scope}.${key}` : key, visited),
+              this.resolveSchema(value, scope ? `${scope}.${key}` : key, resolvedVisited),
             ])
           ),
         };
