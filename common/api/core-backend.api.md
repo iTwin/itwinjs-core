@@ -607,6 +607,8 @@ export class BriefcaseDb extends IModelDb {
     close(options?: CloseIModelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @internal
+    disableFileBasedTxns(): void;
     // @preview
     discardChanges(args?: {
         retainLocks?: true;
@@ -614,12 +616,16 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
     // @internal
+    enableFileBasedTxns(): void;
+    // @internal
     executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     // (undocumented)
     getAllChangesetHealthData(): Promise<ChangesetHealthStats[]>;
     get isBriefcase(): boolean;
+    // @internal
+    get isFileBasedTxnsEnabled(): boolean;
     get iTwinId(): GuidString;
     // (undocumented)
     protected makeLockControl(): void;
@@ -6136,6 +6142,7 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
     toIndex: ChangesetIndex;
     skipSchemaChanges?: true;
+    inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 // @public @preview
