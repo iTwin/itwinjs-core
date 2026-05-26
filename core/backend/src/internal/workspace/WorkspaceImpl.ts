@@ -600,23 +600,20 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
   }
 
   public acquireWriteLock(user: string): void {
-    const cloudContainer = this.cloudContainer;
-    if (cloudContainer) {
-      cloudContainer.acquireWriteLock(user);
-      CloudSqlite.addHiddenProperty(cloudContainer, "writeLockHeldBy", user);
+    if (this.cloudContainer) {
+      this.cloudContainer.acquireWriteLock(user);
+      CloudSqlite.addHiddenProperty(this.cloudContainer, "writeLockHeldBy", user);
     }
   }
   public releaseWriteLock() {
-    const cloudContainer = this.cloudContainer;
-    if (cloudContainer)
-      CloudSqlite.releaseWriteLock(cloudContainer);
+    if (this.cloudContainer)
+      CloudSqlite.releaseWriteLock(this.cloudContainer);
   }
 
   public abandonChanges() {
-    const cloudContainer = this.cloudContainer;
-    if (cloudContainer) {
-      cloudContainer.abandonChanges();
-      CloudSqlite.addHiddenProperty(cloudContainer, "writeLockHeldBy", undefined);
+    if (this.cloudContainer) {
+      this.cloudContainer.abandonChanges();
+      CloudSqlite.addHiddenProperty(this.cloudContainer, "writeLockHeldBy", undefined);
     }
   }
 
