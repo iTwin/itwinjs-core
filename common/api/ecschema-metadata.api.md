@@ -2536,7 +2536,6 @@ export class SchemaView {
     findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
     findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
     findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined;
-    findView(qualifiedName: string): SchemaView.Class | undefined;
     static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView;
     // @internal
     static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView;
@@ -2804,15 +2803,13 @@ export namespace SchemaView {
         get ecInstanceId(): number;
         get fullName(): string;
         getClass(name: string): Class | undefined;
-        getClasses(): IterableIterator<Class>;
+        getClasses(filter?: ClassType): IterableIterator<Class>;
         getEnumeration(name: string): Enumeration | undefined;
         getEnumerations(): IterableIterator<Enumeration>;
         getKindOfQuantities(): IterableIterator<KindOfQuantity>;
         getKindOfQuantity(name: string): KindOfQuantity | undefined;
         getPropertyCategories(): IterableIterator<PropertyCategory>;
         getPropertyCategory(name: string): PropertyCategory | undefined;
-        getView(name: string): Class | undefined;
-        getViews(): IterableIterator<Class>;
         // @internal (undocumented)
         readonly idx: number;
         get isHidden(): boolean;
