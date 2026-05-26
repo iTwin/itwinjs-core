@@ -21,6 +21,10 @@ const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Un
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
 const generatedDefaultPersistenceSource = readFileSync(require.resolve("../internal/DefaultPersistenceUnits.generated.ts"), "utf8");
 
+function normalizeLineEndings(source: string): string {
+  return source.replace(/\r\n/g, "\n");
+}
+
 function assertUniqueGeneratedKeys(entries: ReadonlyArray<{ key: string }>, description: string): void {
   const seen = new Set<string>();
   for (const entry of entries) {
@@ -84,9 +88,8 @@ describe("Generated Units artifacts", () => {
     expect(generatedDefaultPersistenceSource).not.toContain("[Phenomena.LENGTH_RATIO]");
   });
 
-  // Disabled because the string compare can fail on different platforms due to differences in line endings.
-  it.skip("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
-    expect(buildGeneratedUnitsModule(unitsSchema)).toBe(generatedIdentifiersSource);
+  it("rebuilds the checked-in Units identifiers artifact exactly from Units.json", () => {
+    expect(normalizeLineEndings(buildGeneratedUnitsModule(unitsSchema))).toBe(normalizeLineEndings(generatedIdentifiersSource));
   });
 
   it("rebuilds the checked-in Units.json artifact exactly from the source schema", () => {
@@ -94,9 +97,8 @@ describe("Generated Units artifacts", () => {
     expect(rebuiltUnitsJson).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
   });
 
-  // Disabled because the string compare can fail on different platforms due to differences in line endings.
-  it.skip("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
-    expect(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedBasicConversionsSource);
+  it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
+    expect(normalizeLineEndings(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys))).toBe(normalizeLineEndings(generatedBasicConversionsSource));
   });
 
   it("fails generation when a unit numerator is zero", () => {
@@ -113,8 +115,7 @@ describe("Generated Units artifacts", () => {
     expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid denominator for "FT"/);
   });
 
-  // Disabled because the string compare can fail on different platforms due to differences in line endings.
-  it.skip("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
-    expect(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys)).toBe(generatedDefaultPersistenceSource);
+  it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
+    expect(normalizeLineEndings(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
   });
 });

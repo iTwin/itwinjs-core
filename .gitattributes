@@ -6,6 +6,7 @@
 *.bat                                         eol=crlf
 *.sh                                          eol=lf
 *.api.md                                      eol=lf
+*.generated.ts                                eol=lf
 presentation/common/Ruleset.schema.json text  eol=lf
 *.snap                                        eol=lf
 
