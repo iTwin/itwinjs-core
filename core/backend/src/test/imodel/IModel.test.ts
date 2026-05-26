@@ -1118,6 +1118,7 @@ describe("iModel", () => {
           targetId: row.ECInstanceId,
         });
         const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const metadata = await relationship.getMetaData();
         assert.isDefined(metadata, "metadata should be defined");
       }
@@ -1158,6 +1159,7 @@ describe("iModel", () => {
           targetId: row.ECInstanceId,
         });
         const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         relationship.forEach((propName, propMeta) => {
           assert.isDefined(propName, "Property name should be defined");
           assert.isDefined(propMeta, "Property metadata should be defined");

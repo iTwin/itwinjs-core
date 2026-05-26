@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -446,6 +446,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
+  private _schemasPromise?: Promise<SchemaView>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1152,6 +1153,11 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
+      if (this._schemasPromise) {
+        const old = this._schemasPromise;
+        this._schemasPromise = undefined;
+        old.then((view) => view.markOutdated()).catch(() => {});
+      }
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1656,7 +1662,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1664,7 +1670,8 @@ export abstract class IModelDb extends IModel {
    * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1697,7 +1704,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
+   * Gets the context that allows accessing the metadata (`@itwin/ecschema-metadata` package) of this iModel.
+   *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need schema authoring
+   * (via `@itwin/ecschema-editing`), custom-attribute deserialization, or the full ecschema-metadata object graph.
    * @public @preview
    */
   public get schemaContext(): SchemaContext {
@@ -1711,6 +1722,57 @@ export abstract class IModelDb extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
+   * concurrent callers share a single in-flight build.
+   *
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
+   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   * @beta
+   */
+  public async getSchemaView(): Promise<SchemaView> {
+    if (this._schemasPromise) {
+      const ctx = await this._schemasPromise;
+      if (!ctx.isOutdated)
+        return ctx;
+    }
+    // Capture the in-flight promise locally so the rejection handler only clears
+    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
+    // re-fetch could otherwise replace the field before our hydrate fails, and a naive
+    // `_schemasPromise = undefined` would clobber that newer reference.
+    const inflight = this._hydrateSchemas();
+    this._schemasPromise = inflight;
+    inflight.catch(() => {
+      if (this._schemasPromise === inflight)
+        this._schemasPromise = undefined;
+    });
+    return inflight;
+  }
+
+  private async _hydrateSchemas(): Promise<SchemaView> {
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
+    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
+    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
+    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
+    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
+    // don't support OFFSET-based pagination.
+    // This implementation uses the non-pinned version of the pragma other than frontend - because backend
+    // is always strictly coupled with the native code.
+    const reader = this.createQueryReader("PRAGMA schema_view");
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned no rows");
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
+    return SchemaView.fromBinary(data, token ?? "");
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -1790,7 +1852,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1798,7 +1860,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1817,7 +1880,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1825,7 +1888,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1845,7 +1909,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1855,9 +1919,10 @@ export abstract class IModelDb extends IModel {
    * }, false);
    *
    * // Replacement:
-   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * }, false);
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1872,7 +1937,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1882,9 +1947,10 @@ export abstract class IModelDb extends IModel {
    * });
    *
    * // Replacement:
-   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * });
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated

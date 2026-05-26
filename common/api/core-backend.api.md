@@ -245,6 +245,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
 import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
@@ -2786,6 +2787,7 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
+    // @deprecated
     getMetaData(): Promise<EntityClass>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
@@ -3131,12 +3133,13 @@ export class Entity {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     static deserialize(props: DeserializeEntityArgs): EntityProps;
+    // @deprecated
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @preview
+    // @deprecated @preview
     getMetaData(): Promise<EntityClass | RelationshipClass>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     getMetaDataSync(): EntityClass | RelationshipClass;
     // @beta
     getReferenceIds(): EntityReferenceSet;
@@ -4074,6 +4077,8 @@ export abstract class IModelDb extends IModel {
     // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
@@ -5976,6 +5981,7 @@ export class Relationship extends Entity {
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
+    // @deprecated
     getMetaData(): Promise<RelationshipClass>;
     // @beta
     insert(txn: EditTxn): Id64String;
