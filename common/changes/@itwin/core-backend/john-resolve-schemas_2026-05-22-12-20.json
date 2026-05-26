@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added `SettingsSchemas.getResolvedSettingDef` for resolving nested object properties and array items.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fixed `SettingsSchemas.removeGroup` to remove registered type definitions correctly.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
