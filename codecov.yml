@@ -1,0 +1,16 @@
+# Codecov configuration for itwinjs-core.
+# Coverage is informational only — it never blocks a PR.
+# Status checks appear on the PR checks list but are always green (informational: true).
+# PR comments are disabled to avoid noise; view coverage details on codecov.io.
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+
+# Disable PR comments — coverage is visible as a quiet status check and on codecov.io.
+comment: false
