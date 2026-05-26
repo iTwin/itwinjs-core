@@ -109,7 +109,10 @@ export interface SettingsSchemas {
   /** The map of each registered [[SettingGroupSchema]], accessed by its [[SettingGroupSchema.schemaPrefix]]. */
   readonly groups: ReadonlyMap<string, SettingGroupSchema>;
 
-  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
+  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]).
+   * Schemas in this map may include an [[SettingSchema.extends]] property referring to a registered type definition.
+   * Use [[resolveSchema]] to obtain the fully expanded schema.
+   */
   readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
 
   /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],
@@ -147,4 +150,17 @@ export interface SettingsSchemas {
 
   /** Unregisters all [[settingDefs]] and [[typeDefs]] with the specified [[SettingGroupSchema.schemaPrefix]]. */
   removeGroup(schemaPrefix: string): void;
+
+  /**
+   * Looks up a setting schema in [[settingDefs]] and returns its resolved form.
+   * Resolution uses the [[typeDefs]] currently registered with this [[SettingsSchemas]] instance.
+   * @returns The resolved schema for `settingName`, or `undefined` if no schema has been registered for that setting.
+   * @throws Error if a registered setting schema cannot be resolved because a referenced type definition is missing or circular.
+   * @example
+   * ```ts
+   * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef("app/font");
+   * ```
+   */
+  getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
+
 }
