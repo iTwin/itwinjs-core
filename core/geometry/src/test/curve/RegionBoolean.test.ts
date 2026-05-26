@@ -48,6 +48,15 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
 
+/** Verify that `a` equals the XY distance for all pairs in an array. */
+function verifyCloseApproachDistances(ck: Checker, pairs: CurveLocationDetailPair[]): void {
+  for (const pair of pairs) {
+    const distXY = pair.detailA.point.distanceXY(pair.detailB.point);
+    ck.testCoordinate(distXY, pair.detailA.a, "detailA.a equals XY distance");
+    ck.testCoordinate(distXY, pair.detailB.a, "detailB.a equals XY distance");
+  }
+}
+
 describe("RegionBoolean", () => {
   it("SimpleSplits", () => {
     const ck = new Checker();
@@ -548,6 +557,7 @@ describe("RegionBoolean", () => {
       for (let i = 0; i < closedAreas.length; i++) {
         for (let j = i + 1; j < closedAreas.length; j++) {
           const pairs = CurveCurve.closeApproachProjectedXYPairs(closedAreas[i], closedAreas[j], minSearchDistance);
+          verifyCloseApproachDistances(ck, pairs);
           y0 += dy;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas[i], x0, y0);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas[j], x0, y0);
@@ -653,7 +663,7 @@ describe("RegionBoolean", () => {
   });
 
   // cspell:word laurynas, dovydas
-  it("BridgeEdgesAndDegenerateLoops", {timeout: 400000 /* only needed with enableLongTests */}, () => {
+  it("BridgeEdgesAndDegenerateLoops", { timeout: 400000 /* only needed with enableLongTests */ }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -698,8 +708,8 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/data/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/data/curve/laurynasCircularHole2.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/data/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // bridges to three holes along the bridge ray
-      { jsonFilePath: "./src/test/data/curve/inconsistentLoopOrientations.imjs", expectedNumComponents: 3, skipMerge: true},
-      { jsonFilePath: "./src/test/data/curve/inconsistentLoopOrientations.imjs", expectedNumComponents: 3}, // merge corrects the inconsistencies
+      { jsonFilePath: "./src/test/data/curve/inconsistentLoopOrientations.imjs", expectedNumComponents: 3, skipMerge: true },
+      { jsonFilePath: "./src/test/data/curve/inconsistentLoopOrientations.imjs", expectedNumComponents: 3 }, // merge corrects the inconsistencies
     ];
     if (GeometryCoreTestIO.enableLongTests) {
       testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206, skipMerge: true });  // 26s
@@ -924,8 +934,8 @@ describe("RegionBoolean", () => {
       Arc3d.create(Point3d.create(42.29925166000612, -15.407369868364185, 0), Vector3d.create(-29.779550526647522, 8.539117313243498, 0), Vector3d.create(8.539117313243493, 29.779550526647522, 0), AngleSweep.fromJSON([-51.851283981714374, 51.851283981714374])),
       Arc3d.create(Point3d.create(42.29925166023895, -15.407369868364185, 0), Vector3d.create(15.35031151952128, 26.909219429633033, 0), Vector3d.create(26.90921942963303, -15.35031151952128, 0), AngleSweep.fromJSON([-51.85128398159269, 51.85128398159269])),
       Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(35.73091863110368, 10.340829677241958, 0), Vector3d.create(10.340829677241963, -35.73091863110368, 0), AngleSweep.fromJSON([-41.99542910345029, 41.99542910345029])),
-      Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(14.024576697456764, -34.45203264095505, 0), Vector3d.create(-34.45203264095506, -14.02457669745676, 0), AngleSweep.fromJSON([-41.99542910345027,41.99542910345027])),
-      Arc3d.create(Point3d.create(53.30649186903611, -42.44887617137283, 0), Vector3d.create(-32.79491890989654, -17.553478240211835, 0), Vector3d.create(-17.553478240211838, 32.79491890989654, 0), AngleSweep.fromJSON([-41.99668897850568,41.99668897850568])),
+      Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(14.024576697456764, -34.45203264095505, 0), Vector3d.create(-34.45203264095506, -14.02457669745676, 0), AngleSweep.fromJSON([-41.99542910345027, 41.99542910345027])),
+      Arc3d.create(Point3d.create(53.30649186903611, -42.44887617137283, 0), Vector3d.create(-32.79491890989654, -17.553478240211835, 0), Vector3d.create(-17.553478240211838, 32.79491890989654, 0), AngleSweep.fromJSON([-41.99668897850568, 41.99668897850568])),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA, loopB]);
 
@@ -958,7 +968,7 @@ describe("RegionBoolean", () => {
     }
 
     // Optional behavior: post-process Boolean Union to return only negative area loop(s)
-    const simplifiedUnion = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union, { simplifyUnion: true});
+    const simplifiedUnion = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union, { simplifyUnion: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, simplifiedUnion, 0, 0, 200);
     if (ck.testType(simplifiedUnion, Loop, "user expectation is for Boolean union to result in a single Loop") && outerLoop) {
       const r0 = outerLoop.range();

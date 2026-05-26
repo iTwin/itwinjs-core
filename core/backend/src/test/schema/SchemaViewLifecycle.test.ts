@@ -1,0 +1,174 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { Guid } from "@itwin/core-bentley";
+import { expect } from "chai";
+import { ChannelControl } from "../../ChannelControl";
+import { HubMock } from "../../internal/HubMock";
+import { HubWrappers } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { TestUtils } from "../TestUtils";
+
+/** Simple test schema that will be imported to test cache lifecycle. */
+const testSchemaV1 = `<?xml version="1.0" encoding="UTF-8"?>
+  <ECSchema schemaName="SchemaViewLifecycleTest" alias="rslt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+    <ECEntityClass typeName="TestElement">
+      <BaseClass>bis:PhysicalElement</BaseClass>
+      <ECProperty propertyName="PropA" typeName="string"/>
+    </ECEntityClass>
+  </ECSchema>`;
+
+/** Updated schema with an additional property. */
+const testSchemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
+  <ECSchema schemaName="SchemaViewLifecycleTest" alias="rslt" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+    <ECEntityClass typeName="TestElement">
+      <BaseClass>bis:PhysicalElement</BaseClass>
+      <ECProperty propertyName="PropA" typeName="string"/>
+      <ECProperty propertyName="PropB" typeName="int"/>
+    </ECEntityClass>
+  </ECSchema>`;
+
+describe("SchemaView lifecycle", () => {
+  let iModelId: string;
+
+  before(async () => {
+    HubMock.startup("SchemaViewLifecycle", KnownTestLocations.outputDir);
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
+  });
+
+  after(async () => {
+    HubMock.shutdown();
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
+  });
+
+  beforeEach(async () => {
+    iModelId = await HubWrappers.createIModel("user1", HubMock.iTwinId, `RSLifecycle-${Guid.createValue()}`);
+  });
+
+  afterEach(async () => {
+    await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+  });
+
+  it("getSchemaView reflects imported schema after importSchemaStrings", async () => {
+    // Open a briefcase, get initial context
+    const bc = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    const ctx1 = await bc.getSchemaView();
+    expect(ctx1.findClass("SchemaViewLifecycleTest:TestElement")).to.be.undefined;
+    expect(ctx1.isOutdated).to.be.false;
+
+    // Import v1 schema - adds TestElement with PropA
+    // importSchemaStrings calls clearCaches which immediately invalidates _schemasPromise.
+    await bc.importSchemaStrings([testSchemaV1]);
+
+    // importSchemaStrings calls clearCaches which immediately invalidates the cached view
+    const ctx2 = await bc.getSchemaView();
+    expect(ctx1.isOutdated).to.be.true;
+    expect(ctx2.isOutdated).to.be.false;
+
+    const testClass1 = ctx2.findClass("SchemaViewLifecycleTest:TestElement");
+    expect(testClass1).to.not.be.undefined;
+    expect(testClass1!.getOwnProperties().find((p) => p.name === "PropA")).to.not.be.undefined;
+    expect(testClass1!.getOwnProperties().find((p) => p.name === "PropB")).to.be.undefined;
+
+    // Import v2 schema - adds PropB
+    await bc.importSchemaStrings([testSchemaV2]);
+
+    // cache is again invalidated automatically
+    const ctx3 = await bc.getSchemaView();
+    expect(ctx2.isOutdated).to.be.true;
+    expect(ctx3.isOutdated).to.be.false;
+
+    const testClass2 = ctx3.findClass("SchemaViewLifecycleTest:TestElement");
+    expect(testClass2).to.not.be.undefined;
+    expect(testClass2!.getOwnProperties().find((p) => p.name === "PropB")).to.not.be.undefined;
+
+    bc.close();
+  });
+
+  it("getSchemas on second briefcase reflects schema pushed from first", async () => {
+    // bc1 imports a schema and pushes
+    const bc1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await bc1.importSchemaStrings([testSchemaV1]);
+    await bc1.pushChanges({ accessToken: "user1", description: "push v1 schema" });
+
+    // bc2 pulls and should see the new schema
+    const bc2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    const ctx = await bc2.getSchemaView();
+    const testClass = ctx.findClass("SchemaViewLifecycleTest:TestElement");
+    expect(testClass).to.not.be.undefined;
+    expect(testClass!.getOwnProperties().find((p) => p.name === "PropA")).to.not.be.undefined;
+
+    bc1.close();
+    bc2.close();
+  });
+
+  it("pullChanges invalidates cached SchemaView", async () => {
+    // bc1 will push schema changes; bc2 will pull them
+    const bc1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    const bc2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    bc2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // bc2 gets initial context (no test schema)
+    const ctxBefore = await bc2.getSchemaView();
+    expect(ctxBefore.findClass("SchemaViewLifecycleTest:TestElement")).to.be.undefined;
+
+    // bc1: import v1 + push
+    await bc1.importSchemaStrings([testSchemaV1]);
+    await bc1.pushChanges({ accessToken: "user1", description: "push v1" });
+
+    // bc2: pull changes
+    await bc2.pullChanges();
+
+    // After pulling a schema changeset, clearCaches is called which immediately nulls _schemasPromise.
+    const ctxAfterPull = await bc2.getSchemaView();
+    expect(ctxBefore.isOutdated).to.be.true;
+    const testClass = ctxAfterPull.findClass("SchemaViewLifecycleTest:TestElement");
+    expect(testClass).to.not.be.undefined;
+
+    // bc1: import v2 + push
+    await bc1.importSchemaStrings([testSchemaV2]);
+    await bc1.pushChanges({ accessToken: "user1", description: "push v2" });
+
+    // bc2: pull again
+    await bc2.pullChanges();
+    const ctxAfterPull2 = await bc2.getSchemaView();
+    expect(ctxAfterPull.isOutdated).to.be.true;
+    const updated = ctxAfterPull2.findClass("SchemaViewLifecycleTest:TestElement");
+    expect(updated).to.not.be.undefined;
+    expect(updated!.getOwnProperties().find((p) => p.name === "PropB")).to.not.be.undefined;
+
+    bc1.close();
+    bc2.close();
+  });
+
+  it("concurrent getSchemaView calls share a single hydration", async () => {
+    const bc = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Fire multiple concurrent getSchemaView calls - they should all resolve to the same context
+    const [ctx1, ctx2, ctx3] = await Promise.all([
+      bc.getSchemaView(),
+      bc.getSchemaView(),
+      bc.getSchemaView(),
+    ]);
+
+    expect(ctx1).to.equal(ctx2);
+    expect(ctx2).to.equal(ctx3);
+    expect(ctx1.isOutdated).to.be.false;
+
+    bc.close();
+  });
+});

@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -446,6 +446,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
+  private _schemasPromise?: Promise<SchemaView>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1154,6 +1155,11 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
+      if (this._schemasPromise) {
+        const old = this._schemasPromise;
+        this._schemasPromise = undefined;
+        old.then((view) => view.markOutdated()).catch(() => {});
+      }
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1658,7 +1664,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1666,7 +1672,8 @@ export abstract class IModelDb extends IModel {
    * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1699,7 +1706,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
+   * Gets the context that allows accessing the metadata (`@itwin/ecschema-metadata` package) of this iModel.
+   *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need schema authoring
+   * (via `@itwin/ecschema-editing`), custom-attribute deserialization, or the full ecschema-metadata object graph.
    * @public @preview
    */
   public get schemaContext(): SchemaContext {
@@ -1713,6 +1724,57 @@ export abstract class IModelDb extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
+   * concurrent callers share a single in-flight build.
+   *
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
+   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   * @beta
+   */
+  public async getSchemaView(): Promise<SchemaView> {
+    if (this._schemasPromise) {
+      const ctx = await this._schemasPromise;
+      if (!ctx.isOutdated)
+        return ctx;
+    }
+    // Capture the in-flight promise locally so the rejection handler only clears
+    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
+    // re-fetch could otherwise replace the field before our hydrate fails, and a naive
+    // `_schemasPromise = undefined` would clobber that newer reference.
+    const inflight = this._hydrateSchemas();
+    this._schemasPromise = inflight;
+    inflight.catch(() => {
+      if (this._schemasPromise === inflight)
+        this._schemasPromise = undefined;
+    });
+    return inflight;
+  }
+
+  private async _hydrateSchemas(): Promise<SchemaView> {
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
+    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
+    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
+    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
+    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
+    // don't support OFFSET-based pagination.
+    // This implementation uses the non-pinned version of the pragma other than frontend - because backend
+    // is always strictly coupled with the native code.
+    const reader = this.createQueryReader("PRAGMA schema_view");
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned no rows");
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
+    return SchemaView.fromBinary(data, token ?? "");
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -1792,7 +1854,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1800,7 +1862,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1819,7 +1882,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1827,7 +1890,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1847,7 +1911,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1857,9 +1921,10 @@ export abstract class IModelDb extends IModel {
    * }, false);
    *
    * // Replacement:
-   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * }, false);
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1874,7 +1939,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1884,9 +1949,10 @@ export abstract class IModelDb extends IModel {
    * });
    *
    * // Replacement:
-   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * });
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -2894,7 +2960,7 @@ export namespace IModelDb {
      * @param deleteOptions Options for the delete operation.
      * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
      * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
-     * @deprecated Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.1.9 - will not be removed until after 2026-08-15. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
      */
     public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
@@ -3965,7 +4031,70 @@ export class BriefcaseDb extends IModelDb {
     return this[_nativeDb].getAllChangesetHealthData() as ChangesetHealthStats[];
   }
 
-  /** Revert timeline changes and then push resulting changeset */
+  /**
+   * Whether file-based transactions are enabled for this briefcase.
+   *
+   * When enabled, transaction data is stored in separate temporary `.txn` files rather than in the
+   * briefcase's internal transaction table. This avoids SQLite blob size limits and reduces memory
+   * pressure for very large changesets, at the cost of additional disk I/O.
+   * @see [[enableFileBasedTxns]] to enable, [[disableFileBasedTxns]] to disable.
+   * @internal
+   */
+  public get isFileBasedTxnsEnabled(): boolean {
+    return this[_nativeDb].queryLocalValue("fileBasedTxns") === "1";
+  }
+
+  /**
+   * Enable file-based transactions for this briefcase.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public enableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(true);
+  }
+
+  /**
+   * Disable file-based transactions for this briefcase, reverting to the default storage mode
+   * (transactions stored within the briefcase's internal transaction table).
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public disableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(false);
+  }
+
+  private _setFileBasedTxnsSetting(enabled: boolean): void {
+    if (this.isFileBasedTxnsEnabled === enabled)
+      return;
+
+    const nativeDb = this[_nativeDb];
+    if (nativeDb.hasUnsavedChanges())
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot change file-based transactions setting while there are unsaved changes");
+
+    if (nativeDb.hasPendingTxns())
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot change file-based transactions setting while there are pending transactions");
+
+    if (enabled)
+      nativeDb.saveLocalValue("fileBasedTxns", "1");
+    else
+      nativeDb.deleteLocalValue("fileBasedTxns");
+  }
+
+  /**
+   * Revert timeline changes and push the resulting changeset.
+   *
+   * Pulls the latest changes, acquires the schema lock, reverts the inclusive range of
+   * changesets `[toIndex..current]`, and pushes the revert as a new changeset. On failure,
+   * follow the behavior specified by `arg.inCaseOfFailure`, which may discard local changes,
+   * retain local changes, or delete the briefcase.
+   *
+   * @param arg - Arguments specifying the target changeset index, push options, access token, and failure handling behavior.
+   * @throws IModelError with [[ChangeSetStatus.ApplyError]] if `toIndex` is not specified.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   */
   public async revertAndPushChanges(arg: RevertChangesArgs): Promise<void> {
     const nativeDb = this[_nativeDb];
     if (arg.toIndex === undefined) {
@@ -3998,11 +4127,15 @@ export class BriefcaseDb extends IModelDb {
       arg.skipSchemaChanges = true;
     }
 
+    // The native side enables file-based txns during revert. Restore the original setting afterward.
+    const wasFileBasedTxnsEnabled = this.isFileBasedTxnsEnabled;
+    const preRevertIndex = this.changeset.index;
+
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
-      this[_nativeDb].saveChanges("Revert changes");
+      nativeDb.saveChanges("Revert changes");
       if (!arg.description) {
-        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+        arg.description = `Reverted changes from ${preRevertIndex} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
       const pushArgs = {
         description: arg.description,
@@ -4016,12 +4149,47 @@ export class BriefcaseDb extends IModelDb {
       await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
     } catch (err) {
-      if (!arg.retainLocks) {
-        await this.locks.releaseAllLocks();
-        throw err;
+      const failureAction = arg.inCaseOfFailure ?? "revert";
+      try {
+        switch (failureAction) {
+          case "revert":
+            // Restore the briefcase to its pre-revert state: save any unsaved changes into txns,
+            // reverse all txns, then delete them.
+            nativeDb.saveChanges();
+            if (nativeDb.hasPendingTxns())
+              nativeDb.reverseAll();
+            nativeDb.deleteAllTxns();
+            break;
+          case "delete":
+            // Clear local changes first so lock release can succeed.
+            nativeDb.abandonChanges();
+            nativeDb.deleteAllTxns();
+            if (!arg.retainLocks)
+              await this.locks.releaseAllLocks();
+            const filePath = this.pathName;
+            this.close();
+            await BriefcaseManager.deleteBriefcaseFiles(filePath, arg.accessToken);
+            break;
+          case "retain":
+            // Keep local changes as-is for caller inspection/recovery.
+            nativeDb.saveChanges();
+            break;
+        }
+      } catch (cleanupErr) {
+        Logger.logError(loggerCategory, `Failed to clean up after revert error (action=${failureAction}): ${String(cleanupErr)}`);
       }
+
+      if (!arg.retainLocks && this.isOpen) {
+        try {
+          await this.locks.releaseAllLocks();
+        } catch (lockErr) {
+          Logger.logError(loggerCategory, `Failed to release locks after revert failure (action=${failureAction}): ${String(lockErr)}`);
+        }
+      }
+      throw err;
     } finally {
-      this[_nativeDb].abandonChanges();
+      if (this.isOpen && !wasFileBasedTxnsEnabled && !nativeDb.hasPendingTxns() && !nativeDb.hasUnsavedChanges())
+        this.disableFileBasedTxns();
     }
   }
 
