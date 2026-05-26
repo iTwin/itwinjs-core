@@ -33,8 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        # actions/checkout v4.3.1
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Rush setup
         uses: ./.github/actions/rush-setup
@@ -52,8 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        # actions/checkout v4.3.1
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           # Fetch enough history for rush change to compare against the base branch.
           fetch-depth: 0
@@ -76,8 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        # actions/checkout v4.3.1
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Rush setup
         uses: ./.github/actions/rush-setup
@@ -100,8 +100,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        # actions/checkout v4.3.1
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Rush setup
         uses: ./.github/actions/rush-setup
@@ -119,7 +119,7 @@ jobs:
       - name: rush extract-api
         id: extract_api
         continue-on-error: true
-        run: node common/scripts/install-run-rush.js extract-api
+        run: node common/scripts/install-run-rush.js extract-api --to-version-policy prerelease-monorepo-lockStep
 
       - name: Assert no uncommitted api changes
         id: api_diff
