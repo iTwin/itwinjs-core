@@ -25,7 +25,7 @@ inputs:
   node-version:
     description: Node.js version to install
     required: false
-    default: "22"
+    default: "lts/*"
 
 runs:
   using: composite

@@ -86,14 +86,17 @@ jobs:
         run: node common/scripts/install-run-rush.js audit
 
   # ---------------------------------------------------------------------------
-  # lint — build and lint all packages.
+  # lint-and-extract-api — build once, then run lint and extract-api checks.
   # PR only: master is assumed to have passed before merging.
+  # Both checks always run even if the other fails; the job fails if either
+  # check fails (tracked via step outcomes, reported at the end).
   # Note: build is required before lint because TSC produces the type info
   # that ESLint rules (including the deprecation rule) consume.
+  # No artifact upload for extract-api — api.md changes are visible in the PR diff.
   # ---------------------------------------------------------------------------
-  lint:
+  lint-and-extract-api:
     if: github.event_name == 'pull_request'
-    name: rush lint
+    name: rush lint + extract-api
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -109,34 +112,18 @@ jobs:
           VITE_CI: true
 
       - name: rush lint
+        id: lint
+        continue-on-error: true
         run: node common/scripts/install-run-rush.js lint
 
-  # ---------------------------------------------------------------------------
-  # extract-api — verify that generated API signature files are up to date.
-  # PR only: if api.md files need updating they must be committed in the PR.
-  # No artifact upload — the api.md files are already visible in the PR diff.
-  # ---------------------------------------------------------------------------
-  extract-api:
-    if: github.event_name == 'pull_request'
-    name: rush extract-api
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        # actions/checkout v4.3.1
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-
-      - name: Rush setup
-        uses: ./.github/actions/rush-setup
-
-      - name: rush build
-        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
-        env:
-          VITE_CI: true
-
       - name: rush extract-api
+        id: extract_api
+        continue-on-error: true
         run: node common/scripts/install-run-rush.js extract-api
 
       - name: Assert no uncommitted api changes
+        id: api_diff
+        continue-on-error: true
         shell: bash
         run: |
           if [ $(git status --porcelain | wc -l) -ne "0" ]; then
@@ -150,3 +137,18 @@ jobs:
             git diff
             exit 1
           fi
+
+      - name: Report results
+        if: always()
+        shell: bash
+        run: |
+          FAILED=0
+          if [ "${{ steps.lint.outcome }}" = "failure" ]; then
+            echo "::error::rush lint failed"
+            FAILED=1
+          fi
+          if [ "${{ steps.extract_api.outcome }}" = "failure" ] || [ "${{ steps.api_diff.outcome }}" = "failure" ]; then
+            echo "::error::rush extract-api found uncommitted api.md changes"
+            FAILED=1
+          fi
+          exit $FAILED
