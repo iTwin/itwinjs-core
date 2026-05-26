@@ -122,7 +122,7 @@ export interface CreateFilletsInLineStringOptions {
    * Whether to fillet the closure.
    * * If `true`, the input line string is treated as a polygon (closure point optional), and the output `Path` is
    * closed and has a fillet at its start point. If both first and last input points are identical, the last point's
-   * `entry in the radius array is ignored.
+   * entry in the radius array is ignored.
    * * If `false` (default), the first and last points receive no fillet and their respective entries in the radius
    * array are ignored.
    */
