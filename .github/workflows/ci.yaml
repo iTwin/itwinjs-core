@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - "release/**"
+    paths-ignore:
+      - "**/*.md"
+      - docs/**
+      - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
+  schedule:
+    # Nightly audit run at 05:00 UTC — only the `audit` job runs on schedule.
+    # All other jobs are pull_request only; master pushes are assumed clean.
+    - cron: "0 5 * * *"
+
+# Cancel in-progress runs for the same PR when new commits are pushed.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # rush check — verify no inconsistent dependency versions across packages.
+  # PR only: master is assumed to have passed this check before merging.
+  # ---------------------------------------------------------------------------
+  rush-check:
+    if: github.event_name == 'pull_request'
+    name: rush check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush check
+        run: node common/scripts/install-run-rush.js check
+
+  # ---------------------------------------------------------------------------
+  # rush change — verify that all changed packages have a changelog entry.
+  # PR only.
+  # ---------------------------------------------------------------------------
+  rush-change:
+    if: github.event_name == 'pull_request'
+    name: rush change
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          # Fetch enough history for rush change to compare against the base branch.
+          fetch-depth: 0
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush change -v
+        run: node common/scripts/install-run-rush.js change -v -b origin/${{ github.base_ref }}
+
+  # ---------------------------------------------------------------------------
+  # audit — run pnpm security audit.
+  # Runs on pull_request AND on a nightly schedule.
+  # Separated from the build+test matrix so that an audit failure never masks
+  # real test regressions in the main CI.
+  # ---------------------------------------------------------------------------
+  audit:
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    name: rush audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush audit
+        run: node common/scripts/install-run-rush.js audit
+
+  # ---------------------------------------------------------------------------
+  # lint — build and lint all packages.
+  # PR only: master is assumed to have passed before merging.
+  # Note: build is required before lint because TSC produces the type info
+  # that ESLint rules (including the deprecation rule) consume.
+  # ---------------------------------------------------------------------------
+  lint:
+    if: github.event_name == 'pull_request'
+    name: rush lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush build
+        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
+        env:
+          VITE_CI: true
+
+      - name: rush lint
+        run: node common/scripts/install-run-rush.js lint
+
+  # ---------------------------------------------------------------------------
+  # extract-api — verify that generated API signature files are up to date.
+  # PR only: if api.md files need updating they must be committed in the PR.
+  # No artifact upload — the api.md files are already visible in the PR diff.
+  # ---------------------------------------------------------------------------
+  extract-api:
+    if: github.event_name == 'pull_request'
+    name: rush extract-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # actions/checkout v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush build
+        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
+        env:
+          VITE_CI: true
+
+      - name: rush extract-api
+        run: node common/scripts/install-run-rush.js extract-api
+
+      - name: Assert no uncommitted api changes
+        shell: bash
+        run: |
+          if [ $(git status --porcelain | wc -l) -ne "0" ]; then
+            echo "The following file(s) have uncommitted API changes:"
+            git status --porcelain -u
+            echo ""
+            echo "Please run 'rush extract-api' locally, commit the modified api.md"
+            echo "files, and run 'rush change' for affected packages."
+            echo ""
+            echo "Diff:"
+            git diff
+            exit 1
+          fi
