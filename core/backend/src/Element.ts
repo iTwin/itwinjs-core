@@ -605,7 +605,7 @@ export class Element extends Entity {
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.
-   * @deprecated in 5.10.0 - will not be removed until after 2027-06-01. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass` and offers a synchronous, snapshot-style API.
+   * @deprecated in 5.10.0. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass` and offers a synchronous, snapshot-style API.
    */
   public override async getMetaData(): Promise<EntityClass> {
     if (this._metadata && EntityClass.isEntityClass(this._metadata)) {
