@@ -174,6 +174,48 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
+  it("stamps lastEditedAt when closing an editable WorkspaceDb with a write-lock holder even if no resource changed", async () => {
+    const clock = sinon.useFakeTimers(Date.parse("2026-05-12T16:05:00.000Z"));
+    let wsFile: EditableWorkspaceDb | undefined;
+    let restoreCloudContainer: (() => void) | undefined;
+    try {
+      wsFile = await makeEditableDb({ containerId: "last-edited-at-test", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "last edited at test" });
+      const cloudContainer = {};
+
+      // This intentionally avoids mutating WorkspaceDb resources. `lastEditedAt` follows
+      // the existing `lastEditedBy` semantics: stamp when the editable close path finalizes
+      // with a write-lock holder, not only when resource content changed.
+      //
+      // Avoid acquiring a real CloudSqlite write lock in this unit test. The close path only
+      // needs the same writeLockHeldBy state that acquireWriteLock records on the container.
+      CloudSqlite.addHiddenProperty(cloudContainer, "writeLockHeldBy", "Unit Test User");
+
+      const workspaceDb = wsFile;
+      const originalCloudContainer = Object.getOwnPropertyDescriptor(workspaceDb.container, "cloudContainer");
+      restoreCloudContainer = () => {
+        if (originalCloudContainer !== undefined)
+          Object.defineProperty(workspaceDb.container, "cloudContainer", originalCloudContainer);
+        else
+          Reflect.deleteProperty(workspaceDb.container, "cloudContainer");
+      };
+      Object.defineProperty(wsFile.container, "cloudContainer", { configurable: true, get: () => cloudContainer });
+
+      wsFile.close();
+      restoreCloudContainer();
+      restoreCloudContainer = undefined;
+      wsFile.open();
+
+      expect(wsFile.manifest.lastEditedBy).equals("Unit Test User");
+      expect(wsFile.manifest.lastEditedAt).equals("2026-05-12T16:05:00.000Z");
+      wsFile.close();
+    } finally {
+      restoreCloudContainer?.();
+      if (wsFile?.isOpen)
+        wsFile.close();
+      clock.restore();
+    }
+  });
+
   it("load workspace settings", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = await makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "default resources", contactName: "contact 123" });

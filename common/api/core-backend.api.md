@@ -8508,6 +8508,7 @@ export interface WorkspaceDbLoadErrors extends ITwinError {
 export interface WorkspaceDbManifest {
     readonly contactName?: string;
     readonly description?: string;
+    readonly lastEditedAt?: string;
     readonly lastEditedBy?: string;
     readonly workspaceName: string;
 }

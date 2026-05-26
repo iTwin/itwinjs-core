@@ -129,8 +129,14 @@ export interface WorkspaceDbManifest {
   readonly description?: string;
   /** The name of the person to contact with questions about this [[WorkspaceDb]]. */
   readonly contactName?: string;
-  /** The name of the person who last modified this [[WorkspaceDb]]. */
+  /** The write-lock holder recorded when an editable [[WorkspaceDb]] is closed.
+   * @note This follows the existing write-lock holder semantics and does not guarantee that resource content changed.
+   */
   readonly lastEditedBy?: string;
+  /** The UTC ISO-8601 time recorded when an editable [[WorkspaceDb]] is closed.
+   * @note This follows [[lastEditedBy]] semantics and does not guarantee that resource content changed.
+   */
+  readonly lastEditedAt?: string;
 }
 
 /**
