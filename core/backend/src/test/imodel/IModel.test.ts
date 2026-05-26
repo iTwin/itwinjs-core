@@ -2564,6 +2564,43 @@ describe("iModel", () => {
     db.close();
   });
 
+  it("inserting a second element with an empty code must not evict the first from the element props cache", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "EmptyCodeCacheCollision.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "EmptyCodeCacheCollision" } });
+
+    withEditTxn(db, (txn) => {
+      const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+      const modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestModel");
+
+      const emptyCodeProps: GeometricElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: modelId,
+        category: categoryId,
+        code: Code.createEmpty(),
+      };
+
+      // Insert the first element
+      const id1 = txn.insertElement({ ...emptyCodeProps });
+      db.elements.getElementProps(id1); // populate the element props cache
+      const cacheSizeAfterFirstInsertAndRead = db.elements[_cache].size;
+      expect(cacheSizeAfterFirstInsertAndRead).to.be.greaterThan(0, "cache should be populated after getElementProps");
+
+      // Insert a second element with the same empty code
+      const id2 = txn.insertElement({ ...emptyCodeProps });
+
+      // The first element must still be in the cache.
+      const cached1 = db.elements[_cache].get({ id: id1 });
+      expect(cached1, "first element should still be in cache after inserting second element with the same empty code").to.not.be.undefined;
+      expect(cached1!.elProps.id).to.equal(id1);
+
+      expect(Id64.isValidId64(id1)).to.be.true;
+      expect(Id64.isValidId64(id2)).to.be.true;
+      expect(id1).to.not.equal(id2);
+    });
+
+    db.close();
+  });
+
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
