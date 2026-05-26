@@ -174,43 +174,27 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it("stamps lastEditedAt when closing an editable WorkspaceDb with a write-lock holder even if no resource changed", async () => {
+  it("stamps lastEditedAt and lastEditedBy when closing an editable WorkspaceDb during a write-lock session", async () => {
     const clock = sinon.useFakeTimers(Date.parse("2026-05-12T16:05:00.000Z"));
-    let wsFile: EditableWorkspaceDb | undefined;
-    let restoreCloudContainer: (() => void) | undefined;
+    const wsFile = await makeEditableDb({ containerId: "last-edited-at-test", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "last edited at test" });
     try {
-      wsFile = await makeEditableDb({ containerId: "last-edited-at-test", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "last edited at test" });
-      const cloudContainer = {};
-
-      // This intentionally avoids mutating WorkspaceDb resources. `lastEditedAt` follows
-      // the existing `lastEditedBy` semantics: stamp when the editable close path finalizes
-      // with a write-lock holder, not only when resource content changed.
-      //
-      // Avoid acquiring a real CloudSqlite write lock in this unit test. The close path only
-      // needs the same writeLockHeldBy state that acquireWriteLock records on the container.
-      CloudSqlite.addHiddenProperty(cloudContainer, "writeLockHeldBy", "Unit Test User");
-
-      const workspaceDb = wsFile;
-      const originalCloudContainer = Object.getOwnPropertyDescriptor(workspaceDb.container, "cloudContainer");
-      restoreCloudContainer = () => {
-        if (originalCloudContainer !== undefined)
-          Object.defineProperty(workspaceDb.container, "cloudContainer", originalCloudContainer);
-        else
-          Reflect.deleteProperty(workspaceDb.container, "cloudContainer");
-      };
-      Object.defineProperty(wsFile.container, "cloudContainer", { configurable: true, get: () => cloudContainer });
+      // Local (`baseUri: ""`) workspaces have no real cloud container. Inject a fake carrying the
+      // hidden `writeLockHeldBy` that `acquireWriteLock` would normally set on a real container;
+      // the close path reads it via `CloudSqlite.getWriteLockHeldBy`.
+      const fakeCloudContainer: { writeLockHeldBy?: string } = {};
+      CloudSqlite.addHiddenProperty(fakeCloudContainer, "writeLockHeldBy", "Unit Test User");
+      Object.defineProperty(wsFile.container, "cloudContainer", { configurable: true, get: () => fakeCloudContainer });
 
       wsFile.close();
-      restoreCloudContainer();
-      restoreCloudContainer = undefined;
-      wsFile.open();
+
+      // Drop the override so the lazy manifest reload below opens the local file normally
+      // (with no cloud container) and does not re-stamp on its internal close.
+      Reflect.deleteProperty(wsFile.container, "cloudContainer");
 
       expect(wsFile.manifest.lastEditedBy).equals("Unit Test User");
       expect(wsFile.manifest.lastEditedAt).equals("2026-05-12T16:05:00.000Z");
-      wsFile.close();
     } finally {
-      restoreCloudContainer?.();
-      if (wsFile?.isOpen)
+      if (wsFile.isOpen)
         wsFile.close();
       clock.restore();
     }
