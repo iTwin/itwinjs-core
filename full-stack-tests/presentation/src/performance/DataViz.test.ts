@@ -8,7 +8,6 @@ import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  ChildNodeSpecificationTypes,
   ClassInfo,
   Content,
   ContentSpecificationTypes,

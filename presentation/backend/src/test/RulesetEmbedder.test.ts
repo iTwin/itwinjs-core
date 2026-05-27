@@ -11,7 +11,6 @@ import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain.js";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements.js";
 import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder.js";
-import { normalizeVersion } from "../presentation-backend/Utils.js";
 import { stubECSqlReader } from "./Helpers.js";
 
 describe("RulesetEmbedder", () => {
