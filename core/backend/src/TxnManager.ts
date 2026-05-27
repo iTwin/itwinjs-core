@@ -970,6 +970,13 @@ export class TxnManager {
   protected _captureInstanceChanges(id: TxnIdString) {
     if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
 
+    // We shouldn't use strict mode here because lets think of a scenario:
+    // 1) an element is inserted in a txn which inserted some data in table A first row
+    // 2) In second txn, importing a schema increased the number of columns of table A
+    // 3) During rebase when we are reversing the schema txn, the newly added columns are not deleted
+    // so using strict mode will cause error in this case when we will try to capture changes for first txn
+    // because the number of columns in table A will be different than what it was when the changes were originally made.
+    // So to avoid this issue we are not using strict mode here.
     using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
     while (reader.step()) {
