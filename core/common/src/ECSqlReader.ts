@@ -153,6 +153,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     if (this._globalCount === 0) {
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
     const request: DbQueryRequest = {
       ... this._options,

@@ -144,7 +144,10 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
        JOIN meta.ECSchemaDef s USING meta.SchemaOwnsFormats
        WHERE f.Name = ? AND s.Name = 'Formats'`,
       QueryBinder.from([formatItemName]),
-      { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      },
     )) {
       formatNumericSpec = row.toRow();
     }
@@ -171,7 +174,10 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
        JOIN meta.UnitSystemDef us USING meta.UnitSystemHasUnits
        WHERE u.Name = ? AND s.Name = 'Units'`,
       QueryBinder.from([unitItemName]),
-      { rowFormat: QueryRowFormat.UseJsPropertyNames },
+      {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      },
     )) {
       unitRow = row.toRow();
     }
@@ -198,7 +204,10 @@ describe("SchemaView KindOfQuantity presentation formats", () => {
            WHERE f.Name = 'AngleDMS' AND s.Name = 'Formats'
            ORDER BY cu.Ordinal`,
           undefined,
-          { rowFormat: QueryRowFormat.UseJsPropertyNames },
+          {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            rowFormat: QueryRowFormat.UseJsPropertyNames,
+          },
         )) {
           compositeUnits.push(row.toRow());
         }
