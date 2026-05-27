@@ -114,7 +114,7 @@ jobs:
       - name: rush lint
         id: lint
         continue-on-error: true
-        run: node common/scripts/install-run-rush.js lint
+        run: node common/scripts/install-run-rush.js lint --to-version-policy prerelease-monorepo-lockStep
 
       - name: rush extract-api
         id: extract_api
@@ -126,7 +126,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          if [ $(git status --porcelain | wc -l) -ne "0" ]; then
+          if [ -n "$(git status --porcelain)" ]; then
             echo "The following file(s) have uncommitted API changes:"
             git status --porcelain -u
             echo ""
@@ -147,8 +147,12 @@ jobs:
             echo "::error::rush lint failed"
             FAILED=1
           fi
-          if [ "${{ steps.extract_api.outcome }}" = "failure" ] || [ "${{ steps.api_diff.outcome }}" = "failure" ]; then
-            echo "::error::rush extract-api found uncommitted api.md changes"
+          if [ "${{ steps.extract_api.outcome }}" = "failure" ]; then
+            echo "::error::rush extract-api failed (command error)"
+            FAILED=1
+          fi
+          if [ "${{ steps.api_diff.outcome }}" = "failure" ]; then
+            echo "::error::rush extract-api produced uncommitted api.md changes — run 'rush extract-api' locally and commit the results"
             FAILED=1
           fi
           exit $FAILED
