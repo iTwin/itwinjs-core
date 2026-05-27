@@ -16,6 +16,7 @@
     "clean": "rimraf -g lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
     "test": "vitest --run",
+    "test-performance": "vitest ./src/test/clipping/PolyfaceClip.test.ts",
     "extract-api": "betools extract-api --entry=core-geometry",
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",

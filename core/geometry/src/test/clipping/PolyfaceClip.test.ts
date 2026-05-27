@@ -34,7 +34,7 @@ import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../../geometry3d/Pol
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
-import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
@@ -46,6 +46,10 @@ import { SweepContour } from "../../solid/SweepContour";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RFunctions } from "../polyface/DrapeLinestring.test";
+import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
+import { AnnounceNumberNumberCurvePrimitive } from "../../curve/CurvePrimitive";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { ClipShape } from "../../clipping/ClipPrimitive";
 
 /** Estimate a volume for a mesh that may be missing side faces.
  * * Compute volume "between" the mesh facets and the bottom plane of the mesh range
@@ -1540,3 +1544,194 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
+// ============================================================================
+// &&AG playground
+// ============================================================================
+
+/** &&AG performance testing.
+ * This creates a polyface that has a single triangle and uses a subset visitor to target the same triangle multiple times
+ * (0,0)     (1,0)
+ *    |­­­¯¯¯¯/
+ *    |  /
+ *    |/
+ * (0,1)
+ */
+describe.only("PolyfaceClip_performance", { timeout: 50000 }, () => {
+  const polyfaceBuilder = PolyfaceBuilder.create();
+  polyfaceBuilder.addTriangleFacet([Point3d.create(0, 0, 14), Point3d.create(1, 0, 13), Point3d.create(0, 1, 13)]);
+  const polyface = polyfaceBuilder.claimPolyface(false);
+  expect(polyface.facetCount).toStrictEqual(1);
+  expect(polyface.pointCount).toStrictEqual(3);
+
+  const nIterations = 100000;
+  const indices = new Array(nIterations).fill(0);
+  const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+
+  it("ensure subset visitor runs the correct number of iterations", () => {
+    visitor.reset();
+    let actualIterations = 0;
+    while (visitor.moveToNextFacet()) {
+      actualIterations++;
+    }
+    expect(actualIterations).toStrictEqual(nIterations);
+  });
+
+  it("test time spent in PolyfaceClip.sectionPolyfaceClipPlane (all misses)", () => {
+    visitor.reset();
+    const clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(10, 0, 0))!;
+    expect(clipPlane).toBeDefined();
+
+    const t0 = performance.now();
+    const results = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+    console.log(`elapsed (clip plane): ${(performance.now() - t0).toFixed(8)}`);
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("test time spent in sectionPolyfaceWithArcProfileCoords (all misses)", () => {
+    visitor.reset();
+    const arc = Arc3d.createXY(Point3d.create(100, 100, 0), 1.0);
+    arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+
+    const t0 = performance.now();
+    const results = sectionPolyfaceWithArcProfileCoords(visitor, arc);
+    console.log(`elapsed (arc): ${(performance.now() - t0).toFixed(8)}`);
+
+    expect(results.results).toHaveLength(0);
+    expect(results.numEarlyOuts).toStrictEqual(nIterations);
+  });
+
+  it("test time spent in PolyfaceClip.sectionPolyfaceClipPlane (all hits)", () => {
+    visitor.reset();
+    const clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(0.5, 0.5))!;
+    expect(clipPlane).toBeDefined();
+
+    const t0 = performance.now();
+    const results = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+    console.log(`elapsed hits (clip plane): ${(performance.now() - t0).toFixed(8)}`);
+
+    expect(results).toHaveLength(nIterations);
+  });
+
+  it("test time spent in sectionPolyfaceWithArcProfileCoords (all hits)", () => {
+    visitor.reset();
+    const arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5);
+    arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+
+    const t0 = performance.now();
+    const results = sectionPolyfaceWithArcProfileCoords(visitor, arc);
+    console.log(`elapsed hits (arc): ${(performance.now() - t0).toFixed(8)}`);
+
+    expect(results.results).toHaveLength(nIterations);
+    expect(results.numEarlyOuts).toStrictEqual(0);
+  });
+});
+
+
+/** Intersect each facet with an arc and return the result in PROFILE format ie. (distanceAlong, elevation, 0)
+ ** Return all edges chained as array of LineString3d.
+ */
+export function sectionPolyfaceWithArcProfileCoords(visitor: PolyfaceVisitor, arc: Arc3d): { results: LineString3d[], numEarlyOuts: number } {
+  // &&AG the whole idea of this function is to build a triangle that encompasses start/pi/end point
+  // to quickly cull any triangle of the mesh too far off.
+  const piPoint = arc.computeTangentIntersection();
+  if (!piPoint) {
+    return { results: [], numEarlyOuts: -1 };
+  }
+  const arcTriangle = [arc.startPoint(), piPoint, arc.endPoint()];
+
+  const workPoints = [Point3d.create(), Point3d.create(), Point3d.create()];
+  let workClipShape: ClipShape | undefined;
+  const workRay = Ray3d.createZero();
+  const unitZ = Vector3d.unitZ();
+
+  const lineStrings: LineString3d[] = [];
+  let numEarlyOuts = 0;
+
+  const announcer: AnnounceNumberNumberCurvePrimitive = (a0, a1, cp) => {
+    const distanceAlong0 = cp.curveLengthBetweenFractions(0, a0);
+    const distanceAlong1 = cp.curveLengthBetweenFractions(0, a1);
+    const points = [cp.fractionToPoint(a0), cp.fractionToPoint(a1)];
+
+    // Lookup the elevation on the plane defined by the triangle
+    const ray = PolygonOps.centroidAreaNormal(visitor.point, workRay);
+    if (ray?.getDirectionRef().normalizeInPlace()) {
+      const scale = 1.0 / unitZ.dotProduct(ray.getDirectionRef());
+      const altitude0 = ray.pointToFraction(points[0]);
+      const altitude1 = ray.pointToFraction(points[1]);
+
+      points[0].z -= altitude0 * scale;
+      points[1].z -= altitude1 * scale;
+    }
+
+    lineStrings.push(
+      LineString3d.createPoints([Point3d.create(distanceAlong0, points[0].z, 0), Point3d.create(distanceAlong1, points[1].z, 0)]),
+    );
+  };
+
+  while (visitor.moveToNextFacet()) {
+    // Blindly assuming we're dealing with triangles for now...
+    visitor.point.getPoint3dAtUncheckedPointIndex(0, workPoints[0]);
+    visitor.point.getPoint3dAtUncheckedPointIndex(1, workPoints[1]);
+    visitor.point.getPoint3dAtUncheckedPointIndex(2, workPoints[2]);
+
+    // Attempt to early out
+    if (!isTriangleIntersectingWithArcTriangle(workPoints, arcTriangle)) {
+      numEarlyOuts++;
+      continue;
+    }
+    workClipShape = ClipShape.createShape(workPoints, undefined, undefined, undefined, undefined, undefined, workClipShape);
+    if (!workClipShape) {
+      continue;
+    }
+    arc.announceClipIntervals(workClipShape, announcer);
+  }
+
+  return { results: lineStrings, numEarlyOuts };
+}
+
+/** Checks if a triangle intersects with the triangle made up of [start, pi, end] from the arc */
+function isTriangleIntersectingWithArcTriangle(triangle: Point3d[], arcTriangle: Point3d[]): boolean {
+  return Triangle2dIntersection.trianglesIntersect(triangle, arcTriangle);
+}
+
+// Tools to calculate the intersection between triangles in 2d.
+// Tested with this sandbox: https://www.itwinjs.org/sandboxes/FelixGirard/Triangle2d%20intersections
+export namespace Triangle2dIntersection {
+  // check that all points of the other triangle are on the same side of the triangle after mapping to barycentric coordinates.
+  // Taken from https://stackoverflow.com/a/44269990
+  // returns true if all points are outside on the same side
+  function cross2(points: Point3d[], triangle: Point3d[]): boolean {
+    const pa = points[0];
+    const pb = points[1];
+    const pc = points[2];
+    const p0 = triangle[0];
+    const p1 = triangle[1];
+    const p2 = triangle[2];
+    const dXa = pa.x - p2.x;
+    const dYa = pa.y - p2.y;
+    const dXb = pb.x - p2.x;
+    const dYb = pb.y - p2.y;
+    const dXc = pc.x - p2.x;
+    const dYc = pc.y - p2.y;
+    const dX21 = p2.x - p1.x;
+    const dY12 = p1.y - p2.y;
+    const D = dY12 * (p0.x - p2.x) + dX21 * (p0.y - p2.y);
+    const sa = dY12 * dXa + dX21 * dYa;
+    const sb = dY12 * dXb + dX21 * dYb;
+    const sc = dY12 * dXc + dX21 * dYc;
+    const ta = (p2.y - p0.y) * dXa + (p0.x - p2.x) * dYa;
+    const tb = (p2.y - p0.y) * dXb + (p0.x - p2.x) * dYb;
+    const tc = (p2.y - p0.y) * dXc + (p0.x - p2.x) * dYc;
+    if (D < 0) {
+      return (sa >= 0 && sb >= 0 && sc >= 0) || (ta >= 0 && tb >= 0 && tc >= 0) || (sa + ta <= D && sb + tb <= D && sc + tc <= D);
+    }
+
+    return (sa <= 0 && sb <= 0 && sc <= 0) || (ta <= 0 && tb <= 0 && tc <= 0) || (sa + ta >= D && sb + tb >= D && sc + tc >= D);
+  };
+
+  export function trianglesIntersect(t0: Point3d[], t1: Point3d[]): boolean {
+    return !(cross2(t0, t1) || cross2(t1, t0));
+  }
+}
