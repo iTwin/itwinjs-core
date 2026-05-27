@@ -90,6 +90,7 @@ describe("FavoritePropertiesManager", () => {
       get current() {
         return {
           toRow: () => classBaseClass[currIndex],
+          toArray: () => [classBaseClass[currIndex].classFullName, classBaseClass[currIndex].baseClassFullName],
         };
       },
     };

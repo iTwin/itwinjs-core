@@ -194,14 +194,12 @@ describe("RulesetEmbedder", () => {
   }
 
   function setupMocksForQueryingExistingRulesets(rulesetId: string, rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
-    const results = rulesets.map((entry) => ({
-      id: entry.elementId,
-      jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
-      normalizedVersion: normalizeVersion(entry.ruleset.version),
-    }));
+    const results = rulesets.map((entry) => [
+      entry.elementId,
+      JSON.stringify({ jsonProperties: entry.ruleset }),
+    ]);
     imodelMock.createQueryReader
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      .withArgs(sinon.match.any, QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })
+      .withArgs(sinon.match.any, QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })
       .returns(stubECSqlReader(results));
   }
 

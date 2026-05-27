@@ -152,20 +152,19 @@ describe("#performance DataViz requests", () => {
               // and using any class that has no instances is just a waste of time.
               const [schemaName, className] = filteredProperty.classInfo.name.split(":");
               const classesQuery = `
-              select hh.SourceECInstanceId as classId
-              from meta.classhasallbaseclasses hh
-              join meta.ecclassdef bc on bc.ecinstanceid = hh.targetecinstanceid
-              join meta.ecschemadef bs on bs.ecinstanceid = bc.schema.id
-              where bs.name = '${schemaName}' and bc.name = '${className}'
-                and hh.sourceecinstanceid in (
-                  select h.targetecinstanceid
-                  from meta.classhasallbaseclasses h
-                  where h.sourceecinstanceid in (select ECClassId from BisCore.GeometricElement)
-                )
-            `;
-              // eslint-disable-next-line @typescript-eslint/no-deprecated
-              for await (const { classId } of iModel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-                classes.push(await classHierarchy.getClassInfoById(classId));
+                select hh.SourceECInstanceId as classId
+                from meta.classhasallbaseclasses hh
+                join meta.ecclassdef bc on bc.ecinstanceid = hh.targetecinstanceid
+                join meta.ecschemadef bs on bs.ecinstanceid = bc.schema.id
+                where bs.name = '${schemaName}' and bc.name = '${className}'
+                  and hh.sourceecinstanceid in (
+                    select h.targetecinstanceid
+                    from meta.classhasallbaseclasses h
+                    where h.sourceecinstanceid in (select ECClassId from BisCore.GeometricElement)
+                  )
+              `;
+              for await (const row of iModel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+                classes.push(await classHierarchy.getClassInfoById(row[0]));
               }
             }
           }
@@ -385,10 +384,9 @@ describe("#performance DataViz requests", () => {
               const [displayValue, rawValues] = distinctValuesEntry;
               // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
-              // eslint-disable-next-line @typescript-eslint/no-deprecated
-              for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+              for await (const row of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
                 pushValues(displayValueEntries, displayValue, [
-                  { contentClassId: classId, pathFromContentToPropertyClass, filteredProperty, rawValues: [...rawValues] },
+                  { contentClassId: row[0], pathFromContentToPropertyClass, filteredProperty, rawValues: [...rawValues] },
                 ]);
               }
             }
@@ -438,8 +436,7 @@ describe("#performance DataViz requests", () => {
                     ruleType: RuleTypes.RootNodes,
                     specifications: [
                       {
-                        // eslint-disable-next-line @typescript-eslint/no-deprecated
-                        specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                        specType: "InstanceNodesOfSpecificClasses",
                         classes: { schemaName: contentClassInfo.schemaName, classNames: [contentClassInfo.name], arePolymorphic: false },
                         relatedInstances:
                           pathFromContentToPropertyClass.length > 0
