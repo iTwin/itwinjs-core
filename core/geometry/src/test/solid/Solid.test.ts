@@ -729,6 +729,60 @@ describe("Solids", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "IsSkew");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("ConstructiveFrameOptions", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const sectionCCW = Loop.create(LineString3d.create([Point3d.create(1, 3), Point3d.create(4, 1), Point3d.create(6, 6)]));
+    const sectionCW = sectionCCW.clone();
+    sectionCW.reverseInPlace();
+    const rotation = Transform.createRigidFromOriginAndVector(undefined, Vector3d.create(1, 2, 3))!;
+    const sweepDegrees = 110;
+    const sweep0 = RotationalSweep.create(sectionCCW.clone(), Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0), Angle.createDegrees(sweepDegrees), true);
+    const sweep1 = RotationalSweep.create(sectionCCW.clone(), Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0), Angle.createDegrees(-sweepDegrees), true);
+    const sweep2 = RotationalSweep.create(sectionCW.clone(), Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0), Angle.createDegrees(sweepDegrees), true);
+    const sweep3 = RotationalSweep.create(sectionCW.clone(), Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0), Angle.createDegrees(-sweepDegrees), true);
+    let unalignedFrameCanResultInWrongCenterline = false;
+    let alignedFrameAlwaysResultsInCorrectCenterline = true;
+    for (const sweep of [sweep0, sweep1, sweep2, sweep3]) {
+      if (ck.testDefined(sweep, "created sweep")) {
+        if (ck.testTrue(sweep.tryTransformInPlace(rotation), "applied rotation")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep, x0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep.getSweepContourRef().getCurves(), x0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [sweep.cloneAxisRay().getOriginRef(), sweep.cloneAxisRay().fractionToPoint(5.0)], x0);
+          const unalignedFrame = sweep.getConstructiveFrame({ alignToSweep: false });
+          const alignedFrame = sweep.getConstructiveFrame({ alignToSweep: true });
+          const solidRange = sweep.range();
+          if (ck.testDefined(unalignedFrame, "got unaligned frame") && ck.testDefined(alignedFrame, "got aligned frame")) {
+            const centroid = RegionOps.centroidAreaNormal(sweep.getSweepContourRef().getCurves() as Loop)?.origin;
+            if (ck.testDefined(centroid, "got centroid")) {
+              const center = centroid.clone();
+              center.addScaledInPlace(sweep.cloneAxisRay().perpendicularPartOfVectorToTarget(center), -1);
+              const radius = center.distance(centroid);
+              const centerlineFromUnalignedFrame = Arc3d.createScaledXYColumns(center, unalignedFrame.matrix, radius, radius, AngleSweep.createStartEndDegrees(0, sweep.getSweep().degrees));
+              const centerlineFromAlignedFrame = Arc3d.createScaledXYColumns(center, alignedFrame.matrix, radius, radius, AngleSweep.createStartEndDegrees(0, sweep.getSweep().degrees));
+              if (ck.testDefined(centerlineFromUnalignedFrame, "created centerline from unaligned frame")) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerlineFromUnalignedFrame, x0);
+                if (!solidRange.containsRange(centerlineFromUnalignedFrame.range()))
+                  unalignedFrameCanResultInWrongCenterline = true;
+              }
+              if (ck.testDefined(centerlineFromAlignedFrame, "created centerline from aligned frame")) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerlineFromAlignedFrame, x0);
+                if (!solidRange.containsRange(centerlineFromAlignedFrame.range()))
+                  alignedFrameAlwaysResultsInCorrectCenterline = false;
+              }
+            }
+          }
+        }
+      }
+      x0 += 20;
+    }
+    ck.testTrue(unalignedFrameCanResultInWrongCenterline, "Unaligned constructive frame can produce incorrect swept solid centerline");
+    ck.testTrue(alignedFrameAlwaysResultsInCorrectCenterline, "Aligned constructive frame always produces correct swept solid centerline");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ConstructiveFrameOptions");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 
