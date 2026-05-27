@@ -9,6 +9,10 @@ import { compareNumbers, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
+import { ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipUtilities } from "../../clipping/ClipUtils";
+import { ClipVector } from "../../clipping/ClipVector";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
@@ -44,12 +48,12 @@ import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 
@@ -1291,6 +1295,70 @@ describe("RegionOps", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops4");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("constructAllXYRegionLoops5", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // triangle inside square
+    const outerLoop = Loop.createPolygon([Point3d.createZero(), Point3d.create(10), Point3d.create(10, 10), Point3d.create(0, 10)]);
+    const innerLoop = Loop.createPolygon([Point3d.create(5, 5), Point3d.create(8, 2), Point3d.create(8, 8)]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [outerLoop, innerLoop]);
+
+    const side = outerLoop.range().xLength() * 1.5;
+
+    // without bridges, each loop is its own component
+    const resultsNoBridges = RegionOps.constructAllXYRegionLoops([outerLoop, innerLoop], undefined, false);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...resultsNoBridges.map((component) => component.positiveAreaLoops).flat()], side);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...resultsNoBridges.map((component) => component.negativeAreaLoops).flat()], side, -side);
+    if (ck.testExactNumber(2, resultsNoBridges.length, "without bridges: constructAllXYRegionLoops results in 2 components")) {
+      for (let i = 0; i < resultsNoBridges.length; i++) {
+        ck.testExactNumber(1, resultsNoBridges[i].positiveAreaLoops.length, `without bridges: component ${i} has 1 positive area loop`);
+        ck.testExactNumber(1, resultsNoBridges[i].negativeAreaLoops.length, `without bridges: component ${i} has 1 negative area loop`);
+        ck.testExactNumber(resultsNoBridges[i].positiveAreaLoops[0].children.length, resultsNoBridges[i].negativeAreaLoops[0].children.length, `without bridges: component ${i} positive and negative area loops have same number of children`);
+      }
+      ck.testTrue(Geometry.isAlmostEqualEitherNumber(4, resultsNoBridges[0].positiveAreaLoops[0].children.length, resultsNoBridges[1].positiveAreaLoops[0].children.length, 0), "without bridges: one of the components is a loop with 4 children");
+      ck.testTrue(Geometry.isAlmostEqualEitherNumber(3, resultsNoBridges[0].positiveAreaLoops[0].children.length, resultsNoBridges[1].positiveAreaLoops[0].children.length, 0), "without bridges: one of the components is a loop with 3 children");
+    }
+
+    // with bridges, the loops are connected into one component with 2 faces: triangle, split-washer
+    const resultsBridges = RegionOps.constructAllXYRegionLoops([outerLoop, innerLoop], undefined, true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...resultsBridges.map((component) => component.positiveAreaLoops).flat()], 2 * side);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...resultsBridges.map((component) => component.negativeAreaLoops).flat()], 2 * side, -side);
+    if (ck.testExactNumber(1, resultsBridges.length, "with bridges: constructAllXYRegionLoops results in 1 component")) {
+      if (ck.testExactNumber(2, resultsBridges[0].positiveAreaLoops.length, "with bridges: the component has 2 positive area loops")) {
+        ck.testTrue(Geometry.isAlmostEqualEitherNumber(10, resultsBridges[0].positiveAreaLoops[0].children.length, resultsBridges[0].positiveAreaLoops[1].children.length, 0), "with bridges: one of the component's positive area loops has 10 children");
+        ck.testTrue(Geometry.isAlmostEqualEitherNumber(3, resultsBridges[0].positiveAreaLoops[0].children.length, resultsBridges[0].positiveAreaLoops[1].children.length, 0), "with bridges: one of the component's positive area loops has 3 children");
+      }
+      if (ck.testExactNumber(1, resultsBridges[0].negativeAreaLoops.length, "with bridges: the component has 1 negative area loop"))
+        ck.testExactNumber(5, resultsBridges[0].negativeAreaLoops[0].children.length, "with bridges: the component's negative area loop has 5 children");
+    }
+
+    // create a parity region clipper from the loops, and use it to clip a B-spline curve
+    const outerClip = ClipShape.createShape(outerLoop.getPackedStrokes()!.getPoint3dArray())!;
+    const innerClip = ClipShape.createShape(innerLoop.getPackedStrokes()!.getPoint3dArray(), undefined, undefined, undefined, true)!;
+    const clipWithHole = ClipVector.createCapture([innerClip, outerClip]);
+    const curve = InterpolationCurve3d.create({ fitPoints: [Point3d.create(-2, 12), Point3d.create(8, 5), Point3d.create(-2, -2), Point3d.create(2, 5)], isChordLenKnots: 1, closed: true })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
+    const curveClips = ClipUtilities.clipAnyCurve(curve, clipWithHole);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveClips, 0, 0, side); // display on top to verify visually
+    if (ck.testExactNumber(3, curveClips.length, "have 3 curve clips")) {
+      if (ck.testArrayType(curveClips, BSplineCurve3d, "curve clips are B-spline curves")) {
+        const clipParams = [[0.16732192869277906, 0.24728497679578676], [0.3549483851924725, 0.4349114332954802], [0.70301310958801, 0.8992202524002493]];
+        curveClips.sort((a: BSplineCurve3d, b: BSplineCurve3d) => { // sort by start knot
+          const aKnot0 = a.spanFractionToKnot(0, 0);
+          const bKnot0 = b.spanFractionToKnot(0, 0);
+          return Geometry.isSameFraction(aKnot0, bKnot0) ? 0 : aKnot0 < bKnot0 ? -1 : 1;
+        });
+        for (let i = 0; i < curveClips.length; i++) {
+          ck.testFraction(curveClips[i].spanFractionToKnot(0, 0), clipParams[i][0], `curve clip ${i} start knot fraction as expected`);
+          ck.testFraction(curveClips[i].spanFractionToKnot(curveClips[i].numSpan - 1, 1), clipParams[i][1], `curve clip ${i} end knot fraction as expected`);
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops5");
     expect(ck.getNumErrors()).toBe(0);
   });
 
