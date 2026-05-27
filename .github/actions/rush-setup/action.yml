@@ -33,6 +33,10 @@ runs:
   using: composite
   steps:
     - name: Setup Node
+      # Pin to a full commit SHA instead of a mutable tag to prevent tag-hijacking
+      # supply-chain attacks. To update: find the desired tag at
+      # https://github.com/actions/setup-node/releases, click the tag, copy the
+      # full commit SHA from the URL, and update both the SHA and the version comment.
       # actions/setup-node v6.4.0
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
       with:
@@ -49,6 +53,7 @@ runs:
 
     - name: Restore pnpm store cache
       id: cache-restore
+      # Pin to full commit SHA — same rationale as setup-node above.
       # actions/cache v5.0.5
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
