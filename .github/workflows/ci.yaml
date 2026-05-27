@@ -61,6 +61,12 @@ jobs:
       - name: Rush setup
         uses: ./.github/actions/rush-setup
 
+      - name: Fetch base branch
+        # Ensure origin/<base_ref> exists locally for `rush change -b` comparison.
+        # fetch-depth: 0 fetches full history of the PR branch but does not
+        # guarantee all remote tracking refs are present.
+        run: git fetch origin ${{ github.base_ref }}
+
       - name: rush change -v
         run: node common/scripts/install-run-rush.js change -v -b origin/${{ github.base_ref }}
 
@@ -131,7 +137,7 @@ jobs:
             git status --porcelain -u
             echo ""
             echo "Please run 'rush extract-api' locally, commit the modified api.md"
-            echo "files, and run 'rush change' for affected packages."
+            echo "files in common/api/, and run 'rush change' for affected packages."
             echo ""
             echo "Diff:"
             git diff
