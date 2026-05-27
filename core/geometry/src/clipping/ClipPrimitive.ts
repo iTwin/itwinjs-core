@@ -96,30 +96,27 @@ export interface ClipPrimitiveShapeProps {
 export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps;
 
 /**
- * * ClipPrimitive is a base class for clipping implementations that use
- *   * A UnionOfConvexClipPlaneSets designated "clipPlanes".
+ * * ClipPrimitive is a base class for clipping implementations that use:
+ *   * A [[UnionOfConvexClipPlaneSets]] designated "clipPlanes".
  *   * An "invisible" flag.
- * * When constructed directly, objects of type ClipPrimitive (directly, not through a derived class) will have just planes.
- * * Derived classes (e.g. ClipShape) carry additional data such as a swept shape.
- * * ClipPrimitive can be constructed with no planes.
- *     * Derived class is responsible for filling the plane sets.
- *     * At discretion of derived classes, plane construction can be done at construction time or "on demand when" queries
- * call `ensurePlaneSets ()`
- * * ClipPrimitive can be constructed directly with planes (and no derived class).
- * * The prevailing use is via a ClipShape derived class.
- *    * The ClipShape has an "isMask" property
- *       * isMask === false means the plane sets should cover the inside of its polygon.
- *       * isMask === true means the plane sets should cover the outside of its polygon.
- *  * Note that the ClipShape's `isMask` property and the ClipPrimitive's `isInvisible` property are distinct controls.
- *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape isMask property.
- *     * The ClipShape happens to pass the _invisible bit down to ClipPlanes that it creates.
- *         * At that level, the flag controls whether the cut edges are produced on the plane
+ * * A ClipPrimitive can be constructed with or without planes. If without planes:
+ *     * The derived class is responsible for filling the plane sets.
+ *     * The derived class can populate the plane sets at construction time or afterwards with [[ClipPrimitive.ensurePlaneSets]].
+ * * The prevailing use is via derived class [[ClipShape]].
+ *    * A ClipShape carries a swept shape that generates the planes.
+ *    * A ClipShape has an `isMask` property
+ *       * `isMask === false` means the plane sets should cover the inside of its polygon.
+ *       * `isMask === true` means the plane sets should cover the outside of its polygon, i.e., the ClipShape acts as a hole.
+ *  * Note that the ClipShape's `isMask` property and the ClipPrimitive's `invisible` property are distinct flags.
+ *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape `isMask` property.
+ *     * The ClipShape passes its `invisible` flag down to ClipPlanes that it creates.
+ *         * At that level, this flag controls whether cut edges are produced on the planes.
  * @public
  */
 export class ClipPrimitive implements Clipper {
-  /** The (union of) convex regions. */
+  /** The union of convex regions. */
   protected _clipPlanes?: UnionOfConvexClipPlaneSets;
-  /** If true, pointInside inverts the sense of the pointInside for the _clipPlanes. */
+  /** The invisible flag of the primitive, passed down to the clip planes. */
   protected _invisible: boolean;
   /**
    * Get a reference to the `UnionOfConvexClipPlaneSets`.
@@ -130,7 +127,7 @@ export class ClipPrimitive implements Clipper {
     this.ensurePlaneSets();
     return this._clipPlanes;
   }
-  /** Ask if this primitive is a hole. */
+  /** Return whether this primitive is invisible. */
   public get invisible(): boolean {
     return this._invisible;
   }
@@ -270,7 +267,7 @@ export class ClipPrimitive implements Clipper {
       this._clipPlanes.transformInPlace(transform);
     return true;
   }
-  /** Sets both the clip plane set and the mask set visibility */
+  /** Sets the primitive visibility. */
   public setInvisible(invisible: boolean) {
     this._invisible = invisible;
   }
@@ -291,24 +288,14 @@ export class ClipPrimitive implements Clipper {
   /**
    * Quick test of whether the given points fall completely inside or outside.
    * @param points points to test.
-   * @param ignoreInvisibleSetting if true, do the test with the clip planes and return that, ignoring the
-   * invisible setting.
+   * @param _ignoreMasks unused. The [[ClipShape]] override inverts this test when `ignoreMasks` is false and the instance is masked.
    */
-  public classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment {
+  public classifyPointContainment(points: Point3d[], _ignoreMasks: boolean = true): ClipPlaneContainment {
     this.ensurePlaneSets();
     const planes = this._clipPlanes;
     let inside = ClipPlaneContainment.StronglyInside;
     if (planes)
       inside = planes.classifyPointContainment(points, false);
-    if (this._invisible && !ignoreInvisibleSetting)
-      switch (inside) {
-        case ClipPlaneContainment.StronglyInside:
-          return ClipPlaneContainment.StronglyOutside;
-        case ClipPlaneContainment.StronglyOutside:
-          return ClipPlaneContainment.StronglyInside;
-        case ClipPlaneContainment.Ambiguous:
-          return ClipPlaneContainment.Ambiguous;
-      }
     return inside;
   }
   /**
@@ -890,5 +877,27 @@ export class ClipShape extends ClipPrimitive {
   public performTransformFromClip(point: Point3d): void {
     if (this._transformFromClip !== undefined)
       this._transformFromClip.multiplyPoint3d(point, point);
+  }
+  /**
+   * Quick test of whether the given points fall completely inside or outside.
+   * @param points points to test.
+   * @param ignoreMasks if false, invert the containment test on a masked (hole) instance; otherwise perform the containment test as usual.
+   */
+  public override classifyPointContainment(points: Point3d[], ignoreMasks: boolean): ClipPlaneContainment {
+    this.ensurePlaneSets();
+    const planes = this._clipPlanes;
+    let inside = ClipPlaneContainment.StronglyInside;
+    if (planes)
+      inside = planes.classifyPointContainment(points, false);
+    if (this._isMask && !ignoreMasks)
+      switch (inside) {
+        case ClipPlaneContainment.StronglyInside:
+          return ClipPlaneContainment.StronglyOutside;
+        case ClipPlaneContainment.StronglyOutside:
+          return ClipPlaneContainment.StronglyInside;
+        case ClipPlaneContainment.Ambiguous:
+          return ClipPlaneContainment.Ambiguous;
+      }
+    return inside;
   }
 }
