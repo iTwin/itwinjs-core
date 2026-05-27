@@ -114,9 +114,12 @@ export class SchemaLocalization {
     const localization = await this._provider.getLocalization(schema.name, baseLocale);
     if (localization && localization.version) {
       const localizationMajor = this.getMajorVersion(localization.version);
-      if (schema.schemaKey.readVersion !== localizationMajor) {
+
+      if (localizationMajor === undefined)
+        throw new Error(`Schema localization major version is undefined.`);
+
+      if (schema.schemaKey.readVersion !== localizationMajor)
         throw new Error(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor}.`);
-      }
     }
 
     this._cache.set(cacheKey, localization || null);
