@@ -11,7 +11,6 @@ import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain.js";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements.js";
 import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder.js";
-import { normalizeVersion } from "../presentation-backend/Utils.js";
 import { stubECSqlReader } from "./Helpers.js";
 
 describe("RulesetEmbedder", () => {
@@ -194,13 +193,12 @@ describe("RulesetEmbedder", () => {
   }
 
   function setupMocksForQueryingExistingRulesets(rulesetId: string, rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
-    const results = rulesets.map((entry) => ({
-      id: entry.elementId,
-      jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
-      normalizedVersion: normalizeVersion(entry.ruleset.version),
-    }));
+    const results = rulesets.map((entry) => [
+      entry.elementId,
+      JSON.stringify({ jsonProperties: entry.ruleset }),
+    ]);
     imodelMock.createQueryReader
-      .withArgs(sinon.match.any, QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })
+      .withArgs(sinon.match.any, QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })
       .returns(stubECSqlReader(results));
   }
 
