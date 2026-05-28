@@ -27,30 +27,29 @@ export class ECClassHierarchy {
   ) {}
   public static async create(imodel: IModelConnection) {
     const classInfosMap = new Map();
-    const classesQuery = `SELECT
+    const classesQuery = `
+      SELECT
         c.ECInstanceId AS ClassId,
         c.Name AS ClassName,
         s.Name AS SchemaName
-      FROM
-        meta.ECClassDef c
-      JOIN
-        meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
-      `;
-    for await (const row of imodel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      const { classId, className, schemaName } = row;
+      FROM meta.ECClassDef c
+      JOIN meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
+    `;
+    for await (const row of imodel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+      const [classId, className, schemaName] = row.toArray();
       classInfosMap.set(classId, { id: classId, name: className, schemaName });
     }
 
     const baseClassHierarchy = new Map();
     const derivedClassHierarchy = new Map();
-    const hierarchyQuery = `SELECT
+    const hierarchyQuery = `
+      SELECT
         h.TargetECInstanceId AS BaseClassId,
         h.SourceECInstanceId AS ClassId
-      FROM
-        meta.ClassHasBaseClasses h
-      `;
-    for await (const row of imodel.createQueryReader(hierarchyQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      const { baseClassId, classId } = row;
+      FROM meta.ClassHasBaseClasses h
+    `;
+    for await (const row of imodel.createQueryReader(hierarchyQuery, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+      const [baseClassId, classId] = row.toArray();
 
       const baseClasses = baseClassHierarchy.get(classId);
       if (baseClasses) {
@@ -104,9 +103,9 @@ export class ECClassHierarchy {
   public async getClassInfo(schemaName: string, className: string): Promise<ECClassHierarchyInfo> {
     const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
     const result = await this._imodel
-      .createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames })
+      .createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })
       .toArray();
-    const { id } = result[0];
+    const [id] = result[0];
     return this.getClassInfoById(id);
   }
 }

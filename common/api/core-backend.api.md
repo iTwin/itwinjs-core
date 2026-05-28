@@ -245,6 +245,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
 import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
@@ -606,6 +607,8 @@ export class BriefcaseDb extends IModelDb {
     close(options?: CloseIModelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @internal
+    disableFileBasedTxns(): void;
     // @preview
     discardChanges(args?: {
         retainLocks?: true;
@@ -613,12 +616,16 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
     // @internal
+    enableFileBasedTxns(): void;
+    // @internal
     executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     // (undocumented)
     getAllChangesetHealthData(): Promise<ChangesetHealthStats[]>;
     get isBriefcase(): boolean;
+    // @internal
+    get isFileBasedTxnsEnabled(): boolean;
     get iTwinId(): GuidString;
     // (undocumented)
     protected makeLockControl(): void;
@@ -2780,6 +2787,7 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
+    // @deprecated
     getMetaData(): Promise<EntityClass>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
@@ -3125,12 +3133,13 @@ export class Entity {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     static deserialize(props: DeserializeEntityArgs): EntityProps;
+    // @deprecated
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @preview
+    // @deprecated @preview
     getMetaData(): Promise<EntityClass | RelationshipClass>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     getMetaDataSync(): EntityClass | RelationshipClass;
     // @beta
     getReferenceIds(): EntityReferenceSet;
@@ -4068,6 +4077,8 @@ export abstract class IModelDb extends IModel {
     // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
@@ -5970,6 +5981,7 @@ export class Relationship extends Entity {
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
+    // @deprecated
     getMetaData(): Promise<RelationshipClass>;
     // @beta
     insert(txn: EditTxn): Id64String;
@@ -6130,6 +6142,7 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
     toIndex: ChangesetIndex;
     skipSchemaChanges?: true;
+    inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 // @public @preview
@@ -6488,6 +6501,7 @@ export interface SettingsSchemas {
     addFile(fileName: LocalFileName): void;
     addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
     addJson(settingSchema: string): void;
+    getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
     readonly groups: ReadonlyMap<string, SettingGroupSchema>;
     readonly onSchemaChanged: BeEvent<() => void>;
     removeGroup(schemaPrefix: string): void;
@@ -8494,6 +8508,7 @@ export interface WorkspaceDbLoadErrors extends ITwinError {
 export interface WorkspaceDbManifest {
     readonly contactName?: string;
     readonly description?: string;
+    readonly lastEditedAt?: string;
     readonly lastEditedBy?: string;
     readonly workspaceName: string;
 }
