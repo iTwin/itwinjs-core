@@ -112,4 +112,4 @@ For more on those prerequisites, see [GeoLocation of iModels](../GeoLocation.md)
 - [Using Views in iTwin.js](./Views.md)
 - [GeoLocation of iModels](../GeoLocation.md)
 - [The iTwin.js Display System](../display/index.md)
-- [@itwin/map-layers-formats]($map-layers-formats)
+- `@itwin/map-layers-formats`
