@@ -28,6 +28,11 @@ export type WorkspaceContainerId = string;
  * @beta
  */
 export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
+  /** The base URI for the container's cloud storage.
+   * @note When this value is an empty string, the Workspace system treats the [[WorkspaceDb]] as a local CloudSqlite database stored
+   * under [[Workspace.containerDir]] instead of connecting to a cloud container.
+   */
+  readonly baseUri: string;
   /** Whether to synchronize the container via [[CloudSqlite.CloudContainer.checkForChanges]] whenever it is connected to a [[CloudSqlite.CloudCache]].
    * @note This property defaults to `true`.
    */
@@ -86,7 +91,13 @@ export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
 /** Properties describing a [[WorkspaceDb]] and the [[WorkspaceContainer]] containing it.
  * @beta
  */
-export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo { }
+export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {
+  /** The base URI for the container's cloud storage.
+   * @note When this value is an empty string, the Workspace system treats the [[WorkspaceDb]] as a local CloudSqlite database stored
+   * under [[Workspace.containerDir]] instead of connecting to a cloud container.
+   */
+  readonly baseUri: string;
+}
 
 /** A function supplied as [[WorkspaceDbQueryResourcesArgs.callback]] to be invoked to process the requested resources.
  * @beta
