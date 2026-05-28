@@ -85,7 +85,6 @@ export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
 
 // @beta
 export interface AzureMapsOptions {
-    // (undocumented)
     subscriptionKey?: string;
 }
 
@@ -235,7 +234,6 @@ export interface MapFeatureInfoToolData {
 
 // @beta
 export class MapLayersFormats {
-    // (undocumented)
     static get azureMapsOpts(): AzureMapsOptions | undefined;
     // (undocumented)
     static get googleMapsOpts(): GoogleMapsOptions | undefined;
@@ -247,7 +245,6 @@ export class MapLayersFormats {
 
 // @beta
 export interface MapLayersFormatsConfig {
-    // (undocumented)
     azureMapsOpts?: AzureMapsOptions;
     // (undocumented)
     googleMapsOpts?: GoogleMapsOptions;
