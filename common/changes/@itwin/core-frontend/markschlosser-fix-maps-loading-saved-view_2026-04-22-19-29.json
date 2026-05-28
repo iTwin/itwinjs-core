@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Fixed map tiles vanishing on narrow viewports when viewing mostly top-down. Non-planar (ECEF globe) map tiles could be incorrectly frustum-culled because their axis-aligned bounding boxes extend deep into the Earth interior, causing all box corners to fall outside a frustum plane even when the tile visible surface is within view.",
+      "comment": "Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }
