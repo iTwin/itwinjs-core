@@ -9,6 +9,7 @@ export * from "./Interfaces";
 export * from "./Parser";
 export * from "./ParserSpec";
 export * from "./Quantity";
+export * from "./UnitConversions";
 export * from "./Unit";
 export * from "./Formatter/Format";
 export * from "./Formatter/FormatterSpec";
@@ -23,6 +24,7 @@ export * from "./UnitConversion/UnitDefinitionResolver";
 export * from "./SerializedUnitSchema";
 export { BasicUnitsProvider } from "./BasicUnitsProvider";
 export * from "./CompositeUnitsProvider";
+export * from "./generated/Units.generated";
 export * from "./internal/cross-package";
 
 /** @docs-package-description
@@ -40,6 +42,10 @@ export * from "./internal/cross-package";
 /**
  * @docs-group-description CompositeUnitsProvider
  * Factory and composition utilities for layering multiple UnitsProviders.
+ */
+/**
+ * @docs-group-description Units.generated
+ * Generated built-in canonical unit, phenomenon, and unit-system identifiers.
  */
 /**
  * @docs-group-description Logging

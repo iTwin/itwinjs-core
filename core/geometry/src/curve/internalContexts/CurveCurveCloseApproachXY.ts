@@ -58,6 +58,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private _maxDistanceSquared: number;
   private _xyTolerance: number;
   private _newtonTolerance: number;
+  private _maxIterations: number;
   /**
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
    * both curves and their length is smaller than _maxDistanceToAccept.
@@ -75,13 +76,20 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
    * @param xyTolerance optional tolerance for comparing xy points (default [[Geometry.smallMetricDistance]]).
    * @param newtonTolerance optional relative fraction tolerance for Newton iteration (default [[Geometry.smallNewtonStep]]).
+   * @param maxIterations optional max iterations for Newton iteration (default 50).
    */
-  public constructor(geometryB?: AnyCurve, xyTolerance: number = Geometry.smallMetricDistance, newtonTolerance: number = Geometry.smallNewtonStep) {
+  public constructor(
+    geometryB?: AnyCurve,
+    xyTolerance: number = Geometry.smallMetricDistance,
+    newtonTolerance: number = Geometry.smallNewtonStep,
+    maxIterations: number = 50 // seen: 47
+  ) {
     super();
     this._geometryB = geometryB instanceof ProxyCurve ? geometryB.proxyCurve : geometryB;
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
     this._xyTolerance = xyTolerance;
     this._newtonTolerance = newtonTolerance;
+    this._maxIterations = maxIterations;
     const compare = CurveLocationDetailPair.comparePairsByPoints(xyTolerance, true);
     this._results = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
   }
@@ -634,23 +642,34 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return curve instanceof BSplineCurve3dBase || curve instanceof TransitionSpiral3d;
   }
   /**
-   * Process seeds for xy close approach between one curve and another curve to be stroked.
+   * Process seeds for xy close approach between one curve and another curve.
+   * * Seeds typically result from solving a discrete close approach problem, where one or both curves have been stroked.
    * * Refine each result via Newton iteration. If it doesn't converge, remove it.
    * @param seeds the initial seed results to refine.
    * @param curveA curve to find its XY close approach with curveB.
-   * @param curveB the other curve to be stroked.
+   * @param curveAIsStroked whether `seeds` contains results from a linestring approximation to `curveA`
+   * @param curveB the other curve.
+   * @param curveBIsStroked whether `seeds` contains results from a linestring approximation to `curveB`
    * @param reversed whether `curveB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
   private refineStrokedResultsByNewton(
-    seeds: CurveLocationDetailPair[], curveA: CurvePrimitive, curveB: CurvePrimitive, reversed = false
+    seeds: CurveLocationDetailPair[],
+    curveA: CurvePrimitive, curveAIsStroked: boolean,
+    curveB: CurvePrimitive, curveBIsStroked: boolean,
+    reversed = false
   ): void {
     const xyMatchingFunction = new CurveCurveCloseApproachXYRRtoRRD(curveA, curveB);
-    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, 50, this._newtonTolerance); // seen: 47
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(
+      xyMatchingFunction, this._maxIterations, this._newtonTolerance
+    );
     for (const seed of seeds) {
       const detailA = reversed ? seed.detailB : seed.detailA;
       const detailB = reversed ? seed.detailA : seed.detailB;
       assert(detailB.curve instanceof LineString3d, "Caller has discretized the curve");
-      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use the linestring fraction as initial curveB fraction (ASSUME it's close enough)
+      // when the curve is stroked, project the discrete seed to compute a fraction in the original curve's parameter space
+      const u = curveAIsStroked ? curveA.closestPointXY(detailA.point)?.fraction ?? detailA.fraction : detailA.fraction;
+      const v = curveBIsStroked ? curveB.closestPointXY(detailB.point)?.fraction ?? detailB.fraction : detailB.fraction;
+      newtonSearcher.setUV(u, v);
       if (newtonSearcher.runIterations()) {
         const fractionA = newtonSearcher.getU();
         const fractionB = newtonSearcher.getV();
@@ -693,7 +712,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   /**
    * Compute the XY close approach of a curve and another curve to be stroked.
    * @param curveA curve to find its XY close approach with curveB.
-   * @param curveB the other curve to be stroked.
+   * @param curveB the other curve, to be stroked.
    * @param reversed whether `curveB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
    */
   private dispatchCurveStrokedCurve(curveA: CurvePrimitive, curveB: CurvePrimitive, reversed: boolean): void {
@@ -702,12 +721,11 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     for (const intersection of intersections)
       this.testAndRecordPair(intersection, reversed);
     // append seeds computed by solving the discretized spiral close approach problem, then refine the seeds via Newton
-    let cpA = curveA;
-    if (this.needsStroking(curveA))
-      cpA = this.strokeCurve(curveA);
+    const curveAIsStroked = this.needsStroking(curveA);
+    const cpA = curveAIsStroked ? this.strokeCurve(curveA) : curveA;
     const cpB = this.strokeCurve(curveB);
     const seeds = this.computeDiscreteCloseApproachResults(cpA, cpB, reversed);
-    this.refineStrokedResultsByNewton(seeds, curveA, curveB, reversed);
+    this.refineStrokedResultsByNewton(seeds, curveA, curveAIsStroked, curveB, true, reversed);
     if (curveA instanceof LineString3d) { // explicitly test corners (where Newton converges too slowly)
       const fStep = Geometry.safeDivideFraction(1.0, curveA.numEdges(), 0);
       const v0 = CurveCurveCloseApproachXY._workPointBB0;

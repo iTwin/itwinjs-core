@@ -42,6 +42,7 @@ describe("ExcludedElements", () => {
       expect(styleId).not.to.equal(Id64.invalid);
 
       const rows: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
         rows.push(queryRow.toRow());
 
