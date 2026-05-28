@@ -1,62 +1,45 @@
 # Map layers, basemaps, and Azure Maps
 
-Map imagery in iTwin.js is intentionally split across two layers:
+Azure Maps setup uses the generic map-layer APIs from `@itwin/core-frontend` and the Azure Maps format support from `@itwin/map-layers-formats`.
 
-- `@itwin/core-frontend` provides the generic display-style and map-layer APIs used by every app.
-- `@itwin/map-layers-formats` provides optional vendor-specific integrations like Azure Maps and Google Maps.
-
-That split can look odd at first because Azure Maps setup touches both packages. The reason is that they have different responsibilities:
-
-- Use `@itwin/core-frontend` to configure generic application startup and to attach background or overlay layers.
-- Use `@itwin/map-layers-formats` to register Azure-specific format support and to apply Azure-specific basemap behavior like Street, Aerial, and Hybrid.
+Use `@itwin/core-frontend` to start the app and attach ordinary background or overlay layers. Use `@itwin/map-layers-formats` to register Azure Maps support, provide the Azure Maps subscription key, and apply Azure basemaps like Street, Aerial, and Hybrid.
 
 ## When to use each package
 
 Use `@itwin/core-frontend` for the generic map imagery workflow:
 
 - start `IModelApp`
-- provide map-layer credentials at startup
+- provide generic map-layer credentials at startup
 - work with a [Viewport]($frontend), [DisplayStyleState]($frontend), and the standard map-layer APIs
 - attach additional background or overlay imagery layers
 
-Use `@itwin/map-layers-formats` when you need vendor-specific behavior that core does not own:
+Use `@itwin/map-layers-formats` for Azure Maps-specific behavior:
 
-- `MapLayersFormats.initialize()` to register optional formats
+- `MapLayersFormats.initialize()` to register optional formats and configure the Azure Maps subscription key
 - `AzureMaps.applyBackgroundMap(...)` to apply Azure Maps Street, Aerial, or Hybrid basemaps
 - `AzureMaps.getBackgroundMapType(...)` to inspect the active Azure Maps basemap type
-
-## Why Azure Maps is not a core frontend basemap provider
-
-This package split is deliberate. `@itwin/core-frontend` owns generic display and map-layer behavior that should work regardless of map provider. Azure Maps-specific URL construction, Hybrid composition behavior, and helper APIs are vendor-specific concerns, so they live in `@itwin/map-layers-formats` instead of becoming first-class core provider semantics.
-
-That lets an application combine:
-
-- generic core APIs for view and layer management; with
-- optional extension APIs for Azure-specific behavior.
 
 ## Typical setup order
 
 A typical Azure Maps app does three things in order:
 
-1. Start `IModelApp` and provide the Azure Maps key through the generic `mapLayerOptions` startup configuration.
-2. Initialize `@itwin/map-layers-formats` so Azure Maps support is registered.
+1. Start `IModelApp`.
+2. Initialize `@itwin/map-layers-formats` with the Azure Maps subscription key so Azure Maps support is registered.
 3. Apply an Azure basemap through the `AzureMaps` helper, and then keep using the normal map-layer APIs for any additional layers.
 
-### 1. Provide the Azure Maps key at startup
+### 1. Start IModelApp
 
 ```ts
-[[include:AzureMaps_SetAzureMapsApiKey]]
+[[include:AzureMaps_StartIModelApp]]
 ```
 
-The startup configuration belongs to `@itwin/core-frontend` because `IModelApp` owns application startup and generic map-layer configuration.
-
-### 2. Register the optional map-layers-formats package
+### 2. Register the optional map-layers-formats package and provide the Azure Maps key
 
 ```ts
 [[include:AzureMaps_InitializeMapLayersFormats]]
 ```
 
-This step belongs to `@itwin/map-layers-formats` because Azure Maps support is extension-owned, not built into the core frontend package.
+This step registers the optional Azure Maps format supplied by `@itwin/map-layers-formats`. The Azure Maps key can also be supplied through the generic `IModelApp.startup({ mapLayerOptions: { AzureMaps: ... } })` credential path, but `azureMapsOpts.subscriptionKey` keeps Azure-specific setup with the package that handles Azure Maps.
 
 ## Applying Azure Maps basemaps
 

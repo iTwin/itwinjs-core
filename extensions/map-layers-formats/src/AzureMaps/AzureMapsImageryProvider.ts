@@ -6,12 +6,23 @@
  * @module MapLayersFormats
  */
 
-import { ImageMapLayerSettings, type ImageSource } from "@itwin/core-common";
+import { ImageMapLayerSettings, type ImageSource, type MapLayerKey } from "@itwin/core-common";
 import { IModelApp, MapLayerImageryProvider, MapLayerImageryProviderStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport } from "@itwin/core-frontend";
+
+/** @internal */
+export const azureMapsSubscriptionKeyParameter = "subscription-key";
+
+/** @internal */
+export function getAzureMapsSubscriptionKey(accessKey: MapLayerKey | undefined, fallbackSubscriptionKey?: string): string | undefined {
+  if (accessKey !== undefined)
+    return accessKey.key === azureMapsSubscriptionKeyParameter && accessKey.value.length > 0 ? accessKey.value : undefined;
+
+  return fallbackSubscriptionKey !== undefined && fallbackSubscriptionKey.length > 0 ? fallbackSubscriptionKey : undefined;
+}
 
 class AzureMapsRequireAuthError extends Error {
   public constructor() {
-    super("Azure Maps requires a non-empty subscription-key credential");
+    super(`Azure Maps requires a non-empty ${azureMapsSubscriptionKeyParameter} credential`);
   }
 }
 
@@ -20,7 +31,7 @@ class AzureMapsRequireAuthError extends Error {
  * @beta
  */
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
-  public constructor(settings: ImageMapLayerSettings) {
+  public constructor(settings: ImageMapLayerSettings, private readonly _subscriptionKey?: string) {
     super(settings, true);
   }
 
@@ -57,10 +68,11 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async constructUrl(y: number, x: number, zoom: number): Promise<string> {
-    if (this._settings.accessKey?.key !== "subscription-key" || !this._settings.accessKey.value)
+    const subscriptionKey = getAzureMapsSubscriptionKey(this._settings.accessKey, this._subscriptionKey);
+    if (undefined === subscriptionKey)
       throw new AzureMapsRequireAuthError();
 
-    return `${this._settings.url}&subscription-key=${encodeURIComponent(this._settings.accessKey.value)}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
+    return `${this._settings.url}&${azureMapsSubscriptionKeyParameter}=${encodeURIComponent(subscriptionKey)}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
   /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */

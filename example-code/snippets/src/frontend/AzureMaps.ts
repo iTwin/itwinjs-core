@@ -7,23 +7,19 @@ import { BackgroundMapType, ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { AzureMaps, MapLayersFormats } from "@itwin/map-layers-formats";
 
-// __PUBLISH_EXTRACT_START__ AzureMaps_SetAzureMapsApiKey
-export async function setAzureMapsApiKey() {
-  await IModelApp.startup({
-    applicationId: "myAppId",
-    mapLayerOptions: {
-      ["AzureMaps"]: {
-        key: "subscription-key",
-        value: "abc123",
-      },
-    },
-  });
+// __PUBLISH_EXTRACT_START__ AzureMaps_StartIModelApp
+export async function startIModelApp() {
+  await IModelApp.startup({ applicationId: "myAppId" });
 }
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ AzureMaps_InitializeMapLayersFormats
 export async function initializeMapLayersFormats() {
-  await MapLayersFormats.initialize();
+  await MapLayersFormats.initialize({
+    azureMapsOpts: {
+      subscriptionKey: "abc123",
+    },
+  });
 }
 // __PUBLISH_EXTRACT_END__
 

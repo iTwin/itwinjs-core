@@ -300,9 +300,6 @@ export class DisplayTestApp {
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
             : undefined,
-          AzureMaps: configuration.azureMapsKey
-            ? { key: "subscription-key", value: configuration.azureMapsKey }
-            : undefined,
           GoogleMaps: configuration.googleMapsKey
             ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
@@ -443,7 +440,11 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    await MapLayersFormats.initialize();
+    await MapLayersFormats.initialize({
+      azureMapsOpts: configuration.azureMapsKey
+        ? { subscriptionKey: configuration.azureMapsKey }
+        : undefined,
+    });
 
     EditTools.registerProjectLocationTools();
   }

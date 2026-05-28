@@ -84,6 +84,12 @@ export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 // @beta
+export interface AzureMapsOptions {
+    // (undocumented)
+    subscriptionKey?: string;
+}
+
+// @beta
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
     // (undocumented)
     protected abstract getTileApiBaseUrl(): string;
@@ -230,6 +236,8 @@ export interface MapFeatureInfoToolData {
 // @beta
 export class MapLayersFormats {
     // (undocumented)
+    static get azureMapsOpts(): AzureMapsOptions | undefined;
+    // (undocumented)
     static get googleMapsOpts(): GoogleMapsOptions | undefined;
     static initialize(config?: MapLayersFormatsConfig): Promise<void>;
     // (undocumented)
@@ -239,6 +247,8 @@ export class MapLayersFormats {
 
 // @beta
 export interface MapLayersFormatsConfig {
+    // (undocumented)
+    azureMapsOpts?: AzureMapsOptions;
     // (undocumented)
     googleMapsOpts?: GoogleMapsOptions;
     // (undocumented)

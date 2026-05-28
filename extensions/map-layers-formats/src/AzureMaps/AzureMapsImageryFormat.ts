@@ -8,7 +8,8 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ImageryMapLayerFormat, IModelApp, MapLayerImageryProvider, MapLayerSourceStatus, type MapLayerSourceValidation, type ValidateSourceArgs } from "@itwin/core-frontend";
-import { AzureMapsLayerImageryProvider } from "./AzureMapsImageryProvider.js";
+import { MapLayersFormats } from "../mapLayersFormats.js";
+import { AzureMapsLayerImageryProvider, getAzureMapsSubscriptionKey } from "./AzureMapsImageryProvider.js";
 
 /**
  * Azure Maps imagery layer format.
@@ -43,7 +44,7 @@ export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
       return { status: urlStatus };
 
     const accessKey = IModelApp.mapLayerFormatRegistry.configOptions.AzureMaps;
-    if (accessKey?.key !== "subscription-key" || !accessKey.value)
+    if (undefined === getAzureMapsSubscriptionKey(accessKey, MapLayersFormats.azureMapsOpts?.subscriptionKey))
       return { status: MapLayerSourceStatus.RequireAuth };
 
     return { status: MapLayerSourceStatus.Valid };
@@ -51,6 +52,6 @@ export class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
 
   /** @internal */
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
-    return new AzureMapsLayerImageryProvider(settings);
+    return new AzureMapsLayerImageryProvider(settings, MapLayersFormats.azureMapsOpts?.subscriptionKey);
   }
 }

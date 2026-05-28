@@ -6,10 +6,11 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { BackgroundMapType, BaseMapLayerSettings, ImageMapLayerSettings, type MapLayerSettings } from "@itwin/core-common";
-import { IModelApp, MapLayerImageryProviderStatus, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
+import { IModelApp, MapLayerFormatRegistry, MapLayerImageryProviderStatus, type MapLayerOptions, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { AzureMaps } from "../../AzureMaps/AzureMaps.js";
 import { AzureMapsMapLayerFormat } from "../../AzureMaps/AzureMapsImageryFormat.js";
 import { AzureMapsLayerImageryProvider } from "../../AzureMaps/AzureMapsImageryProvider.js";
+import { MapLayersFormats } from "../../mapLayersFormats.js";
 
 class FakeDisplayStyle {
   public settings = { mapImagery: { backgroundLayers: [] as MapLayerSettings[] } };
@@ -50,17 +51,17 @@ class FakeDisplayStyle {
 
 describe("AzureMaps", () => {
   const sandbox = sinon.createSandbox();
-  const registryConfig = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    AzureMaps: { key: "subscription-key", value: "dummyKey" },
-  };
+  let registryConfig: MapLayerOptions;
 
   beforeEach(() => {
-    registryConfig.AzureMaps = { key: "subscription-key", value: "dummyKey" };
-    sandbox.stub(IModelApp, "mapLayerFormatRegistry").get(() => ({
-      isRegistered: () => true,
-      configOptions: registryConfig,
-    }));
+    registryConfig = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      AzureMaps: { key: "subscription-key", value: "dummyKey" },
+    };
+
+    const registry = new MapLayerFormatRegistry(registryConfig);
+    registry.register(AzureMapsMapLayerFormat);
+    sandbox.stub(IModelApp, "mapLayerFormatRegistry").get(() => registry);
   });
 
   afterEach(() => {
@@ -138,6 +139,56 @@ describe("AzureMaps", () => {
 
     const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
     const provider = new AzureMapsLayerImageryProvider(settings);
+    await provider.loadTile(0, 0, 0);
+    expect(provider.status).to.eq(MapLayerImageryProviderStatus.RequireAuth);
+  });
+
+  it("creates providers through the registry with the configured subscription key", async () => {
+    const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
+    const provider = IModelApp.mapLayerFormatRegistry.createImageryProvider(settings);
+
+    expect(provider).to.be.instanceOf(AzureMapsLayerImageryProvider);
+    if (undefined === provider)
+      throw new Error("Expected Azure Maps provider to be created");
+
+    expect(await provider.constructUrl(1, 2, 3)).to.contain("subscription-key=dummyKey");
+  });
+
+  it("can use the MapLayersFormats Azure Maps subscription key option", async () => {
+    delete registryConfig.AzureMaps;
+    sandbox.stub(MapLayersFormats, "azureMapsOpts").get(() => ({ subscriptionKey: "dummyKey" }));
+
+    const validation = await AzureMapsMapLayerFormat.validate({
+      source: MapLayerSource.fromJSON({ name: "Azure", formatId: "AzureMaps", url: "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery" })!,
+    });
+    expect(validation.status).to.eq(MapLayerSourceStatus.Valid);
+
+    const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
+    const provider = IModelApp.mapLayerFormatRegistry.createImageryProvider(settings);
+
+    expect(provider).to.be.instanceOf(AzureMapsLayerImageryProvider);
+    if (undefined === provider)
+      throw new Error("Expected Azure Maps provider to be created");
+
+    expect(await provider.constructUrl(1, 2, 3)).to.contain("subscription-key=dummyKey");
+  });
+
+  it("does not fall back to MapLayersFormats Azure Maps options for malformed layer credentials", async () => {
+    registryConfig.AzureMaps = { key: "wrong-key-name", value: "dummyKey" };
+    sandbox.stub(MapLayersFormats, "azureMapsOpts").get(() => ({ subscriptionKey: "fallbackKey" }));
+
+    const validation = await AzureMapsMapLayerFormat.validate({
+      source: MapLayerSource.fromJSON({ name: "Azure", formatId: "AzureMaps", url: "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery" })!,
+    });
+    expect(validation.status).to.eq(MapLayerSourceStatus.RequireAuth);
+
+    const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
+    const provider = IModelApp.mapLayerFormatRegistry.createImageryProvider(settings);
+
+    expect(provider).to.be.instanceOf(AzureMapsLayerImageryProvider);
+    if (undefined === provider)
+      throw new Error("Expected Azure Maps provider to be created");
+
     await provider.loadTile(0, 0, 0);
     expect(provider.status).to.eq(MapLayerImageryProviderStatus.RequireAuth);
   });
