@@ -860,7 +860,7 @@ describe("SchemaLocalization", () => {
       await expect(localization.getSchemaLabel(testBuildingSchema)).rejects.toThrow("Invalid localization JSON");
     });
 
-    it("should throw error, when major version is different", async () => {
+    it("should fall back to English, when major version is different", async () => {
       const localization = new SchemaLocalization(provider, "fr");
 
       // TestProduct schema and its French localization have same major version
@@ -869,7 +869,8 @@ describe("SchemaLocalization", () => {
       expect(testProductSchema.label).to.equal("Test Product Schema");
 
       // TestPerson schema and its French localization have different major version
-      await expect(localization.getSchemaLabel(testPersonSchema)).rejects.toThrow(`Localization version mismatch for schema "TestPerson". Schema major version is 1, but localization is for major version 2.`);
+      const personLabel = await localization.getSchemaLabel(testPersonSchema);
+      expect(personLabel).to.equal("Test Person Schema");
     });
   });
 });

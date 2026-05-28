@@ -82,11 +82,12 @@ export class SchemaLocalization {
     if (localization && localization.version) {
       const localizationMajor = this.getMajorVersion(localization.version);
 
-      if (localizationMajor === undefined)
-        throw new Error(`Schema localization major version is undefined.`);
-
-      if (schema.schemaKey.readVersion !== localizationMajor)
-        throw new Error(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor}.`);
+      if (localizationMajor === undefined || schema.schemaKey.readVersion !== localizationMajor) {
+        // eslint-disable-next-line no-console
+        console.warn(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor?.toString() ?? "undefined"}.`);
+        this._cache.set(cacheKey, null);
+        return null;
+      }
     }
 
     this._cache.set(cacheKey, localization || null);
@@ -115,11 +116,12 @@ export class SchemaLocalization {
     if (localization && localization.version) {
       const localizationMajor = this.getMajorVersion(localization.version);
 
-      if (localizationMajor === undefined)
-        throw new Error(`Schema localization major version is undefined.`);
-
-      if (schema.schemaKey.readVersion !== localizationMajor)
-        throw new Error(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor}.`);
+      if (localizationMajor === undefined || schema.schemaKey.readVersion !== localizationMajor) {
+        // eslint-disable-next-line no-console
+        console.warn(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor?.toString() ?? "undefined"}.`);
+        this._cache.set(cacheKey, null);
+        return null;
+      }
     }
 
     this._cache.set(cacheKey, localization || null);
