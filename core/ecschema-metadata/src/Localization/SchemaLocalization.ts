@@ -20,7 +20,7 @@ import { LocalizedText, SchemaLocalizationJson } from "./LocalizationTypes";
 export class SchemaLocalization {
   private _provider: ILocalizationProvider;
   private _locale: string;
-  private _cache: Map<string, SchemaLocalizationJson | null> = new Map();
+  private _cache: Map<string, SchemaLocalizationJson | undefined> = new Map();
 
   /**
    * Constructs a SchemaLocalization instance.
@@ -68,14 +68,14 @@ export class SchemaLocalization {
   /**
    * Load and cache the localization JSON for a schema.
    * @param schema The schema to load localization for
-   * @returns The localization JSON, or null if not found
+   * @returns The localization JSON, or undefined if not found
    * @internal
    */
-  private async getSchemaLocalizationJson(schema: Schema): Promise<SchemaLocalizationJson | null> {
+  private async getSchemaLocalizationJson(schema: Schema): Promise<SchemaLocalizationJson | undefined> {
     const cacheKey = `${schema.name}:${this._locale}`;
 
     if (this._cache.has(cacheKey)) {
-      return this._cache.get(cacheKey) || null;
+      return this._cache.get(cacheKey);
     }
 
     const localization = await this._provider.getLocalization(schema.name, this._locale);
@@ -85,31 +85,31 @@ export class SchemaLocalization {
       if (localizationMajor === undefined || schema.schemaKey.readVersion !== localizationMajor) {
         // eslint-disable-next-line no-console
         console.warn(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor?.toString() ?? "undefined"}.`);
-        this._cache.set(cacheKey, null);
-        return null;
+        this._cache.set(cacheKey, undefined);
+        return undefined;
       }
     }
 
-    this._cache.set(cacheKey, localization || null);
-    return localization || null;
+    this._cache.set(cacheKey, localization);
+    return localization;
   }
 
   /**
    * Load the base locale localization if the current locale has a region (e.g., "es" from "es-CO").
    * @param schema The schema to load localization for
-   * @returns The base localization JSON, or null if not found or not applicable
+   * @returns The base localization JSON, or undefined if not found or not applicable
    * @internal
    */
-  private async getBaseLocalizationJson(schema: Schema): Promise<SchemaLocalizationJson | null> {
+  private async getBaseLocalizationJson(schema: Schema): Promise<SchemaLocalizationJson | undefined> {
     if (!this._locale.includes("-")) {
-      return null;
+      return undefined;
     }
 
     const baseLocale = this._locale.split("-")[0];
     const cacheKey = `${schema.name}:${baseLocale}`;
 
     if (this._cache.has(cacheKey)) {
-      return this._cache.get(cacheKey) || null;
+      return this._cache.get(cacheKey);
     }
 
     const localization = await this._provider.getLocalization(schema.name, baseLocale);
@@ -119,13 +119,13 @@ export class SchemaLocalization {
       if (localizationMajor === undefined || schema.schemaKey.readVersion !== localizationMajor) {
         // eslint-disable-next-line no-console
         console.warn(`Localization version mismatch for schema "${schema.name}". Schema major version is ${schema.schemaKey.readVersion.toString()}, but localization is for major version ${localizationMajor?.toString() ?? "undefined"}.`);
-        this._cache.set(cacheKey, null);
-        return null;
+        this._cache.set(cacheKey, undefined);
+        return undefined;
       }
     }
 
-    this._cache.set(cacheKey, localization || null);
-    return localization || null;
+    this._cache.set(cacheKey, localization);
+    return localization;
   }
 
   /**
