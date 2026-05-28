@@ -23,7 +23,6 @@ export interface ILocalizationProvider {
  * @beta
  */
 export class LocalizationProvider implements ILocalizationProvider {
-  private _localizationCache: Map<string, SchemaLocalizationJson> = new Map();
 
   /**
    * Constructs a LocalizationProvider.
@@ -34,28 +33,9 @@ export class LocalizationProvider implements ILocalizationProvider {
 
   /**
    * Load localization JSON for a given schema and locale.
-   * Implements locale fallback: "es-CO" → "es" → undefined
    */
   public async getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined> {
-    const cacheKey = `${schemaName}:${locale}`;
-
-    if (this._localizationCache.has(cacheKey)) {
-      return this._localizationCache.get(cacheKey);
-    }
-
-    let localizationData = await this._loader(schemaName, locale);
-
-    // Try fallback to language without region (e.g., "es-CO" → "es")
-    if (!localizationData && locale.includes("-")) {
-      const baseLocale = locale.split("-")[0];
-      const baseCacheKey = `${schemaName}:${baseLocale}`;
-
-      if (this._localizationCache.has(baseCacheKey)) {
-        return this._localizationCache.get(baseCacheKey);
-      }
-
-      localizationData = await this._loader(schemaName, baseLocale);
-    }
+    const localizationData = await this._loader(schemaName, locale);
 
     if (localizationData) {
       if (!localizationData.name || !localizationData.locale) {
@@ -66,24 +46,11 @@ export class LocalizationProvider implements ILocalizationProvider {
         throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected schema name "${schemaName}" but got "${localizationData.name}"`);
       }
 
-      const expectedLocale = locale.includes("-") && !localizationData.locale.includes("-") ? locale.split("-")[0] : locale;
-      if (localizationData.locale !== expectedLocale) {
-        throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected locale "${expectedLocale}" but got "${localizationData.locale}"`);
+      if (localizationData.locale !== locale) {
+        throw new Error(`Localization JSON mismatch for ${schemaName}:${locale} - expected locale "${locale}" but got "${localizationData.locale}"`);
       }
-
-      const key = `${schemaName}:${localizationData.locale}`;
-      this._localizationCache.set(key, localizationData);
-
-      return localizationData;
     }
 
-    return undefined;
-  }
-
-  /**
-   * Clear the localization cache.
-   */
-  public clearCache(): void {
-    this._localizationCache.clear();
+    return localizationData;
   }
 }
