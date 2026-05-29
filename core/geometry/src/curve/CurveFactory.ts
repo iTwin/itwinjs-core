@@ -128,13 +128,16 @@ export interface CreateFilletsInLineStringOptions {
    */
   filletClosure?: boolean;
   /**
-   * Allowable distance between line string endpoints when `filletClosure` is `true`. In other words, it's the
-   * tolerance to consider line string as closed. Default value is `Geometry.smallMetricDistance`.
+   * Allowable distance between the first and last input points for treating the last point as a duplicate closure
+   * point when `filletClosure` is `true`. This does not control whether the output is closed; with
+   * `filletClosure: true`, the output is closed regardless. Default value is `Geometry.smallMetricDistance`.
    */
   closureTolerance?: number;
   /**
-   * Allowable length of the line segment joining an arc to its neighbor in a cusp configuration. Default value
-   * is `Geometry.smallMetricDistance`.
+   * Allowable length of the line segment joining an arc to its neighbor in a cusp configuration. When
+   * `allowCusp` is `true`, cusps whose implied overlap/connecting segment exceeds this tolerance are suppressed,
+   * so callers may need to raise `cuspTolerance` to preserve cusp behavior for larger-radius cases. Default
+   * value is `Geometry.smallMetricDistance`.
    */
   cuspTolerance?: number;
   /**
@@ -250,7 +253,7 @@ export class CurveFactory {
     }
     assert(blendArray.length === n);
     const suppressFullCuspIndices: number[] = [];
-    const suppressCuspLineSegmentIndices: number[] = [];
+    const suppressCuspLineSegmentIndices: Set<number> = new Set();
     for (let i = 0; i < n; i++) {
       const bB = blendArray[i];
       if (!bB.arc)
@@ -270,12 +273,12 @@ export class CurveFactory {
           if (cuspLenBA > cuspTolerance || cuspLenBC > cuspTolerance) {
             suppressFullCuspIndices.push(i); // save index to suppress full cusp later
           } else if (!cuspLineSegments && (bB.fraction12 > 1 || bB.fraction12 + bC.fraction10 > 1)) {
-            suppressCuspLineSegmentIndices.push(i); // save index to suppress cusp line segment later
+            suppressCuspLineSegmentIndices.add(i); // save index to suppress cusp line segment later
           }
         }
       }
     }
-    // suppress cusps that their line segment length exceeds the cusp tolerance
+    // suppress cusps whose line-segment length exceeds the cusp tolerance
     for (const i of suppressFullCuspIndices) {
       blendArray[i].fraction10 = blendArray[i].fraction12 = 0;
       blendArray[i].arc = undefined;
@@ -284,7 +287,7 @@ export class CurveFactory {
     for (let i = 0; i < n; i++) {
       const b0 = blendArray[i];
       path.tryAddChild(b0.arc);
-      if (suppressCuspLineSegmentIndices.includes(i))
+      if (suppressCuspLineSegmentIndices.has(i))
         continue; // skip adding line segment for this cusp
       if (i + 1 < n || filletClosure) {
         const b1 = blendArray[Geometry.modulo(i + 1, n)];
