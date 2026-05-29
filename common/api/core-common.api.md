@@ -2301,6 +2301,7 @@ export enum DbResponseStatus {
     // (undocumented)
     Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
     // (undocumented)
+    NotOpen = 7,/* iModel is not open. */
     Error_ECSql_PreparedFailed = 101,/*  generic error*/
     // (undocumented)
     Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/

@@ -263,7 +263,7 @@ export abstract class IModelConnection extends IModel {
     const executor = {
       execute: async (request: DbQueryRequest) => {
         if (!this.isOpen) {
-          return { status: DbResponseStatus.Done, data: [], meta: [], rowCount: 0, stats: { cpuTime: 0, totalTime: 0, memUsed: 0, prepareTime: 0, timeLimit: 0, memLimit: 0 }, kind: DbResponseKind.ECSql };
+          return { status: DbResponseStatus.NotOpen, data: [], meta: [], rowCount: 0, stats: { cpuTime: 0, totalTime: 0, memUsed: 0, prepareTime: 0, timeLimit: 0, memLimit: 0 }, kind: DbResponseKind.ECSql };
         }
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
