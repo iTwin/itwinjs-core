@@ -2301,12 +2301,13 @@ export enum DbResponseStatus {
     // (undocumented)
     Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
     // (undocumented)
-    NotOpen = 7,/* iModel is not open. */
-    Error_ECSql_PreparedFailed = 101,/*  generic error*/
+    Error_ECSql_PreparedFailed = 101,/* iModel is not open. */
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
+    Error_ECSql_RowToJsonFailed = 103,/*  generic error*/
     // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
+    Error_ECSql_StepFailed = 102,/*  ecsql prepared failed*/
+    // (undocumented)
+    NotOpen = 7,/*  ecsql step failed*/
     // (undocumented)
     Partial = 3,/*  ecsql failed to serialized row to json.*/
     // (undocumented)
