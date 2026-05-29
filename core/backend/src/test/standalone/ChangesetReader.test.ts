@@ -620,7 +620,7 @@ describe("ChangesetReader insert-full", () => {
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
     assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(modelNew!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelNew!.$meta.changeFetchedPropNames.sort(), ["id", "lastMod", "geometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { useJsName: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
 
@@ -635,7 +635,7 @@ describe("ChangesetReader insert-full", () => {
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
     assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["id", "lastMod", "geometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { useJsName: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
 
@@ -684,13 +684,13 @@ describe("ChangesetReader insert-full", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.changeFetchedPropNames.sort(), [
-      'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id', 'CodeScope.Id',
-      'CodeSpec.Id', 'CodeValue', 'DblProp', 'DtProp', 'ECClassId',
-      'ECInstanceId', 'FederationGuid', 'GeometryStream', 'IntArrProp', 'IntProp',
-      'JsonProperties', 'LastMod', 'LongProp', 'Model.Id', 'Origin', 'Parent', 'Pt2dProp',
-      'Pt3dProp', 'RelatedElem', 'Rotation', 'StrArrProp', 'StrProp', 'StructArrProp', 'StructProp.Label',
-      'StructProp.Pt2d', 'StructProp.Pt3d', 'StructProp.X', 'StructProp.Y',
-      'StructProp.Z', 'TypeDefinition', 'UserLabel'
+      'bBoxHigh', 'bBoxLow', 'binProp', 'boolProp', 'category.id', 'codeScope.id',
+      'codeSpec.id', 'codeValue', 'dblProp', 'dtProp', 'className',
+      'id', 'federationGuid', 'geometryStream', 'intArrProp', 'intProp',
+      'jsonProperties', 'lastMod', 'longProp', 'model.id', 'origin', 'parent', 'pt2dProp',
+      'pt3dProp', 'relatedElem', 'rotation', 'strArrProp', 'strProp', 'structArrProp', 'structProp.label',
+      'structProp.pt2d', 'structProp.pt3d', 'structProp.x', 'structProp.y',
+      'structProp.z', 'typeDefinition', 'userLabel'
     ].sort());
     assert.deepEqual(elem!.$meta.rowOptions, { useJsName: true });
     assert.equal(elem!.$meta.isIndirectChange, false);
@@ -908,7 +908,7 @@ describe("ChangesetReader insert-full", () => {
     assert.equal(modelNew!.$meta.op, "Updated");
     assert.equal(modelNew!.$meta.stage, "New");
     assert.equal(modelNew!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(modelNew!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelNew!.$meta.changeFetchedPropNames.sort(), ["id", "lastMod", "geometryGuid"].sort());
     assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
     assert.equal(modelNew!.$meta.isIndirectChange, true);
 
@@ -923,7 +923,7 @@ describe("ChangesetReader insert-full", () => {
     assert.equal(modelOld!.$meta.op, "Updated");
     assert.equal(modelOld!.$meta.stage, "Old");
     assert.equal(modelOld!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod", "GeometryGuid"].sort());
+    assert.deepEqual(modelOld!.$meta.changeFetchedPropNames.sort(), ["id", "lastMod", "geometryGuid"].sort());
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
 
@@ -971,15 +971,15 @@ describe("ChangesetReader insert-full", () => {
     assert.equal(elem!.$meta.stage, "New");
     assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.changeFetchedPropNames.sort(), [
-      'BBoxHigh', 'BBoxLow', 'BinProp', 'BoolProp', 'Category.Id',
-      'CodeScope.Id', 'CodeSpec.Id',
-      'CodeValue', 'DblProp', 'DtProp',
-      'ECClassId', 'ECInstanceId', 'FederationGuid',
-      'GeometryStream', 'IntArrProp', 'IntProp',
-      'JsonProperties', 'LastMod', 'LongProp',
-      'Model.Id', 'Origin', 'Parent', 'Pt2dProp', 'Pt3dProp', 'RelatedElem', 'Rotation', 'StrArrProp',
-      'StrProp', 'StructArrProp', 'StructProp.Label', 'StructProp.Pt2d', 'StructProp.Pt3d',
-      'StructProp.X', 'StructProp.Y', 'StructProp.Z', 'TypeDefinition', 'UserLabel'
+      'bBoxHigh', 'bBoxLow', 'binProp', 'boolProp', 'category.id',
+      'codeScope.id', 'codeSpec.id',
+      'codeValue', 'dblProp', 'dtProp',
+      'className', 'id', 'federationGuid',
+      'geometryStream', 'intArrProp', 'intProp',
+      'jsonProperties', 'lastMod', 'longProp',
+      'model.id', 'origin', 'parent', 'pt2dProp', 'pt3dProp', 'relatedElem', 'rotation', 'strArrProp',
+      'strProp', 'structArrProp', 'structProp.label', 'structProp.pt2d', 'structProp.pt3d',
+      'structProp.x', 'structProp.y', 'structProp.z', 'typeDefinition', 'userLabel'
     ].sort());
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
     assert.equal(elem!.$meta.isIndirectChange, false);
@@ -1590,6 +1590,16 @@ describe("ChangesetReader insert-partial", () => {
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { useJsName: true });
+    assert.deepEqual(elem!.$meta.changeFetchedPropNames.sort(), [
+      'id', 'className', 'model.id', 'lastMod', 'codeSpec.id',
+      'codeScope.id', 'codeValue', 'userLabel', 'parent', 'federationGuid',
+      'jsonProperties', 'category.id', 'origin', 'rotation', 'bBoxLow', 'bBoxHigh',
+      'geometryStream', 'typeDefinition', 'strProp', 'intProp', 'longProp',
+      'dblProp', 'boolProp', 'dtProp', 'binProp', 'pt2dProp', 'pt3dProp',
+      'structProp.x', 'structProp.y', 'structProp.z', 'structProp.label',
+      'structProp.pt2d', 'structProp.pt3d', 'intArrProp', 'strArrProp',
+      'structArrProp', 'relatedElem'
+    ].sort());
   });
 
   it("txn2 insert-partial | rowOptions: abbreviateBlobs", () => {
@@ -1651,6 +1661,16 @@ describe("ChangesetReader insert-partial", () => {
     assert.equal(elem!.$meta.op, "Inserted");
     assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
+    assert.deepEqual(elem!.$meta.changeFetchedPropNames.sort(), [
+      'id', 'className', 'model.id', 'lastMod', 'codeSpec.id',
+      'codeScope.id', 'codeValue', 'userLabel', 'parent', 'federationGuid',
+      'jsonProperties', 'category.id', 'origin', 'rotation', 'bBoxLow', 'bBoxHigh',
+      'geometryStream', 'typeDefinition', 'strProp', 'intProp', 'longProp',
+      'dblProp', 'boolProp', 'dtProp', 'binProp', 'pt2dProp', 'pt3dProp',
+      'structProp.x', 'structProp.y', 'structProp.z', 'structProp.label',
+      'structProp.pt2d', 'structProp.pt3d', 'intArrProp', 'strArrProp',
+      'structArrProp', 'relatedElem'
+    ].sort());
   });
   it("should throw error if tried to fetch changeset metadata values before stepping", () => {
     using reader = ChangesetReader.openTxn({ db: rwIModel, txnId });
@@ -2139,11 +2159,11 @@ describe("ChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "binProp", "boolProp", "className",
       "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
       "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
+      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
+      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
+      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
+      "structProp.y", "structProp.z"].sort());
 
     const elemOld = instances.find((i) => i.id === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
@@ -2157,11 +2177,11 @@ describe("ChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(elemOld!).sort(), ["$meta", "binProp", "boolProp", "className",
       "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
       "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
+      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
+      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
+      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
+      "structProp.y", "structProp.z"].sort());
   });
 
   it("txn3 update-full | rowOptions: abbreviateBlobs", () => {
@@ -2239,11 +2259,11 @@ describe("ChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "binProp", "boolProp", "className",
       "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
       "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
+      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
+      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
+      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
+      "structProp.y", "structProp.z"].sort());
 
     const elemOld = instances.find((i) => i.id === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
@@ -2256,11 +2276,11 @@ describe("ChangesetReader update-full", () => {
     assert.deepEqual(Object.keys(elemOld!).sort(), ["$meta", "binProp", "boolProp", "className",
       "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
       "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
+      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
+      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
+      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
+      "structProp.y", "structProp.z"].sort());
   });
 
   it("txn3 update-full | rowOptions: classIdsToClassNames", () => {
@@ -2687,6 +2707,11 @@ describe("ChangesetReader delete-partial", () => {
     assert.deepEqual(Object.keys(elem!).sort(), [
       "id", "className", "model", "lastMod", "codeSpec", "codeScope", "federationGuid", "$meta", "category",
     ].sort());
+    assert.deepEqual(elem!.$meta.changeFetchedPropNames.sort(), ["bBoxHigh", "bBoxLow", "binProp", "boolProp",
+      "category.id", "codeScope.id", "codeSpec.id", "codeValue", "dblProp", "dtProp", "className", "id", "federationGuid", "geometryStream",
+      "intArrProp", "intProp", "jsonProperties", "lastMod", "longProp", "model.id", "origin", "parent", "pt2dProp", "pt3dProp", "relatedElem", "rotation", "strArrProp", "strProp",
+      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x", "structProp.y", "structProp.z", "typeDefinition", "userLabel"
+    ].sort());
     assert.equal(elem!.$meta.op, "Deleted");
     assert.equal(elem!.$meta.stage, "Old");
     assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
@@ -2749,6 +2774,11 @@ describe("ChangesetReader delete-partial", () => {
     assert.isUndefined(elem!.strProp);
     assert.deepEqual(Object.keys(elem!).sort(), [
       "id", "className", "model", "lastMod", "codeSpec", "codeScope", "federationGuid", "$meta", "category",
+    ].sort());
+    assert.deepEqual(elem!.$meta.changeFetchedPropNames.sort(), ["bBoxHigh", "bBoxLow", "binProp", "boolProp",
+      "category.id", "codeScope.id", "codeSpec.id", "codeValue", "dblProp", "dtProp", "className", "id", "federationGuid", "geometryStream",
+      "intArrProp", "intProp", "jsonProperties", "lastMod", "longProp", "model.id", "origin", "parent", "pt2dProp", "pt3dProp", "relatedElem", "rotation", "strArrProp", "strProp",
+      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x", "structProp.y", "structProp.z", "typeDefinition", "userLabel"
     ].sort());
     assert.equal(elem!.$meta.op, "Deleted");
     assert.equal(elem!.$meta.stage, "Old");
@@ -4337,20 +4367,6 @@ describe("ChangesetReader: invalid inputs", () => {
     expect(() =>
       ChangesetReader.openFile({ db: iModel, fileName: KnownTestLocations.outputDir }),
     ).to.throw();
-  });
-
-  it("openFile: path points to a plain text file (not .changeset) throws", () => {
-    const txtFile = path.join(KnownTestLocations.outputDir, "not_a_changeset.txt");
-    if (fs.existsSync(txtFile))
-      fs.unlinkSync(txtFile);
-    // Write a small non-changeset file and expect the reader to reject it.
-    fs.writeFileSync(txtFile, "this is not a changeset");
-
-    using reader = ChangesetReader.openFile({ db: iModel, fileName: txtFile });
-    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
-    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
-    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
-    assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
   });
 
   // --- openGroup ---

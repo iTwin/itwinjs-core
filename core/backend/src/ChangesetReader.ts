@@ -135,6 +135,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     reader._propFilter = propFilter;
     try {
       reader._nativeReader.openFile(args.db[_nativeDb], args.fileName, args.invert ?? false, reader._propFilter);
+      if (reader._rowOptions?.useJsName) reader._nativeReader.setUseJsNamesForChangeFetchedPropertyNames(true);
     }
     catch (e) {
       reader.handleCloseErrorWhileOpening(e);
@@ -166,6 +167,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     reader._propFilter = propFilter;
     try {
       reader._nativeReader.openGroup(args.db[_nativeDb], args.changesetFiles, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
+      if (reader._rowOptions?.useJsName) reader._nativeReader.setUseJsNamesForChangeFetchedPropertyNames(true);
     }
     catch (e) {
       reader.handleCloseErrorWhileOpening(e);
@@ -197,6 +199,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     reader._propFilter = propFilter;
     try {
       reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
+      if (reader._rowOptions?.useJsName) reader._nativeReader.setUseJsNamesForChangeFetchedPropertyNames(true);
     } catch (e) {
       reader.handleCloseErrorWhileOpening(e);
       throw e;
@@ -225,6 +228,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     reader._propFilter = propFilter;
     try {
       reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
+      if (reader._rowOptions?.useJsName) reader._nativeReader.setUseJsNamesForChangeFetchedPropertyNames(true);
     } catch (e) {
       reader.handleCloseErrorWhileOpening(e);
       throw e;
@@ -255,6 +259,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     reader._propFilter = propFilter;
     try {
       reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false, reader._propFilter, args.spillThresholdInBytes ?? this.defaultSpillThresholdInBytes);
+      if (reader._rowOptions?.useJsName) reader._nativeReader.setUseJsNamesForChangeFetchedPropertyNames(true);
     } catch (e) {
       reader.handleCloseErrorWhileOpening(e);
       throw e;
