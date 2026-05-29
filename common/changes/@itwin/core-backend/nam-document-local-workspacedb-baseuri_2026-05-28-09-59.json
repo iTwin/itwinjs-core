@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "",
+      "comment": "Document that an empty workspace baseUri uses a local WorkspaceDb.",
       "type": "none"
     }
   ],
