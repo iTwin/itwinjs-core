@@ -1938,7 +1938,7 @@ describe("ChangesetReader update", () => {
     assert.equal(elemOld!.$meta.stage, "Old");
     assert.deepEqual(elemOld!.$meta.tables.sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
     assert.equal(elemOld!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
       "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod", "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label", "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z", "StructProp.X",
       "StructProp.Y", "StructProp.Z", "BinProp"
     ].sort());
