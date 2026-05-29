@@ -11,7 +11,7 @@ import {
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, DbResponseKind, DbResponseStatus, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
@@ -262,6 +262,9 @@ export abstract class IModelConnection extends IModel {
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
+        if (!this.isOpen) {
+          return { status: DbResponseStatus.Done, data: [], meta: [], rowCount: 0, stats: { cpuTime: 0, totalTime: 0, memUsed: 0, prepareTime: 0, timeLimit: 0, memLimit: 0 }, kind: DbResponseKind.ECSql };
+        }
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
