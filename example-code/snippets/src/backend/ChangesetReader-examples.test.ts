@@ -284,7 +284,7 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("rowOption useJsName and changeFetchedPropNames uses original EC names", () => {
+  it("rowOption useJsName and changeFetchedPropNames both use JS names", () => {
     // __PUBLISH_EXTRACT_START__ ChangesetReader.UseJsNameAndChangeFetchedPropNames
     using reader = ChangesetReader.openFile({
       db,
@@ -299,12 +299,11 @@ describe("ChangesetReader Examples", () => {
       expect(instance.id).to.exist;           // ECInstanceId → id
       expect(instance.className).to.exist;    // ECClassId → className (resolved)
 
-      // changeFetchedPropNames always stores the original EC schema names,
-      // regardless of useJsName. Always query it with the schema-level name:
+      // changeFetchedPropNames respects the useJsName flag — names are camelCase when useJsName: true
       const changed = instance.$meta.changeFetchedPropNames;
-      if (changed.includes("Tags"))       // ✅ original EC name — correct
+      if (changed.includes("tags"))       // ✅ camelCase JS name — correct when useJsName: true
         expect(instance.tags).to.exist;
-      // changed.includes("tags")         // ❌ never true — JS name is wrong here
+      // changed.includes("Tags")         // ❌ original EC name — wrong when useJsName: true
     }
     // __PUBLISH_EXTRACT_END__
   });
