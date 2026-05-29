@@ -299,7 +299,7 @@ describe("ChangesetReader Examples", () => {
       expect(instance.id).to.exist;           // ECInstanceId → id
       expect(instance.className).to.exist;    // ECClassId → className (resolved)
 
-      // changeFetchedPropNames respects the useJsName flag — names are camelCase when useJsName: true
+      // changeFetchedPropNames respects the useJsName flag — names are in accordance with the JS names of the properties when useJsName: true
       const changed = instance.$meta.changeFetchedPropNames;
       if (changed.includes("tags"))       // ✅ camelCase JS name — correct when useJsName: true
         expect(instance.tags).to.exist;

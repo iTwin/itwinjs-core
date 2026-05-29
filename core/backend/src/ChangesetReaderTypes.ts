@@ -82,7 +82,7 @@ export interface ChangeMeta {
   For struct properties the property names are always returned in the "StructProp.MemberName" format.
   So if only X changed for a point2d property named "Myp2d" inide a struct "CustomStruct", the returned property name will be "CustomStruct.Myp2d.X".
   Similaly if both X and Y changed for the same point2d property, the returned property name will be "CustomStruct.Myp2d".
-  When [RowFormatOptions.useJsName] is `true`, the names in this array are also in camelCase (JS names), consistent with the property keys on the instance object.
+  When [RowFormatOptions.useJsName] is `true`, the names in this array are also in acccordance with the JS names of the properties, consistent with the property keys on the instance object.
   When `useJsName` is not set or `false`, the original EC schema property names are used. */
   changeFetchedPropNames: string[];
   /** Row adaptor options that were active when this change row was captured. */

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "changeFetchedPropNames in $meta field in the instances of ChangesetReader api now respects the useJsName flag set to ChangesetReader api at creation time and returns names accordingly",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
