@@ -11,7 +11,6 @@ import { _nativeDb, BriefcaseDb, ChannelControl } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { ChangesetReader } from "../../ChangesetReader";
 import * as path from "node:path";
-import * as fs from "fs";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChangeUnifierCache, PartialChangeUnifier } from "../../PartialChangeUnifier";
@@ -1697,22 +1696,21 @@ describe("ChangesetReader insert-partial", () => {
 
 });
 
-describe("ChangesetReader update-full", () => {
+describe("ChangesetReader update", () => {
   let rwIModel: BriefcaseDb;
   let fullElementId: Id64String;
-  let partialElementId: Id64String;
   let drawingModelId: Id64String;
   let drawingCategoryId: Id64String;
   let txnId: string;
   let txn: EditTxn;
 
   before(async () => {
-    HubMock.startup("ECChangesetUpdateFull", KnownTestLocations.outputDir);
+    HubMock.startup("ECChangesetInsertFull", KnownTestLocations.outputDir);
     const adminToken = "super manager token";
     const iTwinId = HubMock.iTwinId;
-    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "updateFull", description: "updateFull", accessToken: adminToken });
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertFull", description: "insertFull", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    txn = startTestTxn(rwIModel, "ChangesetReader update-full setup");
+    txn = startTestTxn(rwIModel, "ChangesetReader insert-full setup");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -1767,9 +1765,9 @@ describe("ChangesetReader update-full", () => {
 
     txn.saveChanges("setup");
 
-    // Wait so that LastMod on bis_Model gets a distinct timestamp before the full insert txn
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the insert txn
     await new Promise((resolve) => setTimeout(resolve, 300));
-    // Txn 2: insert FULL element (needed as update target)
+    // Txn 2: insert FULL element  every EC primitive type populated
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     const geom: GeometryStreamProps = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -1789,7 +1787,7 @@ describe("ChangesetReader update-full", () => {
       DblProp: 3.14159265358979,
       BoolProp: true,
       DtProp: "2024-01-15T12:00:00.000",
-      BinProp: new Uint8Array([1, 2, 3, 5]),
+      BinProp: new Uint8Array([1, 2, 3, 4]),
       Pt2dProp: { x: 1.5, y: 2.5 },
       Pt3dProp: { x: 3.0, y: 4.0, z: 5.0 },
       StructProp: {
@@ -1806,52 +1804,33 @@ describe("ChangesetReader update-full", () => {
       RelatedElem: { id: drawingCategoryId, relClassName: "TestDomain:Test2dUsesElement" },
     } as any);
     txn.saveChanges("insert full element");
-    txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
-
-    // Wait so that LastMod on bis_Model gets a distinct timestamp before the partial insert txn
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    // Txn 3: insert PARTIAL element (needed as RelatedElem target in the update)
-    partialElementId = txn.insertElement({
-      classFullName: "TestDomain:Test2dElement",
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-      // StrProp, IntProp, LongProp, DblProp, BoolProp, DtProp, BinProp intentionally absent
-    } as any);
-    txn.saveChanges("insert partial element");
-    txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
 
     // Wait so that LastMod on bis_Model gets a distinct timestamp before the update txn
     await new Promise((resolve) => setTimeout(resolve, 300));
     // Txn 4: update FULL element  this is the txn under test
     // Txn 3: update FULL element — change several property types
+    const props = rwIModel.elements.getElementProps<any>(fullElementId);
     await rwIModel.locks.acquireLocks({ exclusive: fullElementId });
     txn.updateElement({
-      ...rwIModel.elements.getElementProps(fullElementId),
-      StrProp: "updated",
-      IntProp: 99,
-      LongProp: 0,
+      ...props,
       DblProp: 2.71828182845904,
       BoolProp: false,
       DtProp: "2025-06-01T08:30:00.000",
       BinProp: new Uint8Array([10, 20, 30, 40, 50]),
-      Pt2dProp: { x: 9.0, y: 8.0 },
-      Pt3dProp: { x: 7.0, y: 6.0, z: 5.0 },
+      Pt2dProp: { ...props.pt2dProp, x: 9.0 },
+      Pt3dProp: { ...props.pt3dProp, x: 7.0, z: 5.0 },
       StructProp: {
         X: 9.0, Y: 8.0, Z: 7.0, Label: "updated-origin",
-        Pt2d: { x: 9.5, y: 8.5 },
-        Pt3d: { x: 9.0, y: 8.0, z: 7.0 },
+        Pt2d: { ...props.structProp.pt2d, y: 8.5 },
+        Pt3d: { ...props.structProp.pt3d, y: 8.0, z: 7.0 },
       },
       IntArrProp: [100, 200],
-      StrArrProp: ["delta", "epsilon"],
+      StrArrProp: ["alpha", "beta", "gamma", "epsilon"],
       StructArrProp: [
         { X: 5.0, Y: 6.0, Z: 7.0, Label: "c", Pt2d: { x: 5.0, y: 5.0 }, Pt3d: { x: 5.0, y: 5.0, z: 5.0 } },
-        { X: 7.0, Y: 8.0, Z: 9.0, Label: "d", Pt2d: { x: 7.0, y: 7.0 }, Pt3d: { x: 7.0, y: 7.0, z: 7.0 } },
-        { X: 9.0, Y: 10.0, Z: 11.0, Label: "e", Pt2d: { x: 9.0, y: 9.0 }, Pt3d: { x: 9.0, y: 9.0, z: 9.0 } },
       ],
-      RelatedElem: { id: partialElementId, relClassName: "TestDomain:Test2dUsesElement" },
     });
-    txn.saveChanges("update full element");
+    txn.saveChanges("update element");
     txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
   });
 
@@ -1861,7 +1840,7 @@ describe("ChangesetReader update-full", () => {
     HubMock.shutdown();
   });
 
-  it("txn3 update-full | All_Properties | default rowOptions", () => {
+  it("update-partial | All_Properties | default rowOptions", () => {
     const instances = readTxn(rwIModel, txnId, undefined, undefined, undefined, false);
     assert.equal(instances.length, 4);
 
@@ -1896,32 +1875,24 @@ describe("ChangesetReader update-full", () => {
     const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal(elemNew!.ECInstanceId, fullElementId);
-    assert.equal(elemNew!.ECClassId, "0x176");
-    assert.equal(elemNew!.StrProp, "updated");
-    assert.equal(elemNew!.IntProp, 99);
-    assert.equal(elemNew!.LongProp, 0);
+    assert.equal(rwIModel.getClassNameFromId(elemNew!.ECClassId), "TestDomain:Test2dElement");;
     assert.include(String(elemNew!.BinProp), "\"bytes\"");
     assert.closeTo(elemNew!.DblProp as number, 2.71828182845904, 1e-10);
     assert.equal(elemNew!.BoolProp, false);
     assert.equal(elemNew!.DtProp, "2025-06-01T08:30:00.000");
-    assert.deepEqual(elemNew!.Pt2dProp, { X: 9, Y: 8 });
-    assert.deepEqual(elemNew!.Pt3dProp, { X: 7, Y: 6, Z: 5 });
-    assert.deepEqual(elemNew!.StructProp, { X: 9, Y: 8, Z: 7, Label: "updated-origin", Pt2d: { X: 9.5, Y: 8.5 }, Pt3d: { X: 9, Y: 8, Z: 7 } });
+    assert.deepEqual(elemNew!.Pt2dProp, { X: 9, Y: 2.5 });
+    assert.deepEqual(elemNew!.Pt3dProp, { X: 7, Y: 4, Z: 5 });
+    assert.deepEqual(elemNew!.StructProp, { X: 9, Y: 8, Z: 7, Label: "updated-origin", Pt2d: { X: 0.5, Y: 8.5 }, Pt3d: { X: 1, Y: 8, Z: 7 } });
     assert.deepEqual(elemNew!.IntArrProp, [100, 200]);
-    assert.deepEqual(elemNew!.StrArrProp, ["delta", "epsilon"]);
+    assert.deepEqual(elemNew!.StrArrProp, ["alpha", "beta", "gamma", "epsilon"]);
     assert.deepEqual(elemNew!.StructArrProp, [
-      { X: 5, Y: 6, Z: 7, Label: "c", Pt2d: { X: 5, Y: 5 }, Pt3d: { X: 5, Y: 5, Z: 5 } },
-      { X: 7, Y: 8, Z: 9, Label: "d", Pt2d: { X: 7, Y: 7 }, Pt3d: { X: 7, Y: 7, Z: 7 } },
-      { X: 9, Y: 10, Z: 11, Label: "e", Pt2d: { X: 9, Y: 9 }, Pt3d: { X: 9, Y: 9, Z: 9 } },
+      { X: 5, Y: 6, Z: 7, Label: "c", Pt2d: { X: 5, Y: 5 }, Pt3d: { X: 5, Y: 5, Z: 5 } }
     ]);
-    assert.equal(elemNew!.RelatedElem.Id, partialElementId);
-    assert.equal(rwIModel.getClassNameFromId(elemNew!.RelatedElem.RelECClassId), "TestDomain:Test2dUsesElement");
     assert.isString(elemNew!.LastMod);
     // Object.keys — update row: custom-prop columns first, then $meta and LastMod at the end
     assert.deepEqual(Object.keys(elemNew!).sort(), [
-      "ECInstanceId", "ECClassId",
-      "StrProp", "IntProp", "LongProp", "DblProp", "BoolProp", "DtProp",
-      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp", "RelatedElem",
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
       "$meta", "LastMod", "BinProp"
     ].sort());
     assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
@@ -1933,9 +1904,7 @@ describe("ChangesetReader update-full", () => {
     assert.equal(elemNew!.$meta.instanceKey.split(`-`).length, 2);
     assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
-      "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp",
-      "StrProp", "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
+      "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod", "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label", "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z", "StructProp.X",
       "StructProp.Y", "StructProp.Z", "BinProp"
     ].sort());
     assert.equal(elemNew!.$meta.isIndirectChange, false);
@@ -1944,10 +1913,7 @@ describe("ChangesetReader update-full", () => {
     const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
     assert.equal(elemOld!.ECInstanceId, fullElementId);
-    assert.equal(elemOld!.ECClassId, "0x176");
-    assert.equal(elemOld!.StrProp, "hello");
-    assert.equal(elemOld!.IntProp, 42);
-    assert.equal(elemOld!.LongProp, 9007199254740991);
+    assert.equal(rwIModel.getClassNameFromId(elemOld!.ECClassId), "TestDomain:Test2dElement");
     assert.closeTo(elemOld!.DblProp as number, 3.14159265358979, 1e-10);
     assert.equal(elemOld!.BoolProp, true);
     assert.include(String(elemOld!.BinProp), "\"bytes\"");
@@ -1961,13 +1927,10 @@ describe("ChangesetReader update-full", () => {
       { X: 0, Y: 1, Z: 2, Label: "a", Pt2d: { X: 0, Y: 0 }, Pt3d: { X: 0, Y: 0, Z: 0 } },
       { X: 3, Y: 4, Z: 5, Label: "b", Pt2d: { X: 1, Y: 1 }, Pt3d: { X: 1, Y: 1, Z: 1 } },
     ]);
-    assert.equal(elemOld!.RelatedElem.Id, drawingCategoryId);
-    assert.equal(rwIModel.getClassNameFromId(elemOld!.RelatedElem.RelECClassId), "TestDomain:Test2dUsesElement");
     assert.isString(elemOld!.LastMod);
     assert.deepEqual(Object.keys(elemOld!).sort(), [
-      "ECInstanceId", "ECClassId",
-      "StrProp", "IntProp", "LongProp", "DblProp", "BoolProp", "DtProp",
-      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp", "RelatedElem",
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
       "$meta", "LastMod", "BinProp"
     ].sort());
     assert.deepEqual(Object.keys(elemOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
@@ -1975,16 +1938,14 @@ describe("ChangesetReader update-full", () => {
     assert.equal(elemOld!.$meta.stage, "Old");
     assert.deepEqual(elemOld!.$meta.tables.sort(), ["bis_GeometricElement2d", "bis_Element"].sort());
     assert.equal(elemOld!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
-      "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp",
-      "StrProp", "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+      "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod", "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label", "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z", "StructProp.X",
       "StructProp.Y", "StructProp.Z", "BinProp"
     ].sort());
     assert.equal(elemOld!.$meta.isIndirectChange, false);
   });
 
-  it("txn3 update-full | Bis_Element_Properties", () => {
+  it("update-partial | Bis_Element_Properties", () => {
     const instances = readTxn(rwIModel, txnId, PropertyFilter.BisCoreElement, { classIdsToClassNames: true }, undefined, false);
     assert.equal(instances.length, 4);
 
@@ -2018,13 +1979,16 @@ describe("ChangesetReader update-full", () => {
     assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(modelOld!.$meta.isIndirectChange, true);
 
-    // --- instances[2]: Test2dElement Updated New (no custom props) ---
+    // --- instances[2]: Test2dElement Updated New (only LastMod from BisCore; domain props filtered out) ---
     const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal(elemNew!.ECInstanceId, fullElementId);
     assert.equal(elemNew!.ECClassId, "TestDomain.Test2dElement");
-    assert.isUndefined(elemNew!.StrProp);
-    assert.isUndefined(elemNew!.IntProp);
+    assert.isUndefined(elemNew!.DblProp);
+    assert.isUndefined(elemNew!.BoolProp);
+    assert.isUndefined(elemNew!.Pt2dProp);
+    assert.isUndefined(elemNew!.Pt3dProp);
+    assert.isUndefined(elemNew!.StructProp);
     assert.isUndefined(elemNew!.Model);
     assert.isUndefined(elemNew!.Category);
     expect(elemNew!.LastMod).to.exist;
@@ -2037,7 +2001,6 @@ describe("ChangesetReader update-full", () => {
     assert.isString(elemNew!.$meta.instanceKey);
     assert.equal(elemNew!.$meta.instanceKey.split(`-`).length, 2);
     assert.equal(elemNew!.$meta.propFilter, PropertyFilter.BisCoreElement);
-
     assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["ECInstanceId", "LastMod"].sort());
     assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true });
     assert.equal(elemNew!.$meta.isIndirectChange, false);
@@ -2047,9 +2010,10 @@ describe("ChangesetReader update-full", () => {
     expect(elemOld).to.exist;
     assert.equal(elemOld!.ECInstanceId, fullElementId);
     assert.equal(elemOld!.ECClassId, "TestDomain.Test2dElement");
-    assert.isUndefined(elemOld!.StrProp);
-    assert.isUndefined(elemOld!.IntProp);
+    assert.isUndefined(elemOld!.DblProp);
+    assert.isUndefined(elemOld!.BoolProp);
     assert.isUndefined(elemOld!.Model);
+    expect(elemOld!.LastMod).to.exist;
     assert.deepEqual(Object.keys(elemOld!).sort(), ["ECInstanceId", "ECClassId", "$meta", "LastMod"].sort());
     assert.deepEqual(Object.keys(elemOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "rowOptions", "isIndirectChange"].sort());
     assert.equal(elemOld!.$meta.op, "Updated");
@@ -2061,7 +2025,7 @@ describe("ChangesetReader update-full", () => {
     assert.equal(elemOld!.$meta.isIndirectChange, false);
   });
 
-  it("txn3 update-full | Instance_Key", () => {
+  it("update-partial | Instance_Key", () => {
     const instances = readTxn(rwIModel, txnId, PropertyFilter.InstanceKey, undefined, undefined, false);
     assert.equal(instances.length, 4);
 
@@ -2095,8 +2059,8 @@ describe("ChangesetReader update-full", () => {
     const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal(elemNew!.ECInstanceId, fullElementId);
-    assert.equal(elemNew!.ECClassId, "0x176");
-    assert.isUndefined(elemNew!.StrProp);
+    assert.equal(rwIModel.getClassNameFromId(elemNew!.ECClassId), "TestDomain:Test2dElement");
+    assert.isUndefined(elemNew!.DblProp);
     assert.isUndefined(elemNew!.Model);
     assert.isUndefined(elemNew!.LastMod);
     assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
@@ -2115,8 +2079,8 @@ describe("ChangesetReader update-full", () => {
     const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
     assert.equal(elemOld!.ECInstanceId, fullElementId);
-    assert.equal(elemOld!.ECClassId, "0x176");
-    assert.isUndefined(elemOld!.StrProp);
+    assert.equal(rwIModel.getClassNameFromId(elemOld!.ECClassId), "TestDomain:Test2dElement");
+    assert.isUndefined(elemOld!.DblProp);
     assert.isUndefined(elemOld!.Model);
     assert.deepEqual(Object.keys(elemOld!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
     assert.deepEqual(Object.keys(elemOld!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "instanceKey", "propFilter", "changeFetchedPropNames", "isIndirectChange"].sort());
@@ -2128,7 +2092,7 @@ describe("ChangesetReader update-full", () => {
     assert.equal(elemOld!.$meta.isIndirectChange, false);
   });
 
-  it("txn3 update-full | rowOptions: useJsName", () => {
+  it("update-partial | rowOptions: useJsName", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { useJsName: true }, undefined, false);
     assert.equal(instances.length, 4);
 
@@ -2143,48 +2107,131 @@ describe("ChangesetReader update-full", () => {
     assert.equal(modelOld!.className, "BisCore.DrawingModel");
     assert.deepEqual(modelOld!.$meta.rowOptions, { useJsName: true });
 
+    // --- Test2dElement Updated New (partial: only changed props present, camelCase keys) ---
     const elemNew = instances.find((i) => i.id === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal(elemNew!.className, "TestDomain.Test2dElement");
     assert.isUndefined(elemNew!.ECInstanceId);
-    assert.equal(elemNew!.strProp, "updated");
-    assert.equal(elemNew!.intProp, 99);
+    assert.isUndefined(elemNew!.strProp);
+    assert.isUndefined(elemNew!.intProp);
+    assert.isUndefined(elemNew!.relatedElem);
     assert.include(String(elemNew!.binProp), "\"bytes\"");
-    assert.deepEqual(elemNew!.pt2dProp, { x: 9, y: 8 });
-    assert.deepEqual(elemNew!.pt3dProp, { x: 7, y: 6, z: 5 });
-    assert.deepEqual(elemNew!.relatedElem, { id: partialElementId, relClassName: "TestDomain.Test2dUsesElement" });
+    assert.closeTo(elemNew!.dblProp as number, 2.71828182845904, 1e-10);
+    assert.equal(elemNew!.boolProp, false);
+    assert.equal(elemNew!.dtProp, "2025-06-01T08:30:00.000");
+    // Pt2dProp: only X changed; Y carries the original value
+    assert.deepEqual(elemNew!.pt2dProp, { x: 9, y: 2.5 });
+    // Pt3dProp: only X changed; Y and Z carry the original values
+    assert.deepEqual(elemNew!.pt3dProp, { x: 7, y: 4, z: 5 });
+    assert.deepEqual(elemNew!.structProp, { x: 9, y: 8, z: 7, label: "updated-origin", pt2d: { x: 0.5, y: 8.5 }, pt3d: { x: 1, y: 8, z: 7 } });
+    assert.deepEqual(elemNew!.intArrProp, [100, 200]);
+    assert.deepEqual(elemNew!.strArrProp, ["alpha", "beta", "gamma", "epsilon"]);
+    assert.deepEqual(elemNew!.structArrProp, [
+      { x: 5, y: 6, z: 7, label: "c", pt2d: { x: 5, y: 5 }, pt3d: { x: 5, y: 5, z: 5 } },
+    ]);
     assert.equal(elemNew!.$meta.op, "Updated");
     assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
     assert.deepEqual(elemNew!.$meta.rowOptions, { useJsName: true });
-    assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "binProp", "boolProp", "className",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
-      "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
-      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
-      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
-      "structProp.y", "structProp.z"].sort());
+    assert.deepEqual(Object.keys(elemNew!).sort(), [
+      "$meta", "binProp", "boolProp", "className", "dblProp", "dtProp", "id",
+      "intArrProp", "lastMod", "pt2dProp", "pt3dProp", "strArrProp", "structArrProp", "structProp",
+    ].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+      "binProp", "boolProp", "dblProp", "dtProp", "id", "intArrProp", "lastMod",
+      "pt2dProp.x", "pt3dProp.x", "strArrProp", "structArrProp", "structProp.label",
+      "structProp.pt2d.y", "structProp.pt3d.y", "structProp.pt3d.z",
+      "structProp.x", "structProp.y", "structProp.z",
+    ].sort());
 
+    // --- Test2dElement Updated Old ---
     const elemOld = instances.find((i) => i.id === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
     assert.equal(elemOld!.className, "TestDomain.Test2dElement");
     assert.isUndefined(elemOld!.ECInstanceId);
-    assert.equal(elemOld!.strProp, "hello");
+    assert.isUndefined(elemOld!.strProp);
+    assert.isUndefined(elemOld!.relatedElem);
     assert.include(String(elemOld!.binProp), "\"bytes\"");
-    assert.equal(elemOld!.intProp, 42);
-    assert.deepEqual(elemOld!.relatedElem, { id: drawingCategoryId, relClassName: "TestDomain.Test2dUsesElement" });
+    assert.closeTo(elemOld!.dblProp as number, 3.14159265358979, 1e-10);
+    assert.equal(elemOld!.boolProp, true);
+    assert.equal(elemOld!.dtProp, "2024-01-15T12:00:00.000");
+    assert.deepEqual(elemOld!.pt2dProp, { x: 1.5, y: 2.5 });
+    assert.deepEqual(elemOld!.pt3dProp, { x: 3, y: 4, z: 5 });
+    assert.deepEqual(elemOld!.structProp, { x: 1, y: 2, z: 3, label: "origin", pt2d: { x: 0.5, y: 0.5 }, pt3d: { x: 1, y: 2, z: 3 } });
+    assert.deepEqual(elemOld!.intArrProp, [10, 20, 30]);
+    assert.deepEqual(elemOld!.strArrProp, ["alpha", "beta", "gamma"]);
+    assert.deepEqual(elemOld!.structArrProp, [
+      { x: 0, y: 1, z: 2, label: "a", pt2d: { x: 0, y: 0 }, pt3d: { x: 0, y: 0, z: 0 } },
+      { x: 3, y: 4, z: 5, label: "b", pt2d: { x: 1, y: 1 }, pt3d: { x: 1, y: 1, z: 1 } },
+    ]);
     assert.deepEqual(elemOld!.$meta.rowOptions, { useJsName: true });
-    assert.deepEqual(Object.keys(elemOld!).sort(), ["$meta", "binProp", "boolProp", "className",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
-      "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
-      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
-      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
-      "structProp.y", "structProp.z"].sort());
+    assert.deepEqual(Object.keys(elemOld!).sort(), [
+      "$meta", "binProp", "boolProp", "className", "dblProp", "dtProp", "id",
+      "intArrProp", "lastMod", "pt2dProp", "pt3dProp", "strArrProp", "structArrProp", "structProp",
+    ].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
+      "binProp", "boolProp", "dblProp", "dtProp", "id", "intArrProp", "lastMod",
+      "pt2dProp.x", "pt3dProp.x", "strArrProp", "structArrProp", "structProp.label",
+      "structProp.pt2d.y", "structProp.pt3d.y", "structProp.pt3d.z",
+      "structProp.x", "structProp.y", "structProp.z",
+    ].sort());
   });
 
-  it("txn3 update-full | rowOptions: abbreviateBlobs", () => {
+  it("update-partial | rowOptions: abbreviateBlobs as false", () => {
+    const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: false }, undefined, false);
+    assert.equal(instances.length, 4);
+
+    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    expect(modelNew).to.exist;
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelNew!.ECClassId));
+    assert.deepEqual(modelNew!.$meta.rowOptions, { abbreviateBlobs: false });
+
+    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(modelOld).to.exist;
+    assert.equal("BisCore:DrawingModel", rwIModel.getClassNameFromId(modelOld!.ECClassId));
+    assert.deepEqual(modelOld!.$meta.rowOptions, { abbreviateBlobs: false });
+
+    const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
+    expect(elemNew).to.exist;
+    assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elemNew!.ECClassId));
+    assert.isUndefined(elemNew!.StrProp);
+    assert.isUndefined(elemNew!.RelatedElem);
+    // BinProp is a blob — should be abbreviated to { bytes: N }
+    assert.deepEqual(elemNew!.BinProp, new Uint8Array([10, 20, 30, 40, 50]));
+    assert.equal(elemNew!.$meta.op, "Updated");
+    assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
+    assert.deepEqual(Object.keys(elemNew!).sort(), [
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
+      "$meta", "LastMod", "BinProp",
+    ].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+      "BinProp", "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod",
+      "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label",
+      "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z",
+      "StructProp.X", "StructProp.Y", "StructProp.Z",
+    ].sort());
+
+    const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
+    expect(elemOld).to.exist;
+    assert.equal(rwIModel.getClassNameFromId(elemOld!.ECClassId), "TestDomain:Test2dElement");
+    assert.isUndefined(elemOld!.StrProp);
+    assert.isUndefined(elemOld!.RelatedElem);
+    assert.deepEqual(elemOld!.BinProp, new Uint8Array([1, 2, 3, 4]));
+    assert.deepEqual(elemOld!.$meta.rowOptions, { abbreviateBlobs: false });
+    assert.deepEqual(Object.keys(elemOld!).sort(), [
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
+      "$meta", "LastMod", "BinProp",
+    ].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
+      "BinProp", "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod",
+      "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label",
+      "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z",
+      "StructProp.X", "StructProp.Y", "StructProp.Z",
+    ].sort());
+  });
+
+  it("update-partial | rowOptions: abbreviateBlobs as true", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: true }, undefined, false);
     assert.equal(instances.length, 4);
 
@@ -2201,37 +2248,109 @@ describe("ChangesetReader update-full", () => {
     const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
     expect(elemNew).to.exist;
     assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elemNew!.ECClassId));
-    assert.equal(elemNew!.StrProp, "updated");
-    // BinProp is a blob  should be abbreviated to { bytes: N }
+    assert.isUndefined(elemNew!.StrProp);
+    assert.isUndefined(elemNew!.RelatedElem);
+    // BinProp is a blob — should be abbreviated to { bytes: N }
     assert.include(String(elemNew!.BinProp), "bytes");
     assert.equal(elemNew!.$meta.op, "Updated");
     assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: true });
-    assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "BinProp", "BoolProp",
-      "DblProp", "DtProp", "IntArrProp", "IntProp", "LastMod", "LongProp",
-      "Pt2dProp", "Pt3dProp", "RelatedElem", "StrArrProp", "StrProp", "StructArrProp", "StructProp", "ECClassId", "ECInstanceId"].sort());
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
+    assert.deepEqual(Object.keys(elemNew!).sort(), [
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
+      "$meta", "LastMod", "BinProp",
+    ].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+      "BinProp", "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod",
+      "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label",
+      "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z",
+      "StructProp.X", "StructProp.Y", "StructProp.Z",
+    ].sort());
 
     const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
-    assert.equal(elemOld!.ECClassId, "0x176");
-    assert.equal(elemOld!.StrProp, "hello");
+    assert.equal(rwIModel.getClassNameFromId(elemOld!.ECClassId), "TestDomain:Test2dElement");
+    assert.isUndefined(elemOld!.StrProp);
+    assert.isUndefined(elemOld!.RelatedElem);
     assert.include(String(elemOld!.BinProp), "bytes");
     assert.deepEqual(elemOld!.$meta.rowOptions, { abbreviateBlobs: true });
-    assert.deepEqual(Object.keys(elemOld!).sort(), ["$meta", "BinProp", "BoolProp",
-      "DblProp", "DtProp", "IntArrProp", "IntProp", "LastMod", "LongProp",
-      "Pt2dProp", "Pt3dProp", "RelatedElem", "StrArrProp", "StrProp", "StructArrProp", "StructProp", "ECClassId", "ECInstanceId"].sort());
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
+    assert.deepEqual(Object.keys(elemOld!).sort(), [
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
+      "$meta", "LastMod", "BinProp",
+    ].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
+      "BinProp", "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod",
+      "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label",
+      "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z",
+      "StructProp.X", "StructProp.Y", "StructProp.Z",
+    ].sort());
   });
 
-  it("txn3 update-full | rowOptions: classIdsToClassNames + useJsName", () => {
+  it("update-partial | rowOptions: classIdsToClassNames", () => {
+    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true }, undefined, false);
+    assert.equal(instances.length, 4);
+
+    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    expect(modelNew).to.exist;
+    assert.equal(modelNew!.ECClassId, "BisCore.DrawingModel");
+    assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
+
+    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(modelOld).to.exist;
+    assert.equal(modelOld!.ECClassId, "BisCore.DrawingModel");
+    assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
+
+    const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
+    expect(elemNew).to.exist;
+    assert.equal(elemNew!.ECClassId, "TestDomain.Test2dElement");
+    assert.isUndefined(elemNew!.StrProp);
+    assert.isUndefined(elemNew!.RelatedElem);
+    assert.include(String(elemNew!.BinProp), "\"bytes\"");
+    assert.closeTo(elemNew!.DblProp as number, 2.71828182845904, 1e-10);
+    assert.deepEqual(elemNew!.Pt2dProp, { X: 9, Y: 2.5 });
+    assert.deepEqual(elemNew!.Pt3dProp, { X: 7, Y: 4, Z: 5 });
+    assert.deepEqual(elemNew!.StructProp, { X: 9, Y: 8, Z: 7, Label: "updated-origin", Pt2d: { X: 0.5, Y: 8.5 }, Pt3d: { X: 1, Y: 8, Z: 7 } });
+    assert.equal(elemNew!.$meta.op, "Updated");
+    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
+    assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true });
+    assert.deepEqual(Object.keys(elemNew!).sort(), [
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
+      "$meta", "LastMod", "BinProp",
+    ].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+      "BinProp", "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod",
+      "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label",
+      "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z",
+      "StructProp.X", "StructProp.Y", "StructProp.Z",
+    ].sort());
+
+    const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
+    expect(elemOld).to.exist;
+    assert.equal(elemOld!.ECClassId, "TestDomain.Test2dElement");
+    assert.isUndefined(elemOld!.StrProp);
+    assert.isUndefined(elemOld!.RelatedElem);
+    assert.include(String(elemOld!.BinProp), "\"bytes\"");
+    assert.closeTo(elemOld!.DblProp as number, 3.14159265358979, 1e-10);
+    assert.deepEqual(elemOld!.Pt2dProp, { X: 1.5, Y: 2.5 });
+    assert.deepEqual(elemOld!.Pt3dProp, { X: 3, Y: 4, Z: 5 });
+    assert.deepEqual(elemOld!.StructProp, { X: 1, Y: 2, Z: 3, Label: "origin", Pt2d: { X: 0.5, Y: 0.5 }, Pt3d: { X: 1, Y: 2, Z: 3 } });
+    assert.equal(elemOld!.$meta.op, "Updated");
+    assert.deepEqual(elemOld!.$meta.rowOptions, { classIdsToClassNames: true });
+    assert.deepEqual(Object.keys(elemOld!).sort(), [
+      "ECInstanceId", "ECClassId", "DblProp", "BoolProp", "DtProp",
+      "Pt2dProp", "Pt3dProp", "StructProp", "IntArrProp", "StrArrProp", "StructArrProp",
+      "$meta", "LastMod", "BinProp",
+    ].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
+      "BinProp", "BoolProp", "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "LastMod",
+      "Pt2dProp.X", "Pt3dProp.X", "StrArrProp", "StructArrProp", "StructProp.Label",
+      "StructProp.Pt2d.Y", "StructProp.Pt3d.Y", "StructProp.Pt3d.Z",
+      "StructProp.X", "StructProp.Y", "StructProp.Z",
+    ].sort());
+  });
+
+  it("update-partial | rowOptions: classIdsToClassNames + useJsName", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true }, undefined, false);
     assert.equal(instances.length, 4);
 
@@ -2250,93 +2369,51 @@ describe("ChangesetReader update-full", () => {
     expect(elemNew).to.exist;
     assert.equal(elemNew!.className, "TestDomain.Test2dElement");
     assert.isUndefined(elemNew!.ECInstanceId);
-    assert.equal(elemNew!.strProp, "updated");
-    assert.equal(elemNew!.intProp, 99);
+    assert.isUndefined(elemNew!.strProp);
+    assert.isUndefined(elemNew!.relatedElem);
     assert.include(String(elemNew!.binProp), "\"bytes\"");
-    assert.deepEqual(elemNew!.relatedElem, { id: partialElementId, relClassName: "TestDomain.Test2dUsesElement" });
+    assert.closeTo(elemNew!.dblProp as number, 2.71828182845904, 1e-10);
+    assert.equal(elemNew!.boolProp, false);
+    assert.deepEqual(elemNew!.pt2dProp, { x: 9, y: 2.5 });
+    assert.deepEqual(elemNew!.pt3dProp, { x: 7, y: 4, z: 5 });
+    assert.deepEqual(elemNew!.structProp, { x: 9, y: 8, z: 7, label: "updated-origin", pt2d: { x: 0.5, y: 8.5 }, pt3d: { x: 1, y: 8, z: 7 } });
     assert.equal(elemNew!.$meta.op, "Updated");
     assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
-    assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "binProp", "boolProp", "className",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
-      "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
-      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
-      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
-      "structProp.y", "structProp.z"].sort());
+    assert.deepEqual(Object.keys(elemNew!).sort(), [
+      "$meta", "binProp", "boolProp", "className", "dblProp", "dtProp", "id",
+      "intArrProp", "lastMod", "pt2dProp", "pt3dProp", "strArrProp", "structArrProp", "structProp",
+    ].sort());
+    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), [
+      "binProp", "boolProp", "dblProp", "dtProp", "id", "intArrProp", "lastMod",
+      "pt2dProp.x", "pt3dProp.x", "strArrProp", "structArrProp", "structProp.label",
+      "structProp.pt2d.y", "structProp.pt3d.y", "structProp.pt3d.z",
+      "structProp.x", "structProp.y", "structProp.z",
+    ].sort());
 
     const elemOld = instances.find((i) => i.id === fullElementId && i.$meta.stage === "Old");
     expect(elemOld).to.exist;
     assert.equal(elemOld!.className, "TestDomain.Test2dElement");
     assert.isUndefined(elemOld!.ECInstanceId);
-    assert.equal(elemOld!.strProp, "hello");
+    assert.isUndefined(elemOld!.strProp);
+    assert.isUndefined(elemOld!.relatedElem);
     assert.include(String(elemOld!.binProp), "\"bytes\"");
-    assert.deepEqual(elemOld!.relatedElem, { id: drawingCategoryId, relClassName: "TestDomain.Test2dUsesElement" });
+    assert.closeTo(elemOld!.dblProp as number, 3.14159265358979, 1e-10);
+    assert.deepEqual(elemOld!.pt2dProp, { x: 1.5, y: 2.5 });
+    assert.deepEqual(elemOld!.pt3dProp, { x: 3, y: 4, z: 5 });
+    assert.deepEqual(elemOld!.structProp, { x: 1, y: 2, z: 3, label: "origin", pt2d: { x: 0.5, y: 0.5 }, pt3d: { x: 1, y: 2, z: 3 } });
     assert.deepEqual(elemOld!.$meta.rowOptions, { classIdsToClassNames: true, useJsName: true });
-    assert.deepEqual(Object.keys(elemOld!).sort(), ["$meta", "binProp", "boolProp", "className",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod", "longProp", "pt2dProp",
-      "pt3dProp", "relatedElem", "strArrProp", "strProp", "structArrProp", "structProp"].sort());
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["binProp", "boolProp",
-      "dblProp", "dtProp", "id", "intArrProp", "intProp", "lastMod",
-      "longProp", "pt2dProp", "pt3dProp.x", "pt3dProp.y", "relatedElem.id", "strArrProp", "strProp",
-      "structArrProp", "structProp.label", "structProp.pt2d", "structProp.pt3d", "structProp.x",
-      "structProp.y", "structProp.z"].sort());
+    assert.deepEqual(Object.keys(elemOld!).sort(), [
+      "$meta", "binProp", "boolProp", "className", "dblProp", "dtProp", "id",
+      "intArrProp", "lastMod", "pt2dProp", "pt3dProp", "strArrProp", "structArrProp", "structProp",
+    ].sort());
+    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), [
+      "binProp", "boolProp", "dblProp", "dtProp", "id", "intArrProp", "lastMod",
+      "pt2dProp.x", "pt3dProp.x", "strArrProp", "structArrProp", "structProp.label",
+      "structProp.pt2d.y", "structProp.pt3d.y", "structProp.pt3d.z",
+      "structProp.x", "structProp.y", "structProp.z",
+    ].sort());
   });
 
-  it("txn3 update-full | rowOptions: classIdsToClassNames", () => {
-
-    const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true }, undefined, false);
-    assert.equal(instances.length, 4);
-
-    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
-    expect(modelNew).to.exist;
-    assert.equal(modelNew!.ECClassId, "BisCore.DrawingModel");
-    assert.deepEqual(modelNew!.$meta.rowOptions, { classIdsToClassNames: true });
-
-    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
-    expect(modelOld).to.exist;
-    assert.equal(modelOld!.ECClassId, "BisCore.DrawingModel");
-    assert.deepEqual(modelOld!.$meta.rowOptions, { classIdsToClassNames: true });
-
-    const elemNew = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "New");
-    expect(elemNew).to.exist;
-    assert.equal(elemNew!.ECClassId, "TestDomain.Test2dElement");
-    assert.equal(elemNew!.StrProp, "updated");
-    assert.equal(elemNew!.IntProp, 99);
-    assert.include(String(elemNew!.BinProp), "\"bytes\"");
-    assert.deepEqual(elemNew!.RelatedElem, { Id: partialElementId, RelECClassId: "TestDomain.Test2dUsesElement" });
-    assert.equal(elemNew!.$meta.op, "Updated");
-    assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
-    assert.deepEqual(elemNew!.$meta.rowOptions, { classIdsToClassNames: true });
-
-    assert.deepEqual(Object.keys(elemNew!).sort(), ["$meta", "BinProp", "BoolProp",
-      "DblProp", "DtProp", "IntArrProp", "IntProp", "LastMod", "LongProp",
-      "Pt2dProp", "Pt3dProp", "RelatedElem", "StrArrProp", "StrProp", "StructArrProp", "StructProp", "ECClassId", "ECInstanceId"].sort());
-    assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
-
-    const elemOld = instances.find((i) => i.ECInstanceId === fullElementId && i.$meta.stage === "Old");
-    expect(elemOld).to.exist;
-    assert.equal(elemOld!.ECClassId, "TestDomain.Test2dElement");
-    assert.equal(elemOld!.StrProp, "hello");
-    assert.equal(elemOld!.IntProp, 42);
-    assert.include(String(elemOld!.BinProp), "\"bytes\"");
-    assert.deepEqual(elemOld!.RelatedElem, { Id: drawingCategoryId, RelECClassId: "TestDomain.Test2dUsesElement" });
-    assert.equal(elemOld!.$meta.op, "Updated");
-    assert.deepEqual(elemOld!.$meta.rowOptions, { classIdsToClassNames: true });
-
-    assert.deepEqual(Object.keys(elemOld!).sort(), ["$meta", "BinProp", "BoolProp",
-      "DblProp", "DtProp", "IntArrProp", "IntProp", "LastMod", "LongProp",
-      "Pt2dProp", "Pt3dProp", "RelatedElem", "StrArrProp", "StrProp", "StructArrProp", "StructProp", "ECClassId", "ECInstanceId"].sort());
-    assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ["BinProp", "BoolProp",
-      "DblProp", "DtProp", "ECInstanceId", "IntArrProp", "IntProp", "LastMod",
-      "LongProp", "Pt2dProp", "Pt3dProp.X", "Pt3dProp.Y", "RelatedElem.Id", "StrArrProp", "StrProp",
-      "StructArrProp", "StructProp.Label", "StructProp.Pt2d", "StructProp.Pt3d", "StructProp.X",
-      "StructProp.Y", "StructProp.Z"].sort());
-  });
   it("should throw error if tried to fetch changeset metadata values before stepping", () => {
     using reader = ChangesetReader.openTxn({ db: rwIModel, txnId });
     expect(() => reader.isECTable).to.throw();
@@ -2347,11 +2424,10 @@ describe("ChangesetReader update-full", () => {
     assert.isUndefined(reader.deleted);
     reader.close();
   });
+
   it("should throw error if tried to fetch changeset metadata values after stepping past the end", () => {
     using reader = ChangesetReader.openTxn({ db: rwIModel, txnId });
     while (reader.step()) { }
-    assert.equal(reader.step(), false);
-    assert.equal(reader.step(), false); // trying multiple steps past the end should still return false and not throw, but metadata access should throw
     assert.equal(reader.step(), false);
     expect(() => reader.isECTable).to.throw();
     expect(() => reader.isIndirectChange).to.throw();
@@ -2363,7 +2439,7 @@ describe("ChangesetReader update-full", () => {
   });
 });
 
-describe("ChangesetReader delete-partial", () => {
+describe("ChangesetReader delete", () => {
   let rwIModel: BriefcaseDb;
   let partialElementId: Id64String;
   let drawingModelId: Id64String;
@@ -2377,7 +2453,7 @@ describe("ChangesetReader delete-partial", () => {
     const iTwinId = HubMock.iTwinId;
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "deletePartial", description: "deletePartial", accessToken: adminToken });
     rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    txn = startTestTxn(rwIModel, "ChangesetReader delete-partial");
+    txn = startTestTxn(rwIModel, "ChangesetReader delete");
     // Txn 1: import schema + drawing model setup, then push
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
   <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -2457,7 +2533,7 @@ describe("ChangesetReader delete-partial", () => {
     HubMock.shutdown();
   });
 
-  it("txn4 delete-partial | All_Properties | default rowOptions", () => {
+  it("txn4 delete | All_Properties | default rowOptions", () => {
     const instances = readTxn(rwIModel, txnId);
     assert.equal(instances.length, 3);
 
@@ -2534,7 +2610,7 @@ describe("ChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
 
-  it("txn4 delete-partial | Bis_Element_Properties", () => {
+  it("txn4 delete | Bis_Element_Properties", () => {
     const instances = readTxn(rwIModel, txnId, PropertyFilter.BisCoreElement, { classIdsToClassNames: true });
     assert.equal(instances.length, 3);
 
@@ -2597,7 +2673,7 @@ describe("ChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
 
-  it("txn4 delete-partial | Instance_Key", () => {
+  it("txn4 delete | Instance_Key", () => {
     const instances = readTxn(rwIModel, txnId, PropertyFilter.InstanceKey);
     assert.equal(instances.length, 3);
 
@@ -2648,7 +2724,7 @@ describe("ChangesetReader delete-partial", () => {
     assert.equal(elem!.$meta.isIndirectChange, false);
   });
 
-  it("txn4 delete-partial | rowOptions: classIdsToClassNames", () => {
+  it("txn4 delete | rowOptions: classIdsToClassNames", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true });
     assert.equal(instances.length, 3);
 
@@ -2679,7 +2755,7 @@ describe("ChangesetReader delete-partial", () => {
     assert.deepEqual(elem!.$meta.rowOptions, { classIdsToClassNames: true });
   });
 
-  it("txn4 delete-partial | rowOptions: useJsName", () => {
+  it("txn4 delete | rowOptions: useJsName", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { useJsName: true });
     assert.equal(instances.length, 3);
 
@@ -2718,7 +2794,7 @@ describe("ChangesetReader delete-partial", () => {
     assert.deepEqual(elem!.$meta.rowOptions, { useJsName: true });
   });
 
-  it("txn4 delete-partial | rowOptions: abbreviateBlobs", () => {
+  it("txn4 delete | rowOptions: abbreviateBlobs", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { abbreviateBlobs: true });
     assert.equal(instances.length, 3);
 
@@ -2748,7 +2824,7 @@ describe("ChangesetReader delete-partial", () => {
     assert.deepEqual(elem!.$meta.rowOptions, { abbreviateBlobs: true });
   });
 
-  it("txn4 delete-partial | rowOptions: classIdsToClassNames + useJsName", () => {
+  it("txn4 delete | rowOptions: classIdsToClassNames + useJsName", () => {
     const instances = readTxn(rwIModel, txnId, undefined, { classIdsToClassNames: true, useJsName: true });
     assert.equal(instances.length, 3);
 
