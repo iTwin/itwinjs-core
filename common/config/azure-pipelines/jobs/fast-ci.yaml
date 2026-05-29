@@ -80,16 +80,18 @@ jobs:
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
-            branch=$(System.PullRequest.SourceBranch)
+            if [[ -z "$PR_NUMBER" ]]; then
+              echo 'PullRequest build but no PR number available; skipping linked-PR check.'
+            else
+              # Use GH CLI to get the PR description, SHA and title in json format so it can be parsed
+              gh pr view "$PR_NUMBER" --json title,body,headRefOid >> pr_view.json
 
-            # Use GH CLI to get the PR description, SHA and title in json format so it can be parsed
-            gh pr view $branch --json title,body,headRefOid >> pr_view.json
+              #save SHA and PR description
+              currentSHA=$(node -e "const data = require('./pr_view.json'); console.log(data.headRefOid)")
+              node -e "const data = require('./pr_view.json'); console.log(data.body)" >> body.txt
 
-            #save SHA and PR description
-            currentSHA=$(node -e "const data = require('./pr_view.json'); console.log(data.headRefOid)")
-            node -e "const data = require('./pr_view.json'); console.log(data.body)" >> body.txt
-
-            NativeUrl=$(grep -E '^imodel-native(-internal)?: https://github\.com/iTwin/imodel-native(-internal)?/pull/*' body.txt)
+              NativeUrl=$(grep -E '^imodel-native(-internal)?: https://github\.com/iTwin/imodel-native(-internal)?/pull/*' body.txt)
+            fi
           else
             echo 'This run was not triggered by a Pull request.'
             echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run iTwin.js" to trigger the pipeline'
@@ -104,6 +106,7 @@ jobs:
 
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
+          PR_NUMBER: $(System.PullRequest.PullRequestNumber)
         name: checkForPr
 
   - job: ParseCommitNotes
@@ -238,8 +241,11 @@ jobs:
 
     steps:
       - bash: |
-          branch=$(System.PullRequest.SourceBranch)
-          sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
+          if [[ -z "$PR_NUMBER" ]]; then
+            echo 'No PR number available; skipping status post.'
+            exit 0
+          fi
+          sha=$(gh pr view "$PR_NUMBER" --json "headRefOid" -q ".headRefOid")
           echo "Posting 'success' status to current PR"
           gh api \
             --method POST \
@@ -251,3 +257,4 @@ jobs:
             -f description='No native PR was linked'
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
+          PR_NUMBER: $(System.PullRequest.PullRequestNumber)
