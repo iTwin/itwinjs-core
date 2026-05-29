@@ -6,9 +6,48 @@
  * @module MapLayersFormats
  */
 
-import { BackgroundMapType, BaseMapLayerSettings, ImageMapLayerSettings } from "@itwin/core-common";
-import { type DisplayStyleState } from "@itwin/core-frontend";
-import { AzureMapsUtils } from "../internal/AzureMapsUtils.js";
+import { BackgroundMapType, BaseMapLayerProps, BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties, MapLayerSettings } from "@itwin/core-common";
+import { type DisplayStyleState, IModelApp } from "@itwin/core-frontend";
+import { AzureMapsMapLayerFormat } from "./AzureMapsImageryFormat.js";
+
+const streetUrl = "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.base.road";
+const aerialUrl = "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery";
+const roadLabelsUrl = "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.base.labels.road";
+const roadLabelsRole = "roadLabels";
+
+function assertRegistered(): void {
+  if (!IModelApp.mapLayerFormatRegistry.isRegistered(AzureMapsMapLayerFormat.formatId))
+    throw new Error("AzureMaps format is not registered");
+}
+
+function baseLayerProps(type: BackgroundMapType): BaseMapLayerProps {
+  switch (type) {
+    case BackgroundMapType.Street:
+      return { formatId: AzureMapsMapLayerFormat.formatId, name: "Azure Maps: Streets", url: streetUrl };
+    case BackgroundMapType.Aerial:
+      return { formatId: AzureMapsMapLayerFormat.formatId, name: "Azure Maps: Aerial Imagery", url: aerialUrl };
+    case BackgroundMapType.Hybrid:
+      return { formatId: AzureMapsMapLayerFormat.formatId, name: "Azure Maps: Hybrid", url: aerialUrl };
+  }
+}
+
+function roadLabelsLayerProps(): ImageMapLayerProps {
+  const properties: MapLayerProviderProperties = { azureMapsRole: roadLabelsRole };
+  return {
+    formatId: AzureMapsMapLayerFormat.formatId,
+    name: "Azure Maps: Road labels",
+    url: roadLabelsUrl,
+    transparentBackground: true,
+    properties,
+  };
+}
+
+function isOwnedRoadLabelsLayer(layer: MapLayerSettings): layer is ImageMapLayerSettings {
+  return layer instanceof ImageMapLayerSettings
+    && layer.formatId === AzureMapsMapLayerFormat.formatId
+    && layer.url === roadLabelsUrl
+    && layer.properties?.azureMapsRole === roadLabelsRole;
+}
 
 /**
  * Azure Maps API.
@@ -21,7 +60,8 @@ export const AzureMaps = {
    * @beta
    */
   createBaseLayerSettings: (type: BackgroundMapType) => {
-    return BaseMapLayerSettings.fromJSON(AzureMapsUtils.createBaseLayerProps(type));
+    assertRegistered();
+    return BaseMapLayerSettings.fromJSON(baseLayerProps(type));
   },
 
   /**
@@ -30,10 +70,9 @@ export const AzureMaps = {
    * @beta
    */
   createBackgroundLayers: (type: BackgroundMapType) => {
-    if (type !== BackgroundMapType.Hybrid)
-      return [];
-
-    return [ImageMapLayerSettings.fromJSON(AzureMapsUtils.createRoadLabelsLayerProps())];
+    return type === BackgroundMapType.Hybrid
+      ? [ImageMapLayerSettings.fromJSON(roadLabelsLayerProps())]
+      : [];
   },
 
   /**
@@ -41,9 +80,9 @@ export const AzureMaps = {
    * @beta
    */
   clearBackgroundLayers: (displayStyle: DisplayStyleState) => {
-    for (let index = displayStyle.settings.mapImagery.backgroundLayers.length - 1; index >= 0; --index) {
-      const layer = displayStyle.settings.mapImagery.backgroundLayers[index];
-      if (AzureMapsUtils.isOwnedRoadLabelsLayer(layer))
+    const layers = displayStyle.settings.mapImagery.backgroundLayers;
+    for (let index = layers.length - 1; index >= 0; --index) {
+      if (isOwnedRoadLabelsLayer(layers[index]))
         displayStyle.detachMapLayerByIndex({ index, isOverlay: false });
     }
   },
@@ -55,9 +94,10 @@ export const AzureMaps = {
    * @beta
    */
   applyBackgroundMap: (displayStyle: DisplayStyleState, type: BackgroundMapType) => {
+    assertRegistered();
     AzureMaps.clearBackgroundLayers(displayStyle);
 
-    const azureBaseProps = AzureMapsUtils.createBaseLayerProps(type);
+    const azureBaseProps = baseLayerProps(type);
     const previousBase = displayStyle.backgroundMapBase;
     displayStyle.backgroundMapBase = previousBase instanceof BaseMapLayerSettings
       ? BaseMapLayerSettings.fromJSON({
@@ -76,7 +116,20 @@ export const AzureMaps = {
    * Identifies the active Azure Maps basemap type for the supplied display style, if any.
    * @beta
    */
-  getBackgroundMapType: (displayStyle: DisplayStyleState) => {
-    return AzureMapsUtils.getBackgroundMapType(displayStyle);
+  getBackgroundMapType: (displayStyle: DisplayStyleState): BackgroundMapType | undefined => {
+    const baseLayer = displayStyle.backgroundMapBase;
+    if (!(baseLayer instanceof BaseMapLayerSettings) || baseLayer.formatId !== AzureMapsMapLayerFormat.formatId)
+      return undefined;
+
+    if (baseLayer.url === streetUrl)
+      return BackgroundMapType.Street;
+
+    if (baseLayer.url === aerialUrl) {
+      return displayStyle.settings.mapImagery.backgroundLayers.some(isOwnedRoadLabelsLayer)
+        ? BackgroundMapType.Hybrid
+        : BackgroundMapType.Aerial;
+    }
+
+    return undefined;
   },
 };

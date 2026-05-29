@@ -43,6 +43,9 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
 
+  // The base loadTile marks `_hasSuccessfullyFetchedTile` as soon as a response is received, before
+  // inspecting its status. Azure returns 401/403 for missing/invalid credentials, so this override
+  // detects that before the success is recorded, ensuring no spurious token warning on the first fetch.
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     try {
       const tileUrl = await this.constructUrl(row, column, zoomLevel);
@@ -55,12 +58,10 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
         return undefined;
       }
 
-      if (!this._hasSuccessfullyFetchedTile)
-        this._hasSuccessfullyFetchedTile = true;
-
+      this._hasSuccessfullyFetchedTile = true;
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
-      if (error instanceof AzureMapsRequireAuthError || (error as { status?: number } | undefined)?.status === 401)
+      if (error instanceof AzureMapsRequireAuthError)
         this.reportAzureAuthFailure();
 
       return undefined;
