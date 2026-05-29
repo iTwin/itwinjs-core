@@ -288,7 +288,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * That means the rows for changes from other tables will be skipped entirely and won't be visible through the reader.
    * @param tableNames SQLite table names to include.
    * Note: Table names must be provided in the correct case for proper filtering.
-   * @throws [[IModelError]] if the native layer encounters an error while setting the filter.
+   * @throws if the native layer encounters an error while setting the filter.
    * @beta
    */
   public setTableNameFilters(tableNames: Set<string>): void {
@@ -299,7 +299,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Restrict iteration to changes with the given operation types.
    * That means the rows for changes with other operation types will be skipped entirely and won't be visible through the reader.
    * @param ops Operations to include.
-   * @throws [[IModelError]] if the native layer encounters an error while setting the filter.
+   * @throws if the native layer encounters an error while setting the filter.
    * @beta
    */
   public setOpCodeFilters(ops: Set<SqliteChangeOp>): void {

@@ -460,20 +460,23 @@ export class FavoritePropertiesManager implements Disposable {
     }
 
     const query = `
-    SELECT (derivedSchema.Name || ':' || derivedClass.Name) AS "ClassFullName", (baseSchema.Name || ':' || baseClass.Name) AS "BaseClassFullName"
-    FROM ECDbMeta.ClassHasAllBaseClasses baseClassRels
-    INNER JOIN ECDbMeta.ECClassDef derivedClass ON derivedClass.ECInstanceId = baseClassRels.SourceECInstanceId
-    INNER JOIN ECDbMeta.ECSchemaDef derivedSchema ON derivedSchema.ECInstanceId = derivedClass.Schema.Id
-    INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
-    INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
-    const reader = imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      SELECT
+        ec_classname(baseClassRels.SourceECInstanceId, "s:c"),
+        ec_classname(baseClassRels.TargetECInstanceId, "s:c")
+      FROM ECDbMeta.ClassHasAllBaseClasses baseClassRels
+      INNER JOIN ECDbMeta.ECClassDef derivedClass ON derivedClass.ECInstanceId = baseClassRels.SourceECInstanceId
+      INNER JOIN ECDbMeta.ECSchemaDef derivedSchema ON derivedSchema.ECInstanceId = derivedClass.Schema.Id
+      INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
+      INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
+      WHERE ec_classname(baseClassRels.SourceECInstanceId, "s:c") IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})
+    `;
+    const reader = imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes });
     while (await reader.step()) {
-      const row = reader.current.toRow();
-      if (!(row.classFullName in baseClasses)) {
-        baseClasses[row.classFullName] = [];
+      const [derivedClassName, baseClassName] = reader.current.toArray();
+      if (!(derivedClassName in baseClasses)) {
+        baseClasses[derivedClassName] = [];
       }
-      baseClasses[row.classFullName].push(row.baseClassFullName);
+      baseClasses[derivedClassName].push(baseClassName);
     }
     return baseClasses;
   };
