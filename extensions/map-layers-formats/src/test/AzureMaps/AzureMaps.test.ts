@@ -129,8 +129,26 @@ describe("AzureMaps", () => {
     expect(style.settings.mapImagery.backgroundLayers[0]).to.eq(manualRoadLabels);
   });
 
-  it("requires the subscription-key credential name during validation and tile loading", async () => {
-    registryConfig.AzureMaps = { key: "wrong-key-name", value: "dummyKey" };
+  it("uses the configured Azure Maps access-key value without requiring a specific key name", async () => {
+    registryConfig.AzureMaps = { key: "custom-key-name", value: "dummyKey" };
+
+    const validation = await AzureMapsMapLayerFormat.validate({
+      source: MapLayerSource.fromJSON({ name: "Azure", formatId: "AzureMaps", url: "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery" })!,
+    });
+    expect(validation.status).to.eq(MapLayerSourceStatus.Valid);
+
+    const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
+    const provider = IModelApp.mapLayerFormatRegistry.createImageryProvider(settings);
+
+    expect(provider).to.be.instanceOf(AzureMapsLayerImageryProvider);
+    if (undefined === provider)
+      throw new Error("Expected Azure Maps provider to be created");
+
+    expect(await provider.constructUrl(1, 2, 3)).to.contain("subscription-key=dummyKey");
+  });
+
+  it("requires an Azure Maps credential during validation and tile loading", async () => {
+    delete registryConfig.AzureMaps;
 
     const validation = await AzureMapsMapLayerFormat.validate({
       source: MapLayerSource.fromJSON({ name: "Azure", formatId: "AzureMaps", url: "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery" })!,
@@ -173,14 +191,14 @@ describe("AzureMaps", () => {
     expect(await provider.constructUrl(1, 2, 3)).to.contain("subscription-key=dummyKey");
   });
 
-  it("does not fall back to MapLayersFormats Azure Maps options for malformed layer credentials", async () => {
-    registryConfig.AzureMaps = { key: "wrong-key-name", value: "dummyKey" };
+  it("prefers configured layer credentials over MapLayersFormats Azure Maps options", async () => {
+    registryConfig.AzureMaps = { key: "custom-key-name", value: "dummyKey" };
     sandbox.stub(MapLayersFormats, "azureMapsOpts").get(() => ({ subscriptionKey: "fallbackKey" }));
 
     const validation = await AzureMapsMapLayerFormat.validate({
       source: MapLayerSource.fromJSON({ name: "Azure", formatId: "AzureMaps", url: "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.imagery" })!,
     });
-    expect(validation.status).to.eq(MapLayerSourceStatus.RequireAuth);
+    expect(validation.status).to.eq(MapLayerSourceStatus.Valid);
 
     const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
     const provider = IModelApp.mapLayerFormatRegistry.createImageryProvider(settings);
@@ -189,8 +207,9 @@ describe("AzureMaps", () => {
     if (undefined === provider)
       throw new Error("Expected Azure Maps provider to be created");
 
-    await provider.loadTile(0, 0, 0);
-    expect(provider.status).to.eq(MapLayerImageryProviderStatus.RequireAuth);
+    const url = await provider.constructUrl(1, 2, 3);
+    expect(url).to.contain("subscription-key=dummyKey");
+    expect(url).not.to.contain("subscription-key=fallbackKey");
   });
 
   it("maps Azure 401/403 tile responses to RequireAuth", async () => {

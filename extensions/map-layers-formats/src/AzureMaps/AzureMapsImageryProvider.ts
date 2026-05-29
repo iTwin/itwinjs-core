@@ -15,7 +15,7 @@ export const azureMapsSubscriptionKeyParameter = "subscription-key";
 /** @internal */
 export function getAzureMapsSubscriptionKey(accessKey: MapLayerKey | undefined, fallbackSubscriptionKey?: string): string | undefined {
   if (accessKey !== undefined)
-    return accessKey.key === azureMapsSubscriptionKeyParameter && accessKey.value.length > 0 ? accessKey.value : undefined;
+    return accessKey.value.length > 0 ? accessKey.value : undefined;
 
   return fallbackSubscriptionKey !== undefined && fallbackSubscriptionKey.length > 0 ? fallbackSubscriptionKey : undefined;
 }
