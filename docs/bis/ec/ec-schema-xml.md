@@ -2,6 +2,8 @@
 
 ECSchema XML is the XML representation of an [ECSchema](./ec-schema.md). It is a persistent interchange format for EC metadata: schemas, classes, properties, relationships, custom attributes, enumerations, quantities, units, and formats.
 
+ECXML historically covered both metadata and instance data. Current iTwin schema workflows use ECSchema XML for schema metadata, while ECInstance XML appears most often as custom attribute instances embedded inside `ECCustomAttributes` elements.
+
 This page documents the ECSchema XML 3.2 shape used by current iTwin schemas. The XML format describes the persisted schema document. The semantic rules for each EC item are documented on the linked EC pages and enforced by EC schema validation.
 
 ## Namespace and Version
@@ -154,6 +156,8 @@ The list may be separated by commas, semicolons, or vertical bars.
 
 Each constraint contains one or more `Class` elements with a required `class` attribute. Source constraints support one class semantically; target constraints may support more than one.
 
+For `holding` and `embedding` relationships, `strengthDirection` determines which endpoint acts as the parent or owner. `forward` means the source endpoint has that role; `backward` means the target endpoint has that role. Do not infer ownership from the endpoint names alone.
+
 ```xml
 <ECRelationshipClass typeName="PumpFeedsTank" strength="referencing" strengthDirection="forward" modifier="Sealed">
   <Source multiplicity="(0..*)" roleLabel="feeds" polymorphic="true">
@@ -244,6 +248,8 @@ Common shapes:
 
 In ECXML 3.2, `KindOfQuantity/@persistenceUnit` is a unit reference, not a legacy format string. Presentation formats belong in `presentationUnits`.
 
+The `presentationUnits` attribute is a semicolon-separated list of format references or format override strings. A format override can change the precision, add units to a unitless format, or override unit labels. See [KindOfQuantity format overrides](./kindofquantity.md#format-overrides) for the full syntax.
+
 ## Custom Attributes
 
 `ECCustomAttributes` contains ECInstance XML for custom attribute instances applied to the parent schema, item, relationship constraint, or property.
@@ -258,9 +264,23 @@ In ECXML 3.2, `KindOfQuantity/@persistenceUnit` is a unit reference, not a legac
 
 The custom attribute element namespace is commonly the custom attribute schema full name, such as `CoreCustomAttributes.01.00.03`.
 
+### ECInstance XML in Custom Attributes
+
+Each child element of `ECCustomAttributes` is an instance of an `ECCustomAttributeClass`. The element name identifies the custom attribute class, and the element's child elements are property values for that custom attribute instance.
+
+```xml
+<ECCustomAttributes>
+  <DateTimeInfo xmlns="CoreCustomAttributes.01.00.03">
+    <DateTimeKind>Utc</DateTimeKind>
+  </DateTimeInfo>
+</ECCustomAttributes>
+```
+
+The type of each value is determined from the custom attribute class definition in the referenced schema. A schema item can have multiple custom attributes, but only one instance of a given custom attribute class may be applied to the same container.
+
 ## Validation
 
-The XSD for ECSchema XML validates the XML document shape: allowed elements, attributes, simple value patterns, and some uniqueness rules. It does not express every semantic EC rule. Semantic rules such as relationship constraint compatibility, property override compatibility, and custom attribute applicability are covered by [EC Schema Validation](./ec-schema-validation.md).
+The XSD for ECSchema XML validates the XML document shape: allowed elements, attributes, simple value patterns, and some uniqueness rules. It does not express every semantic EC rule. Semantic rules such as relationship constraint compatibility, reference resolution, property override compatibility, and custom attribute applicability are covered by [EC Schema Validation](./ec-schema-validation.md).
 
 The ECXML 3.2 XSD is maintained in the BIS schemas repository at [System/xsd/ECSchemaXML3.2.xsd](https://github.com/iTwin/bis-schemas/blob/master/System/xsd/ECSchemaXML3.2.xsd). It is intentionally XSD 1.0 compatible for broad tool support, including .NET XML tooling. A companion XSD 1.1 file may provide optional assertions for validators that support XSD 1.1.
 
