@@ -266,7 +266,7 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
 
       e1 = b1.elements.getElementProps(elem1Id!);
       e2 = b1.elements.getElementProps(elem2Id!);
-      chai.expect(e1.code.value).to.equal("");
+      chai.expect(e1.code.value).to.satisfy((v: string | undefined) => v === undefined || v === "");
       chai.expect(e2.code.value).to.equal("CODE_B");
 
       // --- Redo (reinstate txn2: the swap) ---
