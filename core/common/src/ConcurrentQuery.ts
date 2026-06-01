@@ -706,20 +706,34 @@ export enum DbResponseKind {
 
 /** @internal */
 export enum DbResponseStatus {
-  Done = 1,  /* query ran to completion. */
-  Cancel = 2, /*  Requested by user.*/
-  Partial = 3, /*  query was running but ran out of quota.*/
-  Timeout = 4, /*  query time quota expired while it was in queue.*/
-  QueueFull = 5, /*  could not submit the query as queue was full.*/
-  ShuttingDown = 6, /*  Shutdown is in progress. */
-  NotOpen = 7,  /* iModel is not open. */
-  Error = 100, /*  generic error*/
-  Error_ECSql_PreparedFailed = Error + 1, /*  ecsql prepared failed*/
-  Error_ECSql_StepFailed = Error + 2, /*  ecsql step failed*/
-  Error_ECSql_RowToJsonFailed = Error + 3, /*  ecsql failed to serialized row to json.*/
-  Error_ECSql_BindingFailed = Error + 4, /*  ecsql binding failed.*/
-  Error_BlobIO_OpenFailed = Error + 5, /*  class or property or instance specified was not found or property as not of type blob.*/
-  Error_BlobIO_OutOfRange = Error + 6, /*  range specified is invalid based on size of blob.*/
+  /** Query ran to completion. */
+  Done = 1,
+  /** Requested by user. */
+  Cancel = 2,
+  /** Query was running but ran out of quota. */
+  Partial = 3,
+  /** Query time quota expired while it was in queue. */
+  Timeout = 4,
+  /** Could not submit the query because the queue was full. */
+  QueueFull = 5,
+  /** Shutdown is in progress. */
+  ShuttingDown = 6,
+  /** iModel is not open. */
+  NotOpen = 7,
+  /** Generic error. */
+  Error = 100,
+  /** ECSQL prepare failed. */
+  Error_ECSql_PreparedFailed = Error + 1,
+  /** ECSQL step failed. */
+  Error_ECSql_StepFailed = Error + 2,
+  /** ECSQL failed to serialize row to JSON. */
+  Error_ECSql_RowToJsonFailed = Error + 3,
+  /** ECSQL binding failed. */
+  Error_ECSql_BindingFailed = Error + 4,
+  /** Class, property, or instance specified was not found, or property is not of type blob. */
+  Error_BlobIO_OpenFailed = Error + 5,
+  /** Range specified is invalid based on size of blob. */
+  Error_BlobIO_OutOfRange = Error + 6,
 }
 
 /** @internal */
