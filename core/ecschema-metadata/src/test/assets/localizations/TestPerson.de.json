@@ -5,11 +5,11 @@
   "locale": "de",
   "label": "Test-Personenschema",
   "description": "Ein Testschema für Personendaten",
-  "classes": {
+  "items": {
     "Person": {
       "label": "Person",
       "description": "Eine Personenentität",
-      "properties": {
+      "members": {
         "FirstName": {
           "label": "Vorname",
           "description": "Der Vorname"

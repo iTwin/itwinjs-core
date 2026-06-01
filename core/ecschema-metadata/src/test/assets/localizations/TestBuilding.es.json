@@ -5,11 +5,11 @@
   "locale": "es",
   "label": "Esquema de Prueba de Edificios",
   "description": "Un esquema de prueba para elementos de edificios",
-  "classes": {
+  "items": {
     "Building": {
       "label": "Edificio",
       "description": "Una estructura física de edificio",
-      "properties": {
+      "members": {
         "Height": {
           "label": "Altura",
           "description": "La altura del edificio en metros"
@@ -27,7 +27,7 @@
     "Wall": {
       "label": "Pared",
       "description": "Un componente vertical del edificio",
-      "properties": {
+      "members": {
         "Thickness": {
           "label": "Espesor",
           "description": "El espesor de la pared en metros"
@@ -53,13 +53,11 @@
     "ISpatialElement": {
       "label": "Elemento Espacial",
       "description": "Mixin para elementos espaciales"
-    }
-  },
-  "enumerations": {
+    },
     "BuildingType": {
       "label": "Tipo de Edificio",
       "description": "Tipos de edificios",
-      "enumerators": {
+      "members": {
         "Residential": {
           "label": "Residencial",
           "description": "Un edificio residencial"
@@ -73,45 +71,31 @@
           "description": "Un edificio industrial"
         }
       }
-    }
-  },
-  "propertyCategories": {
+    },
     "SpatialCategory": {
       "label": "Categoría Espacial",
       "description": "Categoría para propiedades espaciales"
-    }
-  },
-  "kindOfQuantities": {
+    },
     "LENGTH_KOQ": {
       "label": "Longitud KOQ",
       "description": "Tipo de cantidad para longitud"
-    }
-  },
-  "units": {
+    },
     "M": {
       "label": "Metro",
       "description": "Unidad de metro"
-    }
-  },
-  "unitSystems": {
+    },
     "METRIC": {
       "label": "Métrico",
       "description": "Sistema de unidades métricas"
-    }
-  },
-  "phenomena": {
+    },
     "LENGTH": {
       "label": "Longitud",
       "description": "Fenómeno de longitud"
-    }
-  },
-  "constants": {
+    },
     "PI": {
       "label": "Pi",
       "description": "Constante matemática Pi"
-    }
-  },
-  "formats": {
+    },
     "DefaultReal": {
       "label": "Formato Real Predeterminado",
       "description": "Formato predeterminado para números reales"

@@ -4,7 +4,7 @@
   "version": "01.XX.XX",
   "locale": "es-CO",
   "label": "Esquema de Prueba de Construcciones",
-  "classes": {
+  "items": {
     "Building": {
       "label": "Construcción"
     },

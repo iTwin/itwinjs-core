@@ -5,11 +5,11 @@
   "locale": "fr",
   "label": "Schéma de test de personne",
   "description": "Un schéma de test pour les données personnelles",
-  "classes": {
+  "items": {
     "Person": {
       "label": "Personne",
       "description": "Une entité personne",
-      "properties": {
+      "members": {
         "FirstName": {
           "label": "Prénom",
           "description": "Le prénom"

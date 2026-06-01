@@ -5,11 +5,11 @@
   "locale": "de",
   "label": "Test-Gebäudeschema",
   "description": "Ein Testschema für Gebäudeelemente",
-  "classes": {
+  "items": {
     "Building": {
       "label": "Gebäude",
       "description": "Eine physische Gebäudestruktur",
-      "properties": {
+      "members": {
         "Height": {
           "label": "Höhe",
           "description": "Die Höhe des Gebäudes in Metern"
@@ -27,7 +27,7 @@
     "Wall": {
       "label": "Wand",
       "description": "Eine vertikale Baukomponente",
-      "properties": {
+      "members": {
         "Thickness": {
           "label": "Dicke",
           "description": "Die Dicke der Wand in Metern"
@@ -53,13 +53,11 @@
     "ISpatialElement": {
       "label": "Räumliches Element",
       "description": "Mixin für räumliche Elemente"
-    }
-  },
-  "enumerations": {
+    },
     "BuildingType": {
       "label": "Gebäudetyp",
       "description": "Arten von Gebäuden",
-      "enumerators": {
+      "members": {
         "Residential": {
           "label": "Wohngebäude",
           "description": "Ein Wohngebäude"
@@ -71,51 +69,35 @@
           "label": "Industriegebäude"
         }
       }
-    }
-  },
-  "propertyCategories": {
+    },
     "SpatialCategory": {
       "label": "Räumliche Kategorie",
       "description": "Kategorie für räumliche Eigenschaften"
-    }
-  },
-  "kindOfQuantities": {
+    },
     "LENGTH_KOQ": {
       "label": "Längen-KOQ",
       "description": "Größenart für Länge"
-    }
-  },
-  "units": {
+    },
     "M": {
       "label": "Meter",
       "description": "Metereinheit"
-    }
-  },
-  "invertedUnits": {
+    },
     "PER_M": {
       "label": "Pro Meter",
       "description": "Invertierte Metereinheit"
-    }
-  },
-  "unitSystems": {
+    },
     "METRIC": {
       "label": "Metrisch",
       "description": "Metrisches Einheitensystem"
-    }
-  },
-  "phenomena": {
+    },
     "LENGTH": {
       "label": "Länge",
       "description": "Längenphänomen"
-    }
-  },
-  "constants": {
+    },
     "PI": {
       "label": "Pi",
       "description": "Mathematische Konstante Pi"
-    }
-  },
-  "formats": {
+    },
     "DefaultReal": {
       "label": "Standard-Realformat",
       "description": "Standardformat für reelle Zahlen"

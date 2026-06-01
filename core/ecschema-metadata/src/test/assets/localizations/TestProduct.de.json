@@ -5,11 +5,11 @@
   "locale": "de",
   "label": "Test-Produktschema",
   "description": "Ein Testschema für Produktkatalog",
-  "classes": {
+  "items": {
     "Product": {
       "label": "Produkt",
       "description": "Ein Produktartikel",
-      "properties": {
+      "members": {
         "Name": {
           "label": "Name",
           "description": "Der Name des Produkts"
@@ -23,7 +23,7 @@
     "Category": {
       "label": "Kategorie",
       "description": "Eine Produktkategorie",
-      "properties": {
+      "members": {
         "Name": {
           "label": "Name",
           "description": "Der Kategorienname"

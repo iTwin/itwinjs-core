@@ -10,6 +10,10 @@ import { Schema } from "../../Metadata/Schema";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaLocalization } from "../../Localization/SchemaLocalization";
 import { LocalizationProvider } from "../../Localization/LocalizationProvider";
+import { SchemaKey } from "../../SchemaKey";
+import { SchemaView, SchemaViewBuilder } from "../../SchemaView";
+import { ClassModifier, ClassType, PropertyKind, SchemaViewPrimitiveType } from "../../SchemaViewInterfaces";
+import { StrengthDirection, StrengthType } from "../../ECObjects";
 
 describe("SchemaLocalization", () => {
 
@@ -36,7 +40,7 @@ describe("SchemaLocalization", () => {
 
   describe("LocalizationProvider", () => {
     it("should successfully load the schema label and description information", async () => {
-      let localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      let localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const schemaLabel = localization.getSchemaLabel(testBuildingSchema);
       // Localized schema label
@@ -50,7 +54,7 @@ describe("SchemaLocalization", () => {
       // Actual schema description
       expect(testBuildingSchema.description).to.equal("A test schema for building elements");
 
-      localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema]);
+      localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema.schemaKey]);
       const spanishLabel = localization.getSchemaLabel(testBuildingSchema);
       // Localized schema label
       expect(spanishLabel).to.equal("Esquema de Prueba de Edificios");
@@ -59,7 +63,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to base locale, when region specific locale not found", async () => {
-      const localization = await SchemaLocalization.create(provider, "de-DE", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de-DE", [testBuildingSchema.schemaKey]);
 
       // Should fall back to "de" when "de-DE" is not found
       const schemaLabel = localization.getSchemaLabel(testBuildingSchema);
@@ -67,7 +71,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize entity class label and description", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       expect(buildingClass).toBeDefined();
@@ -87,7 +91,7 @@ describe("SchemaLocalization", () => {
 
     it("should fall back to original label when localization not found", async () => {
       const localizationProvider = new LocalizationProvider(async () => undefined);
-      const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       expect(buildingClass).toBeDefined();
@@ -99,7 +103,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when localization information don't have that class", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       // EntityClass not in localization
       const roomClass = await testBuildingSchema.getEntityClass("Room");
@@ -143,7 +147,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize multiple classes", async () => {
-      const localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       const wallClass = await testBuildingSchema.getEntityClass("Wall");
@@ -162,7 +166,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize StructClass", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const addressStruct = await testBuildingSchema.getStructClass("Address");
       expect(addressStruct).toBeDefined();
@@ -181,7 +185,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize CustomAttributeClass", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const customAttr = await testBuildingSchema.getCustomAttributeClass("BuildingMetadata");
       expect(customAttr).toBeDefined();
@@ -200,7 +204,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize RelationshipClass", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const relationship = await testBuildingSchema.getRelationshipClass("BuildingHasRooms");
       expect(relationship).toBeDefined();
@@ -219,7 +223,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize Mixin", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const mixin = await testBuildingSchema.getMixin("ISpatialElement");
       expect(mixin).toBeDefined();
@@ -238,7 +242,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize property label and description", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       expect(buildingClass).toBeDefined();
@@ -261,7 +265,7 @@ describe("SchemaLocalization", () => {
 
     it("should fall back to original property label when localization not found", async () => {
       const localizationProvider = new LocalizationProvider(async () => undefined);
-      const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       const heightProp = await buildingClass!.getProperty("Height");
@@ -272,7 +276,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize multiple properties", async () => {
-      const localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       const heightProp = await buildingClass!.getProperty("Height");
@@ -292,7 +296,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original property label and description when localization information don't have that property", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       expect(buildingClass).toBeDefined();
@@ -334,7 +338,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize enumeration label and description", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       expect(buildingTypeEnum).toBeDefined();
@@ -353,7 +357,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize enumerator labels and descriptions", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       expect(buildingTypeEnum).toBeDefined();
@@ -368,7 +372,7 @@ describe("SchemaLocalization", () => {
 
     it("should fall back to original enumerator label when localization not found", async () => {
       const localizationProvider = new LocalizationProvider(async () => undefined);
-      const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema.schemaKey]);
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       const label = localization.getEnumeratorLabel(buildingTypeEnum!, "Residential");
@@ -378,7 +382,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original enumerator label or description when partially localized", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       expect(buildingTypeEnum).toBeDefined();
@@ -400,7 +404,7 @@ describe("SchemaLocalization", () => {
 
     it("should fall back to original labels and descriptions when enumeration not in localization", async () => {
       // MaterialType enumeration exists in schema but not in any localization information
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const materialTypeEnum = await testBuildingSchema.getEnumeration("MaterialType");
       expect(materialTypeEnum).toBeDefined();
@@ -414,7 +418,7 @@ describe("SchemaLocalization", () => {
 
     it("should fall back to original label and description when enumerator not in localization", async () => {
       // MixedUse enumerator exists in schema but not in localization information
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       expect(buildingTypeEnum).toBeDefined();
@@ -427,7 +431,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize unit", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const unit = await testBuildingSchema.getUnit("M");
       expect(unit).toBeDefined();
@@ -446,7 +450,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when unit not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const unit = await testBuildingSchema.getUnit("FT");
       expect(unit).toBeDefined();
@@ -459,7 +463,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize inverted unit", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const invertedUnit = await testBuildingSchema.getInvertedUnit("PER_M");
       expect(invertedUnit).toBeDefined();
@@ -478,7 +482,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when inverted unit not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "es", [testBuildingSchema.schemaKey]);
 
       // PER_M not in es localization, should fall back to original
       const invertedUnit = await testBuildingSchema.getInvertedUnit("PER_M");
@@ -492,7 +496,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize phenomenon", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const phenomenon = await testBuildingSchema.getPhenomenon("LENGTH");
       expect(phenomenon).toBeDefined();
@@ -511,7 +515,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when phenomenon not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const phenomenon = await testBuildingSchema.getPhenomenon("AREA");
       expect(phenomenon).toBeDefined();
@@ -524,7 +528,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize UnitSystem", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const unitSystem = await testBuildingSchema.getUnitSystem("METRIC");
       expect(unitSystem).toBeDefined();
@@ -543,7 +547,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when UnitSystem not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const unitSystem = await testBuildingSchema.getUnitSystem("IMPERIAL");
       expect(unitSystem).toBeDefined();
@@ -556,7 +560,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize PropertyCategory", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const propertyCategory = await testBuildingSchema.getPropertyCategory("SpatialCategory");
       expect(propertyCategory).toBeDefined();
@@ -575,7 +579,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when PropertyCategory not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const propertyCategory = await testBuildingSchema.getPropertyCategory("TemporalCategory");
       expect(propertyCategory).toBeDefined();
@@ -588,7 +592,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize format", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const format = await testBuildingSchema.getFormat("DefaultReal");
       expect(format).toBeDefined();
@@ -607,7 +611,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when format not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const format = await testBuildingSchema.getFormat("DefaultInteger");
       expect(format).toBeDefined();
@@ -620,7 +624,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize KindOfQuantity", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const koq = await testBuildingSchema.getKindOfQuantity("LENGTH_KOQ");
       expect(koq).toBeDefined();
@@ -639,7 +643,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when KindOfQuantity not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const koq = await testBuildingSchema.getKindOfQuantity("AREA_KOQ");
       expect(koq).toBeDefined();
@@ -652,7 +656,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize constant", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const constant = await testBuildingSchema.getConstant("PI");
       expect(constant).toBeDefined();
@@ -671,7 +675,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should fall back to original label and description, when constant not in localization", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey]);
 
       const constant = await testBuildingSchema.getConstant("E");
       expect(constant).toBeDefined();
@@ -684,7 +688,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should localize multiple item types with locale fallback", async () => {
-      const localization = await SchemaLocalization.create(provider, "es-CO", [testBuildingSchema]);
+      const localization = await SchemaLocalization.create(provider, "es-CO", [testBuildingSchema.schemaKey]);
 
       // es-CO has Address and Building classes localized
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
@@ -755,7 +759,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should retrieve localizations for multiple schemas independently", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema, testProductSchema, testPersonSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey, testProductSchema.schemaKey, testPersonSchema.schemaKey]);
 
       const buildingLabel = localization.getSchemaLabel(testBuildingSchema);
       expect(buildingLabel).to.equal("Test-Gebäudeschema");
@@ -771,7 +775,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should handle class localization from different schemas", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema, testProductSchema, testPersonSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey, testProductSchema.schemaKey, testPersonSchema.schemaKey]);
 
       const buildingClass = await testBuildingSchema.getEntityClass("Building");
       const buildingClassLabel = localization.getSchemaItemLabel(buildingClass!);
@@ -787,7 +791,7 @@ describe("SchemaLocalization", () => {
     });
 
     it("should handle property localization from different schemas", async () => {
-      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema, testProductSchema, testPersonSchema]);
+      const localization = await SchemaLocalization.create(provider, "de", [testBuildingSchema.schemaKey, testProductSchema.schemaKey, testPersonSchema.schemaKey]);
 
       const productClass = await testProductSchema.getEntityClass("Product");
       const priceProperty = await productClass!.getProperty("Price");
@@ -819,7 +823,7 @@ describe("SchemaLocalization", () => {
       };
 
       const localizationProvider = new LocalizationProvider(trackingLoader);
-      const localization = await SchemaLocalization.create(localizationProvider, "de", [testBuildingSchema, testProductSchema, testPersonSchema]);
+      const localization = await SchemaLocalization.create(localizationProvider, "de", [testBuildingSchema.schemaKey, testProductSchema.schemaKey, testPersonSchema.schemaKey]);
 
       localization.getSchemaLabel(testBuildingSchema);
       localization.getSchemaLabel(testProductSchema);
@@ -834,7 +838,7 @@ describe("SchemaLocalization", () => {
 
     it("should fall back to original labels when locale not available for any schema", async () => {
       // Urdu (ur) not provided for any schema
-      const localization = await SchemaLocalization.create(provider, "ur", [testBuildingSchema, testProductSchema, testPersonSchema]);
+      const localization = await SchemaLocalization.create(provider, "ur", [testBuildingSchema.schemaKey, testProductSchema.schemaKey, testPersonSchema.schemaKey]);
 
       const buildingLabel = localization.getSchemaLabel(testBuildingSchema);
       expect(buildingLabel).to.equal("Test Building Schema");
@@ -856,11 +860,11 @@ describe("SchemaLocalization", () => {
 
       const localizationProvider = new LocalizationProvider(invalidLoader);
 
-      await expect(SchemaLocalization.create(localizationProvider, "de", [testBuildingSchema])).rejects.toThrow("Invalid localization JSON");
+      await expect(SchemaLocalization.create(localizationProvider, "de", [testBuildingSchema.schemaKey])).rejects.toThrow("Invalid localization JSON");
     });
 
     it("should fall back to English, when major version is different", async () => {
-      const localization = await SchemaLocalization.create(provider, "fr", [testBuildingSchema, testProductSchema, testPersonSchema]);
+      const localization = await SchemaLocalization.create(provider, "fr", [testBuildingSchema.schemaKey, testProductSchema.schemaKey, testPersonSchema.schemaKey]);
 
       // TestProduct schema and its French localization have same major version
       const productLabel = localization.getSchemaLabel(testProductSchema);

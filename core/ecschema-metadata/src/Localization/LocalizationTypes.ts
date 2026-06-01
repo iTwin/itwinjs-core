@@ -13,21 +13,12 @@ export interface LocalizedText {
 }
 
 /**
- * Represents localized text for a class including its properties.
+ * Localized text for a schema item
  * @beta
  */
-export interface LocalizedClassText extends LocalizedText {
-  /** Localized properties of the class, keyed by property name */
-  properties?: { [propertyName: string]: LocalizedText };
-}
-
-/**
- * Represents localized text for an enumeration including its enumerators.
- * @beta
- */
-export interface LocalizedEnumerationText extends LocalizedText {
-  /** Localized enumerators, keyed by enumerator name */
-  enumerators?: { [enumeratorName: string]: LocalizedText };
+export interface LocalizedItemText extends LocalizedText {
+  /** Localized members keyed by member name */
+  members?: { [memberName: string]: LocalizedText };
 }
 
 /**
@@ -37,7 +28,7 @@ export interface LocalizedEnumerationText extends LocalizedText {
 export interface SchemaLocalizationJson {
   /** Schema version identifier */
   $schema?: string;
-  /** Name of the schema, this localization applies to */
+  /** Name of the schema this localization applies to */
   name: string;
   /** Version of the schema */
   version?: string;
@@ -47,24 +38,6 @@ export interface SchemaLocalizationJson {
   label?: string;
   /** Localized schema description */
   description?: string;
-  /** Localized classes, keyed by class name */
-  classes?: { [className: string]: LocalizedClassText };
-  /** Localized enumerations, keyed by enumeration name */
-  enumerations?: { [enumerationName: string]: LocalizedEnumerationText };
-  /** Localized units, keyed by unit name */
-  units?: { [unitName: string]: LocalizedText };
-  /** Localized inverted units, keyed by inverted unit name */
-  invertedUnits?: { [invertedUnitName: string]: LocalizedText };
-  /** Localized phenomena, keyed by phenomenon name */
-  phenomena?: { [phenomenonName: string]: LocalizedText };
-  /** Localized unit systems, keyed by unit system name */
-  unitSystems?: { [unitSystemName: string]: LocalizedText };
-  /** Localized property categories, keyed by property category name */
-  propertyCategories?: { [propertyCategoryName: string]: LocalizedText };
-  /** Localized formats, keyed by format name */
-  formats?: { [formatName: string]: LocalizedText };
-  /** Localized kinds of quantity, keyed by kind of quantity name */
-  kindOfQuantities?: { [koqName: string]: LocalizedText };
-  /** Localized constants, keyed by constant name */
-  constants?: { [constantName: string]: LocalizedText };
+  /** Localized schema items, keyed by item name */
+  items?: { [itemName: string]: LocalizedItemText };
 }
