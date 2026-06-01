@@ -35,7 +35,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import { SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaView, schemaViewFormatVersion } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 
@@ -161,6 +161,7 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
+  private _schemasPromise?: Promise<SchemaView>;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -623,6 +624,10 @@ export abstract class IModelConnection extends IModel {
    * This means to correctly access schema context, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
    * Server-side applications would also [configure RPC]($docs/learning/rpcinterface/#server-side-configuration) as needed.
    *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need custom-attribute deserialization
+   * or the full ecschema-metadata object graph.
+   *
    * @note While a `BlankConnection` returns a valid `schemaContext`, it has an invalid locater registered by default, and will throw an error when trying to call it's methods.
    * @beta
    */
@@ -639,6 +644,113 @@ export abstract class IModelConnection extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the existing queryRows RPC (ConcurrentQuery). Subsequent calls return the cached view.
+   * Multiple concurrent callers share a single in-flight fetch.
+   *
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for custom-attribute
+   * deserialization or anywhere you need the full ecschema-metadata object graph.
+   * @beta
+   */
+  public async getSchemaView(): Promise<SchemaView> {
+    if (this._schemasPromise) {
+      const ctx = await this._schemasPromise;
+      if (!ctx.isOutdated)
+        return ctx;
+    }
+    // Capture the in-flight promise locally so the rejection handler only clears
+    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
+    // re-fetch could otherwise replace the field before our fetch fails, and a naive
+    // `_schemasPromise = undefined` would clobber that newer reference.
+    const inflight = this._fetchSchemas();
+    this._schemasPromise = inflight;
+    inflight.catch(() => {
+      if (this._schemasPromise === inflight)
+        this._schemasPromise = undefined;
+    });
+    return inflight;
+  }
+
+
+  /**
+   * Checks whether the iModel's schemas have changed since the current cached [[SchemaView]] was
+   * built, and discards the cache only if they have.
+   *
+   * Frontend code paths that may affect schemas - such as [[BriefcaseConnection.pullChanges]], or
+   * application-specific IPC calls that import or upgrade schemas - cannot reliably determine
+   * whether the operation actually modified any schemas. The IPC response for a pull, for example,
+   * returns only the new changeset id, not the list of applied changesets with their types.
+   * Unconditionally discarding the cached [[SchemaView]] after every such operation would cause
+   * unnecessary reloads in the common case where schemas are unchanged. This method avoids that
+   * cost by fetching a lightweight schema checksum via `PRAGMA checksum(ecdb_schema)` and
+   * comparing it against the token stored in the cached view. Only when the token differs is the
+   * cache discarded.
+   *
+   * Subclasses that expose operations which may modify schemas should await this method after the
+   * operation completes to ensure [[getSchemaView]] returns a fresh view if needed.
+   * @internal
+   */
+  protected async invalidateSchemaViewIfChanged(): Promise<void> {
+    if (!this._schemasPromise)
+      return;
+    const existingPromise = this._schemasPromise;
+    let existing: SchemaView;
+    try {
+      existing = await existingPromise;
+    } catch {
+      // The cached promise itself failed; drop it so the next getSchemaView() retries.
+      if (this._schemasPromise === existingPromise)
+        this._schemasPromise = undefined;
+      return;
+    }
+    if (!existing.schemaToken)
+      return;
+    try {
+      const reader = this.createQueryReader("PRAGMA checksum(ecdb_schema)");
+      const result = await reader.next();
+      if (result.done)
+        throw new Error("PRAGMA checksum(ecdb_schema) returned no rows");
+      const liveToken = result.value.sha3_256 as string;
+      if (liveToken !== existing.schemaToken) {
+        if (this._schemasPromise === existingPromise)
+          this._schemasPromise = undefined;
+        existing.markOutdated();
+      }
+    } catch {
+      // The checksum check is called right after operations that may have changed schemas
+      // (e.g., pullChanges). If we cannot verify the cached view is still current, drop it
+      // rather than risk returning stale metadata indefinitely. The next getSchemaView() call
+      // will reload. We also mark the existing view outdated so any retained references can
+      // observe the invalidation.
+      if (this._schemasPromise === existingPromise) {
+        this._schemasPromise = undefined;
+        existing.markOutdated();
+      }
+    }
+  }
+
+  private async _fetchSchemas(): Promise<SchemaView> {
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
+    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
+    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
+    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
+    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
+    // don't support OFFSET-based pagination.
+    const reader = this.createQueryReader(`PRAGMA schema_view(${schemaViewFormatVersion})`);
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(IModelStatus.BadRequest, "PRAGMA schema_view returned no rows");
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(IModelStatus.BadRequest, "PRAGMA schema_view returned null data column");
+    return SchemaView.fromBinary(data, token ?? "");
   }
 }
 
@@ -1223,6 +1335,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];

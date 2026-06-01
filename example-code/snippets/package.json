@@ -41,7 +41,7 @@
     "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.9",
+    "@bentley/units-schema": "^1.0.10",
     "@bentley/formats-schema": "^1.0.0",
     "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",

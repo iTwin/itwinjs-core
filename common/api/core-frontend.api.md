@@ -289,6 +289,7 @@ import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -5162,8 +5163,12 @@ export abstract class IModelConnection extends IModel {
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
+    // @internal
+    protected invalidateSchemaViewIfChanged(): Promise<void>;
     get isBlank(): boolean;
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
@@ -6377,6 +6382,8 @@ export class MapTile extends RealityTile {
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
+    // @internal
+    computeVisibilityFactor(args: TileDrawArgs): number;
     // @internal (undocumented)
     protected _cornerRays?: Ray3d[];
     // @internal (undocumented)

@@ -48,35 +48,48 @@ class SettingsSchemasImpl implements SettingsSchemas {
     return value;
   }
 
+  public getResolvedSettingDef(settingName: string): SettingSchema | undefined {
+    const schema = this.settingDefs.get(settingName);
+    return schema ? this.resolveSchema(schema, settingName) : undefined;
+  }
+
   /** @internal */
-  public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } } {
+  public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string, visited: string[] = []): { required?: string[], properties: { [name: string]: SettingSchema }, visited: string[] } {
     let required = propDef.required;
     let properties = propDef.properties;
+    let nextVisited = visited;
 
     // if this object extends a typeDef, add typeDef's properties and required values, recursively
     if (propDef.extends !== undefined) {
+      if (visited.includes(propDef.extends))
+        throw new Error(`circular typeDef reference detected: ${[...visited, propDef.extends].join(" -> ")}`);
+
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
-      const expanded = this.getObjectProperties(typeDef, `${scope}.${propDef.extends}`);
+        throw new Error(`typeDef ${propDef.extends} does not exist${scope ? ` for ${scope}` : ""}`);
+      const expanded = this.getObjectProperties(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends, [...visited, propDef.extends]);
+      nextVisited = expanded.visited;
       if (expanded.required)
-        required = required ? [...required, ...expanded.required] : expanded.required;
+        required = required ? [...new Set([...required, ...expanded.required])] : expanded.required;
       if (expanded.properties) {
         properties = properties ? { ...expanded.properties, ...properties } : expanded.properties;
       }
     }
     properties = properties ?? {};
-    return { required, properties };
+    return { required, properties, visited: nextVisited };
   }
 
   /** @internal */
-  public getArrayItems(propDef: Readonly<SettingSchema>, scope: string): SettingSchema {
+  public getArrayItems(propDef: Readonly<SettingSchema>, scope: string, visited: string[] = []): SettingSchema {
     let items = propDef.items;
     if (undefined === items && propDef.extends) {
+      if (visited.includes(propDef.extends))
+        throw new Error(`circular typeDef reference detected: ${[...visited, propDef.extends].join(" -> ")}`);
+
       const typeDef = this.typeDefs.get(propDef.extends);
       if (undefined === typeDef)
-        throw new Error(`typeDef ${propDef.extends} does not exist for ${scope}`);
-      items = typeDef.items;
+        throw new Error(`typeDef ${propDef.extends} does not exist${scope ? ` for ${scope}` : ""}`);
+      items = this.getArrayItems(typeDef, scope ? `${scope}.${propDef.extends}` : propDef.extends, [...visited, propDef.extends]);
     }
     if (undefined === items)
       throw new Error(`array ${scope} has no items definition`);
@@ -172,6 +185,52 @@ class SettingsSchemasImpl implements SettingsSchemas {
     this.onSchemaChanged.raiseEvent();
   }
 
+  private resolveSchema(schema: Readonly<SettingSchema>, scope = "", visited: string[] = []): SettingSchema {
+    const { extends: _extends, ...resolved } = schema;
+
+    switch (schema.type) {
+      case "object": {
+        const { required, properties, visited: resolvedVisited } = this.getObjectProperties(schema, scope, visited);
+
+        return {
+          ...resolved,
+          required,
+          properties: Object.fromEntries(
+            Object.entries(properties).map(([key, value]) => [
+              key,
+              this.resolveSchema(value, scope ? `${scope}.${key}` : key, resolvedVisited),
+            ])
+          ),
+        };
+      }
+
+      case "array": {
+        const items = this.getArrayItems(schema, scope, visited);
+        let resolvedSchema = resolved;
+
+        if (schema.extends) {
+          if (visited.includes(schema.extends))
+            throw new Error(`circular typeDef reference detected: ${[...visited, schema.extends].join(" -> ")}`);
+
+          const typeDef = this.typeDefs.get(schema.extends);
+          if (undefined === typeDef)
+            throw new Error(`typeDef ${schema.extends} does not exist${scope ? ` for ${scope}` : ""}`);
+
+          const inheritedProps = this.resolveSchema(typeDef, scope ? `${scope}.${schema.extends}` : schema.extends, [...visited, schema.extends]);
+          resolvedSchema = { ...inheritedProps, ...resolvedSchema };
+        }
+
+        return {
+          ...resolvedSchema,
+          items: this.resolveSchema(items, scope ? `${scope}.items` : "items", visited),
+        };
+      }
+
+      default:
+        return resolved;
+    }
+  }
+
   private doAdd(settingsGroup: SettingGroupSchema[]) {
     settingsGroup.forEach((group) => {
       if (undefined === group.schemaPrefix)
@@ -191,7 +250,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     }
     if (undefined !== group?.typeDefs) {
       for (const key of Object.keys(group.typeDefs))
-        this.settingDefs.delete(makeSettingKey(schemaPrefix, key));
+        this.typeDefs.delete(makeSettingKey(schemaPrefix, key));
     }
     this._allGroups.delete(schemaPrefix);
   }

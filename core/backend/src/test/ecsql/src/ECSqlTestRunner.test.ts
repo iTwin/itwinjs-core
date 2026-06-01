@@ -243,6 +243,7 @@ function getRowFormat(rowFormat: ECDbTestRowFormat): QueryRowFormat {
     case ECDbTestRowFormat.ECSqlIndexes:
       return QueryRowFormat.UseECSqlPropertyIndexes;
     case ECDbTestRowFormat.JsNames:
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return QueryRowFormat.UseJsPropertyNames;
     default:
       return QueryRowFormat.UseECSqlPropertyNames;

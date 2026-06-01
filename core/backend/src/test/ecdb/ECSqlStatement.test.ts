@@ -14,10 +14,12 @@ import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 
 /* eslint-disable @typescript-eslint/naming-convention */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
   ecdb.saveChanges();
   let rowCount: number = 0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   for await (const queryRow of ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rowCount++;
     if (callback)
@@ -27,6 +29,7 @@ async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: Q
 }
 async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions) {
   ecdb.saveChanges();
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const reader = ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames });
   return reader.toArray();
 }
@@ -178,6 +181,7 @@ describe("ECSqlStatement", () => {
     const rc = await queryCount(ecdb, "SELECT * FROM ts.Foo");
     assert.equal(rc, 100); // expe
     let rowNo = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       assert.equal(row.n, rowNo + 1);
       rowNo = rowNo + 1;
@@ -212,6 +216,7 @@ describe("ECSqlStatement", () => {
         try {
           const options = new QueryOptionsBuilder();
           options.setDelay(delay);
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           options.setRowFormat(QueryRowFormat.UseJsPropertyNames);
           options.setRestartToken("tag");
           for await (const _row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, options.getOptions())) {
@@ -262,6 +267,7 @@ describe("ECSqlStatement", () => {
     ecdb.clearStatementCache();
     for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
       let rowNo = 1;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of ecdb.createQueryReader("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.n, rowNo);
         rowNo = rowNo + 1;
@@ -285,15 +291,18 @@ describe("ECSqlStatement", () => {
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
     ecdb.saveChanges();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       assert.equal(row.cnt, 3);
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", new QueryBinder().bindInt(1, 1).bindInt(2, 2).bindInt(3, 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       assert.equal(row.cnt, 3);
     }
     const slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("No parameter index found for parameter name: d.");
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.cnt, 3);
       }
@@ -316,6 +325,7 @@ describe("ECSqlStatement", () => {
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
     }
     ecdb.saveChanges();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of ecdb.createQueryReader("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       assert.equal(row.hexId, row.id);
       assert.equal(row.hexId, row.idhex);
