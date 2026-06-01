@@ -526,10 +526,10 @@
     "ContentSpecification": {
       "anyOf": [
         {
-          "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
+          "$ref": "#/definitions/ContentRelatedInstancesSpecification"
         },
         {
-          "$ref": "#/definitions/ContentRelatedInstancesSpecification"
+          "$ref": "#/definitions/ContentInstancesOfSpecificClassesSpecification"
         },
         {
           "$ref": "#/definitions/SelectedNodeInstancesSpecification"
@@ -2451,9 +2451,6 @@
     "Rule": {
       "anyOf": [
         {
-          "$ref": "#/definitions/ContentModifier"
-        },
-        {
           "$ref": "#/definitions/ContentRule"
         },
         {
@@ -2494,6 +2491,9 @@
         },
         {
           "$ref": "#/definitions/RootNodeRule"
+        },
+        {
+          "$ref": "#/definitions/ContentModifier"
         }
       ],
       "description": "A union of all presentation rule types."
