@@ -111,7 +111,7 @@
     "inversify": "~6.0.1",
     "json5": "^2.2.3",
     "linebreak": "^1.1.0",
-    "multiparty": "^4.2.1",
+    "multiparty": "^4.3.0",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "touch": "^3.1.0",
