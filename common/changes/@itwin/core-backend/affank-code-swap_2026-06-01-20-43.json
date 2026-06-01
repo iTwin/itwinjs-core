@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Code swap does not take effect when second user pulls changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
