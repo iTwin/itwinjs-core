@@ -147,8 +147,7 @@ preview;type;LazyLoadedUnit
 public;type;LazyLoadedUnitSystem
 preview;type;LazyLoadedUnitSystem
 beta;class;LocalizationProvider
-beta;interface;LocalizedClassText
-beta;interface;LocalizedEnumerationText
+beta;interface;LocalizedItemText
 beta;interface;LocalizedText
 public;class;Mixin
 preview;class;Mixin

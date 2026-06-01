@@ -1154,21 +1154,13 @@ export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
 // @beta
 export class LocalizationProvider implements ILocalizationProvider {
     constructor(_loader: (schemaName: string, locale: string) => Promise<SchemaLocalizationJson | undefined>);
-    clearCache(): void;
     getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
 }
 
 // @beta
-export interface LocalizedClassText extends LocalizedText {
-    properties?: {
-        [propertyName: string]: LocalizedText;
-    };
-}
-
-// @beta
-export interface LocalizedEnumerationText extends LocalizedText {
-    enumerators?: {
-        [enumeratorName: string]: LocalizedText;
+export interface LocalizedItemText extends LocalizedText {
+    members?: {
+        [memberName: string]: LocalizedText;
     };
 }
 
@@ -1754,7 +1746,7 @@ export enum PropertyType {
 }
 
 // @internal (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "PrimitiveArrayProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty";
 
 // @internal (undocumented)
 export namespace PropertyTypeUtils {
@@ -2467,59 +2459,33 @@ export class SchemaLoader {
 
 // @beta
 export class SchemaLocalization {
-    constructor(provider: ILocalizationProvider, locale: string);
-    clearCache(): void;
-    getEnumeratorDescription(enumeration: Enumeration, enumeratorName: string): Promise<string | undefined>;
-    getEnumeratorLabel(enumeration: Enumeration, enumeratorName: string): Promise<string>;
-    getPropertyDescription(ecClass: ECClass, property: Property): Promise<string | undefined>;
-    getPropertyLabel(ecClass: ECClass, property: Property): Promise<string>;
-    getSchemaDescription(schema: Schema): Promise<string | undefined>;
-    getSchemaItemDescription(item: SchemaItem): Promise<string | undefined>;
-    getSchemaItemLabel(item: SchemaItem): Promise<string>;
-    getSchemaLabel(schema: Schema): Promise<string>;
+    static create(provider: ILocalizationProvider, locale: string, schemaKeys: Iterable<SchemaKey>): Promise<SchemaLocalization>;
+    getDescription(schemaName: string, itemName?: string, memberName?: string): string | undefined;
+    getEnumeratorDescription(enumeration: Enumeration | SchemaView.Enumeration, enumeratorOrName: string | SchemaView.Enumerator): string | undefined;
+    getEnumeratorLabel(enumeration: Enumeration | SchemaView.Enumeration, enumeratorOrName: string | SchemaView.Enumerator): string;
+    getLabel(schemaName: string, itemName?: string, memberName?: string): string | undefined;
+    getPropertyDescription(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string | undefined;
+    getPropertyLabel(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string;
+    getSchemaDescription(schema: Schema | SchemaView.Schema): string | undefined;
+    getSchemaItemDescription(item: SchemaItem | SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory): string | undefined;
+    getSchemaItemLabel(item: SchemaItem | SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory): string;
+    getSchemaLabel(schema: Schema | SchemaView.Schema): string;
+    loadLocalizations(schemaKeys: Iterable<SchemaKey>): Promise<void>;
     // (undocumented)
     get locale(): string;
-    set locale(value: string);
     get provider(): ILocalizationProvider;
 }
 
 // @beta
 export interface SchemaLocalizationJson {
     $schema?: string;
-    classes?: {
-        [className: string]: LocalizedClassText;
-    };
-    constants?: {
-        [constantName: string]: LocalizedText;
-    };
     description?: string;
-    enumerations?: {
-        [enumerationName: string]: LocalizedEnumerationText;
-    };
-    formats?: {
-        [formatName: string]: LocalizedText;
-    };
-    invertedUnits?: {
-        [invertedUnitName: string]: LocalizedText;
-    };
-    kindOfQuantities?: {
-        [koqName: string]: LocalizedText;
+    items?: {
+        [itemName: string]: LocalizedItemText;
     };
     label?: string;
     locale: string;
     name: string;
-    phenomena?: {
-        [phenomenonName: string]: LocalizedText;
-    };
-    propertyCategories?: {
-        [propertyCategoryName: string]: LocalizedText;
-    };
-    units?: {
-        [unitName: string]: LocalizedText;
-    };
-    unitSystems?: {
-        [unitSystemName: string]: LocalizedText;
-    };
     version?: string;
 }
 

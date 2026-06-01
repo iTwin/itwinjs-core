@@ -136,7 +136,7 @@ export class SchemaLocalization {
    * Fallback: localized description → base locale description → original description
    */
   public getPropertyDescription(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string | undefined {
-    return this.getDescription(ecClass.schema.name, ecClass.name, property.name) ?? (property.description || undefined);
+    return this.getDescription(ecClass.schema.name, ecClass.name, property.name) ?? property.description;
   }
 
   /**
@@ -164,7 +164,7 @@ export class SchemaLocalization {
     if (description)
       return description;
     if (typeof enumeratorOrName !== "string")
-      return enumeratorOrName.description || undefined;
+      return enumeratorOrName.description;
     const enumerator = (enumeration as Enumeration).enumerators.find(e => e.name === enumeratorName);
     return enumerator?.description;
   }

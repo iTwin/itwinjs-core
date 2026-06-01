@@ -10,10 +10,6 @@ import { Schema } from "../../Metadata/Schema";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaLocalization } from "../../Localization/SchemaLocalization";
 import { LocalizationProvider } from "../../Localization/LocalizationProvider";
-import { SchemaKey } from "../../SchemaKey";
-import { SchemaView, SchemaViewBuilder } from "../../SchemaView";
-import { ClassModifier, ClassType, PropertyKind, SchemaViewPrimitiveType } from "../../SchemaViewInterfaces";
-import { StrengthDirection, StrengthType } from "../../ECObjects";
 
 describe("SchemaLocalization", () => {
 
