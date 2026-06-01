@@ -241,9 +241,8 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
       e1 = b1.elements.getElementProps(elem1Id!);
       chai.expect(e1.code.value).to.satisfy((v: string | undefined) => v === undefined || v === "");
 
-      // --- Step 2 (txn2): Swap codeValues — elem1 gets CODE_B, elem2 gets null ---
-      // Clear elem2's code first to avoid a uniqueness conflict before assigning CODE_B to elem1.
-      await b1.locks.acquireLocks({ exclusive: [elem2Id!] });
+      // --- Step 2 (txn2): Swap codeValues — elem1 gets CODE_B, elem2 gets CODE_A ---
+      // elem1's intermediate empty code value avoids a uniqueness conflict while assigning CODE_A to elem2.
       withEditTxn(b1, "swap code values", (txn) => {
         const props1 = b1!.elements.getElementProps(elem1Id!);
         const props2 = b1!.elements.getElementProps(elem2Id!);
