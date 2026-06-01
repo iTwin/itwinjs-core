@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
-import { Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, GeometricElement2dProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
@@ -279,8 +279,6 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
       chai.expect(e2.code.value).to.equal("CODE_A");
       // --- Push changes ---
       await b1.pushChanges({ description: "null elem1 code and swap code values" });
-      Logger.initializeToConsole();
-      Logger.setLevelDefault(LogLevel.Trace);
       await b2.pullChanges();
 
       // No local txns remain after push
@@ -407,8 +405,6 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
 
       // --- Push changes ---
       await b1.pushChanges({ description: "delete elem1 and insert new element with same code" });
-      Logger.initializeToConsole();
-      Logger.setLevelDefault(LogLevel.Trace);
       await b2.pullChanges();
 
       // No local txns remain after push
