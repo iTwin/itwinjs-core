@@ -147,6 +147,7 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
 
     } finally {
       b1?.close();
+      b2?.close();
       HubMock.shutdown();
     }
   });
