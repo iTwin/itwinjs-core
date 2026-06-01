@@ -42,6 +42,7 @@
           "CVE-2025-27152", // https://github.com/advisories/GHSA-jr5f-v2jv-69x6 azurite>@azure/ms-rest-js>axios
           "CVE-2025-58754", // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj azurite>@azure/ms-rest-js>axios
           "CVE-2026-26996", // https://github.com/advisories/GHSA-3ppc-4f35-3m26 mocha>glob>minimatch
+<<<<<<< HEAD
           "CVE-2025-59288", // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>@playwright/test>playwright (playwright is dev only dep, requires active MitM to exploit)
           "CVE-2026-1615", // https://github.com/advisories/GHSA-87r5-mp6g-5w5j presentation/common>json-schema-faker>jsonpath
           // Fixes for following CVEs only available in newer Electron versions which are not supported by iTwin.js 4.x. Non of the CVEs should be exploitable in library itself.
@@ -49,6 +50,9 @@
           "CVE-2026-34771", // https://github.com/advisories/GHSA-8337-3p73-46f4 electron (fullscreen/pointer-lock/keyboard-lock permission UAF, not used)
           "CVE-2026-34770", // https://github.com/advisories/GHSA-jjp3-mq3x-295m electron (PowerMonitor UAF, not used)
           "CVE-2026-34769" // https://github.com/advisories/GHSA-9wfr-w7mm-pc7f electron (commandLineSwitches injection, webPreferences are hardcoded)
+=======
+          "CVE-2026-47429" // https://github.com/advisories/GHSA-5xrq-8626-4rwp vitest (dev-only). Only exploitable when the Vitest UI server is running; this repo never uses @vitest/ui or `vitest --ui`. Temporary until vitest is bumped to >=4.1.0. core/bentley>vitest, core/frontend>vitest
+>>>>>>> 0867aca50c (Security: ignore dev-only vitest UI advisory CVE-2026-47429 (GHSA-5xrq-8626-4rwp) (#9351))
         ]
       }
     }
