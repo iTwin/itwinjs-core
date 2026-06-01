@@ -43,9 +43,10 @@ function roadLabelsLayerProps(): ImageMapLayerProps {
 }
 
 function isOwnedRoadLabelsLayer(layer: MapLayerSettings): layer is ImageMapLayerSettings {
+  // Identify by format + role marker, not URL: a persisted style created against an older
+  // roadLabelsUrl must still be recognized so Hybrid round-trips and cleanup stay correct.
   return layer instanceof ImageMapLayerSettings
     && layer.formatId === AzureMapsMapLayerFormat.formatId
-    && layer.url === roadLabelsUrl
     && layer.properties?.azureMapsRole === roadLabelsRole;
 }
 

@@ -39,7 +39,7 @@ A typical Azure Maps app does three things in order:
 [[include:AzureMaps_InitializeMapLayersFormats]]
 ```
 
-This step registers the optional Azure Maps format supplied by `@itwin/map-layers-formats`. The Azure Maps key can also be supplied through the generic `IModelApp.startup({ mapLayerOptions: { AzureMaps: ... } })` credential path, but `azureMapsOpts.subscriptionKey` keeps Azure-specific setup with the package that handles Azure Maps.
+This step registers the optional Azure Maps format supplied by `@itwin/map-layers-formats` and supplies the subscription key through `azureMapsOpts.subscriptionKey`. Provide the key this way so Azure-specific setup stays with the package that handles Azure Maps.
 
 ## Applying Azure Maps basemaps
 
@@ -112,4 +112,3 @@ For more on those prerequisites, see [GeoLocation of iModels](../GeoLocation.md)
 - [Using Views in iTwin.js](./Views.md)
 - [GeoLocation of iModels](../GeoLocation.md)
 - [The iTwin.js Display System](../display/index.md)
-- `@itwin/map-layers-formats`

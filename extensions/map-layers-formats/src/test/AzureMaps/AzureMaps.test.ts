@@ -212,6 +212,20 @@ describe("AzureMaps", () => {
     expect(url).not.to.contain("subscription-key=fallbackKey");
   });
 
+  it("falls back to the MapLayersFormats subscription key when the layer access key is empty", async () => {
+    registryConfig.AzureMaps = { key: "subscription-key", value: "" };
+    sandbox.stub(MapLayersFormats, "azureMapsOpts").get(() => ({ subscriptionKey: "fallbackKey" }));
+
+    const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
+    const provider = IModelApp.mapLayerFormatRegistry.createImageryProvider(settings);
+
+    expect(provider).to.be.instanceOf(AzureMapsLayerImageryProvider);
+    if (undefined === provider)
+      throw new Error("Expected Azure Maps provider to be created");
+
+    expect(await provider.constructUrl(1, 2, 3)).to.contain("subscription-key=fallbackKey");
+  });
+
   it("maps Azure 401/403 tile responses to RequireAuth", async () => {
     const settings = AzureMaps.createBaseLayerSettings(BackgroundMapType.Aerial);
     settings.accessKey = { key: "subscription-key", value: "dummyKey" };

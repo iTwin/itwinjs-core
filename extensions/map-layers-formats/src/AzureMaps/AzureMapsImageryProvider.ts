@@ -14,8 +14,10 @@ export const azureMapsSubscriptionKeyParameter = "subscription-key";
 
 /** @internal */
 export function getAzureMapsSubscriptionKey(accessKey: MapLayerKey | undefined, fallbackSubscriptionKey?: string): string | undefined {
-  if (accessKey !== undefined)
-    return accessKey.value.length > 0 ? accessKey.value : undefined;
+  // A layer access key takes precedence, but an empty value falls through to the configured fallback
+  // rather than disabling auth outright.
+  if (accessKey !== undefined && accessKey.value.length > 0)
+    return accessKey.value;
 
   return fallbackSubscriptionKey !== undefined && fallbackSubscriptionKey.length > 0 ? fallbackSubscriptionKey : undefined;
 }
