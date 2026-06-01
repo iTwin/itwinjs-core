@@ -26,7 +26,7 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
   after(async () => {
     await TestUtils.shutdownBackend();
   });
-  it("null codeValue on elem1, swap codeValues between two elements sharing the same codeSpec and codeScope, verify undo/redo, push, and b2 sees final state after pull", async () => {
+  it("swap codeValues between two elements sharing the same codeSpec and codeScope, verify undo/redo in a single transaction", async () => {
     HubMock.startup("CodeSwapTest", KnownTestLocations.outputDir);
     let b1: BriefcaseDb | undefined;
     let b2: BriefcaseDb | undefined;
