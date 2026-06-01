@@ -7,7 +7,7 @@ import { Schema } from "../Metadata/Schema";
 import { ECClass } from "../Metadata/Class";
 import { Property } from "../Metadata/Property";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { Enumeration } from "../Metadata/Enumeration";
+import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
 import { SchemaView } from "../SchemaView";
 import { SchemaKey } from "../SchemaKey";
 import { ILocalizationProvider } from "./LocalizationProvider";
@@ -143,30 +143,16 @@ export class SchemaLocalization {
    * Get localized label for an enumerator.
    * Fallback: localized label → base locale label → original label → enumerator name
    */
-  public getEnumeratorLabel(enumeration: Enumeration | SchemaView.Enumeration, enumeratorOrName: string | SchemaView.Enumerator): string {
-    const enumeratorName = typeof enumeratorOrName === "string" ? enumeratorOrName : enumeratorOrName.name;
-    const label = this.getLabel(enumeration.schema.name, enumeration.name, enumeratorName);
-    if (label)
-      return label;
-    if (typeof enumeratorOrName !== "string")
-      return enumeratorOrName.label || enumeratorName;
-    const enumerator = (enumeration as Enumeration).enumerators.find(e => e.name === enumeratorName);
-    return enumerator?.label ?? enumeratorName;
+  public getEnumeratorLabel(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): string {
+    return this.getLabel(enumeration.schema.name, enumeration.name, enumerator.name) ?? (enumerator.label || enumerator.name);
   }
 
   /**
    * Get localized description for an enumerator.
    * Fallback: localized description → base locale description → original description
    */
-  public getEnumeratorDescription(enumeration: Enumeration | SchemaView.Enumeration, enumeratorOrName: string | SchemaView.Enumerator): string | undefined {
-    const enumeratorName = typeof enumeratorOrName === "string" ? enumeratorOrName : enumeratorOrName.name;
-    const description = this.getDescription(enumeration.schema.name, enumeration.name, enumeratorName);
-    if (description)
-      return description;
-    if (typeof enumeratorOrName !== "string")
-      return enumeratorOrName.description;
-    const enumerator = (enumeration as Enumeration).enumerators.find(e => e.name === enumeratorName);
-    return enumerator?.description;
+  public getEnumeratorDescription(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): string | undefined {
+    return this.getDescription(enumeration.schema.name, enumeration.name, enumerator.name) ?? enumerator.description;
   }
 
   /**

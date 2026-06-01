@@ -358,8 +358,9 @@ describe("SchemaLocalization", () => {
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       expect(buildingTypeEnum).toBeDefined();
 
-      const residentialLabel = localization.getEnumeratorLabel(buildingTypeEnum!, "Residential");
-      const residentialDescription = localization.getEnumeratorDescription(buildingTypeEnum!, "Residential");
+      const residentialEnumerator = buildingTypeEnum!.getEnumeratorByName("Residential")!;
+      const residentialLabel = localization.getEnumeratorLabel(buildingTypeEnum!, residentialEnumerator);
+      const residentialDescription = localization.getEnumeratorDescription(buildingTypeEnum!, residentialEnumerator);
       // Localized enumerator label
       expect(residentialLabel).to.equal("Wohngebäude");
       // Localized enumerator description
@@ -371,7 +372,8 @@ describe("SchemaLocalization", () => {
       const localization = await SchemaLocalization.create(localizationProvider, "fr", [testBuildingSchema.schemaKey]);
 
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
-      const label = localization.getEnumeratorLabel(buildingTypeEnum!, "Residential");
+      const residentialEnumerator = buildingTypeEnum!.getEnumeratorByName("Residential")!;
+      const label = localization.getEnumeratorLabel(buildingTypeEnum!, residentialEnumerator);
 
       // Falls back to original label
       expect(label).to.equal("Residential");
@@ -384,17 +386,19 @@ describe("SchemaLocalization", () => {
       expect(buildingTypeEnum).toBeDefined();
 
       // Commercial: has only localized description
-      const commercialLabel = localization.getEnumeratorLabel(buildingTypeEnum!, "Commercial");
+      const commercialEnumerator = buildingTypeEnum!.getEnumeratorByName("Commercial")!;
+      const commercialLabel = localization.getEnumeratorLabel(buildingTypeEnum!, commercialEnumerator);
       expect(commercialLabel).to.equal("Commercial"); // Falls back to original label
 
-      const commercialDescription = localization.getEnumeratorDescription(buildingTypeEnum!, "Commercial");
+      const commercialDescription = localization.getEnumeratorDescription(buildingTypeEnum!, commercialEnumerator);
       expect(commercialDescription).to.equal("Ein Gewerbegebäude"); // Localized description
 
       // Industrial: has only localized label
-      const industrialLabel = localization.getEnumeratorLabel(buildingTypeEnum!, "Industrial");
+      const industrialEnumerator = buildingTypeEnum!.getEnumeratorByName("Industrial")!;
+      const industrialLabel = localization.getEnumeratorLabel(buildingTypeEnum!, industrialEnumerator);
       expect(industrialLabel).to.equal("Industriegebäude"); // Localized label
 
-      const industrialDescription = localization.getEnumeratorDescription(buildingTypeEnum!, "Industrial");
+      const industrialDescription = localization.getEnumeratorDescription(buildingTypeEnum!, industrialEnumerator);
       expect(industrialDescription).to.equal("An industrial building"); // Falls back to original description
     });
 
@@ -419,10 +423,11 @@ describe("SchemaLocalization", () => {
       const buildingTypeEnum = await testBuildingSchema.getEnumeration("BuildingType");
       expect(buildingTypeEnum).toBeDefined();
 
-      const mixedUseLabel = localization.getEnumeratorLabel(buildingTypeEnum!, "MixedUse");
+      const mixedUseEnumerator = buildingTypeEnum!.getEnumeratorByName("MixedUse")!;
+      const mixedUseLabel = localization.getEnumeratorLabel(buildingTypeEnum!, mixedUseEnumerator);
       expect(mixedUseLabel).to.equal("Mixed Use"); // Falls back to original label
 
-      const mixedUseDescription = localization.getEnumeratorDescription(buildingTypeEnum!, "MixedUse");
+      const mixedUseDescription = localization.getEnumeratorDescription(buildingTypeEnum!, mixedUseEnumerator);
       expect(mixedUseDescription).to.equal("A mixed-use building"); // Falls back to original description
     });
 
