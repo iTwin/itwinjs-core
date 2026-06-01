@@ -27,11 +27,11 @@ export interface LocalizedItemText extends LocalizedText {
  */
 export interface SchemaLocalizationJson {
   /** Schema version identifier */
-  $schema?: string;
+  $schema: string;
   /** Name of the schema this localization applies to */
   name: string;
   /** Version of the schema */
-  version?: string;
+  version: string;
   /** Locale identifier (e.g., "de", "fr", "es-CO") */
   locale: string;
   /** Localized schema label */
