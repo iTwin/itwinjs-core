@@ -333,6 +333,8 @@ const schemaInfoQuery = `
     [Alias] as [alias],
     [DisplayLabel] as [label],
     [Description] as [description],
+    [OriginalECXmlVersionMajor] as [ecSpecMajorVersion],
+    [OriginalECXmlVersionMinor] as [ecSpecMinorVersion],
     (
       SELECT
         json_group_array([schemaReferences].[fullName])
