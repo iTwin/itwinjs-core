@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
+import { SchemaView } from "@itwin/ecschema-metadata";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
-import { ECClassHierarchyInfo } from "../../ECClasHierarchy.js";
 import { TestIModelConnection } from "../../IModelSetupUtils.js";
 import { initialize, terminate, testLocalization } from "../../IntegrationTests.js";
 
@@ -90,16 +90,25 @@ export function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
     });
 }
 
-function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassHierarchyInfo) {
+function classIdEquals(cls: SchemaView.Class, classId: Id64String) {
+  return Id64.fromUint32Pair(cls.ecInstanceId, 0) === classId;
+}
+function hasBaseClass(derived: SchemaView.Class, baseClassId: Id64String): boolean {
+  return !!derived.baseClass && (classIdEquals(derived.baseClass, baseClassId) || hasBaseClass(derived.baseClass, baseClassId));
+}
+function hasDerivedClass(base: SchemaView.Class, derivedClassId: Id64String): boolean {
+  return base.derivedClasses.some((d) => classIdEquals(d, derivedClassId) || hasDerivedClass(d, derivedClassId));
+}
+function cloneFilteredNestedContentField(field: NestedContentField, cls: SchemaView.Class) {
   const clone = field.clone();
-  clone.nestedFields = filterNestedContentFieldsByClass(clone.nestedFields, filterClassInfo);
+  clone.nestedFields = filterNestedContentFieldsByClass(clone.nestedFields, cls);
   return clone;
 }
-function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
+function filterNestedContentFieldsByClass(fields: Field[], cls: SchemaView.Class) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
-    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id))) {
-      const clone = cloneFilteredNestedContentField(f, classInfo);
+    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classIdEquals(cls, id) || hasDerivedClass(cls, id))) {
+      const clone = cloneFilteredNestedContentField(f, cls);
       if (clone.nestedFields.length > 0) {
         filteredFields.push(clone);
       }
@@ -109,16 +118,16 @@ function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassHie
   });
   return filteredFields;
 }
-export function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
+export function filterFieldsByClass(fields: Field[], cls: SchemaView.Class) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField()) {
       // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
       // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
       // that we need to clone the field and pick only property fields and nested fields that apply.
-      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id));
+      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classIdEquals(cls, id) || hasDerivedClass(cls, id));
       if (appliesForGivenClass) {
-        const clone = cloneFilteredNestedContentField(f, classInfo);
+        const clone = cloneFilteredNestedContentField(f, cls);
         if (clone.nestedFields.length > 0) {
           filteredFields.push(clone);
         }
@@ -127,11 +136,7 @@ export function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchy
       // always include the field is at least one property in the field belongs to either base or derived class of given class
       const appliesForGivenClass = f.properties.some((p) => {
         const propertyClassId = p.property.classInfo.id;
-        return (
-          propertyClassId === classInfo.id ||
-          classInfo.baseClasses.some((info) => info.id === propertyClassId) ||
-          classInfo.derivedClasses.some((info) => info.id === propertyClassId)
-        );
+        return classIdEquals(cls, propertyClassId) || hasDerivedClass(cls, propertyClassId) || hasBaseClass(cls, propertyClassId);
       });
       if (appliesForGivenClass) {
         filteredFields.push(f);
