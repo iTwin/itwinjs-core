@@ -120,15 +120,15 @@ function filterNestedContentFields(fields: Field[], predicate: (field: NestedCon
 }
 export function filterFieldsByClass(fields: Field[], cls: SchemaView.Class) {
   const nestedContentFieldPredicate = (field: NestedContentField) => {
+    // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
     return field.actualPrimaryClassIds.some((id) => classIdEquals(cls, id) || hasDerivedClass(cls, id));
   };
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField()) {
-      // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
-      // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
-      // that we need to clone the field and pick only property fields and nested fields that apply.
       if (nestedContentFieldPredicate(f)) {
+        // nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
+        // that we need to clone the field and pick only property fields and nested fields that apply.
         const clone = cloneFilteredNestedContentField(f, nestedContentFieldPredicate);
         if (clone.nestedFields.length > 0) {
           filteredFields.push(clone);
@@ -151,22 +151,22 @@ export function filterFieldsByClass(fields: Field[], cls: SchemaView.Class) {
 }
 export function filterFieldsByClassIntersection(fields: Field[], classes: SchemaView.Class[]) {
   const nestedContentFieldPredicate = (field: NestedContentField) => {
+    // always include nested content field if its `actualPrimaryClassIds` contains an id of every given class
     return classes.every((cls) => field.actualPrimaryClassIds.some((id) => classIdEquals(cls, id)));
   };
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField()) {
-      // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
-      // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
-      // that we need to clone the field and pick only property fields and nested fields that apply.
       if (nestedContentFieldPredicate(f)) {
+        // nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given classes - for
+        // that we need to clone the field and pick only property fields and nested fields that apply.
         const clone = cloneFilteredNestedContentField(f, nestedContentFieldPredicate);
         if (clone.nestedFields.length > 0) {
           filteredFields.push(clone);
         }
       }
     } else if (f.isPropertiesField()) {
-      // always include the field if at least one property in the field belongs to all of the given classes of their base classes
+      // always include the field if at least one property in the field belongs to all of the given classes or their base classes
       const appliesForGivenClasses = classes.every((cls) =>
         f.properties.some((p) => {
           const propertyClassId = p.property.classInfo.id;
