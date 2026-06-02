@@ -8453,6 +8453,7 @@ export type WorkspaceContainerId = string;
 
 // @beta
 export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
+    readonly baseUri: string;
     readonly description?: string;
     readonly loadingHelp?: string;
     readonly syncOnConnect?: boolean;
@@ -8488,6 +8489,7 @@ export interface WorkspaceDb {
 
 // @beta
 export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {
+    readonly baseUri: string;
 }
 
 // @beta

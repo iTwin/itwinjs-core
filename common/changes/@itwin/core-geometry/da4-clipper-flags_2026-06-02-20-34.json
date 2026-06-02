@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "fixed clipper with hole issue with z range",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

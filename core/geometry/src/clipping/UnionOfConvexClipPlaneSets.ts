@@ -325,12 +325,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, zLow);
+      convexSet.addZClipPlanes(invisible, undefined, zLow);
       this._convexSets.push(convexSet);
     }
     if (zHigh) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, undefined, zHigh);
+      convexSet.addZClipPlanes(invisible, zHigh);
       this._convexSets.push(convexSet);
     }
   }

@@ -750,8 +750,8 @@ export class ClipShape extends ClipPrimitive {
         if (nextPerpendicular)
           convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true));
         set.addConvexSet(convexSet);
-        set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
       }
+      set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
     } else {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       if (cameraFocalLength === undefined) {
