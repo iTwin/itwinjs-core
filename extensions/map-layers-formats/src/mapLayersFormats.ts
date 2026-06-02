@@ -10,6 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat.js";
+import { AzureMapsMapLayerFormat } from "./AzureMaps/AzureMapsImageryFormat.js";
 import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat.js";
 import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat.js";
 import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool.js";
@@ -21,6 +22,8 @@ import { GoogleMapsSessionManager } from "./map-layers-formats.js";
 export interface MapLayersFormatsConfig {
   localization?: Localization;
   googleMapsOpts?: GoogleMapsOptions;
+  /** Azure Maps options. */
+  azureMapsOpts?: AzureMapsOptions;
 }
 
 /** Google Maps options.
@@ -28,6 +31,14 @@ export interface MapLayersFormatsConfig {
  */
 export interface GoogleMapsOptions {
   sessionManager?: GoogleMapsSessionManager
+}
+
+/** Azure Maps options.
+ * @beta
+ */
+export interface AzureMapsOptions {
+  /** Azure Maps subscription key used when a layer does not supply its own access key. */
+  subscriptionKey?: string;
 }
 
 /** The primary API for the `@itwin/map-layers-formats` package. It allows the package's features to be [[initialize]]d.
@@ -39,6 +50,7 @@ export class MapLayersFormats {
   public static localization: Localization;
 
   private static _googleMapsOpts?: GoogleMapsOptions;
+  private static _azureMapsOpts?: AzureMapsOptions;
 
   /** Registers the [MapLayerFormat]($frontend)s provided by this package for use with [IModelApp]($frontend).
    * Typically, an application will call `MapLayersFormats.initialize` immediately after [IModelApp.startup]($frontend).
@@ -50,6 +62,7 @@ export class MapLayersFormats {
       IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
       IModelApp.mapLayerFormatRegistry.register(OgcApiFeaturesMapLayerFormat);
       IModelApp.mapLayerFormatRegistry.register(GoogleMapsMapLayerFormat);
+      IModelApp.mapLayerFormatRegistry.register(AzureMapsMapLayerFormat);
     }
 
     // register namespace containing localized strings for this package
@@ -60,6 +73,7 @@ export class MapLayersFormats {
 
     MapFeatureInfoTool.register(MapLayersFormats.localizationNamespace);
     MapLayersFormats._googleMapsOpts = config?.googleMapsOpts;
+    MapLayersFormats._azureMapsOpts = config?.azureMapsOpts;
   }
 
   /** The internationalization service namespace. */
@@ -69,6 +83,11 @@ export class MapLayersFormats {
 
   public static get googleMapsOpts() {
     return MapLayersFormats._googleMapsOpts;
+  }
+
+  /** Azure Maps options supplied during initialization. */
+  public static get azureMapsOpts() {
+    return MapLayersFormats._azureMapsOpts;
   }
 
 }
