@@ -7,11 +7,12 @@ import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@itwin/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGoogle3dTilesUrl, Google3dTilesProvider, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
+import { AzureMapsBackgroundMapSettings } from "./AzureMapsPanel";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
@@ -563,19 +564,23 @@ export class ViewAttributes {
 
     toggleBGMapUI(this._vp.view.viewFlags.backgroundMap || !this.getDisplayingGoogle3dTiles());
 
+    const imageryProvidersDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(imageryProvidersDiv);
     const imageryProviders = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: imageryProvidersDiv,
       name: "Imagery: ",
       id: "viewAttr_MapProvider",
       entries: [
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName }),
+      handler: (select) => azureMapsSettings.changeBackgroundMapProvider({ name: select.value as BackgroundMapProviderName, type: Number.parseInt(types.value, 10) }),
     }).select;
 
+    const typesDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(typesDiv);
     const types = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: typesDiv,
       name: "Type: ",
       id: "viewAttr_mapType",
       entries: [
@@ -583,8 +588,19 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMapProvider({ type: Number.parseInt(select.value, 10) }),
+      handler: (select) => azureMapsSettings.changeBackgroundMapProvider({ name: imageryProviders.value as BackgroundMapProviderName, type: Number.parseInt(select.value, 10) }),
     }).select;
+
+    const azureMapsSettings = new AzureMapsBackgroundMapSettings({
+      parent: backgroundSettingsDiv,
+      viewport: this._vp,
+      imageryProvidersDiv,
+      imageryProviders,
+      typesDiv,
+      types,
+      sync: () => this.sync(),
+    });
+
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
       name: "Globe: ",
@@ -649,6 +665,8 @@ export class ViewAttributes {
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
+      azureMapsSettings.update(view);
+
       const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
       if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
         imageryProviders.value = baseLayer.provider.name;
@@ -702,11 +720,6 @@ export class ViewAttributes {
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
-    this.sync();
-  }
-
-  private updateBackgroundMapProvider(props: BackgroundMapProviderProps): void {
-    this._vp.displayStyle.changeBackgroundMapProvider(props);
     this.sync();
   }
 
