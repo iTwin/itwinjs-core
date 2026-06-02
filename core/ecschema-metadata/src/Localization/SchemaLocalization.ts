@@ -3,15 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { SchemaKey } from "../SchemaKey";
+import { SchemaView } from "../SchemaView";
 import { Schema } from "../Metadata/Schema";
 import { ECClass } from "../Metadata/Class";
 import { Property } from "../Metadata/Property";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
-import { SchemaView } from "../SchemaView";
-import { SchemaKey } from "../SchemaKey";
 import { ILocalizationProvider } from "./LocalizationProvider";
-import { SchemaLocalizationJson } from "./LocalizationTypes";
+import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
+import { LocalizedText, SchemaLocalizationJson } from "./LocalizationTypes";
+
+type SchemaViewItem = SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory;
 
 /**
  * Manages schema localization to provide localized labels and descriptions.
@@ -97,67 +99,47 @@ export class SchemaLocalization {
   }
 
   /**
-   * Get localized label for a schema.
-   * Fallback: localized label → base locale label → original label → schema name
+   * Get localized label and description of a schema.
+   * Label fallback: localized label → base locale label → original label → schema name
+   * Description fallback: localized description → base locale description → original description
    */
-  public getSchemaLabel(schema: Schema | SchemaView.Schema): string {
-    return this.getLabel(schema.name) ?? (schema.label || schema.name);
+  public getLocalizedSchema(schema: Schema | SchemaView.Schema): LocalizedText {
+    const label = this.getLabel(schema.name) ?? (schema.label || schema.name);
+    const description = this.getDescription(schema.name) ?? schema.description;
+    return { label, description };
   }
 
   /**
-   * Get localized description for a schema.
-   * Fallback: localized description → base locale description → original description
+   * Get localized label and description of a schema item (class, enumeration, unit, etc.).
+   * Label fallback: localized label → base locale label → original label → item name
+   * Description fallback: localized description → base locale description → original description
    */
-  public getSchemaDescription(schema: Schema | SchemaView.Schema): string | undefined {
-    return this.getDescription(schema.name) ?? schema.description;
+  public getLocalizedSchemaItem(item: SchemaItem | SchemaViewItem): LocalizedText {
+    const label = this.getLabel(item.schema.name, item.name) ?? (item.label || item.name);
+    const description = this.getDescription(item.schema.name, item.name) ?? item.description;
+    return { label, description };
   }
 
   /**
-   * Get localized label for a schema item (class, enumeration, unit, etc.).
-   * Fallback: localized label → base locale label → original label → item name
+   * Get localized label and description of a property.
+   * Label fallback: localized label → base locale label → original label → property name
+   * Description fallback: localized description → base locale description → original description
    */
-  public getSchemaItemLabel(item: SchemaItem | SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory): string {
-    return this.getLabel(item.schema.name, item.name) ?? (item.label || item.name);
+  public getLocalizedProperty(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): LocalizedText {
+    const label = this.getLabel(ecClass.schema.name, ecClass.name, property.name) ?? (property.label || property.name);
+    const description = this.getDescription(ecClass.schema.name, ecClass.name, property.name) ?? property.description;
+    return { label, description };
   }
 
   /**
-   * Get localized description for a schema item.
-   * Fallback: localized description → base locale description → original description
+   * Get localized label and description of an enumerator.
+   * Label fallback: localized label → base locale label → original label → enumerator name
+   * Description fallback: localized description → base locale description → original description
    */
-  public getSchemaItemDescription(item: SchemaItem | SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory): string | undefined {
-    return this.getDescription(item.schema.name, item.name) ?? item.description;
-  }
-
-  /**
-   * Get localized label for a property.
-   * Fallback: localized label → base locale label → original label → property name
-   */
-  public getPropertyLabel(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string {
-    return this.getLabel(ecClass.schema.name, ecClass.name, property.name) ?? (property.label || property.name);
-  }
-
-  /**
-   * Get localized description for a property.
-   * Fallback: localized description → base locale description → original description
-   */
-  public getPropertyDescription(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string | undefined {
-    return this.getDescription(ecClass.schema.name, ecClass.name, property.name) ?? property.description;
-  }
-
-  /**
-   * Get localized label for an enumerator.
-   * Fallback: localized label → base locale label → original label → enumerator name
-   */
-  public getEnumeratorLabel(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): string {
-    return this.getLabel(enumeration.schema.name, enumeration.name, enumerator.name) ?? (enumerator.label || enumerator.name);
-  }
-
-  /**
-   * Get localized description for an enumerator.
-   * Fallback: localized description → base locale description → original description
-   */
-  public getEnumeratorDescription(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): string | undefined {
-    return this.getDescription(enumeration.schema.name, enumeration.name, enumerator.name) ?? enumerator.description;
+  public getLocalizedEnumerator(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): LocalizedText {
+    const label = this.getLabel(enumeration.schema.name, enumeration.name, enumerator.name) ?? (enumerator.label || enumerator.name);
+    const description = this.getDescription(enumeration.schema.name, enumeration.name, enumerator.name) ?? enumerator.description;
+    return { label, description };
   }
 
   /**

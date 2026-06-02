@@ -2461,15 +2461,11 @@ export class SchemaLoader {
 export class SchemaLocalization {
     static create(provider: ILocalizationProvider, locale: string, schemaKeys: Iterable<SchemaKey>): Promise<SchemaLocalization>;
     getDescription(schemaName: string, itemName?: string, memberName?: string): string | undefined;
-    getEnumeratorDescription(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): string | undefined;
-    getEnumeratorLabel(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): string;
     getLabel(schemaName: string, itemName?: string, memberName?: string): string | undefined;
-    getPropertyDescription(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string | undefined;
-    getPropertyLabel(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): string;
-    getSchemaDescription(schema: Schema | SchemaView.Schema): string | undefined;
-    getSchemaItemDescription(item: SchemaItem | SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory): string | undefined;
-    getSchemaItemLabel(item: SchemaItem | SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory): string;
-    getSchemaLabel(schema: Schema | SchemaView.Schema): string;
+    getLocalizedEnumerator(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): LocalizedText;
+    getLocalizedProperty(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): LocalizedText;
+    getLocalizedSchema(schema: Schema | SchemaView.Schema): LocalizedText;
+    getLocalizedSchemaItem(item: SchemaItem | SchemaViewItem): LocalizedText;
     loadLocalizations(schemaKeys: Iterable<SchemaKey>): Promise<void>;
     // (undocumented)
     get locale(): string;
