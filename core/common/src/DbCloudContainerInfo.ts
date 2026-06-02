@@ -25,6 +25,8 @@ export interface DbCloudContainerInfo {
   readonly dbName?: string;
   /** The range of acceptable versions of the database (semver range, e.g., ">=1.2.0 <2.0.0"). */
   readonly version?: string;
+  /** If true, allow semver prerelease versions, e.g., "1.4.2-beta.0". */
+  readonly includePrerelease?: boolean;
   /** An alias for the container. Defaults to `containerId` if not specified. */
   readonly alias?: string;
   /** A user-friendly description of the container's contents. */
