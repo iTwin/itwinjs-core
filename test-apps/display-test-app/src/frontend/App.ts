@@ -440,7 +440,11 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    await MapLayersFormats.initialize();
+    await MapLayersFormats.initialize({
+      azureMapsOpts: configuration.azureMapsKey
+        ? { subscriptionKey: configuration.azureMapsKey }
+        : undefined,
+    });
 
     EditTools.registerProjectLocationTools();
   }

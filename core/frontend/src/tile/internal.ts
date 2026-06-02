@@ -74,7 +74,6 @@ export * from "../internal/tile/map/ImageryProviders/FeatureGeometryRenderer";
 export * from "../internal/tile/map/ImageryProviders/FeatureGraphicsRenderer";
 export * from "../internal/tile/map/ImageryProviders/ArcGisGeometryReaderJSON";
 export * from "../internal/tile/map/ImageryProviders/ArcGISMapLayerImageryProvider";
-export * from "../internal/tile/map/ImageryProviders/AzureMapsLayerImageryProvider";
 export * from "../internal/tile/map/ImageryProviders/BingImageryProvider";
 export * from "../internal/tile/map/ImageryProviders/MapBoxLayerImageryProvider";
 export * from "../internal/tile/map/ImageryProviders/TileUrlImageryProvider";
