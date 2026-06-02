@@ -2474,11 +2474,13 @@ export class SchemaLocalization {
     // (undocumented)
     get locale(): string;
     get provider(): ILocalizationProvider;
+    // (undocumented)
+    setLocale(locale: string): void;
 }
 
 // @beta
 export interface SchemaLocalizationJson {
-    $schema?: string;
+    $schema: string;
     description?: string;
     items?: {
         [itemName: string]: LocalizedItemText;
@@ -2486,7 +2488,7 @@ export interface SchemaLocalizationJson {
     label?: string;
     locale: string;
     name: string;
-    version?: string;
+    version: string;
 }
 
 // @beta

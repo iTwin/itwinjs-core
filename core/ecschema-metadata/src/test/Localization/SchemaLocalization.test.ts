@@ -747,6 +747,29 @@ describe("SchemaLocalization", () => {
       await expect(invalidProvider.getLocalization("TestBuilding", "de"))
         .rejects.toThrow('Localization JSON mismatch for TestBuilding:de - expected locale "de" but got "fr"');
     });
+
+    it("should clear the cache and reload when the locale is changed", async () => {
+      let count = 0;
+      const testLoader = async (schemaName: string, locale: string) => {
+        count++;
+        return loader(schemaName, locale);
+      };
+
+      const testProvider = new LocalizationProvider(testLoader);
+      const localization = await SchemaLocalization.create(testProvider, "de", [testBuildingSchema.schemaKey]);
+      const callsAfterDe = count;
+      expect(localization.locale).to.equal("de");
+
+      const buildingClass = await testBuildingSchema.getEntityClass("Building");
+      expect(localization.getSchemaItemLabel(buildingClass!)).to.equal("Gebäude");
+
+      localization.setLocale("es");
+      expect(localization.locale).to.equal("es");
+
+      await localization.loadLocalizations([testBuildingSchema.schemaKey]);
+      expect(count).to.be.greaterThan(callsAfterDe);
+      expect(localization.getSchemaItemLabel(buildingClass!)).to.equal("Edificio");
+    });
   });
 
   describe("Schema localization for multiple schemas", () => {

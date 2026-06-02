@@ -43,6 +43,11 @@ export class SchemaLocalization {
     return this._locale;
   }
 
+  public setLocale(locale: string): void {
+    this._locale = locale;
+    this._cache.clear();
+  }
+
   /**
    * Get localization provider.
    */
