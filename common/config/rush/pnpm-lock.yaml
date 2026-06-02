@@ -2786,6 +2786,9 @@ importers:
       '@itwin/presentation-frontend':
         specifier: workspace:*
         version: link:../../presentation/frontend
+      '@itwin/presentation-shared':
+        specifier: ^1.2.1
+        version: 1.2.1
       '@itwin/unified-selection':
         specifier: ^1.2.0
         version: 1.2.0
