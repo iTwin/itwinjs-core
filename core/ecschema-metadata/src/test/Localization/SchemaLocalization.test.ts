@@ -715,7 +715,9 @@ describe("SchemaLocalization", () => {
     it("should throw error when localization JSON has wrong schema name", async () => {
       const schemaLoader = async (_schemaName: string, locale: string) => {
         return {
+          $schema: "ecschema-localization-v1",
           name: "testSchema",
+          version: "01.00.00",
           locale,
           label: "Test Label",
           description: "Test Description",
@@ -731,7 +733,9 @@ describe("SchemaLocalization", () => {
     it("should throw error when localization JSON has wrong locale", async () => {
       const schemaLoader = async (schemaName: string, _locale: string) => {
         return {
+          $schema: "ecschema-localization-v1",
           name: schemaName,
+          version: "01.00.00",
           locale: "fr",
           label: "Test Label",
           description: "Test Description",
