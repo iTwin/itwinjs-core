@@ -7,7 +7,8 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { ContentSpecificationTypes, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite, filterFieldsByClass, getFieldLabels } from "./Utils.js";
+import { describeContentTestSuite, filterFieldsByClass, filterFieldsByClassIntersection, getFieldLabels } from "./Utils.js";
+import { getFieldByLabel } from "../../Utils.js";
 
 describeContentTestSuite("Class descriptor", ({ getDefaultSuiteIModel }) => {
   it("creates base class descriptor usable for subclasses", async () => {
@@ -62,5 +63,18 @@ describeContentTestSuite("Class descriptor", ({ getDefaultSuiteIModel }) => {
     });
     const fieldsTestClass = filterFieldsByClass(descriptorGeometricElement!.fields, schemaView.findClass("PCJ_TestSchema.TestClass")!);
     expect(getFieldLabels(fieldsTestClass)).to.deep.eq(getFieldLabels(descriptorTestClass!));
+
+    // filter descriptor fields by intersection of PhysicalObject and TestClass
+    const fieldsIntersection = filterFieldsByClassIntersection(descriptorGeometricElement!.fields, [
+      schemaView.findClass("Generic.PhysicalObject")!,
+      schemaView.findClass("PCJ_TestSchema.TestClass")!,
+    ]);
+    expect(getFieldLabels(fieldsIntersection)).to.deep.eq([
+      "Category",
+      "Code",
+      "Model",
+      "User Label",
+      ...getFieldLabels([getFieldByLabel(fieldsPhysicalObject, "area"), getFieldByLabel(fieldsPhysicalObject, "Repository Link")]),
+    ]);
   });
 });
