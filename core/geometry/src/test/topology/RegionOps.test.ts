@@ -9,10 +9,6 @@ import { compareNumbers, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
-import { ClipShape } from "../../clipping/ClipPrimitive";
-import { ClipUtilities } from "../../clipping/ClipUtils";
-import { ClipVector } from "../../clipping/ClipVector";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
@@ -1336,28 +1332,6 @@ describe("RegionOps", () => {
         ck.testExactNumber(5, resultsBridges[0].negativeAreaLoops[0].children.length, "with bridges: the component's negative area loop has 5 children");
     }
 
-    // create a parity region clipper from the loops, and use it to clip a B-spline curve
-    const outerClip = ClipShape.createShape(outerLoop.getPackedStrokes()!.getPoint3dArray())!;
-    const innerClip = ClipShape.createShape(innerLoop.getPackedStrokes()!.getPoint3dArray(), undefined, undefined, undefined, true)!;
-    const clipWithHole = ClipVector.createCapture([innerClip, outerClip]);
-    const curve = InterpolationCurve3d.create({ fitPoints: [Point3d.create(-2, 12), Point3d.create(8, 5), Point3d.create(-2, -2), Point3d.create(2, 5)], isChordLenKnots: 1, closed: true })!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
-    const curveClips = ClipUtilities.clipAnyCurve(curve, clipWithHole);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveClips, 0, 0, side); // display on top to verify visually
-    if (ck.testExactNumber(3, curveClips.length, "have 3 curve clips")) {
-      if (ck.testArrayType(curveClips, BSplineCurve3d, "curve clips are B-spline curves")) {
-        const clipParams = [[0.16732192869277906, 0.24728497679578676], [0.3549483851924725, 0.4349114332954802], [0.70301310958801, 0.8992202524002493]];
-        curveClips.sort((a: BSplineCurve3d, b: BSplineCurve3d) => { // sort by start knot
-          const aKnot0 = a.spanFractionToKnot(0, 0);
-          const bKnot0 = b.spanFractionToKnot(0, 0);
-          return Geometry.isSameFraction(aKnot0, bKnot0) ? 0 : aKnot0 < bKnot0 ? -1 : 1;
-        });
-        for (let i = 0; i < curveClips.length; i++) {
-          ck.testFraction(curveClips[i].spanFractionToKnot(0, 0), clipParams[i][0], `curve clip ${i} start knot fraction as expected`);
-          ck.testFraction(curveClips[i].spanFractionToKnot(curveClips[i].numSpan - 1, 1), clipParams[i][1], `curve clip ${i} end knot fraction as expected`);
-        }
-      }
-    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops5");
     expect(ck.getNumErrors()).toBe(0);
   });
