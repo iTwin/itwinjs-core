@@ -789,7 +789,7 @@ export class ClipShape extends ClipPrimitive {
           if (!node.isMaskSet(HalfEdgeMask.EXTERIOR))
             return Point3d.create(node.x, node.y, 0);
         });
-        // parseConvexPolygonPlanes expects a closed loop (pushing the reference doesn't matter)
+        // parseConvexPolygonPlanes expects a closed loop
         convexFacetPoints.push(convexFacetPoints[0].clone());
         const direction = PolygonOps.testXYPolygonTurningDirections(convexFacetPoints); // ###TODO: Can we expect a direction coming out of graph facet?
         this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, false, cameraFocalLength);
