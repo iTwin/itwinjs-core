@@ -243,6 +243,7 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
 
       // --- Step 2 (txn2): Swap codeValues — elem1 gets CODE_B, elem2 gets CODE_A ---
       // elem1's intermediate empty code value avoids a uniqueness conflict while assigning CODE_A to elem2.
+      await b1.locks.acquireLocks({ exclusive: [elem2Id!] });
       withEditTxn(b1, "swap code values", (txn) => {
         const props1 = b1!.elements.getElementProps(elem1Id!);
         const props2 = b1!.elements.getElementProps(elem2Id!);
