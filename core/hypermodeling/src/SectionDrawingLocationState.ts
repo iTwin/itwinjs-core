@@ -204,6 +204,7 @@ export class SectionDrawingLocationState {
   public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
         states.push(new SectionDrawingLocationState(row.toRow() as SectionDrawingLocationStateData, iModel));
     } catch {
