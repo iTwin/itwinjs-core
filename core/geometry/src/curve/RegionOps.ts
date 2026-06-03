@@ -150,7 +150,7 @@ export class RegionOps {
    * Return an area tolerance for a given xy-range and optional distance tolerance.
    * @param range range of planar region to tolerance.
    * @param distanceTolerance optional absolute distance tolerance.
-  */
+   */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
     // ensure the result is nonzero: we never want to report a zero-area loop as a signed-area loop
     if (distanceTolerance === 0)
