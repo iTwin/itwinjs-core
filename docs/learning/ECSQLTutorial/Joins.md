@@ -115,4 +115,30 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 
 ---
 
+## CROSS JOIN with optional ON clause
+
+`CROSS JOIN` produces a Cartesian product of two classes (every row of the left class paired with every row of the right class). It now also accepts an optional `ON` clause to filter that product, matching standard SQL and SQLite syntax.
+
+### Why use CROSS JOIN instead of INNER JOIN?
+
+SQLite applies a [special optimizer rule for CROSS JOIN](https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_): it will **never reorder** the tables in a `CROSS JOIN`, whereas it is free to reorder tables in an `INNER JOIN` for performance. This means you can use `CROSS JOIN ... ON` to get the filtering behavior of an `INNER JOIN` while retaining explicit control over the join order and query plan — which matters in performance-sensitive queries.
+
+### Examples
+
+Unfiltered Cartesian product (classic `CROSS JOIN`):
+
+```sql
+SELECT p.ECInstanceId, i.ECInstanceId FROM bis.Element p CROSS JOIN bis.Model i LIMIT 5
+```
+
+Filtered with `ON` clause — result is the same as `INNER JOIN` but join order is fixed:
+
+```sql
+-- Join order is guaranteed: Element is always the outer table
+SELECT e.ECInstanceId, m.ECInstanceId
+FROM bis.Element e CROSS JOIN bis.Model m ON m.ECInstanceId = e.Model.Id
+```
+
+---
+
 [< Previous](./ECSQLDataTypes.md) &nbsp; | &nbsp; [Next >](./PolymorphicQueries.md)

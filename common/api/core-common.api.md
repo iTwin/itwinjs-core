@@ -2190,6 +2190,7 @@ export interface DbCloudContainerInfo {
     readonly containerId: string;
     readonly dbName?: string;
     readonly description?: string;
+    readonly includePrerelease?: boolean;
     readonly isPublic?: boolean;
     readonly storageType: "azure" | "google";
     readonly version?: string;
@@ -7922,6 +7923,7 @@ export interface QueryQuota {
 export enum QueryRowFormat {
     UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
+    // @deprecated
     UseJsPropertyNames = 2
 }
 
@@ -8615,8 +8617,14 @@ export interface RequestNewBriefcaseProps {
     readonly iTwinId: GuidString;
 }
 
+// @internal
+export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps;
+
+// @internal
+export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
+
 // @internal (undocumented)
-export class ResponseLike implements Response {
+export class ResponseLike {
     constructor(data: any);
     // (undocumented)
     arrayBuffer(): Promise<ArrayBuffer>;
@@ -9998,7 +10006,8 @@ export interface SpatialClassifiersContainer {
 
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-    // (undocumented)
+    modelSelector?: RelatedElementProps;
+    // @deprecated
     modelSelectorId: ViewIdString;
 }
 
@@ -11479,7 +11488,8 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
     // (undocumented)
     angle: AngleProps;
-    // (undocumented)
+    baseModel?: RelatedElementProps;
+    // @deprecated
     baseModelId: Id64String;
     // (undocumented)
     delta: XYProps;
@@ -11502,11 +11512,13 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
-    // (undocumented)
+    categorySelector?: RelatedElementProps;
+    // @deprecated
     categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
-    // (undocumented)
+    displayStyle?: RelatedElementProps;
+    // @deprecated
     displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {

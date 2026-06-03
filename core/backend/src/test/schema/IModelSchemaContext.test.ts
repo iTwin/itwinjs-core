@@ -40,6 +40,7 @@ describe("IModel Schema Context", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const ecClass = await el.getMetaData();
       assert.exists(ecClass);
       assert.equal(ecClass.schema.name, el.schemaName);
@@ -71,6 +72,7 @@ describe("IModel Schema Context", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el2.getMetaData();
       assert.exists(metaData);
       if (undefined === metaData)

@@ -1,6 +1,56 @@
 # Change Log - @itwin/perf-tools
 
-This log was last generated on Fri, 10 Apr 2026 13:03:16 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jun 2026 17:37:05 GMT and should not be manually modified.
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+_Version update only_
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+_Version update only_
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:14 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
 
 ## 5.8.1
 Fri, 10 Apr 2026 13:02:00 GMT

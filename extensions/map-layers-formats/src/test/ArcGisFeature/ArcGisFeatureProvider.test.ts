@@ -63,8 +63,8 @@ export class ViewportMock {
   }
 
   public reset() {
-    this.viewMock.iModel = {} as IModelConnection;
-    this.viewportMock.iModel = {} as IModelConnection;
+    this.viewMock.iModel = {};
+    this.viewportMock.iModel = {};
   }
 }
 
@@ -308,7 +308,7 @@ describe("ArcGisFeatureProvider", () => {
         },
         status: 200,
       } as unknown;   // By using unknown type, I can define parts of Response I really need
-      return (test as Response );
+      return test;
     });
 
     let layerId = 0;
@@ -698,7 +698,7 @@ describe("ArcGisFeatureProvider", () => {
         },
         status: 200,
       } as unknown;   // By using unknown type, I can define parts of Response I really need
-      return (test as Response);
+      return test;
     });
 
     const provider = new ArcGisFeatureProvider(settings);

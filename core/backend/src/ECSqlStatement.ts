@@ -348,10 +348,12 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
 
     args = args ?? {};
     if (args.rowFormat === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
     const resp = this._stmt.toRow({
       classIdsToClassNames: args.classIdsToClassNames,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
       abbreviateBlobs: false,
       // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
@@ -398,6 +400,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
       throw new Error(`Failed to bind parameters: ${message}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
@@ -411,6 +414,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     }
     const formattedRow = {};
     for (const prop of this._props) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = currentResp.data[prop.index];
       if (typeof val !== "undefined" && val !== null) {
@@ -909,7 +913,7 @@ export class ECSqlValue {
 
   /** Get information about the query result's column this value refers to. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
+  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo(); }
 
   /** Get the value of this ECSQL value */
   public get value(): any { return ECSqlValueHelper.getValue(this); }

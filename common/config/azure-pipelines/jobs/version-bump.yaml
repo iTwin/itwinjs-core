@@ -193,9 +193,9 @@ jobs:
       - checkout: self
 
       - task: UseNode@1
-        displayName: Use Node 24.x
+        displayName: Use Node 24.15.0
         inputs:
-          version: 24.x
+          version: 24.15.0
           checkLatest: true
 
       - bash: |
@@ -216,6 +216,22 @@ jobs:
         displayName: rush audit
 
       - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: |
+              # Keep this aligned with the version policy used by the release version bump steps below.
+              versionPolicyName=prerelease-monorepo-lockStep
+              currentVersion=$(jq -r --arg policyName "$versionPolicyName" '.[] | select(.policyName == $policyName) | .version' common/config/rush/version-policies.json)
+              if [ -z "$currentVersion" ] || [ "$currentVersion" = "null" ]; then
+                echo "Failed to find version policy '$versionPolicyName' in common/config/rush/version-policies.json" >&2
+                exit 1
+              fi
+              # Deprecation comments require a released minor/patch version like 5.10.0, not a prerelease suffix like 5.10.0-dev.10.
+              # For non-prerelease versions, this parameter expansion leaves the version unchanged.
+              deprecationVersion=${currentVersion%%-*}
+              sed -i "s/\(addVersion: \"\)[^\"]*/\1$deprecationVersion/" common/config/eslint/eslint.config.deprecation-policy.js
+              echo "Using deprecation addVersion=$deprecationVersion from version policy $versionPolicyName"
+              echo "##vso[task.setvariable variable=deprecationVersion]$deprecationVersion"
+            displayName: Sync deprecation policy addVersion to current version
+
           - bash: node common/scripts/install-run-rush.js lint-deprecation
             displayName: rush lint-deprecation
 
@@ -236,7 +252,7 @@ jobs:
             displayName: Determine whether ESLint rule made any changes
 
           - bash: |
-              git commit -m "Apply deprecation date rule"
+              git commit -m "Apply deprecation date rule for v$(deprecationVersion)"
             displayName: Commit deprecation comment changes to release branch
             condition: eq(variables['deprecationCommentChangesMade'], 'true')
 
@@ -421,9 +437,9 @@ jobs:
     steps:
       - checkout: self
       - task: UseNode@1
-        displayName: "Use Node 24.x"
+        displayName: "Use Node 24.15.0"
         inputs:
-          version: 24.x
+          version: 24.15.0
           checkLatest: true
 
       - bash: |

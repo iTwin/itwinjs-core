@@ -58,6 +58,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private _maxDistanceSquared: number;
   private _xyTolerance: number;
   private _newtonTolerance: number;
+  private _maxIterations: number;
   /**
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
    * both curves and their length is smaller than _maxDistanceToAccept.
@@ -75,13 +76,20 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
    * @param xyTolerance optional tolerance for comparing xy points (default [[Geometry.smallMetricDistance]]).
    * @param newtonTolerance optional relative fraction tolerance for Newton iteration (default [[Geometry.smallNewtonStep]]).
+   * @param maxIterations optional max iterations for Newton iteration (default 50).
    */
-  public constructor(geometryB?: AnyCurve, xyTolerance: number = Geometry.smallMetricDistance, newtonTolerance: number = Geometry.smallNewtonStep) {
+  public constructor(
+    geometryB?: AnyCurve,
+    xyTolerance: number = Geometry.smallMetricDistance,
+    newtonTolerance: number = Geometry.smallNewtonStep,
+    maxIterations: number = 50 // seen: 47
+  ) {
     super();
     this._geometryB = geometryB instanceof ProxyCurve ? geometryB.proxyCurve : geometryB;
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
     this._xyTolerance = xyTolerance;
     this._newtonTolerance = newtonTolerance;
+    this._maxIterations = maxIterations;
     const compare = CurveLocationDetailPair.comparePairsByPoints(xyTolerance, true);
     this._results = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
   }
@@ -472,34 +480,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 2) perpendicular line between 2 arcs (includes intersections)
     this.allPerpendicularsArcArcBounded(cpA, cpB, reversed);
   }
-  /** Low level dispatch of arc with (beziers of) a bspline curve */
-  private dispatchArcBsplineCurve3d(cpA: Arc3d, cpB: BSplineCurve3d, reversed: boolean): void {
-    const ls = LineString3d.create();
-    cpB.emitStrokes(ls);
-    this.computeArcLineString(cpA, ls, reversed);
-  }
-  /** Low level dispatch of (beziers of) a bspline curve with (beziers of) a bspline curve */
-  private dispatchBSplineCurve3dBSplineCurve3d(
-    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
-  ): void {
-    const lsA = LineString3d.create();
-    bcurveA.emitStrokes(lsA);
-    const lsB = LineString3d.create();
-    bcurveB.emitStrokes(lsB);
-    this.computeLineStringLineString(lsA, lsB, reversed);
-  }
-  /** Low level dispatch of linestring with (beziers of) a bspline curve */
-  private dispatchLineStringBSplineCurve(lsA: LineString3d, curveB: BSplineCurve3d, reversed: boolean): void {
-    const lsB = LineString3d.create();
-    curveB.emitStrokes(lsB);
-    this.computeLineStringLineString(lsA, lsB, reversed);
-  }
-  /** Low level dispatch of segment with (beziers of) a bspline curve */
-  private dispatchSegmentBsplineCurve(segA: LineSegment3d, curveB: BSplineCurve3d, reversed: boolean): void {
-    const lsB = LineString3d.create();
-    curveB.emitStrokes(lsB);
-    this.computeSegmentLineString(segA, lsB, reversed);
-  }
   /** Detail computation for segment approaching linestring. */
   private computeSegmentLineString(segA: LineSegment3d, lsB: LineString3d, reversed: boolean): void {
     const numB = lsB.numPoints();
@@ -657,110 +637,44 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     });
     saveResults.forEach((pair: CurveLocationDetailPair) => this._results.insert(pair));
   }
-  /** Double dispatch handler for strongly typed segment. */
-  public override handleLineSegment3d(segmentA: LineSegment3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      const segmentB = this._geometryB;
-      this.computeSegmentSegment(
-        segmentA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0,
-        segmentB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0,
-        false,
-      );
-    } else if (this._geometryB instanceof LineString3d) {
-      this.computeSegmentLineString(segmentA, this._geometryB, false);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.computeSegmentArc(segmentA, this._geometryB, false);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchSegmentBsplineCurve(segmentA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(segmentA, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
-    }
-    return undefined;
-  }
-  /** Double dispatch handler for strongly typed linestring. */
-  public override handleLineString3d(lsA: LineString3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      this.computeSegmentLineString(this._geometryB, lsA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.computeLineStringLineString(lsA, this._geometryB, false);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.computeArcLineString(this._geometryB, lsA, true);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchLineStringBSplineCurve(lsA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(lsA, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
-    }
-    return undefined;
-  }
-  /** Double dispatch handler for strongly typed arc. */
-  public override handleArc3d(arcA: Arc3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      this.computeSegmentArc(this._geometryB, arcA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.computeArcLineString(arcA, this._geometryB, false);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcArc(arcA, this._geometryB, false);
-    } else if (this._geometryB instanceof BSplineCurve3d) {
-      this.dispatchArcBsplineCurve3d(arcA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(arcA, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(arcA, this.handleArc3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(arcA, this.handleArc3d.bind(this));
-    }
-    return undefined;
-  }
-  /** Double dispatch handler for strongly typed bspline curve. */
-  public override handleBSplineCurve3d(curveA: BSplineCurve3d): any {
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentBsplineCurve(this._geometryB, curveA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.dispatchLineStringBSplineCurve(this._geometryB, curveA, true);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcBsplineCurve3d(this._geometryB, curveA, true);
-    } else if (this._geometryB instanceof BSplineCurve3dBase) {
-      this.dispatchBSplineCurve3dBSplineCurve3d(curveA, this._geometryB, false);
-    } else if (this._geometryB instanceof TransitionSpiral3d) {
-      this.dispatchCurveSpiral(curveA, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveCollection) {
-      this.dispatchCurveCollection(curveA, this.handleBSplineCurve3d.bind(this));
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
-    }
-    return undefined;
+  /** Specifies whether the curve needs to be stroked for close approach computation. */
+  private needsStroking(curve?: AnyCurve): curve is BSplineCurve3dBase | TransitionSpiral3d {
+    return curve instanceof BSplineCurve3dBase || curve instanceof TransitionSpiral3d;
   }
   /**
-   * Process seeds for xy close approach between the curve and spiral.
+   * Process seeds for xy close approach between one curve and another curve.
+   * * Seeds typically result from solving a discrete close approach problem, where one or both curves have been stroked.
    * * Refine each result via Newton iteration. If it doesn't converge, remove it.
-   * @param seeds The initial seed results to refine.
-   * @param curveA The other curve primitive. May also be a transition spiral.
-   * @param spiralB The transition spiral.
-   * @param reversed whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
+   * @param seeds the initial seed results to refine.
+   * @param curveA curve to find its XY close approach with curveB.
+   * @param curveAIsStroked whether `seeds` contains results from a linestring approximation to `curveA`
+   * @param curveB the other curve.
+   * @param curveBIsStroked whether `seeds` contains results from a linestring approximation to `curveB`
+   * @param reversed whether `curveB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
-  private refineSpiralResultsByNewton(
-    seeds: CurveLocationDetailPair[], curveA: CurvePrimitive, spiralB: TransitionSpiral3d, reversed = false
+  private refineStrokedResultsByNewton(
+    seeds: CurveLocationDetailPair[],
+    curveA: CurvePrimitive, curveAIsStroked: boolean,
+    curveB: CurvePrimitive, curveBIsStroked: boolean,
+    reversed = false
   ): void {
-    const xyMatchingFunction = new CurveCurveCloseApproachXYRRtoRRD(curveA, spiralB);
-    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, 50, this._newtonTolerance); // seen: 47
+    const xyMatchingFunction = new CurveCurveCloseApproachXYRRtoRRD(curveA, curveB);
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(
+      xyMatchingFunction, this._maxIterations, this._newtonTolerance
+    );
     for (const seed of seeds) {
       const detailA = reversed ? seed.detailB : seed.detailA;
       const detailB = reversed ? seed.detailA : seed.detailB;
-      assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
-      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
+      assert(detailB.curve instanceof LineString3d, "Caller has discretized the curve");
+      // when the curve is stroked, project the discrete seed to compute a fraction in the original curve's parameter space
+      const u = curveAIsStroked ? curveA.closestPointXY(detailA.point)?.fraction ?? detailA.fraction : detailA.fraction;
+      const v = curveBIsStroked ? curveB.closestPointXY(detailB.point)?.fraction ?? detailB.fraction : detailB.fraction;
+      newtonSearcher.setUV(u, v);
       if (newtonSearcher.runIterations()) {
         const fractionA = newtonSearcher.getU();
         const fractionB = newtonSearcher.getV();
         if (this.acceptFraction(fractionA) && this.acceptFraction(fractionB))
-          this.testAndRecordPointPair(curveA, fractionA, undefined, spiralB, fractionB, undefined, reversed);
+          this.testAndRecordPointPair(curveA, fractionA, undefined, curveB, fractionB, undefined, reversed);
       } // ignore failure to converge
     }
   }
@@ -796,37 +710,103 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return discreteResults;
   }
   /**
-   * Compute the XY close approach of a curve and a spiral.
-   * @param curveA curve to find its close approach with spiralB. May also be a transition spiral.
-   * @param spiralB transition spiral to find its close approach with curveA.
-   * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
+   * Compute the XY close approach of a curve and another curve to be stroked.
+   * @param curveA curve to find its XY close approach with curveB.
+   * @param curveB the other curve, to be stroked.
+   * @param reversed whether `curveB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
    */
-  private dispatchCurveSpiral(curveA: CurvePrimitive, spiralB: TransitionSpiral3d, reversed: boolean): void {
+  private dispatchCurveStrokedCurve(curveA: CurvePrimitive, curveB: CurvePrimitive, reversed: boolean): void {
     // explicit search for intersections (Newton converges too slowly on DirectSpiral3d tangent intersections)
-    const intersections = CurveCurve.intersectionXYPairs(curveA, false, spiralB, false, this._xyTolerance);
+    const intersections = CurveCurve.intersectionXYPairs(curveA, false, curveB, false, this._xyTolerance);
     for (const intersection of intersections)
       this.testAndRecordPair(intersection, reversed);
     // append seeds computed by solving the discretized spiral close approach problem, then refine the seeds via Newton
-    let cpA = curveA;
-    if (curveA instanceof TransitionSpiral3d)
-      cpA = this.strokeCurve(curveA);
-    const cpB = this.strokeCurve(spiralB);
+    const curveAIsStroked = this.needsStroking(curveA);
+    const cpA = curveAIsStroked ? this.strokeCurve(curveA) : curveA;
+    const cpB = this.strokeCurve(curveB);
     const seeds = this.computeDiscreteCloseApproachResults(cpA, cpB, reversed);
-    this.refineSpiralResultsByNewton(seeds, curveA, spiralB, reversed);
+    this.refineStrokedResultsByNewton(seeds, curveA, curveAIsStroked, curveB, true, reversed);
     if (curveA instanceof LineString3d) { // explicitly test corners (where Newton converges too slowly)
       const fStep = Geometry.safeDivideFraction(1.0, curveA.numEdges(), 0);
       const v0 = CurveCurveCloseApproachXY._workPointBB0;
       for (let i = 1; i < curveA.numEdges(); ++i)
-        this.testAndRecordProjection(curveA, i * fStep, curveA.pointAtUnchecked(i, v0), spiralB, reversed);
+        this.testAndRecordProjection(curveA, i * fStep, curveA.pointAtUnchecked(i, v0), curveB, reversed);
     }
-    this.testAndRecordEndPointApproaches(curveA, spiralB, reversed);
+    this.testAndRecordEndPointApproaches(curveA, curveB, reversed);
+  }
+  /** Double dispatch handler for strongly typed segment. */
+  public override handleLineSegment3d(segmentA: LineSegment3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      const segmentB = this._geometryB;
+      this.computeSegmentSegment(
+        segmentA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0,
+        segmentB, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0,
+        false,
+      );
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeSegmentLineString(segmentA, this._geometryB, false);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.computeSegmentArc(segmentA, this._geometryB, false);
+    } else if (this.needsStroking(this._geometryB)) {
+      this.dispatchCurveStrokedCurve(segmentA, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
+    }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed linestring. */
+  public override handleLineString3d(lsA: LineString3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      this.computeSegmentLineString(this._geometryB, lsA, true);
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeLineStringLineString(lsA, this._geometryB, false);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.computeArcLineString(this._geometryB, lsA, true);
+    } else if (this.needsStroking(this._geometryB)) {
+      this.dispatchCurveStrokedCurve(lsA, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
+    }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed arc. */
+  public override handleArc3d(arcA: Arc3d): any {
+    if (this._geometryB instanceof LineSegment3d) {
+      this.computeSegmentArc(this._geometryB, arcA, true);
+    } else if (this._geometryB instanceof LineString3d) {
+      this.computeArcLineString(arcA, this._geometryB, false);
+    } else if (this._geometryB instanceof Arc3d) {
+      this.dispatchArcArc(arcA, this._geometryB, false);
+    } else if (this.needsStroking(this._geometryB)) {
+      this.dispatchCurveStrokedCurve(arcA, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(arcA, this.handleArc3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(arcA, this.handleArc3d.bind(this));
+    }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed bspline curve. */
+  public override handleBSplineCurve3d(curveA: BSplineCurve3d): any {
+    if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(curveA, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurvePrimitive) {
+      this.dispatchCurveStrokedCurve(this._geometryB, curveA, true);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(curveA, this.handleBSplineCurve3d.bind(this));
+    }
+    return undefined;
   }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
     if (this._geometryB instanceof CurveChainWithDistanceIndex) {
       this.dispatchCurveChainWithDistanceIndex(spiral, this.handleTransitionSpiral.bind(this));
     } else if (this._geometryB instanceof CurvePrimitive) {
-      this.dispatchCurveSpiral(this._geometryB, spiral, true);
+      this.dispatchCurveStrokedCurve(this._geometryB, spiral, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(spiral, this.handleTransitionSpiral.bind(this));
     }
@@ -844,19 +824,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
-    /*
-    //NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH.
-    // "easy" if both present BezierCurve3dH span loaders
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentBsplineCurve(
-        this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
-        curve, this._extendA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
-    }
-    */
+    // NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH
     return undefined;
   }
 }

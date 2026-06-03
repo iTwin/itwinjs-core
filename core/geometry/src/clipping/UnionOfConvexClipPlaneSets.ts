@@ -7,7 +7,8 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -32,7 +33,7 @@ export type UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[];
 
 /**
  * A collection of ConvexClipPlaneSets.
- * * A point is "in" the clip plane set if it is "in" one or more of  the ConvexClipPlaneSet
+ * * A point is "in" the clip plane set if it is "in" one or more of the ConvexClipPlaneSets.
  * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
  * @public
  */
@@ -195,7 +196,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
   }
   /** Returns 1, 2, or 3 based on whether point is strongly inside, ambiguous, or strongly outside respectively. */
-  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): number {
+  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment {
     for (const convexSet of this._convexSets) {
       const thisStatus = convexSet.classifyPointContainment(points, onIsOutside);
       if (thisStatus !== ClipPlaneContainment.StronglyOutside)
@@ -238,19 +239,9 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
         output.push(convexSetOutput);
     }
   }
-  /**
-   * Announce clipSegment() for each convexSet in this ClipPlaneSet.
-   * * all clipPlaneSets are inspected.
-   * * announced intervals are for each individual clipPlaneSet -- adjacent intervals are not consolidated.
-   * @param f0 active interval start.
-   * @param f1 active interval end.
-   * @param pointA line segment start.
-   * @param pointB line segment end.
-   * @param announce function to announce interval.
-   * @returns Return true if any announcements are made.
-   */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     let numAnnounce = 0;
     for (const convexSet of this._convexSets) {
@@ -259,21 +250,28 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
     return numAnnounce > 0;
   }
-  private static _clipArcFractionArray = new GrowableFloat64Array();
-  /**
-   * Find parts of an arc that are inside any member clipper.
-   * Announce each with `announce(startFraction, endFraction, this)`
-   */
+  private static _clipFractionArray = new GrowableFloat64Array();
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = UnionOfConvexClipPlaneSets._clipArcFractionArray;
+    const breaks = UnionOfConvexClipPlaneSets._clipFractionArray;
     breaks.clear();
-    for (const convexSet of this._convexSets) {
-      for (const clipPlane of convexSet.planes) {
+    for (const convexSet of this._convexSets)
+      for (const clipPlane of convexSet.planes)
         clipPlane.appendIntersectionRadians(arc, breaks);
-      }
-    }
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
+  }
+  /** Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const breaks = UnionOfConvexClipPlaneSets._clipFractionArray;
+    breaks.clear();
+    const results: CurveLocationDetail[] = [];
+    for (const convexSet of this._convexSets)
+      for (const clipPlane of convexSet.planes)
+        curve.appendPlaneIntersectionPoints(clipPlane, results);
+    for (const r of results)
+      breaks.push(r.fraction);
+    return ClipUtilities.selectIntervals01(curve, breaks, this, announce);
   }
   /**
    * Collect the output from computePlanePlanePlaneIntersections in all the contained convex sets.
@@ -327,12 +325,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, zLow);
+      convexSet.addZClipPlanes(invisible, undefined, zLow);
       this._convexSets.push(convexSet);
     }
     if (zHigh) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, undefined, zHigh);
+      convexSet.addZClipPlanes(invisible, zHigh);
       this._convexSets.push(convexSet);
     }
   }

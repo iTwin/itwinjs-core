@@ -472,6 +472,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
       // When assembly parent is selected, pick all geometric elements with it as the parent.
       // When assembly member is selected, pick the parent as well as all the other members.
       const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE (parent.Id IS NOT NULL AND ECInstanceId IN (${id})) OR parent.Id IN (${id}))`;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);

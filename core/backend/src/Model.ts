@@ -53,6 +53,28 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
   elementProps: Readonly<ElementProps>;
 }
 
+/** Per-model element deletion data used inside [[OnBulkModelEventsArg]].
+ * @beta
+ */
+export interface OnBulkDeletedElementsArg extends OnModelIdArg {
+  /** The Ids of all Elements that were bulk-deleted from this Model instance. */
+  elementIds: Id64String[];
+}
+
+/** Argument for the `Model.onBulkModelEvents` static method.
+ * Passed once per distinct Model ECClass, combining both deleted sub-models and
+ * deleted-elements-by-model into a single callback.
+ * @beta
+ */
+export interface OnBulkModelEventsArg extends OnModelArg {
+  /** Ids of Models of this class that were deleted as sub-models. Present only if any sub-models
+   * of this class were deleted. */
+  deletedModelIds?: Id64String[];
+  /** Per-model lists of element Ids deleted from instances of this Model class. Present only if
+   * any elements were deleted from models of this class. */
+  deletedElementsByModel?: OnBulkDeletedElementsArg[];
+}
+
 /** Argument for the `Model.onXxxElement` static methods that supply the Id of an Element for a Model.
  * @beta
  */
@@ -204,6 +226,32 @@ export class Model extends Entity {
     arg.iModel.elements[_cache].deleteWithModel(arg.id);
   }
 
+  /** Called once per distinct Model ECClass after a bulk element delete operation, combining
+   * both sub-model deletions and element-deletions-by-model into a single callback.
+   *
+   * `arg.deletedModelIds` — present when models of this class were deleted as sub-model roots.
+   * The default implementation calls [[onDeleted]] for each.
+   *
+   * `arg.deletedElementsByModel` — present when elements were deleted from models of this class.
+   * The default implementation calls [[onDeleteElement]] and [[onDeletedElement]] for each element.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the Model class dispatched on.
+   * @beta
+   */
+  protected static onBulkModelEvents(arg: OnBulkModelEventsArg): void {
+    if (arg.deletedModelIds !== undefined)
+      for (const id of arg.deletedModelIds)
+        this.onDeleted({ iModel: arg.iModel, id });
+
+    if (arg.deletedElementsByModel !== undefined)
+      for (const entry of arg.deletedElementsByModel)
+        for (const elementId of entry.elementIds) {
+          this.onDeleteElement({ iModel: arg.iModel, id: entry.id, elementId });
+          this.onDeletedElement({ iModel: arg.iModel, id: entry.id, elementId });
+        }
+  }
+
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
@@ -281,7 +329,7 @@ export class Model extends Entity {
   public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Model in the iModel.
-   * @deprecated Use Model.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Model.insert(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public insert(): Id64String;
   public insert(txn?: EditTxn) { return this.id = (txn ?? this.iModel[_implicitTxn]).insertModel(this.toJSON()); }
@@ -293,7 +341,7 @@ export class Model extends Entity {
   public update(txn: EditTxn): void;
   /**
    * Update this Model in the iModel.
-   * @deprecated Use Model.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Model.update(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public update(): void;
   public update(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).updateModel(this.toJSON()); }
@@ -305,7 +353,7 @@ export class Model extends Entity {
   public delete(txn: EditTxn): void;
   /**
    * Delete this Model from the iModel.
-   * @deprecated Use Model.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Model.delete(txn) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public delete(): void;
   public delete(txn?: EditTxn) { (txn ?? this.iModel[_implicitTxn]).deleteModel(this.id); }
@@ -478,7 +526,7 @@ export class PhysicalModel extends SpatialModel {
     * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
-  /** @deprecated Use PhysicalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use PhysicalModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -515,7 +563,7 @@ export class SpatialLocationModel extends SpatialModel {
     * @beta
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
-  /** @deprecated Use SpatialLocationModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use SpatialLocationModel.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -595,7 +643,7 @@ export class SheetIndexModel extends InformationModel {
    * @throws [[IModelError]] if there is an insert problem.
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string): Id64String;
-  /** @deprecated Use SheetIndexModel.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use SheetIndexModel.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];

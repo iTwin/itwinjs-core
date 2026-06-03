@@ -2,6 +2,8 @@
 
 The `ECDbMeta` schema allows querying schema information from an ECDb.
 
+> For a runtime-optimized object-model alternative that loads a curated subset of schema metadata in one shot for traversal and repeated lookups, see [SchemaView](../metadata/SchemaView.md).
+
 ### Schemas in a file
 
 A list of schemas inside an ECDb can be obtained by:

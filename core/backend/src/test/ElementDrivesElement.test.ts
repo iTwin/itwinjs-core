@@ -1,5 +1,5 @@
 import { BeEvent, DbResult, Guid, Id64String, IModelStatus, StopWatch } from "@itwin/core-bentley";
-import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement, RelationshipProps } from "@itwin/core-common";
+import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -540,7 +540,7 @@ export class Engine {
           classFullName: InputDrivesOutput.classFullName,
           sourceId: stmt.getValue(1).getId(),
           targetId: stmt.getValue(2).getId(),
-        } as RelationshipProps;
+        };
       return undefined;
     });
     if (!edge) {

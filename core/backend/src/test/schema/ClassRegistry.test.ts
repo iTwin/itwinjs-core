@@ -42,6 +42,7 @@ describe("Class Registry", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el.getMetaData();
       assert.exists(metaData);
 
@@ -61,6 +62,7 @@ describe("Class Registry", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el2.getMetaData();
       assert.exists(metaData);
 
@@ -426,6 +428,7 @@ describe("Class Registry - generated classes", () => {
     assert.instanceOf(errorElementInstance, Entity);
     assert.equal(errorElementInstance.className, "ErrorElement");
     assert.equal(errorElementInstance.schemaName, "CustomB");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metadata = await errorElementInstance.getMetaData();
     assert.exists(metadata);
     assert.equal(metadata.fullName, "CustomB.ErrorElement");

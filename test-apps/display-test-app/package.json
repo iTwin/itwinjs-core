@@ -83,7 +83,7 @@
   },
   "devDependencies": {
     "@bentley/formats-schema": "^1.0.0",
-    "@bentley/units-schema": "^1.0.9",
+    "@bentley/units-schema": "^1.0.10",
     "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
@@ -98,7 +98,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "electron": "^41.0.0",
+    "electron": "^42.0.0",
     "eslint": "^9.31.0",
     "express": "^4.22.1",
     "express-ws": "^5.0.2",

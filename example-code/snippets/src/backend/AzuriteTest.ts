@@ -55,9 +55,12 @@ export namespace AzuriteTest {
       if (container.isPublic)
         (createProps as any).isPublic = true; // just for tests.
 
-      const containerService = BlobContainer.service!;
+      const containerService = BlobContainer.service;
+      if (containerService === undefined)
+        throw new Error("BlobContainer.service is not initialized");
+      const containerId = createProps.containerId ?? container.containerId;
       try {
-        await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
+        await containerService.delete({ containerId, baseUri, userToken: createProps.userToken });
       } catch { }
 
       return containerService.create(createProps);
@@ -129,21 +132,22 @@ export namespace AzuriteTest {
 
       const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType } as const;
       const azCont = createAzClient(address.containerId);
+      const metadata: NonNullable<azureBlob.ContainerCreateOptions["metadata"]> = {
+        itwinid: arg.scope.iTwinId,
+        containertype: arg.metadata.containerType,
+        label: arg.metadata.label,
+      };
       const opts: azureBlob.ContainerCreateOptions = {
-        metadata: {
-          itwinid: arg.scope.iTwinId,
-          containertype: arg.metadata.containerType,
-          label: arg.metadata.label,
-        },
+        metadata,
       };
       if (arg.scope.iModelId)
-        opts.metadata!.imodelid = arg.scope.iModelId;
+        metadata.imodelid = arg.scope.iModelId;
       if (arg.scope.ownerGuid)
-        opts.metadata!.ownerguid = arg.scope.ownerGuid;
+        metadata.ownerguid = arg.scope.ownerGuid;
       if (arg.metadata.description)
-        opts.metadata!.description = arg.metadata.description;
+        metadata.description = arg.metadata.description;
       if (arg.metadata.json)
-        opts.metadata!.json = JSON.stringify(arg.metadata.json);
+        metadata.json = JSON.stringify(arg.metadata.json);
 
       if (arg.isPublic)
         opts.access = "blob";
@@ -159,7 +163,9 @@ export namespace AzuriteTest {
       await createAzClient(arg.containerId).delete();
     },
     queryScope: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Scope> => {
-      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata;
+      if (metadata === undefined)
+        throw new Error("Container metadata is missing");
       return {
         iTwinId: metadata.itwinid,
         iModelId: metadata.imodelid,
@@ -187,7 +193,9 @@ export namespace AzuriteTest {
       return results;
     },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
-      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata;
+      if (metadata === undefined)
+        throw new Error("Container metadata is missing");
       return {
         containerType: metadata.containertype,
         label: metadata.label,
@@ -197,7 +205,9 @@ export namespace AzuriteTest {
     },
     updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingsContainer): Promise<void> => {
       const client = createAzClient(container.containerId);
-      const metadata = (await client.getProperties()).metadata!;
+      const metadata = (await client.getProperties()).metadata;
+      if (metadata === undefined)
+        throw new Error("Container metadata is missing");
       metadata.json = JSON.stringify(props);
       await client.setMetadata(metadata);
     },

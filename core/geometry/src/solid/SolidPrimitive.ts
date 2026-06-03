@@ -39,6 +39,12 @@ export type SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "ro
 export type AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSweep | RuledSweep | TorusPipe;
 
 /**
+ * Options for [[SolidPrimitive.getConstructiveFrame]], extended by subclasses.
+ * @public
+ */
+export class SolidPrimitiveConstructiveFrameOptions {}
+
+/**
  * Base class for SolidPrimitive variants.
  * * The base class holds capped flag for all derived classes.
  * @public
@@ -64,10 +70,19 @@ export abstract class SolidPrimitive extends GeometryQuery {
   /** Return a cross section at specified vFraction. */
   public abstract constantVSection(_vFraction: number): CurveCollection | undefined;
   /**
-   * Return a Transform from the local system of the solid to world.
+   * Return a Transform from the solid's local coordinate system to world.
    * * The particulars of origin and orientation are specific to each SolidPrimitive type.
+   * * The returned Transform is generally rigid (no preservation of skew, mirror, or scale in the solid's definition).
    */
-  public abstract getConstructiveFrame(): Transform | undefined;
+  public abstract getConstructiveFrame(_options?: SolidPrimitiveConstructiveFrameOptions): Transform | undefined;
+  /**
+   * Return true if the solid's local coordinate axes lack full orthogonality.
+   * * Skew typically takes the form of a local z-axis that is not perpendicular to the local xy-plane.
+   * * This property is always `false` for a [[RuledSweep]].
+   */
+  public get isSkew(): boolean {
+    return false;
+  }
   /**
    * Return true if this is a closed volume
    * * LinearSweep, Box, Cone only depend on capped.

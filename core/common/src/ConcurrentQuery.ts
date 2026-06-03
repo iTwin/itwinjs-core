@@ -27,7 +27,7 @@ export enum QueryRowFormat {
   UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
    * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
-   * @depreacted in 4.11.  Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
    */
   UseJsPropertyNames,
 }
@@ -773,7 +773,7 @@ export class DbQueryError extends BentleyError {
     super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, { response, request });
   }
   public static throwIfError(response: any, request?: any) {
-    if ((response.status as number) >= (DbResponseStatus.Error as number)) {
+    if ((response.status as number) >= (DbResponseStatus.Error)) {
       throw new DbQueryError(response, request);
     }
     if (response.status === DbResponseStatus.Cancel) {
