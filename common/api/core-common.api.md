@@ -2190,6 +2190,7 @@ export interface DbCloudContainerInfo {
     readonly containerId: string;
     readonly dbName?: string;
     readonly description?: string;
+    readonly includePrerelease?: boolean;
     readonly isPublic?: boolean;
     readonly storageType: "azure" | "google";
     readonly version?: string;
