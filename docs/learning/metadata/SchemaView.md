@@ -238,3 +238,7 @@ If you need "give me all classes where property X has extended type Y" - use ECS
 At the time of writing, some concepts are not exposed through ECDbMeta, and some iModels may not have updated to its latest version which added CustomAttributes. Walking all flattened properties of a class is currently not something that ECDbMeta supports.
 
 </details>
+
+## Schema Localization
+
+To use schema localization for SchemaView items, see [SchemaLocalization.md](./SchemaLocalization.md).
