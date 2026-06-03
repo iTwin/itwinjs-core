@@ -32,7 +32,7 @@ export class SchemaLocalization {
     this._locale = locale;
   }
 
-  private get baseLocale(): string | undefined {
+  private get _baseLocale(): string | undefined {
     return this._locale.includes("-") ? this._locale.split("-")[0] : undefined;
   }
 
@@ -76,8 +76,8 @@ export class SchemaLocalization {
     const promises: Promise<void>[] = [];
     for (const key of schemaKeys) {
       promises.push(this.loadLocalizationInfo(key.name, key.readVersion, this._locale));
-      if (this.baseLocale !== undefined)
-        promises.push(this.loadLocalizationInfo(key.name, key.readVersion, this.baseLocale));
+      if (this._baseLocale !== undefined)
+        promises.push(this.loadLocalizationInfo(key.name, key.readVersion, this._baseLocale));
     }
     await Promise.all(promises);
   }
@@ -91,8 +91,8 @@ export class SchemaLocalization {
     if (label)
       return label;
 
-    if (this.baseLocale) {
-      const baseLocalization = this.getCachedLocalization(schemaName, this.baseLocale);
+    if (this._baseLocale) {
+      const baseLocalization = this.getCachedLocalization(schemaName, this._baseLocale);
       return this.resolveLabel(baseLocalization, itemName, memberName);
     }
 
@@ -108,8 +108,8 @@ export class SchemaLocalization {
     if (description)
       return description;
 
-    if (this.baseLocale) {
-      const baseLocalization = this.getCachedLocalization(schemaName, this.baseLocale);
+    if (this._baseLocale) {
+      const baseLocalization = this.getCachedLocalization(schemaName, this._baseLocale);
       return this.resolveDescription(baseLocalization, itemName, memberName);
     }
 
