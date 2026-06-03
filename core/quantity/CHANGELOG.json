@@ -2,6 +2,27 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "5.10.0",
+      "tag": "@itwin/core-quantity_v5.10.0",
+      "date": "Wed, 03 Jun 2026 20:19:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver."
+          },
+          {
+            "comment": "Add generated unit schema names and UnitConversions helpers backed by bundled basic units"
+          },
+          {
+            "comment": "Fix FormatSpecHandle stale state during onFormattingReady"
+          },
+          {
+            "comment": "Use units schema 01.00.10"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.9.5",
       "tag": "@itwin/core-quantity_v5.9.5",
       "date": "Mon, 01 Jun 2026 17:34:00 GMT",
