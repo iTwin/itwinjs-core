@@ -796,7 +796,7 @@ export class RegionOps {
   }
   /**
    * Look for and simplify:
-   * * Contiguous `LineSegment3d` and `LineString3d` objects.
+   * * Contiguous `LineSegment3d`, `LineString3d`, or `Arc3d` objects.
    *   * collect all points
    *   * eliminate duplicated points
    *   * eliminate points colinear with surrounding points
