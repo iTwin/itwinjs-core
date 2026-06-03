@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 01 Jun 2026 17:35:30 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jun 2026 20:19:46 GMT and should not be manually modified.
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
+- QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Fix FormatSpecHandle stale state during onFormattingReady
+- Use units schema 01.00.10
+- Added `IModelConnection.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc.
 
 ## 5.9.5
 Mon, 01 Jun 2026 17:34:00 GMT

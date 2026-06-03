@@ -1,9 +1,0 @@
-{
-  "changes": [
-    {
-      "comment": "Fix misspelled @deprecated tag on QueryRowFormat.UseJsPropertyNames",
-      "type": "none",
-      "packageName": "@itwin/core-common"
-    }
-  ]
-}
