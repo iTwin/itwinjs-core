@@ -7,11 +7,14 @@ import { SchemaKey } from "../SchemaKey";
 import { SchemaView } from "../SchemaView";
 import { Schema } from "../Metadata/Schema";
 import { ECClass } from "../Metadata/Class";
+import { Logger } from "@itwin/core-bentley";
 import { Property } from "../Metadata/Property";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { ILocalizationProvider } from "./LocalizationProvider";
 import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
 import { LocalizedText, SchemaLocalizationJson } from "./LocalizationTypes";
+
+const loggerCategory = "SchemaLocalization";
 
 type SchemaViewItem = SchemaView.Class | SchemaView.Enumeration | SchemaView.KindOfQuantity | SchemaView.PropertyCategory;
 
@@ -27,6 +30,14 @@ export class SchemaLocalization {
   private constructor(provider: ILocalizationProvider, locale: string) {
     this._provider = provider;
     this._locale = locale;
+  }
+
+  private get baseLocale(): string | undefined {
+    return this._locale.includes("-") ? this._locale.split("-")[0] : undefined;
+  }
+
+  private cacheKey(schemaName: string, locale: string): string {
+    return `${schemaName}:${locale}`;
   }
 
   /**
@@ -62,12 +73,11 @@ export class SchemaLocalization {
    * @param schemaKeys The schema keys to load localization for
    */
   public async loadLocalizations(schemaKeys: Iterable<SchemaKey>): Promise<void> {
-    const baseLocale = this._locale.includes("-") ? this._locale.split("-")[0] : undefined;
     const promises: Promise<void>[] = [];
     for (const key of schemaKeys) {
       promises.push(this.loadLocalizationInfo(key.name, key.readVersion, this._locale));
-      if (baseLocale !== undefined)
-        promises.push(this.loadLocalizationInfo(key.name, key.readVersion, baseLocale));
+      if (this.baseLocale !== undefined)
+        promises.push(this.loadLocalizationInfo(key.name, key.readVersion, this.baseLocale));
     }
     await Promise.all(promises);
   }
@@ -76,26 +86,34 @@ export class SchemaLocalization {
    * Get a localized label for a schema, schema item, or member.
    */
   public getLabel(schemaName: string, itemName?: string, memberName?: string): string | undefined {
-    const localization = this.getCachedLocalization(schemaName);
+    const localization = this.getCachedLocalization(schemaName, this._locale);
     const label = this.resolveLabel(localization, itemName, memberName);
     if (label)
       return label;
 
-    const baseLocalization = this.getCachedBaseLocalization(schemaName);
-    return this.resolveLabel(baseLocalization, itemName, memberName);
+    if (this.baseLocale) {
+      const baseLocalization = this.getCachedLocalization(schemaName, this.baseLocale);
+      return this.resolveLabel(baseLocalization, itemName, memberName);
+    }
+
+    return undefined;
   }
 
   /**
    * Get a localized description for a schema, schema item, or member.
    */
   public getDescription(schemaName: string, itemName?: string, memberName?: string): string | undefined {
-    const localization = this.getCachedLocalization(schemaName);
+    const localization = this.getCachedLocalization(schemaName, this._locale);
     const description = this.resolveDescription(localization, itemName, memberName);
     if (description)
       return description;
 
-    const baseLocalization = this.getCachedBaseLocalization(schemaName);
-    return this.resolveDescription(baseLocalization, itemName, memberName);
+    if (this.baseLocale) {
+      const baseLocalization = this.getCachedLocalization(schemaName, this.baseLocale);
+      return this.resolveDescription(baseLocalization, itemName, memberName);
+    }
+
+    return undefined;
   }
 
   /**
@@ -146,7 +164,7 @@ export class SchemaLocalization {
    * Load localization information for a specific schema and locale.
    */
   private async loadLocalizationInfo(schemaName: string, readVersion: number, locale: string): Promise<void> {
-    const cacheKey = `${schemaName}:${locale}`;
+    const cacheKey = this.cacheKey(schemaName, locale);
     if (this._cache.has(cacheKey))
       return;
 
@@ -154,8 +172,7 @@ export class SchemaLocalization {
     if (localization?.version) {
       const localizationMajor = this.getMajorVersion(localization.version);
       if (localizationMajor === undefined || readVersion !== localizationMajor) {
-        // eslint-disable-next-line no-console
-        console.warn(`Localization version mismatch for schema "${schemaName}". Schema major version is ${readVersion.toString()}, but localization is for major version ${localizationMajor?.toString() ?? "undefined"}.`);
+        Logger.logWarning(loggerCategory, `Localization version mismatch for schema "${schemaName}". Schema major version is ${readVersion.toString()}, but localization is for major version ${localizationMajor?.toString() ?? "undefined"}.`);
         this._cache.set(cacheKey, undefined);
         return;
       }
@@ -177,20 +194,11 @@ export class SchemaLocalization {
   }
 
   /**
-   * Retrieve the cached localization for the active locale.
+   * Retrieve the cached localization for a locale
    */
-  private getCachedLocalization(schemaName: string): SchemaLocalizationJson | undefined {
-    return this._cache.get(`${schemaName}:${this._locale}`);
-  }
-
-  /**
-   * Retrieve the cached localization for the base locale (e.g., "es" from "es-CO").
-   */
-  private getCachedBaseLocalization(schemaName: string): SchemaLocalizationJson | undefined {
-    if (!this._locale.includes("-"))
-      return undefined;
-    const baseLocale = this._locale.split("-")[0];
-    return this._cache.get(`${schemaName}:${baseLocale}`);
+  private getCachedLocalization(schemaName: string, locale: string): SchemaLocalizationJson | undefined {
+    const cacheKey = this.cacheKey(schemaName, locale);
+    return this._cache.get(cacheKey);
   }
 
   /**
