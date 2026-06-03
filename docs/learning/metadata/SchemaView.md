@@ -241,4 +241,4 @@ At the time of writing, some concepts are not exposed through ECDbMeta, and some
 
 ## Schema Localization
 
-To use schema localization for SchemaView items, see [schema-localization.md](../../../core/ecschema-metadata/src/Localization/schema-localization.md).
+To use schema localization for SchemaView items, see [SchemaLocalization.md](./SchemaLocalization.md).
