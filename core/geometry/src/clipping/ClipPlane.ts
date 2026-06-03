@@ -246,11 +246,17 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   public get inwardNormalRef(): Vector3d {
     return this._inwardNormal;
   }
-  /**  Return the "interior" property flag. Interpretation of this flag is algorithm-specific. */
+  /**
+   * Return the "interior" property flag. Interpretation of this flag is algorithm-specific.
+   * * One way this flag is used is to indicate a plane that has been added to partition the exterior region of a masked ClipShape.
+   */
   public get interior() {
     return this._interior;
   }
-  /**  Return the "invisible" property flag. Interpretation of this flag is algorithm-specific. */
+  /**
+   * Return the "invisible" property flag. Interpretation of this flag is algorithm-specific.
+   * * One way this flag is used is to indicate a plane that should not be used to compute intersection edges.
+   */
   public get invisible() {
     return this._invisible;
   }

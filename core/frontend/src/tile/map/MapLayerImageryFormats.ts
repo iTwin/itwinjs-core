@@ -10,7 +10,6 @@ import { IModelConnection } from "../../IModelConnection";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
-  AzureMapsLayerImageryProvider,
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
@@ -219,13 +218,6 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
-  public static override formatId = "AzureMaps";
-  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
-    return new AzureMapsLayerImageryProvider(settings);
-  }
-}
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "BingMaps";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
@@ -245,4 +237,4 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
