@@ -385,6 +385,11 @@ jobs:
 
       - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
           - bash: |
+              # Save H_amended (the version-bump commit in detached HEAD) so that the downstream
+              # git-notes and branch-push steps operate on the correct commit after this step
+              # moves HEAD to master to create the fallback branch.
+              versionBumpCommit=$(git log -1 --format=%H)
+
               # Merge conflicts: Create branch, set up PR for manual resolution.
               echo "##[warning] Cherry-pick operation on master failed (most likely due to merge conflicts). Manual intervention required"
 
@@ -403,6 +408,14 @@ jobs:
                 git add .
                 git commit -m "Add deprecation rule changes with all merge conflicts"
               else
+                # Cherry-pick exited non-zero but left no unresolved files, meaning the
+                # deprecation cleanup is already present on master.  Clean up the
+                # in-progress cherry-pick state, restore HEAD to the version-bump commit,
+                # and clear needsPR so the DEPRECATION_COMMENT_CHANGES_PR git note is not
+                # applied to a PR that was never opened.
+                git cherry-pick --abort 2>/dev/null || true
+                git checkout "$versionBumpCommit"
+                echo "##vso[task.setvariable variable=needsPR]false"
                 echo "Deprecation cleanup is already present on master; skipping fallback PR"
                 exit 0
               fi
@@ -413,6 +426,10 @@ jobs:
 
               # Create a PR with new conflict branch
               gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName
+
+              # Restore HEAD to the version-bump commit so downstream steps (SHOULD_PUBLISH
+              # git note, release-branch push) operate on the correct commit.
+              git checkout "$versionBumpCommit"
             displayName: Create PR for manual resolution of deprecation comment changes
             condition: eq(variables['needsPR'], 'true')
             env:
