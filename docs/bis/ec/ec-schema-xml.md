@@ -122,7 +122,7 @@ Example:
 
 ### Custom Attribute Classes
 
-`ECCustomAttributeClass` adds an `appliesTo` attribute that lists the container types where instances of the custom attribute may be applied.
+`ECCustomAttributeClass` adds an `appliesTo` attribute that lists the container types where instances of the custom attribute may be applied. See [ECCustomAttributeClass](./ec-custom-attribute-class.md) for its semantics.
 
 ```xml
 <ECCustomAttributeClass typeName="ReviewInfo" appliesTo="Schema,EntityClass,PrimitiveProperty">
@@ -134,7 +134,7 @@ The list may be separated by commas, semicolons, or vertical bars.
 
 ## Relationship Classes
 
-`ECRelationshipClass` defines the relationship itself and contains `Source` and `Target` constraint elements.
+`ECRelationshipClass` defines the relationship itself and contains `Source` and `Target` constraint elements. See [ECRelationshipClass](./ec-relationship-class.md) for its semantics.
 
 | Attribute | Required | Description |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ For `holding` and `embedding` relationships, `strengthDirection` determines whic
 
 ## Properties
 
-EC property elements are split by property kind. This is intentional: each property kind has a different XML shape and maps naturally to different typed APIs.
+EC property elements are split by property kind. This is intentional: each property kind has a different XML shape and maps naturally to different typed APIs. See [ECProperty](./ec-property.md) for its semantics.
 
 Common property attributes:
 
@@ -207,7 +207,7 @@ Navigation properties use `direction="forward"` or `direction="backward"`.
 
 ## Enumerations
 
-`ECEnumeration` defines a named enumeration with either an integer or string backing type.
+`ECEnumeration` defines a named enumeration with either an integer or string backing type. See [ECEnumeration](./ec-enumeration.md) for its semantics.
 
 | Attribute | Required | Description |
 | --- | --- | --- |
@@ -252,7 +252,7 @@ The `presentationUnits` attribute is a semicolon-separated list of format refere
 
 ## Custom Attributes
 
-`ECCustomAttributes` contains ECInstance XML for custom attribute instances applied to the parent schema, item, relationship constraint, or property.
+`ECCustomAttributes` contains ECInstance XML for custom attribute instances applied to the parent schema, item, relationship constraint, or property. See [ECCustomAttributes](./ec-custom-attributes.md) for its semantics.
 
 ```xml
 <ECCustomAttributes>
