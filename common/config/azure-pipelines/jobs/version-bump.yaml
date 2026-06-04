@@ -389,6 +389,8 @@ jobs:
               # git-notes and branch-push steps operate on the correct commit after this step
               # moves HEAD to master to create the fallback branch.
               versionBumpCommit=$(git log -1 --format=%H)
+              # Only stamp the deprecation-PR note if the fallback PR was actually created.
+              echo "##vso[task.setvariable variable=fallbackPrCreated]false"
               # Restore HEAD to the version-bump commit on any exit (bash -e abort, exit 0, or
               # normal completion) so downstream git-notes and release-branch-push steps always
               # operate on the correct commit.
@@ -434,7 +436,9 @@ jobs:
                 echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
 
                 # Create a PR with new conflict branch
-                if ! gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName; then
+                if gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName; then
+                  echo "##vso[task.setvariable variable=fallbackPrCreated]true"
+                else
                   echo "##vso[task.logissue type=error;]gh pr create failed for $conflictBranchName — create the draft PR manually."
                 fi
               else
@@ -465,7 +469,7 @@ jobs:
           echo "Applying DEPRECATION_COMMENT_CHANGES_PR note to commit $latestCommit"
           git notes append -m "DEPRECATION_COMMENT_CHANGES_PR" $latestCommit
         displayName: Mark commit for eslint rule changes
-        condition: eq(variables['needsPR'], 'true')
+        condition: and(eq(variables['needsPR'], 'true'), eq(variables['fallbackPrCreated'], 'true'))
 
       - bash: |
           git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits
