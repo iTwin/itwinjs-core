@@ -105,9 +105,10 @@ jobs:
 
           if [[ -n "$archiveTag" ]]; then
             echo "Adding output variable $archiveTag"
-            echo "##vso[task.setvariable variable=archiveTag;]$archiveTag"
+            echo "##vso[task.setvariable variable=archiveTag;isOutput=true]$archiveTag"
           fi
         displayName: Set archive vars if necessary
+        name: SetArchiveVars
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
@@ -162,31 +163,3 @@ jobs:
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
-
-      # Tag the build for version archival (e.g., "v4") if building a specific release branch
-      - bash: |
-          if [[ -n "$(archiveTag)" ]]; then
-            echo "Tagging build with $(archiveTag) for archival purposes."
-            echo "##vso[build.addbuildtag]$(archiveTag)"
-          fi
-        displayName: Tag build for version archival (e.g., v4)
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), ne(variables['archiveTag'], ''))
-
-      # tag the build to trigger the release pipeline
-      - bash: |
-          commitMsg="${BUILD_SOURCEVERSIONMESSAGE}"
-          if [[ $commitMsg =~ ^([0-9]+\.[0-9]+\.[0-9]+)(-dev\.[0-9]+)?$ ]]; then
-            echo "'$commitMsg' is a version bump"
-            echo '##vso[build.addbuildtag]iTwinJsDocsRelease'
-          else
-            echo "'$commitMsg' is not a version bump"
-          fi
-        displayName: Tag release if version bump
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
-
-      - task: tagBuildOrRelease@0
-        displayName: Tag release if externally triggered
-        inputs:
-          type: "Build"
-          tags: "iTwinJsDocsRelease"
-        condition: and(succeeded(), ${{ parameters.shouldPublish }}, eq('${{ parameters.isExternalBuild }}', true))

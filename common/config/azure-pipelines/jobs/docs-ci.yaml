@@ -19,6 +19,21 @@ trigger:
 variables:
   - group: Rush Build Cache SAS Token
 
+resources:
+  repositories:
+    - repository: build-pipeline-scripts
+      type: git
+      name: iModelTechnologies/imodeljs-build-pipeline-scripts
+      ref: refs/heads/master
+    - repository: bemetalsmith
+      type: git
+      name: iModelTechnologies/BeMetalsmith
+      ref: refs/heads/main
+    - repository: MendScan
+      type: git
+      name: ReleaseServices/MendScan
+      ref: refs/heads/main
+
 pr:
   drafts: false
   branches:
@@ -39,3 +54,7 @@ jobs:
       workingDir: $(Pipeline.Workspace)/itwinjs-core
       outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
       shouldPublish: ${{ or(parameters.forcePublish, eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}
+  - ${{ if or(parameters.forcePublish, eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}:
+      - template: /release-pipeline/docs/templates/upstream-docs-postbuild.yaml@build-pipeline-scripts
+        parameters:
+          shouldPublish: true
