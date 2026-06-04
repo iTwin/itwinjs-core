@@ -389,6 +389,10 @@ jobs:
               # git-notes and branch-push steps operate on the correct commit after this step
               # moves HEAD to master to create the fallback branch.
               versionBumpCommit=$(git log -1 --format=%H)
+              # Restore HEAD to the version-bump commit on any exit (bash -e abort, exit 0, or
+              # normal completion) so downstream git-notes and release-branch-push steps always
+              # operate on the correct commit.
+              trap 'git checkout "$versionBumpCommit" 2>/dev/null || true' EXIT
 
               # Merge conflicts: Create branch, set up PR for manual resolution.
               echo "##[warning] Cherry-pick operation on master failed (most likely due to merge conflicts). Manual intervention required"
@@ -396,7 +400,8 @@ jobs:
               # Create and checkout to conflict handling branch
               conflictBranchName="cherry-pick-conflict-$(getVersion.version)"
               echo "##[warning] Creating new branch '$conflictBranchName' for manual resolution"
-              git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core master:master
+              git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core master:master \
+                || echo "##vso[task.logissue type=warning;]git fetch failed — using cached local master ref (may be slightly stale)"
               git checkout master
               git checkout -b $conflictBranchName
 
