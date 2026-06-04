@@ -16,7 +16,7 @@ import { TestUtils } from "../TestUtils";
 
 chai.use(chaiAsPromised);
 
-describe.only("Code value management: null, swap, undo/redo, and cross-briefcase pull", function (this: Suite) {
+describe("Code value management: null, swap, undo/redo, and cross-briefcase pull", function (this: Suite) {
   this.timeout(60000);
 
   before(async () => {
