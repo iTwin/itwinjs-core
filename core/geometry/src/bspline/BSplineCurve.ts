@@ -121,7 +121,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   }
   /**
    * Return the number of Bezier spans in the curve. Note that this number includes the number of null
-   * spans at repeated knows.
+   * spans at repeated knots.
    */
   public get numSpan(): number {
     return this._bcurve.numSpan;
