@@ -7,8 +7,8 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
 import { CurveCollection } from "../curve/CurveCollection";
+import { AnyCurve } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { AxisOrder, Geometry } from "../Geometry";
@@ -18,8 +18,25 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { SolidPrimitive } from "./SolidPrimitive";
+import { SolidPrimitive, SolidPrimitiveConstructiveFrameOptions } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
+
+/**
+ * Options for [[RotationalSweep.getConstructiveFrame]].
+ * @public
+ */
+export class RotationalSweepConstructiveFrameOptions extends SolidPrimitiveConstructiveFrameOptions {
+  /**
+   * Though the y-axis of the frame returned by [[RotationalSweep.getConstructiveFrame]] is perpendicular to the
+   * contour plane, it can point in one of two directions. This option allows the caller to control this direction.
+   * * If `false` (default), the y-axis of the frame is the normal reported by the contour. This direction is
+   * independent of the solid's sweep direction.
+   * * If `true`, the y-axis of the frame is aligned to the solid's sweep direction: specifically, it points in the
+   * direction of positive sweep. With this choice, columns 0, 1 of the returned frame can be used to construct the
+   * `vector0` and `vector90` vectors needed to construct a centerline arc for the solid.
+   */
+  public alignToSweep?: boolean;
+}
 
 /**
  * A RotationalSweep is:
@@ -44,8 +61,8 @@ export class RotationalSweep extends SolidPrimitive {
     this._sweepAngle = sweepAngle;
   }
   /**
-   * Create a rotational sweep.
-   * @param contour profile to sweep, coplanar with axis (CAPTURED).
+   * Create a rotational sweep. All input objects are CAPTURED.
+   * @param contour profile to sweep, coplanar with axis.
    * @param axis rotation axis.
    * @param sweepAngle signed angular sweep.
    * @param capped whether to cap the surface to make a solid.
@@ -64,8 +81,14 @@ export class RotationalSweep extends SolidPrimitive {
    * * z direction along the rotation ray.
    * * y direction perpendicular to the base contour plane.
    */
-  public getConstructiveFrame(): Transform | undefined {
+  public getConstructiveFrame(options?: RotationalSweepConstructiveFrameOptions): Transform | undefined {
     const contourPerpendicular = this._contour.localToWorld.matrix.columnZ();
+    if (options?.alignToSweep) {
+      const center = this._contour.curves.range().diagonalFractionToPoint(0.5); // ASSUME: contour range center is off the axis
+      const toCenter = this._normalizedAxis.perpendicularPartOfVectorToTarget(center);
+      if (this._normalizedAxis.direction.tripleProduct(toCenter, contourPerpendicular) < 0)
+        contourPerpendicular.negate(contourPerpendicular);
+    }
     const axes = Matrix3d.createRigidFromColumns(contourPerpendicular, this._normalizedAxis.direction, AxisOrder.YZX);
     if (axes) {
       return Transform.createOriginAndMatrix(this._normalizedAxis.origin, axes);
