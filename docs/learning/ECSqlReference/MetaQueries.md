@@ -27,6 +27,116 @@ TestSchema
 [Executed in 0.0707 s]
 ```
 
+### Querying KindOfQuantity and Units
+
+Properties can reference a [KindOfQuantity](../ECDbMeta.ecschema.md#kindofquantitydef) (KoQ) through the `ECPropertyDef.KindOfQuantity` navigation property. A KoQ describes the physical quantity a property measures and stores its persistence unit in `KindOfQuantityDef.PersistenceUnit`.
+
+Unlike `ECPropertyDef.KindOfQuantity`, `KindOfQuantityDef.PersistenceUnit` is not a navigation property. It is stored as a string such as `"u:M"` or `"u:CUB_M"`, so resolving it to a [UnitDef](../ECDbMeta.ecschema.md#unitdef) requires matching that string against the unit name together with the owning schema alias.
+
+The queries below use representative results. Your class, property, and unit names will vary in other datasets.
+
+#### List properties that have a KindOfQuantity
+
+Start by listing properties whose `KindOfQuantity` navigation property is set:
+
+```sql
+SELECT
+  c.Name AS ClassName,
+  p.Name AS PropertyName,
+  koq.Name AS KindOfQuantityName,
+  koq.PersistenceUnit
+FROM meta.ECPropertyDef p
+  JOIN meta.ECClassDef c ON p.Class.Id = c.ECInstanceId
+  JOIN meta.KindOfQuantityDef koq ON p.KindOfQuantity.Id = koq.ECInstanceId
+ORDER BY c.Name, p.Name
+LIMIT 10
+```
+
+Example result:
+
+```
+ClassName                        |PropertyName                     |KindOfQuantityName|PersistenceUnit
+------------------------------------------------------------------------------------------------------
+AggregateMeshSurfaceEntityAspect |MeshSurfaceEntity_CivilVolume    |VOLUME            |u:CUB_M
+AggregateMeshSurfaceEntityAspect |MeshSurfaceEntity_EndStationFormatted|STATION       |u:M
+AggregateMeshSurfaceEntityAspect |MeshSurfaceEntity_StartStationFormatted|STATION     |u:M
+AirValve_PhysicalAspect          |Physical_AirValveElevation       |ELEVATION         |u:M
+AirValveAspect                   |BaselineOffsetSetOut             |LENGTH            |u:M
+AirValveAspect                   |BaselineStationSetOut            |STATION           |u:M
+AirValveAspect                   |FormationElevation               |LENGTH            |u:M
+Alignment                        |LengthValue                      |LENGTH            |u:M
+Alignment                        |StartStation                     |STATION           |u:M
+Alignment                        |StartValue                       |LENGTH            |u:M
+```
+
+#### Inspect the KindOfQuantity for one property
+
+Once you find a property of interest, filter to that class and property to inspect the KoQ details:
+
+```sql
+SELECT
+  koq.Name AS KindOfQuantityName,
+  koq.PersistenceUnit,
+  koq.RelativeError,
+  koq.PresentationUnits
+FROM meta.ECClassDef c
+  JOIN meta.ECPropertyDef p ON p.Class.Id = c.ECInstanceId
+  JOIN meta.KindOfQuantityDef koq ON p.KindOfQuantity.Id = koq.ECInstanceId
+WHERE c.Name = 'Alignment'
+  AND p.Name = 'LengthValue'
+```
+
+Example result:
+
+```
+KindOfQuantityName|PersistenceUnit|RelativeError|PresentationUnits
+------------------------------------------------------------------------------------------------------------------------------------
+LENGTH            |u:M            |0.0001       |["f:DefaultRealU(2)[u:M]","f:DefaultRealU(2)[u:FT]","f:DefaultRealU(2)[u:US_SURVEY_FT]"]
+```
+
+#### Resolve the persistence unit to UnitDef details
+
+To resolve `PersistenceUnit` to the corresponding `UnitDef`, first pair each unit with its owning schema alias, then match that `"alias:Name"` text to the KoQ's stored `PersistenceUnit` string:
+
+```sql
+SELECT
+  c.Name AS ClassName,
+  p.Name AS PropertyName,
+  koq.Name AS KindOfQuantityName,
+  koq.PersistenceUnit,
+  unit.SchemaAlias AS UnitSchemaAlias,
+  unit.UnitName,
+  unit.UnitLabel
+FROM meta.ECClassDef c
+  JOIN meta.ECPropertyDef p ON p.Class.Id = c.ECInstanceId
+  JOIN meta.KindOfQuantityDef koq ON p.KindOfQuantity.Id = koq.ECInstanceId
+  JOIN (
+    SELECT
+      u.ECInstanceId,
+      s.Alias AS SchemaAlias,
+      u.Name AS UnitName,
+      u.DisplayLabel AS UnitLabel
+    FROM meta.UnitDef u
+      JOIN meta.ECSchemaDef s ON s.ECInstanceId = u.Schema.Id
+  ) unit
+    ON (
+      koq.PersistenceUnit = unit.SchemaAlias || ':' || unit.UnitName
+      OR koq.PersistenceUnit = unit.UnitName
+    )
+WHERE c.Name = 'Alignment'
+  AND p.Name = 'LengthValue'
+```
+
+Example result:
+
+```
+ClassName|PropertyName|KindOfQuantityName|PersistenceUnit|UnitSchemaAlias|UnitName|UnitLabel
+----------------------------------------------------------------------------------------------
+Alignment|LengthValue |LENGTH            |u:M            |u              |M       |m
+```
+
+The second branch of the join condition handles older data where `PersistenceUnit` may be stored as just `"UnitName"` without the schema alias. If multiple schemas define the same unit name, include the unit schema name in the subquery output to confirm which unit matched.
+
 ### Examples on how to query for custom attributes
 
 Obtaining values from inside a custom attribute can be achieved using json_extract.
