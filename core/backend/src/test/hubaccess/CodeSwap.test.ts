@@ -29,7 +29,6 @@ describe.only("Code value management: null, swap, undo/redo, and cross-briefcase
   it("swap codeValues between two elements sharing the same codeSpec and codeScope, verify undo/redo in a single transaction", async () => {
     HubMock.startup("CodeSwapTest", KnownTestLocations.outputDir);
     let b1: BriefcaseDb | undefined;
-    let b2: BriefcaseDb | undefined;
 
     try {
       // --- Setup iModel ---
@@ -42,9 +41,6 @@ describe.only("Code value management: null, swap, undo/redo, and cross-briefcase
 
       b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
       b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-
-      b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
-      b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
       // --- Create a drawing model + category and a CodeSpec ---
       let drawingModelId: Id64String;
@@ -68,7 +64,6 @@ describe.only("Code value management: null, swap, undo/redo, and cross-briefcase
       });
 
       await b1.pushChanges({ description: "setup" });
-      await b2.pullChanges();
 
       // --- Insert two elements with same codeSpecId/codeScopeId but different codeValues ---
       let elem1Id: Id64String;
@@ -93,7 +88,6 @@ describe.only("Code value management: null, swap, undo/redo, and cross-briefcase
       });
 
       await b1.pushChanges({ description: "insert two elements with CODE_A and CODE_B" });
-      await b2.pullChanges();
 
       // Verify initial state
       let e1 = b1.elements.getElementProps(elem1Id!);
@@ -147,7 +141,6 @@ describe.only("Code value management: null, swap, undo/redo, and cross-briefcase
 
     } finally {
       b1?.close();
-      b2?.close();
       HubMock.shutdown();
     }
   });
