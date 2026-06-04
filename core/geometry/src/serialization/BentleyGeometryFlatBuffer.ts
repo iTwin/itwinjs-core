@@ -17,6 +17,8 @@ export class BentleyGeometryFlatBuffer {
   private constructor() { }
   /**
    * Serialize bytes to a flatbuffer.
+   * @param data geometry to serialize
+   * @param addVersionSignature whether to prepend a version signature to the output bytes. Pass `true` for iModel FB geometry streams.
    * @public
    */
   public static geometryToBytes(data: GeometryQuery | GeometryQuery[], addVersionSignature: boolean = false): Uint8Array | undefined {
@@ -25,8 +27,9 @@ export class BentleyGeometryFlatBuffer {
 
   /**
    * Deserialize bytes from a flatbuffer.
-   *  @public
-   * @param justTheBytes FlatBuffer bytes as created by BGFBWriter.createFlatBuffer (g);
+   * @param justTheBytes FlatBuffer bytes as created by BGFBWriter.createFlatBuffer
+   * @param hasVersionSignature Whether the input bytes include a version prefix. Pass `true` for iModel FB geometry streams.
+   * @public
    */
   public static bytesToGeometry(justTheBytes: Uint8Array, hasVersionSignature: boolean = false): GeometryQuery | GeometryQuery[] | undefined {
     return BGFBReader.bytesToGeometry(justTheBytes, hasVersionSignature ? signatureBytes : undefined);

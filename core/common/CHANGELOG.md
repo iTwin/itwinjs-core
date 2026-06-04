@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 19 May 2026 19:47:05 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Fix misspelled @deprecated tag on QueryRowFormat.UseJsPropertyNames
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
 
 ## 5.9.4
 Tue, 19 May 2026 19:45:27 GMT

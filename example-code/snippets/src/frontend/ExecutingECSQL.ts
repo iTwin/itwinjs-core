@@ -81,6 +81,7 @@ async function executeECSql_HandlingRows(iModel: IModelConnection): Promise<void
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_HandlingRows_Types
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Parent, LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const id: Id64String = row.id;
       const className: string = row.className;
@@ -118,6 +119,7 @@ async function executeECSql_HandlingRows(iModel: IModelConnection): Promise<void
 async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<void> {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyIndexes
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Parent, LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`ECInstanceId is ${row[0]}`);
       console.log(`ECClassId is ${row[1]}`);
@@ -129,6 +131,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyIndexes_ToArray
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     const jsRows = await reader.toArray();
     console.log(jsRows);
@@ -137,6 +140,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyNames
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Parent, LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`ECInstanceId is ${row.ECInstanceId}`);
       console.log(`ECClassId is ${row.ECClassId}`);
@@ -148,6 +152,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyNames_ToArray
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     const jsRows = await reader.toArray();
     console.log(jsRows);
@@ -156,6 +161,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseJsPropertyNames
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`ECInstanceId is ${row.id}`);
       console.log(`ECClassId is ${row.className}`);
@@ -167,6 +173,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseJsPropertyNames_ToArray
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     const jsRows = await reader.toArray();
     console.log(jsRows);
@@ -178,6 +185,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Positional
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       QueryBinder.from(["MyCode", "2018-01-01T12:00:00Z"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.id}, ${row.className}, ${row.parent}, ${row.lastMod}`);
     }
@@ -188,6 +196,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Named
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       QueryBinder.from({ code: "MyCode", lastmod: "2018-01-01T12:00:00Z" }), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.id}, ${row.className}, ${row.parent}, ${row.lastMod}`);
     }
@@ -196,6 +205,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", QueryBinder.from([{ id: "0x132" }]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.id}`);
     }
@@ -204,6 +214,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", QueryBinder.from(["0x132"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.id}`);
     }
@@ -212,6 +223,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Struct
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT Name FROM myschema.Company WHERE Location=?", QueryBinder.from([{ street: "7123 Main Street", zip: 30211 }]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.name}`);
     }
@@ -220,6 +232,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_StructMembers
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", QueryBinder.from(["7123 Main Street", 32443]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.name}`);
     }
@@ -228,6 +241,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Array
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", QueryBinder.from([["+16134584201", "+16134584202", "+16134584222"]]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`${row.name}`);
     }

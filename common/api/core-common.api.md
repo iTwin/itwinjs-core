@@ -2190,6 +2190,7 @@ export interface DbCloudContainerInfo {
     readonly containerId: string;
     readonly dbName?: string;
     readonly description?: string;
+    readonly includePrerelease?: boolean;
     readonly isPublic?: boolean;
     readonly storageType: "azure" | "google";
     readonly version?: string;
@@ -7922,6 +7923,7 @@ export interface QueryQuota {
 export enum QueryRowFormat {
     UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
+    // @deprecated
     UseJsPropertyNames = 2
 }
 

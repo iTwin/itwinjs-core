@@ -2,6 +2,69 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.10.0",
+      "tag": "@itwin/core-backend_v5.10.0",
+      "date": "Wed, 03 Jun 2026 20:19:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow reversing schema changeset"
+          },
+          {
+            "comment": "ECSQL: Allow optional ON clause with CROSS JOIN"
+          },
+          {
+            "comment": "Improve revert timeline changes to handle large number of changesets"
+          },
+          {
+            "comment": "Add SettingsSchemas.groups to expose registered SettingGroupSchema metadata, including user-facing titles and descriptions"
+          },
+          {
+            "comment": "Added `SettingsSchemas.getResolvedSettingDef` for resolving nested object properties and array items."
+          },
+          {
+            "comment": "Fixed `SettingsSchemas.removeGroup` to remove registered type definitions correctly."
+          },
+          {
+            "comment": "Add an optional user-facing title to SettingGroupSchema so settings UIs do not need to rely on schemaPrefix for display text"
+          },
+          {
+            "comment": "Add lastEditedAt metadata to WorkspaceDb manifests."
+          },
+          {
+            "comment": "Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications."
+          },
+          {
+            "comment": "Optimized EditTxn.deleteElements for better performance and clearer reporting; added batch lifecycle callbacks Element.onBulkDeleted, Element.onBulkChildDeleted, and Model.onBulkModelEvents to avoid per-element notification overhead."
+          },
+          {
+            "comment": "Added `IModelDb.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc."
+          },
+          {
+            "comment": "Add outline geometry as Path instead of Loop in text annotations"
+          },
+          {
+            "comment": "Semantic Rebase uses the new ChangesetReader api. Also while doing semantic rebase we now stream the changed instances onto the temp file while writing as well as stream changed instances from the file while reading."
+          },
+          {
+            "comment": "Added spillThresholdInBytes parameter to openGroup, openLocalChanges, openInMemoryChanges, openTxn methods of ChangesetReader api"
+          },
+          {
+            "comment": "Added strict mode to changeset reader api"
+          },
+          {
+            "comment": "Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.9.5",
+      "tag": "@itwin/core-backend_v5.9.5",
+      "date": "Mon, 01 Jun 2026 17:34:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.9.4",
       "tag": "@itwin/core-backend_v5.9.4",
       "date": "Tue, 19 May 2026 19:45:27 GMT",

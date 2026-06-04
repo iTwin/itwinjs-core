@@ -128,6 +128,9 @@ jobs:
         env:
           VITE_CI: true
 
+      - name: rush build cesium-renderer
+        run: node common/scripts/install-run-rush.js build --only @itwin/cesium-renderer
+
       - name: rush lint
         id: lint
         continue-on-error: true
@@ -139,9 +142,6 @@ jobs:
         # api-extractor runs in CI mode (GITHUB_ACTIONS=true) and exits non-zero if
         # any api.md would change — no separate git diff step needed for api.md files.
         run: node common/scripts/install-run-rush.js extract-api --to-version-policy prerelease-monorepo-lockStep
-
-      - name: rush build cesium-renderer
-        run: node common/scripts/install-run-rush.js build --only @itwin/cesium-renderer
 
       - name: rush extract-api cesium-renderer
         id: extract_api_cesium
