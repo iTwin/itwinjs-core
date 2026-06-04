@@ -430,10 +430,10 @@ jobs:
 
                 # Create a PR with new conflict branch
                 if ! gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName; then
-                  echo "##vso[task.logissue type=warning;]gh pr create failed for $conflictBranchName — create the draft PR manually."
+                  echo "##vso[task.logissue type=error;]gh pr create failed for $conflictBranchName — create the draft PR manually."
                 fi
               else
-                echo "##vso[task.logissue type=warning;]Failed to push fallback branch $conflictBranchName — push manually and open a draft PR."
+                echo "##vso[task.logissue type=error;]Failed to push fallback branch $conflictBranchName — push manually and open a draft PR."
               fi
 
               # Restore HEAD to the version-bump commit so downstream steps (SHOULD_PUBLISH
