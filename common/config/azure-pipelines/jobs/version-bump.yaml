@@ -275,9 +275,14 @@ jobs:
           - bash: |
               commitRef=$(deprecationCommit.ref)
               echo "Attempting to cherry-pick commit: $commitRef"
-              if git cherry-pick $commitRef; then
-                git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
-                echo "Successfully applied deprecation comment updates to master"
+              if git cherry-pick "$commitRef"; then
+                if git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master; then
+                  echo "Successfully applied deprecation comment updates to master"
+                else
+                  git reset --hard HEAD~1
+                  echo "##vso[task.setvariable variable=needsPR]true"
+                  echo "Failed pushing deprecation comment updates to master. A PR will be created for manual resolution."
+                fi
               else
                 git cherry-pick --abort
                 echo "##vso[task.setvariable variable=needsPR]true"
@@ -391,12 +396,15 @@ jobs:
               git checkout -b $conflictBranchName
 
               # Cherry-pick changes onto conflict handling branch
-              if git cherry-pick $(deprecationCommit.ref); then
+              if git cherry-pick "$(deprecationCommit.ref)"; then
                 echo "Deprecation cleanup applied cleanly on fallback branch"
-              else
+              elif git diff --name-only --diff-filter=U | grep -q .; then
                 # Stage the conflict-marker files so the draft PR shows only the manual-resolution state.
                 git add .
                 git commit -m "Add deprecation rule changes with all merge conflicts"
+              else
+                echo "Deprecation cleanup is already present on master; skipping fallback PR"
+                exit 0
               fi
 
               # Push the fallback branch for manual review or resolution.
