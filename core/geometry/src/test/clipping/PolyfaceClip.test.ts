@@ -7,12 +7,14 @@ import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { compareWithTolerance, OrderedSet } from "@itwin/core-bentley";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveChain } from "../../curve/CurveCollection";
 import { CurveOps } from "../../curve/CurveOps";
+import { AnnounceNumberNumberCurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -21,6 +23,8 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { AxisIndex, Geometry } from "../../Geometry";
@@ -32,19 +36,22 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
-import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { SweepContour } from "../../solid/SweepContour";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 import { RFunctions } from "../polyface/DrapeLinestring.test";
 
 /** Estimate a volume for a mesh that may be missing side faces.
@@ -98,7 +105,6 @@ describe("PolyfaceClip", () => {
     ck.testCoordinate(area, areaLeft + areaRight);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ClipPlane");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("EdgeInClipPlane", () => {
@@ -1540,3 +1546,179 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
+describe("PolyfaceClipPerformance", () => {
+  it("MissAndHit", () => {
+    if (GeometryCoreTestIO.enableLongTests) {
+      const ck = new Checker();
+      const polyfaceBuilder = PolyfaceBuilder.create();
+      polyfaceBuilder.addTriangleFacet([Point3d.create(0, 0, 14), Point3d.create(1, 0, 13), Point3d.create(0, 1, 13)]);
+      const polyface = polyfaceBuilder.claimPolyface(false);
+      const allGeometry: GeometryQuery[] = [];
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
+      ck.testExactNumber(1, polyface.facetCount, "polyface has one facet");
+      ck.testExactNumber(3, polyface.pointCount, "polyface has three points");
+
+      // polyface has a single triangle; visitor will visit that triangle nIterations times for performance testing
+      const nIterations = 100000;
+      const indices = new Array(nIterations).fill(0);
+      let visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+
+      visitor.reset();
+      let actualIterations = 0;
+      while (visitor.moveToNextFacet())
+        actualIterations++;
+      ck.testExactNumber(nIterations, actualIterations, "visitor iterated the expected number of times");
+
+      const timings: string[] = [];
+
+      // clip plane all hit and all miss cases
+      visitor.reset();
+      let clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(10, 0, 0))!;
+      ck.testDefined(clipPlane, "created clip plane");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
+      let t0 = performance.now();
+      let clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+      timings.push(`elapsed misses (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
+      ck.testExactNumber(0, clipPlaneResults.length, "no results from sectionPolyfaceClipPlane (all misses)");
+
+      visitor.reset();
+      clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(0.5, 0.5))!;
+      ck.testDefined(clipPlane, "created clip plane");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
+      t0 = performance.now();
+      clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+      timings.push(`elapsed hits (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
+      ck.testExactNumber(nIterations, clipPlaneResults.length, "all results from sectionPolyfaceClipPlane (all hits)");
+
+      // arc all hit and all miss cases
+      let dy = 5;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
+      visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+      let arc = Arc3d.createXY(Point3d.create(2, 2, 0), 1.0);
+      arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
+      t0 = performance.now();
+      let arcResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, arc);
+      timings.push(`elapsed misses (arc): ${(performance.now() - t0).toFixed(4)} ms`);
+      ck.testExactNumber(0, arcResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+      ck.testExactNumber(nIterations, arcResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+
+      visitor.reset();
+      arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5);
+      arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
+      t0 = performance.now();
+      arcResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, arc);
+      timings.push(`elapsed hits (arc): ${(performance.now() - t0).toFixed(4)} ms`);
+      ck.testExactNumber(nIterations, arcResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+      ck.testExactNumber(0, arcResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+
+      // spiral all hit and all miss cases
+      dy = 10;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
+      visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+      let localToWorld = Transform.createRefs(Point3d.create(10, 10, 0), Matrix3d.createIdentity());
+      let spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 10, Segment1d.create(0, 1), localToWorld)!;
+      ck.testDefined(spiral, "created spiral");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+      t0 = performance.now();
+      let spiralResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, spiral);
+      timings.push(`elapsed misses (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
+      ck.testExactNumber(0, spiralResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+      ck.testExactNumber(nIterations, spiralResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+
+      visitor.reset();
+      localToWorld = Transform.createRefs(Point3d.create(), Matrix3d.createIdentity());
+      spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 100, Segment1d.create(0, 1), localToWorld)!;
+      ck.testDefined(spiral, "created spiral");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+      t0 = performance.now();
+      spiralResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, spiral);
+      timings.push(`elapsed hits (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
+      ck.testExactNumber(nIterations, spiralResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+      ck.testExactNumber(0, spiralResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+
+      for (const t of timings)
+        GeometryCoreTestIO.consoleLog(t);
+      GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClipPerformance", "MissAndHit");
+      expect(ck.getNumErrors()).toBe(0);
+    }
+  });
+});
+
+/** Return a rectangle to visualize a clip plane. */
+export function getClipPlaneForVisualization(clipPlane: ClipPlane): IndexedPolyface {
+  const normal = clipPlane.inwardNormalRef;
+  const origin = Point3d.createZero().plusScaled(normal, clipPlane.distance);
+  const perp0 = Matrix3d.createRigidHeadsUp(normal).columnX();
+  const perp1 = normal.crossProduct(perp0);
+  const s = 2;
+  const planeBuilder = PolyfaceBuilder.create();
+  planeBuilder.addQuadFacet([
+    origin.plusScaled(perp0, -s).plusScaled(perp1, -s),
+    origin.plusScaled(perp0, s).plusScaled(perp1, -s),
+    origin.plusScaled(perp0, s).plusScaled(perp1, s),
+    origin.plusScaled(perp0, -s).plusScaled(perp1, s),
+  ]);
+  return planeBuilder.claimPolyface(false);
+}
+
+/**
+ * Intersect each facet with an arc or spiral and return results in distance along format i.e.,
+ * (distanceAlong, elevation, 0)
+ ** Return all edges chained as array of LineString3d.
+ */
+export function sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(
+  visitor: PolyfaceVisitor, arcOrSpiral: Arc3d | TransitionSpiral3d
+): { profile: LineString3d[], numEarlyOuts: number } {
+  const primitiveRange = arcOrSpiral.range();
+  const workRange = Range3d.createNull();
+  const workPoints = [Point3d.create(), Point3d.create(), Point3d.create()];
+  let workClipShape: ClipShape | undefined;
+  const workRay = Ray3d.createZero();
+  const unitZ = Vector3d.unitZ();
+  const lineStrings: LineString3d[] = [];
+  let numEarlyOuts = 0;
+
+  const announcer: AnnounceNumberNumberCurvePrimitive = (a0, a1, cp) => {
+    const distanceAlong0 = cp.curveLengthBetweenFractions(0, a0);
+    const distanceAlong1 = cp.curveLengthBetweenFractions(0, a1);
+    const intersectionPoints = [cp.fractionToPoint(a0), cp.fractionToPoint(a1)];
+    PolygonOps.centroidAreaNormal(visitor.point, workRay);
+    if (workRay.getDirectionRef().normalizeInPlace()) {
+      const scale = 1.0 / unitZ.dotProduct(workRay.getDirectionRef());
+      const altitude0 = workRay.pointToFraction(intersectionPoints[0]);
+      const altitude1 = workRay.pointToFraction(intersectionPoints[1]);
+      intersectionPoints[0].z -= altitude0 * scale;
+      intersectionPoints[1].z -= altitude1 * scale;
+    }
+    // lineStrings show the cross-section profile of the triangle surface along the arc/spiral path:
+    //    X-axis = distance traveled along the arc/spiral
+    //    Y-axis = elevation (z-height) on the triangle surface at that point
+    //    Z-axis = 0 (flat 2D profile)
+    lineStrings.push(
+      LineString3d.createPoints([
+        Point3d.create(distanceAlong0, intersectionPoints[0].z, 0),
+        Point3d.create(distanceAlong1, intersectionPoints[1].z, 0)
+      ]),
+    );
+  };
+
+  while (visitor.moveToNextFacet()) {
+    visitor.range(workRange);
+    if (!workRange.intersectsRangeXY(primitiveRange)) {
+      numEarlyOuts++;
+      continue; // when ranges don't intersect, we know the arc/spiral doesn't intersect either
+    }
+    // assume we're dealing with triangles
+    visitor.point.getPoint3dAtUncheckedPointIndex(0, workPoints[0]);
+    visitor.point.getPoint3dAtUncheckedPointIndex(1, workPoints[1]);
+    visitor.point.getPoint3dAtUncheckedPointIndex(2, workPoints[2]);
+    workClipShape = ClipShape.createShape(workPoints, undefined, undefined, undefined, undefined, undefined, workClipShape);
+    if (!workClipShape)
+      continue;
+    arcOrSpiral.announceClipIntervals(workClipShape, announcer);
+  }
+  return { profile: lineStrings, numEarlyOuts };
+}
