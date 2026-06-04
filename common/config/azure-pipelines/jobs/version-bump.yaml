@@ -421,14 +421,24 @@ jobs:
               fi
 
               # Push the fallback branch for manual review or resolution.
-              git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $conflictBranchName
-              echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
+              # Use explicit error handling so a transient push or PR-creation failure does NOT
+              # exit the script under bash -e: git checkout "$versionBumpCommit" below must
+              # always run so downstream git-notes and release-branch-push steps operate on the
+              # correct (version-bump) commit rather than the master-lineage conflict branch.
+              if git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $conflictBranchName; then
+                echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
 
-              # Create a PR with new conflict branch
-              gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName
+                # Create a PR with new conflict branch
+                if ! gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName; then
+                  echo "##vso[task.logissue type=warning;]gh pr create failed for $conflictBranchName — create the draft PR manually."
+                fi
+              else
+                echo "##vso[task.logissue type=warning;]Failed to push fallback branch $conflictBranchName — push manually and open a draft PR."
+              fi
 
               # Restore HEAD to the version-bump commit so downstream steps (SHOULD_PUBLISH
               # git note, release-branch push) operate on the correct commit.
+              # This must remain the final statement in the script regardless of push/PR outcome.
               git checkout "$versionBumpCommit"
             displayName: Create PR for manual resolution of deprecation comment changes
             condition: eq(variables['needsPR'], 'true')
