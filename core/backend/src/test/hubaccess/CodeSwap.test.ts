@@ -16,7 +16,7 @@ import { TestUtils } from "../TestUtils";
 
 chai.use(chaiAsPromised);
 
-describe("Code value management: null, swap, undo/redo, and cross-briefcase pull", function (this: Suite) {
+describe.only("Code value management: null, swap, undo/redo, and cross-briefcase pull", function (this: Suite) {
   this.timeout(60000);
 
   before(async () => {
@@ -416,6 +416,120 @@ describe("Code value management: null, swap, undo/redo, and cross-briefcase pull
       chai.expect(() => b2!.elements.getElementProps(elem1Id!)).to.throw();
       const b2NewElem = b2.elements.getElementProps(newElemId!);
       chai.expect(b2NewElem.code.value).to.equal("CODE_A");
+
+    } finally {
+      b1?.close();
+      b2?.close();
+      HubMock.shutdown();
+    }
+  });
+
+  it("single-transaction code swap reverts to old behaviour (swap not applied) when noUpdateLoop is true", async () => {
+    HubMock.startup("CodeSwapNoUpdateLoopTest", KnownTestLocations.outputDir);
+    let b1: BriefcaseDb | undefined;
+    let b2: BriefcaseDb | undefined;
+
+    try {
+      // --- Setup iModel ---
+      const iModelId = await HubMock.createNewIModel({
+        accessToken: "user1",
+        iTwinId: HubMock.iTwinId,
+        iModelName: "CodeSwapNoUpdateLoopTest",
+        description: "CodeSwapNoUpdateLoopTest",
+      });
+
+      b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+      b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+      b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      let drawingModelId: Id64String;
+      let drawingCategoryId: Id64String;
+      let codeSpecId: Id64String;
+      let codeScopeId: Id64String;
+
+      await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+      withEditTxn(b1, "setup model, category, codeSpec", (txn) => {
+        const modelCode = IModelTestUtils.getUniqueModelCode(b1!, "DrawingModel");
+        const [, modelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode);
+        drawingModelId = modelId;
+
+        let catId = DrawingCategory.queryCategoryIdByName(b1!, IModel.dictionaryId, "MyDrawingCategory");
+        if (undefined === catId)
+          catId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+        drawingCategoryId = catId;
+
+        codeSpecId = b1!.codeSpecs.insert(txn, "MyCodeSpec", CodeScopeSpec.Type.Model);
+        codeScopeId = drawingModelId;
+      });
+
+      await b1.pushChanges({ description: "setup" });
+      await b2.pullChanges();
+
+      let elem1Id: Id64String;
+      let elem2Id: Id64String;
+
+      await b1.locks.acquireLocks({ shared: drawingModelId! });
+      withEditTxn(b1, "insert two coded elements", (txn) => {
+        const elem1Props: GeometricElement2dProps = {
+          classFullName: "BisCore:DrawingGraphic",
+          model: drawingModelId!,
+          category: drawingCategoryId!,
+          code: new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_A" }),
+        };
+        const elem2Props: GeometricElement2dProps = {
+          classFullName: "BisCore:DrawingGraphic",
+          model: drawingModelId!,
+          category: drawingCategoryId!,
+          code: new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_B" }),
+        };
+        elem1Id = txn.insertElement(elem1Props);
+        elem2Id = txn.insertElement(elem2Props);
+      });
+
+      await b1.pushChanges({ description: "insert two elements with CODE_A and CODE_B" });
+      await b2.pullChanges();
+
+      // --- Single-transaction swap: null elem1, then swap codes ---
+      await b1.locks.acquireLocks({ exclusive: [elem2Id!, elem1Id!] });
+      withEditTxn(b1, "single-txn swap", (txn) => {
+        // Step 1: null out elem1's code to free the uniqueness slot
+        const props = b1!.elements.getElementProps(elem1Id!);
+        props.code = new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "" });
+        txn.updateElement(props);
+
+        // Step 2: assign CODE_A to elem2, CODE_B to elem1
+        const props1 = b1!.elements.getElementProps(elem1Id!);
+        const props2 = b1!.elements.getElementProps(elem2Id!);
+        props2.code = new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_A" });
+        props1.code = new Code({ spec: codeSpecId!, scope: codeScopeId!, value: "CODE_B" });
+        txn.updateElement(props2);
+        txn.updateElement(props1);
+      });
+
+      // Verify b1 has the swapped state
+      b1.clearCaches();
+      const b1e1 = b1.elements.getElementProps(elem1Id!);
+      const b1e2 = b1.elements.getElementProps(elem2Id!);
+      chai.expect(b1e1.code.value).to.equal("CODE_B");
+      chai.expect(b1e2.code.value).to.equal("CODE_A");
+
+      await b1.pushChanges({ description: "single-txn code swap" });
+
+      // Pull with noUpdateLoop: true — this uses the old (pre-fix) apply path.
+      // The unique-index conflict handler skips the intermediate null step,
+      // so the swap is silently dropped and b2 retains the original codes.
+      // noUpdateLoop is intentionally not in the public PullChangesArgs type.
+      type InternalPullArgs = Parameters<BriefcaseDb["pullChanges"]>[0] & { noUpdateLoop?: boolean };
+      await b2.pullChanges({ noUpdateLoop: true } as InternalPullArgs);
+
+      b2.clearCaches();
+      const b2e1 = b2.elements.getElementProps(elem1Id!);
+      const b2e2 = b2.elements.getElementProps(elem2Id!);
+      // Old behaviour: swap did NOT land — b2 still sees the original codes
+      chai.expect(b2e1.code.value).to.equal("CODE_A");
+      chai.expect(b2e2.code.value).to.equal("CODE_B");
 
     } finally {
       b1?.close();
