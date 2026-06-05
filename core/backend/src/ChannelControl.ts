@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { _bumpChannelVersion, _implementationProhibited, _recordMigration, _verifyChannel } from "./internal/Symbols";
+import { _bumpChannelVersion, _findRegisteredMigration, _implementationProhibited, _recordMigration, _verifyChannel } from "./internal/Symbols";
 import { IModelDb } from "./IModelDb";
 import type { EditTxn } from "./EditTxn";
 import type { Migration, MigrationCompatibility, MigrationDetails, MigrationRecord } from "./Migration";
@@ -129,10 +129,19 @@ export interface ChannelControl {
   upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 
   /**
-   * Registers a migration to be applied to this iModel when it is opened.
-   * Migrations should be registered at application startup, before any iModel is opened.
-   * They are applied in the order in which they are registered.
+   * Registers a migration for this iModel. Migrations should be registered at application
+   * startup, before any iModel is opened. They are applied in the order in which they are
+   * registered.
    * @see [Application Updates]($docs/learning/backend/ApplicationUpdates.md)
+   * @beta
+   */
+  registerMigration(migration: Migration): void;
+
+  /**
+   * Returns the list of migrations that have already been applied to this iModel for the
+   * specified channel, in the order they were applied.
+   * @param channelKey The key of the channel to query.
+   * @returns An array of applied migration records.
    * @beta
    */
   getAppliedMigrations(channelKey: ChannelKey): MigrationRecord[];
@@ -150,6 +159,21 @@ export interface ChannelControl {
 
   /** @internal */
   [_bumpChannelVersion]: (txn: EditTxn, channelKey: ChannelKey, compatibility: MigrationCompatibility) => void;
+
+  /**
+   * Looks up a registered [[Migration]] by channel and id.
+   *
+   * Returns an object with:
+   * - `migration`: the matching [[Migration]], or `undefined` if no migration with that id was registered for the channel.
+   * - `channelHasRegistrations`: `true` if any migrations were registered for the channel at all.
+   *
+   * When `channelHasRegistrations` is `false` the channel is unrelated to this application's
+   * migration system and the caller should apply the changeset without special handling.
+   * When `channelHasRegistrations` is `true` but `migration` is `undefined`, the application is
+   * too old and must be updated before it can process this migration.
+   * @internal
+   */
+  [_findRegisteredMigration](channelKey: ChannelKey, migrationId: string): { migration: Migration | undefined; channelHasRegistrations: boolean };
 }
 
 /** @beta */

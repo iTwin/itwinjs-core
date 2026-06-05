@@ -14,7 +14,7 @@ import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
 import { EditTxn } from "../EditTxn";
-import { _bumpChannelVersion, _implementationProhibited, _implicitTxn, _nativeDb, _recordMigration, _verifyChannel } from "./Symbols";
+import { _bumpChannelVersion, _findRegisteredMigration, _implementationProhibited, _implicitTxn, _nativeDb, _recordMigration, _verifyChannel } from "./Symbols";
 import * as semver from "semver";
 import { Migration, MigrationCompatibility, MigrationDetails, MigrationRecord } from "../Migration";
 
@@ -200,6 +200,13 @@ class ChannelAdmin implements ChannelControl {
       return [];
     const appliedIds = new Set(this.getAppliedMigrations(channelKey).map((r) => r.id));
     return registered.filter((m) => !appliedIds.has(m.id));
+  }
+
+  public [_findRegisteredMigration](channelKey: ChannelKey, migrationId: string): { migration: Migration | undefined; channelHasRegistrations: boolean } {
+    const registrations = this._registeredMigrations.get(channelKey);
+    if (registrations === undefined)
+      return { migration: undefined, channelHasRegistrations: false };
+    return { migration: registrations.find((m) => m.id === migrationId), channelHasRegistrations: true };
   }
 
   public [_recordMigration](txn: EditTxn, channelKey: ChannelKey, migrationId: string, details: MigrationDetails | undefined): void {

@@ -32,6 +32,8 @@ export const _mockCheckpoint = Symbol.for(sym("mockCheckpoint"));
 export const _recordMigration = Symbol.for(sym("recordMigration"));
 /** @internal */
 export const _bumpChannelVersion = Symbol.for(sym("bumpChannelVersion"));
+/** @internal */
+export const _findRegisteredMigration = Symbol.for(sym("findRegisteredMigration"));
 export const _cache = Symbol.for(sym("cache"));
 export const _instanceKeyCache = Symbol.for(sym("instanceKeyCache"));
 /** @internal */
