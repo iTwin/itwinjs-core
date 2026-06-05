@@ -31,7 +31,7 @@ TestSchema
 
 Properties can reference a [KindOfQuantity](../ECDbMeta.ecschema.md#kindofquantitydef) (KoQ) through `ECPropertyDef.KindOfQuantity`. A KoQ tells you what kind of quantity a property represents, such as an angle, length, or weight, and records the unit used to persist that value in `KindOfQuantityDef.PersistenceUnit`.
 
-`ECPropertyDef.KindOfQuantity` is a relationship you can join through. `KindOfQuantityDef.PersistenceUnit` is different: it is just stored text such as `"u:M"` or `"u:CUB_M"`. To resolve that text to a [UnitDef](../ECDbMeta.ecschema.md#unitdef), match it against the unit name together with the owning schema alias.
+`ECPropertyDef.KindOfQuantity` is a relationship you can join through. `KindOfQuantityDef.PersistenceUnit` is different: it is just stored text such as `"u:M"` or `"u:CUB_M"`. In these examples, `u` is the schema alias and the suffix is the unit name, so `"u:M"` means the `M` unit from schema alias `u` (meters), while `"u:CUB_M"` means cubic meters. To resolve that text to a [UnitDef](../ECDbMeta.ecschema.md#unitdef), match it against the unit name together with the owning schema alias.
 
 Imagine you are inspecting an EC Schema for a piping domain that contains classes such as `BendType` and `ValveType`, and you want to answer questions such as:
 
