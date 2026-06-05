@@ -14,8 +14,9 @@ import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
 import { EditTxn } from "../EditTxn";
-import { _implementationProhibited, _implicitTxn, _nativeDb, _verifyChannel } from "./Symbols";
+import { _bumpChannelVersion, _implementationProhibited, _implicitTxn, _nativeDb, _recordMigration, _verifyChannel } from "./Symbols";
 import * as semver from "semver";
+import { Migration, MigrationCompatibility, MigrationDetails, MigrationRecord } from "../Migration";
 
 class ChannelAdmin implements ChannelControl {
   public static readonly channelClassName = "bis:ChannelRootAspect";
@@ -24,6 +25,7 @@ class ChannelAdmin implements ChannelControl {
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
+  private _registeredMigrations = new Map<ChannelKey, Migration[]>();
 
   public constructor(private _iModel: IModelDb) {
     // for backwards compatibility, allow the shared channel unless explicitly turned off in IModelHostOptions.
@@ -173,6 +175,73 @@ class ChannelAdmin implements ChannelControl {
     } catch (error: any) {
       ChannelControlError.throwError(error, "channel-upgrade-failed", `Channel ${options.channelKey} upgrade failed: ${error.message}`);
     }
+  }
+
+  public registerMigration(migration: Migration): void {
+    let migrations = this._registeredMigrations.get(migration.channelKey);
+    if (migrations === undefined) {
+      migrations = [];
+      this._registeredMigrations.set(migration.channelKey, migrations);
+    }
+    migrations.push(migration);
+  }
+
+  public getAppliedMigrations(channelKey: ChannelKey): MigrationRecord[] {
+    const channelRootId = this.queryChannelRoot(channelKey);
+    if (channelRootId === undefined)
+      return [];
+    const props = this._iModel.elements.tryGetElementProps(channelRootId);
+    return (props?.jsonProperties?.migrations as MigrationRecord[] | undefined) ?? [];
+  }
+
+  public getPendingMigrations(channelKey: ChannelKey): Migration[] {
+    const registered = this._registeredMigrations.get(channelKey) ?? [];
+    if (registered.length === 0)
+      return [];
+    const appliedIds = new Set(this.getAppliedMigrations(channelKey).map((r) => r.id));
+    return registered.filter((m) => !appliedIds.has(m.id));
+  }
+
+  public [_recordMigration](txn: EditTxn, channelKey: ChannelKey, migrationId: string, details: MigrationDetails | undefined): void {
+    const channelRootId = this.queryChannelRoot(channelKey);
+    if (channelRootId === undefined)
+      throw new IModelError(IModelStatus.NotFound, `Channel "${channelKey}" not found`);
+
+    const element = this._iModel.elements.getElement(channelRootId);
+    const record: MigrationRecord = {
+      id: migrationId,
+      appliedAt: new Date().toISOString(),
+      ...(details !== undefined && { details }),
+    };
+    if (!element.jsonProperties.migrations)
+      element.jsonProperties.migrations = [];
+    (element.jsonProperties.migrations as MigrationRecord[]).push(record);
+    element.update(txn);
+  }
+
+  public [_bumpChannelVersion](txn: EditTxn, channelKey: ChannelKey, compatibility: MigrationCompatibility): void {
+    if (channelKey === ChannelControl.sharedChannelName)
+      return; // The shared channel root (root subject) has no ChannelRootAspect to carry a version.
+
+    const channelRootId = this.queryChannelRoot(channelKey);
+    if (channelRootId === undefined)
+      throw new IModelError(IModelStatus.NotFound, `Channel "${channelKey}" not found`);
+
+    const aspects = this._iModel.elements.getAspects(channelRootId, ChannelAdmin.channelClassName);
+    if (aspects.length === 0)
+      return; // No ChannelRootAspect means no version to bump (older iModel).
+
+    const aspect = aspects[0];
+    const currentVersion: string = aspect.asAny.version ?? "0.0.0";
+    const bumpType = compatibility === MigrationCompatibility.None ? "major"
+      : compatibility === MigrationCompatibility.ReadOnly ? "minor"
+        : "patch";
+    const newVersion = semver.inc(currentVersion, bumpType);
+    if (!newVersion)
+      throw new IModelError(IModelStatus.BadArg, `Invalid channel version "${currentVersion}" for channel "${channelKey}"`);
+
+    aspect.asAny.version = newVersion;
+    txn.updateAspect(aspect.toJSON());
   }
 }
 

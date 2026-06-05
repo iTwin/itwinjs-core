@@ -69,6 +69,21 @@ export interface ReinstatedChanges {
   readonly deleted: ReadonlySet<Id64String>;
 }
 
+/** A record of a [[Migration]] that has been applied to an iModel.
+ * Applied migration records are stored in the channel root element's `jsonProperties.migrations` array
+ * and are pushed as part of the migration changeset so all briefcases see them.
+ * @see [[ChannelControl.getAppliedMigrations]]
+ * @beta
+ */
+export interface MigrationRecord {
+  /** The unique identifier of the applied migration. */
+  readonly id: string;
+  /** The value returned by [[Migration.migrate]], if any. */
+  readonly details?: MigrationDetails;
+  /** ISO 8601 timestamp of when the migration was applied. */
+  readonly appliedAt: string;
+}
+
 /** Defines a channel-scoped data migration that can be applied to a [[BriefcaseDb]].
  *
  * Migrations are registered at startup and applied, when necessary, in the order in which they

@@ -7,9 +7,10 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { _implementationProhibited, _verifyChannel } from "./internal/Symbols";
+import { _bumpChannelVersion, _implementationProhibited, _recordMigration, _verifyChannel } from "./internal/Symbols";
 import { IModelDb } from "./IModelDb";
 import type { EditTxn } from "./EditTxn";
+import type { Migration, MigrationCompatibility, MigrationDetails, MigrationRecord } from "./Migration";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
@@ -126,6 +127,29 @@ export interface ChannelControl {
    * @beta
    */
   upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
+
+  /**
+   * Registers a migration to be applied to this iModel when it is opened.
+   * Migrations should be registered at application startup, before any iModel is opened.
+   * They are applied in the order in which they are registered.
+   * @see [Application Updates]($docs/learning/backend/ApplicationUpdates.md)
+   * @beta
+   */
+  getAppliedMigrations(channelKey: ChannelKey): MigrationRecord[];
+
+  /**
+   * Returns the list of registered migrations for the specified channel that have not yet been applied to this iModel.
+   * @param channelKey The key of the channel to query.
+   * @returns An array of pending migrations, in registration order.
+   * @beta
+   */
+  getPendingMigrations(channelKey: ChannelKey): Migration[];
+
+  /** @internal */
+  [_recordMigration]: (txn: EditTxn, channelKey: ChannelKey, migrationId: string, details: MigrationDetails | undefined) => void;
+
+  /** @internal */
+  [_bumpChannelVersion]: (txn: EditTxn, channelKey: ChannelKey, compatibility: MigrationCompatibility) => void;
 }
 
 /** @beta */
