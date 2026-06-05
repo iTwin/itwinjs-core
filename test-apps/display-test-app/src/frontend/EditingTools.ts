@@ -346,7 +346,7 @@ export class ReproJaggedCurvesTool extends Tool {
 
     // A high threshold forces absolute positions (jagged at high coords); a low one uses rtcCenter (smooth).
     imodel.editingScope!.dynamicGraphicsAbsolutePositionThreshold = threshold;
-    console.log(`ReproJaggedCurves: dynamicGraphicsAbsolutePositionThreshold=${imodel.editingScope!.dynamicGraphicsAbsolutePositionThreshold}`);
+    console.log(`ReproJaggedCurves: dynamicGraphicsAbsolutePositionThreshold=${imodel.editingScope!.dynamicGraphicsAbsolutePositionThreshold}`); // eslint-disable-line no-console
 
     // Find model and category from the view's displayed models
     let modelId = imodel.editorToolSettings.model;
@@ -417,8 +417,8 @@ export class ReproJaggedCurvesTool extends Tool {
 
     // Use worldPoints for range calculations (project extents, zoom)
     const elementRange = Range3d.createArray(worldPoints);
-    console.log(`ReproJaggedCurves: elementRange=${JSON.stringify(elementRange.toJSON())}`);
-    console.log(`ReproJaggedCurves: projectExtents=${JSON.stringify(imodel.projectExtents.toJSON())}`);
+    console.log(`ReproJaggedCurves: elementRange=${JSON.stringify(elementRange.toJSON())}`); // eslint-disable-line no-console
+    console.log(`ReproJaggedCurves: projectExtents=${JSON.stringify(imodel.projectExtents.toJSON())}`); // eslint-disable-line no-console
     if (!imodel.projectExtents.containsRange(elementRange)) {
       await startCommand(imodel);
       const extents = imodel.projectExtents.clone();
@@ -426,21 +426,21 @@ export class ReproJaggedCurvesTool extends Tool {
       await basicManipulationIpc.updateProjectExtents(extents.toJSON());
       await basicManipulationIpc.saveChanges("ReproJaggedCurves-extents");
       imodel.projectExtents = extents;
-      console.log(`ReproJaggedCurves: updated projectExtents=${JSON.stringify(extents.toJSON())}`);
+      console.log(`ReproJaggedCurves: updated projectExtents=${JSON.stringify(extents.toJSON())}`); // eslint-disable-line no-console
     }
 
     // Now insert the element
     await startCommand(imodel);
     const elementId = await basicManipulationIpc.insertGeometricElement(props);
     await basicManipulationIpc.saveChanges("ReproJaggedCurves");
-    console.log(`ReproJaggedCurves: inserted element ${elementId}`);
+    console.log(`ReproJaggedCurves: inserted element ${elementId}`); // eslint-disable-line no-console
 
     // Zoom to the circle using an explicit range (more reliable than zoomToElements for new elements)
     imodel.selectionSet.replace(elementId);
     const zoomRange = elementRange.clone();
     zoomRange.expandInPlace(2); // pad slightly for visual context
-    await vp.zoomToVolume(zoomRange, { animateFrustumChange: true });
-    console.log(`ReproJaggedCurves: zoomed to range=${JSON.stringify(zoomRange.toJSON())}`);
+    vp.zoomToVolume(zoomRange, { animateFrustumChange: true });
+    console.log(`ReproJaggedCurves: zoomed to range=${JSON.stringify(zoomRange.toJSON())}`); // eslint-disable-line no-console
 
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(
       OutputMessagePriority.Info,
