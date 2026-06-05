@@ -92,6 +92,36 @@ describe("GraphicalEditingScope", () => {
       expect(imodel.editingScope).to.be.undefined;
     });
 
+    it("exposes a configurable dynamicGraphicsAbsolutePositionThreshold", async () => {
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
+      const scope = await imodel.enterEditingScope();
+      try {
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(10_000);
+
+        scope.dynamicGraphicsAbsolutePositionThreshold = 25_000;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(25_000);
+
+        scope.dynamicGraphicsAbsolutePositionThreshold = 0;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(0);
+
+        scope.dynamicGraphicsAbsolutePositionThreshold = Number.POSITIVE_INFINITY;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(Number.POSITIVE_INFINITY);
+
+        // Negative values are clamped to zero.
+        scope.dynamicGraphicsAbsolutePositionThreshold = -100;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(0);
+
+        // Non-finite values other than +Infinity are ignored.
+        scope.dynamicGraphicsAbsolutePositionThreshold = 5_000;
+        scope.dynamicGraphicsAbsolutePositionThreshold = Number.NaN;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(5_000);
+        scope.dynamicGraphicsAbsolutePositionThreshold = Number.NEGATIVE_INFINITY;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(5_000);
+      } finally {
+        await scope.exit();
+      }
+    });
+
     async function openWritable(): Promise<BriefcaseConnection> {
       expect(imodel).to.be.undefined;
       const rwConn = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);

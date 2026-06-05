@@ -19,15 +19,6 @@ import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
 } from "../../tile/internal";
 
-/** Maximum coordinate magnitude (in meters, world space) at which we use absolute positions for dynamic tile
- * graphics requests. Beyond this threshold, per-element `rtcCenter` centering is used instead to avoid float32
- * precision loss. This threshold is a pragmatic tradeoff between the performance
- * benefit of absolute positions and the precision needed to avoid visible artifacts like jagged curves when
- * projects are centered far from the coordinate system origin.
- * @see useAbsolutePositions in [[GraphicsTile.requestContent]]
- */
-const absolutePositionDistanceThreshold = 10_000;
-
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
  * [[GraphicalEditingScope]].
@@ -373,10 +364,14 @@ class GraphicsTile extends Tile {
     // Use absolute positions (better performance) only when the element's world-space coordinates are
     // small enough that float32 precision is adequate. For projects far from the coordinate system origin,
     // large coordinates cause visible precision artifacts (jagged curves). In those cases, fall back to
-    // per-element rtcCenter centering. See absolutePositionDistanceThreshold for details.
+    // per-element rtcCenter centering. The threshold is configurable via GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold.
+    // Dynamic tiles only exist within an editing scope, so the scope is always present here; the `?? 10_000` exists solely to
+    // satisfy the type system (iModel is typed as IModelConnection) and is otherwise unreachable, so its value is arbitrary.
+    const iModel = this.tree.iModel;
+    const threshold = (iModel.isBriefcaseConnection() ? iModel.editingScope?.dynamicGraphicsAbsolutePositionThreshold : undefined) ?? 10_000;
     const worldCenter = this.tree.iModelTransform.multiplyPoint3d(this.range.center);
     const maxCoord = Math.max(Math.abs(worldCenter.x), Math.abs(worldCenter.y), Math.abs(worldCenter.z));
-    const useAbsolutePositions = !this.range.isNull && maxCoord < absolutePositionDistanceThreshold;
+    const useAbsolutePositions = !this.range.isNull && maxCoord < threshold;
 
     const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),

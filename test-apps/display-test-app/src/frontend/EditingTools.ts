@@ -294,32 +294,38 @@ export class MoveElementTool extends Tool {
 /** Automated repro for issue #1990: creates a dense circular line string at high coordinates
  * to demonstrate jagged curves caused by float32 precision loss during editing.
  *
- * Usage: `ReproJaggedCurves` — uses default offset of 20,000,000 meters
+ * Usage: `ReproJaggedCurves` — offset of 20,000,000 meters; forces absolute positions (jagged) to verify the threshold knob
  *        `ReproJaggedCurves x=5000000` — uses custom offset
  *        `ReproJaggedCurves x=0` — creates at origin (control case, should look smooth)
+ *        `ReproJaggedCurves threshold=10000` — sets GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold
  *
  * The tool:
  * 1. Enters editing scope if not already in one
- * 2. Finds a spatial model and category from the current view
- * 3. Creates a circle (200-point line string, radius 5m) at the specified offset
- * 4. Saves and zooms to the element
+ * 2. Sets the scope's `dynamicGraphicsAbsolutePositionThreshold` (default: Infinity, forcing absolute positions => jagged)
+ * 3. Finds a spatial model and category from the current view
+ * 4. Creates a circle (200-point line string, radius 5m) at the specified offset
+ * 5. Saves and zooms to the element
  *
- * Compare the circle at x=20000000 (jagged without fix) vs x=0 (smooth).
+ * Absolute positions are used when `maxCoord < threshold`, and absolute positions are what cause the
+ * jaggedness at high coords. So a *high* threshold (e.g. Infinity) yields jagged; a *low* threshold (e.g. the 10,000m default)
+ * falls back to rtcCenter centering and stays smooth. Compare `threshold=Infinity` (jagged) vs `threshold=10000` (smooth) at
+ * x=20000000.
  */
 export class ReproJaggedCurvesTool extends Tool {
   public static override toolId = "ReproJaggedCurves";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get maxArgs() { return 4; }
 
   public override async parseAndRun(...inputs: string[]): Promise<boolean> {
     const args = parseArgs(inputs);
     const x = args.getFloat("x") ?? 20_000_000;
     const y = args.getFloat("y") ?? 0;
     const z = args.getFloat("z") ?? 0;
-    return this.run(x, y, z);
+    const threshold = args.getFloat("threshold") ?? Number.POSITIVE_INFINITY;
+    return this.run(x, y, z, threshold);
   }
 
-  public override async run(x = 20_000_000, y = 0, z = 0): Promise<boolean> {
+  public override async run(x = 20_000_000, y = 0, z = 0, threshold = Number.POSITIVE_INFINITY): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No active viewport"));
@@ -337,6 +343,10 @@ export class ReproJaggedCurvesTool extends Tool {
       await imodel.enterEditingScope();
       setTitle(imodel);
     }
+
+    // A high threshold forces absolute positions (jagged at high coords); a low one uses rtcCenter (smooth).
+    imodel.editingScope!.dynamicGraphicsAbsolutePositionThreshold = threshold;
+    console.log(`ReproJaggedCurves: dynamicGraphicsAbsolutePositionThreshold=${imodel.editingScope!.dynamicGraphicsAbsolutePositionThreshold}`);
 
     // Find model and category from the view's displayed models
     let modelId = imodel.editorToolSettings.model;
