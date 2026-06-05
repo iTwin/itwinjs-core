@@ -199,7 +199,19 @@ export namespace ChannelControlError {
     /** an attempt to use a channel that was not "allowed" */
     "not-allowed" |
     /** the root channel already exists */
-    "root-exists";
+    "root-exists" |
+    /**
+     * The channel's major (read-compatibility) version is higher than this application supports.
+     * An unknown migration has made the channel's data fundamentally incompatible with this version
+     * of the application. The application must be updated before the channel can be accessed.
+     */
+    "version-blocked" |
+    /**
+     * The channel's minor (write-compatibility) version is higher than this application supports.
+     * An unknown migration has changed the channel's data in a way that is backward-readable but
+     * not backward-writable. The channel may be read but must not be written by this application.
+     */
+    "version-read-only";
 
   /** Instantiate and throw a ChannelControlError */
   export function throwError(key: Key, message: string, channelKey: string): never {

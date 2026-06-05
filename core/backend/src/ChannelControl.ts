@@ -162,6 +162,27 @@ export interface ChannelControl {
    */
   getAllPendingMigrations(): Migration[];
 
+  /**
+   * Returns the version compatibility status for the specified channel, determined by comparing
+   * the channel's current version in the iModel against the version implied by all registered
+   * migrations for that channel.
+   *
+   * - `"ok"` — the channel is fully compatible; reads and writes are permitted.
+   * - `"read-only"` — an unknown migration bumped the channel's minor (write-compatibility)
+   *   version. The channel data is still understandable but must not be written. Attempting to
+   *   write will throw a [[ChannelControlError]] with key `"version-read-only"`.
+   * - `"blocked"` — an unknown migration bumped the channel's major (read-compatibility) version.
+   *   The channel data may no longer make sense to this application. Writing will throw a
+   *   [[ChannelControlError]] with key `"version-blocked"`. The application should also prevent
+   *   users from reading or displaying data from this channel.
+   *
+   * When no migrations are registered for the channel, always returns `"ok"`.
+   *
+   * @see [Application Updates]($docs/learning/backend/ApplicationUpdates.md)
+   * @beta
+   */
+  getChannelVersionCompatibility(channelKey: ChannelKey): "ok" | "read-only" | "blocked";
+
   /** @internal */
   [_recordMigration]: (txn: EditTxn, channelKey: ChannelKey, migrationId: string, details: MigrationDetails | undefined) => void;
 

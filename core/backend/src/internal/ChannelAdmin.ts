@@ -83,6 +83,12 @@ class ChannelAdmin implements ChannelControl {
 
     const channel = this.getChannelKey(modelId);
     if (this._allowedChannels.has(channel)) {
+      // Check version compatibility before confirming write access.
+      const access = this.computeVersionAccess(channel);
+      if (access === "blocked")
+        ChannelControlError.throwError("version-blocked", `Channel "${channel}" requires an application update before it can be written. An unknown migration has bumped its major version.`, channel);
+      if (access === "read-only")
+        ChannelControlError.throwError("version-read-only", `Channel "${channel}" is read-only for this version of the application. An unknown migration has bumped its minor version.`, channel);
       this._allowedModels.add(modelId);
       return;
     }
@@ -257,6 +263,83 @@ class ChannelAdmin implements ChannelControl {
 
     aspect.asAny.version = newVersion;
     txn.updateAspect(aspect.toJSON());
+
+    // Invalidate the write-access model cache since the channel version changed.
+    // Models previously confirmed as writable may now need a version re-check.
+    this._allowedModels.clear();
+  }
+
+  /** Returns the simulated channel version after all registered migrations for the channel
+   * are applied, starting from "0.0.0". This is the maximum version this application
+   * expects to see for the channel after running all its known migrations.
+   */
+  private computeExpectedVersion(channelKey: ChannelKey): string {
+    const migrations = this._registeredMigrations.get(channelKey) ?? [];
+    let version = "0.0.0";
+    for (const migration of migrations) {
+      const bumpType = migration.compatibility === MigrationCompatibility.None ? "major"
+        : migration.compatibility === MigrationCompatibility.ReadOnly ? "minor"
+          : "patch";
+      version = semver.inc(version, bumpType) ?? version;
+    }
+    return version;
+  }
+
+  /** Reads the current version stored in the channel's ChannelRootAspect. */
+  private readChannelVersion(channelKey: ChannelKey): string {
+    if (channelKey === ChannelControl.sharedChannelName)
+      return "0.0.0";
+
+    const channelRootId = this.queryChannelRoot(channelKey);
+    if (channelRootId === undefined)
+      return "0.0.0";
+
+    try {
+      const aspects = this._iModel.elements.getAspects(channelRootId, ChannelAdmin.channelClassName);
+      if (aspects.length > 0)
+        return aspects[0].asAny.version ?? "0.0.0";
+    } catch {
+      // Older iModel without ChannelRootAspect — treat as version "0.0.0".
+    }
+    return "0.0.0";
+  }
+
+  /**
+   * Computes the version compatibility status for a channel. Compares the channel's actual
+   * version in the iModel against the version implied by all registered migrations.
+   *
+   * If the actual version exceeds the expected version:
+   * - A higher major version means an unknown, fundamentally incompatible migration ran → "blocked".
+   * - A higher minor version means an unknown write-incompatible migration ran → "read-only".
+   * - A higher patch version only means a backward-compatible migration ran → "ok".
+   *
+   * When no migrations are registered for the channel, always returns "ok".
+   */
+  private computeVersionAccess(channelKey: ChannelKey): "ok" | "read-only" | "blocked" {
+    const registrations = this._registeredMigrations.get(channelKey);
+    if (!registrations || registrations.length === 0)
+      return "ok";
+
+    const actualVersion = this.readChannelVersion(channelKey);
+    const expectedVersion = this.computeExpectedVersion(channelKey);
+
+    if (semver.lte(actualVersion, expectedVersion))
+      return "ok";
+
+    const actual = semver.parse(actualVersion);
+    const expected = semver.parse(expectedVersion);
+    if (!actual || !expected)
+      return "ok";
+
+    if (actual.major > expected.major)
+      return "blocked";
+    if (actual.minor > expected.minor)
+      return "read-only";
+    return "ok";
+  }
+
+  public getChannelVersionCompatibility(channelKey: ChannelKey): "ok" | "read-only" | "blocked" {
+    return this.computeVersionAccess(channelKey);
   }
 }
 
