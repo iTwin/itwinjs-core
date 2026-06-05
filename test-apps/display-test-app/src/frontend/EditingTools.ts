@@ -451,15 +451,6 @@ export class ReproJaggedCurvesTool extends Tool {
   }
 }
 
-/** Toggles the adaptive precision fix on/off for A/B testing of issue #1990.
- * When forced ON (bypass fix), `useAbsolutePositions` is always true — showing the bug.
- * When OFF (default), the adaptive fix is active — showing correct rendering.
- *
- * Usage: `dta toggle absolute positions` — toggles the state
- *
- * After toggling, exit and re-enter editing scope (run `dta edit` twice) to force
- * dynamic tiles to regenerate with the new setting.
- */
 export class SetEditorToolSettingsTool extends Tool {
   public static override toolId = "SetEditorToolSettings";
   public static override get minArgs() { return 1; }
