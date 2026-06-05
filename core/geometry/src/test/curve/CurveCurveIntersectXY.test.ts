@@ -2862,4 +2862,52 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "BSplineIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("FilletLineIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const lineSegment0 = LineString3d.create(
+      Point3d.create(207109.26432514057, 503380.8318704772, 0),
+      Point3d.create(207158.75937608397, 503380.8318704772, 0)
+    );
+    const lineSegment1 = LineString3d.create(
+      Point3d.create(207158.75937608397, 503380.8318704772, 0),
+      Point3d.create(207158.75937608397, 503346.97388452647, 0)
+    );
+    const fillet = Arc3d.create(
+      Point3d.create(207148.09137608396, 503370.1638704772, 0),
+      Vector3d.create(10.668000000000001, 0, 0),
+      Vector3d.create(0, 10.668000000000001, 0),
+      AngleSweep.createStartEndDegrees(0, 90)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fillet);
+
+    const worldToLocal = Matrix4d.createRowValues(
+      1, 0, 0, -207109.26432514057,
+      0, 1, 0, -503380.8318704772,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    );
+
+    const testFilletLineIntersection = (lineSegment: LineString3d, expectedPoint: Point3d, noIntersections: number) => {
+      const intersections = CurveCurve.intersectionProjectedXYPairs(worldToLocal, lineSegment, true, fillet, true);
+      if (ck.testExactNumber(noIntersections, intersections.length, "Expected one intersection between the fillet and line")) {
+        const intersection = intersections[0].detailA.point;
+        if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both fillet and line")) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 1);
+          if (expectedPoint)
+            ck.testPoint3d(expectedPoint, intersection, "expected intersection point");
+        }
+      }
+    };
+
+    testFilletLineIntersection(lineSegment0, Point3d.create(207148.09137608396, 503380.8318704772), 1);
+    testFilletLineIntersection(lineSegment1, Point3d.create(207158.75937608397, 503370.1638704772), 1);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
