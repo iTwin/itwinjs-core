@@ -327,7 +327,7 @@ describe("FilletedLineString", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygon");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("fromFilletedLineString", () => {
+  it("fromFilletedLineString", () => { // TODO: split this mega test into multiple tiny tests
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -1501,7 +1501,7 @@ describe("FilletedLineString", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("Parse2", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const path = Path.createArray([
