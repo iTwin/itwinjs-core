@@ -26,10 +26,11 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _hubAccess, _findRegisteredMigration, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
 import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
+import { Migration, ReinstatedChanges } from "./Migration";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -127,6 +128,21 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
 export class BriefcaseManager {
   /** @internal */
   public static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+
+  /**
+   * Parses the structured description prefix written on migration changesets.
+   * Returns the channel key and migration id if the prefix is present and well-formed,
+   * or `undefined` if the description does not start with the prefix.
+   * @internal
+   */
+  private static parseMigrationDescription(description: string | undefined): { channelKey: string; migrationId: string } | undefined {
+    if (!description?.startsWith("[migration:"))
+      return undefined;
+    const match = /^\[migration:channel=([^;]+);id=([^\]]+)\]/.exec(description);
+    if (!match)
+      return undefined;
+    return { channelKey: match[1], migrationId: match[2] };
+  }
 
   /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): LocalDirName { return path.join(this._cacheDir, iModelId); }
@@ -661,6 +677,73 @@ export class BriefcaseManager {
         }
         db[_nativeDb].abandonChanges();
         throw err;
+      }
+
+      // Phase 3: Detect migration changesets and run the per-migration reinstatement cycle.
+      //
+      // Migration changesets carry a structured description prefix as a fast hint.
+      // The authoritative confirmation is whether the migration record appears in
+      // ChannelRootAspect.jsonProperties.migrations[] after the changeset is applied.
+      //
+      // For each confirmed migration to a registered channel, we immediately:
+      //   1. Reinstate local changes on top of the post-migration state.
+      //   2. Call migrateLocalChanges to reconcile user edits with the migration.
+      //   3. Save and re-reverse local changes so the next incoming changeset can be applied cleanly.
+      //
+      // This ensures each migration's migrateLocalChanges sees the iModel in the state right after
+      // that specific migration was applied — not after some later migration has also been applied.
+      if (briefcaseDb && !reverse) {
+        const migrationInfo = BriefcaseManager.parseMigrationDescription(changeset.description);
+        if (migrationInfo) {
+          const { channelKey, migrationId } = migrationInfo;
+          // Confirm the changeset is genuinely a migration by checking the record was written
+          // to ChannelRootAspect. A plain changeset with a matching prefix would not write it.
+          const isConfirmed = db.channels.getAppliedMigrations(channelKey).some((r) => r.id === migrationId);
+          if (isConfirmed) {
+            const { migration, channelHasRegistrations } = db.channels[_findRegisteredMigration](channelKey, migrationId);
+            if (!channelHasRegistrations) {
+              // Migration targets a channel this application never edits. Apply normally.
+              Logger.logInfo(loggerCategory, `Migration changeset ${changeset.id} targets unrelated channel "${channelKey}" — continuing normally`);
+            } else if (!migration) {
+              // The application knows about this channel but not this migration id: it is out of date.
+              throw new IModelError(
+                IModelStatus.BadRequest,
+                `Application update required: migration "${migrationId}" for channel "${channelKey}" is not recognized by this version of the application. Please update the application before pulling.`,
+              );
+            } else {
+              Logger.logInfo(loggerCategory, `Running per-migration reinstatement cycle for migration "${migrationId}" (channel "${channelKey}")`);
+
+              // Step 1: Reinstate local changes on top of the post-migration state.
+              if (useSemanticRebase)
+                await briefcaseDb.txns.rebaser.intermediateResumeSemantic();
+              else
+                await briefcaseDb.txns.rebaser.intermediateResume();
+
+              // Step 2: Run migrateLocalChanges.
+              // NOTE (Phase 5): ReinstatedChanges is currently empty. Phase 5 will populate it
+              // by reading the reinstated transactions via the changeset reader.
+              const record = db.channels.getAppliedMigrations(channelKey).find((r) => r.id === migrationId)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+              const reinstatedChanges: ReinstatedChanges = {
+                inserted: new Set<string>(),
+                updated: new Set<string>(),
+                deleted: new Set<string>(),
+              };
+              await migration.migrateLocalChanges(briefcaseDb, record.details, reinstatedChanges);
+              nativeDb.saveChanges(`migrateLocalChanges:${migration.id}`);
+              Logger.logInfo(loggerCategory, `migrateLocalChanges complete for migration "${migrationId}"`);
+
+              // Step 3: Re-reverse local changes so remaining incoming changesets apply cleanly.
+              briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
+              const reReversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
+              if (useSemanticRebase) {
+                nativeDb.clearECDbCache();
+              }
+              const reReversedTxnProps = reReversedTxns.map((txn) => briefcaseDb.txns.getTxnProps(txn)).filter((p): p is TxnProps => p !== undefined);
+              briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reReversedTxnProps);
+              Logger.logInfo(loggerCategory, `Re-reversed ${reReversedTxns.length} local changes after migration cycle`);
+            }
+          }
+        }
       }
     }
     if (isPullMerge) {

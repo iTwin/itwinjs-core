@@ -493,50 +493,8 @@ export class RebaseManager {
    *
    * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
    */
-  public async resume() {
-    const nativeDb = this._iModel[_nativeDb];
-    const txns = this._iModel.txns;
-    try {
-      const reversedTxns = nativeDb.pullMergeRebaseBegin();
-      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
-      this.notifyRebaseBegin(reversedTxnProps);
-
-      let txnId = nativeDb.pullMergeRebaseNext();
-      while (txnId) {
-        const txnProps = txns.getTxnProps(txnId);
-        if (!txnProps) {
-          throw new Error(`Transaction ${txnId} not found`);
-        }
-        this.notifyRebaseTxnBegin(txnProps);
-        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
-        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
-        if (shouldReinstate) {
-          nativeDb.pullMergeRebaseReinstateTxn();
-          Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
-        }
-
-        if (this._customHandler) {
-          await this._customHandler.recompute(txnProps);
-        }
-
-        nativeDb.pullMergeRebaseUpdateTxn();
-        this.notifyRebaseTxnEnd(txnProps);
-        txnId = nativeDb.pullMergeRebaseNext();
-      }
-
-      nativeDb.pullMergeRebaseEnd();
-      this.notifyRebaseEnd(reversedTxnProps);
-      if (!nativeDb.isReadonly) {
-        nativeDb.saveChanges("Merge.");
-      }
-      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
-        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
-      }
-      this.notifyPullMergeEnd(this._iModel.changeset);
-    } catch (err) {
-      nativeDb.pullMergeRebaseAbortTxn();
-      throw err;
-    }
+  public async resume(): Promise<void> {
+    return this.runRebaseLoop({ semantic: false, finalize: true });
   }
 
   /**
@@ -558,56 +516,8 @@ export class RebaseManager {
    *
    * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
    */
-
-  public async resumeSemantic() {
-    const nativeDb = this._iModel[_nativeDb];
-    const txns = this._iModel.txns;
-    try {
-      const reversedTxns = nativeDb.pullMergeRebaseBegin();
-      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
-      this.notifyRebaseBegin(reversedTxnProps);
-
-      let txnId = nativeDb.pullMergeRebaseNext();
-      while (txnId) {
-        const txnProps = txns.getTxnProps(txnId);
-        if (!txnProps) {
-          throw new IModelError(IModelStatus.NotFound, `Transaction ${txnId} not found`);
-        }
-
-        this.notifyRebaseTxnBegin(txnProps);
-        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
-        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
-        if (shouldReinstate) {
-          await this.reinstateSemanticChangeSet(txnProps);
-          Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
-        }
-
-        if (this._customHandler) {
-          await this._customHandler.recompute(txnProps);
-        }
-
-        nativeDb.pullMergeRebaseUpdateTxn();
-        this.purgeSchemaFolderForNoopSchemaChange(txnProps);
-        this.notifyRebaseTxnEnd(txnProps);
-
-        txnId = nativeDb.pullMergeRebaseNext();
-      }
-
-      nativeDb.pullMergeRebaseEnd();
-      this.notifyRebaseEnd(reversedTxnProps);
-      if (!nativeDb.isReadonly) {
-        nativeDb.saveChanges("Merge.");
-      }
-      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
-        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
-      }
-      BriefcaseManager.deleteRebaseFolders(this._iModel, true); // clean up all rebase folders after successful rebase
-      this.notifyPullMergeEnd(this._iModel.changeset);
-    } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, `Error during semantic rebase at transaction ${txns.getCurrentTxnId()}`, () => BentleyError.getErrorProps(err));
-      nativeDb.pullMergeRebaseAbortTxn();
-      throw err;
-    }
+  public async resumeSemantic(): Promise<void> {
+    return this.runRebaseLoop({ semantic: true, finalize: true });
   }
 
   /**
@@ -623,6 +533,111 @@ export class RebaseManager {
       }
     }
   }
+
+  /**
+   * Runs the rebase loop once, reinstating reversed local transactions on top of the current
+   * iModel state, exactly as [[resume]] would — but without the finalization steps.
+   *
+   * Specifically, this method does NOT:
+   * - save changes ("Merge.")
+   * - drop the pull-merge restore point
+   * - call [[notifyPullMergeEnd]]
+   *
+   * Use this for the per-migration intermediate reinstatement cycle inside
+   * [[BriefcaseManager.pullAndApplyChangesets]], where `migrateLocalChanges` must run against the
+   * state immediately after a specific migration is applied, before any subsequent changesets have
+   * been applied. The caller is responsible for saving and re-reversing local changes after this
+   * returns.
+   *
+   * @internal
+   */
+  public async intermediateResume(): Promise<void> {
+    return this.runRebaseLoop({ semantic: false, finalize: false });
+  }
+
+  /**
+   * Semantic-rebase variant of [[intermediateResume]]. Same contract: runs the full semantic
+   * rebase loop but skips the finalization steps (save, restore point drop, notifyPullMergeEnd).
+   * @internal
+   */
+  public async intermediateResumeSemantic(): Promise<void> {
+    return this.runRebaseLoop({ semantic: true, finalize: false });
+  }
+
+  /**
+   * Core rebase loop shared by [[resume]], [[resumeSemantic]], [[intermediateResume]], and
+   * [[intermediateResumeSemantic]].
+   *
+   * @param options.semantic - Use semantic reinstatement (`reinstateSemanticChangeSet`) instead of
+   *   the native binary reinstatement (`pullMergeRebaseReinstateTxn`).
+   * @param options.finalize - When `true`, performs the post-loop finalization steps: saves changes,
+   *   drops the pull-merge restore point, cleans up rebase folders (semantic only), and fires
+   *   [[notifyPullMergeEnd]]. When `false`, the caller is responsible for those steps.
+   */
+  private async runRebaseLoop(options: { semantic: boolean; finalize: boolean }): Promise<void> {
+    const { semantic, finalize } = options;
+    const logPrefix = finalize ? "" : "[migration cycle] ";
+    const nativeDb = this._iModel[_nativeDb];
+    const txns = this._iModel.txns;
+    try {
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+      this.notifyRebaseBegin(reversedTxnProps);
+
+      let txnId = nativeDb.pullMergeRebaseNext();
+      while (txnId) {
+        const txnProps = txns.getTxnProps(txnId);
+        if (!txnProps)
+          throw new IModelError(IModelStatus.NotFound, `Transaction ${txnId} not found`);
+
+        this.notifyRebaseTxnBegin(txnProps);
+        Logger.logInfo(BackendLoggerCategory.IModelDb, `${logPrefix}Rebasing local changes for transaction ${txnId}`);
+        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
+        if (shouldReinstate) {
+          if (semantic) {
+            await this.reinstateSemanticChangeSet(txnProps);
+          } else {
+            nativeDb.pullMergeRebaseReinstateTxn();
+          }
+          Logger.logInfo(BackendLoggerCategory.IModelDb, `${logPrefix}Reinstated local changes for transaction ${txnId}`);
+        }
+
+        if (this._customHandler) {
+          await this._customHandler.recompute(txnProps);
+        }
+
+        nativeDb.pullMergeRebaseUpdateTxn();
+        if (semantic) {
+          this.purgeSchemaFolderForNoopSchemaChange(txnProps);
+        }
+        this.notifyRebaseTxnEnd(txnProps);
+        txnId = nativeDb.pullMergeRebaseNext();
+      }
+
+      nativeDb.pullMergeRebaseEnd();
+      this.notifyRebaseEnd(reversedTxnProps);
+
+      if (finalize) {
+        if (!nativeDb.isReadonly) {
+          nativeDb.saveChanges("Merge.");
+        }
+        if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+          BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+        }
+        if (semantic) {
+          BriefcaseManager.deleteRebaseFolders(this._iModel, true); // clean up all rebase folders after successful rebase
+        }
+        this.notifyPullMergeEnd(this._iModel.changeset);
+      }
+    } catch (err) {
+      if (semantic) {
+        Logger.logError(BackendLoggerCategory.IModelDb, `Error during semantic rebase at transaction ${txns.getCurrentTxnId()}`, () => BentleyError.getErrorProps(err));
+      }
+      nativeDb.pullMergeRebaseAbortTxn();
+      throw err;
+    }
+  }
+
   /**
    * Reinstantes the semantic changeset data for the given txnProps, both schema as well as data changesets
     * @param txnProps
