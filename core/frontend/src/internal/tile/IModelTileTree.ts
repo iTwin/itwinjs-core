@@ -137,7 +137,7 @@ class DynamicState {
   }
 
   public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, scope: GraphicalEditingScope) {
-    this.rootTile = DynamicIModelTile.create(root, elemChanges);
+    this.rootTile = DynamicIModelTile.create(root, elemChanges, scope.dynamicGraphicsAbsolutePositionThreshold);
 
     const removeEndingListener = scope.onExiting.addOnce((_) => {
       root.transition(new StaticState(root));
@@ -168,7 +168,9 @@ class ScheduleScriptDynamicState {
   }
 
   public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>) {
-    this.rootTile = DynamicIModelTile.create(root, elemChanges);
+    // Schedule-script dynamic graphics are not part of a GraphicalEditingScope and have no user-facing threshold control.
+    // Preserve their historical behavior of always using absolute positions by passing an infinite threshold.
+    this.rootTile = DynamicIModelTile.create(root, elemChanges, Number.POSITIVE_INFINITY);
     this._dispose = () => {};
   }
 }
