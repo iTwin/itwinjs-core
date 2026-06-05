@@ -1,6 +1,13 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Mon, 01 Jun 2026 17:37:05 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Bumped `typedoc` version
 
 ## 5.9.5
 Mon, 01 Jun 2026 17:34:00 GMT
