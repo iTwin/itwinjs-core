@@ -22,11 +22,12 @@ class TestRealityTile extends RealityTile {
   public visible = true;
   public override transformToRoot?: Transform | undefined;
 
-  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform) {
+  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform, contentUrl?: string) {
     super({
       contentId: contentSize.toString(),
       range: new Range3d(0, 0, 0, 1, 1, 1),
       maximumSize: 42,
+      contentUrl,
     }, tileTree);
 
     this._contentSize = contentSize;
@@ -98,7 +99,7 @@ class TestRealityTree extends RealityTileTree {
   public readonly contentSize: number;
   protected override readonly _rootTile: TestRealityTile;
 
-  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform, iModelTransform?: Transform) {
+  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform, iModelTransform?: Transform, baseUrl?: string, contentUrl?: string) {
     super({
       loader,
       rootTile: {
@@ -114,12 +115,13 @@ class TestRealityTree extends RealityTileTree {
       gcsConverterAvailable: false,
       reprojectGeometry,
       rootToEcef: Transform.createIdentity(),
+      baseUrl,
     });
 
     this.treeId = TestRealityTree._nextId;
     this.contentSize = contentSize;
 
-    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform);
+    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, undefined, contentUrl);
   }
 
   public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -188,6 +190,14 @@ function createMinimalGlb(): Uint8Array {
   glb.set(jsonBytes, 20);
 
   return glb;
+}
+
+/** Creates a minimal JSON-text glTF (a `.gltf` file rather than a binary `.glb`) for testing.
+ * @param leadingWhitespace Optional whitespace prepended before the opening brace, to verify it is still detected as glTF.
+ */
+function createJsonGltf(leadingWhitespace = ""): Uint8Array {
+  const json = `${leadingWhitespace}${JSON.stringify({ asset: { version: "2.0" }, meshes: [] })}`;
+  return new TextEncoder().encode(json);
 }
 
 function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
@@ -445,6 +455,47 @@ describe("RealityTileLoader", () => {
 
     expect(result.geometry).to.not.be.undefined;
     expect(result.geometry?.polyfaces).to.have.length(1);
+  });
+
+  it("should load geometry from tiles in JSON glTF format", async () => {
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockResolvedValue({ polyfaces: [mockPolyface] });
+
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tile = tree.rootTile;
+
+    // A plain-text `.gltf` file has no binary magic number; it begins with `{` (optionally after whitespace).
+    // It must still be routed to the glTF reader rather than discarded.
+    for (const leading of ["", "  \n\t"]) {
+      const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf(leading));
+      const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+      expect(result.geometry).to.not.be.undefined;
+      expect(result.geometry?.polyfaces).to.have.length(1);
+    }
+  });
+
+  it("should resolve glTF external image URLs against the tile content URL", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    // Tileset is served from .../mk44049/tileset.json; the tile content is the relative path "8/130/85.gltf".
+    // An image referenced relatively by that content (e.g. "85.webp") must resolve to .../mk44049/8/130/85.webp,
+    // so the reader's base URL must be the absolute tile content URL, not the tileset root.
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/mk44049/tileset.json", "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/mk44049/8/130/85.gltf");
   });
 
   it("should return empty content for unsupported tile format", async () => {
