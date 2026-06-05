@@ -1104,9 +1104,9 @@ describe("FilletedLineString", () => {
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 2 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [3, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -3]
+      [3, 8], [3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0], [-3, -3], [0, -3], [-8, -3]
     );
-    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    expectedRadii = [0, 0, 3, 0, 3, 0, 3, 0, 0];
     verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 3: 270 degree sweep with non-parallel line segments on either side
@@ -1135,9 +1135,9 @@ describe("FilletedLineString", () => {
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 3 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [10, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -10]
+      [10, 8], [3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0], [-3, -3], [0, -3], [-8, -10]
     );
-    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    expectedRadii = [0, 0, 3, 0, 3, 0, 3, 0, 0];
     verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 4: 3 neighbor arcs; middle one with 270 degree sweep
@@ -1166,10 +1166,10 @@ describe("FilletedLineString", () => {
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 4 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [3, 0], [3, 0.80384758], [2.59807621, 1.5], [-1.02324413, 7.77231083], [-2.89777748, 0.77645713],
-      [-4.77231083, -6.21939656], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
+      [3, 0], [3, 0.80384758], [2.59807621, 1.5], [1.09807621, 4.09807621], [-1.5, 2.59807621], [-4.09807621, 1.09807621],
+      [-2.59807621, -1.5], [-1.09807621, -4.09807621], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
     );
-    expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0];
+    expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0];
     verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 5: 1 large arcs broken to 3 smaller arcs by the caller with zero-length segments in between
