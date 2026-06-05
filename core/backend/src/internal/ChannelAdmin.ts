@@ -202,6 +202,14 @@ class ChannelAdmin implements ChannelControl {
     return registered.filter((m) => !appliedIds.has(m.id));
   }
 
+  public getAllPendingMigrations(): Migration[] {
+    const result: Migration[] = [];
+    for (const [channelKey] of this._registeredMigrations) {
+      result.push(...this.getPendingMigrations(channelKey));
+    }
+    return result;
+  }
+
   public [_findRegisteredMigration](channelKey: ChannelKey, migrationId: string): { migration: Migration | undefined; channelHasRegistrations: boolean } {
     const registrations = this._registeredMigrations.get(channelKey);
     if (registrations === undefined)

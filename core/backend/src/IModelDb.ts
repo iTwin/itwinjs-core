@@ -31,6 +31,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
+import { applyAndPushPendingMigrations } from "./internal/MigrationRunner";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
@@ -1158,7 +1159,7 @@ export abstract class IModelDb extends IModel {
       if (this._schemasPromise) {
         const old = this._schemasPromise;
         this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => {});
+        old.then((view) => view.markOutdated()).catch(() => { });
       }
       this[_nativeDb].clearECDbCache();
     }
@@ -3800,6 +3801,16 @@ export class BriefcaseDb extends IModelDb {
     }
 
     this.onOpened.raiseEvent(briefcaseDb, args);
+
+    // Phase 4: Apply any pending migrations at open time.
+    // Only attempt when opened ReadWrite with a hub-connected briefcaseId.
+    if (openMode === OpenMode.ReadWrite && briefcaseDb.briefcaseId !== BriefcaseIdValue.Unassigned) {
+      const pendingMigrations = briefcaseDb.channels.getAllPendingMigrations();
+      if (pendingMigrations.length > 0) {
+        await applyAndPushPendingMigrations(briefcaseDb);
+      }
+    }
+
     return briefcaseDb;
   }
 

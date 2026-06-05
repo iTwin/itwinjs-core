@@ -154,6 +154,14 @@ export interface ChannelControl {
    */
   getPendingMigrations(channelKey: ChannelKey): Migration[];
 
+  /**
+   * Returns all pending migrations across all registered channels, in the order they were registered.
+   * This is used at iModel open time to determine whether any migrations need to be applied.
+   * @returns An array of all pending migrations across all channels.
+   * @beta
+   */
+  getAllPendingMigrations(): Migration[];
+
   /** @internal */
   [_recordMigration]: (txn: EditTxn, channelKey: ChannelKey, migrationId: string, details: MigrationDetails | undefined) => void;
 

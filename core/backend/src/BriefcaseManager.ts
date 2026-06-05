@@ -870,8 +870,10 @@ export class BriefcaseManager {
     this.dropRestorePoint(db, name);
   }
 
-  /** create a changeset from the current changes, and push it to iModelHub */
-  private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
+  /** create a changeset from the current changes, and push it to iModelHub
+   * @internal
+   */
+  public static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
     if (db.txns.rebaser.isRebasing) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while rebasing");
     }
