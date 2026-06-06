@@ -277,7 +277,7 @@ When developing tools or components that format/parse quantities:
 
 ### Quantity Property Descriptions
 
-Tool settings and UI components that need quantity-aware formatting and parsing should create plain [PropertyDescription]($appui-abstract) objects with synchronous [CustomFormattedNumberParams]($appui-abstract) callbacks. Use [IModelApp.quantityFormatter.getFormatSpecHandle]($frontend) to obtain a [FormatSpecHandle]($quantity) that reflects the current active unit system and formatter registry — no subclassing required.
+Tool settings and UI components that need quantity-aware formatting and parsing should use [createQuantityDescription]($frontend) to create plain [PropertyDescription]($appui-abstract) objects. This helper function calls [IModelApp.quantityFormatter.getFormatSpecHandle]($frontend) internally, wiring up synchronous [CustomFormattedNumberParams]($appui-abstract) callbacks that reflect the current active unit system — no subclassing required.
 
 <details>
 <summary>Example: length property description for tool settings</summary>
@@ -288,7 +288,7 @@ Tool settings and UI components that need quantity-aware formatting and parsing 
 
 </details>
 
-The same pattern works for any quantity: pass the appropriate `kindOfQuantityName` and persistence unit to `getFormatSpecHandle`. The handle's `format` method falls back to `value.toString()` when no formatter spec is registered, and `handle.parserSpec` is `undefined` until specs are loaded.
+The same pattern works for any quantity: pass the appropriate `kindOfQuantityName` (e.g. `"DefaultToolsUnits.ANGLE"`) and `persistenceUnitName` (e.g. `"Units.RAD"`) to `createQuantityDescription`. The handle's `format` method falls back to `value.toString()` when no formatter spec is registered, and `handle.parserSpec` is `undefined` until specs are loaded.
 
 To choose the right `kindOfQuantityName` and persistence unit for your property, see the [Common KindOfQuantity Mappings](../definitions/FormatSets.md#common-kindofquantity-mappings) table, which lists standard measurements (length, angle, area, stationing, etc.) with their EC full names and persistence units. If you prefer to look up the persistence unit programmatically rather than hardcoding a string, use [getDefaultPersistenceUnit]($quantity) with the appropriate [Phenomena]($quantity) constant — both are described in [Unit Providers](./Providers.md#unitproviders).
 

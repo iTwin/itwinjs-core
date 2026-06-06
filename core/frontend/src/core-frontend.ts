@@ -75,6 +75,7 @@ export * from "./extension/providers/RemoteExtensionProvider";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
+export * from "./properties/QuantityDescriptionHelper";
 export * from "./quantity-formatting/QuantityFormatter";
 export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
 export * from "./quantity-formatting/LocalUnitFormatProvider";

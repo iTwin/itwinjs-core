@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { type CustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, type PropertyDescription } from "@itwin/appui-abstract";
-import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
-import { createUnitsProvider } from "@itwin/core-quantity";
+import { type PropertyDescription } from "@itwin/appui-abstract";
+import { createQuantityDescription, IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
+import { createUnitsProvider, getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Unit_System_Configuration
@@ -220,29 +220,15 @@ async function loadAndRegisterDomainFormats(): Promise<void> {
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Quantity_Property_Description
-/** Build a quantity-aware `PropertyDescription` for tool settings using [FormatSpecHandle]($quantity) callbacks. */
+/** Build a quantity-aware [PropertyDescription]($appui-abstract) for a length tool setting. */
 export function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
-  const koqName = "DefaultToolsUnits.LENGTH";
-  const handle = IModelApp.quantityFormatter.getFormatSpecHandle(koqName, "Units.M");
-  return {
+  return createQuantityDescription({
     name,
     displayLabel,
-    typename: StandardTypeNames.Number,
-    kindOfQuantityName: koqName,
-    editor: {
-      name: StandardEditorNames.NumberCustom,
-      params: [{
-        type: PropertyEditorParamTypes.CustomFormattedNumber,
-        formatFunction: (value: number) => handle.format(value),
-        parseFunction: (input: string) => {
-          const result = handle.parserSpec?.parseToQuantityValue(input);
-          if (result !== undefined && "value" in result && typeof result.value === "number")
-            return { value: result.value };
-          return { parseError: "Unable to parse length" };
-        },
-      } as CustomFormattedNumberParams],
-    },
-  };
+    kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+    persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
+    parseError: "Unable to parse length",
+  });
 }
 // __PUBLISH_EXTRACT_END__
 
