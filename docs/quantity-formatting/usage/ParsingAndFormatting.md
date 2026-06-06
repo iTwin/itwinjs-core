@@ -288,7 +288,9 @@ Tool settings and UI components that need quantity-aware formatting and parsing 
 
 </details>
 
-The same pattern works for any quantity: pass the appropriate `kindOfQuantityName` (e.g. `"DefaultToolsUnits.ANGLE"`) and persistence unit (e.g. `"Units.RAD"`) to `getFormatSpecHandle`. The handle's `format` method falls back to `value.toString()` when no formatter spec is registered, and `handle.parserSpec` is `undefined` until specs are loaded.
+The same pattern works for any quantity: pass the appropriate `kindOfQuantityName` and persistence unit to `getFormatSpecHandle`. The handle's `format` method falls back to `value.toString()` when no formatter spec is registered, and `handle.parserSpec` is `undefined` until specs are loaded.
+
+To choose the right `kindOfQuantityName` and persistence unit for your property, see the [Common KindOfQuantity Mappings](../definitions/FormatSets.md#common-kindofquantity-mappings) table, which lists standard measurements (length, angle, area, stationing, etc.) with their EC full names and persistence units. If you prefer to look up the persistence unit programmatically rather than hardcoding a string, use [getDefaultPersistenceUnit]($quantity) with the appropriate [Phenomena]($quantity) constant — both are described in [Unit Providers](./Providers.md#unitproviders).
 
 ### Migrating from QuantityType to KindOfQuantity
 
