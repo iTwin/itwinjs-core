@@ -2,6 +2,8 @@
 
 This document specifies the binary blob format produced by `SchemaViewWriter` (C++, imodel-native) and consumed by [SchemaView.fromBinary]($ecschema-metadata) (TypeScript, ecschema-metadata). It is the transport format for `SchemaView` - see [SchemaView](./SchemaView.md) for the consumer API.
 
+This is a **lossy runtime** format and an iTwin.js implementation detail, distinct from the EC schema interchange formats. For the full, authoritative EC schema model and its persistence formats, see [ECSchema XML](../../bis/ec/ec-schema-xml.md) and [ECSchema JSON](../../bis/ec/ec-schema-json.md); this format drops units, formats, and custom attribute instances and is versioned independently of the EC spec.
+
 All multi-byte integers are **little-endian**. String references (SRef) are uint32 indices into the string table at the end of the blob. A SRef of 0 always refers to the empty string.
 
 Foreign-key references to `ec_` table rows use uint32 row IDs. A value of 0 means "no reference" (ec_ IDs are 1-based). A value of 0xFFFFFFFF means "not specified" (used for optional array bounds).

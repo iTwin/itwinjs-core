@@ -300,3 +300,8 @@ The two formats describe the same model; the shape differs. Summary (see [ECSche
 ## Version Notes
 
 ECSchema JSON tracks the EC information model the same way [ECSchema XML](./ec-schema-xml.md#version-notes) does. For current schemas, prefer the 3.2 form. The `$schema` URL's version segment identifies the spec version; readers parse it to select the matching rules.
+
+## See also
+
+- [ECSchema XML](./ec-schema-xml.md) - the XML representation of the same EC model.
+- [SchemaView](../../learning/metadata/SchemaView.md) and its [binary format](../../learning/metadata/SchemaViewBinaryFormat.md) - a separate, **lossy runtime** representation used by `@itwin/ecschema-metadata` for fast in-memory access. Unlike ECSchema XML and JSON, it is an iTwin.js implementation format, not an EC interchange format: it drops units, formats, and custom attribute instances and is versioned independently of the EC spec.

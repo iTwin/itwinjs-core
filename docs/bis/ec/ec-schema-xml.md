@@ -299,3 +299,8 @@ ECXML has evolved with ECObjects:
 | 3.2 | Adds units, constants, phenomena, unit systems, formats, and ECEnumerator names as first-class schema XML concepts. |
 
 For current schemas, prefer ECXML 3.2 unless a repository or product explicitly requires an older format.
+
+## See also
+
+- [ECSchema JSON](./ec-schema-json.md) - the JSON representation of the same EC model.
+- [SchemaView](../../learning/metadata/SchemaView.md) and its [binary format](../../learning/metadata/SchemaViewBinaryFormat.md) - a separate, **lossy runtime** representation used by `@itwin/ecschema-metadata` for fast in-memory access. Unlike ECSchema XML and JSON, it is an iTwin.js implementation format, not an EC interchange format: it drops units, formats, and custom attribute instances and is versioned independently of the EC spec.
