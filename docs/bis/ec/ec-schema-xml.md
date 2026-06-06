@@ -6,6 +6,8 @@ ECXML historically covered both metadata and instance data. Current iTwin schema
 
 This page documents the ECSchema XML 3.2 shape used by current iTwin schemas. The XML format describes the persisted schema document. The semantic rules for each EC item are documented on the linked EC pages and enforced by EC schema validation.
 
+[ECSchema JSON](./ec-schema-json.md) is the JSON representation of the same model; see its [Differences from ECSchema XML](./ec-schema-json.md#differences-from-ecschema-xml) section for how the two shapes diverge (alias-qualified vs full-name references, `typeName`/`displayLabel` vs `name`/`label`, element ordering vs the `items` object, and a few required/optional differences).
+
 ## Namespace and Version
 
 An ECSchema XML document has an `ECSchema` root element in an ECXML namespace.
