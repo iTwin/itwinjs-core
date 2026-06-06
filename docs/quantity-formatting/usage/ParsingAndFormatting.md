@@ -283,33 +283,7 @@ Tool settings and UI components that need quantity-aware formatting and parsing 
 <summary>Example: length property description for tool settings</summary>
 
 ```ts
-import { type CustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames,
-  StandardTypeNames, type PropertyDescription } from "@itwin/appui-abstract";
-import { IModelApp } from "@itwin/core-frontend";
-
-function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
-  const koqName = "DefaultToolsUnits.LENGTH";
-  const handle = IModelApp.quantityFormatter.getFormatSpecHandle(koqName, "Units.M");
-  return {
-    name,
-    displayLabel,
-    typename: StandardTypeNames.Number,
-    kindOfQuantityName: koqName,
-    editor: {
-      name: StandardEditorNames.NumberCustom,
-      params: [{
-        type: PropertyEditorParamTypes.CustomFormattedNumber,
-        formatFunction: (value: number) => handle.format(value),
-        parseFunction: (input: string) => {
-          const result = handle.parserSpec?.parseToQuantityValue(input);
-          if (result !== undefined && "value" in result && typeof result.value === "number")
-            return { value: result.value };
-          return { parseError: "Unable to parse length" };
-        },
-      } as CustomFormattedNumberParams],
-    },
-  };
-}
+[[include:Quantity_Formatting.Quantity_Property_Description]]
 ```
 
 </details>

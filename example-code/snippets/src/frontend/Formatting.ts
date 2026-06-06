@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
+import { type CustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, type PropertyDescription } from "@itwin/appui-abstract";
 import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
 import { createUnitsProvider } from "@itwin/core-quantity";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -215,6 +216,33 @@ export function registerAsyncProvider() {
 async function loadAndRegisterDomainFormats(): Promise<void> {
   // Async loading work here...
   await IModelApp.quantityFormatter.addFormattingSpecsToRegistry({ name: "MyDomain.MyKoQ", persistenceUnitName: "Units.M" });
+}
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Quantity_Property_Description
+/** Build a quantity-aware `PropertyDescription` for tool settings using [FormatSpecHandle]($quantity) callbacks. */
+export function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
+  const koqName = "DefaultToolsUnits.LENGTH";
+  const handle = IModelApp.quantityFormatter.getFormatSpecHandle(koqName, "Units.M");
+  return {
+    name,
+    displayLabel,
+    typename: StandardTypeNames.Number,
+    kindOfQuantityName: koqName,
+    editor: {
+      name: StandardEditorNames.NumberCustom,
+      params: [{
+        type: PropertyEditorParamTypes.CustomFormattedNumber,
+        formatFunction: (value: number) => handle.format(value),
+        parseFunction: (input: string) => {
+          const result = handle.parserSpec?.parseToQuantityValue(input);
+          if (result !== undefined && "value" in result && typeof result.value === "number")
+            return { value: result.value };
+          return { parseError: "Unable to parse length" };
+        },
+      } as CustomFormattedNumberParams],
+    },
+  };
 }
 // __PUBLISH_EXTRACT_END__
 
