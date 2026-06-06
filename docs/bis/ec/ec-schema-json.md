@@ -9,7 +9,7 @@ This page documents the ECSchema JSON 3.2 shape used by current iTwin schemas. T
 JSON supports two related shapes:
 
 - **ECSchema JSON** - the whole schema in one object, with its items in a name-keyed `items` object. This is the JSON analogue of an ECSchema XML document.
-- **SchemaItem JSON** - a single schema item (one class, enumeration, KindOfQuantity, etc.) described on its own, outside its schema. Used to move a single item compactly (for example over the wire) without serializing the whole schema. A SchemaItem JSON object is identical to the in-schema item object, plus four locating properties (`$schema`, `schema`, `schemaVersion`, `name`) that identify the schema it came from. It does not redefine or change the item.
+- **SchemaItem JSON** - a single schema item (one class, enumeration, KindOfQuantity, etc.) described on its own, outside its schema. Used to move a single item compactly (for example over the wire) without serializing the whole schema. A SchemaItem JSON object is identical to the in-schema item object, plus three locating properties (`$schema`, `schema`, `name`) and an optional `schemaVersion` that identify the schema it came from. It does not redefine or change the item.
 
 ## `$schema` and Version
 
