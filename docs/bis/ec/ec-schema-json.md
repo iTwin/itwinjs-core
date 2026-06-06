@@ -29,7 +29,7 @@ Every ECSchema JSON document has a required `$schema` property naming the JSON S
 | ECSchema JSON (3.2) | `https://dev.bentley.com/json_schemas/ec/32/ecschema` |
 | SchemaItem JSON (3.2) | `https://dev.bentley.com/json_schemas/ec/32/schemaitem` |
 
-The version digit in the URL (`/ec/32/`) is the EC/JSON spec version, not the schema version. The `version` property is the schema version in `RR.ww.mm` form described by [ECSchema](./ec-schema.md). (The XML namespace `http://www.bentley.com/schemas/Bentley.ECXML.3.2` is the XML equivalent of `$schema` - see [ECSchema XML](./ec-schema-xml.md#namespace-and-version).)
+The version digit in the URL (`/ec/32/`) is the EC/JSON spec version, not the schema version. The `version` property is the schema version in `RR.WW.mm` form described by [ECSchema](./ec-schema.md). (The XML namespace `http://www.bentley.com/schemas/Bentley.ECXML.3.2` is the XML equivalent of `$schema` - see [ECSchema XML](./ec-schema-xml.md#namespace-and-version).)
 
 ## Root Object
 
