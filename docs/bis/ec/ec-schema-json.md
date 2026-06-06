@@ -39,7 +39,7 @@ The root object holds schema-level metadata, references, custom attributes, and 
 | --- | --- | --- | --- |
 | `$schema` | Yes | string | JSON Schema URL identifying the spec version. |
 | `name` | Yes | string | Schema name and namespace for its items. Must be an [ECName](./ec-name.md). |
-| `version` | Yes | string | Schema version in `RR.ww.mm` form. |
+| `version` | Yes | string | Schema version in `RR.WW.mm` form. |
 | `alias` | Yes | string | Short alias for the schema. |
 | `label` | No | string | Localizable display label. |
 | `description` | No | string | Localizable description. |
