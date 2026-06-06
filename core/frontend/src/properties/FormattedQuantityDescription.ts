@@ -12,24 +12,7 @@ import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
 /**
- * Options used to create a quantity property description.
- * @beta
- */
-export interface QuantityDescriptionOptions {
-  /** Name of the property description. */
-  name?: string;
-  /** Display label for the property description. */
-  displayLabel?: string;
-  /** Optional icon specification displayed next to the property editor. */
-  iconSpec?: string;
-  /** KindOfQuantity full name used to look up formatting and parsing specs. */
-  kindOfQuantityName?: string;
-  /** Persistence unit name used with the KindOfQuantity to look up formatting and parsing specs. */
-  persistenceUnitName?: string;
-}
-
-/**
- * @deprecated Use `QuantityDescriptionOptions` with the quantity description helper functions instead.
+ * @deprecated in 5.9.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 export interface FormattedQuantityDescriptionArgs {
@@ -41,7 +24,7 @@ export interface FormattedQuantityDescriptionArgs {
 
 /**
  * Base Quantity Property Description
- * @deprecated Use `createLengthDescription`, `createSurveyLengthDescription`, `createEngineeringLengthDescription`, or `createAngleDescription` instead.
+ * @deprecated in 5.9.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {

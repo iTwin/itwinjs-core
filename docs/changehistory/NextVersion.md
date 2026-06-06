@@ -6,7 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
-    - [Quantity property description helper functions](#quantity-property-description-helper-functions)
+    - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -28,20 +28,13 @@ await imodel.close(); // connection closes before iteration
 const rows = await reader.toArray(); // used to throw, now returns an empty array
 ```
 
-### Quantity property description helper functions
+### Quantity property description classes deprecated
 
-The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated. They remain behavior-compatible, but new code should create plain [PropertyDescription]($appui-abstract) objects with the helper functions below.
+The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated. These classes were introduced when quantity formatting was driven by `QuantityType`, but that approach is superseded by `kindOfQuantityName`-based formatting via [FormatSpecHandle]($quantity).
 
-This reflects the move from `QuantityType`-based descriptions to `kindOfQuantityName` metadata, with synchronous formatting and parsing callbacks.
+New code should build plain [PropertyDescription]($appui-abstract) objects with [CustomFormattedNumberParams]($appui-abstract) backed by [IModelApp.quantityFormatter.getFormatSpecHandle]($frontend) directly. See [Quantity property descriptions](../quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions) for the recommended pattern.
 
-| Deprecated class | Replacement helper |
-| --- | --- |
-| `LengthDescription` | `createLengthDescription` |
-| `SurveyLengthDescription` | `createSurveyLengthDescription` |
-| `EngineeringLengthDescription` | `createEngineeringLengthDescription` |
-| `AngleDescription` | `createAngleDescription` |
-
-The helper functions preserve quantity-aware formatting and parsing through `kindOfQuantityName` and the formatter's current format specs. See [Quantity property descriptions](../quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions) for usage.
+The deprecated classes remain behavior-compatible and will not be removed before a future major release.
 
 ## @itwin/map-layers-formats
 

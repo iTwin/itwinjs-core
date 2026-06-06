@@ -6,11 +6,11 @@
  * @module Editing
  */
 
-import { AccuDrawHintBuilder, BeButtonEvent, CanvasDecoration, CoreTools, createAngleDescription, createLengthDescription, DecorateContext, EventHandled, GraphicType, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
-import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { type CustomFormattedNumberParams, DialogItem, DialogProperty, DialogPropertySyncItem, type PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 
 function translatePrompt(key: string) {
@@ -18,6 +18,56 @@ function translatePrompt(key: string) {
 }
 function translateMessage(key: string) {
   return EditTools.translate(`ProjectLocation:Message.${key}`);
+}
+
+/** Build a quantity-aware `PropertyDescription` for an angle quantity, using a `FormatSpecHandle`-backed callback. */
+function makeAnglePropertyDescription(name: string, displayLabel: string): PropertyDescription {
+  const koqName = "DefaultToolsUnits.ANGLE";
+  const handle = IModelApp.quantityFormatter.getFormatSpecHandle(koqName, "Units.RAD");
+  return {
+    name,
+    displayLabel,
+    typename: StandardTypeNames.Number,
+    kindOfQuantityName: koqName,
+    editor: {
+      name: StandardEditorNames.NumberCustom,
+      params: [{
+        type: PropertyEditorParamTypes.CustomFormattedNumber,
+        formatFunction: (value: number) => handle.format(value),
+        parseFunction: (input: string) => {
+          const result = handle.parserSpec?.parseToQuantityValue(input);
+          if (result !== undefined && "value" in result && typeof result.value === "number")
+            return { value: result.value };
+          return { parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle") };
+        },
+      } as CustomFormattedNumberParams],
+    },
+  };
+}
+
+/** Build a quantity-aware `PropertyDescription` for a length quantity, using a `FormatSpecHandle`-backed callback. */
+function makeLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
+  const koqName = "DefaultToolsUnits.LENGTH";
+  const handle = IModelApp.quantityFormatter.getFormatSpecHandle(koqName, "Units.M");
+  return {
+    name,
+    displayLabel,
+    typename: StandardTypeNames.Number,
+    kindOfQuantityName: koqName,
+    editor: {
+      name: StandardEditorNames.NumberCustom,
+      params: [{
+        type: PropertyEditorParamTypes.CustomFormattedNumber,
+        formatFunction: (value: number) => handle.format(value),
+        parseFunction: (input: string) => {
+          const result = handle.parserSpec?.parseToQuantityValue(input);
+          if (result !== undefined && "value" in result && typeof result.value === "number")
+            return { value: result.value };
+          return { parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength") };
+        },
+      } as CustomFormattedNumberParams],
+    },
+  };
 }
 
 /** @internal */
@@ -102,7 +152,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _latitudeProperty: DialogProperty<number> | undefined;
   public get latitudeProperty() {
     if (!this._latitudeProperty)
-      this._latitudeProperty = new DialogProperty<number>(createAngleDescription({ name: "latitude", displayLabel: translateMessage("Latitude") }), 0.0);
+      this._latitudeProperty = new DialogProperty<number>(makeAnglePropertyDescription("latitude", translateMessage("Latitude")), 0.0);
     return this._latitudeProperty;
   }
 
@@ -112,7 +162,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _longitudeProperty: DialogProperty<number> | undefined;
   public get longitudeProperty() {
     if (!this._longitudeProperty)
-      this._longitudeProperty = new DialogProperty<number>(createAngleDescription({ name: "longitude", displayLabel: translateMessage("Longitude") }), 0.0);
+      this._longitudeProperty = new DialogProperty<number>(makeAnglePropertyDescription("longitude", translateMessage("Longitude")), 0.0);
     return this._longitudeProperty;
   }
 
@@ -122,7 +172,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _altitudeProperty: DialogProperty<number> | undefined;
   public get altitudeProperty() {
     if (!this._altitudeProperty)
-      this._altitudeProperty = new DialogProperty<number>(createLengthDescription({ name: "altitude", displayLabel: CoreTools.translate("Measure.Labels.Altitude") }), 0.0);
+      this._altitudeProperty = new DialogProperty<number>(makeLengthPropertyDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")), 0.0);
     return this._altitudeProperty;
   }
 
@@ -132,7 +182,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
     if (!this._northProperty)
-      this._northProperty = new DialogProperty<number>(createAngleDescription({ name: "north", displayLabel: translateMessage("North") }), 0.0);
+      this._northProperty = new DialogProperty<number>(makeAnglePropertyDescription("north", translateMessage("North")), 0.0);
     return this._northProperty;
   }
 

@@ -2300,12 +2300,6 @@ export class CoreTools {
 }
 
 // @beta
-export function createAngleDescription(options?: QuantityDescriptionOptions): PropertyDescription;
-
-// @beta
-export function createEngineeringLengthDescription(options?: QuantityDescriptionOptions): PropertyDescription;
-
-// @beta
 export interface CreateFormattingSpecProps {
     formatName?: string;
     formatProps: FormatProps;
@@ -2325,9 +2319,6 @@ export interface CreateGraphicFromTemplateArgs {
 }
 
 // @beta
-export function createLengthDescription(options?: QuantityDescriptionOptions): PropertyDescription;
-
-// @beta
 export interface CreateRenderInstancesParamsBuilderArgs {
     modelId?: Id64String;
 }
@@ -2340,9 +2331,6 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
 
 // @internal
 export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
-
-// @beta
-export function createSurveyLengthDescription(options?: QuantityDescriptionOptions): PropertyDescription;
 
 // @public
 export interface CreateTextureArgs {
@@ -6682,7 +6670,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -8092,15 +8080,6 @@ export interface QuadIdProps {
     column: number;
     level: number;
     row: number;
-}
-
-// @beta
-export interface QuantityDescriptionOptions {
-    displayLabel?: string;
-    iconSpec?: string;
-    kindOfQuantityName?: string;
-    name?: string;
-    persistenceUnitName?: string;
 }
 
 // @public

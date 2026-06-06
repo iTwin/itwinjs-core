@@ -12,6 +12,7 @@ import {
   Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
+import { getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
 import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
 } from "@itwin/appui-abstract";
@@ -19,7 +20,7 @@ import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
-import { createLengthDescription } from "../properties/LengthDescription";
+import { createQuantityDescription } from "../properties/internal/QuantityDescriptionHelpers";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
 import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
@@ -4369,7 +4370,13 @@ export class SetupCameraTool extends PrimitiveTool {
   private _cameraHeightProperty: DialogProperty<number> | undefined;
   public get cameraHeightProperty() {
     if (!this._cameraHeightProperty)
-      this._cameraHeightProperty = new DialogProperty<number>(createLengthDescription({ name: "cameraHeight", displayLabel: ViewTool.translate("SetupCamera.Labels.CameraHeight") }), 0.0);
+      this._cameraHeightProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "cameraHeight",
+        displayLabel: ViewTool.translate("SetupCamera.Labels.CameraHeight"),
+        kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+        persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
+        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
+      }), 0.0);
     return this._cameraHeightProperty;
   }
   public get cameraHeight(): number { return this.cameraHeightProperty.value; }
@@ -4388,7 +4395,13 @@ export class SetupCameraTool extends PrimitiveTool {
   private _targetHeightProperty: DialogProperty<number> | undefined;
   public get targetHeightProperty() {
     if (!this._targetHeightProperty)
-      this._targetHeightProperty = new DialogProperty<number>(createLengthDescription({ name: "targetHeight", displayLabel: ViewTool.translate("SetupCamera.Labels.TargetHeight") }), 0.0);
+      this._targetHeightProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "targetHeight",
+        displayLabel: ViewTool.translate("SetupCamera.Labels.TargetHeight"),
+        kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+        persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
+        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
+      }), 0.0);
     return this._targetHeightProperty;
   }
   public get targetHeight(): number { return this.targetHeightProperty.value; }

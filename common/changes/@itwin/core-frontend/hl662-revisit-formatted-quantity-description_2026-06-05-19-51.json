@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add quantity property description helper functions and deprecate legacy quantity description classes.",
+      "comment": "Deprecate legacy quantity description classes (FormattedQuantityDescription, LengthDescription, SurveyLengthDescription, EngineeringLengthDescription, AngleDescription). Use FormatSpecHandle with PropertyDescription directly instead.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }

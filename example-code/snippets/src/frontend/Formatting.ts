@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { createAngleDescription, createLengthDescription, IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
 import { createUnitsProvider } from "@itwin/core-quantity";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
@@ -215,20 +215,6 @@ export function registerAsyncProvider() {
 async function loadAndRegisterDomainFormats(): Promise<void> {
   // Async loading work here...
   await IModelApp.quantityFormatter.addFormattingSpecsToRegistry({ name: "MyDomain.MyKoQ", persistenceUnitName: "Units.M" });
-}
-// __PUBLISH_EXTRACT_END__
-
-// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Quantity_Description_Helpers
-/** Create quantity property descriptions for tool settings */
-export function createQuantityPropertyDescriptions(): { lengthDescription: ReturnType<typeof createLengthDescription>, angleDescription: ReturnType<typeof createAngleDescription> } {
-  const lengthDescription = createLengthDescription();
-  const angleDescription = createAngleDescription({
-    name: "rotationAngle",
-    displayLabel: "Rotation angle",
-    kindOfQuantityName: "DefaultToolsUnits.ANGLE",
-  });
-
-  return { lengthDescription, angleDescription };
 }
 // __PUBLISH_EXTRACT_END__
 

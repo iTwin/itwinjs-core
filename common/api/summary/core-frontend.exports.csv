@@ -114,16 +114,12 @@ public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
-beta;function;createAngleDescription
-beta;function;createEngineeringLengthDescription
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
-beta;function;createLengthDescription
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
 internal;function;createSpatialTileTreeReferences
-beta;function;createSurveyLengthDescription
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
 beta;function;createWorkerProxy
@@ -494,7 +490,6 @@ alpha;interface;PublisherProductInfo
 public;interface;PullChangesOptions
 public;class;QuadId
 public;interface;QuadIdProps
-beta;interface;QuantityDescriptionOptions
 public;interface;QuantityFormatOverridesChangedArgs
 public;interface;QuantityFormatsChangedArgs
 public;class;QuantityFormatter

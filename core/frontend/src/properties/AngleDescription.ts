@@ -6,30 +6,13 @@
  * @module Properties
  */
 
-import { getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
-import type { PropertyDescription } from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
-import { FormattedQuantityDescription, type QuantityDescriptionOptions } from "./FormattedQuantityDescription";
-import { createQuantityDescription } from "./internal/QuantityDescriptionHelpers";
-
-/** Create an angle property description.
- * @beta
- */
-export function createAngleDescription(options: QuantityDescriptionOptions = {}): PropertyDescription {
-  return createQuantityDescription({
-    name: options.name ?? "angle",
-    displayLabel: options.displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Angle"),
-    kindOfQuantityName: options.kindOfQuantityName ?? "DefaultToolsUnits.ANGLE",
-    persistenceUnitName: options.persistenceUnitName ?? getDefaultPersistenceUnit(Phenomena.ANGLE),
-    iconSpec: options.iconSpec,
-    parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle"),
-  });
-}
+import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Angle Property Description
- * @deprecated Use `createAngleDescription` instead.
+ * @deprecated in 5.9.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated

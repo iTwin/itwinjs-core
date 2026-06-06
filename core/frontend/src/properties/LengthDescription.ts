@@ -6,60 +6,13 @@
  * @module Properties
  */
 
-import { getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
-import type { PropertyDescription } from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
-import { FormattedQuantityDescription, type QuantityDescriptionOptions } from "./FormattedQuantityDescription";
-import { createQuantityDescription } from "./internal/QuantityDescriptionHelpers";
-
-/** Create a length property description.
- * @beta
- */
-export function createLengthDescription(options: QuantityDescriptionOptions = {}): PropertyDescription {
-  return createQuantityDescription({
-    name: options.name ?? "length",
-    displayLabel: options.displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-    kindOfQuantityName: options.kindOfQuantityName ?? "DefaultToolsUnits.LENGTH",
-    persistenceUnitName: options.persistenceUnitName ?? getDefaultPersistenceUnit(Phenomena.LENGTH),
-    iconSpec: options.iconSpec,
-    parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
-  });
-}
-
-/** Create a survey length property description.
- * @beta
- */
-export function createSurveyLengthDescription(options: QuantityDescriptionOptions = {}): PropertyDescription {
-  const useDefaultQuantity = undefined === options.kindOfQuantityName && undefined === options.persistenceUnitName;
-  return createQuantityDescription({
-    name: options.name ?? "surveyLength",
-    displayLabel: options.displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-    kindOfQuantityName: options.kindOfQuantityName ?? "CivilUnits.LENGTH",
-    persistenceUnitName: options.persistenceUnitName ?? getDefaultPersistenceUnit(Phenomena.LENGTH),
-    iconSpec: options.iconSpec,
-    parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
-    quantityType: useDefaultQuantity ? QuantityType.LengthSurvey : undefined,
-  });
-}
-
-/** Create an engineering length property description.
- * @beta
- */
-export function createEngineeringLengthDescription(options: QuantityDescriptionOptions = {}): PropertyDescription {
-  return createQuantityDescription({
-    name: options.name ?? "engineeringLength",
-    displayLabel: options.displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-    kindOfQuantityName: options.kindOfQuantityName ?? "AecUnits.LENGTH",
-    persistenceUnitName: options.persistenceUnitName ?? getDefaultPersistenceUnit(Phenomena.LENGTH),
-    iconSpec: options.iconSpec,
-    parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
-  });
-}
+import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Length Property Description
- * @deprecated Use `createLengthDescription` instead.
+ * @deprecated in 5.9.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -86,7 +39,7 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 /**
  * Survey Length Property Description
- * @deprecated Use `createSurveyLengthDescription` instead.
+ * @deprecated in 5.9.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -113,7 +66,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
 
 /**
  * Engineering Length Property Description
- * @deprecated Use `createEngineeringLengthDescription` instead.
+ * @deprecated in 5.9.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated

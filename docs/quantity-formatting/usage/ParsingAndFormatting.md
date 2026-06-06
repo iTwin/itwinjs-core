@@ -277,16 +277,44 @@ When developing tools or components that format/parse quantities:
 
 ### Quantity Property Descriptions
 
-Tool settings and UI components can create plain [PropertyDescription]($appui-abstract) objects for common length and angle quantities. The helper functions below use `kindOfQuantityName` metadata and synchronous callbacks so quantity-aware formatting and parsing remain compatible with property editors.
+Tool settings and UI components that need quantity-aware formatting and parsing should create plain [PropertyDescription]($appui-abstract) objects with synchronous [CustomFormattedNumberParams]($appui-abstract) callbacks. Use [IModelApp.quantityFormatter.getFormatSpecHandle]($frontend) to obtain a [FormatSpecHandle]($quantity) that reflects the current active unit system and formatter registry — no subclassing required.
 
 <details>
-<summary>Quantity property description helpers</summary>
+<summary>Example: length property description for tool settings</summary>
 
 ```ts
-[[include:Quantity_Formatting.Quantity_Description_Helpers]]
+import { type CustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames,
+  StandardTypeNames, type PropertyDescription } from "@itwin/appui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+
+function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
+  const koqName = "DefaultToolsUnits.LENGTH";
+  const handle = IModelApp.quantityFormatter.getFormatSpecHandle(koqName, "Units.M");
+  return {
+    name,
+    displayLabel,
+    typename: StandardTypeNames.Number,
+    kindOfQuantityName: koqName,
+    editor: {
+      name: StandardEditorNames.NumberCustom,
+      params: [{
+        type: PropertyEditorParamTypes.CustomFormattedNumber,
+        formatFunction: (value: number) => handle.format(value),
+        parseFunction: (input: string) => {
+          const result = handle.parserSpec?.parseToQuantityValue(input);
+          if (result !== undefined && "value" in result && typeof result.value === "number")
+            return { value: result.value };
+          return { parseError: "Unable to parse length" };
+        },
+      } as CustomFormattedNumberParams],
+    },
+  };
+}
 ```
 
 </details>
+
+The same pattern works for any quantity: pass the appropriate `kindOfQuantityName` (e.g. `"DefaultToolsUnits.ANGLE"`) and persistence unit (e.g. `"Units.RAD"`) to `getFormatSpecHandle`. The handle's `format` method falls back to `value.toString()` when no formatter spec is registered, and `handle.parserSpec` is `undefined` until specs are loaded.
 
 ### Migrating from QuantityType to KindOfQuantity
 
