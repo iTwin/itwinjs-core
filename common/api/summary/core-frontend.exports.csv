@@ -38,6 +38,7 @@ public;class;ActivityMessageDetails
 public;enum;ActivityMessageEndReason
 internal;class;AlternateUnitLabelsRegistry
 beta;class;AngleDescription
+deprecated;class;AngleDescription
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
@@ -113,12 +114,16 @@ public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
+beta;function;createAngleDescription
+beta;function;createEngineeringLengthDescription
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
+beta;function;createLengthDescription
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
 internal;function;createSpatialTileTreeReferences
+beta;function;createSurveyLengthDescription
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
 beta;function;createWorkerProxy
@@ -165,6 +170,7 @@ public;class;ElementState
 public;class;EllipsoidTerrainProvider
 public;class;EmphasizeElements
 beta;class;EngineeringLengthDescription
+deprecated;class;EngineeringLengthDescription
 public;class;EntityState
 internal;class;EnvironmentDecorations
 public;class;EventController
@@ -193,7 +199,9 @@ public;class;FlyViewTool
 internal;function;formatAnimationBranchId
 internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+deprecated;class;FormattedQuantityDescription
 beta;interface;FormattedQuantityDescriptionArgs
+deprecated;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
@@ -340,6 +348,7 @@ internal;enum;KeyinStatus
 internal;class;LayerTileTreeHandler
 internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
+deprecated;class;LengthDescription
 internal;function;linePlaneIntersect
 alpha;class;LocalExtensionProvider
 alpha;interface;LocalExtensionProviderProps
@@ -485,6 +494,7 @@ alpha;interface;PublisherProductInfo
 public;interface;PullChangesOptions
 public;class;QuadId
 public;interface;QuadIdProps
+beta;interface;QuantityDescriptionOptions
 public;interface;QuantityFormatOverridesChangedArgs
 public;interface;QuantityFormatsChangedArgs
 public;class;QuantityFormatter
@@ -617,6 +627,7 @@ internal;class;SubCategoriesCache
 internal;namespace;SubCategoriesCache
 internal;interface;SubCategoriesRequest
 beta;class;SurveyLengthDescription
+deprecated;class;SurveyLengthDescription
 internal;class;SuspendedToolState
 public;function;synchronizeViewportFrusta
 public;type;SynchronizeViewports

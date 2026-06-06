@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
+    - [Quantity property description helper functions](#quantity-property-description-helper-functions)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -26,6 +27,21 @@ const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
 await imodel.close(); // connection closes before iteration
 const rows = await reader.toArray(); // used to throw, now returns an empty array
 ```
+
+### Quantity property description helper functions
+
+The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated. They remain behavior-compatible, but new code should create plain [PropertyDescription]($appui-abstract) objects with the helper functions below.
+
+This reflects the move from `QuantityType`-based descriptions to `kindOfQuantityName` metadata, with synchronous formatting and parsing callbacks.
+
+| Deprecated class | Replacement helper |
+| --- | --- |
+| `LengthDescription` | `createLengthDescription` |
+| `SurveyLengthDescription` | `createSurveyLengthDescription` |
+| `EngineeringLengthDescription` | `createEngineeringLengthDescription` |
+| `AngleDescription` | `createAngleDescription` |
+
+The helper functions preserve quantity-aware formatting and parsing through `kindOfQuantityName` and the formatter's current format specs. See [Quantity property descriptions](../quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions) for usage.
 
 ## @itwin/map-layers-formats
 

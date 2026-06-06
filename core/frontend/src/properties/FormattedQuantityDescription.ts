@@ -7,11 +7,29 @@
  */
 
 import { FormatterSpec, Parser, ParserSpec } from "@itwin/core-quantity";
-import { BaseQuantityDescription, ParseResults } from "@itwin/appui-abstract";
+import { BaseQuantityDescription, type ParseResults } from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
 /**
+ * Options used to create a quantity property description.
+ * @beta
+ */
+export interface QuantityDescriptionOptions {
+  /** Name of the property description. */
+  name?: string;
+  /** Display label for the property description. */
+  displayLabel?: string;
+  /** Optional icon specification displayed next to the property editor. */
+  iconSpec?: string;
+  /** KindOfQuantity full name used to look up formatting and parsing specs. */
+  kindOfQuantityName?: string;
+  /** Persistence unit name used with the KindOfQuantity to look up formatting and parsing specs. */
+  persistenceUnitName?: string;
+}
+
+/**
+ * @deprecated Use `QuantityDescriptionOptions` with the quantity description helper functions instead.
  * @beta
  */
 export interface FormattedQuantityDescriptionArgs {
@@ -23,15 +41,16 @@ export interface FormattedQuantityDescriptionArgs {
 
 /**
  * Base Quantity Property Description
+ * @deprecated Use `createLengthDescription`, `createSurveyLengthDescription`, `createEngineeringLengthDescription`, or `createAngleDescription` instead.
  * @beta
  */
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
   private _formatterSpec?: FormatterSpec;
   private _parserSpec?: ParserSpec;
 
-  constructor(args: FormattedQuantityDescriptionArgs);
+  constructor(args: FormattedQuantityDescriptionArgs); // eslint-disable-line @typescript-eslint/no-deprecated
   constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
-  constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
+  constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) { // eslint-disable-line @typescript-eslint/no-deprecated
     if (typeof argsOrName === "string") {
       // if argsOrName is a string, displayLabel must be defined.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

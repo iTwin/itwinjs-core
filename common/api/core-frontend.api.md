@@ -1234,7 +1234,7 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
     getAlternateUnitLabels(unit: UnitProps): string[] | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class AngleDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -2300,6 +2300,12 @@ export class CoreTools {
 }
 
 // @beta
+export function createAngleDescription(options?: QuantityDescriptionOptions): PropertyDescription;
+
+// @beta
+export function createEngineeringLengthDescription(options?: QuantityDescriptionOptions): PropertyDescription;
+
+// @beta
 export interface CreateFormattingSpecProps {
     formatName?: string;
     formatProps: FormatProps;
@@ -2319,6 +2325,9 @@ export interface CreateGraphicFromTemplateArgs {
 }
 
 // @beta
+export function createLengthDescription(options?: QuantityDescriptionOptions): PropertyDescription;
+
+// @beta
 export interface CreateRenderInstancesParamsBuilderArgs {
     modelId?: Id64String;
 }
@@ -2331,6 +2340,9 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
 
 // @internal
 export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
+
+// @beta
+export function createSurveyLengthDescription(options?: QuantityDescriptionOptions): PropertyDescription;
 
 // @public
 export interface CreateTextureArgs {
@@ -3228,7 +3240,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     wantEmphasis: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -3552,7 +3564,7 @@ export class FormatsProviderManager implements FormatsProvider {
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
-// @beta
+// @beta @deprecated
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(args: FormattedQuantityDescriptionArgs);
     constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
@@ -3570,7 +3582,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface FormattedQuantityDescriptionArgs {
     // (undocumented)
     displayLabel: string;
@@ -5691,7 +5703,7 @@ export class LayerTileTreeReferenceHandler {
     setLayerSettings(layerSettings: MapLayerSettings[]): void;
 }
 
-// @beta
+// @beta @deprecated
 export class LengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -8082,6 +8094,15 @@ export interface QuadIdProps {
     row: number;
 }
 
+// @beta
+export interface QuantityDescriptionOptions {
+    displayLabel?: string;
+    iconSpec?: string;
+    kindOfQuantityName?: string;
+    name?: string;
+    persistenceUnitName?: string;
+}
+
 // @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
@@ -10405,7 +10426,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @beta
+// @beta @deprecated
 export class SurveyLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)

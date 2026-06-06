@@ -275,6 +275,19 @@ When developing tools or components that format/parse quantities:
    [[include:Quantity_Formatting.General_Pattern_Format_Parse]]
    ```
 
+### Quantity Property Descriptions
+
+Tool settings and UI components can create plain [PropertyDescription]($appui-abstract) objects for common length and angle quantities. The helper functions below use `kindOfQuantityName` metadata and synchronous callbacks so quantity-aware formatting and parsing remain compatible with property editors.
+
+<details>
+<summary>Quantity property description helpers</summary>
+
+```ts
+[[include:Quantity_Formatting.Quantity_Description_Helpers]]
+```
+
+</details>
+
 ### Migrating from QuantityType to KindOfQuantity
 
 Starting in iTwin.js 5.0, we encourage developers to move away from using `QuantityType` and instead use `KindOfQuantity` [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
