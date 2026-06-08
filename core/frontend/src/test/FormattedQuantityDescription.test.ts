@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
+import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
-import { createQuantityDescription } from "../properties/QuantityDescriptionHelper";
+import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 
-describe("createQuantityDescription", () => {
+describe("FormattedQuantityDescription", () => {
   beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
@@ -18,7 +18,7 @@ describe("createQuantityDescription", () => {
     await IModelApp.shutdown();
   });
 
-  it("returns a PropertyDescription with the correct name, displayLabel, and kindOfQuantityName", () => {
+  it("createQuantityDescription returns the correct property metadata", () => {
     const desc = createQuantityDescription({
       name: "myLength",
       displayLabel: "My Length",
@@ -33,7 +33,7 @@ describe("createQuantityDescription", () => {
     expect(desc.typename).toBe(StandardTypeNames.Number);
   });
 
-  it("sets up a NumberCustom editor with CustomFormattedNumber params", () => {
+  it("createQuantityDescription sets up a NumberCustom editor with CustomFormattedNumber params", () => {
     const desc = createQuantityDescription({
       name: "myAngle",
       displayLabel: "My Angle",
@@ -48,7 +48,7 @@ describe("createQuantityDescription", () => {
     expect(params[0].type).toBe(PropertyEditorParamTypes.CustomFormattedNumber);
   });
 
-  it("format callback returns a string (falls back to value.toString() when no spec registered)", () => {
+  it("createQuantityDescription format callback falls back to a string when no spec is registered", () => {
     const desc = createQuantityDescription({
       name: "testProp",
       displayLabel: "Test",
@@ -57,12 +57,17 @@ describe("createQuantityDescription", () => {
       parseError: "parse error",
     });
 
-    const params = desc.editor!.params![0] as any;
-    const formatted = params.formatFunction(1.5);
+    const params = desc.editor?.params ?? [];
+    expect(params).toHaveLength(1);
+    expect(isCustomFormattedNumberParams(params[0])).toBe(true);
+    if (!isCustomFormattedNumberParams(params[0]))
+      throw new Error("Expected CustomFormattedNumberParams");
+
+    const formatted = params[0].formatFunction(1.5);
     expect(typeof formatted).toBe("string");
   });
 
-  it("parse callback returns parseError when parserSpec is not loaded", () => {
+  it("createQuantityDescription parse callback returns parseError when parserSpec is not loaded", () => {
     const desc = createQuantityDescription({
       name: "testProp",
       displayLabel: "Test",
@@ -71,8 +76,13 @@ describe("createQuantityDescription", () => {
       parseError: "my parse error",
     });
 
-    const params = desc.editor!.params![0] as any;
-    const result = params.parseFunction("not-a-number");
+    const params = desc.editor?.params ?? [];
+    expect(params).toHaveLength(1);
+    expect(isCustomFormattedNumberParams(params[0])).toBe(true);
+    if (!isCustomFormattedNumberParams(params[0]))
+      throw new Error("Expected CustomFormattedNumberParams");
+
+    const result = params[0].parseFunction("not-a-number");
     expect(result).toEqual({ parseError: "my parse error" });
   });
 });

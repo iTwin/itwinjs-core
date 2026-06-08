@@ -20,7 +20,7 @@ import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
-import { createQuantityDescription } from "../properties/QuantityDescriptionHelper";
+import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
 import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
