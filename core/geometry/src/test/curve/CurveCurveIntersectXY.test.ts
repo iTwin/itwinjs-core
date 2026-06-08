@@ -2892,14 +2892,13 @@ describe("CurveCurveIntersectXY", () => {
       0, 0, 0, 1
     );
 
-    const testFilletLineIntersection = (lineSegment: LineString3d, expectedPoint: Point3d, noIntersections: number) => {
+    const testFilletLineIntersection = (lineSegment: LineString3d, expectedPoint: Point3d, expectedNumIntersections: number) => {
       const intersections = CurveCurve.intersectionProjectedXYPairs(worldToLocal, lineSegment, true, fillet, true);
-      if (ck.testExactNumber(noIntersections, intersections.length, "Expected one intersection between the fillet and line")) {
+      if (ck.testExactNumber(expectedNumIntersections, intersections.length, "computed expected number of intersections between the fillet and line")) {
         const intersection = intersections[0].detailA.point;
         if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both fillet and line")) {
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 1);
-          if (expectedPoint)
-            ck.testPoint3d(expectedPoint, intersection, "expected intersection point");
+          ck.testPoint3d(expectedPoint, intersection, "expected intersection point");
         }
       }
     };
