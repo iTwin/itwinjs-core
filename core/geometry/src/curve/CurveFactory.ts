@@ -425,12 +425,11 @@ export class CurveFactory {
    * tangent direction.
    * * To treat more input chains as valid, pass `options.relaxedValidation = true`. Internally, this setting performs
    * several transformations on the input to produce a valid filleted linestring:
-   *   * Each `Arc3d` whose sweep is between 120 and 240 degrees is split into 2 arcs of equal sweep separated by a
-   * zero-length `LineSegment3d`. Arcs with sweep between 240 and 360 degrees are split into 3 arcs of equal sweep
-   * separated by 2 zero-length `LineSegment3d`s. Arcs with sweep greater than 360 degrees are not allowed.
+   *   * `Arc3d`s with large sweep are uniformly split into 2 or 3 smaller arcs to improve the proximity of their _PI_
+   * points (cf. {@link Arc3d.computeTangentIntersection}). Arcs with sweep greater than 360 degrees are not allowed.
    *   * Adjacent `Arc3d`s are separated by a zero-length `LineSegment3d`.
-   *   * An `Arc3d` that is not G1 continuous with its neighbor is separated from its neighbor by a zero-length
-   * `LineSegment3d`.
+   *   * An `Arc3d` that is not G1 continuous with its linear neighbor is separated from it by a zero-length
+   * `LineSegment3d` to preserve the corner.
    * @param filletedLineString A linestring with corner fillets, e.g., as created by {@link CurveFactory.createFilletsInLineString}.
    * @param options optional validation settings.
    * @returns Array of [point, radius] pairs extracted from input, or `undefined` if the input is not valid. A radius
