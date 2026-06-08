@@ -36,6 +36,12 @@ Use the new [createQuantityDescription]($frontend) helper function (marked `@bet
 
 The deprecated classes remain behavior-compatible and will not be removed before a future major release.
 
+`createQuantityDescription` intentionally omits the `iconSpec` parameter that the old classes accepted. An icon is a display concern and has no bearing on quantity formatting or parsing — placing it on a property description couples presentation to the data model. If your UI requires an icon alongside the field, add it after construction:
+
+```ts
+const prop = { ...createQuantityDescription(props), iconSpec: "icon-globe" };
+```
+
 ## @itwin/map-layers-formats
 
 ### Azure Maps basemap support is available through map-layers-formats
