@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Deprecate Bing Maps imagery and document the Azure Maps basemap migration path.",
+      "type": "none",
+      "packageName": "@itwin/core-common"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

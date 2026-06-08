@@ -16,7 +16,7 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 
 /** Provides an interface to the [Bing Maps elevation services](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/).
  * Use of these services requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]]
- * passed to [[IModelApp.startup]].
+ * passed to [[IModelApp.startup]]. [[MapLayerOptions.BingMaps]] is deprecated for Bing imagery and retained for existing Bing-based services.
  * @public
  * @extensions
  */
@@ -28,7 +28,9 @@ export class BingElevationProvider {
   /** @public */
   constructor() {
     let bingKey = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
 
     this._heightRangeRequestTemplate =

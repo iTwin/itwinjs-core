@@ -218,6 +218,7 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   }
 }
 
+/** @deprecated in 5.11.0. Bing Maps imagery is deprecated. For basemap imagery providers, see `@itwin/map-layers-formats`. */
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "BingMaps";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
