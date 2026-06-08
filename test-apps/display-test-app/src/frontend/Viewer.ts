@@ -367,6 +367,14 @@ export class Viewer extends Window {
     this._3dOnly.push(walk);
     this.toolBar.addItem(walk);
 
+    const setupCamera = createToolButton({
+      iconUnicode: "\ue9c9", // "camera"
+      click: async () => IModelApp.tools.run("View.SetupCamera", this.viewport),
+      tooltip: "Set up camera",
+    });
+    this._3dOnly.push(setupCamera);
+    this.toolBar.addItem(setupCamera);
+
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue982", // "undo"
       click: async () => IModelApp.tools.run("View.Undo", this.viewport),
