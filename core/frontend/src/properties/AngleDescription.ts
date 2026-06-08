@@ -12,7 +12,7 @@ import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Angle Property Description
- * @deprecated in 5.11.0. Use [[createQuantityDescription]] to build a plain [[PropertyDescription]] with synchronous formatting callbacks backed by a [[FormatSpecHandle]].
+ * @deprecated in 5.11.0. Use [[createQuantityDescription]] to build a plain [PropertyDescription]($appui-abstract) with synchronous formatting callbacks backed by a [FormatSpecHandle]($quantity).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
