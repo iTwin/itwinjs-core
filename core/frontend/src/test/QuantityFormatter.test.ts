@@ -636,6 +636,16 @@ describe("Quantity formatter", async () => {
 
     });
 
+    it("getFormat should honor the requested unit system", async () => {
+      const provider = new QuantityTypeFormatsProvider();
+      const metricFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "metric");
+      const imperialFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "imperial");
+      expect(metricFormat).toBeDefined();
+      expect(imperialFormat).toBeDefined();
+      // Before the fix, the requested system was ignored and both returned the active-system format.
+      expect(metricFormat).not.toEqual(imperialFormat);
+    });
+
     it("should not leak listeners when formatsProvider is replaced multiple times", () => {
       const provider1 = new QuantityTypeFormatsProvider();
       const provider2 = new QuantityTypeFormatsProvider();
@@ -1090,6 +1100,24 @@ describe("Multi-system KoQ registry", () => {
     // Active system is "imperial", so should see both persistence units for imperial
     expect(nameMap!.has("Units.M")).toBe(true);
     expect(nameMap!.has("Units.FT")).toBe(true);
+  });
+
+  it("getSpecsByName returns the requested system projection", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    // qf active system defaults to "imperial".
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.FT", formatProps: simpleDecimalFormat, system: "imperial" });
+
+    // No options → active (imperial) projection: only the imperial-registered persistence unit.
+    const activeMap = qf.getSpecsByName("TestKoQ.LENGTH");
+    expect(activeMap?.has("Units.FT")).toBe(true);
+    expect(activeMap?.has("Units.M")).toBe(false);
+
+    // Explicit metric option → metric projection: only the metric-registered persistence unit.
+    const metricMap = qf.getSpecsByName("TestKoQ.LENGTH", { system: "metric" });
+    expect(metricMap?.has("Units.M")).toBe(true);
+    expect(metricMap?.has("Units.FT")).toBe(false);
   });
 
   it("getSpecsByNameAndUnit returns undefined for unregistered system", async () => {
