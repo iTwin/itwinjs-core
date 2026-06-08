@@ -39,54 +39,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Sample } from "../GeometrySamples";
 
 describe("CurveFactory", () => {
-  it("CreateFilletsOnLineString", () => {
-    const allGeometry: GeometryQuery[] = [];
-    const ck = new Checker();
-
-    const points0 = [
-      Point3d.create(1, 1),
-      Point3d.create(5, 1),
-      Point3d.create(3, 7),
-    ];
-
-    const points1 = [
-      Point3d.create(1, 1),
-      Point3d.create(5, 1),
-      Point3d.create(8, 3),
-      Point3d.create(13, 5),
-      Point3d.create(12, 8),
-      Point3d.create(5, 8)];
-
-    const points2 = [
-      Point3d.create(1, 1),
-      Point3d.create(5, 1),
-      Point3d.create(14, 3),
-      Point3d.create(14, 11),
-      Point3d.create(5, 11),
-      Point3d.create(-1, 1),
-      Point3d.create(-1, 8),
-      Point3d.create(4, 12),
-      Point3d.create(8, 14)];
-    let x0 = 0.0;
-    const xStep = 30;
-    const yStep = 20;
-    for (const points of [points0, points1, points2]) {
-      for (const allowBackup of [true, false]) {
-        let y0 = 0.0;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(points), x0, y0);
-        for (const radius of [0.5, 1.0, 2.0, 4.0, 6.0]) {
-          y0 += yStep;
-          const path = CurveFactory.createFilletsInLineString(points, radius, allowBackup);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
-        }
-        x0 += xStep;
-      }
-      x0 += xStep;
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsOnLineString");
-
-    expect(ck.getNumErrors()).toBe(0);
-  });
   it("FilletArcDegenerate", () => {
     const ck = new Checker();
 
@@ -149,6 +101,57 @@ describe("CurveFactory", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "appendToArcInPlace");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
+describe("FilletedLineString", () => {
+  it("CreateFilletsInLineString", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+
+    const points0 = [
+      Point3d.create(1, 1),
+      Point3d.create(5, 1),
+      Point3d.create(3, 7),
+    ];
+
+    const points1 = [
+      Point3d.create(1, 1),
+      Point3d.create(5, 1),
+      Point3d.create(8, 3),
+      Point3d.create(13, 5),
+      Point3d.create(12, 8),
+      Point3d.create(5, 8)];
+
+    const points2 = [
+      Point3d.create(1, 1),
+      Point3d.create(5, 1),
+      Point3d.create(14, 3),
+      Point3d.create(14, 11),
+      Point3d.create(5, 11),
+      Point3d.create(-1, 1),
+      Point3d.create(-1, 8),
+      Point3d.create(4, 12),
+      Point3d.create(8, 14)];
+    let x0 = 0.0;
+    const xStep = 30;
+    const yStep = 20;
+    for (const points of [points0, points1, points2]) {
+      for (const allowBackup of [true, false]) {
+        let y0 = 0.0;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(points), x0, y0);
+        for (const radius of [0.5, 1.0, 2.0, 4.0, 6.0]) {
+          y0 += yStep;
+          const path = CurveFactory.createFilletsInLineString(points, radius, allowBackup);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+        }
+        x0 += xStep;
+      }
+      x0 += xStep;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "CreateFilletsInLineString");
+
     expect(ck.getNumErrors()).toBe(0);
   });
   it("FilletsInLinestring", () => {
@@ -324,7 +327,7 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygon");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("fromFilletedLineString", () => {
+  it("fromFilletedLineString", () => { // TODO: split this mega test into multiple tiny tests
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -1101,9 +1104,9 @@ describe("CurveFactory", () => {
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 2 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [3, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -3]
+      [3, 8], [3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0], [-3, -3], [0, -3], [-8, -3]
     );
-    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    expectedRadii = [0, 0, 3, 0, 3, 0, 3, 0, 0];
     verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 3: 270 degree sweep with non-parallel line segments on either side
@@ -1132,9 +1135,9 @@ describe("CurveFactory", () => {
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 3 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [10, 8], [3, 0], [3, 7.24264069], [-2.12132034, 2.12132034], [-7.24264069, -3], [0, -3], [-8, -10]
+      [10, 8], [3, 0], [3, 3], [0, 3], [-3, 3], [-3, 0], [-3, -3], [0, -3], [-8, -10]
     );
-    expectedRadii = [0, 0, 3, 0, 3, 0, 0];
+    expectedRadii = [0, 0, 3, 0, 3, 0, 3, 0, 0];
     verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 4: 3 neighbor arcs; middle one with 270 degree sweep
@@ -1163,10 +1166,10 @@ describe("CurveFactory", () => {
       "expect to be able to extract points and radii from filleted linestring for 180+ degree sweeps case 4 with relaxed validation"
     );
     expectedLineString = LineString3d.create(
-      [3, 0], [3, 0.80384758], [2.59807621, 1.5], [-1.02324413, 7.77231083], [-2.89777748, 0.77645713],
-      [-4.77231083, -6.21939656], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
+      [3, 0], [3, 0.80384758], [2.59807621, 1.5], [1.09807621, 4.09807621], [-1.5, 2.59807621], [-4.09807621, 1.09807621],
+      [-2.59807621, -1.5], [-1.09807621, -4.09807621], [1.5, -2.59807621], [2.19615242, -2.19615242], [2.59807621, -1.5]
     );
-    expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0];
+    expectedRadii = [0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0];
     verifyPointsAndRadii(pointsAndRadii!, expectedLineString, expectedRadii);
 
     // case 5: 1 large arcs broken to 3 smaller arcs by the caller with zero-length segments in between
@@ -1278,7 +1281,6 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "fromFilletedLineString");
     expect(ck.getNumErrors()).toBe(0);
   });
-
   it("filletedLineStringRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -1479,7 +1481,91 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "filletedLineStringRoundTrip");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("InflationFactor", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // nearly 360-degree arc
+    const arc = Arc3d.createXY(Point3d.create(207096.70442662196, 503361.09410269983), 23.76383967729415, AngleSweep.createStartEndDegrees(228.83055222398468, -130.7620138748311));
+    const arcSize = arc.range().diagonal().magnitude();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc);
+
+    const output = CurveFactory.fromFilletedLineString(Path.create(arc), { relaxedValidation: true });
+    if (ck.testDefined(output, "expect fromFilletedLineString success")) {
+      const lineString = LineString3d.create(output.map((entry) => entry[0]));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString);
+      const lineStringSize = lineString.range().diagonal().magnitude();
+      const inflationFactor = lineStringSize / arcSize;
+      ck.testLE(inflationFactor, 2.0, "expect inflation factor to be reasonable (less than 2)"); // 1.665
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FilletedLineString", "InflationFactor");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("Parse2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.createArray([
+      LineSegment3d.create(Point3d.createZero(), Point3d.create(6.675087145995349,0.024659754941239953)),
+      LineSegment3d.create(Point3d.create(6.675087145995349, 0.024659754941239953), Point3d.create(6.641416417667642, 5.989662684500217)),
+      LineSegment3d.create(Point3d.create(6.641416417667642, 5.989662684500217), Point3d.create(2.0645099801477045, 5.972754232469015)),
+      LineSegment3d.create(Point3d.create(2.0645099801477045, 5.972754232469015), Point3d.create(2.051741350442171, 10.239936180296354)),
+      LineSegment3d.create(Point3d.create(2.051741350442171, 10.239936180296354), Point3d.create(6.617329637170769, 10.256802819669247)),
+      LineSegment3d.create(Point3d.create(6.617329637170769, 10.256802819669247), Point3d.create(6.593242856557481, 14.523942954838276)),
+      LineSegment3d.create(Point3d.create(6.593242856557481, 14.523942954838276), Point3d.create(14.213205351727083, 14.552093359874561)),
+      LineSegment3d.create(Point3d.create(14.213205351843499, 14.552093359816354), Point3d.create(14.546462253434584, -44.48667683149688)),
+      Arc3d.create(Point3d.create(15.460847646114416, -44.481515388644766), Vector3d.create(-0.6429184204910516, -0.6502178030793166), Vector3d.create(0.6502178030793168, -0.6429184204910514), AngleSweep.createStartEndDegrees(-45.000000000024194, 45.000000000024194)),
+      LineSegment3d.create(Point3d.create(15.466009089141153, -45.3959007813246), Point3d.create(41.098810530034825, -45.25121097895317)),
+      LineSegment3d.create(Point3d.create(41.098810530034825, -45.25121097895317), Point3d.create(41.14395439065993, -53.17588240711484)),
+      LineSegment3d.create(Point3d.create(41.14395439065993, -53.17588240711484), Point3d.create(37.6388690371532, -53.1956676071859)),
+      Arc3d.create(Point3d.create(37.644030479947105, -54.110052969888784), Vector3d.create(-0.6502177817428954, 0.6429183994017849), Vector3d.create(-0.6429183994017849, -0.6502177817428952), AngleSweep.createStartEndDegrees(-45.000000000383196, 45.000000000383196)),
+      LineSegment3d.create(Point3d.create(36.729645117302425, -54.11521441268269), Point3d.create(36.754592092940584, -58.53474407392787)),
+      LineSegment3d.create(Point3d.create(36.754592092940584, -58.53474407392787), Point3d.create(15.11413685278967, -58.656898228568025)),
+      LineSegment3d.create(Point3d.create(15.11413685278967, -58.656898228568025), Point3d.create(15.08402843424119, -53.322983194782864)),
+      Arc3d.create(Point3d.create(14.169643011759035, -53.3281446378096), Vector3d.create(0.6429184415470683, 0.6502178243449755), Vector3d.create(-0.6502178243449757, 0.6429184415470685), AngleSweep.createStartEndDegrees(-44.99999999891705, 135.00000000082312)),
+      LineSegment3d.create(Point3d.create(13.255257569020614, -53.33330608101096), Point3d.create(13.298291174462065, -60.95700760744512)),
+      LineSegment3d.create(Point3d.create(13.298291174462065, -60.95700760744512), Point3d.create(5.678412568871863, -61.000019633735064)),
+      LineSegment3d.create(Point3d.create(5.678412568871863, -61.000019633735064), Point3d.create(5.617843592888676, -50.26980571245076)),
+      Arc3d.create(Point3d.create(4.703458220115863, -50.27496715524467), Vector3d.create(0.6435521840944637, 0.6495905145699469), Vector3d.create(-0.649590514569947, 0.6435521840944638), AngleSweep.createStartEndDegrees(-44.944125940603875, 44.944125940603875)),
+      LineSegment3d.create(Point3d.create(4.70008017832879, -49.36057345505105), Point3d.create(0.27871846058405936, -49.376907278667204)),
+      LineSegment3d.create(Point3d.create(0.27871846058405936, -49.376907278667204), Point3d.createZero()),
+    ]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
+
+    const countZLL = (chain: Path): number => {
+      let count = 0;
+      for (const child of chain.children) {
+        if (child instanceof LineSegment3d && child.curveLength() < Geometry.smallMetricDistance)
+          count++;
+      }
+      return count;
+    };
+
+    const output = CurveFactory.fromFilletedLineString(path);
+    ck.testUndefined(output, "expect default fromFilletedLineString failure on semicircle, unaligned tangents");
+
+    const output2 = CurveFactory.fromFilletedLineString(path, { relaxedValidation: true });
+    if (ck.testDefined(output2, "expect fromFilletedLineString success due to relaxed validation")) {
+      const roundtripPath2 = CurveFactory.createFilletsInLineString(output2.map((entry) => entry[0]), output2.map((entry) => entry[1]));
+      if (ck.testDefined(roundtripPath2, "expect roundtrip success")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, roundtripPath2, 0, 0, 10);
+        ck.testLT(1, countZLL(roundtripPath2), "expect multiple zero-length lines in roundtrip"); // they split the semicircle and unaligned tangents
+      }
+    }
+
+    const output3 = CurveFactory.fromFilletedLineString(path, { relaxedValidation: true, parallelOptions: { radianSquaredTol: 100 * Geometry.smallAngleRadiansSquared }});
+    if (ck.testDefined(output3, "expect fromFilletedLineString success due to relaxed validation")) {
+      const roundtripPath3 = CurveFactory.createFilletsInLineString(output3.map((entry) => entry[0]), output3.map((entry) => entry[1]));
+      if (ck.testDefined(roundtripPath3, "expect roundtrip success")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, roundtripPath3, 0, 0, 20);
+        ck.testExactNumber(1, countZLL(roundtripPath3), "expect exactly one zero-length line in roundtrip due to relaxed angleTol"); // it splits the semicircle
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FilletedLineString", "Parse2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
+
 /**
  *
  * @param allGeometry
