@@ -405,14 +405,14 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const cosines = new GrowableFloat64Array(2);
     const sines = new GrowableFloat64Array(2);
     const radians = new GrowableFloat64Array(2);
-    // Arc: X = C + cU + sV
+    // Arc:  X(theta) = C + cos(theta)·U + sin(theta)·V
     // Line:  contains points A0,A1
-    // Arc point colinear with line if det (A0, A1, X) = 0
-    // with homogeneous xyw points and vectors.
-    // With equational X: det (A0, A1, C) + c det (A0, A1,U) + s det (A0, A1, V) = 0.
-    // solve for theta.
-    // evaluate points.
-    // project back to line.
+    // Arc point X is colinear (intersects) with line if det(A0, A1, X) = 0 with homogeneous xyw points and vectors
+    // This leads to
+    // det(A0, A1, C) + cos(theta) det(A0, A1, U) + sin(theta) det(A0, A1, V) = 0
+    // or
+    // alpha + beta cos(theta) + gamma sin(theta) = 0
+    // solve for theta; evaluate points; project back to line
     if (this._worldToLocalPerspective) {
       const data = arc.toTransformedPoint4d(this._worldToLocalPerspective);
       const radians0 = data.sweep.fractionToRadians(0);
@@ -424,7 +424,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const alpha = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.center);
       const beta = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector0);
       const gamma = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector90);
-      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians, tol2);
       const closeApproach = (0 === numRoots);
       if (closeApproach)
         numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
@@ -464,7 +464,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const alpha = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.center, 1);
       const beta = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector0, 0);
       const gamma = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector90, 0);
-      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians, tol2);
       const closeApproach = (0 === numRoots);
       if (closeApproach)
         numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
@@ -1168,10 +1168,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     this.appendDiscreteCloseApproachResults(cpA, cpB, maxError, reversed); // seeds for finding tangent intersections
     this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
   }
-   /**
-   * Invoke dispatch on each child of `g` as "geometryA".
-   * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
-   */
+  /**
+  * Invoke dispatch on each child of `g` as "geometryA".
+  * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
+  */
   public override handleChildren(g: GeometryQuery): any {
     const children = g.children;
     if (!children)
