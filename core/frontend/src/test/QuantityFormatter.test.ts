@@ -636,7 +636,7 @@ describe("Quantity formatter", async () => {
 
     });
 
-    it("getFormat should honor the requested unit system (#9371)", async () => {
+    it("getFormat should honor the requested unit system", async () => {
       const provider = new QuantityTypeFormatsProvider();
       const metricFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "metric");
       const imperialFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "imperial");
@@ -1102,7 +1102,7 @@ describe("Multi-system KoQ registry", () => {
     expect(nameMap!.has("Units.FT")).toBe(true);
   });
 
-  it("getSpecsByName returns the requested system projection (#9372)", async () => {
+  it("getSpecsByName returns the requested system projection", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
     // qf active system defaults to "imperial".
