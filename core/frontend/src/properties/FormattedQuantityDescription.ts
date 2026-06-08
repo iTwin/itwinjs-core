@@ -12,7 +12,7 @@ import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
 /**
- * @deprecated in 5.11.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
+ * @deprecated in 5.11.0. Use [[createQuantityDescription]] to build a plain [[PropertyDescription]] with synchronous formatting callbacks backed by a [[FormatSpecHandle]].
  * @beta
  */
 export interface FormattedQuantityDescriptionArgs {
@@ -24,7 +24,7 @@ export interface FormattedQuantityDescriptionArgs {
 
 /**
  * Base Quantity Property Description
- * @deprecated in 5.11.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
+ * @deprecated in 5.11.0. Use [[createQuantityDescription]] to build a plain [[PropertyDescription]] with synchronous formatting callbacks backed by a [[FormatSpecHandle]].
  * @beta
  */
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {

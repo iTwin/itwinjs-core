@@ -12,7 +12,7 @@ import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Angle Property Description
- * @deprecated in 5.11.0. See the [quantity formatting learning docs](../../docs/quantity-formatting/usage/ParsingAndFormatting.md) for how to build a plain `PropertyDescription` with `CustomFormattedNumberParams` backed by a [FormatSpecHandle]($quantity).
+ * @deprecated in 5.11.0. Use [[createQuantityDescription]] to build a plain [[PropertyDescription]] with synchronous formatting callbacks backed by a [[FormatSpecHandle]].
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
