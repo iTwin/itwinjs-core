@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecschema-rpcinterface-common
 
-This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+This log was last generated on Mon, 08 Jun 2026 18:47:31 GMT and should not be manually modified.
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
 
 ## 5.10.0
 Wed, 03 Jun 2026 20:19:46 GMT

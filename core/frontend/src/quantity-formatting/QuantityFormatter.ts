@@ -342,11 +342,11 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
-  public async getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+  public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     const quantityType = this._kindOfQuantityMap.get(name);
     if (!quantityType) return undefined;
 
-    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType, system);
   }
 }
 
@@ -1347,14 +1347,17 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   /**
    * @beta
    * Returns a map of [[FormattingSpecEntry]] keyed by persistence unit for a given name, typically a KindOfQuantity full name.
+   * @param name - The KoQ name to look up.
+   * @param options - Optional lookup options. When `options.system` is omitted, the active unit system is used.
    */
-  public getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined {
+  public getSpecsByName(name: string, options?: { system?: UnitSystemKey }): ReadonlyMap<string, FormattingSpecEntry> | undefined {
+    const effectiveSystem = options?.system ?? this._activeUnitSystem;
     const unitMap = this._formatSpecsRegistry.get(name);
     if (!unitMap) return undefined;
-    // Return active-system projection
+    // Return projection for the effective system
     const result = new Map<string, FormattingSpecEntry>();
     for (const [persistenceUnit, systemMap] of unitMap) {
-      const entry = systemMap.get(this._activeUnitSystem);
+      const entry = systemMap.get(effectiveSystem);
       if (entry) result.set(persistenceUnit, entry);
     }
     return result.size > 0 ? result : undefined;
