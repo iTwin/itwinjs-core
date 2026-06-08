@@ -2,6 +2,27 @@
   "name": "@itwin/ecschema-metadata",
   "entries": [
     {
+      "version": "5.10.0",
+      "tag": "@itwin/ecschema-metadata_v5.10.0",
+      "date": "Wed, 03 Jun 2026 20:19:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "UnitConversion, parseDefinition, and Graph now re-exported from @itwin/core-quantity. UnitConversion.from() signature uses UnitConversionSource interface (structural typing — no consumer changes needed). No public API changes."
+          },
+          {
+            "comment": "Use units schema 01.00.10"
+          },
+          {
+            "comment": "Add a SchemaView layer"
+          },
+          {
+            "comment": "Document the units schema update for volume-per-length conversion metadata."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.9.5",
       "tag": "@itwin/ecschema-metadata_v5.9.5",
       "date": "Mon, 01 Jun 2026 17:34:00 GMT",

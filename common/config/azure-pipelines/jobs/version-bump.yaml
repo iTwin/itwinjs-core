@@ -258,7 +258,10 @@ jobs:
 
           - bash: |
               deprecationDateCommitHash=$(git log -1 --format=%H)
+              deprecationCommitRef="deprecation-comment-changes-$(deprecationVersion)"
+              git branch -f "$deprecationCommitRef" "$deprecationDateCommitHash"
               echo "##vso[task.setvariable variable=hash;isOutput=true]$deprecationDateCommitHash"
+              echo "##vso[task.setvariable variable=ref;isOutput=true]$deprecationCommitRef"
             displayName: Save SHA-1 hash of the commit
             name: deprecationCommit
             condition: eq(variables['deprecationCommentChangesMade'], 'true')
@@ -270,11 +273,16 @@ jobs:
             condition: eq(variables['deprecationCommentChangesMade'], 'true')
 
           - bash: |
-              commitHash=$(deprecationCommit.hash)
-              echo "Attempting to cherry-pick commit: $commitHash"
-              if git cherry-pick $commitHash; then
-                git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
-                echo "Successfully applied deprecation comment updates to master"
+              commitRef=$(deprecationCommit.ref)
+              echo "Attempting to cherry-pick commit: $commitRef"
+              if git cherry-pick "$commitRef"; then
+                if git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master; then
+                  echo "Successfully applied deprecation comment updates to master"
+                else
+                  git reset --hard HEAD~1
+                  echo "##vso[task.setvariable variable=needsPR]true"
+                  echo "Failed pushing deprecation comment updates to master. A PR will be created for manual resolution."
+                fi
               else
                 git cherry-pick --abort
                 echo "##vso[task.setvariable variable=needsPR]true"
@@ -377,25 +385,70 @@ jobs:
 
       - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
           - bash: |
+              # Save H_amended (the version-bump commit in detached HEAD) so that the downstream
+              # git-notes and branch-push steps operate on the correct commit after this step
+              # moves HEAD to master to create the fallback branch.
+              versionBumpCommit=$(git log -1 --format=%H)
+              # Only stamp the deprecation-PR note if the fallback PR was actually created.
+              echo "##vso[task.setvariable variable=fallbackPrCreated]false"
+              # Restore HEAD to the version-bump commit on any exit (bash -e abort, exit 0, or
+              # normal completion) so downstream git-notes and release-branch-push steps always
+              # operate on the correct commit.
+              trap 'git checkout "$versionBumpCommit" 2>/dev/null || true' EXIT
+
               # Merge conflicts: Create branch, set up PR for manual resolution.
               echo "##[warning] Cherry-pick operation on master failed (most likely due to merge conflicts). Manual intervention required"
 
               # Create and checkout to conflict handling branch
               conflictBranchName="cherry-pick-conflict-$(getVersion.version)"
               echo "##[warning] Creating new branch '$conflictBranchName' for manual resolution"
+              git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core master:master \
+                || echo "##vso[task.logissue type=warning;]git fetch failed — using cached local master ref (may be slightly stale)"
+              git checkout master
               git checkout -b $conflictBranchName
 
               # Cherry-pick changes onto conflict handling branch
-              git cherry-pick $(deprecationCommit.hash)
+              if git cherry-pick "$(deprecationCommit.ref)"; then
+                echo "Deprecation cleanup applied cleanly on fallback branch"
+              elif git diff --name-only --diff-filter=U | grep -q .; then
+                # Stage the conflict-marker files so the draft PR shows only the manual-resolution state.
+                git add .
+                git commit -m "Add deprecation rule changes with all merge conflicts"
+              else
+                # Cherry-pick exited non-zero but left no unresolved files, meaning the
+                # deprecation cleanup is already present on master.  Clean up the
+                # in-progress cherry-pick state, restore HEAD to the version-bump commit,
+                # and clear needsPR so the DEPRECATION_COMMENT_CHANGES_PR git note is not
+                # applied to a PR that was never opened.
+                git cherry-pick --abort 2>/dev/null || true
+                git checkout "$versionBumpCommit"
+                echo "##vso[task.setvariable variable=needsPR]false"
+                echo "Deprecation cleanup is already present on master; skipping fallback PR"
+                exit 0
+              fi
 
-              # Add, commit and push all ESLint deprecation changes (including conflicts) to conflict handling branch for manual resolution.
-              git add .
-              git commit -m "Add deprecation rule changes with all merge conflicts"
-              git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $conflictBranchName
-              echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
+              # Push the fallback branch for manual review or resolution.
+              # Use explicit error handling so a transient push or PR-creation failure does NOT
+              # exit the script under bash -e: git checkout "$versionBumpCommit" below must
+              # always run so downstream git-notes and release-branch-push steps operate on the
+              # correct (version-bump) commit rather than the master-lineage conflict branch.
+              if git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $conflictBranchName; then
+                echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
 
-              # Create a PR with new conflict branch
-              gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName
+                # Create a PR with new conflict branch
+                if gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName; then
+                  echo "##vso[task.setvariable variable=fallbackPrCreated]true"
+                else
+                  echo "##vso[task.logissue type=error;]gh pr create failed for $conflictBranchName — create the draft PR manually."
+                fi
+              else
+                echo "##vso[task.logissue type=error;]Failed to push fallback branch $conflictBranchName — push manually and open a draft PR."
+              fi
+
+              # Restore HEAD to the version-bump commit so downstream steps (SHOULD_PUBLISH
+              # git note, release-branch push) operate on the correct commit.
+              # This must remain the final statement in the script regardless of push/PR outcome.
+              git checkout "$versionBumpCommit"
             displayName: Create PR for manual resolution of deprecation comment changes
             condition: eq(variables['needsPR'], 'true')
             env:
@@ -416,7 +469,7 @@ jobs:
           echo "Applying DEPRECATION_COMMENT_CHANGES_PR note to commit $latestCommit"
           git notes append -m "DEPRECATION_COMMENT_CHANGES_PR" $latestCommit
         displayName: Mark commit for eslint rule changes
-        condition: eq(variables['needsPR'], 'true')
+        condition: and(eq(variables['needsPR'], 'true'), eq(variables['fallbackPrCreated'], 'true'))
 
       - bash: |
           git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits

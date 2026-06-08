@@ -5,11 +5,28 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
+    - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
     - [Bing Maps imagery is deprecated](#bing-maps-imagery-is-deprecated)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
 ## @itwin/core-frontend
+
+### `IModelConnection.createQueryReader` now terminates gracefully if the connection is closed
+
+Previously, if an [IModelConnection]($frontend) was closed between the call to [IModelConnection.createQueryReader]($frontend) and the first iteration of its results, it ended up throwing during the underlying RPC call.
+
+The `IModelConnection.createQueryReader` executor now checks [IModelConnection.isOpen]($frontend) before attempting any RPC call. If the connection is already closed at the time of the first or any subsequent read, the reader terminates immediately with no rows. No error is thrown.
+
+Callers that previously relied on a thrown error to detect connection closure should check `imodel.isOpen` before or after iteration instead.
+
+**Example**
+
+```typescript
+const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
+await imodel.close(); // connection closes before iteration
+const rows = await reader.toArray(); // used to throw, now returns an empty array
+```
 
 ### Bing Maps imagery is deprecated
 
