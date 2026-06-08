@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Deprecate Bing Maps imagery and document the Azure Maps basemap migration path.",
+      "comment": "Document that the legacy BingProvider background map path is deprecated for imagery and retained for compatibility.",
       "type": "none",
       "packageName": "@itwin/core-common"
     }
