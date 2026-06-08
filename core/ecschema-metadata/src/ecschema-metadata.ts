@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./Authoring/SchemaItemReference";
 export * from "./Constants";
 export * from "./Context";
 export * from "./DelayedPromise";
