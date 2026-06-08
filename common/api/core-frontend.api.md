@@ -8137,7 +8137,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined;
+    getSpecsByName(name: string, options?: {
+        system?: UnitSystemKey;
+    }): ReadonlyMap<string, FormattingSpecEntry> | undefined;
     // @beta
     getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
