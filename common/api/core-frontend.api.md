@@ -8220,7 +8220,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
