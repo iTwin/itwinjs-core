@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "CurveFactory.fromFilletedLineStrings: relaxed validation trisects large arcs",
+    "comment": "CurveFactory.fromFilletedLineString: relaxed validation trisects large arcs",
       "type": "none"
     }
   ],
