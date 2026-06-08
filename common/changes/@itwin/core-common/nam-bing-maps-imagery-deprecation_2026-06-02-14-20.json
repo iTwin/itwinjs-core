@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Document that the legacy BingProvider background map path is deprecated for imagery and retained for compatibility.",
+      "comment": "Clarify that the legacy BingProvider background map path is retained for compatibility with existing persisted data.",
       "type": "none",
       "packageName": "@itwin/core-common"
     }

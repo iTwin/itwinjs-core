@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Deprecate the BingMaps map layer option for imagery and document the Azure Maps basemap migration path.",
+      "comment": "Deprecate `MapLayerOptions.BingMaps` for Bing imagery and document the Azure Maps basemap migration path.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }
