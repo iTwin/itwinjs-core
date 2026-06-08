@@ -2324,7 +2324,6 @@ export function createQuantityDescription(props: CreateQuantityDescriptionProps)
 // @beta
 export interface CreateQuantityDescriptionProps {
     displayLabel: string;
-    iconSpec?: string;
     kindOfQuantityName: string;
     name: string;
     parseError: string;

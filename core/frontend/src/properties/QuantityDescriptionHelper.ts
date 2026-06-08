@@ -8,7 +8,7 @@
 
 import { Parser } from "@itwin/core-quantity";
 import {
-  type CustomFormattedNumberParams, type IconEditorParams, type ParseResults, type PropertyDescription, type PropertyEditorParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames,
+  type CustomFormattedNumberParams, type ParseResults, type PropertyDescription, type PropertyEditorParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
 
@@ -34,8 +34,6 @@ export interface CreateQuantityDescriptionProps {
    * programmatically rather than hardcoding a string.
    */
   persistenceUnitName: string;
-  /** Optional icon spec for the editor. */
-  iconSpec?: string;
   /** Localized error string returned when the user's input cannot be parsed. */
   parseError: string;
 }
@@ -61,7 +59,7 @@ export interface CreateQuantityDescriptionProps {
  * @beta
  */
 export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription {
-  const { name, displayLabel, iconSpec, kindOfQuantityName, persistenceUnitName, parseError } = props;
+  const { name, displayLabel, kindOfQuantityName, persistenceUnitName, parseError } = props;
   const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle(kindOfQuantityName, persistenceUnitName);
   const editorParams: PropertyEditorParams[] = [{
     type: PropertyEditorParamTypes.CustomFormattedNumber,
@@ -77,14 +75,6 @@ export function createQuantityDescription(props: CreateQuantityDescriptionProps)
       return { parseError };
     },
   } as CustomFormattedNumberParams];
-
-  if (iconSpec) {
-    const params: IconEditorParams = {
-      type: PropertyEditorParamTypes.Icon,
-      definition: { iconSpec },
-    };
-    editorParams.push(params);
-  }
 
   return {
     name,
