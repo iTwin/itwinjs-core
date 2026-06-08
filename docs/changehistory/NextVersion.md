@@ -36,10 +36,17 @@ Use the new [createQuantityDescription]($frontend) helper function (marked `@bet
 
 The deprecated classes remain behavior-compatible and will not be removed before a future major release.
 
-`createQuantityDescription` intentionally omits the `iconSpec` parameter that the old classes accepted. An icon is a display concern and has no bearing on quantity formatting or parsing — placing it on a property description couples presentation to the data model. If your UI requires an icon alongside the field, add it after construction:
+`createQuantityDescription` intentionally omits the `iconSpec` parameter that the old classes accepted. If your UI still needs an icon alongside the field, add the same editor param that the deprecated classes used internally:
 
 ```ts
-const prop = { ...createQuantityDescription(props), iconSpec: "icon-globe" };
+import { type IconEditorParams, PropertyEditorParamTypes } from "@itwin/appui-abstract";
+
+const prop = createQuantityDescription(props);
+const iconParam: IconEditorParams = {
+  type: PropertyEditorParamTypes.Icon,
+  definition: { iconSpec: "icon-globe" },
+};
+prop.editor?.params?.push(iconParam);
 ```
 
 ## @itwin/map-layers-formats
