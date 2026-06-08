@@ -24,8 +24,8 @@ export interface CreateQuantityDescriptionProps {
   /**
    * The EC full name of the [KindOfQuantity](https://www.itwinjs.org/bis/ec/kindofquantity/) this property represents,
    * e.g. `"DefaultToolsUnits.LENGTH"` or `"DefaultToolsUnits.ANGLE"`.
-   * See the [Common KindOfQuantity Mappings](../../../docs/quantity-formatting/definitions/FormatSets.md#common-kindofquantity-mappings)
-   * table for standard measurements.
+   * See the [Common KindOfQuantity Mappings](https://www.itwinjs.org/learning/frontend/quantity-formatting/definitions/formatsets/#common-kindofquantity-mappings)
+   * documentation for standard measurements.
    */
   kindOfQuantityName: string;
   /**
@@ -45,17 +45,7 @@ export interface CreateQuantityDescriptionProps {
  * reflects the current unit system and formatter registry. The handle provides synchronous `format` and `parse`
  * callbacks suitable for [CustomFormattedNumberParams]($appui-abstract) — no subclassing required.
  *
- * @example
- * ```ts
- * const prop = createQuantityDescription({
- *   name: "cameraHeight",
- *   displayLabel: "Camera Height",
- *   kindOfQuantityName: "DefaultToolsUnits.LENGTH",
- *   persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
- *   parseError: "Unable to parse length",
- * });
- * ```
- * @see [Quantity Property Descriptions](../../../docs/quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions)
+ * @see [Quantity Property Descriptions](https://www.itwinjs.org/learning/frontend/quantity-formatting/usage/parsingandformatting/#quantity-property-descriptions)
  * @beta
  */
 export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription {
