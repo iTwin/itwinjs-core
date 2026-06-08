@@ -1,6 +1,13 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Wed, 03 Jun 2026 20:19:46 GMT and should not be manually modified.
+This log was last generated on Mon, 08 Jun 2026 18:45:58 GMT and should not be manually modified.
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step
 
 ## 5.10.0
 Wed, 03 Jun 2026 20:19:46 GMT
