@@ -13,11 +13,11 @@ publish: false
 
 ### Bing Maps imagery is deprecated
 
-Bing Maps imagery entry points are now deprecated. This release does not change runtime behavior, and existing persisted Bing-backed styles continue to load for compatibility.
+Bing Maps imagery-specific APIs are now deprecated. This release does not change runtime behavior, and existing persisted Bing-backed styles continue to load for compatibility.
 
 For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
 
-> This imagery-only deprecation does not deprecate `BingLocationProvider` or `BingElevationProvider`, and it does not add a built-in replacement for Bing elevation or location services.
+> This imagery-only deprecation does not deprecate `BingLocationProvider` or `BingElevationProvider`, and it does not add a built-in replacement for Bing elevation or location services. Applications that continue using those Bing services must continue supplying `MapLayerOptions.BingMaps`.
 
 ## @itwin/map-layers-formats
 

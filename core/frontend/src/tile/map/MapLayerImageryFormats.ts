@@ -222,6 +222,7 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "BingMaps";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new BingMapsImageryLayerProvider(settings);
   }
 }
@@ -238,4 +239,5 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
