@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Allow Walk, LookAndMove, and Fly tools to handle keyboard navigation while focus remains on non-editable UI.",
+      "comment": "Move focus Home after installing LookAndMoveTool so keyboard navigation works through the existing focus handling.",
       "type": "none"
     }
   ],

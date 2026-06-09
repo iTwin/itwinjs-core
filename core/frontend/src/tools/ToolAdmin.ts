@@ -1457,41 +1457,6 @@ export class ToolAdmin {
     document.body.focus();
   }
 
-  private _isFocusEditableElement(): boolean {
-    const element = document.activeElement;
-    if (!(element instanceof HTMLElement) || element === document.body)
-      return false;
-
-    if (element.isContentEditable)
-      return true;
-
-    switch (element.tagName.toLowerCase()) {
-      case "input":
-      case "select":
-      case "textarea":
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  private _allowFocusedNavigationToolKeyEvent(keyEvent: KeyboardEvent): boolean {
-    if (keyEvent.defaultPrevented || keyEvent.isComposing || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.metaKey)
-      return false;
-
-    if (this._isFocusHome || undefined !== IModelApp.accuDraw.getFocusItem() || this._isFocusEditableElement())
-      return false;
-
-    switch (this.activeTool?.toolId) {
-      case "View.Fly":
-      case "View.LookAndMove":
-      case "View.Walk":
-        return true;
-      default:
-        return false;
-    }
-  }
-
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
       case "Alt": return BeModifierKeys.Alt;
@@ -1566,9 +1531,7 @@ export class ToolAdmin {
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
 
-    const allowFocusedNavigationToolKeyEvent = this._allowFocusedNavigationToolKeyEvent(keyEvent);
-    const handledByFocus = this.processKeyboardEvent(keyEvent, wentDown);
-    if (handledByFocus && !allowFocusedNavigationToolKeyEvent)
+    if (this.processKeyboardEvent(keyEvent, wentDown))
       return EventHandled.Yes;
 
     if (wentDown && keyEvent.ctrlKey) {
@@ -1582,9 +1545,6 @@ export class ToolAdmin {
       if (EventHandled.Yes === await activeTool.onKeyTransition(wentDown, keyEvent))
         return EventHandled.Yes;
     }
-
-    if (handledByFocus)
-      return EventHandled.Yes;
 
     if (await this.processShortcutKey(keyEvent, wentDown))
       return EventHandled.Yes;
