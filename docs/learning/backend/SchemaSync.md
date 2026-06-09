@@ -65,7 +65,7 @@ The cloud storage container itself must first be created through your storage pr
 const containerProps = {
   baseUri,        // storage account / endpoint
   containerId,    // the provisioned container's id
-  storageType,    // e.g. "azure"
+  storageType,    // "azure" | "google"
 };
 
 const accessToken = await CloudSqlite.requestToken(containerProps);
