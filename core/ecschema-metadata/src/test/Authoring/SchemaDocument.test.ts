@@ -5,8 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  CustomAttributeContainerType, ECClassModifier, PrimitiveType, PropertyKind, RelationshipEnd,
-  SchemaItemType, SchemaMatchType, StrengthDirection, StrengthType,
+  AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, PrimitiveType, PropertyKind,
+  RelationshipEnd, SchemaItemType, SchemaMatchType, StrengthDirection, StrengthType,
 } from "../../ECObjects";
 import { Authoring, SchemaDocument } from "../../Authoring/SchemaDocument";
 
@@ -22,7 +22,6 @@ describe("SchemaDocument", () => {
       expect(doc.readVersion).to.equal(1);
       expect(doc.writeVersion).to.equal(2);
       expect(doc.minorVersion).to.equal(3);
-      expect(doc.version).to.equal("01.02.03");
       expect(doc.references).to.have.lengthOf(1);
       expect(doc.references[0].name).to.equal("BisCore");
     });
@@ -41,6 +40,43 @@ describe("SchemaDocument", () => {
       doc.minorVersion++; // digits stay the source of truth; the key reflects the edit
       expect(doc.key.minorVersion).to.equal(4);
       expect(doc.key.matches(doc.key, SchemaMatchType.Exact)).to.be.true;
+    });
+  });
+
+  describe("references", () => {
+    it("setSchemaReference adds from a held document, deriving version and alias", () => {
+      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+      const other = new SchemaDocument("Other", "ot", 2, 3, 4);
+
+      const ref = doc.setSchemaReference(other);
+      expect(doc.references).to.deep.equal([{ name: "Other", version: "02.03.04", alias: "ot" }]);
+      expect(ref).to.equal(doc.references[0]);
+    });
+
+    it("setSchemaReference replaces an existing reference of the same name (case-insensitive)", () => {
+      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0, {
+        references: [{ name: "Other", version: "01.00.00", alias: "old" }],
+      });
+      const newer = new SchemaDocument("OTHER", "ot", 2, 0, 0);
+
+      doc.setSchemaReference(newer);
+      expect(doc.references).to.have.lengthOf(1); // replaced, not appended
+      expect(doc.references[0]).to.deep.equal({ name: "OTHER", version: "02.00.00", alias: "ot" });
+    });
+
+    it("setSchemaReference accepts an explicit SchemaReference verbatim", () => {
+      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+      const ref: Authoring.SchemaReference = { name: "Other", version: "01.02.03", alias: null };
+      expect(doc.setSchemaReference(ref)).to.equal(ref); // stored as-is, null alias preserved
+    });
+
+    it("setSchemaReference accepts any structural source (e.g. a SchemaView Schema)", () => {
+      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+      // A plain object standing in for a SchemaView `Schema` flyweight - same member shape.
+      const viewSchema: Authoring.SchemaReferenceSource = { name: "Other", alias: "ot", readVersion: 3, writeVersion: 1, minorVersion: 0 };
+
+      doc.setSchemaReference(viewSchema);
+      expect(doc.references[0]).to.deep.equal({ name: "Other", version: "03.01.00", alias: "ot" });
     });
   });
 
@@ -80,6 +116,26 @@ describe("SchemaDocument", () => {
       doc.createEntity("B");
       expect([...doc.getItemsOfType(SchemaItemType.EntityClass)].map((e) => e.name)).to.deep.equal(["A", "B"]);
       expect([...doc.getItemsOfType(SchemaItemType.StructClass)].map((s) => s.name)).to.deep.equal(["S1"]);
+    });
+
+    it("the Class grouping matches any class kind, but not a non-class item", () => {
+      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const widget = doc.createEntity("Widget");
+      doc.createPropertyCategory("Cat");
+
+      expect(doc.getItemOfType("Widget", AbstractSchemaItemType.Class)).to.equal(widget);
+      expect(doc.getItemOfType("Cat", AbstractSchemaItemType.Class)).to.be.undefined; // PropertyCategory is not a class
+    });
+
+    it("getItemsOfType over the Class grouping yields every class kind in declaration order", () => {
+      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      doc.createEntity("E");
+      doc.createPropertyCategory("Cat"); // not a class - excluded
+      doc.createStructClass("S1");
+      doc.createMixin("M", "S:E");
+
+      expect([...doc.getItemsOfType(AbstractSchemaItemType.Class)].map((c) => c.name)).to.deep.equal(["E", "S1", "M"]);
+      expect([...doc.getItemsOfType(AbstractSchemaItemType.SchemaItem)].map((i) => i.name)).to.deep.equal(["E", "Cat", "S1", "M"]);
     });
 
     it("splits base class and mixins, set inline or after", () => {
@@ -262,7 +318,7 @@ describe("SchemaDocument", () => {
   describe("Scenario A: compose a schema in code", () => {
     it("builds MyDomain:Pump with three properties (hiding via a plain CA)", () => {
       const doc = new SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
-        references: [{ name: "BisCore", version: "1.0.0" }, { name: "AecUnits", version: "1.0.0" }],
+        references: [{ name: "BisCore", version: "1.0.0", alias: "bis" }, { name: "AecUnits", version: "1.0.0", alias: "AECU" }],
       });
       doc.customAttributes.add({ className: "CoreCustomAttributes.DynamicSchema" });
 

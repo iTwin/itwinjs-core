@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
+import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
 import { SchemaKey } from "../SchemaKey";
 
 /** Case-invariant name comparison. EC names are case-insensitive; comparison is the document's
@@ -65,13 +65,8 @@ export class SchemaDocument {
    * accessors below ({@link SchemaDocument.getItemOfType}, ...) read it back. */
   public readonly items: Authoring.AnySchemaItem[] = [];
 
-  /** Creates a new document with the given identity. The version is passed as its three numeric
-   * components; the document is validity-free, so no range checking happens here (out-of-range or
-   * all-zero versions are reported at compile). `init` carries the complementary schema-level data;
-   * items are added through the `create*` factories (or `items.push`) afterward, and custom
-   * attributes through the public {@link SchemaDocument.customAttributes} set. To build a document
-   * from a version *string*, parse it with {@link ECVersion.fromString} at the call site (the
-   * deserializers do this); the document itself never parses. */
+  /** Creates a new document with the given identity.
+   * `init` carries the complementary schema-level data; */
   public constructor(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: Authoring.SchemaDocumentInit) {
     this.name = name;
     this.alias = alias;
@@ -89,17 +84,34 @@ export class SchemaDocument {
     }
   }
 
-  /** The `RR.WW.mm` version, each component zero-padded to two digits. */
-  public get version(): string {
-    const pad = (n: number) => n.toString().padStart(2, "0");
-    return `${pad(this.readVersion)}.${pad(this.writeVersion)}.${pad(this.minorVersion)}`;
-  }
-
   /** A read-only {@link SchemaKey} over this document's current name and version, for matching and
    * comparing against other keys (`matches`, `compareByVersion`, the `SchemaMatchType` rules).
    * A new key is constructed on each access. */
   public get key(): SchemaKey {
     return new SchemaKey(this.name, this.readVersion, this.writeVersion, this.minorVersion);
+  }
+
+  /** Adds a schema reference, or replaces the existing reference of the same name (case-insensitive).
+   * Returns the stored reference.
+   *
+   * Pass an explicit {@link Authoring.SchemaReference} to control `name` / `version` / `alias` directly,
+   * or pass any {@link Authoring.SchemaReferenceSource} a caller already holds - the reference's `version`
+   * is then derived from the source's version components and its `alias` from the source's own alias (the
+   * suggested default; set a different `alias` on the returned reference if this document uses one). Both
+   * a {@link SchemaDocument} and a `SchemaView` `Schema` satisfy `SchemaReferenceSource` structurally, so
+   * either can be passed without this module depending on `SchemaView`. */
+  public setSchemaReference(reference: Authoring.SchemaReference): Authoring.SchemaReference;
+  public setSchemaReference(source: Authoring.SchemaReferenceSource): Authoring.SchemaReference;
+  public setSchemaReference(arg: Authoring.SchemaReference | Authoring.SchemaReferenceSource): Authoring.SchemaReference {
+    const reference: Authoring.SchemaReference = "version" in arg
+      ? arg
+      : { name: arg.name, version: new SchemaKey(arg.name, arg.readVersion, arg.writeVersion, arg.minorVersion).version.toString(), alias: arg.alias };
+    const index = this.references.findIndex((r) => namesEqual(r.name, reference.name));
+    if (index >= 0)
+      this.references[index] = reference;
+    else
+      this.references.push(reference);
+    return reference;
   }
 
   /** Returns the first item with the given name (case-insensitive), or `undefined`. */
@@ -108,16 +120,21 @@ export class SchemaDocument {
   }
 
   /** Returns the first item with the given name whose kind matches `itemType`, narrowed to that
-   * kind's type, or `undefined` (no such name, or a name of a different kind). */
+   * kind's type, or `undefined` (no such name, or a name of a different kind). `itemType` may be a
+   * concrete {@link SchemaItemType} or a grouping ({@link AbstractSchemaItemType.Class},
+   * {@link AbstractSchemaItemType.SchemaItem}), in which case any member kind matches.
+   * Given the large amount of item types we have, this method is to avoid a zoo of getXXX methods. */
   public getItemOfType<K extends keyof Authoring.SchemaItemTypeMap>(name: string, itemType: K): Authoring.SchemaItemTypeMap[K] | undefined {
     const item = this.getItem(name);
-    return item !== undefined && item.schemaItemType === itemType ? item as Authoring.SchemaItemTypeMap[K] : undefined;
+    return item !== undefined && isSupportedSchemaItemType(item.schemaItemType, itemType) ? item as Authoring.SchemaItemTypeMap[K] : undefined;
   }
 
-  /** Iterates every item of the given kind in declaration order, narrowed to that kind's type. */
+  /** Iterates every item of the given kind in declaration order, narrowed to that kind's type.
+   * `itemType` may be a concrete {@link SchemaItemType} or a grouping
+   * ({@link AbstractSchemaItemType.Class}, {@link AbstractSchemaItemType.SchemaItem}). */
   public *getItemsOfType<K extends keyof Authoring.SchemaItemTypeMap>(itemType: K): IterableIterator<Authoring.SchemaItemTypeMap[K]> {
     for (const item of this.items) {
-      if (item.schemaItemType === itemType)
+      if (isSupportedSchemaItemType(item.schemaItemType, itemType))
         yield item as Authoring.SchemaItemTypeMap[K];
     }
   }
@@ -200,12 +217,36 @@ export namespace Authoring {
    * so reference correctness is a compile diagnostic - which is why this is a plain string. */
   export type LocalOrFullName = string;
 
-  /** A reference to another schema: invariant `name` + `version`, plus this document's local `alias`
-   * for it (used to qualify references to that schema's items). */
+  /** A reference to another schema: invariant `name` + `version`, plus the `alias` this document uses
+   * for it within its own scope.
+   *
+   * The reference `alias` is authoritative here - it is what this schema qualifies the reference's items
+   * with in ECXML (`alias:Item`). It need not match the referenced schema's own `alias`, which is only a
+   * suggested default; the per-reference alias is what a schema actually uses (and what disambiguates two
+   * references that would otherwise collide on the same alias).
+   *
+   * `alias` is `string | null` rather than optional, so every reference makes an explicit choice and an
+   * author cannot silently forget it. Provide the alias this schema uses to qualify the reference's items
+   * in ECXML, or pass `null` to declare "no alias" - which is what the JSON deserializer does, since
+   * ECJSON qualifies items by full schema name (`Schema.Item`) and stores no alias. A `null` alias cannot
+   * be serialized to ECXML, which requires an alias on every `<ECSchemaReference>`; recovering one for a
+   * JSON-sourced document is a known limitation (see the refactor doc). */
   export interface SchemaReference {
     name: string;
     version: string;
-    alias?: string;
+    alias: string | null;
+  }
+
+  /** The minimal read shape {@link SchemaDocument.setSchemaReference} needs to derive a
+   * {@link SchemaReference} from a schema a caller already holds: its name, alias, and version
+   * components. Both {@link SchemaDocument} and a `SchemaView` `Schema` satisfy this structurally, so the
+   * convenience works across the read and authoring lanes without this module importing `SchemaView`. */
+  export interface SchemaReferenceSource {
+    readonly name: string;
+    readonly alias: string;
+    readonly readVersion: number;
+    readonly writeVersion: number;
+    readonly minorVersion: number;
   }
 
   /** Complementary schema-level data accepted by the {@link SchemaDocument} constructor. */
@@ -839,9 +880,11 @@ export namespace Authoring {
    * and View are not modeled yet; this grows as they are added. */
   export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
 
-  /** Maps each {@link SchemaItemType} discriminant to its concrete item type, so the typed accessors
-   * ({@link SchemaDocument.getItemOfType}, {@link SchemaDocument.getItemsOfType}) can narrow by kind.
-   * Grows as item kinds are added; the units / formats family is not modeled yet. */
+  /** Maps each {@link SchemaItemType} discriminant to its concrete item type, plus the
+   * {@link AbstractSchemaItemType} groupings to their union types, so the typed accessors
+   * ({@link SchemaDocument.getItemOfType}, {@link SchemaDocument.getItemsOfType}) can narrow either by
+   * a single kind or by a grouping (e.g. `Class` for any class kind). Grows as item kinds are added;
+   * the units / formats family is not modeled yet. */
   export interface SchemaItemTypeMap {
     [SchemaItemType.EntityClass]: EntityClass;
     [SchemaItemType.Mixin]: Mixin;
@@ -851,5 +894,7 @@ export namespace Authoring {
     [SchemaItemType.Enumeration]: Enumeration;
     [SchemaItemType.KindOfQuantity]: KindOfQuantity;
     [SchemaItemType.PropertyCategory]: PropertyCategory;
+    [AbstractSchemaItemType.Class]: AnyClass;
+    [AbstractSchemaItemType.SchemaItem]: AnySchemaItem;
   }
 }
