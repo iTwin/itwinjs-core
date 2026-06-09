@@ -91,8 +91,8 @@ await SchemaSync.initializeForIModel({ iModel, containerProps });
 
 Once enabled, Schema Sync participates automatically in the normal schema-import and synchronization flow; applications generally do not call the Schema Sync API directly during editing.
 
-- **Importing schemas** through [`IModelDb.importSchemas`]($backend) automatically routes through the SyncDb when Schema Sync is enabled, using the lock-free-with-fallback behavior described above.
-- **Pulling and pushing changes** automatically synchronizes schema state with the SyncDb. Schema changes recorded in the SyncDb are reflected on pull; the changeset that carries a Schema-Sync schema change is tagged with the `SchemaSync` value of [ChangesetType]($common).
+- **Importing schemas** through [IModelDb.importSchemas]($backend) automatically routes through the SyncDb when Schema Sync is enabled, using the lock-free-with-fallback behavior described above.
+- **Pulling and pushing changes** automatically synchronizes schema state with the SyncDb. Schema changes recorded in the SyncDb are reflected on pull; the changeset that carries a Schema-Sync schema change is tagged with [ChangesetType.SchemaSync]($common).
 
 To check whether an iModel uses Schema Sync, or to force a synchronization of local schema state with the cloud:
 
