@@ -58,7 +58,7 @@ Setting up Schema Sync for an iModel is a two-stage process: provision and seed 
 
 ### 1. Provision and seed the container
 
-The cloud storage container itself must first be created through your storage provider's API (for example, an Azure or AWS blob container). Once the empty container exists, obtain a write-capable access token and seed an empty SyncDb into it:
+The cloud storage container itself must first be created through your storage provider's API (for example, an Azure Blob Storage container or a Google Cloud Storage bucket). Once the empty container exists, obtain a write-capable access token and seed an empty SyncDb into it:
 
 ```ts
 // containerProps describes the already-provisioned cloud container
