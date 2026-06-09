@@ -37,8 +37,8 @@ sequenceDiagram
 
     b1->>sync: import schema, write schema state (under write lock)
     b1->>hub: push changeset (tagged SchemaSync)
-    b2->>sync: pull schema state (adopt same class/property IDs)
     b2->>hub: pull changeset and apply
+    b2->>sync: pull schema state (adopt same class/property IDs)
     Note over b2: re-importing the same schema is now a no-op
 ```
 
