@@ -12,7 +12,8 @@ import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
-import { Tool } from "../tools/Tool";
+import { EventHandled, InteractiveTool, Tool } from "../tools/Tool";
+import { ToolAdmin } from "../tools/ToolAdmin";
 import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
 import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
@@ -49,6 +50,32 @@ class FourthImmediate extends Tool {
 
 class TestRotateTool extends RotateViewTool { }
 class TestSelectTool extends SelectionTool { }
+
+type TestKeyboardTool = InteractiveTool & { readonly keyTransitions: KeyboardEvent[] };
+
+function createTestKeyboardTool(activeToolId: string, handled: EventHandled = EventHandled.Yes): TestKeyboardTool {
+  class TestKeyboardToolImpl extends InteractiveTool {
+    public static override toolId = activeToolId;
+    public readonly keyTransitions: KeyboardEvent[] = [];
+
+    public override async exitTool(): Promise<void> { }
+
+    public override async onKeyTransition(_wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+      this.keyTransitions.push(keyEvent);
+      return handled;
+    }
+  }
+
+  return new TestKeyboardToolImpl();
+}
+
+async function processToolAdminKeyboardEvent(event: KeyboardEvent): Promise<void> {
+  if (!IModelApp.isEventLoopStarted)
+    IModelApp.startEventLoop();
+
+  ToolAdmin.addEvent(event);
+  await IModelApp.toolAdmin.processEvent();
+}
 
 class TestApp extends MockRender.App {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
@@ -190,6 +217,86 @@ describe("IModelApp startup tests", () => {
     await IModelApp.startup();
     expect(IModelApp.publicPath).toBe("");
     await IModelApp.shutdown();
+  });
+});
+
+describe("ToolAdmin keyboard focus", () => {
+  afterEach(async () => {
+    document.body.focus();
+
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("forwards key transitions to navigation tools when focus is on non-editable UI", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+    button.focus();
+    expect(document.activeElement).toBe(button);
+
+    const activeToolSpy = vi.spyOn(IModelApp.toolAdmin, "activeTool", "get");
+    const shortcutSpy = vi.spyOn(IModelApp.toolAdmin, "processShortcutKey");
+
+    try {
+      for (const toolId of ["View.Walk", "View.LookAndMove", "View.Fly"]) {
+        const tool = createTestKeyboardTool(toolId, EventHandled.No);
+        activeToolSpy.mockReturnValue(tool);
+
+        await processToolAdminKeyboardEvent(new KeyboardEvent("keydown", { key: "w" }));
+
+        expect(tool.keyTransitions).toHaveLength(1);
+        expect(tool.keyTransitions[0].key).toBe("w");
+      }
+
+      expect(shortcutSpy).not.toHaveBeenCalled();
+    } finally {
+      activeToolSpy.mockRestore();
+      shortcutSpy.mockRestore();
+      button.remove();
+    }
+  });
+
+  it("preserves the focus guard for editable UI, modified keys, and non-navigation tools", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const input = document.createElement("input");
+    const button = document.createElement("button");
+    document.body.append(input, button);
+
+    const activeToolSpy = vi.spyOn(IModelApp.toolAdmin, "activeTool", "get");
+    const shortcutSpy = vi.spyOn(IModelApp.toolAdmin, "processShortcutKey");
+
+    try {
+      input.focus();
+      expect(document.activeElement).toBe(input);
+
+      const editableFocusTool = createTestKeyboardTool("View.Walk");
+      activeToolSpy.mockReturnValue(editableFocusTool);
+      await processToolAdminKeyboardEvent(new KeyboardEvent("keydown", { key: "w" }));
+      expect(editableFocusTool.keyTransitions).toHaveLength(0);
+
+      button.focus();
+      expect(document.activeElement).toBe(button);
+
+      const modifiedKeyTool = createTestKeyboardTool("View.Walk");
+      activeToolSpy.mockReturnValue(modifiedKeyTool);
+      await processToolAdminKeyboardEvent(new KeyboardEvent("keydown", { ctrlKey: true, key: "w" }));
+      expect(modifiedKeyTool.keyTransitions).toHaveLength(0);
+
+      const nonNavigationTool = createTestKeyboardTool("Test.Keyboard");
+      activeToolSpy.mockReturnValue(nonNavigationTool);
+      await processToolAdminKeyboardEvent(new KeyboardEvent("keydown", { key: "w" }));
+      expect(nonNavigationTool.keyTransitions).toHaveLength(0);
+
+      expect(shortcutSpy).not.toHaveBeenCalled();
+    } finally {
+      activeToolSpy.mockRestore();
+      shortcutSpy.mockRestore();
+      input.remove();
+      button.remove();
+    }
   });
 });
 
