@@ -6,6 +6,7 @@
  * @module Schema
  */
 
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, parsePrimitiveType, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
 import { SchemaKey } from "../SchemaKey";
 
@@ -222,6 +223,41 @@ export class SchemaDocument {
     return this._add(new Authoring.PropertyCategory(name, init));
   }
 
+  /** Creates a unit system, appends it, and returns it. */
+  public createUnitSystem(name: string, init?: Authoring.SchemaItemInit): Authoring.UnitSystem {
+    return this._add(new Authoring.UnitSystem(name, init));
+  }
+
+  /** Creates a phenomenon, appends it, and returns it. `definition` is its defining expression
+   * (mandatory data). */
+  public createPhenomenon(name: string, definition: string, init?: Authoring.SchemaItemInit): Authoring.Phenomenon {
+    return this._add(new Authoring.Phenomenon(name, definition, init));
+  }
+
+  /** Creates a unit, appends it, and returns it. `phenomenon` and `unitSystem` are item references
+   * and `definition` its defining expression (all mandatory data). */
+  public createUnit(name: string, phenomenon: Authoring.LocalOrFullName, unitSystem: Authoring.LocalOrFullName, definition: string, init?: Authoring.UnitInit): Authoring.Unit {
+    return this._add(new Authoring.Unit(name, phenomenon, unitSystem, definition, init));
+  }
+
+  /** Creates an inverted unit, appends it, and returns it. `invertsUnit` references the unit it is
+   * the reciprocal of and `unitSystem` the system it belongs to (both mandatory data). */
+  public createInvertedUnit(name: string, invertsUnit: Authoring.LocalOrFullName, unitSystem: Authoring.LocalOrFullName, init?: Authoring.SchemaItemInit): Authoring.InvertedUnit {
+    return this._add(new Authoring.InvertedUnit(name, invertsUnit, unitSystem, init));
+  }
+
+  /** Creates a constant, appends it, and returns it. `phenomenon` is an item reference and
+   * `definition` its defining expression (both mandatory data). */
+  public createConstant(name: string, phenomenon: Authoring.LocalOrFullName, definition: string, init?: Authoring.ConstantInit): Authoring.Constant {
+    return this._add(new Authoring.Constant(name, phenomenon, definition, init));
+  }
+
+  /** Creates a format, appends it, and returns it. `type` is the numeric rendering kind (mandatory
+   * data). */
+  public createFormat(name: string, type: FormatType, init?: Authoring.FormatInit): Authoring.Format {
+    return this._add(new Authoring.Format(name, type, init));
+  }
+
   /** Appends a constructed item and returns it - the shared tail of every `create*` factory. */
   private _add<T extends Authoring.AnySchemaItem>(item: T): T {
     this.items.push(item);
@@ -332,6 +368,13 @@ export namespace Authoring {
     public toJSON(): CustomAttribute[] {
       return [...this._items];
     }
+  }
+
+  /** Complementary data shared by every schema item kind's constructor. Item kinds with no data of
+   * their own (e.g. {@link UnitSystem}) accept this directly; the others extend it. */
+  export interface SchemaItemInit {
+    label?: string;
+    description?: string;
   }
 
   /** Common base of every schema item. `schemaItemType` is the discriminant for narrowing; the
@@ -771,6 +814,288 @@ export namespace Authoring {
     }
   }
 
+  // ===== Units / formats family =====
+  // Effectively frozen: the direction is for units and formats to move out of schemas into the
+  // external units/formats framework, with a KindOfQuantity referring to them by identifier string.
+  // These kinds are modeled at full fidelity so existing schemas keep round-tripping, but no new
+  // capabilities are expected here.
+
+  /** A unit system: a named family of units (`"SI"`, `"METRIC"`, `"USCUSTOM"`, ...) that
+   * {@link Unit}s declare membership in. Carries no data beyond the common item envelope.
+   * @alpha
+   */
+  export class UnitSystem extends SchemaItem {
+    public readonly schemaItemType = SchemaItemType.UnitSystem;
+
+    /** Creates a unit system. `name` is the only mandatory argument; `init` carries the rest. */
+    public constructor(name: string, init?: SchemaItemInit) {
+      super(name);
+      if (init) {
+        this.label = init.label;
+        this.description = init.description;
+      }
+    }
+  }
+
+  /** A phenomenon: the measurable quantity kind (length, area, temperature, ...) that units
+   * quantify. Units of the same phenomenon are mutually convertible.
+   * @alpha
+   */
+  export class Phenomenon extends SchemaItem {
+    public readonly schemaItemType = SchemaItemType.Phenomenon;
+    /** Defining expression in terms of other phenomena (e.g. `"LENGTH(2)"` for area,
+     * `"FORCE*LENGTH(-2)"` for pressure), or the phenomenon's own name for a base
+     * phenomenon (e.g. `"LENGTH"`). */
+    public definition: string;
+
+    /** Creates a phenomenon. `definition` is mandatory; `init` carries the rest. */
+    public constructor(name: string, definition: string, init?: SchemaItemInit) {
+      super(name);
+      this.definition = definition;
+      if (init) {
+        this.label = init.label;
+        this.description = init.description;
+      }
+    }
+  }
+
+  /** Complementary data accepted by the {@link Unit} constructor. */
+  export interface UnitInit extends SchemaItemInit {
+    /** Numerator of the factor relating this unit to its definition. */
+    numerator?: number;
+    /** Denominator of the factor relating this unit to its definition. */
+    denominator?: number;
+    /** Offset applied when converting to this unit. */
+    offset?: number;
+  }
+
+  /** A unit of measure. Its `definition` expresses it in terms of other units and constants;
+   * `numerator` / `denominator` / `offset` carry the conversion factor that expression is scaled by.
+   * @alpha
+   */
+  export class Unit extends SchemaItem {
+    public readonly schemaItemType = SchemaItemType.Unit;
+    /** Reference to the {@link Phenomenon} this unit measures. */
+    public phenomenon: LocalOrFullName;
+    /** Reference to the {@link UnitSystem} this unit belongs to. */
+    public unitSystem: LocalOrFullName;
+    /** Defining expression in terms of other units and constants (e.g. `"MILLI*M"`,
+     * `"M*SEC(-1)"`), or the unit's own name for a base unit (e.g. `"M"`). */
+    public definition: string;
+    /** Numerator of the factor relating this unit to its definition. `undefined` reads as `1.0`
+     * and is not persisted. */
+    public numerator?: number;
+    /** Denominator of the factor relating this unit to its definition. `undefined` reads as `1.0`
+     * and is not persisted. */
+    public denominator?: number;
+    /** Offset applied when converting to this unit (e.g. Celsius is kelvin with an offset of
+     * `-273.15`). `undefined` reads as `0.0` and is not persisted. */
+    public offset?: number;
+
+    /** Creates a unit. `phenomenon`, `unitSystem`, and `definition` are mandatory; `init` carries the rest. */
+    public constructor(name: string, phenomenon: LocalOrFullName, unitSystem: LocalOrFullName, definition: string, init?: UnitInit) {
+      super(name);
+      this.phenomenon = phenomenon;
+      this.unitSystem = unitSystem;
+      this.definition = definition;
+      if (init) {
+        this.label = init.label;
+        this.description = init.description;
+        this.numerator = init.numerator;
+        this.denominator = init.denominator;
+        this.offset = init.offset;
+      }
+    }
+  }
+
+  /** An inverted unit: the reciprocal of another unit, for quantities conventionally stated both
+   * ways (e.g. a slope as horizontal-per-vertical inverting vertical-per-horizontal). It derives its
+   * phenomenon and conversion from the unit it inverts, so unlike {@link Unit} it carries no
+   * definition of its own.
+   * @alpha
+   */
+  export class InvertedUnit extends SchemaItem {
+    public readonly schemaItemType = SchemaItemType.InvertedUnit;
+    /** Reference to the {@link Unit} this unit is the reciprocal of. */
+    public invertsUnit: LocalOrFullName;
+    /** Reference to the {@link UnitSystem} this unit belongs to. */
+    public unitSystem: LocalOrFullName;
+
+    /** Creates an inverted unit. `invertsUnit` and `unitSystem` are mandatory; `init` carries the rest. */
+    public constructor(name: string, invertsUnit: LocalOrFullName, unitSystem: LocalOrFullName, init?: SchemaItemInit) {
+      super(name);
+      this.invertsUnit = invertsUnit;
+      this.unitSystem = unitSystem;
+      if (init) {
+        this.label = init.label;
+        this.description = init.description;
+      }
+    }
+  }
+
+  /** Complementary data accepted by the {@link Constant} constructor. */
+  export interface ConstantInit extends SchemaItemInit {
+    /** Numerator of the constant's value. */
+    numerator?: number;
+    /** Denominator of the constant's value. */
+    denominator?: number;
+  }
+
+  /** A constant: a fixed quantity usable in unit definitions (e.g. `PI`, or `DECA` as `10`). Like a
+   * {@link Unit} it has a phenomenon and a defining expression, but no unit system - it is not a
+   * unit values are stated in.
+   * @alpha
+   */
+  export class Constant extends SchemaItem {
+    public readonly schemaItemType = SchemaItemType.Constant;
+    /** Reference to the {@link Phenomenon} this constant belongs to (e.g. a dimensionless ratio
+     * like `"NUMBER"` for `PI`). */
+    public phenomenon: LocalOrFullName;
+    /** Defining expression, like {@link Unit.definition} (`"ONE"` for a plain number). */
+    public definition: string;
+    /** Numerator of the constant's value (e.g. `3.14159...` for `PI`). `undefined` reads as `1.0`
+     * and is not persisted. */
+    public numerator?: number;
+    /** Denominator of the constant's value. `undefined` reads as `1.0` and is not persisted. */
+    public denominator?: number;
+
+    /** Creates a constant. `phenomenon` and `definition` are mandatory; `init` carries the rest. */
+    public constructor(name: string, phenomenon: LocalOrFullName, definition: string, init?: ConstantInit) {
+      super(name);
+      this.phenomenon = phenomenon;
+      this.definition = definition;
+      if (init) {
+        this.label = init.label;
+        this.description = init.description;
+        this.numerator = init.numerator;
+        this.denominator = init.denominator;
+      }
+    }
+  }
+
+  /** One unit of a {@link FormatComposite}: a reference to a `Unit` or `InvertedUnit`, plus an
+   * optional label overriding the unit's own when values are rendered. */
+  export interface FormatCompositeUnit {
+    /** Reference to the `Unit` or `InvertedUnit`. */
+    name: LocalOrFullName;
+    /** Label rendered after this unit's segment, overriding the unit's own display label. */
+    label?: string;
+  }
+
+  /** The composite specification of a {@link Format}: how a single quantity is split across up to
+   * four units of descending magnitude (e.g. feet-and-inches, degrees-minutes-seconds). */
+  export interface FormatComposite {
+    /** Separator between the unit segments. Empty or a single character; `undefined` reads as `" "`. */
+    spacer?: string;
+    /** Whether zero-magnitude segments are rendered. `undefined` reads as `true`. */
+    includeZero?: boolean;
+    /** The composite's units in descending magnitude, each with an optional label override. The spec
+     * requires one to four; the document does not enforce that. */
+    units: FormatCompositeUnit[];
+  }
+
+  /** Complementary data accepted by the {@link Format} constructor. */
+  export interface FormatInit extends SchemaItemInit {
+    precision?: DecimalPrecision | FractionalPrecision;
+    roundFactor?: number;
+    minWidth?: number;
+    showSignOption?: ShowSignOption;
+    formatTraits?: FormatTraits;
+    decimalSeparator?: string;
+    thousandSeparator?: string;
+    uomSeparator?: string;
+    scientificType?: ScientificType;
+    stationOffsetSize?: number;
+    stationSeparator?: string;
+    /** Copied into an owned {@link Format.composite} object. */
+    composite?: Readonly<FormatComposite>;
+  }
+
+  /** A format: how a quantity value is rendered as a string - numeric type and precision, separators,
+   * sign handling, and optionally a {@link FormatComposite} splitting the value across multiple
+   * units. Referenced by a `KindOfQuantity`'s presentation format strings, which may override the
+   * precision and composite units inline (e.g. `"f:DefaultRealU(4)[u:M]"`).
+   * Every field beyond `type` is optional, `undefined` meaning "not set": it reads as the noted
+   * default and is not persisted. Note the EC schema spec serializes only the decimal, fractional,
+   * scientific, and station types; the remaining {@link FormatType} members belong to the quantity
+   * formatting library and a compile diagnostic reports them on a schema format.
+   * @alpha
+   */
+  export class Format extends SchemaItem {
+    public readonly schemaItemType = SchemaItemType.Format;
+    /** The numeric rendering kind (decimal, fractional, scientific, station). */
+    public type: FormatType;
+    /** Precision of the numeric part: a {@link DecimalPrecision} (decimal places) for decimal-based
+     * types, a {@link FractionalPrecision} (fraction denominator) for fractional. `undefined` reads
+     * as the type's spec default. */
+    public precision?: DecimalPrecision | FractionalPrecision;
+    /** Rounding factor applied when the {@link FormatTraits.ApplyRounding} trait is set; `0` rounds
+     * to precision. `undefined` reads as `0`. */
+    public roundFactor?: number;
+    /** Minimum width of the formatted string, padded to fit; `undefined` pads nothing. */
+    public minWidth?: number;
+    /** How the sign of the value is rendered. `undefined` reads as {@link ShowSignOption.OnlyNegative}. */
+    public showSignOption?: ShowSignOption;
+    /** Bitmask of rendering traits ({@link FormatTraits.ShowUnitLabel}, ...). The wire form is a
+     * delimited string; this is the parsed flags value. `undefined` reads as no traits, same as
+     * {@link FormatTraits.Uninitialized} (`0`). */
+    public formatTraits?: FormatTraits;
+    /** Separator between the integer and fractional digits. Empty or a single character;
+     * `undefined` reads as `"."`. */
+    public decimalSeparator?: string;
+    /** Separator grouping the integer digits by thousands, rendered only with the
+     * {@link FormatTraits.Use1000Separator} trait. Empty or a single character; `undefined` reads as `","`. */
+    public thousandSeparator?: string;
+    /** Separator between the value and the unit label. Empty or a single character; `undefined`
+     * reads as `" "`. */
+    public uomSeparator?: string;
+    /** Scientific notation variant; the spec requires it when {@link Format.type} is scientific. */
+    public scientificType?: ScientificType;
+    /** Number of digits right of the station separator; the spec requires it when
+     * {@link Format.type} is station. */
+    public stationOffsetSize?: number;
+    /** Separator between the station and offset digits (`"3+25"`). Empty or a single character;
+     * `undefined` reads as `"+"`. */
+    public stationSeparator?: string;
+    /** The composite specification splitting the value across multiple units, if any. */
+    public composite?: FormatComposite;
+
+    /** Creates a format. `type` is mandatory; `init` carries the rest. */
+    public constructor(name: string, type: FormatType, init?: FormatInit) {
+      super(name);
+      this.type = type;
+      if (init) {
+        this.label = init.label;
+        this.description = init.description;
+        this.precision = init.precision;
+        this.roundFactor = init.roundFactor;
+        this.minWidth = init.minWidth;
+        this.showSignOption = init.showSignOption;
+        this.formatTraits = init.formatTraits;
+        this.decimalSeparator = init.decimalSeparator;
+        this.thousandSeparator = init.thousandSeparator;
+        this.uomSeparator = init.uomSeparator;
+        this.scientificType = init.scientificType;
+        this.stationOffsetSize = init.stationOffsetSize;
+        this.stationSeparator = init.stationSeparator;
+        if (init.composite) {
+          this.composite = {
+            spacer: init.composite.spacer,
+            includeZero: init.composite.includeZero,
+            units: init.composite.units.map((u) => ({ name: u.name, label: u.label })),
+          };
+        }
+      }
+    }
+
+    /** True when the given trait is set in {@link Format.formatTraits}. */
+    public hasFormatTrait(trait: FormatTraits): boolean {
+      return this.formatTraits !== undefined && (this.formatTraits & trait) === trait;
+    }
+  }
+
+  // ===== End of units / formats family =====
+
   /** Complementary data shared by every property kind's constructor. */
   export interface PropertyInit {
     label?: string;
@@ -1060,15 +1385,14 @@ export namespace Authoring {
   /** Union of every EC class kind. */
   export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
 
-  /** Union of every schema item kind modeled so far. The units / formats family (Unit, Format, ...)
-   * and View are not modeled yet; this grows as they are added. */
-  export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory;
+  /** Union of every schema item kind. */
+  export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory
+    | UnitSystem | Phenomenon | Unit | InvertedUnit | Constant | Format;
 
   /** Maps each {@link SchemaItemType} discriminant to its concrete item type, plus the
    * {@link AbstractSchemaItemType} groupings to their union types, so the typed accessors
    * ({@link SchemaDocument.getItemOfType}, {@link SchemaDocument.getItemsOfType}) can narrow either by
-   * a single kind or by a grouping (e.g. `Class` for any class kind). Grows as item kinds are added;
-   * the units / formats family is not modeled yet. */
+   * a single kind or by a grouping (e.g. `Class` for any class kind). */
   export interface SchemaItemTypeMap {
     [SchemaItemType.EntityClass]: EntityClass;
     [SchemaItemType.Mixin]: Mixin;
@@ -1078,6 +1402,12 @@ export namespace Authoring {
     [SchemaItemType.Enumeration]: Enumeration;
     [SchemaItemType.KindOfQuantity]: KindOfQuantity;
     [SchemaItemType.PropertyCategory]: PropertyCategory;
+    [SchemaItemType.UnitSystem]: UnitSystem;
+    [SchemaItemType.Phenomenon]: Phenomenon;
+    [SchemaItemType.Unit]: Unit;
+    [SchemaItemType.InvertedUnit]: InvertedUnit;
+    [SchemaItemType.Constant]: Constant;
+    [SchemaItemType.Format]: Format;
     [AbstractSchemaItemType.Class]: AnyClass;
     [AbstractSchemaItemType.SchemaItem]: AnySchemaItem;
   }
