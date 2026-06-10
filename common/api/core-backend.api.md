@@ -554,15 +554,17 @@ export namespace BlobContainer {
         label: string;
     }
     export interface MetadataResponse extends Metadata {
+        accountITwinId?: GuidString;
         containerId: string;
         iTwinId?: GuidString;
-        parentITwinId?: GuidString;
     }
     export type Provider = "azure" | "google";
     export interface QueryContainerProps {
         containerType?: GuidString;
         iModelId?: GuidString;
-        includeParentITwins?: boolean;
+        includeParentITwins?: boolean | {
+            filter: "accountOnly";
+        };
         iTwinId: GuidString;
         label?: GuidString;
     }
@@ -6432,11 +6434,6 @@ export interface SettingsContainer {
 export namespace SettingsContainers {
     export function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined>;
     export function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps[] | undefined>;
-    export interface QueryArgs {
-        includeParentITwins?: boolean;
-        iTwinId: GuidString;
-        label?: string;
-    }
 }
 
 // @internal
