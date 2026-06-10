@@ -218,22 +218,12 @@ export namespace Authoring {
   export type LocalOrFullName = string;
 
   /** A reference to another schema: invariant `name` + `version`, plus the `alias` this document uses
-   * for it within its own scope.
-   *
-   * The reference `alias` is authoritative here - it is what this schema qualifies the reference's items
-   * with in ECXML (`alias:Item`). It need not match the referenced schema's own `alias`, which is only a
-   * suggested default; the per-reference alias is what a schema actually uses (and what disambiguates two
-   * references that would otherwise collide on the same alias).
-   *
-   * `alias` is `string | null` rather than optional, so every reference makes an explicit choice and an
-   * author cannot silently forget it. Provide the alias this schema uses to qualify the reference's items
-   * in ECXML, or pass `null` to declare "no alias" - which is what the JSON deserializer does, since
-   * ECJSON qualifies items by full schema name (`Schema.Item`) and stores no alias. A `null` alias cannot
-   * be serialized to ECXML, which requires an alias on every `<ECSchemaReference>`; recovering one for a
-   * JSON-sourced document is a known limitation (see the refactor doc). */
+   * for it within its own scope. */
   export interface SchemaReference {
     name: string;
     version: string;
+    /** The alias is `string | null` rather than optional, so skipping it is an explicit decision.
+     * Serializing to XML requires an alias on every reference. The JSON format does not carry this field. */
     alias: string | null;
   }
 
@@ -452,11 +442,11 @@ export namespace Authoring {
    */
   export class Mixin extends ECClass {
     public readonly schemaItemType = SchemaItemType.Mixin;
-    /** The entity class this mixin may be applied to (3.2: `IsMixin.AppliesToEntityClass`). */
+    /** The entity class (including its derived classes) that this mixin may be applied to. (3.2: `IsMixin.AppliesToEntityClass`). */
     public appliesTo: LocalOrFullName;
 
     /** Creates a mixin. `appliesTo` is mandatory. A mixin is always abstract, so the modifier defaults
-     * to {@link ECClassModifier.Abstract} unless `init.modifier` overrides it. */
+     * to {@link ECClassModifier.Abstract}. */
     public constructor(name: string, appliesTo: LocalOrFullName, init?: ClassInit) {
       super(name, init);
       this.appliesTo = appliesTo;
@@ -677,8 +667,7 @@ export namespace Authoring {
     /** Reference to a PropertyCategory */
     category?: LocalOrFullName;
     /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`). Only meaningful on primitive
-     * and primitive-array properties (whose values are scalar quantities); allowed but ignored on
-     * struct, struct-array, and navigation properties. */
+     * and primitive-array properties (whose values are scalar quantities) */
     kindOfQuantity?: LocalOrFullName;
   }
 
@@ -701,7 +690,7 @@ export namespace Authoring {
     /** Reference to a PropertyCategory (e.g. `"MyDomain:Cat"`); resolved at compile. */
     public category?: LocalOrFullName;
     /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`); resolved at compile. Only
-     * meaningful on primitive / primitive-array properties; allowed but ignored elsewhere. */
+     * meaningful on primitive / primitive-array properties. */
     public kindOfQuantity?: LocalOrFullName;
     /** Property-level custom attributes. */
     public readonly customAttributes = new CustomAttributeSet();
