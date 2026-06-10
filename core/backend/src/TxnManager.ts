@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -21,6 +21,8 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { ChangesetReader } from "./ChangesetReader";
+import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -324,6 +326,7 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
+  private _disposed: boolean = false;
 
   /** Event raised before pull merge process begins.
    * @alpha
@@ -446,6 +449,30 @@ export class RebaseManager {
   }
 
   public constructor(private _iModel: BriefcaseDb) { }
+
+  /** Disposes of this RebaseManager, clearing all event listeners.
+   * Also calls [[RebaseHandler.dispose]] on the registered custom handler, if any.
+   * Subsequent calls are ignored.
+   * @alpha
+   */
+  public dispose(): void {
+    if (this._disposed)
+      return;
+    this._disposed = true;
+    this._customHandler?.dispose?.();
+    this.onPullMergeBegin.clear();
+    this.onRebaseBegin.clear();
+    this.onRebaseTxnBegin.clear();
+    this.onRebaseTxnEnd.clear();
+    this.onRebaseEnd.clear();
+    this.onPullMergeEnd.clear();
+    this.onApplyIncomingChangesBegin.clear();
+    this.onApplyIncomingChangesEnd.clear();
+    this.onReverseLocalChangesBegin.clear();
+    this.onReverseLocalChangesEnd.clear();
+    this.onDownloadChangesetsBegin.clear();
+    this.onDownloadChangesetsEnd.clear();
+  }
 
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
@@ -626,16 +653,15 @@ export class RebaseManager {
         throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
-      const changedInstances = BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id);
-      changedInstances.forEach((instance: InstancePatch) => {
-        if (instance.isIndirect) {
+      for await (const instance of BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id)) {
+        if (instance.$meta.isIndirectChange) {
           this._iModel.txns.withIndirectTxnMode(() => {
             this.applyInstancePatch(instance);
           });
-          return;
+          continue;
         }
         this.applyInstancePatch(instance);
-      });
+      }
 
       BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
     }
@@ -651,27 +677,34 @@ export class RebaseManager {
    */
   private applyInstancePatch(instance: InstancePatch) {
     const nativeDb = this._iModel[_nativeDb];
-    switch (instance.op) {
+    const { $meta, ...props } = instance;
+    switch ($meta.op) {
       case "Inserted": {
-        if (!instance.props)
+        if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
         const options = { forceUseId: true, useJsNames: true };
-        nativeDb.insertInstance(instance.props, options);
+        const id = nativeDb.insertInstance(props, options);
+        if (!Id64.isValidId64(id))
+          throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.id}`);
         break;
       }
       case "Updated": {
-        if (!instance.props)
+        if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
-        nativeDb.updateInstance(instance.props, { useJsNames: true });
+        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
         break;
       }
       case "Deleted": {
-        const key = { id: instance.key.id, classFullName: instance.key.classFullName };
-        nativeDb.deleteInstance(key, { useJsNames: true });
+        const key = { id: props.id, classFullName: props.className };
+        const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
         break;
       }
       default:
-        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${instance.op as string}'`);
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
     }
   }
 
@@ -865,6 +898,7 @@ export class TxnManager {
     this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
+      this.rebaser.dispose();
     });
   }
 
@@ -929,6 +963,26 @@ export class TxnManager {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
     // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
+  }
+
+  /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
+   * @internal */
+  protected _captureInstanceChanges(id: TxnIdString) {
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
+
+    // We shouldn't use strict mode here because lets think of a scenario:
+    // 1) an element is inserted in a txn which inserted some data in table A first row
+    // 2) In second txn, importing a schema increased the number of columns of table A
+    // 3) During rebase when we are reversing the schema txn, the newly added columns are not deleted
+    // so using strict mode will cause error in this case when we will try to capture changes for first txn
+    // because the number of columns in table A will be different than what it was when the changes were originally made.
+    // So to avoid this issue we are not using strict mode here.
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    while (reader.step()) {
+      pcu.appendFrom(reader);
+    }
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
@@ -1595,4 +1649,11 @@ export interface RebaseHandler {
    * @alpha
    */
   recompute(txn: TxnProps): Promise<void>;
+  /**
+   * Called when the owning [[RebaseManager]] is disposed (e.g. when the iModel is closed).
+   * Override this method to unsubscribe from events or release resources held by this handler.
+   *
+   * @alpha
+   */
+  dispose?(): void;
 }

@@ -17,7 +17,7 @@
     "browserslist": "latest", // https://github.com/browserslist/update-db#readme
     "glob@>=11.0.0 <11.1.0": "^11.1.0", // https://github.com/advisories/GHSA-5j98-mcp5-4vw2 cpx2>glob
     "axios@<1.0.0": "^1.13.5", // https://github.com/advisories/GHSA-43fc-jf86-j433
-    "serialize-javascript": "^7.0.3", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq mocha>serialize-javascript (related to CVE-2020-7660)
+    "serialize-javascript": "^7.0.5", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq and https://github.com/advisories/GHSA-qj8w-gfj5-8c6v mocha>serialize-javascript
     "lodash@>=4.0.0 <=4.17.23": "^4.18.0" // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
   },
   // A list of temporary advisories excluded from the High and Critical list.
@@ -33,7 +33,8 @@
           "CVE-2024-45296", // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
           "CVE-2025-27152", // https://github.com/advisories/GHSA-jr5f-v2jv-69x6 azurite>@azure/ms-rest-js>axios
           "CVE-2025-58754", // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj azurite>@azure/ms-rest-js>axios
-          "CVE-2026-26996" // https://github.com/advisories/GHSA-3ppc-4f35-3m26 mocha>glob>minimatch
+          "CVE-2026-26996", // https://github.com/advisories/GHSA-3ppc-4f35-3m26 mocha>glob>minimatch
+          "CVE-2026-47429" // https://github.com/advisories/GHSA-5xrq-8626-4rwp vitest (dev-only). Only exploitable when the Vitest UI server is running; this repo never uses @vitest/ui or `vitest --ui`. Temporary until vitest is bumped to >=4.1.0. core/bentley>vitest, core/frontend>vitest
         ]
       }
     }

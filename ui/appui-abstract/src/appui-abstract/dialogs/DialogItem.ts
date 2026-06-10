@@ -97,7 +97,7 @@ export class DialogProperty<T> {
       return {
         value: this._value,
         displayValue: this._displayValue,
-      } as DialogItemValue;
+      };
     // istanbul ignore next
     throw new Error("Not valid primitive type");
   }

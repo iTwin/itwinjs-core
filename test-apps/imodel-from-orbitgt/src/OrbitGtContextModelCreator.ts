@@ -75,12 +75,18 @@ export class OrbitGtContextIModelCreator {
 
         const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
         const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
-        const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
+        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5);
+        if (undefined === ecefCenter)
+          throw new TypeError("Unable to determine the OrbitGT ECEF center.");
+        const cartoCenter = Cartographic.fromEcef(ecefCenter);
+        if (undefined === cartoCenter)
+          throw new TypeError("Unable to convert the OrbitGT ECEF center to cartographic coordinates.");
         cartoCenter.height = 0;
         const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         this.iModelDb.setEcefLocation(ecefLocation);
-        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        const ecefToWorld = ecefLocation.getTransform().inverse();
+        if (undefined === ecefToWorld)
+          throw new TypeError("Unable to determine the OrbitGT world transform.");
         worldRange = ecefToWorld.multiplyRange(ecefRange);
         geoLocated = true;
       }

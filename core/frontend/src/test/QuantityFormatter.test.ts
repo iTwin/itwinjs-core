@@ -6,7 +6,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import { FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
+import { FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
@@ -590,7 +590,7 @@ describe("Quantity formatter", async () => {
 
       // Exact values do not exist in document
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 0.3048006, "Units.M");
-      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 79200.0 / 3937.0, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
     });
@@ -634,6 +634,16 @@ describe("Quantity formatter", async () => {
       expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["foobar"] });
       expect(spy.mock.calls[1][0]).toEqual({ formatsChanged: "all" });
 
+    });
+
+    it("getFormat should honor the requested unit system", async () => {
+      const provider = new QuantityTypeFormatsProvider();
+      const metricFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "metric");
+      const imperialFormat = await provider.getFormat("DefaultToolsUnits.LENGTH", "imperial");
+      expect(metricFormat).toBeDefined();
+      expect(imperialFormat).toBeDefined();
+      // Before the fix, the requested system was ignored and both returned the active-system format.
+      expect(metricFormat).not.toEqual(imperialFormat);
     });
 
     it("should not leak listeners when formatsProvider is replaced multiple times", () => {
@@ -721,7 +731,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
 
     await quantityFormatter.setActiveUnitSystem("metric");
     await testFormatting(QuantityType.Length, 1000.0, `1000 m`);
@@ -744,7 +754,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.84 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
-    await testFormatting(QuantityType.Volume, 1000.0, "35314.6662 ft³");
+    await testFormatting(QuantityType.Volume, 1000.0, "35314.6667 ft³");
 
     await quantityFormatter.setActiveUnitSystem("usSurvey");
     await testFormatting(QuantityType.Length, 1000.0, `3280.8333 ft`);
@@ -973,7 +983,7 @@ describe("FormatSpecHandle", () => {
     expect(qf.onFormattingReady.numberOfListeners).toBe(initialCount);
   });
 
-  it("refreshes specs when onFormattingReady fires", async () => {
+  it("FormatSpecHandle reflects registry additions without waiting for onFormattingReady", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
 
@@ -981,9 +991,7 @@ describe("FormatSpecHandle", () => {
     const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
     expect(handle.formatterSpec).toBeUndefined();
 
-    // Populate registry then trigger the event
     await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: testFormatProps });
-    qf.onFormattingReady.emit();
 
     expect(handle.formatterSpec).toBeDefined();
     expect(handle.parserSpec).toBeDefined();
@@ -1094,6 +1102,24 @@ describe("Multi-system KoQ registry", () => {
     expect(nameMap!.has("Units.FT")).toBe(true);
   });
 
+  it("getSpecsByName returns the requested system projection", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+    // qf active system defaults to "imperial".
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.FT", formatProps: simpleDecimalFormat, system: "imperial" });
+
+    // No options → active (imperial) projection: only the imperial-registered persistence unit.
+    const activeMap = qf.getSpecsByName("TestKoQ.LENGTH");
+    expect(activeMap?.has("Units.FT")).toBe(true);
+    expect(activeMap?.has("Units.M")).toBe(false);
+
+    // Explicit metric option → metric projection: only the metric-registered persistence unit.
+    const metricMap = qf.getSpecsByName("TestKoQ.LENGTH", { system: "metric" });
+    expect(metricMap?.has("Units.M")).toBe(true);
+    expect(metricMap?.has("Units.FT")).toBe(false);
+  });
+
   it("getSpecsByNameAndUnit returns undefined for unregistered system", async () => {
     const qf = new QuantityFormatter();
     await qf.onInitialized();
@@ -1125,6 +1151,49 @@ describe("Multi-system KoQ registry", () => {
     const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
     expect(handle.system).toBeUndefined();
     expect(handle.formatterSpec).toBeDefined();
+    handle[Symbol.dispose]();
+  });
+
+  it("FormatSpecHandle read inside onFormattingReady observes current system state", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "imperial" });
+    await qf.addFormattingSpecsToRegistry({ name: "TestKoQ.LENGTH", persistenceUnitName: "Units.M", formatProps: simpleDecimalFormat, system: "metric" });
+
+    const handleRef: { current: ReturnType<typeof qf.getFormatSpecHandle> | undefined } = { current: undefined };
+    const observedSpecs: Array<FormatterSpec | undefined> = [];
+    const removeReadyListener = qf.onFormattingReady.addListener(() => {
+      if (!handleRef.current)
+        throw new Error("Expected FormatSpecHandle to be created before onFormattingReady fired");
+
+      observedSpecs.push(handleRef.current.formatterSpec);
+    });
+
+    const handle = qf.getFormatSpecHandle("TestKoQ.LENGTH", "Units.M");
+    handleRef.current = handle;
+    const imperialFormatterSpec = qf.getSpecsByNameAndUnit({
+      name: "TestKoQ.LENGTH",
+      persistenceUnitName: "Units.M",
+      system: "imperial",
+    })?.formatterSpec;
+    const metricFormatterSpec = qf.getSpecsByNameAndUnit({
+      name: "TestKoQ.LENGTH",
+      persistenceUnitName: "Units.M",
+      system: "metric",
+    })?.formatterSpec;
+
+    expect(imperialFormatterSpec).toBeDefined();
+    expect(metricFormatterSpec).toBeDefined();
+    expect(handle.formatterSpec).toBe(imperialFormatterSpec);
+
+    await qf.setActiveUnitSystem("metric");
+
+    expect(observedSpecs).toHaveLength(1);
+    expect(observedSpecs[0]).toBe(metricFormatterSpec);
+    expect(observedSpecs[0]).not.toBe(imperialFormatterSpec);
+
+    removeReadyListener();
     handle[Symbol.dispose]();
   });
 });

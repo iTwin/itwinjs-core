@@ -289,6 +289,7 @@ import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -5162,8 +5163,12 @@ export abstract class IModelConnection extends IModel {
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
+    // @internal
+    protected invalidateSchemaViewIfChanged(): Promise<void>;
     get isBlank(): boolean;
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
@@ -6377,6 +6382,8 @@ export class MapTile extends RealityTile {
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
+    // @internal
+    computeVisibilityFactor(args: TileDrawArgs): number;
     // @internal (undocumented)
     protected _cornerRays?: Ray3d[];
     // @internal (undocumented)
@@ -8130,7 +8137,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined;
+    getSpecsByName(name: string, options?: {
+        system?: UnitSystemKey;
+    }): ReadonlyMap<string, FormattingSpecEntry> | undefined;
     // @beta
     getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
@@ -8211,7 +8220,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -11855,6 +11864,8 @@ export class ToolAdmin {
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
     protected filterViewport(vp: ScreenViewport): boolean;
     // @internal
+    finishEditCommandForTxnOperation(): Promise<boolean>;
+    // @internal
     forgetViewport(vp: ScreenViewport): void;
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
@@ -11888,6 +11899,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean;
     processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -12067,6 +12079,8 @@ export class ToolSettings {
     static enableVirtualCursorForLocate: boolean;
     // @beta
     static enableVolumeSelection: boolean;
+    // @beta
+    static escapeMovesFocusToHome: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
@@ -13644,6 +13658,13 @@ export class ViewPose3d extends ViewPose {
     get target(): Point3d;
 }
 
+// @beta
+export interface ViewRealityModel {
+    readonly description: string | undefined;
+    readonly name: string;
+    readonly treeRef: TileTreeReference;
+}
+
 // @public
 export class ViewRect {
     constructor(left?: number, top?: number, right?: number, bottom?: number);
@@ -13773,12 +13794,13 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     abstract getModelTreeRefs(): Iterable<TileTreeReference>;
     abstract getOrigin(): Point3d;
+    // @beta
+    getRealityModelTreeRefs(): Iterable<ViewRealityModel>;
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
     static getStandardViewMatrix(id: StandardViewId): Matrix3d;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getTargetPoint(result?: Point3d): Point3d;
-    // (undocumented)
     getTileTreeRefs(): Iterable<TileTreeReference>;
     getUpVector(point: Point3d): Vector3d;
     getViewClip(): ClipVector | undefined;

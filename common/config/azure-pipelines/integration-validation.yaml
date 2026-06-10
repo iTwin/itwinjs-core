@@ -48,15 +48,15 @@ jobs:
         Linux_node_24_x:
           imageName: ubuntu-latest
           poolName:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
         Windows_node_24_x:
           imageName: windows-latest
           poolName:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
         MacOS_node_24_x:
           imageName: macos-latest
           poolName: "iModelTechMacArm"
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
     pool:
       name: $(poolName)
       vmImage: $(imageName)

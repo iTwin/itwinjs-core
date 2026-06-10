@@ -102,6 +102,7 @@ describe("WithQueryReaderTests", () => {
   });
 
   it("checking rowFormat UseJsPropertyNames - values accessed by JavaScript property name", () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const config = new QueryOptionsBuilder().setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
     iModel.withQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element", (reader) => {
       assert.isTrue(reader.step());

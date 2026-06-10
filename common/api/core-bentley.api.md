@@ -1390,6 +1390,11 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     reset(ids?: CompressedId64Set): void;
 }
 
+// @beta
+export type NestedValueOf<T> = ValueOf<{
+    [K in keyof T]: ValueOf<T[K]>;
+}>;
+
 // @public
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
 
@@ -1830,6 +1835,12 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
+
+// @beta
+export type ValueOf<T> = T[keyof T];
+
+// @beta
+export function wrapTimerCallback(timerPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
 
 // @public
 export class YieldManager {

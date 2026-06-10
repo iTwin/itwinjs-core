@@ -2190,6 +2190,7 @@ export interface DbCloudContainerInfo {
     readonly containerId: string;
     readonly dbName?: string;
     readonly description?: string;
+    readonly includePrerelease?: boolean;
     readonly isPublic?: boolean;
     readonly storageType: "azure" | "google";
     readonly version?: string;
@@ -2288,31 +2289,19 @@ export enum DbResponseKind {
 
 // @internal (undocumented)
 export enum DbResponseStatus {
-    // (undocumented)
-    Cancel = 2,/* query ran to completion. */
-    // (undocumented)
-    Done = 1,/*  Requested by user.*/
-    // (undocumented)
-    Error = 100,/*  query was running but ran out of quota.*/
-    // (undocumented)
-    Error_BlobIO_OpenFailed = 105,/*  query time quota expired while it was in queue.*/
-    // (undocumented)
-    Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
-    // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
-    // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  generic error*/
-    // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
-    // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
-    // (undocumented)
-    Partial = 3,/*  ecsql failed to serialized row to json.*/
-    // (undocumented)
-    QueueFull = 5,/*  ecsql binding failed.*/
-    // (undocumented)
-    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
-    // (undocumented)
+    Cancel = 2,
+    Done = 1,
+    Error = 100,
+    Error_BlobIO_OpenFailed = 105,
+    Error_BlobIO_OutOfRange = 106,
+    Error_ECSql_BindingFailed = 104,
+    Error_ECSql_PreparedFailed = 101,
+    Error_ECSql_RowToJsonFailed = 103,
+    Error_ECSql_StepFailed = 102,
+    NotOpen = 7,
+    Partial = 3,
+    QueueFull = 5,
+    ShuttingDown = 6,
     Timeout = 4
 }
 
@@ -7922,6 +7911,7 @@ export interface QueryQuota {
 export enum QueryRowFormat {
     UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
+    // @deprecated
     UseJsPropertyNames = 2
 }
 
@@ -8615,8 +8605,14 @@ export interface RequestNewBriefcaseProps {
     readonly iTwinId: GuidString;
 }
 
+// @internal
+export function resolveNavProp(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): RelatedElementProps;
+
+// @internal
+export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
+
 // @internal (undocumented)
-export class ResponseLike implements Response {
+export class ResponseLike {
     constructor(data: any);
     // (undocumented)
     arrayBuffer(): Promise<ArrayBuffer>;
@@ -9998,7 +9994,8 @@ export interface SpatialClassifiersContainer {
 
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-    // (undocumented)
+    modelSelector?: RelatedElementProps;
+    // @deprecated
     modelSelectorId: ViewIdString;
 }
 
@@ -11479,7 +11476,8 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
     // (undocumented)
     angle: AngleProps;
-    // (undocumented)
+    baseModel?: RelatedElementProps;
+    // @deprecated
     baseModelId: Id64String;
     // (undocumented)
     delta: XYProps;
@@ -11502,11 +11500,13 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
-    // (undocumented)
+    categorySelector?: RelatedElementProps;
+    // @deprecated
     categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
-    // (undocumented)
+    displayStyle?: RelatedElementProps;
+    // @deprecated
     displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {

@@ -234,7 +234,7 @@ export class KeySet {
       value.forEach((key) => this.add(key, pred));
     } else if (!pred || pred(value)) {
       if (Key.isEntityProps(value)) {
-        this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
+        this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) });
       } else if (Key.isInstanceKey(value)) {
         const normalizedClassName = normalizeClassName(value.className);
         const lcClassName = normalizedClassName.toLowerCase();
@@ -282,7 +282,7 @@ export class KeySet {
         this.delete(key);
       }
     } else if (Key.isEntityProps(value)) {
-      this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
+      this.delete({ className: value.classFullName, id: value.id! });
     } else if (Key.isInstanceKey(value)) {
       const normalizedClassName = normalizeClassName(value.className);
       const set = this._instanceKeys.get(normalizedClassName.toLowerCase());
@@ -305,7 +305,7 @@ export class KeySet {
    */
   public has(value: Key): boolean {
     if (Key.isEntityProps(value)) {
-      return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
+      return this.has({ className: value.classFullName, id: value.id! });
     }
     if (Key.isInstanceKey(value)) {
       const normalizedClassName = normalizeClassName(value.className);

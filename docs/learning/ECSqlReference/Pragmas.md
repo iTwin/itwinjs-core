@@ -13,11 +13,12 @@ PRAGMA help
 | checksum                      | global | checksum([ecdb_schema\|ecdb_map\|sqlite_schema]) return sha3 checksum for data. |
 | ecdb_ver                      | global | return current and file profile versions                                        |
 | experimental_features_enabled | global | enable/disable experimental features                                            |
-| validate_ecsql_writes        | global | enable/disable validation for values in an ecsql statement                      |
+| validate_ecsql_writes         | global | enable/disable validation for values in an ecsql statement                      |
 | explain_query                 | global | explain query plan                                                              |
 | help                          | global | return list of pragma supported                                                 |
 | integrity_check               | global | performs integrity checks on ECDb                                               |
 | parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                                   |
+| schema_view                   | global | returns a curated subset of schema metadata as a binary blob                    |
 | disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                          |
 
 ## `PRAGMA checksum`
@@ -66,8 +67,8 @@ Print out the underlying sqlite/native sql as a string. This will help debugging
 PRAGMA sqlite_sql([SELECT * FROM meta.ECClassDef WHERE Name='Element'])
 ```
 
-| sqlite_sql |
-| ---------- |
+| sqlite_sql                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | SELECT [ECClassDef].[ECInstanceId],[ECClassDef].[ECClassId],[ECClassDef].[SchemaId],[ECClassDef].[SchemaRelECClassId],[ECClassDef].[Name],[ECClassDef].[DisplayLabel],[ECClassDef].[Description],[ECClassDef].[Type],[ECClassDef].[Modifier],[ECClassDef].[CustomAttributeContainerType],[ECClassDef].[RelationshipStrength],[ECClassDef].[RelationshipStrengthDirection] FROM (SELECT [Id] ECInstanceId,15 ECClassId,[SchemaId],(CASE WHEN [SchemaId] IS NULL THEN NULL ELSE 16 END) [SchemaRelECClassId],[Name],[DisplayLabel],[Description],[Type],[Modifier],[CustomAttributeContainerType],[RelationshipStrength],[RelationshipStrengthDirection] FROM [main].[ec_Class]) [ECClassDef] WHERE [ECClassDef].[Name]='Element' |
 
 ## `PRAGMA experimental_features_enabled`
@@ -114,9 +115,9 @@ to check if flag is currently set.
 PRAGMA validate_ecsql_writes
 ```
 
-| validate_ecsql_writes        |
-| ----------------------------- |
-| False                         |
+| validate_ecsql_writes |
+| --------------------- |
+| False                 |
 
 ## `PRAGMA explain_query`
 
@@ -126,10 +127,10 @@ Prints out a high level description of the strategy or plan SQLite uses to imple
 PRAGMA explain_query ('SELECT * FROM bis.GeometricElement3d')
 ```
 
-| id | parent | notused | detail |
-| -- | ------ | ------- | ------ |
-| 3  | 0      | 215     | SCAN main.bis_GeometricElement3d |
-| 5  | 0      | 45      | SEARCH main.bis_Element USING INTEGER PRIMARY KEY (rowid=?) |
+| id  | parent | notused | detail                                                      |
+| --- | ------ | ------- | ----------------------------------------------------------- |
+| 3   | 0      | 215     | SCAN main.bis_GeometricElement3d                            |
+| 5   | 0      | 45      | SEARCH main.bis_Element USING INTEGER PRIMARY KEY (rowid=?) |
 
 ## `PRAGMA integrity_check` (experimental)
 
@@ -201,5 +202,41 @@ PRAGMA parse_tree ('SELECT ECClassId, CodeValue FROM bis.GeometricElement3d') EC
   }
 }
 ```
+
+## `PRAGMA schema_view`
+
+Returns a curated subset of EC schema metadata from the connection as a single compact binary blob. This is used internally by `SchemaView` to hydrate a lightweight, read-only schema cache in a single round-trip instead of loading each schema individually. The subset is described in [SchemaView - What is included / excluded](../metadata/SchemaView.md#what-is-included).
+
+The pragma accepts an optional integer argument to select the binary format version. When omitted, the latest supported version is returned (currently v1).
+
+```sql
+PRAGMA schema_view
+```
+
+Explicitly request format version 1:
+
+```sql
+PRAGMA schema_view(1)
+```
+
+The result is a single row with the following columns:
+
+| Column        | Type    | Description                                                                   |
+| ------------- | ------- | ----------------------------------------------------------------------------- |
+| format        | string  | Format identifier (currently `binary`)                                        |
+| formatVersion | integer | The format version of the returned blob                                       |
+| data          | binary  | The schema metadata blob                                                      |
+| schemaToken   | string  | SHA3-256 hash of the `ecdb_schema` tables, usable as a cache-invalidation key |
+
+The pragma is read-only. Attempting to set a value returns an error.
+
+Passing an unsupported format version returns an error:
+
+```sql
+-- ERROR: unsupported format version
+PRAGMA schema_view(99)
+```
+
+The pragma works against any ECDb profile from `4.0.0.1` onward; older files do not need to be upgraded first. On profile `4.0.0.1` only, `KindOfQuantity` persistence and presentation strings are returned in legacy FUS format rather than EC3.2; all other data is unaffected. See [SchemaViewBinaryFormat - ECDb Profile Compatibility](../metadata/SchemaViewBinaryFormat.md#ecdb-profile-compatibility) for details.
 
 [ECSql Syntax](./index.md)

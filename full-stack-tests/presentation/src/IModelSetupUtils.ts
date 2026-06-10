@@ -13,11 +13,14 @@ import {
   CategoryProps,
   Code,
   ElementAspectProps,
+  ElementProps,
+  ExternalSourceProps,
   GeometricModel3dProps,
   IModel,
   InformationPartitionElementProps,
   LocalFileName,
   PhysicalElementProps,
+  RepositoryLinkProps,
 } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 
@@ -114,7 +117,7 @@ export function importSchema(mochaContext: Mocha.Context, imodel: { importSchema
 }
 
 /** Insert a document partition element into created imodel. Return created element's className and Id. */
-export function insertDocumentPartitionTxn(txn: EditTxn, db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
+function insertDocumentPartitionTxn(txn: EditTxn, db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
   const id = txn.insertElement({
     classFullName: "BisCore:DocumentPartition",
     model: IModel.repositoryModelId,
@@ -136,7 +139,7 @@ export function insertPhysicalModelWithPartition(props: { db: IModelDb; codeValu
   return insertPhysicalSubModel({ ...baseProps, modeledElementId: partitionKey.id });
 }
 
-export function insertPhysicalPartitionTxn(
+function insertPhysicalPartitionTxn(
   txn: EditTxn,
   props: { db: IModelDb; codeValue: string; parentId: Id64String } & Partial<Omit<InformationPartitionElementProps, "id" | "parent" | "code">>,
 ) {
@@ -162,7 +165,7 @@ export function insertPhysicalPartition(
   return withEditTxn(props.db, (txn) => insertPhysicalPartitionTxn(txn, props));
 }
 
-export function insertPhysicalSubModelTxn(
+function insertPhysicalSubModelTxn(
   txn: EditTxn,
   props: { db: IModelDb; modeledElementId: Id64String } & Partial<Omit<GeometricModel3dProps, "id" | "modeledElement" | "parentModel">>,
 ) {
@@ -184,7 +187,7 @@ export function insertPhysicalSubModel(
 }
 
 /** Insert a spatial category element into created imodel. Return created element's className and Id. */
-export function insertSpatialCategoryTxn(
+function insertSpatialCategoryTxn(
   txn: EditTxn,
   props: { db: IModelDb; codeValue: string; modelId?: Id64String } & Partial<Omit<CategoryProps, "id" | "model" | "parent" | "code">>,
 ) {
@@ -208,7 +211,7 @@ export function insertSpatialCategory(
 }
 
 /** Insert a physical element into created imodel. Return created element's className and Id. */
-export function insertPhysicalElementTxn<TAdditionalProps extends object>(
+function insertPhysicalElementTxn<TAdditionalProps extends object>(
   txn: EditTxn,
   props: { db: IModelDb; modelId: Id64String; categoryId: Id64String; parentId?: Id64String } & Partial<
     Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
@@ -225,14 +228,14 @@ export function insertPhysicalElementTxn<TAdditionalProps extends object>(
     code: Code.createEmpty(),
     ...(parentId
       ? {
-        parent: {
-          id: parentId,
-          relClassName: `BisCore:PhysicalElementAssemblesElements`,
-        },
-      }
+          parent: {
+            id: parentId,
+            relClassName: `BisCore:PhysicalElementAssemblesElements`,
+          },
+        }
       : undefined),
     ...elementProps,
-  } as PhysicalElementProps);
+  });
   return { className, id };
 }
 
@@ -246,7 +249,7 @@ export function insertPhysicalElement<TAdditionalProps extends object>(
 }
 
 /** Insert an aspect into created imodel, return its key */
-export function insertElementAspectTxn<TAdditionalProps extends object>(
+function insertElementAspectTxn<TAdditionalProps extends object>(
   txn: EditTxn,
   props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
 ) {
@@ -258,8 +261,11 @@ export function insertElementAspectTxn<TAdditionalProps extends object>(
     element: {
       id: elementId,
     },
+    scope: {
+      id: elementId,
+    },
     ...aspectProps,
-  } as ElementAspectProps);
+  });
   return { className, id };
 }
 
@@ -267,6 +273,58 @@ export function insertElementAspect<TAdditionalProps extends object>(
   props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
 ) {
   return withEditTxn(props.db, (txn) => insertElementAspectTxn(txn, props));
+}
+
+export function insertExternalSource(
+  props: { db: IModelDb; classFullName?: string; parentId?: Id64String; repositoryLinkId?: Id64String } & Partial<
+    Omit<ExternalSourceProps, "id" | "repository" | "parent">
+  >,
+) {
+  const { db, classFullName, parentId, repositoryLinkId, ...externalSourceProps } = props;
+  const defaultClassName = "BisCore:ExternalSource";
+  const className = classFullName ?? defaultClassName;
+  return withEditTxn(db, (txn) => {
+    const id = txn.insertElement({
+      classFullName: className,
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+      parent: parentId
+        ? {
+            relClassName: "BisCore:ElementOwnsChildElements",
+            id: parentId,
+          }
+        : undefined,
+      repository: repositoryLinkId
+        ? {
+            id: repositoryLinkId,
+            relClassName: "BisCore:ExternalSourceIsInRepository",
+          }
+        : undefined,
+      ...externalSourceProps,
+    } as RepositoryLinkProps);
+    return { className, id };
+  });
+}
+
+export function insertRepositoryLink(
+  props: { db: IModelDb; classFullName?: string; repositoryUrl?: string; repositoryLabel?: string } & Partial<
+    Omit<RepositoryLinkProps, "id" | "model" | "url" | "userLabel">
+  >,
+) {
+  const { db, classFullName, repositoryUrl, repositoryLabel, ...repoLinkProps } = props;
+  const defaultClassName = "BisCore:RepositoryLink";
+  const className = classFullName ?? defaultClassName;
+  return withEditTxn(db, (txn) => {
+    const id = txn.insertElement({
+      classFullName: className,
+      model: IModel.repositoryModelId,
+      url: repositoryUrl,
+      userLabel: repositoryLabel,
+      code: Code.createEmpty(),
+      ...repoLinkProps,
+    } satisfies RepositoryLinkProps as ElementProps);
+    return { className, id };
+  });
 }
 
 function setupOutputFileLocation(fileName: string): LocalFileName {

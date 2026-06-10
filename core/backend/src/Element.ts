@@ -54,6 +54,57 @@ export interface OnElementIdArg extends OnElementArg {
   federationGuid: GuidString;
 }
 
+/**
+ * Per-element argument supplied to the [[Element.onBulkDeleted]] static method.
+ * @beta
+ */
+export interface OnBulkDeleteArg {
+  /** The Id of the element that was deleted. */
+  id: Id64String;
+  /** The ModelId of the element that was deleted. */
+  model: Id64String;
+  /** The federationGuid of the element that was deleted. Absent when the element had no federation GUID. */
+  federationGuid?: GuidString;
+  /** The Id of the sub-model that was deleted along with this element. Present only when this
+   * element was a sub-model root (i.e. modeled by a [[Model]] that is also being deleted).
+   * When set, [[Element.onSubModelDelete]] and [[Element.onSubModelDeleted]] are called for this entry. */
+  subModelId?: Id64String;
+}
+
+/**
+ * Batch argument for the [[Element.onBulkDeleted]] static method.
+ * @beta
+ */
+export interface OnBulkDeletedBatchArg {
+  /** The iModelDb on which the bulk delete is being performed. */
+  iModel: IModelDb;
+  /** The elements that were deleted. */
+  elements: OnBulkDeleteArg[];
+}
+
+/**
+ * Per-element argument supplied to the [[Element.onBulkChildDeleted]] static method.
+ * Supplied once per deleted child whose parent element was *not* itself deleted in the same operation.
+ * @beta
+ */
+export interface OnBulkChildDeleteArg {
+  /** The Id of the parent element whose child was deleted. */
+  parentId: Id64String;
+  /** The Id of the child element that was deleted. */
+  childId: Id64String;
+}
+
+/**
+ * Batch argument for the [[Element.onBulkChildDeleted]] static method.
+ * @beta
+ */
+export interface OnBulkChildDeletedBatchArg {
+  /** The iModelDb on which the bulk delete is being performed. */
+  iModel: IModelDb;
+  /** The deleted child elements whose parent ECClass matches this class, grouped in this batch. */
+  elements: OnBulkChildDeleteArg[];
+}
+
 /** Argument for the `Element.onChildXxx` static methods
  * @beta
  */
@@ -276,6 +327,45 @@ export class Element extends Entity {
     arg.iModel.models[_cache].delete(arg.model);
   }
 
+  /** Called after a batch of Elements of this class were deleted in a bulk delete operation.
+   *
+   * The default implementation fires all JS notifications that would normally be fired
+   * per-element in the single-element delete path:
+   * 1. **[[onDeleted]]** — for every element; preserves any user overrides.
+   * 2. **[[onSubModelDelete]] + [[onSubModelDeleted]]** — for sub-model root elements
+   *    (`subModelId` is set), matching the order of the single-element path.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Elements that were deleted.
+   * @beta
+   */
+  protected static onBulkDeleted(arg: OnBulkDeletedBatchArg): void {
+    for (const el of arg.elements) {
+      this.onDelete({ iModel: arg.iModel, id: el.id, model: el.model, federationGuid: el.federationGuid ?? "" });
+      this.onDeleted({ iModel: arg.iModel, id: el.id, model: el.model, federationGuid: el.federationGuid ?? "" });
+
+      if (el.subModelId !== undefined) {
+        this.onSubModelDelete({ iModel: arg.iModel, subModelId: el.subModelId });
+        this.onSubModelDeleted({ iModel: arg.iModel, subModelId: el.subModelId });
+      }
+    }
+  }
+
+  /** Called after a batch of child Elements of this class's instances were deleted in a bulk delete operation.
+   *
+   * The default implementation calls [[onChildDelete]] and [[onChildDeleted]] for every entry in the batch.
+   *
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the *parent* Element whose children were deleted.
+   * @beta
+   */
+  protected static onBulkChildDeleted(arg: OnBulkChildDeletedBatchArg): void {
+    for (const el of arg.elements) {
+      this.onChildDelete({ iModel: arg.iModel, parentId: el.parentId, childId: el.childId });
+      this.onChildDeleted({ iModel: arg.iModel, parentId: el.parentId, childId: el.childId });
+    }
+  }
+
   /** Called when an element with an instance of this class as its parent is about to be deleted.
    * @note throw an exception if the element should not be deleted
    * @note implementers should not presume that the element was deleted if this method does not throw,
@@ -420,7 +510,7 @@ export class Element extends Entity {
    * * none of the element's outputs have been processed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
-   * @deprecated Use onBeforeOutputsHandledArg instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use onBeforeOutputsHandledArg instead.
    */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -448,7 +538,7 @@ export class Element extends Entity {
    * This method is not called if none of the element's inputs were changed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
-   * @deprecated Use onAllInputsHandledArg instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use onAllInputsHandledArg instead.
    */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -499,7 +589,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getMetaData` provided by the parent class `Entity` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` instead.
    *
    * @example
    * ```typescript
@@ -507,13 +597,16 @@ export class Element extends Entity {
    * const metaData: EntityMetaData | undefined = element.getClassMetaData();
    *
    * // Replacement:
-   * const metaData: EntityClass = await element.getMetaData();
+   * const view = await element.iModel.getSchemaView();
+   * const cls = view.findClass(element.classFullName);
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
-  /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.*/
+  /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.
+   * @deprecated in 5.10.0 - will not be removed until after 2026-09-03. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` to retrieve a `SchemaView.Class`. The returned type differs from `EntityClass` and offers a synchronous, snapshot-style API.
+   */
   public override async getMetaData(): Promise<EntityClass> {
     if (this._metadata && EntityClass.isEntityClass(this._metadata)) {
       return this._metadata;
@@ -579,7 +672,7 @@ export class Element extends Entity {
   public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Element into the iModel.
-   * @deprecated Use Element.insert(txn) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Element.insert(txn) instead.
    */
   public insert(): Id64String;
   public insert(txn?: EditTxn): Id64String {
@@ -593,7 +686,7 @@ export class Element extends Entity {
   public update(txn: EditTxn): void;
   /**
    * Update this Element in the iModel.
-   * @deprecated Use Element.update(txn) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Element.update(txn) instead.
    */
   public update(): void;
   public update(txn?: EditTxn): void {
@@ -607,7 +700,7 @@ export class Element extends Entity {
   public delete(txn: EditTxn): void;
   /**
    * Delete this Element from the iModel.
-   * @deprecated Use Element.delete(txn) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Element.delete(txn) instead.
    */
   public delete(): void;
   public delete(txn?: EditTxn): void {
@@ -837,7 +930,7 @@ export abstract class GeometricElement3d extends GeometricElement {
 
     if (props.geom) {
       const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
-        geom: props.geom as any,
+        geom: props.geom,
         is2d: false,
         placement: props.placement,
         categoryId: props.category,
@@ -998,7 +1091,7 @@ export abstract class GeometricElement2d extends GeometricElement {
 
     if (props.geom) {
       const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
-        geom: props.geom as any,
+        geom: props.geom,
         is2d: true,
         placement: props.placement,
         categoryId: props.category,
@@ -1151,7 +1244,7 @@ export class Subject extends InformationReferenceElement {
   }
 
   public override toJSON(): SubjectProps { // This override only specializes the return type
-    return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
    * @param iModelDb The IModelDb
@@ -1192,7 +1285,7 @@ export class Subject extends InformationReferenceElement {
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   /** Insert a Subject
-   * @deprecated Use Subject.insert(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Subject.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
@@ -1283,7 +1376,7 @@ export class Drawing extends Document {
    * @beta
    */
   public static insert(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
-  /** @deprecated Use Drawing.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Drawing.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1555,7 +1648,7 @@ export class DefinitionContainer extends DefinitionSet {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
-  /** @deprecated Use DefinitionContainer.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DefinitionContainer.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1715,7 +1808,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
-  /** @deprecated Use TemplateRecipe3d.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use TemplateRecipe3d.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1791,7 +1884,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe2d or its sub-model.
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
-  /** @deprecated Use TemplateRecipe2d.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use TemplateRecipe2d.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1823,7 +1916,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   }
 
   public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
-    return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
+    return super.toJSON(); // Entity.toJSON takes care of auto-handled properties
   }
 
   /** Create a code that can be used for any subclass of InformationPartitionElement.
@@ -2104,7 +2197,7 @@ export class GeometryPart extends DefinitionElement {
 
     if (undefined !== props.geom) {
       const source = inst.geometryStream = iModel[_nativeDb].convertOrUpdateGeometryPart({
-        geom: props.geom as any,
+        geom: props.geom,
         is2d: false,
         bbox: props.bbox,
       }, "BinaryStream", {});

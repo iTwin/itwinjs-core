@@ -6,11 +6,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { EmptyLocalization } from "@itwin/core-common";
-import { UnitConversionProps, UnitProps } from "@itwin/core-quantity";
+import { BasicUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
-import { BasicUnitsProvider } from "../quantity-formatting/BasicUnitsProvider";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
@@ -198,7 +197,7 @@ describe("IModelApp startup tests", () => {
  * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
  * but still delegates to BasicUnitsProvider for correct behaviour.
  */
-class NonBasicUnitsProvider {
+class NonBundledUnitsProvider {
   private readonly _delegate = new BasicUnitsProvider();
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
@@ -242,7 +241,7 @@ describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
     const formatter = IModelApp.quantityFormatter;
 
     // Install a non-default provider so resetToUseInternalUnitsProvider won't early-exit.
-    await formatter.setUnitsProvider(new NonBasicUnitsProvider());
+    await formatter.setUnitsProvider(new NonBundledUnitsProvider());
 
     await IModelApp.shutdown();
 
@@ -253,5 +252,70 @@ describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
 
     // startDefaultTool must NOT be called — IModelApp is no longer initialised.
     expect(startDefaultSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("Undo/redo edit command cleanup", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("undo finishes active edit command before reversing txns", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reverseSingleTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reverseSingleTxnAsync },
+        },
+      },
+    } as any);
+
+    expect(await toolAdmin.doUndoOperation()).toBe(true);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reverseSingleTxnAsync).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(reverseSingleTxnAsync.mock.invocationCallOrder[0]);
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+  });
+
+  it("redo uses notifications and skips txn when finishCommand fails", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reinstateTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reinstateTxnAsync },
+        },
+      },
+    } as any);
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    expect(await toolAdmin.doRedoOperation()).toBe(false);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reinstateTxnAsync).not.toHaveBeenCalled();
+    expect(outputMessageSpy).toHaveBeenCalledOnce();
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+    outputMessageSpy.mockRestore();
   });
 });

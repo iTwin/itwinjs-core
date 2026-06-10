@@ -8,7 +8,7 @@
 
 import { BeEvent, BentleyError, BeUiEvent, BeUnorderedUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AddFormattingSpecArgs, AlternateUnitLabelsProvider, Format, FormatDefinition, FormatProps,
+  AddFormattingSpecArgs, AlternateUnitLabelsProvider, BasicUnitsProvider, Format, FormatDefinition, FormatProps,
   FormatsChangedArgs, FormatSpecHandle, FormatsProvider, FormatterSpec, FormattingReadyCollector,
   FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParseError, ParserSpec,
   QuantityParseResult, UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
@@ -16,7 +16,7 @@ import {
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
+import { getDefaultAlternateUnitLabels } from "./AlternateUnitLabels";
 import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
@@ -342,11 +342,11 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
-  public async getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+  public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     const quantityType = this._kindOfQuantityMap.get(name);
     if (!quantityType) return undefined;
 
-    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType, system);
   }
 }
 
@@ -928,6 +928,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * `IModelApp.toolAdmin.restartPrimitiveTool()` to allow the tool to reinitialize itself.
    */
   public async resetToUseInternalUnitsProvider() {
+    // Coupled to createUnitsProvider() returning BasicUnitsProvider directly when no primary is set.
     if (this._unitsProvider instanceof BasicUnitsProvider)
       return;
 
@@ -1310,7 +1311,13 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    return this._unitsProvider.getConversion(fromUnit, toUnit);
+    const result = await this._unitsProvider.getConversion(fromUnit, toUnit);
+    if (result.error)
+      Logger.logWarning(
+        `${FrontendLoggerCategory.Package}.quantityFormatter`,
+        `Unit conversion from "${fromUnit.name}" to "${toUnit.name}" could not be resolved.`,
+      );
+    return result;
   }
 
   /**
@@ -1340,14 +1347,17 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   /**
    * @beta
    * Returns a map of [[FormattingSpecEntry]] keyed by persistence unit for a given name, typically a KindOfQuantity full name.
+   * @param name - The KoQ name to look up.
+   * @param options - Optional lookup options. When `options.system` is omitted, the active unit system is used.
    */
-  public getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined {
+  public getSpecsByName(name: string, options?: { system?: UnitSystemKey }): ReadonlyMap<string, FormattingSpecEntry> | undefined {
+    const effectiveSystem = options?.system ?? this._activeUnitSystem;
     const unitMap = this._formatSpecsRegistry.get(name);
     if (!unitMap) return undefined;
-    // Return active-system projection
+    // Return projection for the effective system
     const result = new Map<string, FormattingSpecEntry>();
     for (const [persistenceUnit, systemMap] of unitMap) {
-      const entry = systemMap.get(this._activeUnitSystem);
+      const entry = systemMap.get(effectiveSystem);
       if (entry) result.set(persistenceUnit, entry);
     }
     return result.size > 0 ? result : undefined;
@@ -1362,12 +1372,12 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     return this._formatSpecsRegistry.get(args.name)?.get(args.persistenceUnitName)?.get(effectiveSystem);
   }
 
-  /** Create a cacheable handle to formatting specs for a specific KoQ and persistence unit.
-   * The handle auto-refreshes when the QuantityFormatter reloads. Call `dispose()` when done.
+  /** Create a handle to formatting specs for a specific KoQ and persistence unit.
+   * The handle reads the current specs from the formatter on access. Call `dispose()` when done.
    *
    * @param koqName - The KindOfQuantity name (e.g., "DefaultToolsUnits.LENGTH")
    * @param persistenceUnit - The persistence unit name (e.g., "Units.M")
-   * @returns A FormatSpecHandle that auto-updates on reload
+   * @returns A FormatSpecHandle that reflects current formatter state
    * @beta
    */
   public getFormatSpecHandle(koqName: string, persistenceUnit: string, system?: UnitSystemKey): FormatSpecHandle {
@@ -1396,12 +1406,19 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
         formatProps,
         formatName: name,
       });
-      if (!this._formatSpecsRegistry.has(name))
-        this._formatSpecsRegistry.set(name, new Map());
-      const unitMap = this._formatSpecsRegistry.get(name)!;
-      if (!unitMap.has(persistenceUnitName))
-        unitMap.set(persistenceUnitName, new Map());
-      unitMap.get(persistenceUnitName)!.set(effectiveSystem, { formatterSpec, parserSpec });
+      let unitMap = this._formatSpecsRegistry.get(name);
+      if (!unitMap) {
+        unitMap = new Map();
+        this._formatSpecsRegistry.set(name, unitMap);
+      }
+
+      let systemMap = unitMap.get(persistenceUnitName);
+      if (!systemMap) {
+        systemMap = new Map();
+        unitMap.set(persistenceUnitName, systemMap);
+      }
+
+      systemMap.set(effectiveSystem, { formatterSpec, parserSpec });
     } else {
       throw new Error(`Unable to find format properties for ${name} with persistence unit ${persistenceUnitName}`);
     }

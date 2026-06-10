@@ -93,6 +93,7 @@ public;class;CurveCollection
 public;type;CurveCollectionType
 public;class;CurveCurve
 public;enum;CurveCurveApproachType
+public;interface;CurveCurveOptions
 public;enum;CurveExtendMode
 public;class;CurveExtendOptions
 public;class;CurveFactory
@@ -261,6 +262,7 @@ internal;class;RegionMomentsXY
 public;class;RegionOps
 public;class;ReusableObjectCache
 public;class;RotationalSweep
+public;class;RotationalSweepConstructiveFrameOptions
 public;class;RuledSweep
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
@@ -269,6 +271,7 @@ public;interface;SignedLoops
 public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
+public;class;SolidPrimitiveConstructiveFrameOptions
 public;type;SolidPrimitiveType
 public;class;SortableEdge
 public;type;SortableEdgeCluster

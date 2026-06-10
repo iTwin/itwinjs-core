@@ -45,7 +45,7 @@ export interface SettingSchema extends Readonly<JSONSchema> {
   * remove them via [[SettingsSchemas.removeGroup]].
   *
   * All of the settings share the same [[schemaPrefix]], which must be unique amongst all other groups.
-  * The prefix is combined with the name of each [[SettingSchema]] in the group to form the fully-qualified name used to refer
+  * The prefix is a stable identifier combined with the name of each [[SettingSchema]] in the group to form the fully-qualified name used to refer
   * to the setting outside of the group, e.g., when accessing [[SettingsSchemas.settingDefs]] or in [[SettingSchema.extends]].
   * In the following example, the fully-qualified name of the setting named "metric" is "format/units/metric".
   *
@@ -65,11 +65,12 @@ export interface SettingSchema extends Readonly<JSONSchema> {
 export interface SettingGroupSchema {
   /** Uniquely identifies this group amongst all other groups.
    * The prefix can use forward-slashes to define logical subgroups - for example, two related groups with the prefixes "units/metric" and "units/imperial".
-   * The user interface may parse these prefixes to display both groups under a "units" tab or expandable tree view node.
    *
    * @note Schema prefixes beginning with "itwin" are reserved for use by iTwin.js.
    */
   readonly schemaPrefix: string;
+  /** A title of this group suitable for displaying to a user. */
+  readonly title?: string;
   /** Metadata for each [[Setting]] in this group. */
   readonly settingDefs?: { [name: string]: SettingSchema | undefined };
   /** Metadata for types that can be extended by other [[Setting]]s via [[SettingSchema.extends]]. */
@@ -105,7 +106,13 @@ export interface SettingsSchemas {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
-  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
+  /** The map of each registered [[SettingGroupSchema]], accessed by its [[SettingGroupSchema.schemaPrefix]]. */
+  readonly groups: ReadonlyMap<string, SettingGroupSchema>;
+
+  /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]).
+   * Schemas in this map may include an [[SettingSchema.extends]] property referring to a registered type definition.
+   * Use [[resolveSchema]] to obtain the fully expanded schema.
+   */
   readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
 
   /** The map of each individual registered [[SettingSchema]] defining a type that can be extended by other [[SettingSchema]]s via [[SettingSchema.extends]],
@@ -143,4 +150,17 @@ export interface SettingsSchemas {
 
   /** Unregisters all [[settingDefs]] and [[typeDefs]] with the specified [[SettingGroupSchema.schemaPrefix]]. */
   removeGroup(schemaPrefix: string): void;
+
+  /**
+   * Looks up a setting schema in [[settingDefs]] and returns its resolved form.
+   * Resolution uses the [[typeDefs]] currently registered with this [[SettingsSchemas]] instance.
+   * @returns The resolved schema for `settingName`, or `undefined` if no schema has been registered for that setting.
+   * @throws Error if a registered setting schema cannot be resolved because a referenced type definition is missing or circular.
+   * @example
+   * ```ts
+   * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef("app/font");
+   * ```
+   */
+  getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
+
 }

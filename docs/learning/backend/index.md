@@ -37,6 +37,7 @@ These packages provide the following functions to support backend operations:
 - Loading and Creating Elements, ElementAspects, and Models
   - [Access Elements](./AccessElements.md)
   - [Create Elements](./CreateElements.md)
+  - [Delete Elements in Bulk](./BulkElementDeletion.md)
   - [Access ElementAspects](./AccessElementAspects.md)
   - [Create ElementAspects](./CreateElementAspects.md)
   - [Access Models](./AccessModels.md)
@@ -53,6 +54,12 @@ These packages provide the following functions to support backend operations:
 
 - Change Summary
   - [Change Summary Overview](../ChangeSummaries)
+  - [ChangesetReader — low-level changeset reading API](./ChangesetReader.md)
+
+- Workspaces and Settings
+  - [Workspaces and Settings overview](./WorkspacesAndSettings.md)
+  - [Settings](./Settings.md)
+  - [Workspace resources](./Workspace.md)
 
 For services and app backends:
 

@@ -1,6 +1,74 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Thu, 16 Apr 2026 11:06:21 GMT and should not be manually modified.
+This log was last generated on Mon, 08 Jun 2026 18:47:31 GMT and should not be manually modified.
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.
+- Add generated unit schema names and UnitConversions helpers backed by bundled basic units
+- Fix FormatSpecHandle stale state during onFormattingReady
+- Use units schema 01.00.10
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Fix FormatSpecHandle stale state during onFormattingReady
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Minor changes
+
+- Add Units namespace with typed constants, findPersistenceUnitForPhenomenon helper, and impliedUnitSystem to FormatsChangedArgs.
+
+### Updates
+
+- Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:14 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
 
 ## 5.8.2
 Thu, 16 Apr 2026 11:05:01 GMT

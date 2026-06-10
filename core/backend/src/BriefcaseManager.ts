@@ -11,9 +11,10 @@
 import * as path from "node:path";
 import * as os from "node:os";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
+  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
+  Base64EncodedString,
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
   TxnProps,
@@ -28,38 +29,15 @@ import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
-import { ChangedECInstance, ChangesetECAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "./ChangesetECAdaptor";
-import { ECSqlRow } from "./Entity";
-import { SqliteChangesetReader } from "./SqliteChangesetReader";
+import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
-/**
- * The argument for identifying an Patch Instance Key
+/** The argument for patch instances during semantic rebase
  * @internal
  */
-interface PatchInstanceKey {
-  id: Id64String;
-  classFullName: string;
-}
-
-/**
- * Wrapper around ChangedECInstance to indicate if the change was indirect or direct
- * @internal
- */
-interface ChangedInstanceForSemanticRebase {
-  isIndirect: boolean;
-  instance: ChangedECInstance;
-}
-
-/** The argument for patch instances during high level rebase application
- * @internal
-*/
-export interface InstancePatch {
-  key: PatchInstanceKey;
-  op: "Inserted" | "Updated" | "Deleted";
-  isIndirect: boolean;
-  props?: ECSqlRow
+export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
+  $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
 }
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
@@ -130,10 +108,17 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-  /** The index of the changeset to revert to */
+  /** The first changeset index to revert (inclusive). All changesets from `toIndex` through the current index are reverted, leaving the briefcase at `toIndex - 1`. */
   toIndex: ChangesetIndex;
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
+  /**
+   * Specifies the action to take in case of failure during the revert operation. Default is `"revert"`.
+   * - `"revert"`: Reverse all local transactions and delete them, restoring the briefcase to its pre-revert state.
+   * - `"retain"`: Keep local changes as-is for caller inspection or manual recovery.
+   * - `"delete"`: Close the briefcase and delete the local file. If an `accessToken` is available, also release the briefcaseId from iModelHub.
+   */
+  inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
@@ -646,11 +631,8 @@ export class BriefcaseManager {
 
     if (!reverse) {
       if (briefcaseDb) {
-        if (useSemanticRebase) {
-          this.capturePatchInstances(briefcaseDb);
-        }
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
-        const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+        const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
         if (useSemanticRebase) {
           nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
         }
@@ -893,96 +875,13 @@ export class BriefcaseManager {
   private static readonly DATA_FILE_NAME = "data.json";
 
   /**
-   * Captures the changed instances as patch instances from each data txn in the briefcase db for semantic rebase
-   * @param db The {@link BriefcaseDb} instance for which to capture the changed instances as patch instances for all data txns
-   * @internal
-   */
-  private static capturePatchInstances(db: BriefcaseDb): void {
-    const txns = Array.from(db.txns.queryTxns());
-    txns.forEach((txn) => {
-      if (txn.type !== "Data") return;
-      // already captured(This actually shows that first rebase operation is already done but during that while reinstating this txns,
-      // some error happened so the folder still exists so we don't want to capture again)
-      if (this.semanticRebaseDataFolderExists(db, txn.id)) return;
-      const changedInstances = this.captureChangedInstancesAsJSON(db, txn.id);
-      const instancePatches = this.constructPatchInstances(db, changedInstances);
-      this.storeChangedInstancesForSemanticRebase(db, txn.id, instancePatches);
-    });
-  }
-
-  /**
-   * Captures changed instances from a txn as JSON
-   * @param txnId The txn id for which to capture changed instances
-   * @param db The {@link BriefcaseDb} instance from which to capture changed instances as json
-   * @returns changed instances for semantic rebase
-   * @internal
-   */
-  private static captureChangedInstancesAsJSON(db: BriefcaseDb, txnId: string): ChangedInstanceForSemanticRebase[] {
-    const reader = SqliteChangesetReader.openTxn({
-      txnId, db, disableSchemaCheck: true
-    });
-    const adaptor = new ChangesetECAdaptor(reader);
-    using indirectUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
-    using directUnifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
-    while (adaptor.step()) {
-      if (adaptor.reader.isIndirect)
-        indirectUnifier.appendFrom(adaptor);
-      else
-        directUnifier.appendFrom(adaptor);
-    }
-    return [...Array.from(directUnifier.instances).map((instance) => ({ isIndirect: false, instance })), ...Array.from(indirectUnifier.instances).map((instance) => ({ isIndirect: true, instance }))];
-  }
-
-  /**
-   * Constructs patch instances from changed instances
-   * @param changedInstances The changed instances from which to construct the patch instances
-   * @param db The {@link BriefcaseDb} instance for which to construct the patch instances
-   * @returns  The {@link InstancePatch} instance patches for semantic rebase
-   * @internal
-   */
-  private static constructPatchInstances(db: BriefcaseDb, changedInstances: ChangedInstanceForSemanticRebase[]): InstancePatch[] {
-    return changedInstances
-      .filter((changedInstance) => !(changedInstance.instance.$meta?.op === "Updated" && changedInstance.instance.$meta.stage === "Old")) // we will not take the old stage of updated instances
-      .map((changedInstance) => this.constructPatchInstance(db, changedInstance));
-  }
-
-  /**
-   * Constructs a single patch instance from changed instance
-   * @param changedInstance The changed instance from which to construct the patch instance
-   * @param db The {@link BriefcaseDb} instance for which to construct the single patch instance
-   * @returns a single instance patch {@link InstancePatch}
-   * @throws IModelError If cannot determine classId or unknown operation encountered
-   */
-  private static constructPatchInstance(db: BriefcaseDb, changedInstance: ChangedInstanceForSemanticRebase): InstancePatch {
-    const className =
-      (changedInstance.instance.ECClassId && db.getClassNameFromId(changedInstance.instance.ECClassId))
-      ?? changedInstance.instance.$meta?.classFullName
-      ?? (changedInstance.instance.$meta?.fallbackClassId && db.getClassNameFromId(changedInstance.instance.$meta.fallbackClassId));
-
-    if (!className)
-      throw new IModelError(IModelStatus.BadArg, "Cannot determine classId of changed instance");
-
-    const instanceKey: PatchInstanceKey = { id: changedInstance.instance.ECInstanceId, classFullName: className };
-    const op = changedInstance.instance.$meta?.op;
-    if (op !== "Inserted" && op !== "Updated" && op !== "Deleted")
-      throw new IModelError(IModelStatus.BadArg, `Unknown operation: ${op}`);
-
-    return {
-      key: instanceKey,
-      op,
-      isIndirect: changedInstance.isIndirect,
-      props: op !== "Deleted" ? db[_nativeDb].readInstance(instanceKey, { useJsNames: true }) : undefined,
-    };
-  }
-
-  /**
    * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure
-   * @param db The {@link BriefcaseDb} instance for storing the changed instances against a txn
+   * @param db The [BriefcaseDb]($backend) instance for storing the changed instances against a txn
    * @param txnId The txn id for which we are storing the changed instances
-   * @param instancePatches The {@link InstancePatch} instance patches to be stored
+   * @param instancePatches The [ChangeInstance]($backend) IterableIterator instance patches to be stored
    * @internal
    */
-  private static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: InstancePatch[]): void {
+  public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void {
     const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
     const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
     const filePath = path.join(targetDir, this.DATA_FILE_NAME);
@@ -991,7 +890,34 @@ export class BriefcaseManager {
       IModelJsFs.removeSync(targetDir);
 
     IModelJsFs.recursiveMkDirSync(targetDir);
-    IModelJsFs.writeFileSync(filePath, JSON.stringify(instancePatches, undefined, 2));
+
+    const BATCH_SIZE = 100;
+    let isFirst = true;
+    let batchParts: string[] = [];
+
+    const flushBatch = () => {
+      if (batchParts.length === 0) return;
+      IModelJsFs.appendFileSync(filePath, batchParts.join(""));
+      batchParts = [];
+    };
+
+    IModelJsFs.writeFileSync(filePath, "[");
+    for (const instancePatch of instancePatches) {
+      // we will not take the old stage of updated instances for now, because we still don't have conflict resolution on instance level while using semantic rebase.
+      // Once we have conflict resolution on instance level, we can consider taking old stage of updated instances as well.
+      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue;
+      const { $meta, ...rest } = instancePatch;
+      const transformedInstance: InstancePatch = {
+        ...rest,
+        $meta: { op: $meta.op, stage: $meta.stage, isIndirectChange: $meta.isIndirectChange },
+      };
+      batchParts.push(`${isFirst ? "" : ","}\n${JSON.stringify(transformedInstance, Base64EncodedString.replacer)}`);
+      isFirst = false;
+      if (batchParts.length >= BATCH_SIZE)
+        flushBatch();
+    }
+    flushBatch();
+    IModelJsFs.appendFileSync(filePath, "\n]");
   }
 
   /**
@@ -1006,7 +932,7 @@ export class BriefcaseManager {
 
   /**
    * Stores schemas for semantic rebase locally in appropriate folder structure
-   * @param db The {@link BriefcaseDb} instance for storing the schemas against a txn
+   * @param db The [BriefcaseDb]($backend) instance for storing the schemas against a txn
    * @param txnId The txn id for which we are storing the schemas
    * @param schemaFileNames The schema file paths or schema xml strings to be stored
    * @internal
@@ -1037,7 +963,7 @@ export class BriefcaseManager {
 
   /**
    * Gets schemas for semantic rebase for a txn
-   * @param db The {@link BriefcaseDb} instance for getting the locally stored schemas against a txn
+   * @param db The [BriefcaseDb]($backend) instance for getting the locally stored schemas against a txn
    * @param txnId The txn id for which we are getting the schemas
    * @returns the schema file paths
    * @internal
@@ -1050,22 +976,25 @@ export class BriefcaseManager {
 
   /**
    * Get the changed instances data for semantic rebase for a txn
-   * @param db - The {@link BriefcaseDb} instance for getting the locally stored changed instances against a txn
+   * @param db - The [BriefcaseDb]($backend) instance for getting the locally stored changed instances against a txn
    * @param txnId - The txn id for which we are getting the changed instances
    * @returns Instance patches
    * @internal
    */
-  public static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[] {
+  public static async *getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch> {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
     const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
-    const fileContents = IModelJsFs.readFileWithEncodingSync(filePath, "utf-8");
-    return JSON.parse(fileContents) as InstancePatch[];
+    for await (const line of IModelJsFs.readLines(filePath)) {
+      if (line === "[" || line === "]" || line === "") continue;
+      const trimmedLine = line.trim().endsWith(",") ? line.trim().slice(0, -1) : line.trim(); // remove trailing comma if exists
+      yield JSON.parse(trimmedLine, Base64EncodedString.reviver) as InstancePatch;
+    }
   }
 
   /**
    * Checks if schema folder exists for semantic rebase for a txn
-   * @param db - The {@link BriefcaseDb} instance for which TO check the schema folder
+   * @param db - The [BriefcaseDb]($backend) instance for which TO check the schema folder
    * @param txnId - The txn id for which we are check the schema folder
    * @returns true if exists, false otherwise
    * @internal
@@ -1078,7 +1007,7 @@ export class BriefcaseManager {
 
   /**
    * Checks if data folder exists for semantic rebase for a txn
-   * @param db The {@link BriefcaseDb} instance for which to check the data folder.
+   * @param db The [BriefcaseDb]($backend) instance for which to check the data folder.
    * @param txnId The txn id for which to check the data folder
    * @returns true if exists, false otherwise
    * @internal
@@ -1091,7 +1020,7 @@ export class BriefcaseManager {
 
   /**
    * Deletes the schema folder for semantic rebase for a txn
-   * @param db The {@link BriefcaseDb} instance for which to delete the schema folder.
+   * @param db The [BriefcaseDb]($backend) instance for which to delete the schema folder.
    * @param txnId The txn id for which to delete the schema folder
    * @internal
    */
@@ -1110,7 +1039,7 @@ export class BriefcaseManager {
 
   /**
   * Deletes the data folder for semantic rebase for a txn
-  * @param db The {@link BriefcaseDb} instance for which to delete the data folder.
+  * @param db The [BriefcaseDb]($backend) instance for which to delete the data folder.
   * @param txnId The txn id for which to delete the data folder
   * @internal
   */
@@ -1129,7 +1058,7 @@ export class BriefcaseManager {
 
   /**
    * Deletes rebase folders for semantic rebase
-   * @param db The {@link BriefcaseDb} instance for which to delete the rebase folders.
+   * @param db The [BriefcaseDb]($backend) instance for which to delete the rebase folders.
    * @param checkIfEmpty If true, only deletes the base folder if it is empty, default is false
    * @internal
    */

@@ -367,7 +367,7 @@ export class Field implements FieldProps {
     return {
       type: FieldDescriptorType.Name,
       fieldName: this.name,
-    } as NamedFieldDescriptor;
+    };
   }
 
   /**
@@ -596,7 +596,7 @@ export class PropertiesField extends Field implements PropertiesFieldProps {
         class: p.property.classInfo.name,
         name: p.property.name,
       })),
-    } as PropertiesFieldDescriptor;
+    };
   }
 
   /**

@@ -17,6 +17,7 @@ import { FractionalPrecision } from '@itwin/core-quantity';
 import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
+import { UnitConversion } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
@@ -91,6 +92,52 @@ export interface ArrayPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
     readonly minOccurs?: number;
 }
 
+// @internal
+export interface ClassData {
+    // (undocumented)
+    readonly baseClassIdx: number;
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    readonly ecInstanceId: number;
+    readonly isHidden: boolean | undefined;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly mixinCount: number;
+    // (undocumented)
+    readonly mixinStartIdx: number;
+    // (undocumented)
+    readonly modifier: ClassModifier;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly ownPropCount: number;
+    // (undocumented)
+    readonly ownPropStart: number;
+    // (undocumented)
+    readonly schemaIdx: number;
+    // (undocumented)
+    readonly sourceConstraintIdx: number;
+    // (undocumented)
+    readonly strength: StrengthType;
+    // (undocumented)
+    readonly strengthDirection: StrengthDirection;
+    // (undocumented)
+    readonly targetConstraintIdx: number;
+    // (undocumented)
+    readonly type: ClassType;
+}
+
+// @beta
+export enum ClassModifier {
+    // (undocumented)
+    Abstract = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Sealed = 2
+}
+
 // @beta
 export function classModifierToString(modifier: ECClassModifier): string;
 
@@ -102,6 +149,20 @@ export interface ClassProps extends SchemaItemProps {
     readonly modifier?: string;
     // (undocumented)
     readonly properties?: AnyPropertyProps[];
+}
+
+// @beta
+export enum ClassType {
+    // (undocumented)
+    CustomAttribute = 3,
+    // (undocumented)
+    Entity = 0,
+    Mixin = 4,
+    // (undocumented)
+    Relationship = 1,
+    // (undocumented)
+    Struct = 2,
+    View = 5
 }
 
 // @public @preview
@@ -463,7 +524,7 @@ export enum ECSchemaStatus {
     UnableToLocateSchema = 35071
 }
 
-// @internal
+// @beta
 export interface ECSpecVersion {
     // (undocumented)
     readVersion: number;
@@ -650,6 +711,27 @@ export class EnumerationArrayProperty extends EnumerationArrayProperty_base {
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
 }
 
+// @internal
+export interface EnumerationData {
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly enumeratorCount: number;
+    // (undocumented)
+    readonly enumeratorStart: number;
+    // (undocumented)
+    readonly isStrict: boolean;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly primitiveType: SchemaViewPrimitiveType;
+    // (undocumented)
+    readonly schemaIdx: number;
+}
+
 // @public @preview (undocumented)
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     // @internal
@@ -693,6 +775,18 @@ export interface Enumerator<T> {
     readonly name: string;
     // (undocumented)
     readonly value: T;
+}
+
+// @internal
+export interface EnumeratorData {
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly value: number | string;
 }
 
 // @public @preview (undocumented)
@@ -835,6 +929,11 @@ export interface HasMixins {
     getMixinsSync(): Iterable<Mixin>;
     // (undocumented)
     readonly mixins: ReadonlyArray<LazyLoadedMixin>;
+}
+
+// @beta
+export interface ILocalizationProvider {
+    getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
 }
 
 // @internal
@@ -985,6 +1084,25 @@ export interface KindOfQuantityProps extends SchemaItemProps {
     readonly relativeError: number;
 }
 
+// @internal
+export interface KoqData {
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly persistenceUnitStringIdx: number;
+    // (undocumented)
+    readonly presentationFormatsStringIdx: number;
+    // (undocumented)
+    readonly relativeError: number;
+    // (undocumented)
+    readonly schemaIdx: number;
+}
+
 // @public @preview (undocumented)
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
 
@@ -1032,6 +1150,27 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 
 // @public @preview (undocumented)
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
+
+// @beta
+export class LocalizationProvider implements ILocalizationProvider {
+    constructor(_loader: (schemaName: string, locale: string) => Promise<SchemaLocalizationJson | undefined>);
+    getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
+}
+
+// @beta
+export interface LocalizedItemText extends LocalizedText {
+    members?: {
+        [memberName: string]: LocalizedText;
+    };
+}
+
+// @beta
+export interface LocalizedText {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    label?: string;
+}
 
 // @public @preview
 export class Mixin extends ECClass {
@@ -1187,6 +1326,9 @@ export function parseRelationshipEnd(end: string): RelationshipEnd | undefined;
 
 // @beta
 export function parseSchemaItemType(type: string): SchemaItemType | undefined;
+
+// @internal
+export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): SchemaView;
 
 // @beta
 export function parseStrength(strength: string): StrengthType | undefined;
@@ -1344,6 +1486,21 @@ export enum PrimitiveType {
 // @beta (undocumented)
 export function primitiveTypeToString(type: PrimitiveType): string;
 
+// @internal
+export interface PropCategoryData {
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly priority: number;
+    // (undocumented)
+    readonly schemaIdx: number;
+}
+
 // @public @preview
 export abstract class Property implements CustomAttributeContainerProps {
     // @internal
@@ -1445,6 +1602,54 @@ export interface PropertyCategoryProps extends SchemaItemProps {
     readonly priority: number;
 }
 
+// @internal
+export interface PropertyDef {
+    // (undocumented)
+    readonly arrayMaxOccurs: number | undefined;
+    // (undocumented)
+    readonly arrayMinOccurs: number | undefined;
+    // (undocumented)
+    readonly categoryIdx: number;
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    // (undocumented)
+    readonly enumIdx: number;
+    // (undocumented)
+    readonly extTypeStringIdx: number;
+    // (undocumented)
+    readonly isHidden: boolean;
+    // (undocumented)
+    readonly isReadOnly: boolean;
+    // (undocumented)
+    readonly kind: PropertyKind;
+    // (undocumented)
+    readonly koqIdx: number;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly navDirection: StrengthDirection;
+    // (undocumented)
+    readonly navRelClassIdx: number;
+    // (undocumented)
+    readonly primitiveType: SchemaViewPrimitiveType;
+    // (undocumented)
+    readonly structClassIdx: number;
+}
+
+// @beta
+export enum PropertyKind {
+    // (undocumented)
+    Navigation = 4,
+    // (undocumented)
+    Primitive = 0,
+    // (undocumented)
+    PrimitiveArray = 2,
+    // (undocumented)
+    Struct = 1,
+    // (undocumented)
+    StructArray = 3
+}
+
 // @public @preview (undocumented)
 export interface PropertyProps {
     // (undocumented)
@@ -1469,6 +1674,17 @@ export interface PropertyProps {
     readonly priority?: number;
     // (undocumented)
     readonly type: string;
+}
+
+// @internal
+export interface PropertyRef {
+    // (undocumented)
+    readonly defIdx: number;
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly priority: number;
 }
 
 // @public @preview (undocumented)
@@ -1717,6 +1933,32 @@ export class RelationshipMultiplicity {
     static readonly zeroOne: RelationshipMultiplicity;
 }
 
+// @internal
+export interface RelConstraintData {
+    // (undocumented)
+    readonly abstractConstraintIdx: number;
+    // (undocumented)
+    readonly classRefCount: number;
+    // (undocumented)
+    readonly classRefStart: number;
+    // (undocumented)
+    readonly multiplicityLower: number;
+    // (undocumented)
+    readonly multiplicityUpper: number;
+    // (undocumented)
+    readonly polymorphic: boolean;
+    // (undocumented)
+    readonly roleLabelStringIdx: number;
+}
+
+// @internal
+export interface ResolvedPropertyRef {
+    // (undocumented)
+    readonly classIdx: number;
+    // (undocumented)
+    readonly ref: PropertyRef;
+}
+
 // @public @preview (undocumented)
 export class Schema implements CustomAttributeContainerProps {
     constructor(context: SchemaContext, name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number);
@@ -1944,6 +2186,43 @@ export class SchemaContext {
     // (undocumented)
     get locaters(): ReadonlyArray<ISchemaLocater>;
     schemaExists(schemaKey: SchemaKey): boolean;
+}
+
+// @internal
+export interface SchemaData {
+    // (undocumented)
+    readonly aliasStringIdx: number;
+    // (undocumented)
+    readonly catCount: number;
+    // (undocumented)
+    readonly catRangeStart: number;
+    // (undocumented)
+    readonly classCount: number;
+    // (undocumented)
+    readonly classRangeStart: number;
+    // (undocumented)
+    readonly descriptionStringIdx: number;
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly enumCount: number;
+    // (undocumented)
+    readonly enumRangeStart: number;
+    // (undocumented)
+    readonly isHidden: boolean;
+    // (undocumented)
+    readonly koqCount: number;
+    // (undocumented)
+    readonly koqRangeStart: number;
+    // (undocumented)
+    readonly labelStringIdx: number;
+    // (undocumented)
+    readonly nameStringIdx: number;
+    // (undocumented)
+    readonly versionMinor: number;
+    // (undocumented)
+    readonly versionRead: number;
+    // (undocumented)
+    readonly versionWrite: number;
 }
 
 // @beta
@@ -2179,6 +2458,36 @@ export class SchemaLoader {
 }
 
 // @beta
+export class SchemaLocalization {
+    static create(provider: ILocalizationProvider, locale: string, schemaKeys: Iterable<SchemaKey>): Promise<SchemaLocalization>;
+    getDescription(schemaName: string, itemName?: string, memberName?: string): string | undefined;
+    getLabel(schemaName: string, itemName?: string, memberName?: string): string | undefined;
+    getLocalizedEnumerator(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): LocalizedText;
+    getLocalizedProperty(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): LocalizedText;
+    getLocalizedSchema(schema: Schema | SchemaView.Schema): LocalizedText;
+    getLocalizedSchemaItem(item: SchemaItem | SchemaViewItem): LocalizedText;
+    loadLocalizations(schemaKeys: Iterable<SchemaKey>): Promise<void>;
+    // (undocumented)
+    get locale(): string;
+    get provider(): ILocalizationProvider;
+    // (undocumented)
+    setLocale(locale: string): void;
+}
+
+// @beta
+export interface SchemaLocalizationJson {
+    $schema: string;
+    description?: string;
+    items?: {
+        [itemName: string]: LocalizedItemText;
+    };
+    label?: string;
+    locale: string;
+    name: string;
+    version: string;
+}
+
+// @beta
 export interface SchemaLocaterOptions {
     readonly loadPartialSchemaOnly?: boolean;
 }
@@ -2268,6 +2577,425 @@ export class SchemaUnitProvider implements UnitsProvider {
     getAlternateDisplayLabels(unitName: string): Array<string>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps>>;
+}
+
+// @beta
+export class SchemaView {
+    // @internal (undocumented)
+    readonly [_storage]: SchemaViewStorage;
+    // @internal
+    constructor(data: SchemaViewData, schemaToken?: string);
+    // @internal (undocumented)
+    buildDerivedClassMap(): ReadonlyMap<number, readonly number[]>;
+    get classCount(): number;
+    findClass(qualifiedName: string): SchemaView.Class | undefined;
+    findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
+    findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
+    findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined;
+    static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView;
+    // @internal
+    static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView;
+    getSchema(name: string): SchemaView.Schema | undefined;
+    getSchemaByAlias(alias: string): SchemaView.Schema | undefined;
+    getSchemas(): IterableIterator<SchemaView.Schema>;
+    // @internal (undocumented)
+    getTransitiveBases(classIdx: number): ReadonlySet<number>;
+    get isOutdated(): boolean;
+    // @internal
+    markOutdated(): void;
+    // @internal (undocumented)
+    resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[];
+    // @internal (undocumented)
+    resolveClassIdx(qualifiedName: string): number;
+    get schemaCount(): number;
+    get schemaToken(): string;
+}
+
+// @beta (undocumented)
+export namespace SchemaView {
+    export type AnyArrayProperty = PrimitiveArrayProperty | StructArrayProperty;
+    export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
+    export type AnyProperty = PrimitiveProperty | PrimitiveArrayProperty | StructProperty | StructArrayProperty | NavigationProperty;
+    export type AnyStructProperty = StructProperty | StructArrayProperty;
+    export class Class {
+        // @internal
+        constructor(_ctx: SchemaView,
+        idx: number);
+        // (undocumented)
+        assertRelationship(): asserts this is RelationshipClass;
+        get baseClass(): Class | undefined;
+        // (undocumented)
+        protected readonly _ctx: SchemaView;
+        // @internal (undocumented)
+        protected get _data(): ClassData;
+        get derivedClasses(): readonly Class[];
+        // (undocumented)
+        get description(): string;
+        get ecInstanceId(): number;
+        get fullName(): string;
+        getOwnProperties(): readonly Property[];
+        getProperties(): readonly Property[];
+        getProperty(name: string): Property | undefined;
+        // @internal (undocumented)
+        readonly idx: number;
+        is(classOrName: Class | string): boolean;
+        // (undocumented)
+        get isAbstract(): boolean;
+        // (undocumented)
+        isCustomAttribute(): boolean;
+        get isEffectivelyHidden(): boolean;
+        // (undocumented)
+        isEntity(): boolean;
+        get isHidden(): boolean | undefined;
+        // (undocumented)
+        isMixin(): boolean;
+        isRelationship(): this is RelationshipClass;
+        // (undocumented)
+        get isSealed(): boolean;
+        // (undocumented)
+        isStruct(): boolean;
+        // (undocumented)
+        isView(): boolean;
+        // (undocumented)
+        get label(): string;
+        get mixins(): readonly Class[];
+        // (undocumented)
+        get modifier(): ClassModifier;
+        // (undocumented)
+        get name(): string;
+        // (undocumented)
+        get schema(): Schema;
+        // (undocumented)
+        get type(): ClassType;
+    }
+    // @internal (undocumented)
+    export function createClass(ctx: SchemaView, idx: number): Class;
+    // @internal (undocumented)
+    export function createProperty(ctx: SchemaView, ref: PropertyRef, classIdx: number): Property;
+    export class Enumeration {
+        // @internal
+        constructor(_ctx: SchemaView,
+        idx: number);
+        // (undocumented)
+        get description(): string;
+        get ecInstanceId(): number;
+        get fullName(): string;
+        getEnumerator(value: number | string): Enumerator | undefined;
+        getEnumeratorByName(name: string): Enumerator | undefined;
+        getEnumerators(): IterableIterator<Enumerator>;
+        // @internal (undocumented)
+        readonly idx: number;
+        // (undocumented)
+        get isStrict(): boolean;
+        // (undocumented)
+        get label(): string;
+        // (undocumented)
+        get name(): string;
+        // (undocumented)
+        get primitiveType(): SchemaViewPrimitiveType;
+        // (undocumented)
+        get schema(): Schema;
+    }
+    export class Enumerator {
+        // @internal
+        constructor(_ctx: SchemaView,
+        idx: number);
+        // (undocumented)
+        get description(): string;
+        // @internal (undocumented)
+        readonly idx: number;
+        // (undocumented)
+        get label(): string;
+        // (undocumented)
+        get name(): string;
+        // (undocumented)
+        get value(): number | string;
+    }
+    export class KindOfQuantity {
+        // @internal
+        constructor(_ctx: SchemaView,
+        idx: number);
+        // (undocumented)
+        get description(): string;
+        get ecInstanceId(): number;
+        get fullName(): string;
+        // @internal (undocumented)
+        readonly idx: number;
+        // (undocumented)
+        get label(): string;
+        // (undocumented)
+        get name(): string;
+        get persistenceUnit(): string;
+        get presentationFormats(): readonly PresentationFormat[];
+        get presentationFormatsRaw(): string;
+        // (undocumented)
+        get relativeError(): number;
+        // (undocumented)
+        get schema(): Schema;
+    }
+    export class NavigationProperty extends Property {
+        // (undocumented)
+        get direction(): StrengthDirection;
+        // (undocumented)
+        get relationshipClass(): RelationshipClass;
+    }
+    // @internal
+    export function parseFormatString(formatString: string): PresentationFormat;
+    export interface PresentationFormat {
+        readonly name: string;
+        readonly precision?: number;
+        readonly unitAndLabels?: ReadonlyArray<readonly [string, string | undefined]>;
+    }
+    export class PrimitiveArrayProperty extends Property {
+        // (undocumented)
+        get arrayMaxOccurs(): number | undefined;
+        // (undocumented)
+        get arrayMinOccurs(): number | undefined;
+        // (undocumented)
+        get enumeration(): Enumeration | undefined;
+        // (undocumented)
+        get extendedTypeName(): string | undefined;
+        // (undocumented)
+        get kindOfQuantity(): KindOfQuantity | undefined;
+        // (undocumented)
+        get primitiveType(): SchemaViewPrimitiveType;
+    }
+    export class PrimitiveProperty extends Property {
+        // (undocumented)
+        get enumeration(): Enumeration | undefined;
+        // (undocumented)
+        get extendedTypeName(): string | undefined;
+        // (undocumented)
+        get kindOfQuantity(): KindOfQuantity | undefined;
+        // (undocumented)
+        get primitiveType(): SchemaViewPrimitiveType;
+    }
+    export abstract class Property {
+        // @internal
+        constructor(_ctx: SchemaView, _ref: PropertyRef,
+        _classIdx: number);
+        // (undocumented)
+        assertArray(): asserts this is AnyArrayProperty;
+        // (undocumented)
+        assertNavigation(): asserts this is NavigationProperty;
+        // (undocumented)
+        assertPrimitive(): asserts this is AnyPrimitiveProperty;
+        // (undocumented)
+        assertStruct(): asserts this is AnyStructProperty;
+        get category(): PropertyCategory | undefined;
+        // (undocumented)
+        protected readonly _ctx: SchemaView;
+        get declaringClass(): Class | undefined;
+        // @internal (undocumented)
+        protected get _def(): PropertyDef;
+        // (undocumented)
+        get description(): string;
+        get ecInstanceId(): number;
+        isArray(): this is AnyArrayProperty;
+        isEnumeration(): this is AnyPrimitiveProperty;
+        get isHidden(): boolean;
+        isNavigation(): this is NavigationProperty;
+        isPrimitive(): this is AnyPrimitiveProperty;
+        // (undocumented)
+        get isReadOnly(): boolean;
+        isStruct(): this is AnyStructProperty;
+        // (undocumented)
+        get kind(): PropertyKind;
+        get label(): string;
+        // (undocumented)
+        get name(): string;
+        get priority(): number;
+    }
+    export class PropertyCategory {
+        // @internal
+        constructor(_ctx: SchemaView,
+        idx: number);
+        // (undocumented)
+        get description(): string;
+        get ecInstanceId(): number;
+        get fullName(): string;
+        // @internal (undocumented)
+        readonly idx: number;
+        // (undocumented)
+        get label(): string;
+        // (undocumented)
+        get name(): string;
+        // (undocumented)
+        get priority(): number;
+        // (undocumented)
+        get schema(): Schema;
+    }
+    export class RelationshipClass extends Class {
+        // (undocumented)
+        get source(): RelConstraint | undefined;
+        // (undocumented)
+        get strength(): StrengthType;
+        // (undocumented)
+        get strengthDirection(): StrengthDirection;
+        // (undocumented)
+        get target(): RelConstraint | undefined;
+    }
+    export class RelConstraint {
+        // @internal
+        constructor(_ctx: SchemaView, _idx: number);
+        // (undocumented)
+        get abstractConstraint(): Class | undefined;
+        // (undocumented)
+        get constraintClasses(): readonly Class[];
+        get multiplicityLower(): number;
+        get multiplicityUpper(): number;
+        // (undocumented)
+        get polymorphic(): boolean;
+        get roleLabel(): string;
+    }
+    export class Schema {
+        // @internal
+        constructor(_ctx: SchemaView,
+        idx: number);
+        // (undocumented)
+        get alias(): string;
+        // (undocumented)
+        get description(): string;
+        get ecInstanceId(): number;
+        get fullName(): string;
+        getClass(name: string): Class | undefined;
+        getClasses(filter?: ClassType): IterableIterator<Class>;
+        getEnumeration(name: string): Enumeration | undefined;
+        getEnumerations(): IterableIterator<Enumeration>;
+        getKindOfQuantities(): IterableIterator<KindOfQuantity>;
+        getKindOfQuantity(name: string): KindOfQuantity | undefined;
+        getPropertyCategories(): IterableIterator<PropertyCategory>;
+        getPropertyCategory(name: string): PropertyCategory | undefined;
+        // @internal (undocumented)
+        readonly idx: number;
+        get isHidden(): boolean;
+        // (undocumented)
+        get label(): string;
+        // (undocumented)
+        get minorVersion(): number;
+        // (undocumented)
+        get name(): string;
+        // (undocumented)
+        get readVersion(): number;
+        // (undocumented)
+        get writeVersion(): number;
+    }
+    export class StructArrayProperty extends Property {
+        // (undocumented)
+        get arrayMaxOccurs(): number | undefined;
+        // (undocumented)
+        get arrayMinOccurs(): number | undefined;
+        // (undocumented)
+        get structClass(): Class;
+    }
+    export class StructProperty extends Property {
+        // (undocumented)
+        get structClass(): Class;
+    }
+}
+
+// @internal
+export class SchemaViewBuilder {
+    addClass(data: ClassData): number;
+    addClassMixin(classIdx: number): void;
+    addConstraintClassRef(classIdx: number): void;
+    addEnumeration(data: EnumerationData): number;
+    addEnumerator(data: EnumeratorData): void;
+    addKoq(data: KoqData): number;
+    addPropertyCategory(data: PropCategoryData): number;
+    addPropertyDef(data: PropertyDef): number;
+    addPropertyRef(ref: PropertyRef): void;
+    addRelConstraint(data: RelConstraintData): number;
+    addSchema(data: SchemaData): number;
+    build(schemaToken?: string): SchemaView;
+    get classMixinCount(): number;
+    get constraintClassRefCount(): number;
+    get enumeratorCount(): number;
+    getString(sid: number): string;
+    internString(value: string | undefined): number;
+    get propertyRefCount(): number;
+    updateClass(classIdx: number, data: ClassData): void;
+    updateSchemaRanges(schemaIdx: number, ranges: {
+        classRangeStart: number;
+        classCount: number;
+        enumRangeStart: number;
+        enumCount: number;
+        koqRangeStart: number;
+        koqCount: number;
+        catRangeStart: number;
+        catCount: number;
+    }): void;
+}
+
+// @internal
+export interface SchemaViewData {
+    // (undocumented)
+    readonly catByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+    // (undocumented)
+    readonly classByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+    // (undocumented)
+    readonly classes: readonly ClassData[];
+    // (undocumented)
+    readonly classMixins: readonly number[];
+    // (undocumented)
+    readonly constraintClassRefs: readonly number[];
+    // (undocumented)
+    readonly enumByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+    // (undocumented)
+    readonly enumerations: readonly EnumerationData[];
+    // (undocumented)
+    readonly enumerators: readonly EnumeratorData[];
+    // (undocumented)
+    readonly koqByName: ReadonlyMap<number, ReadonlyMap<string, number>>;
+    // (undocumented)
+    readonly koqs: readonly KoqData[];
+    // (undocumented)
+    readonly lowerStrings: readonly string[];
+    // (undocumented)
+    readonly propCategories: readonly PropCategoryData[];
+    // (undocumented)
+    readonly propDefs: readonly PropertyDef[];
+    // (undocumented)
+    readonly propertyRefs: readonly PropertyRef[];
+    // (undocumented)
+    readonly relConstraints: readonly RelConstraintData[];
+    // (undocumented)
+    readonly schemaByAlias: ReadonlyMap<string, number>;
+    // (undocumented)
+    readonly schemaByName: ReadonlyMap<string, number>;
+    // (undocumented)
+    readonly schemas: readonly SchemaData[];
+    // (undocumented)
+    readonly strings: readonly string[];
+}
+
+// @beta
+export const schemaViewFormatVersion = 1;
+
+// @beta
+export enum SchemaViewPrimitiveType {
+    // (undocumented)
+    Binary = 257,
+    // (undocumented)
+    Boolean = 513,
+    // (undocumented)
+    DateTime = 769,
+    // (undocumented)
+    Double = 1025,
+    // (undocumented)
+    IGeometry = 2561,
+    // (undocumented)
+    Integer = 1281,
+    // (undocumented)
+    Long = 1537,
+    // (undocumented)
+    Point2d = 1793,
+    // (undocumented)
+    Point3d = 2049,
+    // (undocumented)
+    String = 2305,
+    // (undocumented)
+    Uninitialized = 0
 }
 
 // @internal
@@ -2393,23 +3121,6 @@ export class Unit extends SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     get unitSystem(): LazyLoadedUnitSystem | undefined;
-}
-
-// @internal
-export class UnitConversion {
-    constructor(factor?: number, offset?: number);
-    compose(conversion: UnitConversion): UnitConversion;
-    evaluate(x: number): number;
-    // (undocumented)
-    readonly factor: number;
-    static from(unitOrConstant: Unit | Constant): UnitConversion;
-    // (undocumented)
-    static identity: UnitConversion;
-    inverse(): UnitConversion;
-    multiply(conversion: UnitConversion): UnitConversion;
-    // (undocumented)
-    readonly offset: number;
-    raise(power: number): UnitConversion;
 }
 
 // @internal

@@ -731,3 +731,135 @@ SELECT id FROM IdSet
 ```sql
 SELECT id FROM ECVLib.IdSet
 ```
+
+# Point lookup: id = literal returns single matching row
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[1,2,3,4,5]') WHERE id = 3
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id  |
+| --- |
+| 0x3 |
+
+# Point lookup: id = literal returns empty when id is not in set
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[1,2,3,4,5]') WHERE id = 10
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id |
+| -- |
+
+# IN optimization: id IN (...) returns only matching ids
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[1,2,3,4,5,6,7,8,9,10]') WHERE id IN (3, 5, 7)
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id  |
+| --- |
+| 0x3 |
+| 0x5 |
+| 0x7 |
+
+# IN optimization: id IN (...) returns empty when no ids match
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[1,2,3]') WHERE id IN (10, 20)
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id |
+| -- |
+
+# Point lookup: bindIdSet path returns single matching row
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x1, 0x2, 0x3, 0x4, 0x5]
+
+```sql
+SELECT id FROM IdSet(?) WHERE id = 3
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id  |
+| --- |
+| 0x3 |
+
+# Point lookup: join form returns correct row for matching ECInstanceId
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT e.i FROM aps.TestElement e, IdSet('[21,24,25]') WHERE e.ECInstanceId = id AND id = 21
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int  | i                  |
+
+| i   |
+| --- |
+| 101 |
+
+# Empty array: IdSet with empty array returns no rows
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[]')
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id |
+| -- |
+
+# Sorted deduplication: unsorted input with duplicates is returned sorted and deduped
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id FROM IdSet('[50,10,30,20,40,10]')
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id   |
+| ---- |
+| 0xa  |
+| 0x14 |
+| 0x1e |
+| 0x28 |
+| 0x32 |

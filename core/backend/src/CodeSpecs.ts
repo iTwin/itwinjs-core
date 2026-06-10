@@ -151,7 +151,7 @@ export class CodeSpecs {
    * @returns The Id of the persistent CodeSpec.
    * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    * @throws IModelError if the insertion fails
-   * @deprecated Use CodeSpecs.insert(txn, codeSpec) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use CodeSpecs.insert(txn, codeSpec) instead.
    */
   public insert(codeSpec: CodeSpec): Id64String;
 
@@ -160,7 +160,7 @@ export class CodeSpecs {
    * @param properties The properties or the CodeSpec. For backwards compatibility this may also be a `CodeScopeSpec.Type`.
    * @returns The Id of the persistent CodeSpec.
    * @throws IModelError if the insertion fails
-   * @deprecated Use CodeSpecs.insert(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use CodeSpecs.insert(txn, ...) instead.
    */
   public insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
   public insert(
@@ -213,7 +213,7 @@ export class CodeSpecs {
   /** Update the Json properties of an existing CodeSpec.
    * @param codeSpec The codeSpec holding Json properties values to update.
    * @throws if unable to update the codeSpec.
-   * @deprecated Use CodeSpecs.updateProperties(txn, codeSpec) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use CodeSpecs.updateProperties(txn, codeSpec) instead.
    */
   public updateProperties(codeSpec: CodeSpec): void;
   public updateProperties(txnOrCodeSpec: EditTxn | CodeSpec, codeSpec?: CodeSpec): void {
