@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
+import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, parsePrimitiveType, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
 import { SchemaKey } from "../SchemaKey";
 
 /** Case-invariant name comparison. EC names are case-insensitive; comparison is the document's
@@ -31,6 +31,16 @@ function foldFullName(fullName: string): string {
  * merge, programmatic generation). Every type takes its mandatory data as positional arguments and
  * the rest through an optional `init` object, so a single field can be set by name while the others
  * keep their defaults.
+ * @example
+ * ```ts
+ * const doc = new SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
+ *   references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
+ * });
+ * const pump = doc.createEntity("Pump", { label: "Pump", baseClass: "BisCore:PhysicalElement" });
+ * const serial = pump.createPrimitive("SerialNumber", PrimitiveType.String);
+ * serial.customAttributes.add({ className: "CoreCustomAttributes.HiddenProperty" });
+ * pump.createPrimitive("FlowRate", PrimitiveType.Double, { kindOfQuantity: "AecUnits:VOLUMETRIC_FLOW" });
+ * ```
  * @alpha
  */
 export class SchemaDocument {
@@ -117,9 +127,20 @@ export class SchemaDocument {
     return stored;
   }
 
+  /** Returns the schema reference with the given name (case-insensitive), or `undefined`. */
+  public getSchemaReference(name: string): Authoring.SchemaReference | undefined {
+    return this.references.find((r) => namesEqual(r.name, name));
+  }
+
   /** Returns the first item with the given name (case-insensitive), or `undefined`. */
   public getItem(name: string): Authoring.AnySchemaItem | undefined {
     return this.items.find((i) => namesEqual(i.name, name));
+  }
+
+  /** Removes and returns the first item with the given name (case-insensitive), or `undefined`. */
+  public removeItem(name: string): Authoring.AnySchemaItem | undefined {
+    const index = this.items.findIndex((i) => namesEqual(i.name, name));
+    return index === -1 ? undefined : this.items.splice(index, 1)[0];
   }
 
   /** Returns the first item with the given name whose kind matches `itemType`, narrowed to that
@@ -280,9 +301,10 @@ export namespace Authoring {
       return this._items[Symbol.iterator]();
     }
 
-    /** Adds a custom attribute instance. */
-    public add(ca: CustomAttribute): void {
+    /** Adds a custom attribute instance and returns it, for follow-up configuration in one expression. */
+    public add(ca: CustomAttribute): CustomAttribute {
       this._items.push(ca);
+      return ca;
     }
 
     /** Returns the first instance of the named CA class, or `undefined`. Matching is case-insensitive
@@ -305,9 +327,15 @@ export namespace Authoring {
       const idx = this._items.findIndex((ca) => foldFullName(ca.className) === key);
       return idx === -1 ? undefined : this._items.splice(idx, 1)[0];
     }
+
+    /** The instances as a plain array, so `JSON.stringify` renders the set transparently. */
+    public toJSON(): CustomAttribute[] {
+      return [...this._items];
+    }
   }
 
-  /** Common base of every schema item. `schemaItemType` is the discriminant for narrowing.
+  /** Common base of every schema item. `schemaItemType` is the discriminant for narrowing; the
+   * `is*()` / `assert*()` methods below mirror the same checks on `SchemaView`.
    * @alpha
    */
   export abstract class SchemaItem {
@@ -322,6 +350,72 @@ export namespace Authoring {
 
     protected constructor(name: string) {
       this.name = name;
+    }
+
+    /** Narrows to {@link EntityClass}. */
+    public isEntity(): this is EntityClass {
+      return this.schemaItemType === SchemaItemType.EntityClass;
+    }
+
+    /** Narrows to {@link Mixin}. */
+    public isMixin(): this is Mixin {
+      return this.schemaItemType === SchemaItemType.Mixin;
+    }
+
+    /** Narrows to {@link StructClass}. */
+    public isStruct(): this is StructClass {
+      return this.schemaItemType === SchemaItemType.StructClass;
+    }
+
+    /** Narrows to {@link CustomAttributeClass}. */
+    public isCustomAttribute(): this is CustomAttributeClass {
+      return this.schemaItemType === SchemaItemType.CustomAttributeClass;
+    }
+
+    /** Narrows to {@link RelationshipClass}. */
+    public isRelationship(): this is RelationshipClass {
+      return this.schemaItemType === SchemaItemType.RelationshipClass;
+    }
+
+    /** Narrows to {@link AnyClass} - true for every class kind. */
+    public isClass(): this is AnyClass {
+      return isSupportedSchemaItemType(this.schemaItemType, AbstractSchemaItemType.Class);
+    }
+
+    /** @see isEntity */
+    public assertEntity(): asserts this is EntityClass {
+      if (!this.isEntity())
+        throw new Error(`Expected an entity class, got ${this.schemaItemType} for "${this.name}"`);
+    }
+
+    /** @see isMixin */
+    public assertMixin(): asserts this is Mixin {
+      if (!this.isMixin())
+        throw new Error(`Expected a mixin, got ${this.schemaItemType} for "${this.name}"`);
+    }
+
+    /** @see isStruct */
+    public assertStruct(): asserts this is StructClass {
+      if (!this.isStruct())
+        throw new Error(`Expected a struct class, got ${this.schemaItemType} for "${this.name}"`);
+    }
+
+    /** @see isCustomAttribute */
+    public assertCustomAttribute(): asserts this is CustomAttributeClass {
+      if (!this.isCustomAttribute())
+        throw new Error(`Expected a custom attribute class, got ${this.schemaItemType} for "${this.name}"`);
+    }
+
+    /** @see isRelationship */
+    public assertRelationship(): asserts this is RelationshipClass {
+      if (!this.isRelationship())
+        throw new Error(`Expected a relationship class, got ${this.schemaItemType} for "${this.name}"`);
+    }
+
+    /** @see isClass */
+    public assertClass(): asserts this is AnyClass {
+      if (!this.isClass())
+        throw new Error(`Expected a class, got ${this.schemaItemType} for "${this.name}"`);
     }
   }
 
@@ -366,6 +460,12 @@ export namespace Authoring {
     /** Returns this class's own property with the given name (case-insensitive), or `undefined`. */
     public getProperty(name: string): AnyProperty | undefined {
       return this.properties.find((p) => namesEqual(p.name, name));
+    }
+
+    /** Removes and returns this class's own property with the given name (case-insensitive), or `undefined`. */
+    public removeProperty(name: string): AnyProperty | undefined {
+      const index = this.properties.findIndex((p) => namesEqual(p.name, name));
+      return index === -1 ? undefined : this.properties.splice(index, 1)[0];
     }
 
     /** Creates a primitive property (keyword type), appends it, and returns it. */
@@ -601,6 +701,11 @@ export namespace Authoring {
       this.enumerators.push(enumerator);
       return enumerator;
     }
+
+    /** Returns the enumerator with the given name (case-insensitive), or `undefined`. */
+    public getEnumerator(name: string): Enumerator | undefined {
+      return this.enumerators.find((e) => namesEqual(e.name, name));
+    }
   }
 
   /** Complementary data accepted by the {@link KindOfQuantity} constructor. */
@@ -713,6 +818,59 @@ export namespace Authoring {
         this.category = init.category;
         this.kindOfQuantity = init.kindOfQuantity;
       }
+    }
+
+    /** Narrows to the primitive kinds ({@link PrimitiveProperty}, {@link PrimitiveArrayProperty}).
+     * Includes primitive arrays, matching the same check on `SchemaView`. */
+    public isPrimitive(): this is AnyPrimitiveProperty {
+      return this.kind === PropertyKind.Primitive || this.kind === PropertyKind.PrimitiveArray;
+    }
+
+    /** Narrows to the struct kinds ({@link StructProperty}, {@link StructArrayProperty}). */
+    public isStruct(): this is AnyStructProperty {
+      return this.kind === PropertyKind.Struct || this.kind === PropertyKind.StructArray;
+    }
+
+    /** Narrows to the array kinds ({@link PrimitiveArrayProperty}, {@link StructArrayProperty}). */
+    public isArray(): this is AnyArrayProperty {
+      return this.kind === PropertyKind.PrimitiveArray || this.kind === PropertyKind.StructArray;
+    }
+
+    /** Narrows to {@link NavigationProperty}. */
+    public isNavigation(): this is NavigationProperty {
+      return this.kind === PropertyKind.Navigation;
+    }
+
+    /** True when this property is backed by an enumeration rather than a primitive keyword: an
+     * enum-backed property is a primitive property whose `typeName` is an enumeration reference.
+     * The check is lexical (the primitive keywords are a closed set); the reference itself is only
+     * resolved at compile. */
+    public isEnumeration(): this is AnyPrimitiveProperty {
+      return this.isPrimitive() && parsePrimitiveType(this.typeName) === undefined;
+    }
+
+    /** @see isPrimitive */
+    public assertPrimitive(): asserts this is AnyPrimitiveProperty {
+      if (!this.isPrimitive())
+        throw new Error(`Expected a primitive property, got ${PropertyKind[this.kind]} for "${this.name}"`);
+    }
+
+    /** @see isStruct */
+    public assertStruct(): asserts this is AnyStructProperty {
+      if (!this.isStruct())
+        throw new Error(`Expected a struct property, got ${PropertyKind[this.kind]} for "${this.name}"`);
+    }
+
+    /** @see isArray */
+    public assertArray(): asserts this is AnyArrayProperty {
+      if (!this.isArray())
+        throw new Error(`Expected an array property, got ${PropertyKind[this.kind]} for "${this.name}"`);
+    }
+
+    /** @see isNavigation */
+    public assertNavigation(): asserts this is NavigationProperty {
+      if (!this.isNavigation())
+        throw new Error(`Expected a navigation property, got ${PropertyKind[this.kind]} for "${this.name}"`);
     }
   }
 
@@ -889,6 +1047,15 @@ export namespace Authoring {
 
   /** Union of every property kind. */
   export type AnyProperty = PrimitiveProperty | PrimitiveArrayProperty | StructProperty | StructArrayProperty | NavigationProperty;
+
+  /** The primitive (or enumeration-backed) property kinds: scalar or array. */
+  export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
+
+  /** The struct property kinds: scalar or array of an embedded struct. */
+  export type AnyStructProperty = StructProperty | StructArrayProperty;
+
+  /** The array property kinds. */
+  export type AnyArrayProperty = PrimitiveArrayProperty | StructArrayProperty;
 
   /** Union of every EC class kind. */
   export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
