@@ -379,6 +379,7 @@ class GraphicsTile extends Tile {
     // (see DynamicIModelTile.create) - e.g. the active GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold.
     const worldCenter = this.tree.iModelTransform.multiplyPoint3d(this.range.center);
     const maxCoord = Math.max(Math.abs(worldCenter.x), Math.abs(worldCenter.y), Math.abs(worldCenter.z));
+    // A null range has no geometry or unknown extent, so rtcCenter (the safer, precision-preserving default) is used.
     const useAbsolutePositions = !this.range.isNull && maxCoord < this.absolutePositionThreshold;
 
     const props: ElementGraphicsRequestProps = {

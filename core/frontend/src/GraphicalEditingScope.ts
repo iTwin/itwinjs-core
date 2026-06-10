@@ -76,6 +76,9 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
    * zero, which always uses `rtcCenter` centering) to favor precision. Negative values are clamped to zero; non-finite values
    * other than `Number.POSITIVE_INFINITY` are ignored.
    *
+   * This value is read once per model, when the first element in that model is modified during the scope. Set it before making
+   * edits to ensure it takes effect; changes made afterward do not apply to a model until the scope is exited and re-entered.
+   *
    * Defaults to 10000 (10 kilometers).
    * @beta
    */
