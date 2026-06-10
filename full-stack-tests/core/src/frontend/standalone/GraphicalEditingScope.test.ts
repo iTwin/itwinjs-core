@@ -9,7 +9,7 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, StandardViewId, TileLoadPriority,
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelApp, OnScreenTarget, StandardViewId, TileLoadPriority,
   ViewCreator3d
 } from "@itwin/core-frontend";
 import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
@@ -656,6 +656,73 @@ describe("GraphicalEditingScope", () => {
     it("refreshes viewport contents when geometry is added to an empty model", async () => {
       await testViewportRefresh();
     });
+
+    it("threads dynamicGraphicsAbsolutePositionThreshold through to dynamic graphics requests", async () => {
+      // The setter test above only verifies the property; this verifies the value actually reaches the
+      // `useAbsolutePositions` flag of the element graphics request produced for a modified element.
+      await expectUseAbsolutePositions(0, false);
+      await closeIModel();
+      await expectUseAbsolutePositions(Number.POSITIVE_INFINITY, true);
+    });
+
+    async function expectUseAbsolutePositions(threshold: number, expected: boolean): Promise<void> {
+      imodel = await openWritable();
+
+      const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const dictModelId = await imodel.models.getDictionaryModel();
+      const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      await saveBriefcaseChanges(imodel);
+
+      const viewCreator = new ViewCreator3d(imodel);
+      const view = await viewCreator.createDefaultView({
+        cameraOn: false,
+        skyboxOn: false,
+        standardViewId: StandardViewId.Top,
+        useSeedView: false,
+      }, [modelId]);
+      view.categorySelector.categories.clear();
+      view.categorySelector.categories.add(category);
+      view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
+
+      const bc = imodel;
+      const tileAdmin = IModelApp.tileAdmin;
+      const original = tileAdmin.requestElementGraphics.bind(tileAdmin);
+      const requested: Array<boolean | undefined> = [];
+      let capture = false;
+      tileAdmin.requestElementGraphics = async (iModel, props) => {
+        if (capture)
+          requested.push(props.useAbsolutePositions);
+        return original(iModel, props);
+      };
+
+      try {
+        await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
+          await vp.waitForAllTilesToRender();
+
+          // The threshold is captured when the model's first element is modified, so set it before editing.
+          const scope = await bc.enterEditingScope();
+          scope.dynamicGraphicsAbsolutePositionThreshold = threshold;
+
+          // Only capture requests made after the edit - i.e. the dynamic element graphics.
+          capture = true;
+
+          const ext = bc.projectExtents;
+          await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
+          await saveBriefcaseChanges(bc);
+
+          await BeDuration.wait(150);
+          await vp.waitForAllTilesToRender();
+
+          expect(requested.length).to.be.greaterThan(0);
+          for (const useAbsolutePositions of requested)
+            expect(useAbsolutePositions).to.equal(expected);
+
+          await scope.exit();
+        });
+      } finally {
+        tileAdmin.requestElementGraphics = original;
+      }
+    }
   }
 });
 
