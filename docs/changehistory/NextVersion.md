@@ -30,24 +30,13 @@ const rows = await reader.toArray(); // used to throw, now returns an empty arra
 
 ### Quantity property description classes deprecated
 
-The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated. These classes were introduced when quantity formatting was driven by `QuantityType`, but that approach is superseded by `kindOfQuantityName`-based formatting via [FormatSpecHandle]($quantity).
+The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated.
 
-Use the new [createQuantityDescription]($frontend) helper function (marked `@beta`) to build plain [PropertyDescription]($appui-abstract) objects with synchronous formatting and parsing callbacks wired to the active unit system. See [Quantity property descriptions](../quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions) for usage examples.
+These appui-based helpers were introduced when quantity formatting was driven by `QuantityType`, but new quantity formatting work should use `kindOfQuantityName`-based APIs through [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) instead.
+
+For existing tool settings and other appui-based property flows, these deprecated classes remain available as a compatibility path while the editor stack moves toward deriving quantity formatting and parsing from property metadata such as `kindOfQuantityName`.
 
 The deprecated classes remain behavior-compatible and will not be removed before a future major release.
-
-`createQuantityDescription` intentionally omits the `iconSpec` parameter that the old classes accepted. If your UI still needs an icon alongside the field, add the same editor param that the deprecated classes used internally:
-
-```ts
-import { type IconEditorParams, PropertyEditorParamTypes } from "@itwin/appui-abstract";
-
-const prop = createQuantityDescription(props);
-const iconParam: IconEditorParams = {
-  type: PropertyEditorParamTypes.Icon,
-  definition: { iconSpec: "icon-globe" },
-};
-prop.editor?.params?.push(iconParam);
-```
 
 ## @itwin/map-layers-formats
 

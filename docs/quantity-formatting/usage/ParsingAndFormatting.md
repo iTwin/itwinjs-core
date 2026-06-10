@@ -275,36 +275,6 @@ When developing tools or components that format/parse quantities:
    [[include:Quantity_Formatting.General_Pattern_Format_Parse]]
    ```
 
-### Quantity Property Descriptions
-
-Tool settings and UI components that need quantity-aware formatting and parsing should use [createQuantityDescription]($frontend) to create plain [PropertyDescription]($appui-abstract) objects. This helper function calls [IModelApp.quantityFormatter.getFormatSpecHandle]($frontend) internally, wiring up synchronous [CustomFormattedNumberParams]($appui-abstract) callbacks that reflect the current active unit system — no subclassing required.
-
-<details>
-<summary>Example: length property description for tool settings</summary>
-
-```ts
-[[include:Quantity_Formatting.Quantity_Property_Description]]
-```
-
-</details>
-
-The same pattern works for any quantity: pass the appropriate `kindOfQuantityName` (e.g. `"DefaultToolsUnits.ANGLE"`) and `persistenceUnitName` (e.g. `"Units.RAD"`) to `createQuantityDescription`. The handle's `format` method falls back to `value.toString()` when no formatter spec is registered, and `handle.parserSpec` is `undefined` until specs are loaded.
-
-If you previously used the deprecated quantity description classes with `iconSpec`, keep `createQuantityDescription` focused on formatting and parsing, then append an icon editor param after construction:
-
-```ts
-import { type IconEditorParams, PropertyEditorParamTypes } from "@itwin/appui-abstract";
-
-const description = createQuantityDescription(props);
-const iconParam: IconEditorParams = {
-  type: PropertyEditorParamTypes.Icon,
-  definition: { iconSpec: "icon-globe" },
-};
-description.editor?.params?.push(iconParam);
-```
-
-To choose the right `kindOfQuantityName` and persistence unit for your property, see the [Common KindOfQuantity Mappings](../definitions/FormatSets.md#common-kindofquantity-mappings) table, which lists standard measurements (length, angle, area, stationing, etc.) with their EC full names and persistence units. If you prefer to look up the persistence unit programmatically rather than hardcoding a string, use [getDefaultPersistenceUnit]($quantity) with the appropriate [Phenomena]($quantity) constant — both are described in [Unit Providers](./Providers.md#unitproviders).
-
 ### Migrating from QuantityType to KindOfQuantity
 
 Starting in iTwin.js 5.0, we encourage developers to move away from using `QuantityType` and instead use `KindOfQuantity` [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name).

@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { type PropertyDescription } from "@itwin/appui-abstract";
-import { createQuantityDescription, IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
-import { createUnitsProvider, getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
+import { IModelApp, IModelConnection, QuantityType } from "@itwin/core-frontend";
+import { createUnitsProvider } from "@itwin/core-quantity";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Unit_System_Configuration
@@ -216,19 +215,6 @@ export function registerAsyncProvider() {
 async function loadAndRegisterDomainFormats(): Promise<void> {
   // Async loading work here...
   await IModelApp.quantityFormatter.addFormattingSpecsToRegistry({ name: "MyDomain.MyKoQ", persistenceUnitName: "Units.M" });
-}
-// __PUBLISH_EXTRACT_END__
-
-// __PUBLISH_EXTRACT_START__ Quantity_Formatting.Quantity_Property_Description
-/** Build a quantity-aware [PropertyDescription]($appui-abstract) for a length tool setting. */
-export function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
-  return createQuantityDescription({
-    name,
-    displayLabel,
-    kindOfQuantityName: "DefaultToolsUnits.LENGTH",
-    persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
-    parseError: "Unable to parse length",
-  });
 }
 // __PUBLISH_EXTRACT_END__
 

@@ -12,7 +12,7 @@ import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Angle Property Description
- * @deprecated in 5.11.0. Use [[createQuantityDescription]] to build a plain [PropertyDescription]($appui-abstract) with synchronous formatting callbacks backed by a [FormatSpecHandle]($quantity).
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) in new code.
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated

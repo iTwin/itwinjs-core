@@ -1784,9 +1784,6 @@ importers:
       '@azure/storage-blob':
         specifier: ^12.28.0
         version: 12.28.0
-      '@itwin/appui-abstract':
-        specifier: workspace:*
-        version: link:../../ui/appui-abstract
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend

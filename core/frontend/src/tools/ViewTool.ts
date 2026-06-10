@@ -14,13 +14,12 @@ import {
 import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
 import { getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
 import {
-  DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
+  type CustomFormattedNumberParams, DialogItem, DialogProperty, DialogPropertySyncItem, type PropertyDescription, PropertyDescriptionHelper, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
-import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
 import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
@@ -42,6 +41,30 @@ import {
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { ToolSettings } from "./ToolSettings";
 import { GraphicType } from "../common/render/GraphicType";
+
+function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
+  const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle("DefaultToolsUnits.LENGTH", getDefaultPersistenceUnit(Phenomena.LENGTH));
+  const parseError = IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength");
+  const editorParams: CustomFormattedNumberParams[] = [{
+    type: PropertyEditorParamTypes.CustomFormattedNumber,
+    formatFunction: (numberValue: number): string => formatSpecHandle.format(numberValue),
+    parseFunction: (userInput: string) => {
+      const parseResult = formatSpecHandle.parserSpec?.parseToQuantityValue(userInput);
+      return parseResult?.ok ? { value: parseResult.value } : { parseError };
+    },
+  }];
+
+  return {
+    name,
+    displayLabel,
+    kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+    typename: StandardTypeNames.Number,
+    editor: {
+      name: StandardEditorNames.NumberCustom,
+      params: editorParams,
+    },
+  };
+}
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 /* eslint-disable no-restricted-syntax */
@@ -4370,13 +4393,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private _cameraHeightProperty: DialogProperty<number> | undefined;
   public get cameraHeightProperty() {
     if (!this._cameraHeightProperty)
-      this._cameraHeightProperty = new DialogProperty<number>(createQuantityDescription({
-        name: "cameraHeight",
-        displayLabel: ViewTool.translate("SetupCamera.Labels.CameraHeight"),
-        kindOfQuantityName: "DefaultToolsUnits.LENGTH",
-        persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
-      }), 0.0);
+      this._cameraHeightProperty = new DialogProperty<number>(createLengthPropertyDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight")), 0.0);
     return this._cameraHeightProperty;
   }
   public get cameraHeight(): number { return this.cameraHeightProperty.value; }
@@ -4395,13 +4412,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private _targetHeightProperty: DialogProperty<number> | undefined;
   public get targetHeightProperty() {
     if (!this._targetHeightProperty)
-      this._targetHeightProperty = new DialogProperty<number>(createQuantityDescription({
-        name: "targetHeight",
-        displayLabel: ViewTool.translate("SetupCamera.Labels.TargetHeight"),
-        kindOfQuantityName: "DefaultToolsUnits.LENGTH",
-        persistenceUnitName: getDefaultPersistenceUnit(Phenomena.LENGTH),
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
-      }), 0.0);
+      this._targetHeightProperty = new DialogProperty<number>(createLengthPropertyDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight")), 0.0);
     return this._targetHeightProperty;
   }
   public get targetHeight(): number { return this.targetHeightProperty.value; }

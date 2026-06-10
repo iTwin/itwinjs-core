@@ -117,8 +117,6 @@ internal;class;CoreTools
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
-beta;function;createQuantityDescription
-beta;interface;CreateQuantityDescriptionProps
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
 internal;function;createSpatialTileTreeReferences

@@ -2319,18 +2319,6 @@ export interface CreateGraphicFromTemplateArgs {
 }
 
 // @beta
-export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription;
-
-// @beta
-export interface CreateQuantityDescriptionProps {
-    displayLabel: string;
-    kindOfQuantityName: string;
-    name: string;
-    parseError: string;
-    persistenceUnitName: string;
-}
-
-// @beta
 export interface CreateRenderInstancesParamsBuilderArgs {
     modelId?: Id64String;
 }
