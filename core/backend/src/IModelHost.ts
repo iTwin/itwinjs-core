@@ -441,7 +441,7 @@ export class IModelHost {
 
   /** Obtain the [[Workspace]] for an iTwin by discovering its settings containers.
    * All named dictionary resources in the requested iTwin's [[WorkspaceDb]] are loaded into the workspace at
-   * [[SettingsPriority.iTwin]]. Named dictionary resources from any discovered account iTwin containers are
+   * [[SettingsPriority.iTwin]]. Named dictionary resources from the discovered account iTwin container are
    * loaded at [[SettingsPriority.organization]].
    * @note This method requires an internet connection to discover the containers.
    * To use an iTwin workspace offline, use the overload that accepts [[WorkspaceDbSettingsProps]].

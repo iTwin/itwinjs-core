@@ -76,8 +76,6 @@ export namespace BlobContainer {
     containerId: string;
     /** The iTwinId that owns this container. */
     iTwinId?: GuidString;
-    /** The parent iTwinId of the owning iTwin, if any. */
-    parentITwinId?: GuidString;
     /** The account iTwinId of the owning iTwin. */
     accountITwinId?: GuidString;
   }
@@ -165,7 +163,7 @@ export namespace BlobContainer {
     containerType?: GuidString;
     /** optional label of the containers to query */
     label?: GuidString;
-    /** Whether to include parent iTwins in the query. Defaults to `false`. */
+    /** Whether to include the account iTwin in the query. Pass `{ filter: "accountOnly" }` to include only the account iTwin for the requested iTwin. Defaults to `false`. */
     includeParentITwins?: boolean | { filter: "accountOnly" };
   }
 
@@ -186,7 +184,11 @@ export namespace BlobContainer {
     /** query the Metadata for a specific container */
     queryMetadata(container: AccessContainerProps): Promise<Metadata>;
 
-    /** Returns all containers and their metadata associated with a given iTwinId. Can be further queried by label and containerType. */
+    /** Returns all containers and their metadata associated with a given iTwinId.
+     * Pass `includeParentITwins: { filter: "accountOnly" }` to also include the account iTwin container,
+     * without traversing any higher parent chain.
+     * Results can be further queried by label and containerType.
+     */
     queryContainersMetadata(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
 
     /** update the json properties of this container */
