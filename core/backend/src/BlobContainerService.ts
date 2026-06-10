@@ -78,6 +78,8 @@ export namespace BlobContainer {
     iTwinId?: GuidString;
     /** The parent iTwinId of the owning iTwin, if any. */
     parentITwinId?: GuidString;
+    /** The account iTwinId of the owning iTwin. */
+    accountITwinId?: GuidString;
   }
 
   /** Properties returned by `Service.requestToken` */
@@ -164,7 +166,7 @@ export namespace BlobContainer {
     /** optional label of the containers to query */
     label?: GuidString;
     /** Whether to include parent iTwins in the query. Defaults to `false`. */
-    includeParentITwins?: boolean;
+    includeParentITwins?: boolean | { filter: "accountOnly" };
   }
 
   /** Methods to create, delete, and access blob containers. */
