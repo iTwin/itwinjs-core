@@ -15,7 +15,7 @@ describe("SchemaDocument", () => {
     it("captures the envelope and the numeric version", () => {
       const doc = new SchemaDocument("MyDomain", "md", 1, 2, 3, {
         label: "My Domain", description: "desc",
-        references: [{ name: "BisCore", version: "1.0.0", alias: "bis" }],
+        references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
       });
       expect(doc.name).to.equal("MyDomain");
       expect(doc.alias).to.equal("md");
@@ -44,39 +44,42 @@ describe("SchemaDocument", () => {
   });
 
   describe("references", () => {
-    it("setSchemaReference adds from a held document, deriving version and alias", () => {
+    it("setSchemaReference adds from a held document, copying identity and alias", () => {
       const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
       const other = new SchemaDocument("Other", "ot", 2, 3, 4);
 
       const ref = doc.setSchemaReference(other);
-      expect(doc.references).to.deep.equal([{ name: "Other", version: "02.03.04", alias: "ot" }]);
+      expect(doc.references).to.deep.equal([{ name: "Other", readVersion: 2, writeVersion: 3, minorVersion: 4, alias: "ot" }]);
       expect(ref).to.equal(doc.references[0]);
+      expect(doc.references[0]).to.not.equal(other); // copied, never the document itself
     });
 
     it("setSchemaReference replaces an existing reference of the same name (case-insensitive)", () => {
       const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0, {
-        references: [{ name: "Other", version: "01.00.00", alias: "old" }],
+        references: [{ name: "Other", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "old" }],
       });
       const newer = new SchemaDocument("OTHER", "ot", 2, 0, 0);
 
       doc.setSchemaReference(newer);
       expect(doc.references).to.have.lengthOf(1); // replaced, not appended
-      expect(doc.references[0]).to.deep.equal({ name: "OTHER", version: "02.00.00", alias: "ot" });
+      expect(doc.references[0]).to.deep.equal({ name: "OTHER", readVersion: 2, writeVersion: 0, minorVersion: 0, alias: "ot" });
     });
 
-    it("setSchemaReference accepts an explicit SchemaReference verbatim", () => {
+    it("setSchemaReference copies an explicit SchemaReference, preserving a null alias", () => {
       const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-      const ref: Authoring.SchemaReference = { name: "Other", version: "01.02.03", alias: null };
-      expect(doc.setSchemaReference(ref)).to.equal(ref); // stored as-is, null alias preserved
+      const ref: Authoring.SchemaReference = { name: "Other", readVersion: 1, writeVersion: 2, minorVersion: 3, alias: null };
+      const stored = doc.setSchemaReference(ref);
+      expect(stored).to.deep.equal(ref);
+      expect(stored).to.not.equal(ref); // a copy; later caller-side mutation does not leak in
     });
 
     it("setSchemaReference accepts any structural source (e.g. a SchemaView Schema)", () => {
       const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
       // A plain object standing in for a SchemaView `Schema` flyweight - same member shape.
-      const viewSchema: Authoring.SchemaReferenceSource = { name: "Other", alias: "ot", readVersion: 3, writeVersion: 1, minorVersion: 0 };
+      const viewSchema = { name: "Other", alias: "ot", readVersion: 3, writeVersion: 1, minorVersion: 0 };
 
       doc.setSchemaReference(viewSchema);
-      expect(doc.references[0]).to.deep.equal({ name: "Other", version: "03.01.00", alias: "ot" });
+      expect(doc.references[0]).to.deep.equal({ name: "Other", readVersion: 3, writeVersion: 1, minorVersion: 0, alias: "ot" });
     });
   });
 
@@ -217,9 +220,9 @@ describe("SchemaDocument", () => {
       expect(new Authoring.Enumeration("E", "string").isStrict).to.be.true;
     });
 
-    it("creates a kind of quantity: persistenceUnit mandatory, formats appended", () => {
-      const koq = new SchemaDocument("S", "s", 1, 0, 0).createKindOfQuantity("Length", "Units:M", {
-        relativeError: 0.001, presentationFormats: ["Formats:DefaultReal", "Formats:AmerFI"],
+    it("creates a kind of quantity: persistenceUnit and relativeError mandatory, formats appended", () => {
+      const koq = new SchemaDocument("S", "s", 1, 0, 0).createKindOfQuantity("Length", "Units:M", 0.001, {
+        presentationFormats: ["Formats:DefaultReal", "Formats:AmerFI"],
       });
       expect(koq.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
       expect(koq.persistenceUnit).to.equal("Units:M");
@@ -256,10 +259,12 @@ describe("SchemaDocument", () => {
 
     it("createPrimitiveArray creates array properties with occurs bounds, defaulting to 0 / unbounded", () => {
       const e = new Authoring.EntityClass("E");
-      const arr = e.createPrimitiveArray("Tags", PrimitiveType.String, { minOccurs: 1, maxOccurs: 5 });
+      const arr = e.createPrimitiveArray("Tags", PrimitiveType.String, { minOccurs: 1, maxOccurs: 5, minLength: 1, maxLength: 64 });
       expect(arr.kind).to.equal(PropertyKind.PrimitiveArray);
       expect(arr.minOccurs).to.equal(1);
       expect(arr.maxOccurs).to.equal(5);
+      expect(arr.minLength).to.equal(1);
+      expect(arr.maxLength).to.equal(64);
 
       const def = e.createPrimitiveArray("More", PrimitiveType.String);
       expect(def.minOccurs).to.equal(0);
@@ -318,7 +323,10 @@ describe("SchemaDocument", () => {
   describe("Scenario A: compose a schema in code", () => {
     it("builds MyDomain:Pump with three properties (hiding via a plain CA)", () => {
       const doc = new SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
-        references: [{ name: "BisCore", version: "1.0.0", alias: "bis" }, { name: "AecUnits", version: "1.0.0", alias: "AECU" }],
+        references: [
+          { name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" },
+          { name: "AecUnits", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "AECU" },
+        ],
       });
       doc.customAttributes.add({ className: "CoreCustomAttributes.DynamicSchema" });
 

@@ -48,15 +48,15 @@ export class SchemaDocument {
   public label?: string;
   /** Optional description. */
   public description?: string;
-  /** The EC spec version this document was deserialized from (e.g. `"3.2"`), as a hint about its
-   * origin. `undefined` for documents created in memory, which are treated as the latest known spec
-   * Purely informational */
+  /** Major component of the EC spec version this document was deserialized from (`3` for a 3.2
+   * source), as a hint about its origin. `undefined` for documents created in memory, which are
+   * treated as the latest known spec. Purely informational. */
   public originalECXmlVersionMajor?: number;
-  /** Minor version to go along with {@link originalECXmlVersionMajor} version. */
+  /** Minor component to go along with {@link originalECXmlVersionMajor} (`2` for a 3.2 source). */
   public originalECXmlVersionMinor?: number;
   /** Points back to the source the schema was deserialized from, e.g., a file path or URL. */
   public source?: string;
-  /** Schema references (`name` + `version`, each with its own local `alias`), in declaration order. */
+  /** Schema references (`name` + version components, each with its own local `alias`), in declaration order. */
   public readonly references: Authoring.SchemaReference[] = [];
   /** Schema-level custom attributes. */
   public readonly customAttributes = new Authoring.CustomAttributeSet();
@@ -65,8 +65,8 @@ export class SchemaDocument {
    * accessors below ({@link SchemaDocument.getItemOfType}, ...) read it back. */
   public readonly items: Authoring.AnySchemaItem[] = [];
 
-  /** Creates a new document with the given identity.
-   * `init` carries the complementary schema-level data; */
+  /** Creates a new document with the given identity. `init` carries the complementary schema-level
+   * data; every field left out keeps its default. */
   public constructor(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: Authoring.SchemaDocumentInit) {
     this.name = name;
     this.alias = alias;
@@ -79,39 +79,42 @@ export class SchemaDocument {
       this.originalECXmlVersionMajor = init.originalECXmlVersionMajor;
       this.originalECXmlVersionMinor = init.originalECXmlVersionMinor;
       this.source = init.source;
-      if (init.references)
-        this.references.push(...init.references);
+      if (init.references) {
+        for (const reference of init.references)
+          this.setSchemaReference(reference);
+      }
     }
   }
 
   /** A read-only {@link SchemaKey} over this document's current name and version, for matching and
    * comparing against other keys (`matches`, `compareByVersion`, the `SchemaMatchType` rules).
-   * A new key is constructed on each access. */
+   * A new key is constructed on each access. Throws if a version component is out of range, since
+   * a key cannot represent one - the one place the otherwise validity-free document enforces its data. */
   public get key(): SchemaKey {
     return new SchemaKey(this.name, this.readVersion, this.writeVersion, this.minorVersion);
   }
 
-  /** Adds a schema reference, or replaces the existing reference of the same name (case-insensitive).
-   * Returns the stored reference.
-   *
-   * Pass an explicit {@link Authoring.SchemaReference} to control `name` / `version` / `alias` directly,
-   * or pass any {@link Authoring.SchemaReferenceSource} a caller already holds - the reference's `version`
-   * is then derived from the source's version components and its `alias` from the source's own alias (the
-   * suggested default; set a different `alias` on the returned reference if this document uses one). Both
-   * a {@link SchemaDocument} and a `SchemaView` `Schema` satisfy `SchemaReferenceSource` structurally, so
-   * either can be passed without this module depending on `SchemaView`. */
-  public setSchemaReference(reference: Authoring.SchemaReference): Authoring.SchemaReference;
-  public setSchemaReference(source: Authoring.SchemaReferenceSource): Authoring.SchemaReference;
-  public setSchemaReference(arg: Authoring.SchemaReference | Authoring.SchemaReferenceSource): Authoring.SchemaReference {
-    const reference: Authoring.SchemaReference = "version" in arg
-      ? arg
-      : { name: arg.name, version: new SchemaKey(arg.name, arg.readVersion, arg.writeVersion, arg.minorVersion).version.toString(), alias: arg.alias };
-    const index = this.references.findIndex((r) => namesEqual(r.name, reference.name));
+  /** Sets a schema reference: appends it, or replaces the existing reference of the same name
+   * (case-insensitive) in place. The fields are copied into a stored reference, which is returned
+   * for further configuration. Any object of the {@link Authoring.SchemaReference} shape can be
+   * passed - a hand-written literal, another {@link SchemaDocument}, or a `SchemaView` `Schema` -
+   * so a reference is derived from a schema a caller already holds by just passing it. The source's
+   * own `alias` is then only the suggested default; set a different one on the returned reference
+   * if this document uses one. */
+  public setSchemaReference(reference: Readonly<Authoring.SchemaReference>): Authoring.SchemaReference {
+    const stored: Authoring.SchemaReference = {
+      name: reference.name,
+      readVersion: reference.readVersion,
+      writeVersion: reference.writeVersion,
+      minorVersion: reference.minorVersion,
+      alias: reference.alias,
+    };
+    const index = this.references.findIndex((r) => namesEqual(r.name, stored.name));
     if (index >= 0)
-      this.references[index] = reference;
+      this.references[index] = stored;
     else
-      this.references.push(reference);
-    return reference;
+      this.references.push(stored);
+    return stored;
   }
 
   /** Returns the first item with the given name (case-insensitive), or `undefined`. */
@@ -123,7 +126,8 @@ export class SchemaDocument {
    * kind's type, or `undefined` (no such name, or a name of a different kind). `itemType` may be a
    * concrete {@link SchemaItemType} or a grouping ({@link AbstractSchemaItemType.Class},
    * {@link AbstractSchemaItemType.SchemaItem}), in which case any member kind matches.
-   * Given the large amount of item types we have, this method is to avoid a zoo of getXXX methods. */
+   * Covers every item kind; dedicated getters like {@link SchemaDocument.getEntity} exist only for
+   * the most common ones. */
   public getItemOfType<K extends keyof Authoring.SchemaItemTypeMap>(name: string, itemType: K): Authoring.SchemaItemTypeMap[K] | undefined {
     const item = this.getItem(name);
     return item !== undefined && isSupportedSchemaItemType(item.schemaItemType, itemType) ? item as Authoring.SchemaItemTypeMap[K] : undefined;
@@ -187,9 +191,9 @@ export class SchemaDocument {
   }
 
   /** Creates a kind of quantity, appends it, and returns it. `persistenceUnit` is the unit reference
-   * the KoQ persists in (mandatory data). */
-  public createKindOfQuantity(name: string, persistenceUnit: Authoring.LocalOrFullName, init?: Authoring.KindOfQuantityInit): Authoring.KindOfQuantity {
-    return this._add(new Authoring.KindOfQuantity(name, persistenceUnit, init));
+   * the KoQ persists in and `relativeError` its conversion tolerance (both mandatory data). */
+  public createKindOfQuantity(name: string, persistenceUnit: Authoring.LocalOrFullName, relativeError: number, init?: Authoring.KindOfQuantityInit): Authoring.KindOfQuantity {
+    return this._add(new Authoring.KindOfQuantity(name, persistenceUnit, relativeError, init));
   }
 
   /** Creates a property category, appends it, and returns it. */
@@ -213,30 +217,25 @@ export namespace Authoring {
   /** A reference to a schema item, as a plain string. Either a bare local name (`"Pump"` - an item in
    * this same schema) or a full name (`"BisCore:PhysicalElement"`). On input it also tolerates the
    * alias-qualified form (`"bis:PhysicalElement"`) and the dot separator
-   * (`"BisCore.PhysicalElement"`); The document is validity-free and resolves nothing,
+   * (`"BisCore.PhysicalElement"`). The document is validity-free and resolves nothing,
    * so reference correctness is a compile diagnostic - which is why this is a plain string. */
   export type LocalOrFullName = string;
 
-  /** A reference to another schema: invariant `name` + `version`, plus the `alias` this document uses
-   * for it within its own scope. */
+  /** A reference to another schema: invariant `name` + the three version components, plus the `alias`
+   * this document uses for it within its own scope. Both {@link SchemaDocument} and a `SchemaView`
+   * `Schema` satisfy this shape structurally, so a schema a caller already holds can be passed
+   * directly wherever a reference is expected. */
   export interface SchemaReference {
     name: string;
-    version: string;
+    /** Read component of the referenced `RR.WW.mm` version. */
+    readVersion: number;
+    /** Write component of the referenced `RR.WW.mm` version. */
+    writeVersion: number;
+    /** Minor component of the referenced `RR.WW.mm` version. */
+    minorVersion: number;
     /** The alias is `string | null` rather than optional, so skipping it is an explicit decision.
      * Serializing to XML requires an alias on every reference. The JSON format does not carry this field. */
     alias: string | null;
-  }
-
-  /** The minimal read shape {@link SchemaDocument.setSchemaReference} needs to derive a
-   * {@link SchemaReference} from a schema a caller already holds: its name, alias, and version
-   * components. Both {@link SchemaDocument} and a `SchemaView` `Schema` satisfy this structurally, so the
-   * convenience works across the read and authoring lanes without this module importing `SchemaView`. */
-  export interface SchemaReferenceSource {
-    readonly name: string;
-    readonly alias: string;
-    readonly readVersion: number;
-    readonly writeVersion: number;
-    readonly minorVersion: number;
   }
 
   /** Complementary schema-level data accepted by the {@link SchemaDocument} constructor. */
@@ -246,7 +245,9 @@ export namespace Authoring {
     originalECXmlVersionMajor?: number;
     originalECXmlVersionMinor?: number;
     source?: string;
-    references?: SchemaReference[];
+    /** Set through {@link SchemaDocument.setSchemaReference}, so the same shapes are accepted
+     * (a literal, a held {@link SchemaDocument}, a `SchemaView` `Schema`) and the fields are copied. */
+    references?: ReadonlyArray<Readonly<SchemaReference>>;
   }
 
   /** A custom attribute instance: the full name of the CA class it instantiates, plus its property
@@ -285,7 +286,9 @@ export namespace Authoring {
     }
 
     /** Returns the first instance of the named CA class, or `undefined`. Matching is case-insensitive
-     * and treats the `:` and `.` separators as equivalent. */
+     * and treats the `:` and `.` separators as equivalent, but compares spellings, not resolved
+     * identity: an alias-qualified name (`"bis:HiddenProperty"`) does not match the schema-name form
+     * (`"BisCore:HiddenProperty"`) of the same class. */
     public get(className: string): CustomAttribute | undefined {
       const key = foldFullName(className);
       return this._items.find((ca) => foldFullName(ca.className) === key);
@@ -553,6 +556,12 @@ export namespace Authoring {
     description?: string;
   }
 
+  /** Complementary data accepted by {@link Enumeration.createEnumerator}. */
+  export interface EnumeratorInit {
+    label?: string;
+    description?: string;
+  }
+
   /** Complementary data accepted by the {@link Enumeration} constructor. */
   export interface EnumerationInit {
     label?: string;
@@ -587,7 +596,7 @@ export namespace Authoring {
 
     /** Creates an enumerator, appends it, and returns it. `value` should match the backing type; the
      * document does not enforce that. */
-    public createEnumerator(name: string, value: number | string, init?: { label?: string, description?: string }): Enumerator {
+    public createEnumerator(name: string, value: number | string, init?: EnumeratorInit): Enumerator {
       const enumerator: Enumerator = { name, value, label: init?.label, description: init?.description };
       this.enumerators.push(enumerator);
       return enumerator;
@@ -598,8 +607,6 @@ export namespace Authoring {
   export interface KindOfQuantityInit {
     label?: string;
     description?: string;
-    /** Conversion tolerance. */
-    relativeError?: number;
     /** Presentation format override strings, in declaration order; the first is the default. */
     presentationFormats?: string[];
   }
@@ -612,19 +619,20 @@ export namespace Authoring {
     public readonly schemaItemType = SchemaItemType.KindOfQuantity;
     /** The unit reference the quantity persists in (e.g. `"Units:M"`). */
     public persistenceUnit: LocalOrFullName;
-    /** Conversion tolerance. */
-    public relativeError?: number;
+    /** Conversion tolerance, as the ratio of absolute error to actual value (`0.001` reads
+     * "accurate to one part in a thousand"). */
+    public relativeError: number;
     /** Presentation format override strings, in declaration order; the first is the default presentation. */
     public readonly presentationFormats: string[] = [];
 
-    /** Creates a kind of quantity. `persistenceUnit` is mandatory; `init` carries the rest. */
-    public constructor(name: string, persistenceUnit: LocalOrFullName, init?: KindOfQuantityInit) {
+    /** Creates a kind of quantity. `persistenceUnit` and `relativeError` are mandatory; `init` carries the rest. */
+    public constructor(name: string, persistenceUnit: LocalOrFullName, relativeError: number, init?: KindOfQuantityInit) {
       super(name);
       this.persistenceUnit = persistenceUnit;
+      this.relativeError = relativeError;
       if (init) {
         this.label = init.label;
         this.description = init.description;
-        this.relativeError = init.relativeError;
         if (init.presentationFormats)
           this.presentationFormats.push(...init.presentationFormats);
       }
@@ -667,7 +675,7 @@ export namespace Authoring {
     /** Reference to a PropertyCategory */
     category?: LocalOrFullName;
     /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`). Only meaningful on primitive
-     * and primitive-array properties (whose values are scalar quantities) */
+     * and primitive-array properties (whose values are scalar quantities). */
     kindOfQuantity?: LocalOrFullName;
   }
 
@@ -760,6 +768,14 @@ export namespace Authoring {
   /** Complementary data accepted by the {@link PrimitiveArrayProperty} constructor. */
   export interface PrimitiveArrayPropertyInit extends PropertyInit {
     extendedTypeName?: string;
+    /** Minimum element value (int / long / double only). */
+    minValue?: number;
+    /** Maximum element value (int / long / double only). */
+    maxValue?: number;
+    /** Minimum element length (string / binary only). */
+    minLength?: number;
+    /** Maximum element length (string / binary only). */
+    maxLength?: number;
     /** Minimum number of elements (default 0). */
     minOccurs?: number;
     /** Maximum number of elements; omit for unbounded. */
@@ -775,6 +791,14 @@ export namespace Authoring {
     public typeName: string;
     /** Extended type name, if any. */
     public extendedTypeName?: string;
+    /** Minimum element value (int / long / double only). */
+    public minValue?: number;
+    /** Maximum element value (int / long / double only). */
+    public maxValue?: number;
+    /** Minimum element length (string / binary only). */
+    public minLength?: number;
+    /** Maximum element length (string / binary only). */
+    public maxLength?: number;
     /** Minimum number of elements (default 0). */
     public minOccurs: number = 0;
     /** Maximum number of elements; `undefined` means unbounded. */
@@ -786,6 +810,10 @@ export namespace Authoring {
       this.typeName = typeof type === "string" ? type : primitiveTypeToString(type);
       if (init) {
         this.extendedTypeName = init.extendedTypeName;
+        this.minValue = init.minValue;
+        this.maxValue = init.maxValue;
+        this.minLength = init.minLength;
+        this.maxLength = init.maxLength;
         if (init.minOccurs !== undefined)
           this.minOccurs = init.minOccurs;
         this.maxOccurs = init.maxOccurs;
