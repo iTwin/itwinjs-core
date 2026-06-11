@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, GeometryStreamProps, PlacementProps,
+  Code, ElementGeometry, ElementGeometryDataEntry, FlatBufferGeometryStream, GeometricElementProps, GeometryStreamProps, PlacementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButton, BeButtonEvent, BriefcaseConnection, DecorateContext, GraphicType, HitDetail, IModelApp,
+  AccuDrawHintBuilder, BeButton, BeButtonEvent, BriefcaseConnection, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
   Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
@@ -19,6 +20,24 @@ import { setTitle } from "./Title";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.
+
+/** Toggles whether dynamic tiles retain stale children as visual fallback during regeneration.
+ * When enabled (default), prevents flicker but shows slightly stale graphics during edits.
+ * When disabled, exhibits the original flicker behavior.
+ */
+export class ToggleStaleChildrenTool extends Tool {
+  public static override toolId = "ToggleStaleChildren";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public override async run(): Promise<boolean> {
+    const ta = IModelApp.tileAdmin as any;
+    ta.retainStaleDynamicTileChildren = !ta.retainStaleDynamicTileChildren;
+    const state = ta.retainStaleDynamicTileChildren ? "ON (no flicker)" : "OFF (original flicker)";
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Retain stale dynamic tile children: ${state}`));
+    return true;
+  }
+}
 
 /** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
 export class EditingScopeTool extends Tool {
@@ -315,5 +334,149 @@ export class SetEditorToolSettingsTool extends Tool {
     }
 
     return true;
+  }
+}
+
+/** Interactively modifies the geometry stream of selected elements by dragging.
+ * Unlike MoveElementTool (which only changes placement), this rewrites the GeometryStream
+ * on every mouse motion — continuously committing changes so that dynamic tiles must
+ * regenerate in real time. This exercises the code path that causes flicker.
+ *
+ * Usage: Select element(s), run "dta deform element", click anchor point, move mouse to
+ * continuously deform. Click or reset to stop.
+ */
+export class DeformElementTool extends PrimitiveTool {
+  public static override toolId = "DeformElement";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  private _anchorPoint?: Point3d;
+  private _originalGeometry = new Map<Id64String, ElementGeometryDataEntry[]>();
+  private _elementIds: Id64String[] = [];
+  private _updating = false;
+  private _pendingPoint?: Point3d;
+
+  public override requireWriteableTarget(): boolean { return true; }
+
+  public override async onPostInstall(): Promise<void> {
+    await super.onPostInstall();
+
+    const imodel = this.iModel;
+    if (!imodel.isBriefcaseConnection()) {
+      await this.exitTool();
+      return;
+    }
+
+    this._elementIds = Array.from(imodel.selectionSet.elements);
+    if (this._elementIds.length === 0) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "DeformElement: select element(s) first"));
+      await this.exitTool();
+      return;
+    }
+
+    // Cache original geometry for all selected elements.
+    await startCommand(imodel);
+    for (const id of this._elementIds) {
+      const geomInfo = await basicManipulationIpc.requestElementGeometry(id);
+      if (geomInfo)
+        this._originalGeometry.set(id, geomInfo.entryArray);
+    }
+
+    if (this._originalGeometry.size === 0) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "DeformElement: no geometry found"));
+      await this.exitTool();
+      return;
+    }
+
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,
+      `DeformElement: click anchor point (${this._originalGeometry.size} element(s))`));
+  }
+
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (!this._anchorPoint) {
+      this._anchorPoint = ev.point.clone();
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "DeformElement: move mouse to deform, click or reset to stop"));
+      return EventHandled.Yes;
+    }
+
+    // Second click — apply final position and restart.
+    await this._applyTransform(ev.point);
+    await this.onReinitialize();
+    return EventHandled.Yes;
+  }
+
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (!this._anchorPoint)
+      return;
+
+    if (this._updating) {
+      // Capture latest position so we apply it when the current update finishes.
+      this._pendingPoint = ev.point.clone();
+      return;
+    }
+
+    await this._applyTransform(ev.point);
+  }
+
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.onReinitialize();
+    return EventHandled.Yes;
+  }
+
+  private async _applyTransform(currentPoint: Point3d): Promise<void> {
+    if (!this._anchorPoint || this._updating)
+      return;
+
+    this._updating = true;
+    try {
+      const offset = currentPoint.minus(this._anchorPoint);
+      const transform = Transform.createTranslationXYZ(offset.x, offset.y, offset.z);
+      const imodel = this.iModel;
+      if (!imodel.isBriefcaseConnection())
+        return;
+
+      await startCommand(imodel);
+      for (const [id, originalEntries] of this._originalGeometry) {
+        const newEntries = DeformElementTool._transformEntries(originalEntries, transform);
+        if (newEntries)
+          await basicManipulationIpc.updateGeometricElement(id, { entryArray: newEntries });
+      }
+      await basicManipulationIpc.saveChanges(DeformElementTool.toolId);
+    } finally {
+      this._updating = false;
+    }
+
+    // If mouse moved while we were busy, immediately apply the latest position.
+    const pending = this._pendingPoint;
+    if (pending) {
+      this._pendingPoint = undefined;
+      await this._applyTransform(pending);
+    }
+  }
+
+  private static _transformEntries(entryArray: ElementGeometryDataEntry[], transform: Transform): ElementGeometryDataEntry[] | undefined {
+    const builder = new ElementGeometry.Builder();
+    let anyTransformed = false;
+
+    for (const entry of entryArray) {
+      const geom = ElementGeometry.toGeometryQuery(entry);
+      if (geom) {
+        const cloned = geom.clone();
+        if (cloned && cloned.tryTransformInPlace(transform)) {
+          builder.appendGeometryQuery(cloned);
+          anyTransformed = true;
+          continue;
+        }
+      }
+      builder.entries.push(entry);
+    }
+
+    return anyTransformed ? builder.entries : undefined;
+  }
+
+  public override async onRestartTool(): Promise<void> {
+    const tool = new DeformElementTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

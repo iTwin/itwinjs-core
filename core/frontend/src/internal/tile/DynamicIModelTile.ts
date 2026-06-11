@@ -185,6 +185,8 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
  * Its contentId is the element's Id.
  */
 class ElementTile extends Tile {
+  private _staleChildren: GraphicsTile[] = [];
+
   public constructor(parent: RootTile, elementId: Id64String, range: Range3d) {
     super({
       parent,
@@ -196,6 +198,11 @@ class ElementTile extends Tile {
 
     this.loadChildren();
     this.setIsReady();
+  }
+
+  public override [Symbol.dispose](): void {
+    this._disposeStaleChildren();
+    super[Symbol.dispose]();
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -283,10 +290,18 @@ class ElementTile extends Tile {
       if (closestMatch) {
         selected.push(closestMatch);
         args.markUsed(closestMatch);
+      } else if (this._staleChildren.length > 0) {
+        // Use a stale graphic from before the geometry update as a fallback while new graphics load.
+        // This prevents the element from flickering out of existence between edits.
+        const stale = this._staleChildren[0];
+        selected.push(stale);
+        args.markUsed(stale);
       }
     } else if (exactMatch.hasGraphics) {
       selected.push(exactMatch);
       args.markUsed(exactMatch);
+      // Fresh graphics are ready — discard stale fallbacks.
+      this._disposeStaleChildren();
     }
   }
 
@@ -296,12 +311,41 @@ class ElementTile extends Tile {
     const radius = 0.5 * this.range.low.distance(this.range.high);
     this.boundingSphere.init(center, radius);
 
-    // Discard out-dated graphics.
     assert(undefined !== this.children);
-    for (const child of this.children)
-      child[Symbol.dispose]();
+
+    if (!IModelApp.tileAdmin.retainStaleDynamicTileChildren) {
+      // Original behavior: discard all children immediately.
+      for (const child of this.children)
+        child[Symbol.dispose]();
+
+      this.children.length = 0;
+      return;
+    }
+
+    // Retain children that have graphics as stale fallbacks so the element remains visible while new graphics load.
+    // Only replace existing stale fallbacks if current children actually have loaded graphics;
+    // otherwise keep the previous stale fallback across rapid updates.
+    const freshGraphics: GraphicsTile[] = [];
+    for (const child of this.children as GraphicsTile[]) {
+      if (child.hasGraphics)
+        freshGraphics.push(child);
+      else
+        child[Symbol.dispose]();
+    }
+
+    if (freshGraphics.length > 0) {
+      this._disposeStaleChildren();
+      this._staleChildren.push(...freshGraphics);
+    }
 
     this.children.length = 0;
+  }
+
+  private _disposeStaleChildren(): void {
+    for (const child of this._staleChildren)
+      child[Symbol.dispose]();
+
+    this._staleChildren.length = 0;
   }
 }
 
