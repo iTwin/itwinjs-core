@@ -79,7 +79,7 @@ export interface MigrationRecord {
   /** The unique identifier of the applied migration. */
   readonly id: string;
   /** The value returned by [[Migration.migrate]], if any. */
-  readonly details?: MigrationDetails;
+  readonly details: MigrationDetails | undefined;
   /** ISO 8601 timestamp of when the migration was applied. */
   readonly appliedAt: string;
 }

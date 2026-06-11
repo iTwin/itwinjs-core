@@ -26,15 +26,26 @@ const maxRetries = 5;
  * Called automatically from [[BriefcaseDb.open]] when there are registered migrations that have
  * not yet been applied to this iModel. The algorithm:
  *
- * 1. Pulls the latest changesets from iModel Hub. The [[Phase 3]] pull flow detects any migration
- *    changesets pushed by other briefcases and calls `migrateLocalChanges` as needed.
- * 2. If all registered migrations have now been applied (by another briefcase), stops early.
- * 3. Reverses any local changes, runs each pending `Migration.migrate()` in indirect mode (bypassing
- *    lock checks), and immediately pushes each migration as its own changeset.
- * 4. If a push fails with `PullIsRequired` (another briefcase pushed first), discards the pending
- *    migration work, reinstates local changes, and retries from step 1.
- * 5. After all migrations are pushed, reinstates local changes and calls `migrateLocalChanges()`
- *    for each applied migration to reconcile the user's local work with the post-migration state.
+ * 1. Pull the latest changesets. The Phase 3 pull flow handles any migration changesets already
+ *    pushed by other briefcases, calling `migrateLocalChanges` for each one as needed.
+ * 2. If all registered migrations have now been applied (by another briefcase), stop early.
+ * 3. Reverse local changes and enter the pull-merge rebase context.
+ * 4. For each pending migration in registration order:
+ *    a. Run `migrate()` in indirect mode (bypasses lock/channel checks) and save the changeset.
+ *    b. Push immediately. On `PullIsRequired` (race) or unexpected error, discard the migration
+ *       txn and break. Local changes remain reversed in the native rebase stack.
+ *    c. **Per-migration reinstatement cycle**: call `intermediateResume()` to reinstate local
+ *       changes on top of the just-pushed migration state, then call `migrateLocalChanges()` so
+ *       this migration can reconcile the user's work with its specific post-migration state.
+ *       Save, then re-reverse local changes to prepare for the next migration.
+ * 5. Final `resume()`: reinstates local changes on top of the fully-migrated iModel, saves
+ *    ("Merge."), and fires `notifyPullMergeEnd`. Also covers the break cases from step 4b,
+ *    where local changes were already re-reversed before the loop exited.
+ * 6. If a race was detected, loop back (up to 5 retries) from step 1.
+ *
+ * The per-migration reinstatement in step 4c mirrors the Phase 3 pull flow: each
+ * `migrateLocalChanges` call sees the iModel in the state immediately after its own migration
+ * was applied — not after any later migration has also run.
  *
  * @internal
  */
@@ -68,7 +79,6 @@ export async function applyAndPushPendingMigrations(db: BriefcaseDb): Promise<vo
     db.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
     Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local change(s) before migration apply.`);
 
-    const appliedMigrations: Array<{ migration: Migration; details: MigrationDetails | undefined }> = [];
     let raceDetected = false;
     let unexpectedError: unknown;
 
@@ -93,38 +103,30 @@ export async function applyAndPushPendingMigrations(db: BriefcaseDb): Promise<vo
       // (hub returns PullIsRequired), we discard the migration work and restart the outer loop.
       try {
         await BriefcaseManager.pushChanges(db, { accessToken, description, retainLocks: true });
-        appliedMigrations.push({ migration, details });
         Logger.logInfo(loggerCategory, `Migration "${migration.id}" pushed successfully.`);
       } catch (err: any) {
-        if (err.errorNumber === IModelHubStatus.PullIsRequired) {
-          Logger.logInfo(loggerCategory, `Push race detected for migration "${migration.id}". Discarding migration work and retrying.`);
-          // Discard the migration pending txn. The stage remains "Merging" and the user's
-          // reversed txns are still in the native rebase stack — resume() below will reinstate them.
-          nativeDb.discardLocalChanges();
-          raceDetected = true;
-          break;
-        }
-
-        // Unexpected error: clean up and propagate after reinstating user changes.
-        Logger.logError(loggerCategory, `Unexpected error pushing migration "${migration.id}": ${(err as Error).message}`);
         nativeDb.discardLocalChanges();
-        unexpectedError = err;
+        if (err.errorNumber === IModelHubStatus.PullIsRequired) {
+          Logger.logInfo(loggerCategory, `Push race detected for migration "${migration.id}". Discarding and retrying.`);
+          raceDetected = true;
+        } else {
+          Logger.logError(loggerCategory, `Unexpected error pushing migration "${migration.id}": ${(err as Error).message}`);
+          unexpectedError = err;
+        }
+        // In both cases the migration txn is discarded. Local changes remain reversed in the
+        // native rebase stack — resume() below will reinstate them.
         break;
       }
-    }
 
-    // Reinstate local changes. This runs the rebase loop, applying the user's reversed txns
-    // on top of the current post-migration iModel state. Local changes win on conflict.
-    Logger.logInfo(loggerCategory, `Reinstating local changes after migration cycle.`);
-    await db.txns.rebaser.resume();
+      // Per-migration reinstatement cycle, matching the Phase 3 pull flow:
+      //   1. Reinstate local changes on top of the just-pushed migration state.
+      //   2. Call migrateLocalChanges so this migration can reconcile the user's work.
+      //   3. Re-reverse local changes to prepare for the next migration.
+      // This ensures migrateLocalChanges sees the iModel in the state right after THIS
+      // migration was applied — not after some later migration has also been applied.
+      Logger.logInfo(loggerCategory, `Running per-migration reinstatement for migration "${migration.id}".`);
+      await db.txns.rebaser.intermediateResume();
 
-    if (unexpectedError !== undefined)
-      throw unexpectedError;
-
-    // For each successfully applied migration, call migrateLocalChanges() to reconcile the
-    // user's reinstated local changes with the post-migration state.
-    for (const { migration, details } of appliedMigrations) {
-      Logger.logInfo(loggerCategory, `Running migrateLocalChanges for migration "${migration.id}".`);
       const record = db.channels.getAppliedMigrations(migration.channelKey).find((r) => r.id === migration.id);
       // NOTE (Phase 5): ReinstatedChanges is currently a stub with empty sets.
       // Phase 5 will populate it by reading reinstated txns via the changeset reader.
@@ -136,7 +138,25 @@ export async function applyAndPushPendingMigrations(db: BriefcaseDb): Promise<vo
       await migration.migrateLocalChanges(db, record?.details ?? details, reinstatedChanges);
       nativeDb.saveChanges(`migrateLocalChanges:${migration.id}`);
       Logger.logInfo(loggerCategory, `migrateLocalChanges complete for migration "${migration.id}".`);
+
+      // Re-reverse local changes to prepare for the next migration (or for the final resume).
+      db.txns.rebaser.notifyReverseLocalChangesBegin();
+      const reReversedTxns = nativeDb.pullMergeReverseLocalChanges(false);
+      const reReversedTxnProps = reReversedTxns
+        .map((txn) => db.txns.getTxnProps(txn))
+        .filter((p): p is TxnProps => p !== undefined);
+      db.txns.rebaser.notifyReverseLocalChangesEnd(reReversedTxnProps);
+      Logger.logInfo(loggerCategory, `Re-reversed ${reReversedTxns.length} local change(s) after migration "${migration.id}".`);
     }
+
+    // Final reinstatement: reinstates local changes (including all migrateLocalChanges results)
+    // on top of the final post-migration iModel state. Saves and fires notifyPullMergeEnd.
+    // Also handles the race/error cases, where local changes were re-reversed before the break.
+    Logger.logInfo(loggerCategory, "Final reinstatement after migration cycle.");
+    await db.txns.rebaser.resume();
+
+    if (unexpectedError !== undefined)
+      throw unexpectedError;
 
     if (!raceDetected) {
       Logger.logInfo(loggerCategory, "All pending migrations applied successfully.");

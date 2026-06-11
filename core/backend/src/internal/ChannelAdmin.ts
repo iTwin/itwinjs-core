@@ -232,7 +232,7 @@ class ChannelAdmin implements ChannelControl {
     const record: MigrationRecord = {
       id: migrationId,
       appliedAt: new Date().toISOString(),
-      ...(details !== undefined && { details }),
+      details: details,
     };
     if (!element.jsonProperties.migrations)
       element.jsonProperties.migrations = [];
