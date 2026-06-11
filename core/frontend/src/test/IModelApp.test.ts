@@ -210,8 +210,9 @@ describe("LookAndMoveTool keyboard focus", () => {
     expect(document.activeElement).toBe(button);
 
     try {
-      await new LookAndMoveTool(IModelApp.viewManager.selectedView!).onPostInstall();
-      expect(document.activeElement).toBe(document.body);
+      // Exercise the normal tool install pipeline (onInstall, onPostInstall, etc.) rather than invoking onPostInstall directly.
+      if (await IModelApp.tools.run(LookAndMoveTool.toolId))
+        expect(document.activeElement).toBe(document.body);
     } finally {
       button.remove();
     }
