@@ -36,7 +36,7 @@ function createQuantityPropertyDescription(props: QuantityPropertyDescriptionPro
     formatFunction: (numberValue: number): string => formatSpecHandle.format(numberValue),
     parseFunction: (userInput: string) => {
       const parseResult = formatSpecHandle.parserSpec?.parseToQuantityValue(userInput);
-      return parseResult?.ok ? { value: parseResult.value } : { parseError };
+      return parseResult && parseResult.ok ? { value: parseResult.value } : { parseError };
     },
   }];
 
