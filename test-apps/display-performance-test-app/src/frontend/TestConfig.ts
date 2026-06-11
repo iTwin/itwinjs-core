@@ -180,10 +180,10 @@ export interface TestConfigProps {
    * Logged exceptions will include the string "DPTA_EXCEPTION" for easy grepping.
    */
   onException?: "terminate";
-  /** An optional string appended to the generated file name for this test, useful for distinguishing tests
+  /** An optional string that replaces iModelName in the generated file name for this test, useful for distinguishing tests
    * that would otherwise produce the same name (e.g. same iModel/view but different frontendTilesUrlTemplate).
    */
-  extraLabel?: string;
+  iModelNameAlias?: string;
 }
 
 export const defaultHilite = new Hilite.Settings();
@@ -230,7 +230,7 @@ export class TestConfig {
   public readonly backgroundMap?: BackgroundMapProps;
   public readonly hyperModeling?: HyperModelingProps;
   public readonly onException?: "terminate";
-  public readonly extraLabel?: string;
+  public readonly iModelNameAlias?: string;
 
   /** Construct a new TestConfig with properties initialized by following priority:
    *  As defined by `props`; or
@@ -258,7 +258,7 @@ export class TestConfig {
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
     this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
-    this.extraLabel = props.extraLabel ?? prevConfig?.extraLabel;
+    this.iModelNameAlias = props.iModelNameAlias ?? prevConfig?.iModelNameAlias;
     this.frontendTilesUrlTemplate = props.frontendTilesUrlTemplate ?? prevConfig?.frontendTilesUrlTemplate;
     this.frontendTilesNopFallback = props.frontendTilesNopFallback ?? prevConfig?.frontendTilesNopFallback;
 
