@@ -259,7 +259,6 @@ export class TestConfig {
     this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
     this.extraLabel = props.extraLabel ?? prevConfig?.extraLabel;
-    this.iModelNameAlias = props.iModelNameAlias ?? prevConfig?.iModelNameAlias;
     this.frontendTilesUrlTemplate = props.frontendTilesUrlTemplate ?? prevConfig?.frontendTilesUrlTemplate;
     this.frontendTilesNopFallback = props.frontendTilesNopFallback ?? prevConfig?.frontendTilesNopFallback;
 
