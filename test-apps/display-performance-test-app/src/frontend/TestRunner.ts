@@ -829,6 +829,7 @@ export class TestRunner {
     testName += configs.iModelName.replace(/\.[^/.]+$/, "");
     testName += `_${configs.viewName}`;
     testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
+    testName += configs.extraLabel ? `_${configs.extraLabel.trim()}` : "";
     testName = testName.replace(/[/\\?%*:|"<>]/g, "-");
 
     const renderMode = getRenderMode(test.viewport);
