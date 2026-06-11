@@ -1122,7 +1122,7 @@ export class ClipPrimitive implements Clipper {
     announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     arePlanesDefined(): boolean;
-    classifyPointContainment(points: Point3d[], _ignoreMasks?: boolean): ClipPlaneContainment;
+    classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment;
     protected _clipPlanes?: UnionOfConvexClipPlaneSets;
     clone(): ClipPrimitive;
     containsZClip(): boolean;
@@ -1168,7 +1168,6 @@ export interface ClipPrimitiveShapeProps {
 // @public
 export class ClipShape extends ClipPrimitive {
     protected constructor(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean);
-    classifyPointContainment(points: Point3d[], ignoreMasks: boolean): ClipPlaneContainment;
     clone(result?: ClipShape): ClipShape;
     static createBlock(extremities: Range3d, clipMask: ClipMaskXYZRangePlanes, isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createEmpty(isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
@@ -5633,7 +5632,7 @@ export class RotationalSweep extends SolidPrimitive {
     static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(range: Range3d, transform?: Transform): void;
-    getConstructiveFrame(options?: RotationalSweepConstructiveFrameOptions): Transform | undefined;
+    getConstructiveFrame(): Transform | undefined;
     getCurves(): CurveCollection;
     getFractionalRotationTransform(vFraction: number, result?: Transform): Transform;
     getSweep(): Angle;
@@ -5644,11 +5643,6 @@ export class RotationalSweep extends SolidPrimitive {
     get isSkew(): boolean;
     readonly solidPrimitiveType = "rotationalSweep";
     tryTransformInPlace(transform: Transform): boolean;
-}
-
-// @public
-export class RotationalSweepConstructiveFrameOptions extends SolidPrimitiveConstructiveFrameOptions {
-    alignToSweep?: boolean;
 }
 
 // @public
@@ -5809,14 +5803,10 @@ export abstract class SolidPrimitive extends GeometryQuery {
     protected _capped: boolean;
     abstract constantVSection(_vFraction: number): CurveCollection | undefined;
     readonly geometryCategory = "solid";
-    abstract getConstructiveFrame(_options?: SolidPrimitiveConstructiveFrameOptions): Transform | undefined;
+    abstract getConstructiveFrame(): Transform | undefined;
     abstract get isClosedVolume(): boolean;
     get isSkew(): boolean;
     abstract readonly solidPrimitiveType: SolidPrimitiveType;
-}
-
-// @public
-export class SolidPrimitiveConstructiveFrameOptions {
 }
 
 // @public
@@ -6288,7 +6278,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
-    classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment;
+    classifyPointContainment(points: Point3d[], onIsOutside: boolean): number;
     clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
     computePlanePlanePlaneIntersectionsInAllConvexSets(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment?: boolean): number;
     get convexSets(): ConvexClipPlaneSet[];

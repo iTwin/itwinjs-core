@@ -12,7 +12,7 @@ import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
- * Use of this service requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]] passed to [[IModelApp.startup]]. [[MapLayerOptions.BingMaps]] is deprecated for Bing imagery and retained for existing Bing-based services.
+ * Use of this service requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]] passed to [[IModelApp.startup]].
  * @public
  * @extensions
  */
@@ -21,9 +21,7 @@ export class BingLocationProvider {
 
   constructor() {
     let bingKey = "";
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
     }
     this._locationRequestTemplate = `https://dev.virtualearth.net/REST/v1/Locations?query={query}&key=${bingKey}`;

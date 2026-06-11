@@ -262,7 +262,6 @@ internal;class;RegionMomentsXY
 public;class;RegionOps
 public;class;ReusableObjectCache
 public;class;RotationalSweep
-public;class;RotationalSweepConstructiveFrameOptions
 public;class;RuledSweep
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
@@ -271,7 +270,6 @@ public;interface;SignedLoops
 public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
-public;class;SolidPrimitiveConstructiveFrameOptions
 public;type;SolidPrimitiveType
 public;class;SortableEdge
 public;type;SortableEdgeCluster
