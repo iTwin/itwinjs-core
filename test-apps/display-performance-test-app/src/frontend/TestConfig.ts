@@ -230,6 +230,7 @@ export class TestConfig {
   public readonly backgroundMap?: BackgroundMapProps;
   public readonly hyperModeling?: HyperModelingProps;
   public readonly onException?: "terminate";
+  public readonly extraLabel?: string;
 
   /** Construct a new TestConfig with properties initialized by following priority:
    *  As defined by `props`; or
