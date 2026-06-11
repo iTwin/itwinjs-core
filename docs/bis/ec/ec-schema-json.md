@@ -1,6 +1,6 @@
 # ECSchema JSON
 
-ECSchema JSON is the JSON representation of an [ECSchema](./ec-schema.md). Like [ECSchema XML](./ec-schema-xml.md), it is a persistent interchange format for EC metadata: schemas, classes, properties, relationships, custom attributes, enumerations, quantities, units, and formats. The two formats describe the same EC information model; this page is the JSON counterpart to [ECSchema XML](./ec-schema-xml.md) and links back to it where the two diverge.
+ECSchema JSON is the JSON representation of an [ECSchema](./ec-schema.md). Like [ECSchema XML](./ec-schema-xml.md), it is a persistent interchange format for EC metadata: schemas, classes, properties, relationships, custom attributes, enumerations, quantities, units, and formats. The two formats describe the same EC information model; this page is the JSON counterpart to [ECSchema XML](./ec-schema-xml.md) and cross-references it where the two diverge.
 
 This page documents the ECSchema JSON 3.2 shape used by current iTwin schemas. The semantic rules for each EC item are documented on the linked EC pages and enforced by EC schema validation; this page covers the JSON document shape only.
 
@@ -59,7 +59,7 @@ Schema items are properties of an `items` object, keyed by item name:
 }
 ```
 
-The key is the item name, so an in-schema item object omits the `name`, `schema`, and `schemaVersion` properties (those are implied by the key and the enclosing schema). Item names must be unique across all item kinds in a schema - an entity class and an enumeration cannot share a name. This differs from XML, where each item is an element of a specific kind and ordering is positional; in JSON the items are object members. (See [ECName](./ec-name.md) for naming and uniqueness rules.)
+The key is the item name, so an in-schema item object omits the `$schema`, `name`, `schema`, and `schemaVersion` properties (those are implied by the enclosing document, the key, and the schema). Item names must be unique across all item kinds in a schema - an entity class and an enumeration cannot share a name. This differs from XML, where each item is an element of a specific kind and ordering is positional; in JSON the items are object members. (See [ECName](./ec-name.md) for naming and uniqueness rules.)
 
 ## Schema References
 
@@ -102,7 +102,7 @@ Common class properties:
 
 | Property | Required | JSON type | Description |
 | --- | --- | --- | --- |
-| `modifier` | No | string | `none` (default), `abstract`, or `sealed`. |
+| `modifier` | No | string | `None` (default), `Abstract`, or `Sealed`. Values are serialized in this casing; parsers accept casing variations. |
 | `baseClass` | No | string | Full base class name `{schema}.{class}`. Relationship classes support at most one base class semantically. |
 | `properties` | No | array | Property objects (see [Properties](#properties)). |
 | `customAttributes` | No | array | Custom attribute instances applied to the class. |
@@ -112,7 +112,7 @@ Common class properties:
 ```json
 "Pump": {
   "schemaItemType": "EntityClass",
-  "modifier": "sealed",
+  "modifier": "Sealed",
   "label": "Pump",
   "baseClass": "BisCore.PhysicalElement",
   "mixins": ["Example.IServiceable"],
@@ -143,12 +143,12 @@ Common class properties:
 
 | Property | Required | JSON type | Description |
 | --- | --- | --- | --- |
-| `strength` | Yes | string | `referencing`, `holding`, or `embedding`. |
-| `strengthDirection` | Yes | string | `forward` or `backward`. |
+| `strength` | Yes | string | `Referencing`, `Holding`, or `Embedding`. |
+| `strengthDirection` | Yes | string | `Forward` or `Backward`. |
 | `source` | Yes | object | Source constraint (see below). |
 | `target` | Yes | object | Target constraint (see below). |
 
-> `strength` and `strengthDirection` are **required in JSON** (the deserializer rejects an object that omits them). This differs from [ECSchema XML](./ec-schema-xml.md#relationship-classes), where both are optional and default to `referencing` / `forward`.
+> `strength` and `strengthDirection` are **required in JSON** (the deserializer rejects an object that omits them). This differs from [ECSchema XML](./ec-schema-xml.md#relationship-classes), where both are optional and default to `Referencing` / `Forward`. Like the other enumerated values, they are serialized in the casing shown but parsed case-insensitively.
 
 `source` and `target` constraint objects:
 
@@ -164,9 +164,9 @@ Common class properties:
 ```json
 "PumpFeedsTank": {
   "schemaItemType": "RelationshipClass",
-  "modifier": "sealed",
-  "strength": "referencing",
-  "strengthDirection": "forward",
+  "modifier": "Sealed",
+  "strength": "Referencing",
+  "strengthDirection": "Forward",
   "source": {
     "multiplicity": "(0..*)", "roleLabel": "feeds", "polymorphic": true,
     "constraintClasses": ["Example.Pump"]
@@ -205,12 +205,12 @@ Per-kind additions:
 | `StructProperty` | `typeName` (full struct class name) | |
 | `PrimitiveArrayProperty` | `typeName`, `extendedTypeName`, value/length bounds, `minOccurs`/`maxOccurs` | enum-backed arrays use this kind with an enumeration `typeName`. |
 | `StructArrayProperty` | `typeName` (full struct class name), `minOccurs`/`maxOccurs` | |
-| `NavigationProperty` | `relationshipName` (full relationship name), `direction` (`forward`/`backward`) | |
+| `NavigationProperty` | `relationshipName` (full relationship name), `direction` (`Forward`/`Backward`) | |
 
 ```json
 { "type": "StructProperty", "name": "Address", "typeName": "Example.PostalAddress" }
 { "type": "PrimitiveArrayProperty", "name": "Tags", "typeName": "string", "minOccurs": 0, "maxOccurs": 2147483647 }
-{ "type": "NavigationProperty", "name": "Tank", "relationshipName": "Example.PumpFeedsTank", "direction": "forward" }
+{ "type": "NavigationProperty", "name": "Tank", "relationshipName": "Example.PumpFeedsTank", "direction": "Forward" }
 ```
 
 > Unbounded arrays serialize `maxOccurs` as the integer `2147483647` in JSON, where XML uses the string `"unbounded"`.
@@ -252,7 +252,7 @@ ECSchema JSON 3.2 includes units and formats as schema items. See [KindOfQuantit
 }
 ```
 
-- **KindOfQuantity**: `persistenceUnit` (required, full unit name), `relativeError` (required, number), `presentationUnits` (optional; an array of format strings, or a single `;`-separated string). The first presentation format is the default. See [KindOfQuantity format overrides](./kindofquantity.md) for the override grammar.
+- **KindOfQuantity**: `persistenceUnit` (required, full unit name), `relativeError` (required, number), `presentationUnits` (optional; an array of format strings, or a single `;`-separated string). The first presentation format is the default. See [KindOfQuantity format overrides](./kindofquantity.md#format-overrides) for the override grammar.
 - **Unit**: `phenomenon`, `unitSystem`, `definition` (all required); `numerator`, `denominator`, `offset` (optional).
 - **InvertedUnit**: `invertsUnit`, `unitSystem` (both required).
 - **Constant**: `phenomenon`, `definition` (required); `numerator`, `denominator` (optional).
@@ -276,7 +276,7 @@ A container may carry multiple custom attributes, but only one instance of a giv
 
 The JSON Schema for ECSchema JSON validates document shape: allowed properties, value types, and simple patterns. It does not express every semantic EC rule; semantic rules (relationship constraint compatibility, reference resolution, property override compatibility, custom attribute applicability) are covered by [EC Schema Validation](./ec-schema-validation.md).
 
-The 3.2 JSON Schema files live in the BIS schemas repository under `System/json_schema/ec32/`.
+The 3.2 JSON Schema files live in the BIS schemas repository at [System/json_schema/ec32/](https://github.com/iTwin/bis-schemas/tree/master/System/json_schema/ec32/). The `$schema` URL (`https://dev.bentley.com/json_schemas/...`) is a formal identifier for the spec version, not a live HTTP validation endpoint - the canonical schema files are the ones in the BIS schemas repository.
 
 ## Differences from ECSchema XML
 
@@ -285,17 +285,30 @@ The two formats describe the same model; the shape differs. Summary (see [ECSche
 | Aspect | ECSchema XML | ECSchema JSON |
 | --- | --- | --- |
 | Spec/version marker | `xmlns` namespace | `$schema` URL |
+| Schema name | `schemaName` attribute | `name` |
 | Item name | `typeName` attribute | object key (or `name` in SchemaItem JSON) |
+| Property name | `propertyName` attribute | `name` |
 | Label / description | `displayLabel` / `description` | `label` / `description` |
 | Enumeration backing type | `backingTypeName` | `type` |
 | Read-only flag | `readOnly` | `isReadOnly` |
-| Constraint polymorphic flag | `polymorphic` | `polymorphic` |
+| Mixin representation | `ECEntityClass` element + `IsMixin` custom attribute (`AppliesToEntityClass`) | dedicated `Mixin` `schemaItemType` with top-level `appliesTo` |
+| Constraint polymorphic flag | `polymorphic` string attribute (casing-tolerant) | `polymorphic` JSON boolean |
 | Cross-references | alias-qualified, `bis:Class`, `:` separator | full schema name, `BisCore.Class`, `.` separator |
 | Reference alias | required `alias` on each `ECSchemaReference` | none (no alias in JSON) |
 | Items | one element per kind, order positional | `items` object keyed by name |
-| Relationship `strength` / `strengthDirection` | optional, default `referencing` / `forward` | **required** |
+| Relationship `strength` / `strengthDirection` | optional, default `Referencing` / `Forward` | **required** |
 | Unbounded array `maxOccurs` | `"unbounded"` | `2147483647` |
 | Standalone single item | not supported | SchemaItem JSON |
+
+## Obtaining ECSchema JSON
+
+This page documents the shape of the JSON; the JSON itself is produced from an in-memory `Schema`. Standard schemas (`BisCore`, etc.) are distributed with iTwin.js as ECSchema XML and are loaded into a `SchemaContext` at runtime; the same JSON shape applies regardless of how a schema was originally authored.
+
+- **From an iModel.** On the backend, `IModelDb.schemaContext` (`@itwin/core-backend`) resolves a schema by name into a `Schema` object. Calling `Schema.toJSON()` (`@itwin/ecschema-metadata`) returns the `SchemaProps` object documented here.
+- **From files.** `@itwin/ecschema-locaters` provides locaters - `SchemaJsonFileLocater` for `.ecschema.json` and `SchemaXmlFileLocater` for `.ecschema.xml` - that you register on a `SchemaContext` to load schemas from disk. Once loaded, `Schema.toJSON()` serializes to JSON regardless of the source format.
+- **A single item.** `SchemaItem.toJSON(true)` serializes one item as a standalone **SchemaItem JSON** object; pass `SchemaItem.toJSON(true, true)` to also include `schemaVersion`.
+
+For fast read-only access that does not require full-fidelity JSON, prefer [SchemaView](../../learning/metadata/SchemaView.md) (see [See also](#see-also)).
 
 ## Version Notes
 
@@ -304,4 +317,5 @@ ECSchema JSON tracks the EC information model the same way [ECSchema XML](./ec-s
 ## See also
 
 - [ECSchema XML](./ec-schema-xml.md) - the XML representation of the same EC model.
+- `SchemaContext` (`@itwin/ecschema-metadata`) - the API-layer entry point for loading, authoring, validating, and serializing ECSchema JSON at full fidelity.
 - [SchemaView](../../learning/metadata/SchemaView.md) and its [binary format](../../learning/metadata/SchemaViewBinaryFormat.md) - a separate, **lossy runtime** representation used by `@itwin/ecschema-metadata` for fast in-memory access. Unlike ECSchema XML and JSON, it is an iTwin.js implementation format, not an EC interchange format: it drops units, formats, and custom attribute instances and is versioned independently of the EC spec.
