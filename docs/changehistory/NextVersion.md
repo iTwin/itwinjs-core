@@ -34,9 +34,9 @@ The quantity property description classes [LengthDescription]($frontend), [Surve
 
 These appui-based helpers were introduced when quantity formatting was driven by `QuantityType`, but new quantity formatting work should use `kindOfQuantityName`-based APIs through [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) instead.
 
-For existing tool settings and other appui-based property flows, these deprecated classes remain available as a compatibility path while the editor stack moves toward deriving quantity formatting and parsing from property metadata such as `kindOfQuantityName`.
+For existing tool settings and other appui-based property flows, these deprecated classes remain available as a compatibility path while the editor stack moves toward deriving quantity formatting and parsing from property metadata such as `kindOfQuantityName`. Most callers can migrate directly to that model. `SurveyLengthDescription` is the notable exception: its legacy behavior selects survey-style display units in unit systems where survey and engineering length formats differ. Applications that need to preserve that behavior should provide the desired format through a dedicated [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata). For more information, see the quantity learning docs on [Format Sets](../quantity-formatting/definitions/FormatSets.md) and [Providers](../quantity-formatting/usage/Providers.md).
 
-The deprecated classes remain behavior-compatible and will not be removed before a future major release.
+Existing uses of the deprecated classes continue to behave as before, and the classes will not be removed before a future major release.
 
 ## @itwin/map-layers-formats
 

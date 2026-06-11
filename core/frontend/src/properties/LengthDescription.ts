@@ -39,7 +39,7 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 /**
  * Survey Length Property Description
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) in new code.
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use `kindOfQuantityName`-based formatting in new code. To preserve survey-length behavior, configure a [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata), then obtain specs through [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
