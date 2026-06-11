@@ -14,6 +14,7 @@ export default defineConfig({
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/filename.test.ts"], // to honor it/describe.only
     testTimeout: 80000, // Some tests can take much longer than the default 5 seconds when run in parallel.
+    pool: 'forks', // Forks use process IPC instead of MessagePort, avoiding birpc 60s RPC timeout on heavy CPU-bound tests (vitest-dev/vitest#8164)
     minWorkers: 1,
     maxWorkers: 3,
     coverage: {
