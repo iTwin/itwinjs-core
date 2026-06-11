@@ -377,6 +377,8 @@ class GraphicsTile extends Tile {
     // large coordinates cause visible precision artifacts (jagged curves). At or beyond the threshold, fall back
     // to per-element rtcCenter centering. The threshold is supplied by whatever created this dynamic branch
     // (see DynamicIModelTile.create) - e.g. the active GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold.
+    // NOTE: Using range.center is correct for rigid iModelTransforms (the typical case). For non-rigid transforms,
+    // checking all 8 range.corners() would be more precise (e.g. for an element whose box straddles the origin).
     const worldCenter = this.tree.iModelTransform.multiplyPoint3d(this.range.center);
     const maxCoord = Math.max(Math.abs(worldCenter.x), Math.abs(worldCenter.y), Math.abs(worldCenter.z));
     // A null range has no geometry or unknown extent, so rtcCenter (the safer, precision-preserving default) is used.

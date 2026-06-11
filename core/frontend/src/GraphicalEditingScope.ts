@@ -64,11 +64,11 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   /** The connection to the iModel being edited. */
   public readonly iModel: BriefcaseConnection;
 
-  /** The maximum world-space coordinate magnitude, in meters, at which graphics produced for elements modified during this
+  /** The world-space coordinate magnitude, in meters, below which graphics produced for elements modified during this
    * scope encode their vertex positions as absolute float32 coordinates.
    *
    * Encoding absolute positions is more performant, but loses precision for coordinates of large magnitude. When an element's
-   * graphics are centered farther than this threshold from the coordinate system origin (for example, when a project is
+   * graphics are centered at or beyond this threshold from the coordinate system origin (for example, when a project is
    * georeferenced far from the origin) the graphics instead use per-element `rtcCenter` centering, which preserves precision
    * (avoiding artifacts like jagged curves) at a small performance cost.
    *

@@ -168,8 +168,8 @@ class ScheduleScriptDynamicState {
   }
 
   public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>) {
+    // Restore the original always-absolute-positions behavior (pre-adaptive-threshold) by passing an infinite threshold.
     // Schedule-script dynamic graphics are not part of a GraphicalEditingScope and have no user-facing threshold control.
-    // Preserve their historical behavior of always using absolute positions by passing an infinite threshold.
     this.rootTile = DynamicIModelTile.create(root, elemChanges, Number.POSITIVE_INFINITY);
     this._dispose = () => {};
   }

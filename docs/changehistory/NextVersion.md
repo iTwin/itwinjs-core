@@ -21,6 +21,16 @@ const scope = await briefcase.enterEditingScope();
 scope.dynamicGraphicsAbsolutePositionThreshold = 50_000;
 ```
 
+For framework code that does not directly enter the scope, configure the threshold from [GraphicalEditingScope.onEnter]($frontend), which runs before any edits:
+
+```ts
+GraphicalEditingScope.onEnter.addListener((scope) => {
+  scope.dynamicGraphicsAbsolutePositionThreshold = 50_000;
+});
+```
+
+This changes the default behavior for existing projects: previously dynamic editing graphics always used absolute positions, but elements now centered 10 km or more from the origin automatically switch to `rtcCenter` centering. Projects within 10 km are unaffected. To restore the prior behavior, set the threshold to `Number.POSITIVE_INFINITY`.
+
 ### `IModelConnection.createQueryReader` now terminates gracefully if the connection is closed
 
 Previously, if an [IModelConnection]($frontend) was closed between the call to [IModelConnection.createQueryReader]($frontend) and the first iteration of its results, it ended up throwing during the underlying RPC call.

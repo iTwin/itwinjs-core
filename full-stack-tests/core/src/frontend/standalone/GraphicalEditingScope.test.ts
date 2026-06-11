@@ -659,13 +659,21 @@ describe("GraphicalEditingScope", () => {
 
     it("threads dynamicGraphicsAbsolutePositionThreshold through to dynamic graphics requests", async () => {
       // The setter test above only verifies the property; this verifies the value actually reaches the
-      // `useAbsolutePositions` flag of the element graphics request produced for a modified element.
+      // `useAbsolutePositions` flag of the element graphics request produced for a modified element, and that
+      // the `maxCoord < threshold` comparison is exercised against the element's real world-space coordinates.
+      // `thresholdFactor` is multiplied by the element's coordinate magnitude: factors below 1 produce a threshold
+      // beneath it (=> rtcCenter, false), factors above 1 produce a threshold above it (=> absolute, true). 0 and
+      // +Infinity cover the degenerate extremes.
       await expectUseAbsolutePositions(0, false);
+      await closeIModel();
+      await expectUseAbsolutePositions(0.5, false);
+      await closeIModel();
+      await expectUseAbsolutePositions(2, true);
       await closeIModel();
       await expectUseAbsolutePositions(Number.POSITIVE_INFINITY, true);
     });
 
-    async function expectUseAbsolutePositions(threshold: number, expected: boolean): Promise<void> {
+    async function expectUseAbsolutePositions(thresholdFactor: number, expected: boolean): Promise<void> {
       imodel = await openWritable();
 
       const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
@@ -685,6 +693,16 @@ describe("GraphicalEditingScope", () => {
       view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
 
       const bc = imodel;
+
+      // The element spans the project extents, so its world-space center - and thus the `maxCoord` the tile computes -
+      // is the midpoint of these endpoints. The seed iModel is georeferenced away from the origin, so this is non-zero.
+      const p0 = new Point3d(bc.projectExtents.low.x, bc.projectExtents.high.y, 0);
+      const p1 = new Point3d(bc.projectExtents.high.x, bc.projectExtents.low.y, 0);
+      const center = p0.interpolate(0.5, p1);
+      const maxCoord = Math.max(Math.abs(center.x), Math.abs(center.y), Math.abs(center.z));
+      expect(maxCoord).to.be.greaterThan(0);
+      const threshold = maxCoord * thresholdFactor; // 0, below maxCoord, above maxCoord, or +Infinity
+
       const tileAdmin = IModelApp.tileAdmin;
       const original = tileAdmin.requestElementGraphics.bind(tileAdmin);
       const requested: Array<boolean | undefined> = [];
@@ -702,22 +720,22 @@ describe("GraphicalEditingScope", () => {
           // The threshold is captured when the model's first element is modified, so set it before editing.
           const scope = await bc.enterEditingScope();
           scope.dynamicGraphicsAbsolutePositionThreshold = threshold;
+          try {
+            // Only capture requests made after the edit - i.e. the dynamic element graphics.
+            capture = true;
 
-          // Only capture requests made after the edit - i.e. the dynamic element graphics.
-          capture = true;
+            await insertLineElement(bc, modelId, category, makeLineSegment(p0, p1));
+            await saveBriefcaseChanges(bc);
 
-          const ext = bc.projectExtents;
-          await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
-          await saveBriefcaseChanges(bc);
+            await BeDuration.wait(150);
+            await vp.waitForAllTilesToRender();
 
-          await BeDuration.wait(150);
-          await vp.waitForAllTilesToRender();
-
-          expect(requested.length).to.be.greaterThan(0);
-          for (const useAbsolutePositions of requested)
-            expect(useAbsolutePositions).to.equal(expected);
-
-          await scope.exit();
+            expect(requested.length).to.be.greaterThan(0);
+            for (const useAbsolutePositions of requested)
+              expect(useAbsolutePositions).to.equal(expected);
+          } finally {
+            await scope.exit().catch(() => { });
+          }
         });
       } finally {
         tileAdmin.requestElementGraphics = original;
