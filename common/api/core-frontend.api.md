@@ -4285,6 +4285,9 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     get briefcaseChannelName(): "itwinjs-core/editing-scope";
     // @deprecated (undocumented)
     dispose(): void;
+    // @beta
+    get dynamicGraphicsAbsolutePositionThreshold(): number;
+    set dynamicGraphicsAbsolutePositionThreshold(value: number);
     // @internal
     static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
     exit(): Promise<void>;
