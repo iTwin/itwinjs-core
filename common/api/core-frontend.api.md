@@ -5850,6 +5850,8 @@ export class LookAndMoveTool extends ViewManip {
     // (undocumented)
     protected get isExitAllowedOnReinitialize(): boolean;
     // (undocumented)
+    onPostInstall(): Promise<void>;
+    // (undocumented)
     protected provideInitialToolAssistance(): void;
     // (undocumented)
     provideToolAssistance(mainInstrKey: string): void;

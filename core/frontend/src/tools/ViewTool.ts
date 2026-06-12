@@ -109,6 +109,14 @@ const inertialDampen = (pt: Vector3d) => {
   pt.scaleInPlace(Geometry.clamp(ToolSettings.viewingInertia.damping, .75, .999));
 };
 
+const focusHome = (): void => {
+  const element = document.activeElement as HTMLElement | null;
+  if (element && element !== document.body)
+    element.blur();
+
+  document.body.focus();
+};
+
 /** An InteractiveTool that manipulates a view.
  * @public
  * @extensions
@@ -3136,6 +3144,11 @@ export class LookAndMoveTool extends ViewManip {
 
   protected override get isExitAllowedOnReinitialize(): boolean { return true; }
   protected override provideInitialToolAssistance(): void { this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
+
+  public override async onPostInstall(): Promise<void> {
+    await super.onPostInstall();
+    focusHome();
+  }
 
   public override provideToolAssistance(mainInstrKey: string): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(mainInstrKey));
