@@ -1054,7 +1054,7 @@ for (const enableSemanticRebase of [false, true]) {
         .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
     });
 
-    it.only("cross-txn element ID remapping", async () => {
+    it("cross-txn element ID remapping", async () => {
       /*
        * This test reproduces a specific scenario in the iModel rebase logic:
        *
