@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Reality model tiles whose content is plain-text JSON glTF (a `.gltf` file) are now rendered, including their externally-referenced textures (e.g. `.webp` images). Previously only binary glTF (`.glb`) and b3dm content were recognized, so JSON glTF tiles were silently discarded.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "mark.schlosser@bentley.com"
+}
