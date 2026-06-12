@@ -59,9 +59,36 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
   private _disposed = false;
   private _cleanup?: RemoveFunction;
+  private _dynamicGraphicsAbsolutePositionThreshold = 10_000;
 
   /** The connection to the iModel being edited. */
   public readonly iModel: BriefcaseConnection;
+
+  /** The world-space coordinate magnitude, in meters, below which graphics produced for elements modified during this
+   * scope encode their vertex positions as absolute float32 coordinates.
+   *
+   * Encoding absolute positions is more performant, but loses precision for coordinates of large magnitude. When an element's
+   * graphics are centered at or beyond this threshold from the coordinate system origin (for example, when a project is
+   * georeferenced far from the origin) the graphics instead use per-element `rtcCenter` centering, which preserves precision
+   * (avoiding artifacts like jagged curves) at a small performance cost.
+   *
+   * Increase this value to favor performance (`Number.POSITIVE_INFINITY` always uses absolute positions). Decrease it (down to
+   * zero, which always uses `rtcCenter` centering) to favor precision. Negative values are clamped to zero; non-finite values
+   * other than `Number.POSITIVE_INFINITY` are ignored.
+   *
+   * This value is read once per model, when the first element in that model is modified during the scope. Set it before making
+   * edits to ensure it takes effect; changes made afterward do not apply to a model until the scope is exited and re-entered.
+   *
+   * Defaults to 10000 (10 kilometers).
+   * @beta
+   */
+  public get dynamicGraphicsAbsolutePositionThreshold(): number {
+    return this._dynamicGraphicsAbsolutePositionThreshold;
+  }
+  public set dynamicGraphicsAbsolutePositionThreshold(value: number) {
+    if (Number.isFinite(value) || value === Number.POSITIVE_INFINITY)
+      this._dynamicGraphicsAbsolutePositionThreshold = Math.max(value, 0);
+  }
 
   /** Event raised when a new scope is created for any [[BriefcaseConnection]].
    * @see [[onExiting]] and [[onExited]] for complementary events.
