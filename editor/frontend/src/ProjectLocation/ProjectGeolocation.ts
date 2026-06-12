@@ -33,7 +33,10 @@ function createQuantityPropertyDescription(props: QuantityPropertyDescriptionPro
   const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle(kindOfQuantityName, persistenceUnitName);
   const editorParams: CustomFormattedNumberParams[] = [{
     type: PropertyEditorParamTypes.CustomFormattedNumber,
-    formatFunction: (numberValue: number): string => formatSpecHandle.format(numberValue),
+    formatFunction: (numberValue: number): string => {
+      const formatterSpec = formatSpecHandle.formatterSpec;
+      return formatterSpec ? IModelApp.quantityFormatter.formatQuantity(numberValue, formatterSpec) : numberValue.toFixed(2);
+    },
     parseFunction: (userInput: string) => {
       const parseResult = formatSpecHandle.parserSpec?.parseToQuantityValue(userInput);
       return parseResult && parseResult.ok ? { value: parseResult.value } : { parseError };

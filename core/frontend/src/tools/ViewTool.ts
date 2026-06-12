@@ -12,7 +12,6 @@ import {
   Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
-import { getDefaultPersistenceUnit, Phenomena } from "@itwin/core-quantity";
 import {
   type CustomFormattedNumberParams, DialogItem, DialogProperty, DialogPropertySyncItem, type PropertyDescription, PropertyDescriptionHelper, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
@@ -43,11 +42,14 @@ import { ToolSettings } from "./ToolSettings";
 import { GraphicType } from "../common/render/GraphicType";
 
 function createLengthPropertyDescription(name: string, displayLabel: string): PropertyDescription {
-  const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle("DefaultToolsUnits.LENGTH", getDefaultPersistenceUnit(Phenomena.LENGTH));
+  const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle("DefaultToolsUnits.LENGTH", "Units.M");
   const parseError = IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength");
   const editorParams: CustomFormattedNumberParams[] = [{
     type: PropertyEditorParamTypes.CustomFormattedNumber,
-    formatFunction: (numberValue: number): string => formatSpecHandle.format(numberValue),
+    formatFunction: (numberValue: number): string => {
+      const formatterSpec = formatSpecHandle.formatterSpec;
+      return formatterSpec ? IModelApp.quantityFormatter.formatQuantity(numberValue, formatterSpec) : numberValue.toFixed(2);
+    },
     parseFunction: (userInput: string) => {
       const parseResult = formatSpecHandle.parserSpec?.parseToQuantityValue(userInput);
       return parseResult && parseResult.ok ? { value: parseResult.value } : { parseError };
