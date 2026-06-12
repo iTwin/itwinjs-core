@@ -153,7 +153,6 @@ export namespace AzuriteTest {
     return current;
   };
 
-
   export const service: BlobContainer.ContainerService & { userToken: { admin: string, readOnly: string, readWrite: string } } = {
     userToken: {
       admin: fakeUser(), // just unique strings
