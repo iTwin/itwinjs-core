@@ -142,16 +142,7 @@ export namespace AzuriteTest {
   export const setParentITwin = (childITwinId: string, parentITwinId: string) => parentITwins.set(childITwinId, parentITwinId);
   export const clearParentITwins = () => parentITwins.clear();
 
-  const getAccountITwinId = (requestedITwinId: string): string => {
-    const visited = new Set<string>();
-    let current = requestedITwinId;
-    for (let parent = parentITwins.get(current); parent !== undefined && !visited.has(parent); parent = parentITwins.get(current)) {
-      visited.add(current);
-      current = parent;
-    }
-
-    return current;
-  };
+  const getAccountITwinId = (requestedITwinId: string): string => parentITwins.get(requestedITwinId) ?? requestedITwinId;
 
   export const service: BlobContainer.ContainerService & { userToken: { admin: string, readOnly: string, readWrite: string } } = {
     userToken: {
