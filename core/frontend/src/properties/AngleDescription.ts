@@ -12,11 +12,14 @@ import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Angle Property Description
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class AngleDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "angle";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     super({
       name: name ?? defaultName,
       displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Angle"),

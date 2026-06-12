@@ -5,9 +5,11 @@
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
+import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
 import { FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
+import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
@@ -217,6 +219,94 @@ describe("Quantity formatter", async () => {
       expect(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value)).toBe(true);
       expect(withinTolerance(overrideValueInMeters4.value, overrideValueInMeters5.value)).toBe(true);
     }
+  });
+
+  it("createQuantityDescription returns the correct property metadata", () => {
+    const desc = createQuantityDescription({
+      name: "myLength",
+      displayLabel: "My Length",
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+      persistenceUnitName: "Units.M",
+      parseError: "parse error",
+    });
+
+    expect(desc.name).toBe("myLength");
+    expect(desc.displayLabel).toBe("My Length");
+    expect(desc.kindOfQuantityName).toBe("DefaultToolsUnits.LENGTH");
+    expect(desc.typename).toBe(StandardTypeNames.Number);
+  });
+
+  it("createQuantityDescription sets up a NumberCustom editor with CustomFormattedNumber params", () => {
+    const desc = createQuantityDescription({
+      name: "myAngle",
+      displayLabel: "My Angle",
+      kindOfQuantityName: "DefaultToolsUnits.ANGLE",
+      persistenceUnitName: "Units.RAD",
+      parseError: "parse error",
+    });
+
+    expect(desc.editor?.name).toBe(StandardEditorNames.NumberCustom);
+    expect(desc.editor?.params).toHaveLength(1);
+    const param = desc.editor?.params?.[0];
+    expect(param?.type).toBe(PropertyEditorParamTypes.CustomFormattedNumber);
+    expect(param).toBeDefined();
+    expect(isCustomFormattedNumberParams(param!)).toBe(true);
+  });
+
+  it("createQuantityDescription format callback falls back to toFixed(2) when no spec is registered", () => {
+    const desc = createQuantityDescription({
+      name: "testProp",
+      displayLabel: "Test",
+      kindOfQuantityName: "NonExistent.KOQ",
+      persistenceUnitName: "Units.M",
+      parseError: "parse error",
+    });
+
+    const param = desc.editor?.params?.[0];
+    expect(param).toBeDefined();
+    expect(isCustomFormattedNumberParams(param!)).toBe(true);
+    if (!param || !isCustomFormattedNumberParams(param))
+      throw new Error("Expected CustomFormattedNumberParams");
+
+    const formatted = param.formatFunction(12.345);
+    expect(formatted).toBe("12.35");
+  });
+
+  it("createQuantityDescription parse callback returns parseError when parserSpec is not loaded", () => {
+    const desc = createQuantityDescription({
+      name: "testProp",
+      displayLabel: "Test",
+      kindOfQuantityName: "NonExistent.KOQ",
+      persistenceUnitName: "Units.M",
+      parseError: "my parse error",
+    });
+
+    const param = desc.editor?.params?.[0];
+    expect(param).toBeDefined();
+    expect(isCustomFormattedNumberParams(param!)).toBe(true);
+    if (!param || !isCustomFormattedNumberParams(param))
+      throw new Error("Expected CustomFormattedNumberParams");
+
+    expect(param.parseFunction("12.3 m")).toEqual({ parseError: "my parse error" });
+  });
+
+  it("createQuantityDescription falls back to a generic parseError when no override is supplied", () => {
+    const desc = createQuantityDescription({
+      name: "testProp",
+      displayLabel: "Test",
+      kindOfQuantityName: "NonExistent.KOQ",
+      persistenceUnitName: "Units.M",
+    });
+
+    const param = desc.editor?.params?.[0];
+    expect(param).toBeDefined();
+    expect(isCustomFormattedNumberParams(param!)).toBe(true);
+    if (!param || !isCustomFormattedNumberParams(param))
+      throw new Error("Expected CustomFormattedNumberParams");
+
+    expect(param.parseFunction("bad input")).toEqual({
+      parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseValue"),
+    });
   });
 
   it("Set and use coordinate and length overrides format (Survey Feet) - deprecate way", async () => {
