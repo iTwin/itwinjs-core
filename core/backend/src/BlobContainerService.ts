@@ -163,7 +163,7 @@ export namespace BlobContainer {
     containerType?: GuidString;
     /** optional label of the containers to query */
     label?: GuidString;
-    /** Whether to include the account iTwin in the query. Pass `{ filter: "accountOnly" }` to include only the account iTwin for the requested iTwin. Defaults to `false`. */
+    /** Whether to include parent iTwins in the query. Pass `true` to traverse the full parent chain, or `{ filter: "accountOnly" }` to include only the account iTwin. Defaults to `false`. */
     includeParentITwins?: boolean | { filter: "accountOnly" };
   }
 
