@@ -31,7 +31,6 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
-import { applyAndPushPendingMigrations } from "./internal/MigrationRunner";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
@@ -3807,7 +3806,7 @@ export class BriefcaseDb extends IModelDb {
     if (openMode === OpenMode.ReadWrite && briefcaseDb.briefcaseId !== BriefcaseIdValue.Unassigned) {
       const pendingMigrations = briefcaseDb.channels.getAllPendingMigrations();
       if (pendingMigrations.length > 0) {
-        await applyAndPushPendingMigrations(briefcaseDb);
+        await BriefcaseManager.applyAndPushPendingMigrations(briefcaseDb);
       }
     }
 
