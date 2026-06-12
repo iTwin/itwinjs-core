@@ -9,7 +9,7 @@ This page documents the ECSchema JSON 3.2 shape used by current iTwin schemas. T
 JSON supports two related shapes:
 
 - **ECSchema JSON** - the whole schema in one object, with its items in a name-keyed `items` object. This is the JSON analogue of an ECSchema XML document.
-- **SchemaItem JSON** - a single schema item (one class, enumeration, KindOfQuantity, etc.) described on its own, outside its schema. Used to move a single item compactly (for example over the wire) without serializing the whole schema. A SchemaItem JSON object is identical to the in-schema item object, plus three locating properties (`$schema`, `schema`, `name`) and an optional `schemaVersion` that identify the schema it came from. It does not redefine or change the item.
+- **SchemaItem JSON** - a single schema item (one class, enumeration, KindOfQuantity, etc.) described on its own, outside its schema. Used to move a single item compactly (for example over the wire) without serializing the whole schema. A SchemaItem JSON object is identical to the in-schema item object, plus a format discriminator (`$schema`, the schemaitem spec URL), two provenance properties (`schema` and `name`) and an optional `schemaVersion` that identify the schema it came from. It does not redefine or change the item.
 
 ## `$schema` and Version
 
@@ -304,9 +304,12 @@ The two formats describe the same model; the shape differs. Summary (see [ECSche
 
 This page documents the shape of the JSON; the JSON itself is produced from an in-memory `Schema`. Standard schemas (`BisCore`, etc.) are distributed with iTwin.js as ECSchema XML and are loaded into a `SchemaContext` at runtime; the same JSON shape applies regardless of how a schema was originally authored.
 
-- **From an iModel.** On the backend, `IModelDb.schemaContext` (`@itwin/core-backend`) resolves a schema by name into a `Schema` object. Calling `Schema.toJSON()` (`@itwin/ecschema-metadata`) returns the `SchemaProps` object documented here.
+- **From an iModel.** On the backend, `IModelDb.schemaContext` (`@itwin/core-backend`) returns a `SchemaContext` for the iModel; call `schemaContext.getSchema(schemaKey, matchType)` to obtain a `Schema` object. Calling `Schema.toJSON()` (`@itwin/ecschema-metadata`) returns the `SchemaProps` object documented here.
 - **From files.** `@itwin/ecschema-locaters` provides locaters - `SchemaJsonFileLocater` for `.ecschema.json` and `SchemaXmlFileLocater` for `.ecschema.xml` - that you register on a `SchemaContext` to load schemas from disk. Once loaded, `Schema.toJSON()` serializes to JSON regardless of the source format.
+- **Authoring programmatically.** `@itwin/ecschema-editing` builds and edits a `Schema` in memory; serialize the result with `Schema.toJSON()`.
 - **A single item.** `SchemaItem.toJSON(true)` serializes one item as a standalone **SchemaItem JSON** object; pass `SchemaItem.toJSON(true, true)` to also include `schemaVersion`.
+
+**Importing into an iModel requires XML.** `IModelDb.importSchemas()` and `importSchemaStrings()` accept ECSchema XML only. If your schema is authored as JSON, serialize it to XML first before importing - see [Serializing schemas to XML](../../learning/serializing-xml-schemas.md).
 
 For fast read-only access that does not require full-fidelity JSON, prefer [SchemaView](../../learning/metadata/SchemaView.md) (see [See also](#see-also)).
 
@@ -317,5 +320,6 @@ ECSchema JSON tracks the EC information model the same way [ECSchema XML](./ec-s
 ## See also
 
 - [ECSchema XML](./ec-schema-xml.md) - the XML representation of the same EC model.
-- `SchemaContext` (`@itwin/ecschema-metadata`) - the API-layer entry point for loading, authoring, validating, and serializing ECSchema JSON at full fidelity.
+- [SchemaContext]($ecschema-metadata) (`@itwin/ecschema-metadata`) - the API-layer entry point for loading, authoring, validating, and serializing ECSchema JSON at full fidelity.
+
 - [SchemaView](../../learning/metadata/SchemaView.md) and its [binary format](../../learning/metadata/SchemaViewBinaryFormat.md) - a separate, **lossy runtime** representation used by `@itwin/ecschema-metadata` for fast in-memory access. Unlike ECSchema XML and JSON, it is an iTwin.js implementation format, not an EC interchange format: it drops units, formats, and custom attribute instances and is versioned independently of the EC spec.
