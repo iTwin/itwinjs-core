@@ -704,9 +704,8 @@ describe("Viewport changed events", async () => {
       let numLoaded = 0;
 
       // Wait for the queued subcategory loads to drain instead of assuming a fixed completion time.
-      // This keeps the test focused on ordering semantics instead of machine speed.
-      for (let elapsedMs = 0; elapsedMs < 30000; elapsedMs += 50) {
-        await BeDuration.wait(50);
+      // This keeps the test focused on eventual completion instead of machine speed.
+      for (let elapsedMs = 0; elapsedMs <= 30000; elapsedMs += 50) {
         numLoaded = 0;
         for (const catId of Id64.iterable(catIds)) {
           if (subcats.getSubCategories(catId) !== undefined)
@@ -716,6 +715,8 @@ describe("Viewport changed events", async () => {
         if (numLoaded === expectedCount && vp.subcategories.isEmpty) {
           break;
         }
+
+        await BeDuration.wait(50);
       }
 
       expect(vp.subcategories.isEmpty).to.be.true;
