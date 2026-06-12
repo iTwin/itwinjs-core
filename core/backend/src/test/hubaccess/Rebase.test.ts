@@ -1080,6 +1080,9 @@ for (const enableSemanticRebase of [false, true]) {
       const firstTxnElementId = await testIModel.insertElement(userATxn);
       userATxn.saveChanges("First Txn: Create new element (Needs recompute)");
 
+      const firstTxnElementFedGUID = userA.elements.getFederationGuidFromId(firstTxnElementId);
+      chai.expect(firstTxnElementFedGUID).to.exist;
+
       // Insert another element that references the element from the first txn.
       const secondTxnElementId = await testIModel.insertElementEx(userATxn, {
         parent: { id: firstTxnElementId, relClassName: "TestDomain:A1OwnsA1" },
@@ -1098,13 +1101,19 @@ for (const enableSemanticRebase of [false, true]) {
         shouldReinstate: (txnProps: TxnProps) => txnProps.props.description !== "First Txn: Create new element (Needs recompute)",
         recompute: async (txnProps: TxnProps) => {
           if (txnProps.props.description === "First Txn: Create new element (Needs recompute)") {
-            morphedElementId = await testIModel.insertElement(userATxn);
+            morphedElementId = await testIModel.insertElementEx(userATxn, {
+              federationGuid: firstTxnElementFedGUID,
+            });
           }
         },
       });
 
       // User A pulls the remote changes causing a rebase failure when reinstating the second txn
       await userA.pullChanges();
+
+      chai.expect(morphedElementId).to.not.equal(firstTxnElementId);
+      chai.expect(userA.elements.tryGetElementProps(morphedElementId)).to.exist;
+      chai.expect(userA.elements.tryGetElementProps(remoteElementId)).to.exist;
     });
 
     it("ECSqlReader unable to read updates after saveChanges()", async () => {
