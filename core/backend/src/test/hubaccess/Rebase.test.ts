@@ -156,7 +156,7 @@ class TestIModel {
     baseProps.prop1 = `${this._data++}`;
     return txn.insertElement(baseProps);
   }
-  public async insertElementEx(txn: EditTxn, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
+  public async insertElementEx(txn: EditTxn, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps, federationGuid?: string }) {
     const b = txn.iModel as BriefcaseDb;
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
     const builder = new GeometryStreamBuilder();
@@ -171,6 +171,7 @@ class TestIModel {
       category: this.drawingCategoryId,
       code: Code.createEmpty(),
       parent: args?.parent,
+      federationGuid: args?.federationGuid,
       geom: builder.geometryStream,
       prop1: args?.prop1 ?? `${this._data++}`
     };
@@ -1051,6 +1052,59 @@ for (const enableSemanticRebase of [false, true]) {
       // should fail to pull and rebase changes.
       await chai.expect(b2.pushChanges({ description: `deleted child ${childId} and inserted grandchild ${grandChildId}` }))
         .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
+    });
+
+    it.only("cross-txn element ID remapping", async () => {
+      /*
+       * This test reproduces a specific scenario in the iModel rebase logic:
+       *
+       * A local briefcase has multiple unpushed transactions where:
+       *  1. The earlier txn uses `shouldReinstate = false` + `recompute` to fully re-execute its command.
+       *  2. The re-execution logic assigns new element IDs (morphing an element) to the recreated elements while maintaining a common federationGUID.
+       *  3. A later txn references the element created by the earlier txn.
+       *
+       * In such a scenario, during a rebase, the first txn will recompute and create a new element.
+       * As a result, the subsequenet txn referencing the stale elementId will cause the rebase to fail with the error: "Foreign key conflicts in ChangeSet. Aborting rebase."
+       */
+      const userA = await testIModel.openBriefcase();
+      const userB = await testIModel.openBriefcase();
+      const userATxn = startTestTxn(userA, "cross-txn id remap b1");
+      const userBTxn = startTestTxn(userB, "cross-txn id remap b2");
+
+      // Create a remote element to validate if pullChanges succeded
+      const remoteElementId = await testIModel.insertElement(userBTxn);
+      userBTxn.saveChanges("remote element");
+      await userB.pushChanges({ description: "remote element created" });
+
+      // Insert an element
+      const firstTxnElementId = await testIModel.insertElement(userATxn);
+      userATxn.saveChanges("First Txn: Create new element (Needs recompute)");
+
+      // Insert another element that references the element from the first txn.
+      const secondTxnElementId = await testIModel.insertElementEx(userATxn, {
+        parent: { id: firstTxnElementId, relClassName: "TestDomain:A1OwnsA1" },
+      });
+      userATxn.saveChanges("SecondTxn: Create another element that references the first txn element");
+
+      // Validate that all elements have been setup  correctly in their respective briefcases
+      chai.expect(userA.elements.tryGetElementProps(firstTxnElementId)).to.exist;
+      chai.expect(userA.elements.tryGetElementProps(secondTxnElementId)).to.exist;
+      chai.expect(userA.elements.getElementProps(secondTxnElementId).parent?.id).to.equal(firstTxnElementId);
+      chai.expect(userB.elements.tryGetElementProps(remoteElementId)).to.exist;
+
+      // Simulate a element morph where element is changed into a new element with the same federationGuid
+      let morphedElementId = "";
+      userA.txns.rebaser.setCustomHandler({
+        shouldReinstate: (txnProps: TxnProps) => txnProps.props.description !== "First Txn: Create new element (Needs recompute)",
+        recompute: async (txnProps: TxnProps) => {
+          if (txnProps.props.description === "First Txn: Create new element (Needs recompute)") {
+            morphedElementId = await testIModel.insertElement(userATxn);
+          }
+        },
+      });
+
+      // User A pulls the remote changes causing a rebase failure when reinstating the second txn
+      await userA.pullChanges();
     });
 
     it("ECSqlReader unable to read updates after saveChanges()", async () => {
