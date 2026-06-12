@@ -835,6 +835,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "sax",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "semver",
       "allowedCategories": [ "backend", "internal" ]
     },

@@ -4,6 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./Authoring/SchemaDocument";
+export * from "./Authoring/SchemaDocumentIO";
+export * from "./Authoring/SchemaIssues";
+export * from "./Authoring/SchemaSources";
+export * from "./Authoring/SchemaXmlReader";
+export * from "./Authoring/SchemaXmlWriter";
 export * from "./Constants";
 export * from "./Context";
 export * from "./DelayedPromise";
