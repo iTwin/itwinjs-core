@@ -43,6 +43,8 @@ import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
+import type { ChannelKey } from "./ChannelControl";
+import type { Migration } from "./Migration";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -374,6 +376,33 @@ export class IModelHost {
   private static _cacheDir = "";
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
+  private static _registeredMigrations = new Map<ChannelKey, Migration[]>();
+
+  /**
+   * Registers a migration for use with any subsequently opened iModel. Migrations should be
+   * registered at application startup, before any iModel is opened. They are applied in the
+   * order in which they are registered.
+   * @see [Application Updates]($docs/learning/backend/ApplicationUpdates.md)
+   * @beta
+   */
+  public static registerMigration(migration: Migration): void {
+    let migrations = this._registeredMigrations.get(migration.channelKey);
+    if (migrations === undefined) {
+      migrations = [];
+      this._registeredMigrations.set(migration.channelKey, migrations);
+    }
+    migrations.push(migration);
+  }
+
+  /** @internal */
+  public static getRegisteredMigrationsForChannel(channelKey: ChannelKey): Migration[] {
+    return this._registeredMigrations.get(channelKey) ?? [];
+  }
+
+  /** @internal */
+  public static getRegisteredMigrationChannelKeys(): IterableIterator<ChannelKey> {
+    return this._registeredMigrations.keys();
+  }
 
   // Omit the hubAccess field from configuration so it stays internal.
   public static configuration?: Omit<IModelHostOptions, "hubAccess">;
@@ -713,6 +742,7 @@ export class IModelHost {
     this._appWorkspace?.close();
     this._appWorkspace = undefined;
     this._settingsSchemas = undefined;
+    this._registeredMigrations.clear();
 
     CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);

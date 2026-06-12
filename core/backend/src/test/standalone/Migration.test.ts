@@ -9,7 +9,7 @@ import { withEditTxn } from "../../EditTxn";
 import { _bumpChannelVersion, _verifyChannel } from "../../internal/Symbols";
 import { MigrationCompatibility } from "../../Migration";
 import { ChannelControl } from "../../ChannelControl";
-import { StandaloneDb } from "../../core-backend";
+import { IModelHost, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Channel version compatibility", () => {
@@ -24,6 +24,11 @@ describe("Channel version compatibility", () => {
 
   afterEach(() => {
     // Ensure any open StandaloneDbs from individual tests are cleaned up by each test.
+  });
+
+  afterEach(() => {
+    // Clear global migration registrations between tests so they don't bleed across.
+    (IModelHost as any)._registeredMigrations.clear();
   });
 
   describe("getChannelVersionCompatibility", () => {
@@ -42,7 +47,7 @@ describe("Channel version compatibility", () => {
       const db = createDb("MatchingVersions.bim");
       try {
         // Register a patch-level migration.
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadWrite,
@@ -72,7 +77,7 @@ describe("Channel version compatibility", () => {
       const db = createDb("MinorVersionTooHigh.bim");
       try {
         // Register only a patch-level migration. Expected final version = "0.0.1".
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadWrite,
@@ -97,7 +102,7 @@ describe("Channel version compatibility", () => {
       const db = createDb("MajorVersionTooHigh.bim");
       try {
         // Register only a minor-level migration. Expected final version = "0.1.0".
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadOnly,
@@ -137,7 +142,7 @@ describe("Channel version compatibility", () => {
           ["m2", MigrationCompatibility.ReadOnly],
           ["m3", MigrationCompatibility.None],
         ] as const) {
-          db.channels.registerMigration({
+          IModelHost.registerMigration({
             id,
             channelKey,
             compatibility: compat,
@@ -185,7 +190,7 @@ describe("Channel version compatibility", () => {
     it("throws 'version-read-only' when the channel's minor version was bumped beyond expectations", () => {
       const db = createDb("WriteToReadOnly.bim");
       try {
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadWrite, // expected: "0.0.1"
@@ -213,7 +218,7 @@ describe("Channel version compatibility", () => {
     it("throws 'version-blocked' when the channel's major version was bumped beyond expectations", () => {
       const db = createDb("WriteToBlocked.bim");
       try {
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadOnly, // expected: "0.1.0"
@@ -241,7 +246,7 @@ describe("Channel version compatibility", () => {
     it("does not throw when the channel version exactly matches what registered migrations produce", () => {
       const db = createDb("WriteOk.bim");
       try {
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadOnly, // expected: "0.1.0"
@@ -268,7 +273,7 @@ describe("Channel version compatibility", () => {
     it("clears the allowed-model cache when a channel version is bumped", () => {
       const db = createDb("CacheInvalidation.bim");
       try {
-        db.channels.registerMigration({
+        IModelHost.registerMigration({
           id: "m1",
           channelKey,
           compatibility: MigrationCompatibility.ReadWrite, // expected: "0.0.1"

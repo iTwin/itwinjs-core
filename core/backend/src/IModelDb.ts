@@ -3799,16 +3799,17 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    this.onOpened.raiseEvent(briefcaseDb, args);
-
     // Phase 4: Apply any pending migrations at open time.
     // Only attempt when opened ReadWrite with a hub-connected briefcaseId.
+    // This must happen before onOpened so the db is fully ready when listeners run.
     if (openMode === OpenMode.ReadWrite && briefcaseDb.briefcaseId !== BriefcaseIdValue.Unassigned) {
       const pendingMigrations = briefcaseDb.channels.getAllPendingMigrations();
       if (pendingMigrations.length > 0) {
         await BriefcaseManager.applyAndPushPendingMigrations(briefcaseDb);
       }
     }
+
+    this.onOpened.raiseEvent(briefcaseDb, args);
 
     return briefcaseDb;
   }

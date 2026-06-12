@@ -16,7 +16,8 @@ import { ElementOwnsChannelRootAspect } from "../NavigationRelationship";
 import { EditTxn } from "../EditTxn";
 import { _bumpChannelVersion, _findRegisteredMigration, _implementationProhibited, _implicitTxn, _nativeDb, _recordMigration, _verifyChannel } from "./Symbols";
 import * as semver from "semver";
-import { Migration, MigrationCompatibility, MigrationDetails, MigrationRecord } from "../Migration";
+import { MigrationCompatibility, MigrationDetails, MigrationRecord } from "../Migration";
+import type { Migration } from "../Migration";
 
 class ChannelAdmin implements ChannelControl {
   public static readonly channelClassName = "bis:ChannelRootAspect";
@@ -25,7 +26,6 @@ class ChannelAdmin implements ChannelControl {
   private _allowedChannels = new Set<ChannelKey>();
   private _allowedModels = new Set<Id64String>();
   private _deniedModels = new Map<Id64String, ChannelKey>();
-  private _registeredMigrations = new Map<ChannelKey, Migration[]>();
 
   public constructor(private _iModel: IModelDb) {
     // for backwards compatibility, allow the shared channel unless explicitly turned off in IModelHostOptions.
@@ -183,15 +183,6 @@ class ChannelAdmin implements ChannelControl {
     }
   }
 
-  public registerMigration(migration: Migration): void {
-    let migrations = this._registeredMigrations.get(migration.channelKey);
-    if (migrations === undefined) {
-      migrations = [];
-      this._registeredMigrations.set(migration.channelKey, migrations);
-    }
-    migrations.push(migration);
-  }
-
   public getAppliedMigrations(channelKey: ChannelKey): MigrationRecord[] {
     const channelRootId = this.queryChannelRoot(channelKey);
     if (channelRootId === undefined)
@@ -201,7 +192,7 @@ class ChannelAdmin implements ChannelControl {
   }
 
   public getPendingMigrations(channelKey: ChannelKey): Migration[] {
-    const registered = this._registeredMigrations.get(channelKey) ?? [];
+    const registered = IModelHost.getRegisteredMigrationsForChannel(channelKey);
     if (registered.length === 0)
       return [];
     const appliedIds = new Set(this.getAppliedMigrations(channelKey).map((r) => r.id));
@@ -210,15 +201,15 @@ class ChannelAdmin implements ChannelControl {
 
   public getAllPendingMigrations(): Migration[] {
     const result: Migration[] = [];
-    for (const [channelKey] of this._registeredMigrations) {
+    for (const channelKey of IModelHost.getRegisteredMigrationChannelKeys()) {
       result.push(...this.getPendingMigrations(channelKey));
     }
     return result;
   }
 
   public [_findRegisteredMigration](channelKey: ChannelKey, migrationId: string): { migration: Migration | undefined; channelHasRegistrations: boolean } {
-    const registrations = this._registeredMigrations.get(channelKey);
-    if (registrations === undefined)
+    const registrations = IModelHost.getRegisteredMigrationsForChannel(channelKey);
+    if (registrations.length === 0)
       return { migration: undefined, channelHasRegistrations: false };
     return { migration: registrations.find((m) => m.id === migrationId), channelHasRegistrations: true };
   }
@@ -274,7 +265,7 @@ class ChannelAdmin implements ChannelControl {
    * expects to see for the channel after running all its known migrations.
    */
   private computeExpectedVersion(channelKey: ChannelKey): string {
-    const migrations = this._registeredMigrations.get(channelKey) ?? [];
+    const migrations = IModelHost.getRegisteredMigrationsForChannel(channelKey);
     let version = "0.0.0";
     for (const migration of migrations) {
       const bumpType = migration.compatibility === MigrationCompatibility.None ? "major"
@@ -316,8 +307,8 @@ class ChannelAdmin implements ChannelControl {
    * When no migrations are registered for the channel, always returns "ok".
    */
   private computeVersionAccess(channelKey: ChannelKey): "ok" | "read-only" | "blocked" {
-    const registrations = this._registeredMigrations.get(channelKey);
-    if (!registrations || registrations.length === 0)
+    const registrations = IModelHost.getRegisteredMigrationsForChannel(channelKey);
+    if (registrations.length === 0)
       return "ok";
 
     const actualVersion = this.readChannelVersion(channelKey);

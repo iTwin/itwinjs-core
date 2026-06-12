@@ -129,15 +129,6 @@ export interface ChannelControl {
   upgradeChannel(options: ChannelUpgradeOptions, iModel: IModelDb, data?: any): Promise<void>;
 
   /**
-   * Registers a migration for this iModel. Migrations should be registered at application
-   * startup, before any iModel is opened. They are applied in the order in which they are
-   * registered.
-   * @see [Application Updates]($docs/learning/backend/ApplicationUpdates.md)
-   * @beta
-   */
-  registerMigration(migration: Migration): void;
-
-  /**
    * Returns the list of migrations that have already been applied to this iModel for the
    * specified channel, in the order they were applied.
    * @param channelKey The key of the channel to query.
