@@ -102,6 +102,23 @@ export async function* decodeSchemaText(text: SchemaText): AsyncGenerator<string
   }
 }
 
+/** Parses an EC `RR.WW.mm` version string into its components, tolerating unpadded numbers.
+ * Returns `undefined` when the string is not a three-part dotted number. Shared by the readers;
+ * exposed for implementers of additional ones.
+ * @alpha
+ */
+export function parseVersionString(version: string | undefined): { read: number, write: number, minor: number } | undefined {
+  if (version === undefined)
+    return undefined;
+  const parts = version.split(".");
+  if (parts.length !== 3)
+    return undefined;
+  const [read, write, minor] = parts.map((part) => parseInt(part, 10));
+  if (isNaN(read) || isNaN(write) || isNaN(minor))
+    return undefined;
+  return { read, write, minor };
+}
+
 /** Options shared by the text readers. */
 export interface SchemaTextReadOptions {
   /** Origin of the text (file path, URL, ...), copied onto every reported issue and onto

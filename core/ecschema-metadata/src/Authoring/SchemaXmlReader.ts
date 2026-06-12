@@ -13,7 +13,7 @@ import {
 } from "../ECObjects";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import {
-  decodeSchemaText, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
+  decodeSchemaText, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
@@ -172,18 +172,6 @@ async function parseElementTree(text: SchemaText, issues: SchemaIssueList, sourc
     return undefined;
   }
   return root;
-}
-
-function parseVersionString(version: string | undefined): { read: number, write: number, minor: number } | undefined {
-  if (version === undefined)
-    return undefined;
-  const parts = version.split(".");
-  if (parts.length !== 3)
-    return undefined;
-  const [read, write, minor] = parts.map((part) => parseInt(part, 10));
-  if (isNaN(read) || isNaN(write) || isNaN(minor))
-    return undefined;
-  return { read, write, minor };
 }
 
 function readSchemaReferenceAttributes(attributes: { [name: string]: string }, issues: SchemaIssueList, source: string | undefined): Authoring.SchemaReference | undefined {
