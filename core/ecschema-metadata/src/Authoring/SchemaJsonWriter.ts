@@ -31,6 +31,16 @@ interface JsonObject {
 export class SchemaJsonWriter {
   /** Writes the document to ECJSON text in the requested spec version (default {@link ECSpec.Latest}). */
   public writeDocument(document: SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
+    const result = this.writeDocumentTree(document, options);
+    if (result.tree === undefined)
+      return { issues: result.issues };
+    return { text: `${JSON.stringify(result.tree, undefined, 2)}\n`, issues: result.issues };
+  }
+
+  /** Writes the document as a plain ECJSON object tree instead of text - for consumers that want
+   * the props shape directly (feeding APIs that take parsed JSON, comparison) without a
+   * stringify/parse round trip. Same conversion and issue reporting as {@link writeDocument}. */
+  public writeDocumentTree(document: SchemaDocument, options?: SchemaWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
     const issues = new SchemaIssueList();
     const spec = options?.spec ?? ECSpec.Latest;
     if (spec !== ECSpec.V3_2) {
@@ -38,7 +48,7 @@ export class SchemaJsonWriter {
       return { issues };
     }
     const emitter = new EcJson32Emitter(document, issues);
-    return { text: `${JSON.stringify(emitter.emit(), undefined, 2)}\n`, issues };
+    return { tree: emitter.emit(), issues };
   }
 }
 

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./Authoring/SchemaComparison";
 export * from "./Authoring/SchemaDocument";
 export * from "./Authoring/SchemaDocumentIO";
 export * from "./Authoring/SchemaIssues";
