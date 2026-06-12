@@ -17,26 +17,17 @@ import { QuantityType } from "../quantity-formatting/QuantityFormatter";
  * @beta
  */
 export interface CreateQuantityDescriptionProps {
-  /** Programmatic property name.
-   * @beta
-   */
+  /** Programmatic property name. */
   name: string;
-  /** User-facing property label.
-   * @beta
-   */
+  /** User-facing property label. */
   displayLabel: string;
-  /** KindOfQuantity name used to resolve formatting and parsing behavior.
-   * @beta
-   */
+  /** KindOfQuantity name used to resolve formatting and parsing behavior. */
   kindOfQuantityName: string;
-  /** Persistence unit name for values stored in the property.
-   * @beta
-   */
+  /** Persistence unit name for values stored in the property. */
   persistenceUnitName: string;
   /** Optional parse failure message override shown when the input cannot be converted.
    *
    * If omitted, [createQuantityDescription]($frontend) falls back to a generic parse error message.
-   * @beta
    */
   parseError?: string;
 }
