@@ -4387,7 +4387,6 @@ export class SetupCameraTool extends PrimitiveTool {
         displayLabel: ViewTool.translate("SetupCamera.Labels.CameraHeight"),
         kindOfQuantityName: "DefaultToolsUnits.LENGTH",
         persistenceUnitName: "Units.M",
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
       }), 0.0);
     return this._cameraHeightProperty;
   }
@@ -4412,7 +4411,6 @@ export class SetupCameraTool extends PrimitiveTool {
         displayLabel: ViewTool.translate("SetupCamera.Labels.TargetHeight"),
         kindOfQuantityName: "DefaultToolsUnits.LENGTH",
         persistenceUnitName: "Units.M",
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
       }), 0.0);
     return this._targetHeightProperty;
   }

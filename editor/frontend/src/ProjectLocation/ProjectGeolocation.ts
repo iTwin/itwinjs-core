@@ -105,7 +105,6 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       this._latitudeProperty = new DialogProperty<number>(createQuantityDescription({
         name: "latitude", displayLabel: translateMessage("Latitude"),
         kindOfQuantityName: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD",
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle"),
       }), 0.0);
     return this._latitudeProperty;
   }
@@ -119,7 +118,6 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       this._longitudeProperty = new DialogProperty<number>(createQuantityDescription({
         name: "longitude", displayLabel: translateMessage("Longitude"),
         kindOfQuantityName: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD",
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle"),
       }), 0.0);
     return this._longitudeProperty;
   }
@@ -133,7 +131,6 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       this._altitudeProperty = new DialogProperty<number>(createQuantityDescription({
         name: "altitude", displayLabel: CoreTools.translate("Measure.Labels.Altitude"),
         kindOfQuantityName: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M",
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
       }), 0.0);
     return this._altitudeProperty;
   }
@@ -147,7 +144,6 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       this._northProperty = new DialogProperty<number>(createQuantityDescription({
         name: "north", displayLabel: translateMessage("North"),
         kindOfQuantityName: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD",
-        parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle"),
       }), 0.0);
     return this._northProperty;
   }
