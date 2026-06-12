@@ -20,6 +20,7 @@ export enum BackgroundMapType {
 
 /** Enumerates a set of supported [[BackgroundMapProvider]]s that can provide map imagery.
  * @note To access imagery from such a provider, an API key must be supplied via [IModelAppOptions.mapLayerOptions]($frontend).
+ * @note "BingProvider" is deprecated in 5.11.0 and retained for compatibility with existing persisted data and application code.
  * @public
  * @extensions
  */
@@ -30,7 +31,9 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
  * @public
  */
 export interface BackgroundMapProviderProps {
-  /** The name of the provider. Default: "BingProvider" */
+  /** The name of the provider. Default: "BingProvider" for legacy compatibility.
+   * @note "BingProvider" is deprecated in 5.11.0; prefer non-Bing imagery sources for new usage.
+   */
   name?: BackgroundMapProviderName;
   /** The type of imagery to display. Default: Hybrid. */
   type?: BackgroundMapType;
@@ -52,6 +55,7 @@ export class BackgroundMapProvider {
 
   /** Create a provider from its JSON representation. */
   public static fromJSON(props: BackgroundMapProviderProps): BackgroundMapProvider {
+    // TODO(#7009): When BingProvider is removed in a future major version, unknown provider names must not silently coerce to BingProvider.
     const name: BackgroundMapProviderName = props.name === "MapBoxProvider" ? props.name : "BingProvider";
     let type;
     switch (props.type) {

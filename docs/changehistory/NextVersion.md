@@ -7,6 +7,7 @@ publish: false
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
+    - [Bing Maps imagery is deprecated](#bing-maps-imagery-is-deprecated)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -46,6 +47,14 @@ const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
 await imodel.close(); // connection closes before iteration
 const rows = await reader.toArray(); // used to throw, now returns an empty array
 ```
+
+### Bing Maps imagery is deprecated
+
+Bing Maps imagery-specific APIs are now deprecated. This release does not change runtime behavior, and existing persisted Bing-backed styles continue to load for compatibility.
+
+For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
+
+> This imagery-only deprecation does not deprecate `BingLocationProvider` or `BingElevationProvider`, and it does not add a built-in replacement for Bing elevation or location services. Applications that continue using those Bing services must continue supplying `MapLayerOptions.BingMaps`.
 
 ## @itwin/map-layers-formats
 
