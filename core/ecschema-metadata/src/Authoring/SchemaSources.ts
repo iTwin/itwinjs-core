@@ -182,8 +182,7 @@ export class SchemaSourceSet {
 
     // Walk the reference closure breadth-first over headers.
     const pending: ResolutionNode[] = [...nodes.values()];
-    while (pending.length > 0) {
-      const node = pending.shift()!;
+    for (let node = pending.shift(); node !== undefined; node = pending.shift()) {
       if (node.header === undefined)
         continue;
       for (const reference of node.header.references) {

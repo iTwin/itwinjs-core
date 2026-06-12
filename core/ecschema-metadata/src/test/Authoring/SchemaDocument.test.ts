@@ -197,9 +197,9 @@ describe("SchemaDocument", () => {
       expect(e.mixins).to.deep.equal(["MyDomain:IMixin", "Other:Thing"]);
     });
 
-    it("defaults entity modifier to None and leaves baseClass / mixins empty", () => {
+    it("leaves modifier, baseClass and mixins unset by default", () => {
       const e = new Authoring.EntityClass("E");
-      expect(e.modifier).to.equal(ECClassModifier.None);
+      expect(e.modifier).to.be.undefined; // absent reads as None per spec; the document preserves absence
       expect(e.baseClass).to.be.undefined;
       expect(e.mixins).to.deep.equal([]);
     });
@@ -249,13 +249,13 @@ describe("SchemaDocument", () => {
   });
 
   describe("class kinds", () => {
-    it("creates a mixin: appliesTo mandatory, abstract by default, overridable", () => {
+    it("creates a mixin: appliesTo mandatory, modifier stays unset (abstract per spec)", () => {
       const doc = new SchemaDocument("S", "s", 1, 0, 0);
       const mixin = doc.createMixin("IMixin", "BisCore:Element");
       expect(mixin.schemaItemType).to.equal(SchemaItemType.Mixin);
       expect(mixin.appliesTo).to.equal("BisCore:Element");
-      expect(mixin.modifier).to.equal(ECClassModifier.Abstract); // default for a mixin
-      expect(doc.createMixin("Other", "BisCore:Element", { modifier: ECClassModifier.None }).modifier).to.equal(ECClassModifier.None);
+      expect(mixin.modifier).to.be.undefined; // a mixin is abstract per spec; nothing is written
+      expect(doc.createMixin("Other", "BisCore:Element", { modifier: ECClassModifier.Abstract }).modifier).to.equal(ECClassModifier.Abstract);
     });
 
     it("creates a struct class (no extra fields, inherits ECClass)", () => {
@@ -274,15 +274,15 @@ describe("SchemaDocument", () => {
       expect(ca.appliesTo & CustomAttributeContainerType.PrimitiveProperty).to.equal(0);
     });
 
-    it("creates a relationship: strength / direction defaults and two empty constraints", () => {
+    it("creates a relationship: strength / direction stay unset and two empty constraints", () => {
       const rel = new SchemaDocument("S", "s", 1, 0, 0).createRelationship("ElementOwnsChildren");
       expect(rel.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
-      expect(rel.strength).to.equal(StrengthType.Referencing);
-      expect(rel.strengthDirection).to.equal(StrengthDirection.Forward);
+      expect(rel.strength).to.be.undefined; // absent reads as Referencing per spec
+      expect(rel.strengthDirection).to.be.undefined; // absent reads as Forward per spec
       expect(rel.source.relationshipEnd).to.equal(RelationshipEnd.Source);
       expect(rel.target.relationshipEnd).to.equal(RelationshipEnd.Target);
       expect(rel.source.multiplicity).to.equal("(0..*)");
-      expect(rel.source.polymorphic).to.be.true;
+      expect(rel.source.polymorphic).to.be.undefined; // absent reads as true per spec
 
       rel.source.constraintClasses.push("BisCore:Element");
       rel.target.multiplicity = "(0..1)";

@@ -13,7 +13,7 @@ import {
 } from "../ECObjects";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import {
-  decodeSchemaText, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
+  decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
@@ -645,6 +645,7 @@ class EcXml3Walker {
     // Presentation format strings stay verbatim; the override grammar is parsed at compile.
     const presentationFormats = node.attributes.presentationUnits !== undefined
       ? node.attributes.presentationUnits.split(";").map((entry) => entry.trim()).filter((entry) => entry.length > 0)
+        .map((entry) => mapFormatStringReferences(entry, (reference) => this.normalizeItemReference(reference)))
       : undefined;
     this._document.createKindOfQuantity(name, this.normalizeItemReference(persistenceUnit), relativeError, {
       ...this.itemInit(node),

@@ -67,6 +67,12 @@ export interface SchemaComparison {
  *   plumbing - it only abbreviates names within that one file and carries no semantic information,
  *   so documents read from ECXML and ECJSON (which has no reference aliases) compare equal.
  *   The schema's *own* alias is identity and does compare.
+ * - **Spec defaults equal absence.** Writing a default explicitly (`modifier="None"`,
+ *   `strength="referencing"`, `strengthDirection="forward"`, `polymorphic="true"`, a mixin's
+ *   `modifier="Abstract"`) means the same schema as omitting it, and serializers differ in which
+ *   convention they follow - the published XML and JSON of the same schema disagree on these
+ *   today. The document preserves the distinction for exact round-trips; the comparer treats them
+ *   as equal.
  *
  * Order-insensitive where order carries no meaning: items, properties, enumerators, and custom
  * attributes match by name; `constraintClasses` and `mixins` compare as sets. Presentation formats
@@ -87,6 +93,8 @@ export function compareSchemaDocuments(left: SchemaDocument, right: SchemaDocume
   issues.addAll(rightResult.issues);
   const leftTree = leftResult.tree ?? {};
   const rightTree = rightResult.tree ?? {};
+  elideSpecDefaults(leftTree);
+  elideSpecDefaults(rightTree);
 
   const schemaDifferences: SchemaValueDifference[] = [];
   for (const key of unionKeys(leftTree, rightTree)) {
@@ -151,6 +159,53 @@ function renderDifference(difference: SchemaValueDifference): string {
 
 // ===== Canonical-tree comparison =====
 
+/** Drops fields whose explicit value is the spec default, so explicit-vs-absent does not register
+ * as a difference (see the `compareSchemaDocuments` doc). Mutates the tree in place - it is a
+ * private copy produced for this comparison. */
+function elideSpecDefaults(tree: Record<string, unknown>): void {
+  const items = tree.items;
+  if (!isPlainObject(items))
+    return;
+  for (const item of Object.values(items)) {
+    if (!isPlainObject(item))
+      continue;
+    if (item.modifier === "None" || (item.modifier === "Abstract" && item.schemaItemType === "Mixin"))
+      delete item.modifier;
+    if (item.schemaItemType === "RelationshipClass") {
+      if (typeof item.strength === "string" && item.strength.toLowerCase() === "referencing")
+        delete item.strength;
+      if (typeof item.strengthDirection === "string" && item.strengthDirection.toLowerCase() === "forward")
+        delete item.strengthDirection;
+      for (const end of ["source", "target"]) {
+        const constraint = item[end];
+        if (isPlainObject(constraint) && constraint.polymorphic === true)
+          delete constraint.polymorphic;
+      }
+    }
+    if (item.schemaItemType === "Format") {
+      if (item.roundFactor === 0)
+        delete item.roundFactor;
+      if (typeof item.showSignOption === "string" && item.showSignOption.toLowerCase() === "onlynegative")
+        delete item.showSignOption;
+      if (item.decimalSeparator === ".")
+        delete item.decimalSeparator;
+      if (item.thousandSeparator === ",")
+        delete item.thousandSeparator;
+      if (item.uomSeparator === " ")
+        delete item.uomSeparator;
+      if (item.stationSeparator === "+")
+        delete item.stationSeparator;
+      const composite = item.composite;
+      if (isPlainObject(composite)) {
+        if (composite.includeZero === true)
+          delete composite.includeZero;
+        if (composite.spacer === " ")
+          delete composite.spacer;
+      }
+    }
+  }
+}
+
 function unionKeys(left: Record<string, unknown>, right: Record<string, unknown>): string[] {
   const keys = Object.keys(left);
   for (const key of Object.keys(right)) {
@@ -183,6 +238,22 @@ function compareValues(path: string, left: unknown, right: unknown, lenient: boo
     return;
   }
 
+  // The XML reader's untyped custom attribute values keep a struct-array entry's element name as
+  // a single-key wrapper object ({ DbIndex: {...} } for { ...the entry... }) - lexically
+  // unavoidable without the CA class - and reads a one-entry struct array as the bare entry
+  // rather than an array. When only one side is wrapped, compare through the wrapper; when only
+  // one side is an array, compare the other as a one-element array.
+  if (lenient) {
+    const leftWrapped = singleKeyWrapperValue(left);
+    const rightWrapped = singleKeyWrapperValue(right);
+    if (leftWrapped !== undefined && rightWrapped === undefined && (isPlainObject(right) || Array.isArray(right)))
+      return compareValues(path, leftWrapped, right, lenient, out);
+    if (rightWrapped !== undefined && leftWrapped === undefined && (isPlainObject(left) || Array.isArray(left)))
+      return compareValues(path, left, rightWrapped, lenient, out);
+    if (Array.isArray(left) !== Array.isArray(right))
+      return compareValues(path, Array.isArray(left) ? left : [left], Array.isArray(right) ? right : [right], lenient, out);
+  }
+
   if (isPlainObject(left) && isPlainObject(right)) {
     for (const key of unionKeys(left, right))
       compareValues(joinPath(path, key), left[key], right[key], lenient || key === "customAttributes", out);
@@ -196,6 +267,18 @@ function compareValues(path: string, left: unknown, right: unknown, lenient: boo
 
   if (!scalarEquals(left, right, lenient))
     out.push({ path, left: render(left), right: render(right) });
+}
+
+/** When `value` is a plain object with exactly one key holding a plain object, returns that inner
+ * object (the XML struct-array entry wrapper shape); otherwise `undefined`. */
+function singleKeyWrapperValue(value: unknown): Record<string, unknown> | undefined {
+  if (!isPlainObject(value))
+    return undefined;
+  const keys = Object.keys(value);
+  if (keys.length !== 1)
+    return undefined;
+  const inner = value[keys[0]];
+  return isPlainObject(inner) ? inner : undefined;
 }
 
 function compareArrays(path: string, left: unknown[], right: unknown[], lenient: boolean, out: SchemaValueDifference[]): void {

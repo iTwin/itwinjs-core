@@ -119,6 +119,36 @@ export function parseVersionString(version: string | undefined): { read: number,
   return { read, write, minor };
 }
 
+/** Rewrites the item references embedded in a presentation format override string
+ * (`FormatName(precision)[UnitName|label]...`) through `mapReference`, leaving the precision
+ * segment and unit labels untouched. The format name and the unit names are ordinary item
+ * references, so readers normalize them to the document form and writers requalify them per
+ * format (alias-qualified for ECXML, schema-qualified for ECJSON) - the same treatment every
+ * other item reference gets. Tolerant: segments that do not match the grammar pass through
+ * verbatim for the compiler to diagnose.
+ * @alpha
+ */
+export function mapFormatStringReferences(formatString: string, mapReference: (reference: string) => string): string {
+  const match = /^([^([]+)([\s\S]*)$/.exec(formatString);
+  if (match === null)
+    return formatString;
+  let result = mapReference(match[1]);
+  let rest = match[2];
+  const precision = /^\([^)]*\)/.exec(rest);
+  if (precision !== null) {
+    result += precision[0];
+    rest = rest.substring(precision[0].length);
+  }
+  for (;;) {
+    const bracket = /^\[([^\]|]*)(\|[^\]]*)?\]/.exec(rest);
+    if (bracket === null)
+      break;
+    result += `[${mapReference(bracket[1])}${bracket[2] ?? ""}]`;
+    rest = rest.substring(bracket[0].length);
+  }
+  return result + rest;
+}
+
 /** Options shared by the text readers. */
 export interface SchemaTextReadOptions {
   /** Origin of the text (file path, URL, ...), copied onto every reported issue and onto

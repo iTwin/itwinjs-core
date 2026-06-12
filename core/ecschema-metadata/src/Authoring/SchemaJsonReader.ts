@@ -10,7 +10,7 @@ import { parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
 import { parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection, PrimitiveType } from "../ECObjects";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import {
-  decodeSchemaText, parseVersionString, SchemaDocumentHeader, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
+  decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentHeader, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
@@ -479,8 +479,10 @@ class EcJson32Walker {
   }
 
   private occursInit(propertyObject: JsonObject): { minOccurs?: number, maxOccurs?: number } {
-    // An absent maxOccurs means unbounded.
-    return { minOccurs: asNumber(propertyObject.minOccurs), maxOccurs: asNumber(propertyObject.maxOccurs) };
+    // An absent maxOccurs means unbounded; ECJSON also spells unbounded as INT32_MAX, which
+    // normalizes to the document's single representation (undefined).
+    const maxOccurs = asNumber(propertyObject.maxOccurs);
+    return { minOccurs: asNumber(propertyObject.minOccurs), maxOccurs: maxOccurs === 2147483647 ? undefined : maxOccurs };
   }
 
   // ===== Non-class items =====
@@ -526,13 +528,15 @@ class EcJson32Walker {
       this._error("SchemaJson-0035", `The kind of quantity "${name}" is missing persistenceUnit or a numeric relativeError; the item was skipped.`);
       return;
     }
-    // Presentation format strings stay verbatim; the override grammar is parsed at compile.
+    // Presentation format strings stay as strings; the override grammar is parsed at compile.
+    // The references embedded in them are normalized like any other item reference.
     // ECJSON allows a single string or an array; both normalize to the document's array.
     let presentationFormats: string[] | undefined;
     if (typeof item.presentationUnits === "string")
       presentationFormats = item.presentationUnits.split(";").map((entry) => entry.trim()).filter((entry) => entry.length > 0);
     else if (Array.isArray(item.presentationUnits))
       presentationFormats = item.presentationUnits.flatMap((entry) => typeof entry === "string" ? [entry] : []);
+    presentationFormats = presentationFormats?.map((entry) => mapFormatStringReferences(entry, (reference) => this.normalizeItemReference(reference)));
     this._document.createKindOfQuantity(name, this.normalizeItemReference(persistenceUnit), relativeError, {
       ...this.itemInit(item),
       presentationFormats,

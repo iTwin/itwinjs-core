@@ -465,6 +465,9 @@ importers:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
+      '@bentley/bis-core-schema':
+        specifier: ^1.0.15
+        version: 1.0.15
       '@bentley/bis-custom-attributes-schema':
         specifier: ^1.0.0
         version: 1.0.0

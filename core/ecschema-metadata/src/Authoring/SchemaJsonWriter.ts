@@ -7,9 +7,9 @@
  */
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
-import { classModifierToString, containerTypeToString, ECClassModifier, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
+import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
-import { ECSpec, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
+import { ECSpec, mapFormatStringReferences, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** The `$schema` URL of the ECJSON 3.2 spec. */
@@ -181,7 +181,7 @@ class EcJson32Emitter {
   private _emitClass(item: Authoring.AnyClass, specific: JsonObject): JsonObject {
     const json = this._emitItemEnvelope(item, {
       ...specific,
-      modifier: item.modifier === ECClassModifier.None ? undefined : classModifierToString(item.modifier),
+      modifier: item.modifier === undefined ? undefined : classModifierToString(item.modifier),
       baseClass: item.baseClass !== undefined ? this._toJsonItemReference(item.baseClass, item.name) : undefined,
     });
     this._attachCustomAttributes(json, item.customAttributes, item.name);
@@ -206,8 +206,8 @@ class EcJson32Emitter {
 
   private _emitRelationshipClass(item: Authoring.RelationshipClass): JsonObject {
     const json = this._emitClass(item, {
-      strength: strengthToString(item.strength),
-      strengthDirection: strengthDirectionToString(item.strengthDirection),
+      strength: item.strength === undefined ? undefined : strengthToString(item.strength),
+      strengthDirection: item.strengthDirection === undefined ? undefined : strengthDirectionToString(item.strengthDirection),
     });
     json.source = this._emitRelationshipConstraint(item.source, item.name);
     json.target = this._emitRelationshipConstraint(item.target, item.name);
@@ -298,12 +298,14 @@ class EcJson32Emitter {
   }
 
   private _emitKindOfQuantity(item: Authoring.KindOfQuantity): JsonObject {
-    // Presentation format strings are emitted verbatim - the override grammar embeds its own
-    // references, which the document does not parse.
+    // The references embedded in the override grammar are schema-qualified like any other item
+    // reference in ECJSON.
+    const presentationUnits = item.presentationFormats
+      .map((entry) => mapFormatStringReferences(entry, (reference) => this._toJsonItemReference(reference, item.name)));
     return this._emitItemEnvelope(item, {
       persistenceUnit: this._toJsonItemReference(item.persistenceUnit, item.name),
       relativeError: item.relativeError,
-      presentationUnits: item.presentationFormats.length > 0 ? [...item.presentationFormats] : undefined,
+      presentationUnits: presentationUnits.length > 0 ? presentationUnits : undefined,
     });
   }
 

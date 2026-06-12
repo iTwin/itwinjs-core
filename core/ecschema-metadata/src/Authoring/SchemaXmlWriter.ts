@@ -7,9 +7,9 @@
  */
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
-import { classModifierToString, containerTypeToString, ECClassModifier, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
+import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
-import { ECSpec, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
+import { ECSpec, mapFormatStringReferences, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** The ECXML namespace URI of the 3.2 spec. */
@@ -327,7 +327,7 @@ class EcXml32Emitter {
   }
 
   private _modifierAttribute(item: Authoring.AnyClass): XmlAttribute {
-    return ["modifier", item.modifier === ECClassModifier.None ? undefined : classModifierToString(item.modifier)];
+    return ["modifier", item.modifier === undefined ? undefined : classModifierToString(item.modifier)];
   }
 
   private _emitEntityClass(item: Authoring.EntityClass): void {
@@ -378,8 +378,8 @@ class EcXml32Emitter {
     this._xml.openElement("ECRelationshipClass", [
       ...this._itemHeaderAttributes(item),
       this._modifierAttribute(item),
-      ["strength", strengthToString(item.strength)],
-      ["strengthDirection", strengthDirectionToString(item.strengthDirection)],
+      ["strength", item.strength === undefined ? undefined : strengthToString(item.strength)],
+      ["strengthDirection", item.strengthDirection === undefined ? undefined : strengthDirectionToString(item.strengthDirection)],
     ]);
     if (item.baseClass !== undefined)
       this._xml.textElement("BaseClass", this._toXmlItemReference(item.baseClass, item.name));
@@ -477,9 +477,11 @@ class EcXml32Emitter {
   private _occursAttributes(property: Authoring.AnyProperty): XmlAttribute[] {
     if (!property.isArray())
       return [];
+    // An unbounded array omits maxOccurs - one of the published spellings (the others being
+    // maxOccurs="unbounded" in XML and 2147483647 in JSON, both normalized by the readers).
     return [
       ["minOccurs", property.minOccurs],
-      ["maxOccurs", property.maxOccurs === undefined ? "unbounded" : property.maxOccurs],
+      ["maxOccurs", property.maxOccurs],
     ];
   }
 
@@ -501,13 +503,15 @@ class EcXml32Emitter {
   }
 
   private _emitKindOfQuantity(item: Authoring.KindOfQuantity): void {
-    // Presentation format strings are emitted verbatim - the override grammar embeds its own
-    // references, which the document does not parse.
+    // The references embedded in the override grammar are alias-qualified like any other item
+    // reference in ECXML.
+    const presentationUnits = item.presentationFormats
+      .map((entry) => mapFormatStringReferences(entry, (reference) => this._toXmlItemReference(reference, item.name)));
     this._xml.selfClosingElement("KindOfQuantity", [
       ...this._itemHeaderAttributes(item),
       ["persistenceUnit", this._toXmlItemReference(item.persistenceUnit, item.name)],
       ["relativeError", item.relativeError],
-      ["presentationUnits", item.presentationFormats.length > 0 ? item.presentationFormats.join(";") : undefined],
+      ["presentationUnits", presentationUnits.length > 0 ? presentationUnits.join(";") : undefined],
     ]);
   }
 

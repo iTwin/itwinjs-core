@@ -16,7 +16,7 @@
     },
     {
       "name": "@bentley/bis-core-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",

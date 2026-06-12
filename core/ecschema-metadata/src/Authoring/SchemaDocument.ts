@@ -479,8 +479,10 @@ export namespace Authoring {
    * @alpha
    */
   export abstract class ECClass extends SchemaItem {
-    /** Abstract / sealed / none. */
-    public modifier: ECClassModifier = ECClassModifier.None;
+    /** Abstract / sealed / none. `undefined` when the source carried no modifier - which the spec
+     * reads as {@link ECClassModifier.None} (implicitly abstract for mixins). The distinction is
+     * preserved so a document round-trips exactly. */
+    public modifier?: ECClassModifier;
     /** The single base class reference (e.g. `"BisCore:PhysicalElement"`), if any. */
     public baseClass?: LocalOrFullName;
     /** Class-level custom attributes. */
@@ -494,8 +496,7 @@ export namespace Authoring {
       if (init) {
         this.label = init.label;
         this.description = init.description;
-        if (init.modifier !== undefined)
-          this.modifier = init.modifier;
+        this.modifier = init.modifier;
         this.baseClass = init.baseClass;
       }
     }
@@ -591,13 +592,11 @@ export namespace Authoring {
     /** The entity class (including its derived classes) that this mixin may be applied to. (3.2: `IsMixin.AppliesToEntityClass`). */
     public appliesTo: LocalOrFullName;
 
-    /** Creates a mixin. `appliesTo` is mandatory. A mixin is always abstract, so the modifier defaults
-     * to {@link ECClassModifier.Abstract}. */
+    /** Creates a mixin. `appliesTo` is mandatory. A mixin is abstract per spec whether or not a
+     * modifier is written, so none is defaulted here - an absent modifier round-trips as absent. */
     public constructor(name: string, appliesTo: LocalOrFullName, init?: ClassInit) {
       super(name, init);
       this.appliesTo = appliesTo;
-      if (init?.modifier === undefined)
-        this.modifier = ECClassModifier.Abstract;
     }
   }
 
@@ -648,8 +647,9 @@ export namespace Authoring {
     public multiplicity: string = "(0..*)";
     /** Role label. The spec requires it; the document leaves it optional and defers to the compiler. */
     public roleLabel?: string;
-    /** Whether the constraint matches derived classes of its constraint classes. */
-    public polymorphic: boolean = true;
+    /** Whether the constraint matches derived classes of its constraint classes. `undefined` when the
+     * source carried no value - the spec reads that as `true`. */
+    public polymorphic?: boolean;
     /** The common base/abstract constraint, required when there is more than one constraint class and
      * none is inherited. */
     public abstractConstraint?: LocalOrFullName;
@@ -668,10 +668,12 @@ export namespace Authoring {
    */
   export class RelationshipClass extends ECClass {
     public readonly schemaItemType = SchemaItemType.RelationshipClass;
-    /** How the lifetimes of source and target are related. Defaults to {@link StrengthType.Referencing}. */
-    public strength: StrengthType = StrengthType.Referencing;
-    /** Which end is the starting point. Defaults to {@link StrengthDirection.Forward}. */
-    public strengthDirection: StrengthDirection = StrengthDirection.Forward;
+    /** How the lifetimes of source and target are related. `undefined` when the source carried no
+     * value - the spec reads that as {@link StrengthType.Referencing}. */
+    public strength?: StrengthType;
+    /** Which end is the starting point. `undefined` when the source carried no value - the spec
+     * reads that as {@link StrengthDirection.Forward}. */
+    public strengthDirection?: StrengthDirection;
     /** The source end. */
     public readonly source = new RelationshipConstraint(RelationshipEnd.Source);
     /** The target end. */
@@ -681,10 +683,8 @@ export namespace Authoring {
      * the constraints start empty. */
     public constructor(name: string, init?: RelationshipClassInit) {
       super(name, init);
-      if (init?.strength !== undefined)
-        this.strength = init.strength;
-      if (init?.strengthDirection !== undefined)
-        this.strengthDirection = init.strengthDirection;
+      this.strength = init?.strength;
+      this.strengthDirection = init?.strengthDirection;
     }
   }
 
@@ -1284,7 +1284,9 @@ export namespace Authoring {
     public maxLength?: number;
     /** Minimum number of elements (default 0). */
     public minOccurs: number = 0;
-    /** Maximum number of elements; `undefined` means unbounded. */
+    /** Maximum number of elements; `undefined` means unbounded. The readers normalize the wire
+     * spellings of unbounded (ECXML `maxOccurs="unbounded"`, ECJSON `2147483647`) to `undefined`,
+     * and the writers omit the field. */
     public maxOccurs?: number;
 
     /** Creates a primitive array property. `name` and `type` are mandatory; `init` carries the rest. */
@@ -1336,7 +1338,7 @@ export namespace Authoring {
     public typeName: LocalOrFullName;
     /** Minimum number of elements (default 0). */
     public minOccurs: number = 0;
-    /** Maximum number of elements; `undefined` means unbounded. */
+    /** Maximum number of elements; `undefined` means unbounded. See {@link PrimitiveArrayProperty.maxOccurs}. */
     public maxOccurs?: number;
 
     /** Creates a struct array property. `name` and `structClass` are mandatory; `init` carries the rest. */

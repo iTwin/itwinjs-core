@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "@bentley/aec-units-schema": "^1.0.3",
+    "@bentley/bis-core-schema": "^1.0.15",
     "@bentley/bis-custom-attributes-schema": "^1.0.0",
     "@bentley/cif-units-schema": "^1.0.7",
     "@bentley/core-custom-attributes-schema": "^1.0.4",
