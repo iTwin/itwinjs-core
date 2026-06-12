@@ -12,7 +12,7 @@ import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Length Property Description
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) in new code.
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -39,7 +39,7 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 /**
  * Survey Length Property Description
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use `kindOfQuantityName`-based formatting in new code. To preserve survey-length behavior, configure a [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata), then obtain specs through [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity).
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) in new code. To preserve survey-length behavior, configure a dedicated [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -66,7 +66,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
 
 /**
  * Engineering Length Property Description
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) in new code.
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated

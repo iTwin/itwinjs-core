@@ -7,12 +7,59 @@
  */
 
 import { FormatterSpec, Parser, ParserSpec } from "@itwin/core-quantity";
-import { BaseQuantityDescription, ParseResults } from "@itwin/appui-abstract";
+import {
+  BaseQuantityDescription, type CustomFormattedNumberParams, ParseResults, type PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames,
+} from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
+/** Properties for [createQuantityDescription]($frontend).
+ * @beta
+ */
+export interface CreateQuantityDescriptionProps {
+  name: string;
+  displayLabel: string;
+  kindOfQuantityName: string;
+  persistenceUnitName: string;
+  parseError: string;
+}
+
+/** Creates a quantity-aware [PropertyDescription]($appui-abstract) for tool settings and other UI property flows.
+ *
+ * The returned description uses a `NumberCustom` editor with synchronous formatting and parsing callbacks backed by the
+ * active [IModelApp.quantityFormatter]($frontend). Formatting falls back to `numberValue.toFixed(2)` until specs are available.
+ *
+ * @beta
+ */
+export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription {
+  const { name, displayLabel, kindOfQuantityName, persistenceUnitName, parseError } = props;
+  const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle(kindOfQuantityName, persistenceUnitName);
+  const editorParams: CustomFormattedNumberParams[] = [{
+    type: PropertyEditorParamTypes.CustomFormattedNumber,
+    formatFunction: (numberValue: number): string => {
+      const formatterSpec = formatSpecHandle.formatterSpec;
+      return formatterSpec ? IModelApp.quantityFormatter.formatQuantity(numberValue, formatterSpec) : numberValue.toFixed(2);
+    },
+    parseFunction: (userInput: string) => {
+      const parseResult = formatSpecHandle.parserSpec?.parseToQuantityValue(userInput);
+      return parseResult && parseResult.ok ? { value: parseResult.value } : { parseError };
+    },
+  }];
+
+  return {
+    name,
+    displayLabel,
+    kindOfQuantityName,
+    typename: StandardTypeNames.Number,
+    editor: {
+      name: StandardEditorNames.NumberCustom,
+      params: editorParams,
+    },
+  };
+}
+
 /**
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) in new code.
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
 export interface FormattedQuantityDescriptionArgs {
@@ -24,7 +71,7 @@ export interface FormattedQuantityDescriptionArgs {
 
 /**
  * Base Quantity Property Description
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [IModelApp.quantityFormatter]($frontend) and [FormatSpecHandle]($quantity) in new code.
+ * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {

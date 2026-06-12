@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Deprecate legacy quantity description classes (FormattedQuantityDescription, LengthDescription, SurveyLengthDescription, EngineeringLengthDescription, AngleDescription). Use FormatSpecHandle with PropertyDescription directly instead.",
+      "comment": "Deprecate legacy quantity description classes and add createQuantityDescription as the migration path for tool settings and other appui-based property flows, with guidance for the SurveyLengthDescription exception.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }

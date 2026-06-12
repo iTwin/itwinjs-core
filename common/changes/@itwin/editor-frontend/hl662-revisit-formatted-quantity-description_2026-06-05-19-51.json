@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Migrate project geolocation tool settings off deprecated quantity description classes to direct FormatSpecHandle usage.",
+      "comment": "Migrate project geolocation tool settings off deprecated quantity description classes to use createQuantityDescription.",
       "type": "none",
       "packageName": "@itwin/editor-frontend"
     }
