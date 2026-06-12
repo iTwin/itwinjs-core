@@ -12,6 +12,7 @@ import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
+ * Use of this service requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]] passed to [[IModelApp.startup]].
  * @public
  * @extensions
  */
