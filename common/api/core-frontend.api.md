@@ -2323,15 +2323,10 @@ export function createQuantityDescription(props: CreateQuantityDescriptionProps)
 
 // @beta
 export interface CreateQuantityDescriptionProps {
-    // (undocumented)
     displayLabel: string;
-    // (undocumented)
     kindOfQuantityName: string;
-    // (undocumented)
     name: string;
-    // (undocumented)
-    parseError: string;
-    // (undocumented)
+    parseError?: string;
     persistenceUnitName: string;
 }
 

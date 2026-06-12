@@ -110,7 +110,6 @@ describe("Formatting examples", () => {
       displayLabel: "Camera Height",
       kindOfQuantityName: "DefaultToolsUnits.LENGTH",
       persistenceUnitName: "Units.M",
-      parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"),
     });
     // __PUBLISH_EXTRACT_END__
 

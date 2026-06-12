@@ -290,6 +290,25 @@ describe("Quantity formatter", async () => {
     expect(param.parseFunction("12.3 m")).toEqual({ parseError: "my parse error" });
   });
 
+  it("createQuantityDescription falls back to a generic parseError when no override is supplied", () => {
+    const desc = createQuantityDescription({
+      name: "testProp",
+      displayLabel: "Test",
+      kindOfQuantityName: "NonExistent.KOQ",
+      persistenceUnitName: "Units.M",
+    });
+
+    const param = desc.editor?.params?.[0];
+    expect(param).toBeDefined();
+    expect(isCustomFormattedNumberParams(param!)).toBe(true);
+    if (!param || !isCustomFormattedNumberParams(param))
+      throw new Error("Expected CustomFormattedNumberParams");
+
+    expect(param.parseFunction("bad input")).toEqual({
+      parseError: IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseValue"),
+    });
+  });
+
   it("Set and use coordinate and length overrides format (Survey Feet) - deprecate way", async () => {
     const overrideLengthAndCoordinateEntry = {
       metric: {

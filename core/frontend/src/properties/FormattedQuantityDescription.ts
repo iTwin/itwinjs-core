@@ -17,11 +17,28 @@ import { QuantityType } from "../quantity-formatting/QuantityFormatter";
  * @beta
  */
 export interface CreateQuantityDescriptionProps {
+  /** Programmatic property name.
+   * @beta
+   */
   name: string;
+  /** User-facing property label.
+   * @beta
+   */
   displayLabel: string;
+  /** KindOfQuantity name used to resolve formatting and parsing behavior.
+   * @beta
+   */
   kindOfQuantityName: string;
+  /** Persistence unit name for values stored in the property.
+   * @beta
+   */
   persistenceUnitName: string;
-  parseError: string;
+  /** Optional parse failure message override shown when the input cannot be converted.
+   *
+   * If omitted, [createQuantityDescription]($frontend) falls back to a generic parse error message.
+   * @beta
+   */
+  parseError?: string;
 }
 
 /** Creates a quantity-aware [PropertyDescription]($appui-abstract) for tool settings and other UI property flows.
@@ -32,7 +49,8 @@ export interface CreateQuantityDescriptionProps {
  * @beta
  */
 export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription {
-  const { name, displayLabel, kindOfQuantityName, persistenceUnitName, parseError } = props;
+  const { name, displayLabel, kindOfQuantityName, persistenceUnitName } = props;
+  const parseError = props.parseError ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseValue");
   const formatSpecHandle = IModelApp.quantityFormatter.getFormatSpecHandle(kindOfQuantityName, persistenceUnitName);
   const editorParams: CustomFormattedNumberParams[] = [{
     type: PropertyEditorParamTypes.CustomFormattedNumber,
