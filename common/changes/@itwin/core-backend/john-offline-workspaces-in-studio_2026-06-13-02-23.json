@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix offline workspace open in Electron: CloudSqlite.requestToken now catches network errors and returns an empty token as documented; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile); getOnlineStatus defaults to false so connectivity is not assumed until explicitly confirmed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
