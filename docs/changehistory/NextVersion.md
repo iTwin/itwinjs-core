@@ -7,6 +7,8 @@ publish: false
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
+    - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
+    - [Bing Maps imagery is deprecated](#bing-maps-imagery-is-deprecated)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -46,6 +48,26 @@ const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
 await imodel.close(); // connection closes before iteration
 const rows = await reader.toArray(); // used to throw, now returns an empty array
 ```
+
+### Quantity property description classes deprecated
+
+The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated.
+
+These appui-based helpers were introduced when quantity formatting was driven by `QuantityType`, but new quantity formatting work should use `kindOfQuantityName`-based APIs instead.
+
+Most callers can migrate to [createQuantityDescription]($frontend), which builds a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting and parsing callbacks backed by [IModelApp.quantityFormatter]($frontend).
+
+`SurveyLengthDescription` is the notable exception: its legacy behavior selects survey-style display units in unit systems where survey and engineering length formats differ. Applications that need to preserve that behavior should provide the desired format through a dedicated [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata). For more information, see the quantity learning docs on [Quantity property descriptions](../quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions), [Format Sets](../quantity-formatting/definitions/FormatSets.md), and [Providers](../quantity-formatting/usage/Providers.md).
+
+Existing uses of the deprecated classes continue to behave as before, and the classes will not be removed before a future major release.
+
+### Bing Maps imagery is deprecated
+
+Bing Maps imagery-specific APIs are now deprecated. This release does not change runtime behavior, and existing persisted Bing-backed styles continue to load for compatibility.
+
+For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
+
+> This imagery-only deprecation does not deprecate `BingLocationProvider` or `BingElevationProvider`, and it does not add a built-in replacement for Bing elevation or location services. Applications that continue using those Bing services must continue supplying `MapLayerOptions.BingMaps`. 
 
 ## @itwin/map-layers-formats
 

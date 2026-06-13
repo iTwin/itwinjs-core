@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrate project geolocation tool settings off deprecated quantity description classes to use createQuantityDescription.",
+      "type": "none",
+      "packageName": "@itwin/editor-frontend"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend",
+  "email": "50554904+hl662@users.noreply.github.com"
+}
