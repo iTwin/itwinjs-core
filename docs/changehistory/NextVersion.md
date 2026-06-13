@@ -5,11 +5,31 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
+    - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
 ## @itwin/core-frontend
+
+### Configurable precision for graphical editing at high coordinates
+
+During a [GraphicalEditingScope]($frontend), graphics for modified elements that are georeferenced far from the coordinate system origin could exhibit float32 precision artifacts such as jagged curves. The new [GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold]($frontend) property sets the world-space coordinate magnitude (in meters) beyond which such graphics use `rtcCenter` centering to preserve precision, at a small performance cost. It defaults to 10 kilometers. Set it before making edits, as it is read once per model when that model's first element is modified.
+
+```ts
+const scope = await briefcase.enterEditingScope();
+scope.dynamicGraphicsAbsolutePositionThreshold = 50_000;
+```
+
+For framework code that does not directly enter the scope, configure the threshold from [GraphicalEditingScope.onEnter]($frontend), which runs before any edits:
+
+```ts
+GraphicalEditingScope.onEnter.addListener((scope) => {
+  scope.dynamicGraphicsAbsolutePositionThreshold = 50_000;
+});
+```
+
+This changes the default behavior for existing projects: previously dynamic editing graphics always used absolute positions, but elements now centered 10 km or more from the origin automatically switch to `rtcCenter` centering. Projects within 10 km are unaffected. To restore the prior behavior, set the threshold to `Number.POSITIVE_INFINITY`.
 
 ### `IModelConnection.createQueryReader` now terminates gracefully if the connection is closed
 
