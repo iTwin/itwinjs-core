@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-let isOnline = true;
+let isOnline = false;
 
 /**
  * Sets the online status of the backend that will be returned by `getOnlineStatus`.
@@ -18,7 +18,7 @@ export function setOnlineStatus(online: boolean) {
  * Determine whether the backend is currently considered online.
  * @note This only works if `setOnlineStatus` has been called by something to update the status.
  * `NativeHost` does this whenever the connectivity changes. If `setOnlineStatus` has never been
- * called, this will return `true`.
+ * called, this will return `false`.
  * @internal
  */
 export function getOnlineStatus(): boolean {

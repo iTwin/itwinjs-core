@@ -62,8 +62,13 @@ export namespace CloudSqlite {
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
-    const response = await getBlobService().requestToken({ ...args, userToken });
-    return response?.token ?? "";
+    try {
+      const response = await getBlobService().requestToken({ ...args, userToken });
+      return response.token;
+    } catch {
+      logInfo(`Could not get token for container [${args.containerId}]. We might be offline, so returning an empty token.`);
+      return "";
+    }
   }
 
   interface CloudContainerInternal extends CloudContainer {
