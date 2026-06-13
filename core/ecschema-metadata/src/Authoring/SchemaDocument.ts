@@ -182,7 +182,8 @@ export class SchemaDocument {
   }
 
   /** Creates a mixin, appends it, and returns it. `appliesTo` is the entity class the mixin may be
-   * applied to (mandatory data). A mixin defaults to {@link ECClassModifier.Abstract}. */
+   * applied to (mandatory data). A mixin is abstract by definition regardless of its
+   * {@link ECClass.modifier} - see {@link Authoring.Mixin}. */
   public createMixin(name: string, appliesTo: Authoring.LocalOrFullName, init?: Authoring.ClassInit): Authoring.Mixin {
     return this._add(new Authoring.Mixin(name, appliesTo, init));
   }
@@ -277,6 +278,44 @@ export namespace Authoring {
    * (`"BisCore.PhysicalElement"`). The document is validity-free and resolves nothing,
    * so reference correctness is a compile diagnostic - which is why this is a plain string. */
   export type LocalOrFullName = string;
+
+  /** The spec-defined value each optional, defaultable field reads as when absent. The document keeps
+   * "set to the default" and "absent" distinct so it can round-trip a source exactly, so these are
+   * not applied on construction. They are the single source of truth for what the defaults are: the
+   * per-field doc comments below point here, and a writer asked to drop redundant defaults (the
+   * `omitDefaults` option of {@link SchemaJsonWriter}) consults this. */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  export const SpecDefaults = {
+    /** A class with no `modifier`. */
+    classModifier: ECClassModifier.None,
+    /** A mixin's `modifier`. A mixin is abstract by definition, so this is the value `omitDefaults`
+     * treats as redundant. An explicit non-abstract modifier on a mixin is meaningless - nothing in
+     * this stack enforces or acts on it - but it is kept verbatim rather than silently rewritten
+     * (see {@link Mixin}). */
+    mixinModifier: ECClassModifier.Abstract,
+    /** A relationship with no `strength`. */
+    relationshipStrength: StrengthType.Referencing,
+    /** A relationship with no `strengthDirection`. */
+    relationshipStrengthDirection: StrengthDirection.Forward,
+    /** A relationship constraint with no `polymorphic` flag. */
+    constraintPolymorphic: true,
+    /** A format with no `roundFactor` - round to precision. */
+    formatRoundFactor: 0,
+    /** A format with no `showSignOption`. */
+    formatShowSignOption: ShowSignOption.OnlyNegative,
+    /** A format with no `decimalSeparator`. */
+    formatDecimalSeparator: ".",
+    /** A format with no `thousandSeparator`. */
+    formatThousandSeparator: ",",
+    /** A format with no `uomSeparator`. */
+    formatUomSeparator: " ",
+    /** A format with no `stationSeparator`. */
+    formatStationSeparator: "+",
+    /** A format composite with no `spacer`. */
+    compositeSpacer: " ",
+    /** A format composite with no `includeZero` flag. */
+    compositeIncludeZero: true,
+  } as const;
 
   /** A reference to another schema: invariant `name` + the three version components, plus the `alias`
    * this document uses for it within its own scope. Both {@link SchemaDocument} and a `SchemaView`
@@ -479,9 +518,9 @@ export namespace Authoring {
    * @alpha
    */
   export abstract class ECClass extends SchemaItem {
-    /** Abstract / sealed / none. `undefined` when the source carried no modifier - which the spec
-     * reads as {@link ECClassModifier.None} (implicitly abstract for mixins). The distinction is
-     * preserved so a document round-trips exactly. */
+    /** Abstract / sealed / none. `undefined` when the source carried no modifier, which reads as the
+     * spec default ({@link SpecDefaults.classModifier}, or {@link SpecDefaults.mixinModifier} for a
+     * mixin). The distinction is preserved so a document round-trips exactly. */
     public modifier?: ECClassModifier;
     /** The single base class reference (e.g. `"BisCore:PhysicalElement"`), if any. */
     public baseClass?: LocalOrFullName;
@@ -585,6 +624,15 @@ export namespace Authoring {
 
   /** A mixin: an abstract class mixed into entity classes. In ECXML 3.2 it is an entity class carrying
    * an `IsMixin` custom attribute; the document promotes it to a first-class kind.
+   *
+   * A mixin is **abstract by definition**. Although it still carries the {@link ECClass.modifier}
+   * field, that field is conceptually always `Abstract`, and nothing in this stack enforces, defaults,
+   * or otherwise acts on it. An explicit non-abstract modifier (e.g. `modifier="None"`) is therefore
+   * meaningless and does not round-trip consistently across stacks: ECObjects-native drops a mixin's
+   * `None` when writing XML and omits the modifier entirely in ECJSON, whereas this document preserves
+   * whatever the source carried. Treat any non-`Abstract` mixin modifier as a likely authoring
+   * mistake. `omitDefaults` ({@link SpecDefaults.mixinModifier}) drops a redundant `Abstract` but
+   * keeps such an odd value, so a comparison surfaces it rather than hiding it.
    * @alpha
    */
   export class Mixin extends ECClass {
@@ -592,8 +640,8 @@ export namespace Authoring {
     /** The entity class (including its derived classes) that this mixin may be applied to. (3.2: `IsMixin.AppliesToEntityClass`). */
     public appliesTo: LocalOrFullName;
 
-    /** Creates a mixin. `appliesTo` is mandatory. A mixin is abstract per spec whether or not a
-     * modifier is written, so none is defaulted here - an absent modifier round-trips as absent. */
+    /** Creates a mixin. `appliesTo` is mandatory. A mixin is abstract whether or not a modifier is
+     * written, so none is defaulted here - an absent modifier round-trips as absent. */
     public constructor(name: string, appliesTo: LocalOrFullName, init?: ClassInit) {
       super(name, init);
       this.appliesTo = appliesTo;
@@ -648,7 +696,7 @@ export namespace Authoring {
     /** Role label. The spec requires it; the document leaves it optional and defers to the compiler. */
     public roleLabel?: string;
     /** Whether the constraint matches derived classes of its constraint classes. `undefined` when the
-     * source carried no value - the spec reads that as `true`. */
+     * source carried no value, which reads as the spec default ({@link SpecDefaults.constraintPolymorphic}). */
     public polymorphic?: boolean;
     /** The common base/abstract constraint, required when there is more than one constraint class and
      * none is inherited. */
@@ -669,10 +717,10 @@ export namespace Authoring {
   export class RelationshipClass extends ECClass {
     public readonly schemaItemType = SchemaItemType.RelationshipClass;
     /** How the lifetimes of source and target are related. `undefined` when the source carried no
-     * value - the spec reads that as {@link StrengthType.Referencing}. */
+     * value, which reads as the spec default ({@link SpecDefaults.relationshipStrength}). */
     public strength?: StrengthType;
-    /** Which end is the starting point. `undefined` when the source carried no value - the spec
-     * reads that as {@link StrengthDirection.Forward}. */
+    /** Which end is the starting point. `undefined` when the source carried no value, which reads as
+     * the spec default ({@link SpecDefaults.relationshipStrengthDirection}). */
     public strengthDirection?: StrengthDirection;
     /** The source end. */
     public readonly source = new RelationshipConstraint(RelationshipEnd.Source);
@@ -985,9 +1033,11 @@ export namespace Authoring {
   /** The composite specification of a {@link Format}: how a single quantity is split across up to
    * four units of descending magnitude (e.g. feet-and-inches, degrees-minutes-seconds). */
   export interface FormatComposite {
-    /** Separator between the unit segments. Empty or a single character; `undefined` reads as `" "`. */
+    /** Separator between the unit segments. Empty or a single character; `undefined` reads as the
+     * spec default ({@link SpecDefaults.compositeSpacer}). */
     spacer?: string;
-    /** Whether zero-magnitude segments are rendered. `undefined` reads as `true`. */
+    /** Whether zero-magnitude segments are rendered. `undefined` reads as the spec default
+     * ({@link SpecDefaults.compositeIncludeZero}). */
     includeZero?: boolean;
     /** The composite's units in descending magnitude, each with an optional label override. The spec
      * requires one to four; the document does not enforce that. */
@@ -1030,24 +1080,26 @@ export namespace Authoring {
      * as the type's spec default. */
     public precision?: DecimalPrecision | FractionalPrecision;
     /** Rounding factor applied when the {@link FormatTraits.ApplyRounding} trait is set; `0` rounds
-     * to precision. `undefined` reads as `0`. */
+     * to precision. `undefined` reads as the spec default ({@link SpecDefaults.formatRoundFactor}). */
     public roundFactor?: number;
     /** Minimum width of the formatted string, padded to fit; `undefined` pads nothing. */
     public minWidth?: number;
-    /** How the sign of the value is rendered. `undefined` reads as {@link ShowSignOption.OnlyNegative}. */
+    /** How the sign of the value is rendered. `undefined` reads as the spec default
+     * ({@link SpecDefaults.formatShowSignOption}). */
     public showSignOption?: ShowSignOption;
     /** Bitmask of rendering traits ({@link FormatTraits.ShowUnitLabel}, ...). The wire form is a
      * delimited string; this is the parsed flags value. `undefined` reads as no traits, same as
      * {@link FormatTraits.Uninitialized} (`0`). */
     public formatTraits?: FormatTraits;
     /** Separator between the integer and fractional digits. Empty or a single character;
-     * `undefined` reads as `"."`. */
+     * `undefined` reads as the spec default ({@link SpecDefaults.formatDecimalSeparator}). */
     public decimalSeparator?: string;
     /** Separator grouping the integer digits by thousands, rendered only with the
-     * {@link FormatTraits.Use1000Separator} trait. Empty or a single character; `undefined` reads as `","`. */
+     * {@link FormatTraits.Use1000Separator} trait. Empty or a single character; `undefined` reads as
+     * the spec default ({@link SpecDefaults.formatThousandSeparator}). */
     public thousandSeparator?: string;
     /** Separator between the value and the unit label. Empty or a single character; `undefined`
-     * reads as `" "`. */
+     * reads as the spec default ({@link SpecDefaults.formatUomSeparator}). */
     public uomSeparator?: string;
     /** Scientific notation variant; the spec requires it when {@link Format.type} is scientific. */
     public scientificType?: ScientificType;
@@ -1055,7 +1107,7 @@ export namespace Authoring {
      * {@link Format.type} is station. */
     public stationOffsetSize?: number;
     /** Separator between the station and offset digits (`"3+25"`). Empty or a single character;
-     * `undefined` reads as `"+"`. */
+     * `undefined` reads as the spec default ({@link SpecDefaults.formatStationSeparator}). */
     public stationSeparator?: string;
     /** The composite specification splitting the value across multiple units, if any. */
     public composite?: FormatComposite;

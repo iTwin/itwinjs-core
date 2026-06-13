@@ -120,6 +120,8 @@ Example:
 </ECEntityClass>
 ```
 
+> A mixin is serialized as an `ECEntityClass` carrying an `IsMixin` custom attribute (see [ECMixinClass](./ec-mixin-class.md)). A mixin is abstract by definition. The conventional and recommended form is to write `modifier="Abstract"` explicitly - every mixin in BisCore does, and that is what the serializer emits. Omitting the modifier is equivalent, since a mixin is abstract whether or not it is present. What is *not* valid is an explicit non-abstract value such as `modifier="None"`: it is meaningless, is not enforced anywhere, and should be treated as an authoring mistake.
+
 ### Custom Attribute Classes
 
 `ECCustomAttributeClass` adds an `appliesTo` attribute that lists the container types where instances of the custom attribute may be applied. See [ECCustomAttributeClass](./ec-custom-attribute-class.md) for its semantics.

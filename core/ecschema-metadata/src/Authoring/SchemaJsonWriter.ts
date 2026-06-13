@@ -15,6 +15,19 @@ import { SchemaIssueList } from "./SchemaIssues";
 /** The `$schema` URL of the ECJSON 3.2 spec. */
 const ECJSON_3_2_SCHEMA_URL = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
+/** Options for {@link SchemaJsonWriter}, extending the {@link SchemaWriteOptions} shared by all
+ * writers. The extra options are JSON-only for now; one moves up into {@link SchemaWriteOptions} if
+ * the XML writer ever gains it.
+ * @alpha
+ */
+export interface SchemaJsonWriteOptions extends SchemaWriteOptions {
+  /** Drop every field whose value equals its spec default ({@link Authoring.SpecDefaults}), so the
+   * output carries only what departs from the defaults. Off by default - a normal write keeps every
+   * explicit value so the document round-trips exactly. Turned on where an explicit default and an
+   * absent field must read as the same schema: {@link compareSchemaDocuments} and schema fingerprinting. */
+  omitDefaults?: boolean;
+}
+
 /** A JSON object under construction; values are inserted in emit order and `undefined` is skipped. */
 interface JsonObject {
   [name: string]: unknown;
@@ -30,7 +43,7 @@ interface JsonObject {
  */
 export class SchemaJsonWriter {
   /** Writes the document to ECJSON text in the requested spec version (default {@link ECSpec.Latest}). */
-  public writeDocument(document: SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
+  public writeDocument(document: SchemaDocument, options?: SchemaJsonWriteOptions): SchemaWriteResult {
     const result = this.writeDocumentTree(document, options);
     if (result.tree === undefined)
       return { issues: result.issues };
@@ -40,14 +53,14 @@ export class SchemaJsonWriter {
   /** Writes the document as a plain ECJSON object tree instead of text - for consumers that want
    * the props shape directly (feeding APIs that take parsed JSON, comparison) without a
    * stringify/parse round trip. Same conversion and issue reporting as {@link writeDocument}. */
-  public writeDocumentTree(document: SchemaDocument, options?: SchemaWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
+  public writeDocumentTree(document: SchemaDocument, options?: SchemaJsonWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
     const issues = new SchemaIssueList();
     const spec = options?.spec ?? ECSpec.Latest;
     if (spec !== ECSpec.V3_2) {
       issues.addError("SchemaJson-0001", `Unsupported target spec version "${spec as string}" - the JSON writer currently supports only 3.2.`);
       return { issues };
     }
-    const emitter = new EcJson32Emitter(document, issues);
+    const emitter = new EcJson32Emitter(document, issues, options?.omitDefaults ?? false);
     return { tree: emitter.emit(), issues };
   }
 }
@@ -65,10 +78,12 @@ function formatVersion(read: number, write: number, minor: number): string {
 class EcJson32Emitter {
   private readonly _document: SchemaDocument;
   private readonly _issues: SchemaIssueList;
+  private readonly _omitDefaults: boolean;
 
-  public constructor(document: SchemaDocument, issues: SchemaIssueList) {
+  public constructor(document: SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean) {
     this._document = document;
     this._issues = issues;
+    this._omitDefaults = omitDefaults;
   }
 
   public emit(): JsonObject {
@@ -181,13 +196,33 @@ class EcJson32Emitter {
   private _emitClass(item: Authoring.AnyClass, specific: JsonObject): JsonObject {
     const json = this._emitItemEnvelope(item, {
       ...specific,
-      modifier: item.modifier === undefined ? undefined : classModifierToString(item.modifier),
+      modifier: this._modifierValue(item),
       baseClass: item.baseClass !== undefined ? this._toJsonItemReference(item.baseClass, item.name) : undefined,
     });
     this._attachCustomAttributes(json, item.customAttributes, item.name);
     if (item.properties.length > 0)
       json.properties = item.properties.map((property) => this._emitProperty(property, item.name));
     return json;
+  }
+
+  /** The class modifier as a string, or `undefined` to omit it. The default differs for a mixin. */
+  private _modifierValue(item: Authoring.AnyClass): string | undefined {
+    const defaultModifier = item.isMixin() ? Authoring.SpecDefaults.mixinModifier : Authoring.SpecDefaults.classModifier;
+    return this._enumValue(item.modifier, defaultModifier, classModifierToString);
+  }
+
+  /** Converts an optional enum field to its string form, or `undefined` to omit it - when unset, or
+   * when {@link _omitDefaults} is on and it equals `defaultValue`. */
+  private _enumValue<T>(value: T | undefined, defaultValue: T, toString: (value: T) => string): string | undefined {
+    if (value === undefined || (this._omitDefaults && value === defaultValue))
+      return undefined;
+    return toString(value);
+  }
+
+  /** Returns `value`, or `undefined` to omit it when {@link _omitDefaults} is on and it equals the
+   * spec default. For optional scalar fields emitted as-is (no enum-to-string conversion). */
+  private _omittingDefault<T>(value: T | undefined, defaultValue: T): T | undefined {
+    return this._omitDefaults && value === defaultValue ? undefined : value;
   }
 
   private _emitEntityClass(item: Authoring.EntityClass): JsonObject {
@@ -206,8 +241,8 @@ class EcJson32Emitter {
 
   private _emitRelationshipClass(item: Authoring.RelationshipClass): JsonObject {
     const json = this._emitClass(item, {
-      strength: item.strength === undefined ? undefined : strengthToString(item.strength),
-      strengthDirection: item.strengthDirection === undefined ? undefined : strengthDirectionToString(item.strengthDirection),
+      strength: this._enumValue(item.strength, Authoring.SpecDefaults.relationshipStrength, strengthToString),
+      strengthDirection: this._enumValue(item.strengthDirection, Authoring.SpecDefaults.relationshipStrengthDirection, strengthDirectionToString),
     });
     json.source = this._emitRelationshipConstraint(item.source, item.name);
     json.target = this._emitRelationshipConstraint(item.target, item.name);
@@ -219,7 +254,7 @@ class EcJson32Emitter {
     const json: JsonObject = prune({
       multiplicity: constraint.multiplicity,
       roleLabel: constraint.roleLabel,
-      polymorphic: constraint.polymorphic,
+      polymorphic: this._omittingDefault(constraint.polymorphic, Authoring.SpecDefaults.constraintPolymorphic),
       abstractConstraint: constraint.abstractConstraint !== undefined ? this._toJsonItemReference(constraint.abstractConstraint, location) : undefined,
       constraintClasses: constraint.constraintClasses.map((constraintClass) => this._toJsonItemReference(constraintClass, location)),
     });
@@ -340,21 +375,21 @@ class EcJson32Emitter {
     const json = this._emitItemEnvelope(item, {
       type: item.type,
       precision: item.precision,
-      roundFactor: item.roundFactor,
+      roundFactor: this._omittingDefault(item.roundFactor, Authoring.SpecDefaults.formatRoundFactor),
       minWidth: item.minWidth,
-      showSignOption: item.showSignOption,
+      showSignOption: this._omittingDefault(item.showSignOption, Authoring.SpecDefaults.formatShowSignOption),
       formatTraits: item.formatTraits !== undefined ? formatTraitsToArray(item.formatTraits) : undefined,
-      decimalSeparator: item.decimalSeparator,
-      thousandSeparator: item.thousandSeparator,
-      uomSeparator: item.uomSeparator,
+      decimalSeparator: this._omittingDefault(item.decimalSeparator, Authoring.SpecDefaults.formatDecimalSeparator),
+      thousandSeparator: this._omittingDefault(item.thousandSeparator, Authoring.SpecDefaults.formatThousandSeparator),
+      uomSeparator: this._omittingDefault(item.uomSeparator, Authoring.SpecDefaults.formatUomSeparator),
       scientificType: item.scientificType,
       stationOffsetSize: item.stationOffsetSize,
-      stationSeparator: item.stationSeparator,
+      stationSeparator: this._omittingDefault(item.stationSeparator, Authoring.SpecDefaults.formatStationSeparator),
     });
     if (item.composite !== undefined) {
       json.composite = prune({
-        spacer: item.composite.spacer,
-        includeZero: item.composite.includeZero,
+        spacer: this._omittingDefault(item.composite.spacer, Authoring.SpecDefaults.compositeSpacer),
+        includeZero: this._omittingDefault(item.composite.includeZero, Authoring.SpecDefaults.compositeIncludeZero),
         units: item.composite.units.map((unit) => prune({
           name: this._toJsonItemReference(unit.name, item.name),
           label: unit.label,
