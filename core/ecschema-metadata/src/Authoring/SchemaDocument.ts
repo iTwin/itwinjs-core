@@ -199,8 +199,8 @@ export class SchemaDocument {
     return this._add(new Authoring.CustomAttributeClass(name, appliesTo, init));
   }
 
-  /** Creates a relationship class, appends it, and returns it. Its `source` and `target` constraints
-   * are created empty; configure them on the returned handle. */
+  /** Creates a relationship class, appends it, and returns it. Configure the `source` and `target`
+   * constraints inline via `init`, or on the returned handle with {@link Authoring.RelationshipConstraint.set}. */
   public createRelationship(name: string, init?: Authoring.RelationshipClassInit): Authoring.RelationshipClass {
     return this._add(new Authoring.RelationshipClass(name, init));
   }
@@ -264,6 +264,18 @@ export class SchemaDocument {
     this.items.push(item);
     return item;
   }
+}
+
+/** The four multiplicities that cover almost every relationship endpoint, as the `(lo..hi)` strings the
+ * constraint stores. Convenience values only - any field or `init` that accepts a multiplicity also
+ * accepts a raw string, so an uncommon range like `"(2..5)"` is still expressible.
+ * @alpha
+ */
+export enum Multiplicity {
+  ZeroOne = "(0..1)",
+  ZeroMany = "(0..*)",
+  OneOne = "(1..1)",
+  OneMany = "(1..*)",
 }
 
 /** Nested authoring types for {@link SchemaDocument}: schema items, properties, and the custom
@@ -678,9 +690,27 @@ export namespace Authoring {
 
   /** Complementary data accepted by the {@link RelationshipClass} constructor. The two constraints are
    * not here - they are created empty and configured on the returned handle. */
+  /** Complementary data accepted by {@link RelationshipConstraint.set} and by the `source` / `target`
+   * fields of {@link RelationshipClassInit}. A pure field initializer: provided scalar fields are
+   * assigned and `constraintClasses` are appended; omitted fields are left untouched.
+   * @alpha
+   */
+  export interface RelationshipConstraintInit {
+    multiplicity?: Multiplicity | string;
+    roleLabel?: string;
+    polymorphic?: boolean;
+    abstractConstraint?: LocalOrFullName;
+    /** Constraint class references; appended to any already present. */
+    constraintClasses?: LocalOrFullName[];
+  }
+
   export interface RelationshipClassInit extends ClassInit {
     strength?: StrengthType;
     strengthDirection?: StrengthDirection;
+    /** Configures the source constraint in the same pass as the class (see {@link RelationshipConstraint.set}). */
+    source?: RelationshipConstraintInit;
+    /** Configures the target constraint in the same pass as the class. */
+    target?: RelationshipConstraintInit;
   }
 
   /** One end (source or target) of a relationship. Not a schema item - it is owned by its
@@ -709,6 +739,25 @@ export namespace Authoring {
     public constructor(relationshipEnd: RelationshipEnd) {
       this.relationshipEnd = relationshipEnd;
     }
+
+    /** Sets the common endpoint fields (multiplicity / role label / polymorphic / abstract constraint) and
+     * appends any constraint classes, in one call. Provided fields are assigned; omitted fields are left
+     * untouched. Returns the constraint so calls can chain. Note `abstractConstraint` is not derived from a
+     * single constraint class - it is only required when an endpoint has more than one, so the document
+     * leaves it to the author (or the compiler) rather than inventing it. */
+    public set(init: RelationshipConstraintInit): this {
+      if (init.multiplicity !== undefined)
+        this.multiplicity = init.multiplicity;
+      if (init.roleLabel !== undefined)
+        this.roleLabel = init.roleLabel;
+      if (init.polymorphic !== undefined)
+        this.polymorphic = init.polymorphic;
+      if (init.abstractConstraint !== undefined)
+        this.abstractConstraint = init.abstractConstraint;
+      if (init.constraintClasses !== undefined)
+        this.constraintClasses.push(...init.constraintClasses);
+      return this;
+    }
   }
 
   /** A relationship class relating instances of its source and target constraint classes.
@@ -727,12 +776,17 @@ export namespace Authoring {
     /** The target end. */
     public readonly target = new RelationshipConstraint(RelationshipEnd.Target);
 
-    /** Creates a relationship class. `init` carries strength / direction and the shared class fields;
-     * the constraints start empty. */
+    /** Creates a relationship class. `init` carries strength / direction, the shared class fields, and
+     * optional `source` / `target` configuration; any constraint end left out of `init` starts empty and
+     * can be configured later via {@link RelationshipConstraint.set}. */
     public constructor(name: string, init?: RelationshipClassInit) {
       super(name, init);
       this.strength = init?.strength;
       this.strengthDirection = init?.strengthDirection;
+      if (init?.source !== undefined)
+        this.source.set(init.source);
+      if (init?.target !== undefined)
+        this.target.set(init.target);
     }
   }
 

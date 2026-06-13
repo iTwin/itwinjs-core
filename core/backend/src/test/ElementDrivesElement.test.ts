@@ -1,7 +1,7 @@
 import { BeEvent, DbResult, Guid, Id64String, IModelStatus, StopWatch } from "@itwin/core-bentley";
 import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { PrimitiveType, SchemaDocument, StrengthType } from "@itwin/ecschema-metadata";
+import { Multiplicity, PrimitiveType, SchemaDocument, StrengthType } from "@itwin/ecschema-metadata";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SpatialCategory } from "../Category";
@@ -362,15 +362,9 @@ export class NetworkSchema extends Schema {
     const inputDrivesOutput = schemaDocument.createRelationship("InputDrivesOutput", {
       baseClass: "BisCore:ElementDrivesElement",
       strength: StrengthType.Referencing,
+      source: { multiplicity: Multiplicity.ZeroOne, roleLabel: "drives", polymorphic: true, constraintClasses: ["Node"] },
+      target: { multiplicity: Multiplicity.ZeroMany, roleLabel: "is driven by", polymorphic: false, constraintClasses: ["Node"] },
     });
-    inputDrivesOutput.source.multiplicity = "(0..1)";
-    inputDrivesOutput.source.roleLabel = "drives";
-    inputDrivesOutput.source.polymorphic = true;
-    inputDrivesOutput.source.constraintClasses.push("Node");
-    inputDrivesOutput.target.multiplicity = "(0..*)";
-    inputDrivesOutput.target.roleLabel = "is driven by";
-    inputDrivesOutput.target.polymorphic = false;
-    inputDrivesOutput.target.constraintClasses.push("Node");
     inputDrivesOutput.createPrimitive("prop", PrimitiveType.Double);
 
     await IModelTestUtils.importSchemaDocuments(iModel, [schemaDocument]);
