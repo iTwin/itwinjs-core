@@ -377,16 +377,20 @@ class EcXml32Emitter {
   private _emitRelationshipClass(item: Authoring.RelationshipClass): void {
     this._xml.openElement("ECRelationshipClass", [
       ...this._itemHeaderAttributes(item),
-      this._modifierAttribute(item),
+      // ECXML 3.1+ requires the modifier attribute on relationship classes (it is optional elsewhere),
+      // so emit it unconditionally, falling back to the spec default when the document leaves it absent.
+      ["modifier", classModifierToString(item.modifier ?? Authoring.SpecDefaults.classModifier)],
       ["strength", item.strength === undefined ? undefined : strengthToString(item.strength)],
       ["strengthDirection", item.strengthDirection === undefined ? undefined : strengthDirectionToString(item.strengthDirection)],
     ]);
     if (item.baseClass !== undefined)
       this._xml.textElement("BaseClass", this._toXmlItemReference(item.baseClass, item.name));
     this._emitCustomAttributes(item.customAttributes, item.name);
-    this._emitProperties(item);
+    // ECXML 3.2 sequences the constraints before any properties on the relationship; native's
+    // parser rejects the reverse order, so Source/Target must precede _emitProperties here.
     this._emitRelationshipConstraint("Source", item.source, item.name);
     this._emitRelationshipConstraint("Target", item.target, item.name);
+    this._emitProperties(item);
     this._xml.closeElement("ECRelationshipClass");
   }
 

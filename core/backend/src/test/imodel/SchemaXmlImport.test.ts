@@ -9,7 +9,7 @@ import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ECSpecVersion, EntityClass, Format } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, EntityClass, Format, PrimitiveType, SchemaDocument } from "@itwin/ecschema-metadata";
 
 describe("Schema XML Import Tests", () => {
   before(() => {
@@ -130,22 +130,19 @@ describe("Schema XML Import Tests", () => {
 });
 
 describe("exportSchemaXmlString", () => {
-  const schemaXml32 = `<?xml version="1.0" encoding="UTF-8"?>
-    <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-      <ECSchemaReference name="BisCore" version="1.0.23" alias="bis"/>
-
-      <ECEntityClass typeName="TestClass">
-        <BaseClass>bis:GraphicalElement2d</BaseClass>
-        <ECProperty propertyName="Name" typeName="string"/>
-      </ECEntityClass>
-    </ECSchema>`;
 
   let imodel: SnapshotDb;
 
   before(async () => {
     const filePath = IModelTestUtils.prepareOutputFile("exportSchemaXmlString", "exportSchemaXmlString.bim");
     imodel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "exportSchemaXmlStringTest" } });
-    await imodel.importSchemaStrings([schemaXml32]);
+
+    const schemaDocument = new SchemaDocument("TestSchema", "ts", 1, 0, 0, {
+      references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 23, alias: "bis" }],
+    });
+    const testClass = schemaDocument.createEntity("TestClass", { baseClass: "BisCore:GraphicalElement2d" });
+    testClass.createPrimitive("Name", PrimitiveType.String);
+    await IModelTestUtils.importSchemaDocuments(imodel, [schemaDocument]);
   });
 
   after(() => {

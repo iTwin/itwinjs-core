@@ -141,7 +141,7 @@ The list may be separated by commas, semicolons, or vertical bars.
 | Attribute | Required | Description |
 | --- | --- | --- |
 | `typeName` | Yes | Relationship class name. |
-| `modifier` | No | `None`, `Abstract`, or `Sealed`. |
+| `modifier` | Yes | `None`, `Abstract`, or `Sealed`. Unlike other class kinds, where `modifier` is optional, it is required on relationship classes in ECXML 3.1 and later - a parser rejects a relationship class that omits it. |
 | `strength` | No | `referencing`, `holding`, or `embedding`. Parsers accept casing variations. |
 | `strengthDirection` | No | `forward` or `backward`. Parsers accept casing variations. |
 | `description` | No | Localizable description. |
@@ -157,6 +157,8 @@ The list may be separated by commas, semicolons, or vertical bars.
 | `abstractConstraint` | No | Abstract class constraint for the endpoint. Required semantically when an endpoint has multiple constraint classes and no inherited abstract constraint. |
 
 Each constraint contains one or more `Class` elements with a required `class` attribute. Source constraints support one class semantically; target constraints may support more than one.
+
+A relationship class may also declare its own properties using the property elements described under [Properties](#properties). When it does, the `Source` and `Target` constraint elements must appear before any property elements; this ordering is required by the format and enforced by parsers.
 
 For `holding` and `embedding` relationships, `strengthDirection` determines which endpoint acts as the parent or owner. `forward` means the source endpoint has that role; `backward` means the target endpoint has that role. Do not infer ownership from the endpoint names alone.
 
