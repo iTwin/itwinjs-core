@@ -6,8 +6,10 @@
  * @module Schema
  */
 
-import { formatTraitsToArray } from "@itwin/core-quantity";
+import { formatTraitsToArray, FormatType } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
+import { SchemaView } from "../SchemaView";
+import { customAttributeXmlToJson } from "./CustomAttributeConverter";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
@@ -60,7 +62,7 @@ export class SchemaJsonWriter {
       issues.addError("SchemaJson-0001", `Unsupported target spec version "${spec as string}" - the JSON writer currently supports only 3.2.`);
       return { issues };
     }
-    const emitter = new EcJson32Emitter(document, issues, options?.omitDefaults ?? false);
+    const emitter = new EcJson32Emitter(document, issues, options?.omitDefaults ?? false, options?.schemaView);
     return { tree: emitter.emit(), issues };
   }
 }
@@ -79,11 +81,13 @@ class EcJson32Emitter {
   private readonly _document: SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _omitDefaults: boolean;
+  private readonly _schemaView: SchemaView | undefined;
 
-  public constructor(document: SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean) {
+  public constructor(document: SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean, schemaView: SchemaView | undefined) {
     this._document = document;
     this._issues = issues;
     this._omitDefaults = omitDefaults;
+    this._schemaView = schemaView;
   }
 
   public emit(): JsonObject {
@@ -143,20 +147,38 @@ class EcJson32Emitter {
   }
 
   /** Attaches a `customAttributes` array: each instance is the flattened ECJSON form - the
-   * `className` key plus the property values inline. The document's untyped values are already
-   * JSON-shaped, so they pass through. */
+   * `className` key plus the property values inline. A CA already in JSON form passes through; one in
+   * XML form (from the XML reader) is converted here, dropping the CA and reporting an error if the
+   * conversion fails (an unparseable body, or a single-entry struct array that needs a CA class no
+   * {@link _schemaView} supplied). */
   private _attachCustomAttributes(json: JsonObject, customAttributes: Authoring.CustomAttributeSet, location: string): void {
     if (customAttributes.size === 0)
       return;
     const entries: JsonObject[] = [];
     for (const ca of customAttributes) {
-      if (ca.properties !== undefined && "className" in ca.properties) {
+      const value = this._customAttributeJson(ca, location);
+      if (value === undefined)
+        continue;
+      if ("className" in value) {
         this._issues.addWarning("SchemaJson-0004",
           `The custom attribute "${ca.className}" has a property named "className", which collides with the ECJSON discriminator; the property was skipped.`, { location });
       }
-      entries.push({ ...ca.properties, className: this._toJsonItemReference(ca.className, location) });
+      entries.push({ ...value, className: this._toJsonItemReference(ca.className, location) });
     }
-    json.customAttributes = entries;
+    if (entries.length > 0)
+      json.customAttributes = entries;
+  }
+
+  /** The CA's value as a JSON property object: passthrough when it is already in JSON form, otherwise
+   * converted from its raw XML body. Returns `{}` for a valueless CA, or `undefined` when an XML-form
+   * value could not be converted (the CA is then skipped; an issue has been reported). */
+  private _customAttributeJson(ca: Authoring.CustomAttribute, location: string): JsonObject | undefined {
+    if (ca.format === Authoring.CustomAttributeFormat.Json)
+      return ca.json ?? {};
+    const body = ca.xml;
+    if (body === undefined)
+      return {};
+    return customAttributeXmlToJson(body, ca.className, { schemaView: this._schemaView, ownerSchemaName: this._document.name, issues: this._issues, location });
   }
 
   private _emitItem(item: Authoring.AnySchemaItem): JsonObject {
@@ -205,10 +227,21 @@ class EcJson32Emitter {
     return json;
   }
 
-  /** The class modifier as a string, or `undefined` to omit it. The default differs for a mixin. */
+  /** The class modifier as a string, or `undefined` to omit it. Native ECJSON treats the modifier
+   * differently per class kind, so this mirrors that:
+   *  - Mixin: never emitted - ECJSON's `Mixin` schema has no `modifier` field (a mixin is abstract
+   *    by definition), so native drops it regardless of what the ECXML carried.
+   *  - Relationship: always materialized, even `None` (resolved to the spec default when unset).
+   *  - Entity / struct / custom-attribute class: `None` (the default) is dropped even when the ECXML
+   *    stated it explicitly; only `Abstract`/`Sealed` are emitted. */
   private _modifierValue(item: Authoring.AnyClass): string | undefined {
-    const defaultModifier = item.isMixin() ? Authoring.SpecDefaults.mixinModifier : Authoring.SpecDefaults.classModifier;
-    return this._enumValue(item.modifier, defaultModifier, classModifierToString);
+    if (item.isMixin())
+      return undefined;
+    if (item.isRelationship())
+      return this._resolvedEnumValue(item.modifier, Authoring.SpecDefaults.classModifier, classModifierToString);
+    if (item.modifier === undefined || item.modifier === Authoring.SpecDefaults.classModifier)
+      return undefined;
+    return classModifierToString(item.modifier);
   }
 
   /** Converts an optional enum field to its string form, or `undefined` to omit it - when unset, or
@@ -217,6 +250,13 @@ class EcJson32Emitter {
     if (value === undefined || (this._omitDefaults && value === defaultValue))
       return undefined;
     return toString(value);
+  }
+
+  /** Like {@link _enumValue}, but a missing value materializes the spec default instead of being
+   * omitted - matching native ECJSON, which always writes a resolved value for the field. With
+   * {@link _omitDefaults} on, a value (resolved or explicit) equal to the default is still dropped. */
+  private _resolvedEnumValue<T>(value: T | undefined, defaultValue: T, toString: (value: T) => string): string | undefined {
+    return this._enumValue(value ?? defaultValue, defaultValue, toString);
   }
 
   /** Returns `value`, or `undefined` to omit it when {@link _omitDefaults} is on and it equals the
@@ -240,9 +280,11 @@ class EcJson32Emitter {
   }
 
   private _emitRelationshipClass(item: Authoring.RelationshipClass): JsonObject {
+    // Native ECJSON always materializes a relationship's strength and strengthDirection (resolved to
+    // the spec default when the ECXML left them off), so they resolve rather than omit on absence.
     const json = this._emitClass(item, {
-      strength: this._enumValue(item.strength, Authoring.SpecDefaults.relationshipStrength, strengthToString),
-      strengthDirection: this._enumValue(item.strengthDirection, Authoring.SpecDefaults.relationshipStrengthDirection, strengthDirectionToString),
+      strength: this._resolvedEnumValue(item.strength, Authoring.SpecDefaults.relationshipStrength, strengthToString),
+      strengthDirection: this._resolvedEnumValue(item.strengthDirection, Authoring.SpecDefaults.relationshipStrengthDirection, strengthDirectionToString),
     });
     json.source = this._emitRelationshipConstraint(item.source, item.name);
     json.target = this._emitRelationshipConstraint(item.target, item.name);
@@ -384,7 +426,7 @@ class EcJson32Emitter {
       uomSeparator: this._omittingDefault(item.uomSeparator, Authoring.SpecDefaults.formatUomSeparator),
       scientificType: item.scientificType,
       stationOffsetSize: item.stationOffsetSize,
-      stationSeparator: this._omittingDefault(item.stationSeparator, Authoring.SpecDefaults.formatStationSeparator),
+      stationSeparator: this._stationSeparatorValue(item),
     });
     if (item.composite !== undefined) {
       json.composite = prune({
@@ -397,6 +439,14 @@ class EcJson32Emitter {
       });
     }
     return json;
+  }
+
+  /** Native ECJSON materializes `stationSeparator` (resolved to the spec default when unset) only on
+   * station-type formats and omits it on the others, so the field is keyed on the format type. */
+  private _stationSeparatorValue(item: Authoring.Format): string | undefined {
+    if (item.type !== FormatType.Station)
+      return undefined;
+    return this._omittingDefault(item.stationSeparator ?? Authoring.SpecDefaults.formatStationSeparator, Authoring.SpecDefaults.formatStationSeparator);
   }
 }
 

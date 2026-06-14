@@ -174,6 +174,30 @@ Comparison is semantic, not textual:
 
 This makes round-trip and migration testing direct: read, write, read back, compare - and on failure, print the exact differences.
 
+## Custom attributes
+
+A custom attribute instance is held as its class name plus a value. Because the document has no resolved CA class definition (that arrives at compile), it keeps the value in whichever **raw form** its source produced and converts only when a writer crosses the format boundary:
+
+- **JSON form** - a plain property object (`{ [name]: value }`), the canonical ECJSON shape. This is what the JSON reader produces and what you write when authoring in code.
+- **XML form** - the raw ECXML body, exactly as written. This is what the XML reader produces; it is kept verbatim so an XML-sourced CA round-trips back to XML untouched.
+
+`CustomAttribute.format` says which form a value is in; the matching `json` or `xml` accessor returns it, and the *other* accessor throws - reading the wrong side can only mean a conversion was skipped:
+
+```ts
+const ca = entity.customAttributes.add({ className: "BisCore:ClassHasHandler", json: { Restrictions: ["Clone"] } });
+ca.format;     // Authoring.CustomAttributeFormat.Json
+ca.json;       // { Restrictions: ["Clone"] }
+// ca.xml;     // throws - this value is held as JSON, not XML
+```
+
+Writing to the **same** format the value came from is a passthrough - no interpretation, exact bytes. Writing to the **other** format runs the conversion, which is where the XML/JSON custom-attribute gap lives:
+
+- **Most values convert without the CA class** - scalars (with type recovery for booleans and canonical numbers), primitive arrays, structs, and multi-entry struct arrays.
+- **Two shapes genuinely need the CA class**, because one format carries information the other does not. Going XML -> JSON, a *single-entry* struct array is lexically identical to a struct, so without the class it is read as a struct. Going JSON -> XML, a struct array's entry element name (its struct class) is absent from canonical JSON and cannot be invented.
+- When such a value is met and no class is available, **the custom attribute is dropped and an error is reported** - the rest of the document is still written. Supply a resolved [SchemaView](./SchemaView.md) through `writeDocument(doc, { schemaView })` to convert these faithfully: the writer looks up the CA class to disambiguate the struct array and to name its entry elements.
+
+> Because of this, **always check `issues.hasErrors` before trusting writer output.** An error means something was dropped (typically a struct-array custom attribute that needed a CA class no `schemaView` supplied), not that nothing was produced. The conversion logic - and the full matrix of what is recoverable without the class - lives in one place, `CustomAttributeConverter`.
+
 ## The issue model
 
 Everything in the authoring layer reports problems the same way: a `SchemaIssueList` of `SchemaIssue` entries, each carrying:

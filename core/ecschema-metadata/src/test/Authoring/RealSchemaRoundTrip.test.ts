@@ -86,6 +86,13 @@ function diffJson(path: string, left: unknown, right: unknown, out: string[]): v
       diffJson(`${path}[${i}]`, left[i], right[i], out);
     return;
   }
+  // An array on one side and a non-array on the other is a real structural mismatch (e.g. a
+  // single-entry struct array read as a struct). Flag it explicitly - without this, both stringify
+  // to "[object Object]" at the scalar branch below and the difference is silently masked.
+  if (Array.isArray(left) !== Array.isArray(right)) {
+    out.push(`${path}: ${JSON.stringify(left)} vs ${JSON.stringify(right)}`);
+    return;
+  }
   if (typeof left === "object" && left !== null && typeof right === "object" && right !== null && !Array.isArray(left) && !Array.isArray(right)) {
     const leftObject = left as Record<string, unknown>;
     const rightObject = right as Record<string, unknown>;
@@ -256,6 +263,60 @@ describe("real released schemas (from @bentley schema packages)", () => {
         const { xml } = await loadTexts();
         const document = await readDocumentFromXml(xml, schemaName);
         const emitted = new SchemaXmlWriter().writeDocument(document).text!;
+        const differences: string[] = [];
+        diffCanonicalXml(schemaName, canonicalizeXml(xml), canonicalizeXml(emitted), differences);
+        expect(differences, preview(differences)).to.be.empty;
+      });
+
+      // The two checks above re-emit each format from its own source - they never cross the
+      // XML<->JSON boundary, so any information that lives in one format but not the other (most
+      // notably the struct class name on struct-array custom-attribute entries, which ECXML carries
+      // as the entry element name and ECJSON drops) passes through untouched and is never tested.
+      // The cross-format document comparison ("XML-read and JSON-read documents compare equal")
+      // does cross the boundary, but compareSchemaDocuments deliberately coerces those CA shapes so
+      // it cannot see the gap either. These two checks read one format, emit the OTHER, and diff
+      // against the published file of that other format - the only assertions that exercise the
+      // actual XML->JSON / JSON->XML conversion against an independent oracle.
+      //
+      // KNOWN FAILING (kept red on purpose, no SchemaView passed): conversion across the boundary is
+      // lossy without the CA class for two shapes, and these are the only assertions that surface it.
+      // Both directions need a CompiledSchemaView fed to the writer to go green; that does not exist
+      // yet (see CustomAttributeConverter and the Schema Authoring living doc), so the gap is real and
+      // visible here rather than papered over.
+      //  - XML -> JSON: a SINGLE-entry struct array is lexically a struct, so the converter reads it
+      //    as one without the class. In BisCore this hits UrlLink and EmbeddedFileLink (their one-entry
+      //    DbIndexList.Indexes). Multi-entry struct arrays (Element, ExternalSourceAspect) already
+      //    convert cleanly. This is the authoritative direction (the package JSON was produced from the
+      //    XML by the heavy serializer), so this failure is a genuine fidelity gap pending a SchemaView.
+      //  - JSON -> XML: a struct array's entry element name (struct class) is absent from canonical
+      //    JSON, so the converter drops the whole CA and reports SchemaCA-0001 (BisCore DbIndexList).
+      //    Plus the spec-default spelling skew this direction always had (strengthDirection,
+      //    stationSeparator, modifier materialized one way in the published file, the other in ours) -
+      //    and this is NOT a trustworthy oracle anyway, since the package XML was the conversion SOURCE,
+      //    not a JSON->XML target. Kept red as a marker, not a correctness bar.
+
+      it("XML converted to JSON matches the published JSON (independent oracle)", async () => {
+        const { xml, json } = await loadTexts();
+        const fromXml = await readDocumentFromXml(xml, schemaName);
+        const fromJson = await readDocumentFromJson(json, schemaName);
+        // Neutralize cross-format reference-version skew (some packages published their XML and JSON
+        // from different source revisions) by aligning to the published JSON's references, so only
+        // value/CA conversion differences remain in the diff.
+        for (const reference of fromJson.references)
+          fromXml.setSchemaReference(reference);
+        const emitted = new SchemaJsonWriter().writeDocument(fromXml).text!;
+        const differences: string[] = [];
+        diffJson(schemaName, JSON.parse(json), JSON.parse(emitted), differences);
+        expect(differences, preview(differences)).to.be.empty;
+      });
+
+      it("JSON converted to XML matches the published XML semantically (independent oracle)", async () => {
+        const { xml, json } = await loadTexts();
+        const fromXml = await readDocumentFromXml(xml, schemaName);
+        const fromJson = await readDocumentFromJson(json, schemaName);
+        for (const reference of fromXml.references)
+          fromJson.setSchemaReference(reference);
+        const emitted = new SchemaXmlWriter().writeDocument(fromJson).text!;
         const differences: string[] = [];
         diffCanonicalXml(schemaName, canonicalizeXml(xml), canonicalizeXml(emitted), differences);
         expect(differences, preview(differences)).to.be.empty;

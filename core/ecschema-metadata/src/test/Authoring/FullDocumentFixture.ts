@@ -20,7 +20,7 @@ export function composeFullDocument(): SchemaDocument {
   });
   doc.customAttributes.add({ className: "CoreCustomAttributes.DynamicSchema" });
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  doc.customAttributes.add({ className: "TestDomain:Tagged", properties: { Note: "hello & <welcome>", Tags: ["a", "b"] } });
+  doc.customAttributes.add({ className: "TestDomain:Tagged", json: { Note: "hello & <welcome>", Tags: ["a", "b"] } });
 
   // Units / formats family.
   doc.createUnitSystem("METRIC", { label: "Metric" });
@@ -69,10 +69,13 @@ export function composeFullDocument(): SchemaDocument {
   // The modifier is set explicitly even though None is the spec default. ECXML 3.1+ requires the
   // modifier attribute on relationship classes (native rejects a relationship without it, default or
   // not), so the XML writer always emits it and the reader always reads it back as an explicit
-  // value. A relationship that round-trips through XML therefore always carries an explicit modifier;
-  // making it explicit here keeps the XML-read and JSON-read documents identical (the round-trip
-  // tests assert byte-identical JSON across both formats).
-  doc.createRelationship("PumpOwnsParts", { strength: StrengthType.Embedding, modifier: ECClassModifier.None,
+  // value. strength and strengthDirection are set explicitly for the matching reason on the JSON
+  // side: native ECJSON always materializes a relationship's strength and strengthDirection (even at
+  // their defaults), so a relationship that round-trips through JSON always carries them explicitly.
+  // A relationship that round-trips through either format therefore carries all three explicitly;
+  // setting them here keeps the XML-read and JSON-read documents identical (the round-trip tests
+  // assert byte-identical output across both formats).
+  doc.createRelationship("PumpOwnsParts", { strength: StrengthType.Embedding, strengthDirection: StrengthDirection.Forward, modifier: ECClassModifier.None,
     source: { multiplicity: Multiplicity.OneOne, roleLabel: "owns", constraintClasses: ["Pump"] },
     target: { multiplicity: Multiplicity.ZeroMany, roleLabel: "is owned by", polymorphic: false, constraintClasses: ["PartInfo"] },
    });

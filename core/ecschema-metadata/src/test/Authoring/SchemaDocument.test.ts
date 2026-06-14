@@ -550,8 +550,8 @@ describe("SchemaDocument", () => {
       expect(doc.customAttributes.has("corecustomattributes.dynamicschema")).to.be.true; // case
 
       const e = doc.createEntity("E");
-      e.customAttributes.add({ className: "BisCore:ClassHasHandler", properties: { restricted: "yes" } });
-      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.properties!.restricted).to.equal("yes");
+      e.customAttributes.add({ className: "BisCore:ClassHasHandler", json: { restricted: "yes" } });
+      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.json!.restricted).to.equal("yes");
 
       const prop = e.createPrimitive("Serial", PrimitiveType.String);
       prop.customAttributes.add({ className: "CoreCustomAttributes:HiddenProperty" });
@@ -567,15 +567,38 @@ describe("SchemaDocument", () => {
     it("add returns the stored instance for follow-up configuration", () => {
       const e = new Authoring.EntityClass("E");
       const ca = e.customAttributes.add({ className: "BisCore:ClassHasHandler" });
-      ca.properties = { restricted: "yes" };
-      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.properties).to.deep.equal({ restricted: "yes" });
+      ca.json = { restricted: "yes" };
+      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.json).to.deep.equal({ restricted: "yes" });
+    });
+
+    it("holds the value in one of two formats; the wrong-side accessor throws", () => {
+      // Default (authoring / JSON reader) form is JSON; the value is reachable through `json`.
+      const json = new Authoring.CustomAttribute("MyDomain:Ca", { n: 1 });
+      expect(json.format).to.equal(Authoring.CustomAttributeFormat.Json);
+      expect(json.json).to.deep.equal({ n: 1 });
+      expect(() => json.xml).to.throw(/holds its value as JSON/); // reading the XML side is a bug
+
+      // Setting `xml` flips the format (this is what the XML reader does); now `json` throws.
+      const xml = new Authoring.CustomAttribute("MyDomain:Ca");
+      xml.xml = "<n>1</n>";
+      expect(xml.format).to.equal(Authoring.CustomAttributeFormat.Xml);
+      expect(xml.xml).to.equal("<n>1</n>");
+      expect(() => xml.json).to.throw(/holds its value as XML/);
+
+      // A plain props literal is wrapped in a JSON-form instance on the way in.
+      const e = new Authoring.EntityClass("E");
+      const fromLiteral = e.customAttributes.add({ className: "BisCore:ClassHasHandler" });
+      expect(fromLiteral).to.be.instanceOf(Authoring.CustomAttribute);
+      expect(fromLiteral.format).to.equal(Authoring.CustomAttributeFormat.Json);
+      // An instance passed to add is stored as-is, not re-wrapped.
+      expect(e.customAttributes.add(json)).to.equal(json);
     });
 
     it("a second instance of the same CA class is tolerated; get and remove are first-occurrence", () => {
       // The spec allows one instance per class; the validity-free document does not enforce that.
       const e = new Authoring.EntityClass("E");
-      const first = e.customAttributes.add({ className: "MyDomain:Ca", properties: { n: 1 } });
-      const second = e.customAttributes.add({ className: "mydomain.ca", properties: { n: 2 } });
+      const first = e.customAttributes.add({ className: "MyDomain:Ca", json: { n: 1 } });
+      const second = e.customAttributes.add({ className: "mydomain.ca", json: { n: 2 } });
       expect(e.customAttributes.size).to.equal(2);
       expect([...e.customAttributes]).to.deep.equal([first, second]); // insertion order
       expect(e.customAttributes.get("MyDomain:Ca")).to.equal(first);

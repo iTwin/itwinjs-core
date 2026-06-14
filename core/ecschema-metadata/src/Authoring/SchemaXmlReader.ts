@@ -11,6 +11,7 @@ import { parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
 import {
   parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection, PrimitiveType,
 } from "../ECObjects";
+import { serializeCustomAttributeBody } from "./CustomAttributeConverter";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
@@ -24,8 +25,9 @@ import { SchemaIssueList } from "./SchemaIssues";
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
  * keeps whatever it could extract, leaving semantic judgment to the compiler. Custom attribute
- * values are kept untyped (strings and plain object/array shapes mirroring the XML structure) -
- * typing them requires the CA class definition, which is resolved at compile, not read.
+ * values are kept as their raw ECXML body - typing or converting them requires the CA class
+ * definition, which is resolved at compile, not read; a writer that must emit a CA in another format
+ * runs the {@link CustomAttributeConverter} at that point.
  * @alpha
  */
 export class SchemaXmlReader implements SchemaDocumentTextReader {
@@ -781,10 +783,11 @@ class EcXml3Walker {
   // ===== Custom attributes =====
 
   /** Reads an `<ECCustomAttributes>` container into a set. The CA class is identified by the entry
-   * element's name plus its `xmlns` (`Schema.RR.WW.mm` - the version is a serialization artifact
-   * and is dropped). Values stay untyped: without the CA class definition the reader cannot type
-   * them, so they keep the structural shape of the XML and are typed at compile - the same split
-   * ECDb's XmlCAToJson conversion makes, which types values against the resolved class. */
+   * element's name plus its `xmlns` (`Schema.RR.WW.mm` - the version is a serialization artifact and
+   * is dropped). The value is kept as the raw ECXML body, exactly as written: the document has no CA
+   * class definition, so it does not interpret the value here - it stays XML until a writer must emit
+   * it as JSON, at which point the {@link CustomAttributeConverter} converts it (the same class-aware
+   * split ECDb's XmlCAToJson makes). An empty CA carries no body. */
   private readCustomAttributes(container: XmlElementNode, target: Authoring.CustomAttributeSet, _location: string, skipElementName?: string): void {
     for (const caNode of container.children) {
       if (skipElementName !== undefined && caNode.name.toLowerCase() === skipElementName)
@@ -796,63 +799,12 @@ class EcXml3Walker {
         if (schemaName.length > 0 && schemaName.toLowerCase() !== this._document.name.toLowerCase())
           className = `${schemaName}:${caNode.name}`;
       }
-      const properties = this.readCustomAttributeStruct(caNode);
-      target.add(properties !== undefined ? { className, properties } : { className });
+      const ca = new Authoring.CustomAttribute(className);
+      const body = serializeCustomAttributeBody(caNode.children);
+      if (body !== undefined)
+        ca.xml = body;
+      target.add(ca);
     }
-  }
-
-  /** An element whose children are property elements -> a plain object, or `undefined` when empty. */
-  private readCustomAttributeStruct(node: XmlElementNode): { [name: string]: unknown } | undefined {
-    if (node.children.length === 0)
-      return undefined;
-    const result: { [name: string]: unknown } = {};
-    for (const child of node.children)
-      result[child.name] = this.readCustomAttributeValue(child);
-    return result;
-  }
-
-  /** Maps one CA property element to an untyped value:
-   * - text only -> a scalar (promoted to boolean/number when the typed value re-serializes to the
-   *   byte-identical text, otherwise the raw string - see `promoteScalar`)
-   * - children named by a primitive keyword -> an array of strings (primitive array)
-   * - two or more children sharing another name -> an array of single-key objects, the key keeping
-   *   the entry element name (struct array; the bag has nowhere else to carry it)
-   * - anything else -> a nested object (struct)
-   * A one-entry struct array is indistinguishable from a struct without the class definition; the
-   * heuristic prefers the struct reading. */
-  private readCustomAttributeValue(node: XmlElementNode): unknown {
-    if (node.children.length === 0)
-      return this.promoteScalar(node.text.trim());
-
-    const firstName = node.children[0].name;
-    const allSameName = node.children.every((child) => child.name === firstName);
-
-    if (allSameName && parsePrimitiveType(firstName) !== undefined)
-      return node.children.map((child) => child.text.trim());
-
-    if (allSameName && node.children.length >= 2)
-      return node.children.map((child) => ({ [child.name]: this.readCustomAttributeStruct(child) ?? {} }));
-
-    return this.readCustomAttributeStruct(node) ?? {};
-  }
-
-  /** Promotes a class-blind scalar text value to a typed value when, and only when, the typed value
-   * re-serializes to the byte-identical text - so promotion can never change the XML round-trip.
-   * Boolean: exact EC-canonical `True`/`False`. Number: `String(Number(x)) === x`, which rejects
-   * `"007"`, `"1.0"`, `"1e3"`, `"NaN"`, `"Infinity"`, and anything with stray whitespace. Everything
-   * else stays a string. The rare casualty is a string property whose value happens to be exactly
-   * `"True"` or a canonical number; the XML round-trip is still exact, only XML->JSON mis-types it. */
-  private promoteScalar(text: string): string | boolean | number {
-    if (text === "True")
-      return true;
-    if (text === "False")
-      return false;
-    if (text.length > 0) {
-      const value = Number(text);
-      if (Number.isFinite(value) && String(value) === text)
-        return value;
-    }
-    return text;
   }
 
   // ===== Shared helpers =====

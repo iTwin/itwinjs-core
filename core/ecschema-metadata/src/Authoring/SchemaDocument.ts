@@ -358,15 +358,92 @@ export namespace Authoring {
     references?: ReadonlyArray<Readonly<SchemaReference>>;
   }
 
-  /** A custom attribute instance: the full name of the CA class it instantiates, plus its property
-   * values. The document does not have the CA class definition, so it stores the class as a plain
-   * full-name string and an optional property bag, resolving nothing until compile. */
-  export interface CustomAttribute {
-    /** Full name of the custom attribute class, e.g. `"CoreCustomAttributes.DynamicSchema"`. Either EC
-     * separator (`:` or `.`) is accepted and they compare as equal; the class is resolved at compile. */
+  /** A raw ECXML custom-attribute body: the serialized value elements of a CA, exactly as the XML
+   * reader produced them, kept verbatim so an XML-sourced CA round-trips back to XML untouched. It is
+   * opaque to the document; only the {@link CustomAttributeConverter} interprets it, and only when a
+   * writer must emit it in the other format. A type alias over `string`. */
+  export type XmlString = string;
+
+  /** Which raw form a {@link CustomAttribute} currently holds its value in. The document keeps a CA's
+   * value in whichever format its source produced and converts only when a writer crosses the
+   * boundary, so this records the source without committing to a conversion.
+   * @alpha
+   */
+  export enum CustomAttributeFormat {
+    /** The value is an untyped JSON property object - from the JSON reader or in-memory authoring. */
+    Json = "json",
+    /** The value is a raw ECXML body {@link XmlString} - from the XML reader. */
+    Xml = "xml",
+  }
+
+  /** The plain shape accepted by {@link CustomAttributeSet.add}: a class name and an optional JSON
+   * value. A {@link CustomAttribute} instance satisfies it too, so either a literal or an instance
+   * works. Authoring is always in JSON form; the {@link XmlString} form is set by the XML reader. */
+  export interface CustomAttributeProps {
     className: LocalOrFullName;
-    /** Property name -> value. Omitted when the CA carries no values. Values are unvalidated until compile. */
-    properties?: { [name: string]: unknown };
+    json?: { [name: string]: unknown };
+  }
+
+  /** A custom attribute instance: the custom-attribute class it instantiates, plus its value held in
+   * whichever raw form its source produced. The document has no CA class definition, so it resolves
+   * nothing until compile - the value is either an untyped JSON property object (from the JSON reader
+   * or in-memory authoring) or a raw ECXML body ({@link XmlString}, from the XML reader), tracked by
+   * {@link format}. Access the value through the matching {@link json} or {@link xml} accessor; the
+   * other throws, because reading the wrong side means a conversion was skipped. A writer emitting to
+   * the value's own format passes it through; crossing the boundary runs the
+   * {@link CustomAttributeConverter}. Build one directly (JSON form) or through
+   * {@link CustomAttributeSet.add}.
+   * @alpha
+   */
+  export class CustomAttribute implements CustomAttributeProps {
+    /** Full name of the custom attribute class, e.g. `"CoreCustomAttributes.DynamicSchema"`. Either EC
+     * separator (`:` or `.`) is accepted and they compare as equal; the class is resolved at compile.
+     * The XML reader fills this from the entry element name and its `xmlns`; in memory, prefer the
+     * schema-name form over an alias - there is no reference list to resolve an alias against until the
+     * document holds one. */
+    public className: LocalOrFullName;
+
+    private _format: CustomAttributeFormat;
+    private _value: XmlString | { [name: string]: unknown } | undefined;
+
+    /** Creates a CA in JSON form (the authoring form) with an optional value. The XML reader sets the
+     * {@link xml} accessor afterwards to switch a CA to XML form. */
+    public constructor(className: LocalOrFullName, json?: { [name: string]: unknown }) {
+      this.className = className;
+      this._format = CustomAttributeFormat.Json;
+      this._value = json;
+    }
+
+    /** Which raw form the value is currently held in. */
+    public get format(): CustomAttributeFormat {
+      return this._format;
+    }
+
+    /** The untyped JSON property object, or `undefined` when the CA carries no value. Throws when the
+     * value is held as XML ({@link format} is {@link CustomAttributeFormat.Xml}) - convert it first.
+     * Setting this switches {@link format} to JSON. */
+    public get json(): { [name: string]: unknown } | undefined {
+      if (this._format !== CustomAttributeFormat.Json)
+        throw new Error(`Custom attribute "${this.className}" holds its value as XML, not JSON; convert it before reading json.`);
+      return this._value as { [name: string]: unknown } | undefined;
+    }
+    public set json(value: { [name: string]: unknown } | undefined) {
+      this._value = value;
+      this._format = CustomAttributeFormat.Json;
+    }
+
+    /** The raw ECXML body, or `undefined` when the CA carries no value. Throws when the value is held
+     * as JSON ({@link format} is {@link CustomAttributeFormat.Json}) - convert it first. Setting this
+     * switches {@link format} to XML. */
+    public get xml(): XmlString | undefined {
+      if (this._format !== CustomAttributeFormat.Xml)
+        throw new Error(`Custom attribute "${this.className}" holds its value as JSON, not XML; convert it before reading xml.`);
+      return this._value as XmlString | undefined;
+    }
+    public set xml(value: XmlString | undefined) {
+      this._value = value;
+      this._format = CustomAttributeFormat.Xml;
+    }
   }
 
   /** An ordered set of custom attribute instances on a container (schema, class, property, or
@@ -388,10 +465,14 @@ export namespace Authoring {
       return this._items[Symbol.iterator]();
     }
 
-    /** Adds a custom attribute instance and returns it, for follow-up configuration in one expression. */
-    public add(ca: CustomAttribute): CustomAttribute {
-      this._items.push(ca);
-      return ca;
+    /** Adds a custom attribute instance and returns it, for follow-up configuration in one expression.
+     * Accepts either a {@link CustomAttribute} instance or a plain {@link CustomAttributeProps} literal
+     * (`{ className, properties? }`); a literal is wrapped in an instance before storing, so the
+     * returned value is always a {@link CustomAttribute}. */
+    public add(ca: CustomAttribute | CustomAttributeProps): CustomAttribute {
+      const instance = ca instanceof CustomAttribute ? ca : new CustomAttribute(ca.className, ca.json);
+      this._items.push(instance);
+      return instance;
     }
 
     /** Returns the first instance of the named CA class, or `undefined`. Matching is case-insensitive
@@ -415,9 +496,15 @@ export namespace Authoring {
       return idx === -1 ? undefined : this._items.splice(idx, 1)[0];
     }
 
-    /** The instances as a plain array, so `JSON.stringify` renders the set transparently. */
-    public toJSON(): CustomAttribute[] {
-      return [...this._items];
+    /** The instances as plain objects, so `JSON.stringify` renders the set transparently rather than
+     * leaking the instances' private storage: each is `{ className }` plus the value under `json` or
+     * `xml` per its {@link CustomAttribute.format}, omitted when the CA carries none. */
+    public toJSON(): Array<{ className: LocalOrFullName, json?: { [name: string]: unknown }, xml?: XmlString }> {
+      return this._items.map((ca) => {
+        if (ca.format === CustomAttributeFormat.Xml)
+          return ca.xml !== undefined ? { className: ca.className, xml: ca.xml } : { className: ca.className };
+        return ca.json !== undefined ? { className: ca.className, json: ca.json } : { className: ca.className };
+      });
     }
   }
 

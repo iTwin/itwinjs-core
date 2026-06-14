@@ -8,6 +8,7 @@
 
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
+import { SchemaView } from "../SchemaView";
 
 /** The EC specification (serialization format) versions a {@link SchemaDocument} can be written to
  * or read from. The in-memory document always models the latest spec; readers and writers convert
@@ -177,12 +178,25 @@ export interface SchemaDocumentTextReader {
 export interface SchemaWriteOptions {
   /** The spec version to emit. Defaults to {@link ECSpec.Latest}. */
   spec?: ECSpec;
+  /** An optional resolved schema view used only to convert custom-attribute values that cross the
+   * XML<->JSON boundary - a CA whose value was read in the other format than the one being written.
+   * Most CAs convert without it, but some genuinely need the CA class definition (see
+   * {@link CustomAttributeConverter}): a single-entry struct array going XML -> JSON, or any struct
+   * array going JSON -> XML. Without a view that resolves such a CA, that CA is dropped and an error is
+   * reported - the rest of the document is still written. Supply a view covering the document's CA
+   * classes to convert them faithfully. */
+  schemaView?: SchemaView;
 }
 
 /** The result every schema writer returns. `text` is `undefined` only when the document could not
  * be written at all (e.g. an unsupported target spec); recoverable problems - an item reference
- * whose schema is missing from the reference list, say - are reported as issues alongside
- * best-effort output.
+ * whose schema is missing from the reference list, a custom-attribute value that could not be
+ * converted to the target format - are reported as issues alongside best-effort output.
+ *
+ * Always check {@link issues} (in particular {@link SchemaIssueList.hasErrors}) before trusting the
+ * text: an error means the output is incomplete - typically a custom attribute was dropped because
+ * crossing the XML<->JSON boundary needed a CA class that no {@link SchemaWriteOptions.schemaView}
+ * supplied - not that nothing was produced.
  * @alpha
  */
 export interface SchemaWriteResult {

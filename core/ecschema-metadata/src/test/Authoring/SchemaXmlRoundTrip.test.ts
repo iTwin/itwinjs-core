@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { SchemaItemType, SchemaMatchType } from "../../ECObjects";
-import { SchemaDocument } from "../../Authoring/SchemaDocument";
+import { Authoring, SchemaDocument } from "../../Authoring/SchemaDocument";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
 import { InMemorySchemaSource, SchemaSourceSet } from "../../Authoring/SchemaSources";
@@ -44,12 +44,15 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     expect(doc.source).to.equal("fixture");
     expect(doc.references).to.have.lengthOf(2);
 
-    // The schema CA bag survives, values kept untyped.
+    // The schema CA survives; the XML reader keeps its value as a raw ECXML body (XML form), so the
+    // text - escaped note, repeated <string> entries - is preserved verbatim until a writer needs it.
     expect(doc.customAttributes.has("CoreCustomAttributes:DynamicSchema")).to.be.true;
     const tagged = doc.customAttributes.get("TestDomain.Tagged") ?? doc.customAttributes.get("Tagged");
     expect(tagged).to.not.be.undefined;
-    expect(tagged!.properties!.Note).to.equal("hello & <welcome>");
-    expect(tagged!.properties!.Tags).to.deep.equal(["a", "b"]);
+    expect(tagged!.format).to.equal(Authoring.CustomAttributeFormat.Xml);
+    expect(tagged!.xml).to.contain("<Note>hello &amp; &lt;welcome&gt;</Note>");
+    expect(tagged!.xml).to.contain("<string>a</string>");
+    expect(tagged!.xml).to.contain("<string>b</string>");
 
     // The mixin is promoted to a first-class item; IsMixin is consumed, not kept as a CA.
     const mixin = doc.getItemOfType("IMonitored", SchemaItemType.Mixin);

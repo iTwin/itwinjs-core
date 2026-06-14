@@ -671,9 +671,11 @@ class EcJson32Walker {
         this._error("SchemaJson-0043", `A custom attribute on "${location}" is missing its className; it was skipped.`);
         continue;
       }
+      // The remaining keys are the CA's property values, already in canonical ECJSON shape - exactly
+      // the document's untyped JSON representation - so they carry over as the value directly.
       const { className: _discriminator, ...properties } = caObject;
       target.add(Object.keys(properties).length > 0
-        ? { className: this.normalizeItemReference(className), properties }
+        ? { className: this.normalizeItemReference(className), json: properties }
         : { className: this.normalizeItemReference(className) });
     }
   }

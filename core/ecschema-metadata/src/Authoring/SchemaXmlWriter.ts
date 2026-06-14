@@ -8,19 +8,14 @@
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
+import { SchemaView } from "../SchemaView";
+import { customAttributeJsonToXml } from "./CustomAttributeConverter";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** The ECXML namespace URI of the 3.2 spec. */
 const ECXML_3_2_NAMESPACE = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
-
-/** Serializes a boolean to its EC-canonical XML text (`True`/`False`, capitalized) - not
- * `String(value)`'s lowercase form. This is the exact text the reader's guarded scalar promotion
- * recognizes, so a promoted boolean round-trips byte-for-byte. */
-function ecBooleanText(value: boolean): string {
-  return value ? "True" : "False";
-}
 
 /** Serializes a {@link SchemaDocument} to ECXML text. The document always models the latest spec;
  * the writer converts to the requested spec version at this boundary (currently only
@@ -39,7 +34,7 @@ export class SchemaXmlWriter {
       issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}" - the XML writer currently supports only 3.2.`);
       return { issues };
     }
-    const emitter = new EcXml32Emitter(document, issues);
+    const emitter = new EcXml32Emitter(document, issues, options?.schemaView);
     return { text: emitter.emit(), issues };
   }
 }
@@ -80,6 +75,15 @@ class XmlStringBuilder {
     this._lines.push(`${this._indent()}<${name}${this._formatAttributes(attributes)}>${escapeText(text)}</${name}>`);
   }
 
+  /** Appends a block of pre-rendered XML lines (a custom attribute's raw body), indenting each line to
+   * the current depth. The block is serialized at indent 0 with the same four-space step, so prefixing
+   * the current indent preserves its internal nesting. Already escaped - lines are emitted verbatim. */
+  public rawBlock(text: string): void {
+    const indent = this._indent();
+    for (const line of text.split("\n"))
+      this._lines.push(line.length > 0 ? `${indent}${line}` : line);
+  }
+
   public toString(): string {
     return `<?xml version="1.0" encoding="UTF-8"?>\n${this._lines.join("\n")}\n`;
   }
@@ -111,11 +115,13 @@ function formatVersion(read: number, write: number, minor: number): string {
 class EcXml32Emitter {
   private readonly _document: SchemaDocument;
   private readonly _issues: SchemaIssueList;
+  private readonly _schemaView: SchemaView | undefined;
   private readonly _xml = new XmlStringBuilder();
 
-  public constructor(document: SchemaDocument, issues: SchemaIssueList) {
+  public constructor(document: SchemaDocument, issues: SchemaIssueList, schemaView: SchemaView | undefined) {
     this._document = document;
     this._issues = issues;
+    this._schemaView = schemaView;
   }
 
   public emit(): string {
@@ -224,81 +230,34 @@ class EcXml32Emitter {
     if (synthesized)
       synthesized();
     for (const ca of customAttributes) {
+      const body = this._customAttributeXmlBody(ca, location);
+      if (body === undefined)
+        continue; // dropped - the value could not be converted to XML; an issue was reported
       const { elementName, xmlns } = this._customAttributeNamespace(ca.className, location);
       const attributes: XmlAttribute[] = [["xmlns", xmlns]];
-      if (ca.properties === undefined || Object.keys(ca.properties).length === 0) {
+      if (body.length === 0) {
         this._xml.selfClosingElement(elementName, attributes);
         continue;
       }
       this._xml.openElement(elementName, attributes);
-      this._emitCustomAttributeValues(ca.properties, location);
+      this._xml.rawBlock(body);
       this._xml.closeElement(elementName);
     }
     this._xml.closeElement("ECCustomAttributes");
   }
 
-  /** Emits a CA property bag. The document stores CA values untyped (the CA class definition is not
-   * available before compile), so this is a best-effort structural mapping, the inverse of the
-   * reader's: primitives as element text, arrays as repeated entry elements, objects as nested
-   * structs. Array entries of unrecognizable shape are reported and skipped. */
-  private _emitCustomAttributeValues(values: { [name: string]: unknown }, location: string): void {
-    for (const [name, value] of Object.entries(values))
-      this._emitCustomAttributeValue(name, value, location);
-  }
-
-  private _emitCustomAttributeValue(name: string, value: unknown, location: string): void {
-    if (value === undefined || value === null)
-      return;
-    if (Array.isArray(value)) {
-      this._xml.openElement(name);
-      for (const entry of value)
-        this._emitCustomAttributeArrayEntry(entry, name, location);
-      this._xml.closeElement(name);
-      return;
-    }
-    if (typeof value === "object") {
-      this._xml.openElement(name);
-      this._emitCustomAttributeValues(value as { [name: string]: unknown }, location);
-      this._xml.closeElement(name);
-      return;
-    }
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-      this._xml.textElement(name, typeof value === "boolean" ? ecBooleanText(value) : String(value));
-      return;
-    }
-    this._issues.addWarning("SchemaXml-0008",
-      `The custom attribute property "${name}" holds a value of unserializable type "${typeof value}"; it was skipped.`, { location });
-  }
-
-  private _emitCustomAttributeArrayEntry(entry: unknown, propertyName: string, location: string): void {
-    if (entry === undefined || entry === null)
-      return;
-    if (typeof entry === "string") {
-      this._xml.textElement("string", entry);
-      return;
-    }
-    if (typeof entry === "boolean") {
-      this._xml.textElement("boolean", ecBooleanText(entry));
-      return;
-    }
-    if (typeof entry === "number") {
-      this._xml.textElement(Number.isInteger(entry) ? "int" : "double", String(entry));
-      return;
-    }
-    if (typeof entry === "object") {
-      // The reader represents a struct-array entry as a single-key object, the key carrying the
-      // entry element name (the struct class), since the untyped bag has nowhere else to keep it.
-      const keys = Object.keys(entry);
-      const innerValue = (entry as { [name: string]: unknown })[keys[0]];
-      if (keys.length === 1 && typeof innerValue === "object" && innerValue !== null && !Array.isArray(innerValue)) {
-        this._xml.openElement(keys[0]);
-        this._emitCustomAttributeValues(innerValue as { [name: string]: unknown }, location);
-        this._xml.closeElement(keys[0]);
-        return;
-      }
-    }
-    this._issues.addWarning("SchemaXml-0006",
-      `Cannot determine the entry element name for an array value of custom attribute property "${propertyName}"; the entry was skipped.`, { location });
+  /** The CA's value as a raw ECXML body: passthrough when it is already in XML form, otherwise
+   * converted from its JSON value. Returns `""` for a valueless CA (emitted self-closing), or
+   * `undefined` when a JSON value could not be expressed in XML - a struct array needing a CA class no
+   * {@link _schemaView} supplied - in which case the CA is dropped and an issue has been reported. */
+  private _customAttributeXmlBody(ca: Authoring.CustomAttribute, location: string): string | undefined {
+    if (ca.format === Authoring.CustomAttributeFormat.Xml)
+      return ca.xml ?? "";
+    const json = ca.json;
+    if (json === undefined || Object.keys(json).length === 0)
+      return "";
+    return customAttributeJsonToXml(json, ca.className,
+      { schemaView: this._schemaView, ownerSchemaName: this._document.name, issues: this._issues, location });
   }
 
   private _emitItem(item: Authoring.AnySchemaItem): void {
