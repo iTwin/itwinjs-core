@@ -48,15 +48,17 @@ describe("compareSchemaDocuments", () => {
     expect(comparison.areEqual, formatSchemaComparison(comparison)).to.be.true;
   });
 
-  it("compares custom attribute values leniently across the XML/JSON typing gap", async () => {
+  it("compares custom attribute values across the XML/JSON typing boundary", async () => {
     const original = new SchemaDocument("CaTest", "ct", 1, 0, 0);
     original.createCustomAttributeClass("Marked", CustomAttributeContainerType.Schema);
     original.customAttributes.add({ className: "Marked", properties: { Count: 5, Active: true } }); // eslint-disable-line @typescript-eslint/naming-convention
 
-    // XML renders the scalars as text and reads them back as strings; the original holds types.
+    // The XML writer renders the scalars as canonical text ("5", "True"); the reader's guarded
+    // promotion reads them back as the same types, so the typing gap is closed for canonical values.
     const xml = new SchemaXmlWriter().writeDocument(original).text!;
     const fromXml = (await new SchemaXmlReader().readDocument(xml)).document!;
-    expect(fromXml.customAttributes.get("Marked")!.properties!.Count).to.equal("5");
+    expect(fromXml.customAttributes.get("Marked")!.properties!.Count).to.equal(5);
+    expect(fromXml.customAttributes.get("Marked")!.properties!.Active).to.equal(true);
 
     const comparison = compareSchemaDocuments(original, fromXml);
     expect(comparison.areEqual, formatSchemaComparison(comparison)).to.be.true;

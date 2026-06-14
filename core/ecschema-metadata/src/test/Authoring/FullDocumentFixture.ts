@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DecimalPrecision, FormatTraits, FormatType } from "@itwin/core-quantity";
-import { CustomAttributeContainerType, PrimitiveType, StrengthDirection, StrengthType } from "../../ECObjects";
-import { SchemaDocument } from "../../Authoring/SchemaDocument";
+import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, StrengthDirection, StrengthType } from "../../ECObjects";
+import { Multiplicity, SchemaDocument } from "../../Authoring/SchemaDocument";
 
 /** Composes a document exercising every schema item kind, property kind, and CA placement.
  * Shared by the XML and JSON round-trip tests. */
@@ -66,14 +66,15 @@ export function composeFullDocument(): SchemaDocument {
 
   doc.createMixin("IMonitored", "Pump", { description: "monitoring mixin" });
 
-  const rel = doc.createRelationship("PumpOwnsParts", { strength: StrengthType.Embedding });
-  rel.source.multiplicity = "(1..1)";
-  rel.source.roleLabel = "owns";
-  rel.source.constraintClasses.push("Pump");
-  rel.target.multiplicity = "(0..*)";
-  rel.target.roleLabel = "is owned by";
-  rel.target.polymorphic = false;
-  rel.target.constraintClasses.push("PartInfo");
-
+  // The modifier is set explicitly even though None is the spec default. ECXML 3.1+ requires the
+  // modifier attribute on relationship classes (native rejects a relationship without it, default or
+  // not), so the XML writer always emits it and the reader always reads it back as an explicit
+  // value. A relationship that round-trips through XML therefore always carries an explicit modifier;
+  // making it explicit here keeps the XML-read and JSON-read documents identical (the round-trip
+  // tests assert byte-identical JSON across both formats).
+  doc.createRelationship("PumpOwnsParts", { strength: StrengthType.Embedding, modifier: ECClassModifier.None,
+    source: { multiplicity: Multiplicity.OneOne, roleLabel: "owns", constraintClasses: ["Pump"] },
+    target: { multiplicity: Multiplicity.ZeroMany, roleLabel: "is owned by", polymorphic: false, constraintClasses: ["PartInfo"] },
+   });
   return doc;
 }

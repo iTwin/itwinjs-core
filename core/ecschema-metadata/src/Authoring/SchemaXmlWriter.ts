@@ -15,6 +15,13 @@ import { SchemaIssueList } from "./SchemaIssues";
 /** The ECXML namespace URI of the 3.2 spec. */
 const ECXML_3_2_NAMESPACE = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 
+/** Serializes a boolean to its EC-canonical XML text (`True`/`False`, capitalized) - not
+ * `String(value)`'s lowercase form. This is the exact text the reader's guarded scalar promotion
+ * recognizes, so a promoted boolean round-trips byte-for-byte. */
+function ecBooleanText(value: boolean): string {
+  return value ? "True" : "False";
+}
+
 /** Serializes a {@link SchemaDocument} to ECXML text. The document always models the latest spec;
  * the writer converts to the requested spec version at this boundary (currently only
  * {@link ECSpec.V3_2} - older specs are future work and a different writer subclass/branch).
@@ -256,7 +263,7 @@ class EcXml32Emitter {
       return;
     }
     if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-      this._xml.textElement(name, String(value));
+      this._xml.textElement(name, typeof value === "boolean" ? ecBooleanText(value) : String(value));
       return;
     }
     this._issues.addWarning("SchemaXml-0008",
@@ -271,7 +278,7 @@ class EcXml32Emitter {
       return;
     }
     if (typeof entry === "boolean") {
-      this._xml.textElement("boolean", String(entry));
+      this._xml.textElement("boolean", ecBooleanText(entry));
       return;
     }
     if (typeof entry === "number") {

@@ -812,7 +812,8 @@ class EcXml3Walker {
   }
 
   /** Maps one CA property element to an untyped value:
-   * - text only -> the string
+   * - text only -> a scalar (promoted to boolean/number when the typed value re-serializes to the
+   *   byte-identical text, otherwise the raw string - see `promoteScalar`)
    * - children named by a primitive keyword -> an array of strings (primitive array)
    * - two or more children sharing another name -> an array of single-key objects, the key keeping
    *   the entry element name (struct array; the bag has nowhere else to carry it)
@@ -821,7 +822,7 @@ class EcXml3Walker {
    * heuristic prefers the struct reading. */
   private readCustomAttributeValue(node: XmlElementNode): unknown {
     if (node.children.length === 0)
-      return node.text.trim();
+      return this.promoteScalar(node.text.trim());
 
     const firstName = node.children[0].name;
     const allSameName = node.children.every((child) => child.name === firstName);
@@ -833,6 +834,25 @@ class EcXml3Walker {
       return node.children.map((child) => ({ [child.name]: this.readCustomAttributeStruct(child) ?? {} }));
 
     return this.readCustomAttributeStruct(node) ?? {};
+  }
+
+  /** Promotes a class-blind scalar text value to a typed value when, and only when, the typed value
+   * re-serializes to the byte-identical text - so promotion can never change the XML round-trip.
+   * Boolean: exact EC-canonical `True`/`False`. Number: `String(Number(x)) === x`, which rejects
+   * `"007"`, `"1.0"`, `"1e3"`, `"NaN"`, `"Infinity"`, and anything with stray whitespace. Everything
+   * else stays a string. The rare casualty is a string property whose value happens to be exactly
+   * `"True"` or a canonical number; the XML round-trip is still exact, only XML->JSON mis-types it. */
+  private promoteScalar(text: string): string | boolean | number {
+    if (text === "True")
+      return true;
+    if (text === "False")
+      return false;
+    if (text.length > 0) {
+      const value = Number(text);
+      if (Number.isFinite(value) && String(value) === text)
+        return value;
+    }
+    return text;
   }
 
   // ===== Shared helpers =====
