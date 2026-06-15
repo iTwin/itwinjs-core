@@ -498,17 +498,17 @@ describe("RealityTileLoader", () => {
         return { polyfaces: [mockPolyface] };
       });
 
-    // Tileset is served from .../mk44049/tileset.json; the tile content is the relative path "8/130/85.gltf".
-    // An image referenced relatively by that content (e.g. "85.webp") must resolve to .../mk44049/8/130/85.webp,
+    // Tileset is served from .../tileset-root/tileset.json; the tile content is the relative path "8/130/85.gltf".
+    // An image referenced relatively by that content (e.g. "85.webp") must resolve to .../tileset-root/8/130/85.webp,
     // so the reader's base URL must be the absolute tile content URL, not the tileset root.
-    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/mk44049/tileset.json", "8/130/85.gltf");
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json", "8/130/85.gltf");
     const tile = tree.rootTile;
 
     const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
     const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
 
     expect(result.geometry?.polyfaces).to.have.length(1);
-    expect(readerBaseUrl).to.equal("https://example.com/mk44049/8/130/85.gltf");
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf");
   });
 
   it("should return empty content for unsupported tile format", async () => {
