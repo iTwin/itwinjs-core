@@ -8,7 +8,7 @@ publish: false
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
-    - [Bing Maps deprecation and geospatial provider interfaces](#bing-maps-deprecation-and-geospatial-provider-interfaces)
+    - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -61,7 +61,7 @@ Most callers can migrate to [createQuantityDescription]($frontend), which builds
 
 Existing uses of the deprecated classes continue to behave as before, and the classes will not be removed before a future major release.
 
-### Bing Maps deprecation and geospatial provider interfaces
+### Bing Maps deprecation and new geospatial provider interfaces
 
 [Bing Maps from Azure](https://azure.microsoft.com/en-us/products/bing-maps) will be retired and go offline in 2028. This release deprecates all Bing-dependent APIs in `@itwin/core-frontend` and introduces abstract provider interfaces so applications can migrate to alternative services.
 
