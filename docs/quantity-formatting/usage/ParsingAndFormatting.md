@@ -324,6 +324,18 @@ To support migration, `IModelApp` uses an internal [QuantityTypeFormatsProvider]
 
 > **Note**: We plan to deprecate `QuantityType` during the iTwin.js 5.x lifecycle.
 
+### Quantity property descriptions
+
+Tool settings and UI components that need quantity-aware formatting and parsing can use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract). The helper wires up synchronous `NumberCustom` editor callbacks backed by [IModelApp.quantityFormatter]($frontend).
+
+```ts
+[[include:Quantity_Formatting.Property_Description]]
+```
+
+The same pattern works for other quantities such as angles by changing `kindOfQuantityName`, `persistenceUnitName`, and `parseError`. If formatting specs are not loaded yet, the helper falls back to `numberValue.toFixed(2)`. If parsing specs are not loaded yet, it returns the supplied `parseError`.
+
+If you are replacing `SurveyLengthDescription`, the helper is still the right property-construction API, but preserving survey-specific display behavior may also require a dedicated [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata). See [Format Sets](../definitions/FormatSets.md) and [Providers](./Providers.md).
+
 ## Ratio Formatting and Parsing
 
 Ratio formats enable the display of proportional relationships between quantities, commonly used for scale factors, slopes, and architectural drawings. For detailed information about ratio format properties and configuration, see [Ratio Format Properties](../definitions/Formats.md#ratio-format-properties).
