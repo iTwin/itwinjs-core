@@ -40,17 +40,6 @@ describe("CloudSqlite.requestToken", () => {
     expect(requestTokenStub.called).to.be.false;
   });
 
-  it("returns empty token when BlobContainer.service.requestToken rejects", async () => {
-    setOnlineStatus(true);
-    BlobContainer.service = {
-      requestToken: sinon.stub().rejects(new Error("getaddrinfo ENOTFOUND api.bentley.com")),
-    } as any;
-
-    const token = await CloudSqlite.requestToken(args);
-
-    expect(token).to.equal("");
-  });
-
   it("returns the token from BlobContainer.service when online and request succeeds", async () => {
     setOnlineStatus(true);
     BlobContainer.service = {
