@@ -14,7 +14,7 @@ overrides:
   axios@<1.0.0: ^1.13.5
   serialize-javascript: ^7.0.5
   lodash@>=4.0.0 <=4.17.23: ^4.18.0
-  esbuild@>=0.17.0 <0.28.1: '>=0.28.1'
+  esbuild@>=0.17.0 <0.28.1: ~0.28.1
 
 pnpmfileChecksum: sha256-E1T7OJ3DLTjpDqf4RdJzK9VDtAxgm4gDEQCLYdHD8nI=
 

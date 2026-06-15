@@ -19,7 +19,7 @@
     "axios@<1.0.0": "^1.13.5", // https://github.com/advisories/GHSA-43fc-jf86-j433
     "serialize-javascript": "^7.0.5", // https://github.com/advisories/GHSA-5c6j-r48x-rmvq and https://github.com/advisories/GHSA-qj8w-gfj5-8c6v mocha>serialize-javascript
     "lodash@>=4.0.0 <=4.17.23": "^4.18.0", // https://github.com/advisories/GHSA-r5fr-rjxr-66jc api-extractor>lodash, node-simctl>asyncbox>lodash, etc.
-    "esbuild@>=0.17.0 <0.28.1": ">=0.28.1" // https://github.com/advisories/GHSA-gv7w-rqvm-qjhr vitest>vite>esbuild
+    "esbuild@>=0.17.0 <0.28.1": "~0.28.1" // https://github.com/advisories/GHSA-gv7w-rqvm-qjhr vitest>vite>esbuild
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
