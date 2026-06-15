@@ -848,11 +848,11 @@ describe("Format", () => {
         assert.isDefined(testSchema);
         const format = testSchema.getItemSync("TestFormat", Format);
         assert.isDefined(format);
-        expect(format.type).to.eq(FormatType.Ratio);
-        expect(format.ratioType).to.eq("OneToN");
-        expect(format.ratioSeparator).to.eq(":");
-        expect(format.ratioFormatType).to.eq("Decimal");
-        expect(format.precision).to.eq(4);
+        expect(format!.type).to.eq(FormatType.Ratio);
+        expect(format!.ratioType).to.eq("OneToN");
+        expect(format!.ratioSeparator).to.eq(":");
+        expect(format!.ratioFormatType).to.eq("Decimal");
+        expect(format!.precision).to.eq(4);
       });
 
       it("async - should deserialize ratio properties with EC 3.3", async () => {
@@ -860,11 +860,11 @@ describe("Format", () => {
         assert.isDefined(testSchema);
         const format = await testSchema.getItem("TestFormat", Format);
         assert.isDefined(format);
-        expect(format.type).to.eq(FormatType.Ratio);
-        expect(format.ratioType).to.eq("OneToN");
-        expect(format.ratioSeparator).to.eq(":");
-        expect(format.ratioFormatType).to.eq("Decimal");
-        expect(format.precision).to.eq(4);
+        expect(format!.type).to.eq(FormatType.Ratio);
+        expect(format!.ratioType).to.eq("OneToN");
+        expect(format!.ratioSeparator).to.eq(":");
+        expect(format!.ratioFormatType).to.eq("Decimal");
+        expect(format!.precision).to.eq(4);
       });
     }); // ratio properties with EC 3.3
 
@@ -1051,7 +1051,7 @@ describe("Format", () => {
       // Now manually set the schema's EC version to 3.2 to test serialization behavior
       (ecschema33 as any)._originalECSpecMinorVersion = 2;
 
-      const serialized = await format33.toXml(newDom);
+      const serialized = await format33!.toXml(newDom);
       expect(serialized.nodeName).to.eql("Format");
       expect(serialized.getAttribute("typeName")).to.eql("TestFormat");
       expect(serialized.getAttribute("type")).to.eql("ratio");
@@ -1106,7 +1106,7 @@ describe("Format", () => {
       const format = ecschema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
 
-      const serialized = await format.toXml(newDom);
+      const serialized = await format!.toXml(newDom);
       expect(serialized.nodeName).to.eql("Format");
       expect(serialized.getAttribute("typeName")).to.eql("TestFormat");
       expect(serialized.getAttribute("type")).to.eql("ratio");

@@ -1710,7 +1710,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-      const [itemName, , itemElement] = findResult;
+      const [itemName, , itemElement] = findResult!;
       assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The RelationshipClass TestSchema.${itemName} is missing the required 'strength' attribute.`);
     });
 
@@ -1728,7 +1728,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-      const [, , itemElement] = findResult;
+      const [, , itemElement] = findResult!;
 
       const actualProps = parser.parseRelationshipClass(itemElement);
       assert.equal(actualProps.strengthDirection, "Forward");
@@ -1745,7 +1745,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-      const [itemName, , itemElement] = findResult;
+      const [itemName, , itemElement] = findResult!;
       assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The RelationshipClass TestSchema.${itemName} is missing the required Source constraint tag.`);
     });
 
@@ -1760,7 +1760,7 @@ describe("XmlParser", () => {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-      const [itemName, , itemElement] = findResult;
+      const [itemName, , itemElement] = findResult!;
       assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The RelationshipClass TestSchema.${itemName} is missing the required Target constraint tag.`);
     });
 
@@ -1779,7 +1779,7 @@ describe("XmlParser", () => {
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-        const [itemName, , itemElement] = findResult;
+        const [itemName, , itemElement] = findResult!;
         assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The Source Constraint of TestSchema.${itemName} is missing the required 'multiplicity' attribute.`);
       });
 
@@ -1797,7 +1797,7 @@ describe("XmlParser", () => {
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-        const [itemName, , itemElement] = findResult;
+        const [itemName, , itemElement] = findResult!;
         assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The Target Constraint of TestSchema.${itemName} is missing the required 'roleLabel' attribute.`);
       });
 
@@ -1815,7 +1815,7 @@ describe("XmlParser", () => {
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-        const [itemName, , itemElement] = findResult;
+        const [itemName, , itemElement] = findResult!;
         assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The Source Constraint of TestSchema.${itemName} is missing the required 'polymorphic' attribute.`);
       });
 
@@ -1833,7 +1833,7 @@ describe("XmlParser", () => {
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-        const [itemName, , itemElement] = findResult;
+        const [itemName, , itemElement] = findResult!;
         assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The Target Constraint of TestSchema.${itemName} has an invalid 'polymorphic' attribute. It should either be "true" or "false".`);
       });
 
@@ -1850,7 +1850,7 @@ describe("XmlParser", () => {
         parser = new XmlParser(createSchemaXmlWithItems(itemXml));
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
-        const [itemName, , itemElement] = findResult;
+        const [itemName, , itemElement] = findResult!;
         assert.throws(() => parser.parseRelationshipClass(itemElement), ECSchemaError, `The Source Constraint of TestSchema.${itemName} is missing the required Class tags.`);
       });
     });
