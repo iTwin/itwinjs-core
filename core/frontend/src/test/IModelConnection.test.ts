@@ -19,6 +19,30 @@ function makeEmptyDoneResponse() {
   };
 }
 
+describe("IModelConnection geo-elevation getters on non-geolocated iModels", () => {
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
+
+  function createNonGeoLocatedConnection() {
+    const imodel = createBlankConnection();
+    imodel.ecefLocation = undefined;
+    expect(imodel.isGeoLocated).toBe(false);
+    return imodel;
+  }
+
+  it("geodeticToSeaLevel returns 0 without throwing for non-geolocated iModel", () => {
+    const imodel = createNonGeoLocatedConnection();
+    const result = imodel.geodeticToSeaLevel;
+    expect(result).toBe(0);
+  });
+
+  it("projectCenterAltitude returns 0 without throwing for non-geolocated iModel", () => {
+    const imodel = createNonGeoLocatedConnection();
+    const result = imodel.projectCenterAltitude;
+    expect(result).toBe(0);
+  });
+});
+
 describe("IModelConnection.createQueryReader should return safely if the connection is closed", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
