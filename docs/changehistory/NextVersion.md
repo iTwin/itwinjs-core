@@ -91,9 +91,9 @@ For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
 
 #### What's deprecated
 
-Bing Maps imagery-specific APIs (`BingMapsMapLayerFormat`, `BingMapsImageryLayerProvider`) are now deprecated. Existing persisted Bing-backed styles continue to load for compatibility, but new code should use Azure Maps or another provider.
+[MapLayerOptions.BingMaps]($frontend), [BingElevationProvider]($frontend), [BingLocationProvider]($frontend), and the Bing Maps imagery APIs (`BingMapsMapLayerFormat`, `BingMapsImageryLayerProvider`) are all deprecated. Existing persisted Bing-backed styles continue to load for compatibility, but new code should use Azure Maps or another provider.
 
-[BingElevationProvider]($frontend) and [BingLocationProvider]($frontend) are also deprecated. Migrate by replacing direct construction with the `IModelApp` provider slots:
+Migrate elevation and location by replacing direct construction with the `IModelApp` provider slots:
 
 ```typescript
 // Before
