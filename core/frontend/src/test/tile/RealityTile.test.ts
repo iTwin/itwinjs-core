@@ -5,7 +5,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
-import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
+import { GltfV2ChunkTypes, GltfVersions, TileFormat, TileReadStatus } from "@itwin/core-common";
 import { Angle, Matrix3d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -509,6 +509,70 @@ describe("RealityTileLoader", () => {
 
     expect(result.geometry?.polyfaces).to.have.length(1);
     expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf");
+  });
+
+  it("should preserve the tileset's query/authentication parameters in the glTF reader base URL", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    // The tileset URL carries query/auth state (e.g. "?sig=abc") that the data source appends to every tile request.
+    // The glTF reader re-applies its base URL's query to relatively-referenced resources, so the reader base URL must
+    // retain "?sig=abc" — otherwise external textures (e.g. "85.webp") would be fetched without auth and 404/403.
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?sig=abc");
+  });
+
+  it("should not override a tile content URL's own query with the tileset's query", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    // When the tile content URL already carries its own query, the data source does not append the tileset's query, so
+    // the reader base URL must keep the content URL's query rather than replacing it with the tileset's.
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf?token=xyz");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?token=xyz");
+  });
+
+  it("should route JSON glTF content through the render path with the correct base URL via the real content-loading entrypoint", async () => {
+    let readerBaseUrl: string | undefined;
+    // The other tests call loadGeometryFromStream directly. Here we go through the real entrypoint, loadTileContent.
+    // TestRealityTileLoader does not produce geometry, so loadTileContent routes content through the render path
+    // (loadGraphicsFromStream), whose glTF reader is exercised via read(). Capturing the base URL there proves the
+    // render path detects JSON glTF and resolves the base URL (subpath + query) identically to the geometry path,
+    // guarding against the two paths drifting apart.
+    vi.spyOn(GltfGraphicsReader.prototype, "read")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { readStatus: TileReadStatus.Success, isLeaf: true };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    await reader.loadTileContent(tile, createJsonGltf(), IModelApp.renderSystem);
+
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?sig=abc");
   });
 
   it("should return empty content for unsupported tile format", async () => {
