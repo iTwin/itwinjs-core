@@ -5,7 +5,7 @@ Schema Synchronization ("Schema Sync") is a mechanism that lets the briefcases o
 - to let a briefcase import or upgrade a schema **without acquiring the exclusive schema lock** in the common case, so other users can keep editing while the import happens, and
 - to ensure that when different briefcases import the *same* schema, they agree on the identities (class IDs, property IDs) assigned to it, so the schemas do not diverge by identity even though they are textually identical.
 
-> **API status:** The `SchemaSync` namespace in `@itwin/core-backend` is marked `@internal`. It is not part of the supported public API: it is omitted from the API reference, may change or be removed without notice, and referencing it triggers the `@itwin/no-internal` lint rule. The examples below reflect the current implementation rather than a stable contract.
+> **API status:** The `SchemaSync` namespace in `@itwin/core-backend` is marked `@internal`, and is intended to stay that way: only iTwin.js core itself is expected to call it. It is not part of the supported public API - it is omitted from the API reference, may change or be removed without notice. In normal use Schema Sync works behind the schema-import and synchronization APIs you already call (see [Working with a Schema-Sync-enabled iModel](#working-with-a-schema-sync-enabled-imodel)), so applications generally never touch this namespace directly. The examples below reflect the current implementation rather than a stable contract, and are included to explain the mechanism rather than to recommend calling it.
 
 ## The problem Schema Sync addresses
 
@@ -13,16 +13,26 @@ In a multi-user iModel, schema changes have historically been serialized with an
 
 There is also a more subtle problem. EC class IDs and property IDs are briefcase-local 8-byte identifiers assigned at import time. If two briefcases independently import the same schema, they can assign **different IDs to the same class or property**. The schemas are then identical as text but divergent by identity, which forces ID remapping when the briefcases' changesets are later merged.
 
-Schema Sync attacks both problems by introducing a single shared authority for schema state that all briefcases consult.
+Schema Sync attacks both problems by tracking schema additions that are *in flight* across briefcases, so that every briefcase agrees on a change before it has fully propagated through the normal changeset flow.
 
 ## How it works
+
+### In-flight additions
+
+The core idea is to make every briefcase aware of schema additions made by others that have not yet been incorporated into its own copy. A schema addition is **in flight** from the moment the initiating user makes it until that user pushes it *and* the last other briefcase has pulled it. Once every briefcase has the change, the addition is no longer in flight and Schema Sync no longer needs to track it.
+
+This works because of the change-merging principle that **two users making identical additions do not conflict**. When two briefcases import the same schema, the second import does not contend with the first; it simply adopts the identities the first already established. (The same in-flight tracking mechanism applies, and must apply, to other definitional data beyond schemas - tracking definition-element additions is a planned extension of this same machinery.)
+
+Because an addition can only be in flight when other briefcases exist, an **offline or single-briefcase project never has in-flight schema changes**, and Schema Sync has nothing to coordinate there.
+
+### The SyncDb
 
 Schema Sync stores the iModel's schema-related state (the EC metadata tables and profile information) in a separate **CloudSqlite database**, referred to as the *SyncDb*, which lives in a cloud storage container. Each briefcase that has Schema Sync enabled is connected to that container.
 
 - When a briefcase imports a schema, it first takes a write lock on the SyncDb, then imports and writes the resulting schema/metadata state into the SyncDb.
 - When another briefcase next pulls, it reads the schema state from the SyncDb. If the schema is already present there, the import on that briefcase becomes a no-op, and it adopts the same class/property IDs that the first briefcase recorded.
 
-Because every briefcase derives its schema identities from the same authoritative SyncDb, the class-ID/property-ID divergence problem is *prevented* rather than repaired after the fact.
+Because every briefcase derives its schema identities from the same shared SyncDb while a change is in flight, the class-ID/property-ID divergence problem is *prevented* rather than repaired after the fact.
 
 The SyncDb is a `CloudSqlite` database (`SchemaSync.SchemaSyncDb`), so it benefits from CloudSqlite's local caching: reads are served from a local cache and do not block other briefcases, while writes are serialized by a container write lock.
 
@@ -53,6 +63,8 @@ Enabling Schema Sync does **not** unconditionally eliminate the schema lock. The
 So the rule is: **additive, non-transforming schema changes import without the schema lock; schema changes that must transform data still take the exclusive lock.**
 
 ## Enabling Schema Sync
+
+> **Normally handled by iModelHub.** For hub-managed iModels you do not perform these steps yourself. iModelHub is responsible for provisioning the Schema Sync container, seeding it, and recording the link to it in the iModel's properties, so the source application takes no action to enable or configure Schema Sync. The steps below describe what happens under the hood (and what a self-managed or test setup would do explicitly); they are not part of a normal application workflow.
 
 Setting up Schema Sync for an iModel is a two-stage process: provision and seed the cloud container, then connect the iModel to it. Neither stage is tied to iModel creation - an existing iModel can be enabled at any time.
 
