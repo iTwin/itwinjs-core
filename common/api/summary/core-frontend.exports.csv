@@ -38,6 +38,7 @@ public;class;ActivityMessageDetails
 public;enum;ActivityMessageEndReason
 internal;class;AlternateUnitLabelsRegistry
 beta;class;AngleDescription
+deprecated;class;AngleDescription
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
@@ -116,6 +117,8 @@ internal;class;CoreTools
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
+beta;function;createQuantityDescription
+beta;interface;CreateQuantityDescriptionProps
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
 internal;function;createSpatialTileTreeReferences
@@ -165,6 +168,7 @@ public;class;ElementState
 public;class;EllipsoidTerrainProvider
 public;class;EmphasizeElements
 beta;class;EngineeringLengthDescription
+deprecated;class;EngineeringLengthDescription
 public;class;EntityState
 internal;class;EnvironmentDecorations
 public;class;EventController
@@ -193,7 +197,9 @@ public;class;FlyViewTool
 internal;function;formatAnimationBranchId
 internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+deprecated;class;FormattedQuantityDescription
 beta;interface;FormattedQuantityDescriptionArgs
+deprecated;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
@@ -340,6 +346,7 @@ internal;enum;KeyinStatus
 internal;class;LayerTileTreeHandler
 internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
+deprecated;class;LengthDescription
 internal;function;linePlaneIntersect
 alpha;class;LocalExtensionProvider
 alpha;interface;LocalExtensionProviderProps
@@ -617,6 +624,7 @@ internal;class;SubCategoriesCache
 internal;namespace;SubCategoriesCache
 internal;interface;SubCategoriesRequest
 beta;class;SurveyLengthDescription
+deprecated;class;SurveyLengthDescription
 internal;class;SuspendedToolState
 public;function;synchronizeViewportFrusta
 public;type;SynchronizeViewports
