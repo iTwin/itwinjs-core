@@ -157,6 +157,9 @@
     "SetEditorToolSettings": {
       "keyin": "dta editor settings"
     },
+    "ReproJaggedCurves": {
+      "keyin": "dta repro jagged curves"
+    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },
