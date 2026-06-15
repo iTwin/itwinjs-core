@@ -1234,7 +1234,7 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
     getAlternateUnitLabels(unit: UnitProps): string[] | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class AngleDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -2319,6 +2319,18 @@ export interface CreateGraphicFromTemplateArgs {
 }
 
 // @beta
+export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription;
+
+// @beta
+export interface CreateQuantityDescriptionProps {
+    displayLabel: string;
+    kindOfQuantityName: string;
+    name: string;
+    parseError?: string;
+    persistenceUnitName: string;
+}
+
+// @beta
 export interface CreateRenderInstancesParamsBuilderArgs {
     modelId?: Id64String;
 }
@@ -3228,7 +3240,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     wantEmphasis: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -3552,7 +3564,7 @@ export class FormatsProviderManager implements FormatsProvider {
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
-// @beta
+// @beta @deprecated
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(args: FormattedQuantityDescriptionArgs);
     constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
@@ -3570,7 +3582,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface FormattedQuantityDescriptionArgs {
     // (undocumented)
     displayLabel: string;
@@ -4285,6 +4297,9 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     get briefcaseChannelName(): "itwinjs-core/editing-scope";
     // @deprecated (undocumented)
     dispose(): void;
+    // @beta
+    get dynamicGraphicsAbsolutePositionThreshold(): number;
+    set dynamicGraphicsAbsolutePositionThreshold(value: number);
     // @internal
     static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
     exit(): Promise<void>;
@@ -5691,7 +5706,7 @@ export class LayerTileTreeReferenceHandler {
     setLayerSettings(layerSettings: MapLayerSettings[]): void;
 }
 
-// @beta
+// @beta @deprecated
 export class LengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -5846,6 +5861,8 @@ export class LookAndMoveTool extends ViewManip {
     static iconSpec: string;
     // (undocumented)
     protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    onPostInstall(): Promise<void>;
     // (undocumented)
     protected provideInitialToolAssistance(): void;
     // (undocumented)
@@ -8137,7 +8154,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined;
+    getSpecsByName(name: string, options?: {
+        system?: UnitSystemKey;
+    }): ReadonlyMap<string, FormattingSpecEntry> | undefined;
     // @beta
     getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
@@ -8218,7 +8237,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -10405,7 +10424,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @beta
+// @beta @deprecated
 export class SurveyLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)

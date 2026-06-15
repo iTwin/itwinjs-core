@@ -113,7 +113,7 @@ describe("Viewport", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => (viewport.flashedId = "0x12345")).toThrowError("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
         UnexpectedErrors.setHandler(oldHandler);
       });
     });

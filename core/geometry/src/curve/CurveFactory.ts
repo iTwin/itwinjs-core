@@ -333,9 +333,9 @@ export class CurveFactory {
    * * If there are 2 connected arcs, add a zero-length line segment between them.
    * * If there is a pair of arc and line segment/string with non-parallel tangents, add a zero-length line segment
    * between them.
-   * * If there is an arc with sweep degrees in [180, 360), break the arc into 2 pieces separated by a zero-length
-   * line segment. Similarly, break a 360-degree arc into 3 pieces separated by 2 zero-length line segments. Return
-   * `undefined` if there is an arc with sweep greater than 360 degrees.
+   * * If there is an arc with sweep degrees in (120, 240], break the arc into 2 pieces separated by a zero-length
+   * line segment. Similarly, break arcs with sweep in (240, 360] into 3 pieces separated by 2 zero-length line segments.
+   * Return `undefined` if there is an arc with sweep greater than 360 degrees.
    */
   private static updatePathForRelaxedValidation(
     filletedLineString: Path, isClosed: boolean, parallelOptions?: PerpParallelOptions,
@@ -366,9 +366,10 @@ export class CurveFactory {
         const linePoint = child.startPoint();
         newFilletedLineString.tryAddChild(LineSegment3d.create(linePoint, linePoint));
       }
-      if (arcSweep !== undefined && arcSweep > 180 - sweepTol && arcSweep <= 360 - sweepTol) {
+      // to avoid PI too far from the arc, split arcs so that no sub-arc has sweep greater than 120 degrees
+      if (arcSweep !== undefined && arcSweep > 120 && arcSweep <= 240) {
         CurveFactory.splitAndAppendArc(newFilletedLineString, child as Arc3d, [0, 0.5, 1]); // 2 pieces
-      } else if (arcSweep !== undefined && arcSweep > 360 - sweepTol && arcSweep <= 360 + sweepTol) {
+      } else if (arcSweep !== undefined && arcSweep > 240 && arcSweep <= 360 + sweepTol) {
         CurveFactory.splitAndAppendArc(newFilletedLineString, child as Arc3d, [0, 1 / 3, 2 / 3, 1]); // 3 pieces
       } else {
         newFilletedLineString.tryAddChild(child);
@@ -466,12 +467,11 @@ export class CurveFactory {
    * tangent direction.
    * * To treat more input chains as valid, pass `options.relaxedValidation = true`. Internally, this setting performs
    * several transformations on the input to produce a valid filleted linestring:
-   *   * Each `Arc3d` whose sweep is between 180 and 360 degrees is split into 2 arcs of equal sweep separated by a
-   *  zero-length `LineSegment3d`. A 360-degree arc is split into 3 arcs of equal sweep separated by 2 zero-length
-   * `LineSegment3d`s. Arcs with sweep greater than 360 degrees are not allowed.
+   *   * `Arc3d`s with large sweep are uniformly split into 2 or 3 smaller arcs to improve the proximity of their _PI_
+   * points (cf. {@link Arc3d.computeTangentIntersection}). Arcs with sweep greater than 360 degrees are not allowed.
    *   * Adjacent `Arc3d`s are separated by a zero-length `LineSegment3d`.
-   *   * An `Arc3d` that is not G1 continuous with its neighbor is separated from its neighbor by a zero-length
-   * `LineSegment3d`.
+   *   * An `Arc3d` that is not G1 continuous with its linear neighbor is separated from it by a zero-length
+   * `LineSegment3d` to preserve the corner.
    * @param filletedLineString A linestring with corner fillets, e.g., as created by {@link CurveFactory.createFilletsInLineString}.
    * @param options optional validation settings.
    * @returns Array of [point, radius] pairs extracted from input, or `undefined` if the input is not valid. A radius

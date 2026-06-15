@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

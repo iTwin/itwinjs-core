@@ -67,6 +67,7 @@ function replaceHttpWithHttps(originalUrl: string) {
   return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
 }
 
+/** @deprecated in 5.11.0. Bing Maps imagery is deprecated. For basemap imagery providers, see `@itwin/map-layers-formats`. */
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   private _urlTemplate?: string;
   private _urlSubdomains?: string[];

@@ -42,7 +42,7 @@ export default defineConfig({
     },
     deps: {
       optimizer: {
-        web: {
+        client: {
           enabled: true,
         },
       },
@@ -51,5 +51,8 @@ export default defineConfig({
   optimizeDeps: {
     include: includePackages,
     force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
   }
 })

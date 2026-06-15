@@ -112,7 +112,7 @@ function filterNestedContentFields(fields: Field[], predicate: (field: NestedCon
       if (clone.nestedFields.length > 0) {
         filteredFields.push(clone);
       }
-    } else {
+    } else if (!f.isNestedContentField()) {
       filteredFields.push(f);
     }
   });
