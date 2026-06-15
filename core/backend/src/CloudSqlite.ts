@@ -56,7 +56,7 @@ export namespace CloudSqlite {
 
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
-   * If the service is unavailable or returns an error, an empty token is returned.
+   * If the backend is considered offline, this returns an empty token without calling the service.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
     // allow the userToken to be supplied via args. If not supplied, or blank, use the backend's accessToken. If that fails, use the value from the current RPC request
@@ -65,13 +65,9 @@ export namespace CloudSqlite {
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
     if (!getOnlineStatus())
       return "";
-    try {
-      const response = await getBlobService().requestToken({ ...args, userToken });
-      return response.token;
-    } catch (error) {
-      logError(`Error requesting token for container [${args.containerId}]: ${(error as Error).message}`);
-      return "";
-    }
+
+    const response = await getBlobService().requestToken({ ...args, userToken });
+    return response?.token ?? "";
   }
 
   interface CloudContainerInternal extends CloudContainer {

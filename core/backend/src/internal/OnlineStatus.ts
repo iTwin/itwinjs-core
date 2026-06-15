@@ -18,7 +18,7 @@ export function setOnlineStatus(online: boolean) {
  * Determine whether the backend is currently considered online.
  * @note This only works if `setOnlineStatus` has been called by something to update the status.
  * `NativeHost` does this whenever the connectivity changes. If `setOnlineStatus` has never been
- * called, this will return `false`.
+ * called, this will return `true`.
  * @internal
  */
 export function getOnlineStatus(): boolean {
