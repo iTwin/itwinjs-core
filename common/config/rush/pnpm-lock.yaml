@@ -2788,11 +2788,11 @@ importers:
         specifier: workspace:*
         version: link:../../presentation/frontend
       '@itwin/presentation-shared':
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.2.2
+        version: 1.2.2
       '@itwin/unified-selection':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.4.0
+        version: 1.4.0
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3156,8 +3156,8 @@ importers:
   ../../presentation/backend:
     dependencies:
       '@itwin/presentation-shared':
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.2.2
+        version: 1.2.2
       object-hash:
         specifier: ^1.3.1
         version: 1.3.1
@@ -3292,8 +3292,8 @@ importers:
   ../../presentation/common:
     dependencies:
       '@itwin/presentation-shared':
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.2.2
+        version: 1.2.2
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -3401,8 +3401,8 @@ importers:
   ../../presentation/frontend:
     dependencies:
       '@itwin/unified-selection':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.4.0
+        version: 1.4.0
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
@@ -5184,8 +5184,8 @@ packages:
       reflect-metadata:
         optional: true
 
-  '@itwin/core-bentley@4.11.7':
-    resolution: {integrity: sha512-9+OTSlT+r1oo2s4mRsA3HPAbda0kWA+Ml7Pk2fF6NjnybzlvycnfKNewIhS2XgxWNj0ZUDUt3XPxz/s2w8n6lw==}
+  '@itwin/core-bentley@5.10.2':
+    resolution: {integrity: sha512-QD1rPCdWdPyYr3ffdpgM/eowg9jMjiboC/mR4+COgvCwMIRak9MPcMmt+ojwOr92RxOB4H+zbAtOHsro5XtyYw==}
 
   '@itwin/electron-authorization@0.22.2':
     resolution: {integrity: sha512-4sZAgQarJuZ2q0sV6pf0qnanhE0MtnEZk17oSzT9NHAZXbXUDriI2AgNlZbIEHfFQOcdFWkA7lVRroWMSM/1uw==}
@@ -5293,8 +5293,8 @@ packages:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
 
-  '@itwin/presentation-shared@1.2.1':
-    resolution: {integrity: sha512-b8In5BV+6q1FjMC+zUmkcSAVgbvp+F0M6WlOOiToSWVx+UpcolctlQZSMCKyBuvYvXVDh7DRfAFOm8k2nfgQfw==}
+  '@itwin/presentation-shared@1.2.2':
+    resolution: {integrity: sha512-jQWW7mjfb5Qcxtfa3EBLrKhVyaulptwN0yLp0gViCXBcrxbZyukCcvLaDBBevAfSF7Mtspc22Vj0dKCq10UfrQ==}
 
   '@itwin/reality-data-client@1.3.1':
     resolution: {integrity: sha512-ZTmYPIPhawxxZiVhH0kWdnffN+rk4dHdj7lcoYKcYig1LqP6c1+vlJTYtRSaxqpRG5qdBBgyfcGjHWH198eMgw==}
@@ -5315,8 +5315,8 @@ packages:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
 
-  '@itwin/unified-selection@1.2.0':
-    resolution: {integrity: sha512-SeIjqYGNq0k4YiMzix+haRDOhmSu8gpVQOP/iE29HVGbFABUIIKM07PzjV4zSSWh6Ctu2Nq4dPdhiPE9se0C+g==}
+  '@itwin/unified-selection@1.4.0':
+    resolution: {integrity: sha512-rQ7+Raz4VY/cexxk/mwiBip55BkYW7IlLnCg5v0NBM5Mie1cWbq+dUaH4HbHhER2mYuY0bhm4g8M/Qnz47Hhjg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -11771,7 +11771,7 @@ snapshots:
 
   '@itwin/cloud-agnostic-core@3.1.2': {}
 
-  '@itwin/core-bentley@4.11.7': {}
+  '@itwin/core-bentley@5.10.2': {}
 
   '@itwin/electron-authorization@0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.0.0)':
     dependencies:
@@ -11925,9 +11925,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@itwin/presentation-shared@1.2.1':
+  '@itwin/presentation-shared@1.2.2':
     dependencies:
-      '@itwin/core-bentley': 4.11.7
+      '@itwin/core-bentley': 5.10.2
 
   '@itwin/reality-data-client@1.3.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)':
     dependencies:
@@ -11959,10 +11959,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@itwin/unified-selection@1.2.0':
+  '@itwin/unified-selection@1.4.0':
     dependencies:
-      '@itwin/core-bentley': 4.11.7
-      '@itwin/presentation-shared': 1.2.1
+      '@itwin/core-bentley': 5.10.2
+      '@itwin/presentation-shared': 1.2.2
       rxjs: 7.8.2
       rxjs-for-await: 1.0.0(rxjs@7.8.2)
 
