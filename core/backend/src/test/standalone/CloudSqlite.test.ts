@@ -17,7 +17,14 @@ describe("CloudSqlite.requestToken", () => {
     userToken: "test-user-token",
   };
 
+  let originalService: BlobContainer.ContainerService | undefined;
+
+  beforeEach(() => {
+    originalService = BlobContainer.service;
+  });
+
   afterEach(() => {
+    BlobContainer.service = originalService;
     sinon.restore();
     setOnlineStatus(true);
   });
