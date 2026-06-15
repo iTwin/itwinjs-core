@@ -154,7 +154,7 @@ describe("FilletedLineString", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("FilletsInLinestring", () => {
+  it("FilletsInLineString", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
@@ -524,7 +524,7 @@ describe("FilletedLineString", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineStringCuspTolerance");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("fromFilletedLineString", () => { // TODO: split this mega test into multiple tiny tests
+  it("FromFilletedLineString", () => { // TODO: split this mega test into multiple tiny tests
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
