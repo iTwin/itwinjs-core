@@ -1693,21 +1693,25 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @public
-export class BingElevationProvider {
+// @public @deprecated
+export class BingElevationProvider implements ElevationProvider, GeoidProvider {
     constructor();
-    // @internal (undocumented)
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+    // @internal @deprecated (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
     getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
+    // @deprecated
     getHeightAverage(iModel: IModelConnection): Promise<number>;
+    // @deprecated
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
     // @beta
     getHeights(range: Range2d): Promise<number[] | undefined>;
+    // @deprecated
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
 }
 
-// @public
-export class BingLocationProvider {
+// @public @deprecated
+export class BingLocationProvider implements LocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
 }
@@ -3177,6 +3181,12 @@ export class ElementState extends EntityState implements ElementProps {
 }
 
 // @public
+export interface ElevationProvider {
+    getHeight(carto: Cartographic): Promise<number>;
+    getHeights(range: Range2d): Promise<number[] | undefined>;
+}
+
+// @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
     getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
@@ -3807,6 +3817,11 @@ export class GeographicTilingScheme extends MapTilingScheme {
 }
 
 // @public
+export interface GeoidProvider {
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+}
+
+// @public
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
     constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
     // (undocumented)
@@ -3904,6 +3919,12 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
 
 // @beta
 export function getGoogle3dTilesUrl(): string;
+
+// @public
+export function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number>;
+
+// @public
+export function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d>;
 
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
@@ -5024,6 +5045,7 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    static get elevationProvider(): ElevationProvider;
     // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
@@ -5031,6 +5053,7 @@ export class IModelApp {
     // @beta
     static get formatsProvider(): FormatsProvider;
     static set formatsProvider(provider: FormatsProvider);
+    static get geoidProvider(): GeoidProvider;
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -5042,6 +5065,7 @@ export class IModelApp {
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
+    static get locationProvider(): LocationProvider;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
@@ -5108,13 +5132,16 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
+    elevationProvider?: ElevationProvider;
     formatsProvider?: FormatsProvider;
+    geoidProvider?: GeoidProvider;
     hubAccess?: FrontendHubAccess;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
     localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
+    locationProvider?: LocationProvider;
     // @beta
     mapLayerOptions?: MapLayerOptions;
     // @internal
@@ -5810,6 +5837,11 @@ export class LocateResponse {
     setFrom(other: LocateResponse): void;
     // (undocumented)
     snapStatus: SnapStatus;
+}
+
+// @public
+export interface LocationProvider {
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
 }
 
 // @internal (undocumented)

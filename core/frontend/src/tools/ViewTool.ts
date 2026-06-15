@@ -16,7 +16,6 @@ import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
 } from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
-import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
 import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
@@ -3416,7 +3415,7 @@ export class ViewGlobeLocationTool extends ViewTool {
 
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
-      const bingLocationProvider = new BingLocationProvider();
+      const bingLocationProvider = IModelApp.locationProvider;
       try {
         this._globalLocation = await bingLocationProvider.getLocation(locationString);
         if (this._globalLocation !== undefined) {

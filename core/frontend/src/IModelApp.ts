@@ -40,7 +40,11 @@ import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
 import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
-import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
+import { BingElevationProvider, MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
+import { ElevationProvider } from "./ElevationProvider";
+import { GeoidProvider } from "./GeoidProvider";
+import { LocationProvider } from "./LocationProvider";
+import { BingLocationProvider } from "./BingLocation";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -92,6 +96,21 @@ export interface IModelAppOptions {
    * @beta
    */
   mapLayerOptions?: MapLayerOptions;
+  /** Supplies the elevation provider for this session.
+   * Defaults to [[BingElevationProvider]] if not specified.
+   * @public
+   */
+  elevationProvider?: ElevationProvider;
+  /** Supplies the geoid provider for this session.
+   * Defaults to [[BingElevationProvider]] if not specified (it implements both interfaces).
+   * @public
+   */
+  geoidProvider?: GeoidProvider;
+  /** Supplies the location provider for this session.
+   * Defaults to [[BingLocationProvider]] if not specified.
+   * @public
+   */
+  locationProvider?: LocationProvider;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
@@ -213,6 +232,9 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _terrainProviderRegistry: TerrainProviderRegistry;
+  private static _elevationProvider: ElevationProvider;
+  private static _geoidProvider: GeoidProvider;
+  private static _locationProvider: LocationProvider;
   private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
@@ -239,6 +261,18 @@ export class IModelApp {
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  /** The [[ElevationProvider]] for this session.
+   * @public
+   */
+  public static get elevationProvider(): ElevationProvider { return this._elevationProvider; }
+  /** The [[GeoidProvider]] for this session.
+   * @public
+   */
+  public static get geoidProvider(): GeoidProvider { return this._geoidProvider; }
+  /** The [[LocationProvider]] for this session.
+   * @public
+   */
+  public static get locationProvider(): LocationProvider { return this._locationProvider; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
    * @beta
    */
@@ -435,6 +469,10 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
+    const defaultBingElevation = new BingElevationProvider();
+    this._elevationProvider = opts.elevationProvider ?? defaultBingElevation;
+    this._geoidProvider = opts.geoidProvider ?? defaultBingElevation;
+    this._locationProvider = opts.locationProvider ?? new BingLocationProvider();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
