@@ -469,6 +469,9 @@ describe("Cloud workspace containers", () => {
         workspace.close();
       }
     } finally {
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      await IModelHost.deleteSettingDictionary(iTwin1Id, "app1/config");
+      await IModelHost.deleteSettingDictionary(iTwin2Id, "org/defaults");
       AzuriteTest.clearParentITwins();
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
     }
