@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added `CesiumAccessClient` interface and `TileAdmin.Props.cesiumAccess` to allow pluggable authentication for Cesium ion assets via the iTwin Platform Cesium Curated Content API. Added `TileAdmin.hasCesiumAccess` getter. Added `iTwinId` to `TerrainMeshProviderOptions`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "anmol.shrestha@bentley.com"
+}
