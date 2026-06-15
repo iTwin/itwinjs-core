@@ -117,6 +117,8 @@ jobs:
           # if this release is `release/6.0.x`, the branch entries in `mergify.yml` should be updated to look like:
           #   - &current_minor "release/6.0.x"
           #   - &previous_minor "release/5.<whatever_last_minor_release_version_was>.x"
+          #   - &previous_major "release/5.<whatever_last_minor_release_version_was>.x"
+          # NOTE - previous_minor should be set to the same value as previous_major in a major release since there is no previous minor branch
 
           if [ $((previousMinorVersion)) -lt 0 ]
           then
