@@ -9,7 +9,6 @@
 import { request } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import type { ElevationProvider, GeoidProvider } from "../../GeoProviders";
 import { Cartographic } from "@itwin/core-common";
 import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 
@@ -18,11 +17,11 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 /** Provides an interface to the [Bing Maps elevation services](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/).
  * Use of these services requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]]
  * passed to [[IModelApp.startup]].
+ * @public
+ * @extensions
  * @deprecated in 5.11.0. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.elevationProvider]] and [[IModelAppOptions.geoidProvider]].
  * @note This class structurally satisfies both [[ElevationProvider]] and [[GeoidProvider]] but does not use an explicit
  * `implements` clause because api-extractor forbids `@public` classes from referencing `@beta` interfaces (ae-incompatible-release-tags).
- * @public
- * @extensions
  */
 export class BingElevationProvider {
   private _heightRangeRequestTemplate: string;
@@ -47,7 +46,7 @@ export class BingElevationProvider {
   }
 
   /** Return the height (altitude) at a given cartographic location.
-   * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If geodetic is false then the sea level height id returned using the Earth Gravitational Model 2008 (EGM2008 2.5').
+   * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If geodetic is false then the sea level height id returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
    * @public
    */
   public async getHeight(carto: Cartographic, geodetic = true) {
@@ -84,8 +83,8 @@ export class BingElevationProvider {
   }
 
   /** Return the offset from geodetic height to sea level height at the given cartographic location.
-   * Satisfies [[GeoidProvider]].
-   * @public
+   * @note Satisfies [[GeoidProvider]] structurally.
+   * @internal
    */
   public async getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
   /** @deprecated in 5.11.0. Use the Cartographic overload instead.

@@ -104,6 +104,7 @@ export interface IModelAppOptions {
   /** Supplies the geoid provider for this session.
    * Defaults to [[BingElevationProvider]] if not specified, which implements both [[ElevationProvider]] and [[GeoidProvider]].
    * @note The default [[BingElevationProvider]] reads its API key from [[MapLayerOptions.BingMaps]] at startup.
+   * Ensure the Bing key is available via [[IModelAppOptions.mapLayerOptions]] for the default provider to work.
    * @beta
    */
   geoidProvider?: GeoidProvider;
@@ -472,7 +473,7 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until a replacement is configured
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until it is removed in a future major version
     const defaultBingElevation = new BingElevationProvider();
     this._elevationProvider = opts.elevationProvider ?? defaultBingElevation;
     this._geoidProvider = opts.geoidProvider ?? defaultBingElevation;

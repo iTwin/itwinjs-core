@@ -673,6 +673,7 @@ class MapTreeSupplier implements TileTreeSupplier {
     const projectCenter = iModel.projectExtents.center;
     switch (heightOriginMode) {
       case TerrainHeightOriginMode.Ground: {
+        // Non-geolocated iModels skip elevation lookup — matches previous BingElevationProvider fallback behavior.
         if (!iModel.isGeoLocated) return heightOrigin;
         const carto = iModel.spatialToCartographicFromEcef(projectCenter);
         return heightOrigin + exaggeration * (await IModelApp.elevationProvider.getHeight(carto));
@@ -681,6 +682,7 @@ class MapTreeSupplier implements TileTreeSupplier {
         return heightOrigin;
 
       case TerrainHeightOriginMode.Geoid: {
+        // Non-geolocated iModels skip geoid lookup — matches previous BingElevationProvider fallback behavior.
         if (!iModel.isGeoLocated) return heightOrigin;
         const carto = iModel.spatialToCartographicFromEcef(projectCenter);
         return heightOrigin + await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);

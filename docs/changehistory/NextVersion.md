@@ -8,8 +8,7 @@ publish: false
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
-    - [Bing Maps imagery is deprecated](#bing-maps-imagery-is-deprecated)
-    - [Geospatial provider interfaces](#geospatial-provider-interfaces)
+    - [Bing Maps deprecation and geospatial provider interfaces](#bing-maps-deprecation-and-geospatial-provider-interfaces)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -62,15 +61,11 @@ Most callers can migrate to [createQuantityDescription]($frontend), which builds
 
 Existing uses of the deprecated classes continue to behave as before, and the classes will not be removed before a future major release.
 
-### Bing Maps imagery is deprecated
+### Bing Maps deprecation and geospatial provider interfaces
 
-Bing Maps imagery-specific APIs are now deprecated. This release does not change runtime behavior, and existing persisted Bing-backed styles continue to load for compatibility.
+[Bing Maps from Azure](https://azure.microsoft.com/en-us/products/bing-maps) will be retired and go offline in 2028. This release deprecates all Bing-dependent APIs in `@itwin/core-frontend` and introduces abstract provider interfaces so applications can migrate to alternative services.
 
-For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
-
-> This imagery-only deprecation does not deprecate `BingLocationProvider` or `BingElevationProvider`, and it does not add a built-in replacement for Bing elevation or location services. Applications that continue using those Bing services must continue supplying `MapLayerOptions.BingMaps`. 
-
-### Geospatial provider interfaces
+#### What's new
 
 New `@beta` interfaces decouple elevation, geoid, and location services from the Bing Maps implementation:
 
@@ -92,9 +87,13 @@ If not supplied, [BingElevationProvider]($frontend) and [BingLocationProvider]($
 
 Standalone utility functions [getHeightRange]($frontend) and [getHeightAverage]($frontend) replace the convenience methods previously on `BingElevationProvider`.
 
-#### Deprecations
+For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
 
-[BingElevationProvider]($frontend) and [BingLocationProvider]($frontend) are now deprecated. Migrate by replacing direct construction with the `IModelApp` provider slots:
+#### What's deprecated
+
+Bing Maps imagery-specific APIs (`BingMapsMapLayerFormat`, `BingMapsImageryLayerProvider`) are now deprecated. Existing persisted Bing-backed styles continue to load for compatibility, but new code should use Azure Maps or another provider.
+
+[BingElevationProvider]($frontend) and [BingLocationProvider]($frontend) are also deprecated. Migrate by replacing direct construction with the `IModelApp` provider slots:
 
 ```typescript
 // Before

@@ -1696,6 +1696,7 @@ export interface BeWheelEventProps extends BeButtonEventProps {
 // @public @deprecated
 export class BingElevationProvider {
     constructor();
+    // @internal
     getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
     // @internal @deprecated (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
