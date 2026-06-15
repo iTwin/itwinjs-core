@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-let isOnline = false;
+let isOnline = true;
 
 /**
  * Sets the online status of the backend that will be returned by `getOnlineStatus`.
