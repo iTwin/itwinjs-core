@@ -132,6 +132,11 @@ export abstract class WebAppRpcLogging {
   }
 }
 
+declare global {
+   
+  var window: any;
+}
+
 class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: WebAppRpcRequest): Promise<void> {
     switch (event) {
@@ -143,7 +148,7 @@ class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   }
 
   protected override getHostname(): string {
-    return (globalThis as any).window?.location?.host ?? "imodeljs-mobile";
+    return globalThis.window?.location?.host ?? "imodeljs-mobile";
   }
 
   private logErrorFrontend(message: string, request: WebAppRpcRequest): void {
