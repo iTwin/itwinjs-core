@@ -19,13 +19,12 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
  * Use of these services requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]]
  * passed to [[IModelApp.startup]].
  * @deprecated in 5.11.0. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.elevationProvider]] and [[IModelAppOptions.geoidProvider]].
+ * @note This class structurally satisfies both [[ElevationProvider]] and [[GeoidProvider]] but does not use an explicit
+ * `implements` clause because api-extractor forbids `@public` classes from referencing `@beta` interfaces (ae-incompatible-release-tags).
  * @public
  * @extensions
  */
 export class BingElevationProvider {
-  // Note: this class structurally satisfies both ElevationProvider and GeoidProvider.
-  // We avoid an explicit `implements` clause because api-extractor forbids @public classes
-  // from referencing @beta interfaces in their signatures (ae-incompatible-release-tags).
   private _heightRangeRequestTemplate: string;
   private _seaLevelOffsetRequestTemplate: string;
   private _heightListRequestTemplate: string;

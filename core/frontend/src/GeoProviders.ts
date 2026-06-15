@@ -16,9 +16,10 @@ import { GlobalLocation } from "./ViewGlobalLocation";
  */
 export interface ElevationProvider {
   /** Return the height (altitude) at a given cartographic location.
-   * Height is geodetic (WGS84 ellipsoid).
+   * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.
+   * If geodetic is false then sea level height is returned using the Earth Gravitational Model 2008 (EGM2008 2.5').
    */
-  getHeight(carto: Cartographic): Promise<number>;
+  getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
 
   /** Return a grid of elevations within the specified range.
    * Returns undefined if elevation data is unavailable for the range.

@@ -3182,7 +3182,7 @@ export class ElementState extends EntityState implements ElementProps {
 
 // @beta
 export interface ElevationProvider {
-    getHeight(carto: Cartographic): Promise<number>;
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
     getHeights(range: Range2d): Promise<number[] | undefined>;
 }
 

@@ -673,16 +673,16 @@ class MapTreeSupplier implements TileTreeSupplier {
     const projectCenter = iModel.projectExtents.center;
     switch (heightOriginMode) {
       case TerrainHeightOriginMode.Ground: {
+        if (!iModel.isGeoLocated) return heightOrigin;
         const carto = iModel.spatialToCartographicFromEcef(projectCenter);
-        if (carto === undefined) return heightOrigin;
         return heightOrigin + exaggeration * (await IModelApp.elevationProvider.getHeight(carto));
       }
       case TerrainHeightOriginMode.Geodetic:
         return heightOrigin;
 
       case TerrainHeightOriginMode.Geoid: {
+        if (!iModel.isGeoLocated) return heightOrigin;
         const carto = iModel.spatialToCartographicFromEcef(projectCenter);
-        if (carto === undefined) return heightOrigin;
         return heightOrigin + await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
       }
     }
@@ -705,7 +705,7 @@ class MapTreeSupplier implements TileTreeSupplier {
       await ApproximateTerrainHeights.instance.initialize();
 
       bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel);
-      const carto = iModel.spatialToCartographicFromEcef(iModel.projectExtents.center);
+      const carto = iModel.isGeoLocated ? iModel.spatialToCartographicFromEcef(iModel.projectExtents.center) : undefined;
       geodeticOffset = carto ? await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto) : 0;
       const provider = IModelApp.terrainProviderRegistry.find(id.terrainProviderName);
       if (provider)

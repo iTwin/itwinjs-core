@@ -7,7 +7,7 @@
  */
 
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { Cartographic } from "@itwin/core-common";
+import { Cartographic, GlobeMode } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
@@ -65,7 +65,7 @@ export async function queryTerrainElevationOffset(viewport: ScreenViewport, cart
   if (viewport && viewport.view instanceof ViewState3d && viewport.iModel.isGeoLocated) {
     const view3d = viewport.view;
     if (view3d.displayStyle.displayTerrain) {
-      const elevationOffset = await IModelApp.elevationProvider.getHeight(carto);
+      const elevationOffset = await IModelApp.elevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.Ellipsoid);
       if (elevationOffset !== undefined)
         return elevationOffset;
     }

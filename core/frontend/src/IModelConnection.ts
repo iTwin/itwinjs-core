@@ -595,11 +595,11 @@ export abstract class IModelConnection extends IModel {
    */
   public get geodeticToSeaLevel(): number | undefined {
     if (undefined === this._geodeticToSeaLevel) {
-      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
-      if (carto === undefined) {
+      if (!this.isGeoLocated) {
         this._geodeticToSeaLevel = 0.0;
         return 0.0;
       }
+      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
       this._geodeticToSeaLevel = IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
       this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
         this._geodeticToSeaLevel = geodeticToSeaLevel;
@@ -615,11 +615,11 @@ export abstract class IModelConnection extends IModel {
    */
   public get projectCenterAltitude(): number | undefined {
     if (undefined === this._projectCenterAltitude) {
-      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
-      if (carto === undefined) {
+      if (!this.isGeoLocated) {
         this._projectCenterAltitude = 0.0;
         return 0.0;
       }
+      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
       this._projectCenterAltitude = IModelApp.elevationProvider.getHeight(carto);
       this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;

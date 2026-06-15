@@ -96,16 +96,21 @@ export interface IModelAppOptions {
   mapLayerOptions?: MapLayerOptions;
   /** Supplies the elevation provider for this session.
    * Defaults to [[BingElevationProvider]] if not specified.
+   * @note The default [[BingElevationProvider]] reads its API key from [[MapLayerOptions.BingMaps]] at startup.
+   * Ensure the Bing key is available via [[IModelAppOptions.mapLayerOptions]] for the default provider to work.
    * @beta
    */
   elevationProvider?: ElevationProvider;
   /** Supplies the geoid provider for this session.
-   * Defaults to [[BingElevationProvider]] if not specified (it implements both interfaces).
+   * Defaults to [[BingElevationProvider]] if not specified, which implements both [[ElevationProvider]] and [[GeoidProvider]].
+   * @note The default [[BingElevationProvider]] reads its API key from [[MapLayerOptions.BingMaps]] at startup.
    * @beta
    */
   geoidProvider?: GeoidProvider;
   /** Supplies the location provider for this session.
    * Defaults to [[BingLocationProvider]] if not specified.
+   * @note The default [[BingLocationProvider]] reads its API key from [[MapLayerOptions.BingMaps]] at startup.
+   * Ensure the Bing key is available via [[IModelAppOptions.mapLayerOptions]] for the default provider to work.
    * @beta
    */
   locationProvider?: LocationProvider;
