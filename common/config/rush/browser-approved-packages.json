@@ -391,7 +391,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@vitest/browser",
+      "name": "@vitest/browser-playwright",
       "allowedCategories": [ "frontend" ]
     },
     {
