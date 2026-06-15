@@ -40,5 +40,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
   }
 })
