@@ -10,9 +10,7 @@ import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides geocoding — converting a query string to a geographic location.
  * @beta
- * @extensions
  */
-// eslint-disable-next-line @itwin/public-extension-exports
 export interface LocationProvider {
   /** Return the location for a query string, or undefined if not found. */
   getLocation(query: string): Promise<GlobalLocation | undefined>;

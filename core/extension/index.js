@@ -191,8 +191,6 @@ export const {
 	connectViewports,
 	extractImageSourceDimensions,
 	getCompressedJpegFromCanvas,
-	getHeightAverage,
-	getHeightRange,
 	getImageSourceFormatForMimeType,
 	getImageSourceMimeType,
 	imageBufferToBase64EncodedPng,

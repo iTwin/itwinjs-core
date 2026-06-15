@@ -12,9 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 
 /** Provides terrain elevation data.
  * @beta
- * @extensions
  */
-// eslint-disable-next-line @itwin/public-extension-exports
 export interface ElevationProvider {
   /** Return the height (altitude) at a given cartographic location.
    * Height is geodetic (WGS84 ellipsoid).
@@ -29,9 +27,7 @@ export interface ElevationProvider {
 
 /** Compute the elevation range for an iModel's project extents using the given provider.
  * @beta
- * @extensions
  */
-// eslint-disable-next-line @itwin/public-extension-exports
 export async function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d> {
   const latLongRange = Range2d.createNull();
   const range = iModel.projectExtents.clone();
@@ -49,9 +45,7 @@ export async function getHeightRange(provider: ElevationProvider, iModel: IModel
 
 /** Compute the average elevation for an iModel's project extents using the given provider.
  * @beta
- * @extensions
  */
-// eslint-disable-next-line @itwin/public-extension-exports
 export async function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number> {
   const latLongRange = Range2d.createNull();
   for (const corner of iModel.projectExtents.corners()) {
