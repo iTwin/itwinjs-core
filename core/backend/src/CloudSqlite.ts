@@ -68,8 +68,8 @@ export namespace CloudSqlite {
     try {
       const response = await getBlobService().requestToken({ ...args, userToken });
       return response.token;
-    } catch {
-      logError(`Could not get token for container [${args.containerId}]. Returning empty token.`);
+    } catch (error) {
+      logError(`Error requesting token for container [${args.containerId}]: ${(error as Error).message}`);
       return "";
     }
   }
