@@ -506,7 +506,7 @@ describe("WorkspaceFile", () => {
 
     it("finds containers by iTwinId", async () => {
       BlobContainer.service = createMockService([
-        { containerId: testContainerId, containerType: "workspace", label: "Test Workspace" },
+        { containerId: testContainerId, containerType: "workspace", label: "Test Workspace", iTwinId: testITwinId },
       ]);
 
       const containers = await editor.findContainers({ iTwinId: testITwinId });
@@ -516,7 +516,7 @@ describe("WorkspaceFile", () => {
 
     it("finds a container by iTwinId and iModelId", async () => {
       BlobContainer.service = createMockService([
-        { containerId: "imodel-scoped-container", containerType: "workspace", label: "iModel Workspace" },
+        { containerId: "imodel-scoped-container", containerType: "workspace", label: "iModel Workspace", iTwinId: testITwinId },
       ]);
 
       const containers = await editor.findContainers({ iTwinId: testITwinId, iModelId: testIModelId });

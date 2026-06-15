@@ -105,14 +105,14 @@ describe("Generated Units artifacts", () => {
     const invalidSchema = JSON.parse(JSON.stringify(unitsSchema)) as typeof unitsSchema;
     (invalidSchema.items as Record<string, unknown>).FT = { ...invalidSchema.items.FT, numerator: 0 };
 
-    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid numerator for "FT"/);
+    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrow(/Invalid numerator for "FT"/);
   });
 
   it("fails generation when a unit denominator is zero", () => {
     const invalidSchema = JSON.parse(JSON.stringify(unitsSchema)) as typeof unitsSchema;
     (invalidSchema.items as Record<string, unknown>).FT = { ...invalidSchema.items.FT, denominator: 0 };
 
-    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid denominator for "FT"/);
+    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrow(/Invalid denominator for "FT"/);
   });
 
   it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
