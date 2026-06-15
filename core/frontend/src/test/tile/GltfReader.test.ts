@@ -308,7 +308,7 @@ describe("GltfReader", () => {
       expect(reader).toBeDefined();
       expect(() => {
         for (const _ of reader.traverseScene()) { }
-      }).toThrowError("Cycle detected while traversing glTF nodes");
+      }).toThrow("Cycle detected while traversing glTF nodes");
     }
 
     expectCycle(0);
