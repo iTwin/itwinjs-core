@@ -88,14 +88,13 @@ describe("ITwin Workspace", () => {
           iTwinId: childITwinId,
           accountITwinId,
         }));
-        if (typeof args.includeParentITwins === "object" && args.includeParentITwins.filter === "accountOnly")
-          results.push(...accountContainerIds.map((containerId) => ({
-            containerId,
-            containerType: "settings",
-            label: containerId,
-            iTwinId: accountITwinId,
-            accountITwinId,
-          })));
+        results.push(...accountContainerIds.map((containerId) => ({
+          containerId,
+          containerType: "settings",
+          label: containerId,
+          iTwinId: accountITwinId,
+          accountITwinId,
+        })));
         return results;
       },
       updateJson: async () => { },
