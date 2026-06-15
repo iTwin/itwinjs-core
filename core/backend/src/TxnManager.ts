@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, GuidString, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -497,9 +497,6 @@ export class RebaseManager {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
 
-    // With shouldReinstate=false txns are recomputed, this map stores the mappings between the old and new element Ids.
-    const remappedIdMap = new Map<Id64String, Id64String>();
-
     try {
       const reversedTxns = nativeDb.pullMergeRebaseBegin();
       const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
@@ -515,21 +512,12 @@ export class RebaseManager {
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
         const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
         if (shouldReinstate) {
-          if (remappedIdMap.size > 0) {
-            // A remapping exists: replace with the new element Id by applying the instance patch.
-            this.reinstateWithRemapping(txnId, remappedIdMap);
-          } else {
-            nativeDb.pullMergeRebaseReinstateTxn();
-          }
+          nativeDb.pullMergeRebaseReinstateTxn();
           Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
         }
 
         if (this._customHandler) {
           await this._customHandler.recompute(txnProps);
-          if (!shouldReinstate) {
-            // The recompute might have created new element IDs, we need to record the remapping.
-            this.buildRemappingEntries(txnId, remappedIdMap);
-          }
         }
 
         nativeDb.pullMergeRebaseUpdateTxn();
@@ -719,101 +707,6 @@ export class RebaseManager {
       default:
         throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
     }
-  }
-
-  /**
-   * After a `shouldReinstate = false` txn's `recompute` has run, read the txn's original
-   * inserted elements from its changeset and record any entries where the element was recreated at a different ID.
-   * Matching is done by federation GUID.
-   * @internal
-   */
-  private buildRemappingEntries(txnId: TxnIdString, remappedIdMap: Map<Id64String, Id64String>): void {
-    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId, rowOptions: { useJsName: true, abbreviateBlobs: false } });
-
-    while (reader.step()) {
-      if (reader.op !== "Inserted" || !reader.isECTable)
-        continue;
-      const ins = reader.inserted;
-      if (!ins)
-        continue;
-
-      const originalId = ins.id as Id64String | undefined;
-      const guid = ins.federationGuid as GuidString | undefined;
-
-      if (originalId && guid && Id64.isValidId64(originalId)) {
-        const currentId = this._iModel.elements.getIdFromFederationGuid(guid);
-        if (currentId && currentId !== originalId)
-          remappedIdMap.set(originalId, currentId);
-      }
-    }
-  }
-
-  /**
-   * Reads EC instance changes from the txn's changeset, applies the remapping to all element ID references and applies the patched instances to the database.
-   * Replacement for `nativeDb.pullMergeRebaseReinstateTxn()` used when the accumulated ID remapping table is non-empty.
-   * @internal
-   */
-  private reinstateWithRemapping(txnId: TxnIdString, remappedIdMap: ReadonlyMap<Id64String, Id64String>): void {
-    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId, rowOptions: { useJsName: true, abbreviateBlobs: false } });
-    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
-    while (reader.step()) {
-      pcu.appendFrom(reader);
-    }
-
-    for (const instance of pcu.instances) {
-      const { $meta, ...rest } = instance;
-      const remappedRest = RebaseManager.remapInstanceProps(rest as Record<string, any>, remappedIdMap);
-      const patch: InstancePatch = {
-        ...remappedRest,
-        $meta: { op: $meta.op, stage: $meta.stage, isIndirectChange: $meta.isIndirectChange },
-      };
-      if (patch.$meta.isIndirectChange) {
-        this._iModel.txns.withIndirectTxnMode(() => this.applyInstancePatch(patch));
-      } else {
-        this.applyInstancePatch(patch);
-      }
-    }
-  }
-
-  /**
-   * Look at every property of an instance and substitute any `Id64String` value that appears in `remapping`.
-   * @internal
-   */
-  private static remapInstanceProps(props: Record<string, any>, remapping: ReadonlyMap<Id64String, Id64String>): Record<string, any> {
-    if (remapping.size === 0)
-      return props;
-
-    const result: Record<string, any> = {};
-    for (const [key, value] of Object.entries(props)) {
-      if (key === "id") {
-        result[key] = value;   // never remap the instance's own ECInstanceId
-      } else {
-        result[key] = RebaseManager._remapValue(value, remapping);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * @internal
-   */
-  private static _remapValue(value: any, remapping: ReadonlyMap<Id64String, Id64String>): any {
-    if (typeof value === "string" && Id64.isId64(value))
-      return remapping.get(value) ?? value;
-
-    if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-      if (ArrayBuffer.isView(value))
-        return value;
-
-      return Object.fromEntries(
-        Object.entries(value as Record<string, any>).map(([k, v]) => [k, RebaseManager._remapValue(v, remapping)]),
-      );
-    }
-
-    if (Array.isArray(value))
-      return (value as unknown[]).map((v) => RebaseManager._remapValue(v, remapping));
-
-    return value;
   }
 
   /**
