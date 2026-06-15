@@ -496,7 +496,6 @@ export class RebaseManager {
   public async resume() {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
-
     try {
       const reversedTxns = nativeDb.pullMergeRebaseBegin();
       const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
