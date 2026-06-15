@@ -18,6 +18,7 @@ import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
+import { getOnlineStatus } from "./internal/OnlineStatus";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
@@ -62,11 +63,13 @@ export namespace CloudSqlite {
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
+    if (!getOnlineStatus())
+      return "";
     try {
       const response = await getBlobService().requestToken({ ...args, userToken });
       return response.token;
     } catch {
-      logInfo(`Could not get token for container [${args.containerId}]. We might be offline, so returning an empty token.`);
+      logError(`Could not get token for container [${args.containerId}]. Returning empty token.`);
       return "";
     }
   }
