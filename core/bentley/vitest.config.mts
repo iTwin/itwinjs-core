@@ -19,6 +19,18 @@ export default defineConfig({
         "cobertura"
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
+<<<<<<< HEAD
     }
+=======
+    },
+    minWorkers: 1,
+    maxWorkers: 3,
+  },
+  optimizeDeps: {
+    force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
+>>>>>>> 7a735d806b (Security: remediate GHSA-gv7w-rqvm-qjhr (esbuild <0.28.1) (#9398))
   }
 })

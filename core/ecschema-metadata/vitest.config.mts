@@ -1,7 +1,13 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import * as packageJson from "./package.json";
+const includePackages: string[] = Object.entries(packageJson.peerDependencies)
+  .filter(([_, version]) => version === "workspace:*")
+  .map(([pkgName]) => pkgName);
+
 export default defineConfig({
   test: {
     dir: "src",
+    setupFiles: "./src/test/setupTests.ts",
     coverage: {
       provider: "v8",
       include: [
@@ -19,9 +25,6 @@ export default defineConfig({
         "cobertura"
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
-<<<<<<< HEAD
-    }
-=======
     },
     minWorkers: 1,
     maxWorkers: 3,
@@ -32,6 +35,5 @@ export default defineConfig({
     esbuildOptions: {
       target: "es2022",
     },
->>>>>>> 7a735d806b (Security: remediate GHSA-gv7w-rqvm-qjhr (esbuild <0.28.1) (#9398))
   }
 })

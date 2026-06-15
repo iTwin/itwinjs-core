@@ -36,6 +36,16 @@ export default defineConfig({
         },
       },
     },
+<<<<<<< HEAD
     fileParallelism: false
+=======
+  },
+  optimizeDeps: {
+    include: includePackages,
+    force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
+>>>>>>> 7a735d806b (Security: remediate GHSA-gv7w-rqvm-qjhr (esbuild <0.28.1) (#9398))
   }
 })

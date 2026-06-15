@@ -1,7 +1,22 @@
-import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import { coverageConfigDefaults, defineConfig } from "vitest/config";
+
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   test: {
     dir: "src",
+    // include: ["**/<insert-file-name-here>.test.ts"],
+    exclude: ["**/PrimitiveConverters.test.ts"],
+    browser: {
+      provider: "playwright",
+      enabled: true,
+      instances: [
+        { browser: "chromium" }
+      ],
+      headless: true,
+      screenshotFailures: false
+    },
     coverage: {
       provider: "v8",
       include: [
@@ -19,19 +34,14 @@ export default defineConfig({
         "cobertura"
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
-<<<<<<< HEAD
-    }
-=======
     },
     minWorkers: 1,
     maxWorkers: 3,
   },
   optimizeDeps: {
-    include: includePackages,
     force: true,
     esbuildOptions: {
       target: "es2022",
     },
->>>>>>> 7a735d806b (Security: remediate GHSA-gv7w-rqvm-qjhr (esbuild <0.28.1) (#9398))
   }
 })

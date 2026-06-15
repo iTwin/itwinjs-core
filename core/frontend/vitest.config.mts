@@ -59,6 +59,14 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
+<<<<<<< HEAD
     include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
+=======
+    include: includePackages,
+    force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
+>>>>>>> 7a735d806b (Security: remediate GHSA-gv7w-rqvm-qjhr (esbuild <0.28.1) (#9398))
   },
 })
