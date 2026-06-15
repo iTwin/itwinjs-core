@@ -6,6 +6,8 @@ It lives in `@itwin/ecschema-metadata` and should be the first choice for access
 
 For the binary transport format specification, see [SchemaViewBinaryFormat.md](./SchemaViewBinaryFormat.md).
 
+`SchemaView` is a **lossy runtime** projection - it omits units, formats, and custom attribute instances. For the full, authoritative EC schema model and its interchange formats, see [ECSchema XML](../../bis/ec/ec-schema-xml.md) and [ECSchema JSON](../../bis/ec/ec-schema-json.md).
+
 ## When to use SchemaView
 
 Use `SchemaView` when you need fast, synchronous, repeated lookups at runtime:

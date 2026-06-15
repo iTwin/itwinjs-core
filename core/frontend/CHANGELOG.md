@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+This log was last generated on Thu, 11 Jun 2026 21:11:10 GMT and should not be manually modified.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
 
 ## 5.10.0
 Wed, 03 Jun 2026 20:19:46 GMT
