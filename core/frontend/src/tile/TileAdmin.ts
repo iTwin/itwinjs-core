@@ -16,6 +16,7 @@ import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
+import type { CesiumAccessClient } from "../CesiumAccessClient";
 import {
   DisclosedTileTreeSet, FetchCloudStorage, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus,
   TileRequest, TileRequestChannels, TileStorage, TileTree, TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
@@ -163,6 +164,8 @@ export class TileAdmin {
   public readonly contextPreloadParentSkip: number;
   /** @beta */
   public readonly cesiumIonKey?: string;
+  /** @beta */
+  public readonly cesiumAccess?: CesiumAccessClient;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;
@@ -189,6 +192,13 @@ export class TileAdmin {
 
   /** @internal */
   public get emptyTileUserSet(): ReadonlyTileUserSet { return UniqueTileUserSets.emptySet; }
+
+  /** Returns true if Cesium ion assets can be accessed, either via [[cesiumIonKey]] or [[cesiumAccess]].
+   * @beta
+   */
+  public get hasCesiumAccess(): boolean {
+    return undefined !== this.cesiumAccess || undefined !== this.cesiumIonKey;
+  }
 
   /** Returns basic statistics about the TileAdmin's current state. */
   public get statistics(): TileAdmin.Statistics {
@@ -249,6 +259,7 @@ export class TileAdmin {
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
+    this.cesiumAccess = options.cesiumAccess;
     this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -1262,6 +1273,13 @@ export namespace TileAdmin {
      * @public
      */
     cesiumIonKey?: string;
+
+    /** A pluggable client for resolving Cesium ion asset endpoints. When supplied, this takes precedence over [[cesiumIonKey]].
+     * Use this to access Cesium ion assets via the iTwin Platform Cesium Curated Content API or any custom authentication mechanism.
+     * If neither `cesiumAccess` nor `cesiumIonKey` is supplied, Cesium ion content like terrain and OSM Buildings cannot be displayed.
+     * @beta
+     */
+    cesiumAccess?: CesiumAccessClient;
 
     /** If true, when applying a schedule script to a view, ordinary tiles will be requested and then reprocessed on the frontend to align with the script's
      * animation nodes. This permits the use of schedule scripts not stored in the iModel and improves utilization of the tile cache for animated views.

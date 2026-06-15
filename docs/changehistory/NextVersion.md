@@ -9,6 +9,7 @@ publish: false
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps imagery is deprecated](#bing-maps-imagery-is-deprecated)
+    - [Pluggable Cesium ion authentication via `CesiumAccessClient`](#pluggable-cesium-ion-authentication-via-cesiumaccessclient)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -68,6 +69,47 @@ Bing Maps imagery-specific APIs are now deprecated. This release does not change
 For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
 
 > This imagery-only deprecation does not deprecate `BingLocationProvider` or `BingElevationProvider`, and it does not add a built-in replacement for Bing elevation or location services. Applications that continue using those Bing services must continue supplying `MapLayerOptions.BingMaps`. 
+
+### Pluggable Cesium ion authentication via `CesiumAccessClient`
+
+A new [`CesiumAccessClient`]($frontend) interface and [`TileAdmin.Props.cesiumAccess`]($frontend) option enable pluggable authentication for [Cesium ion](https://cesium.com/platform/cesium-ion/) assets such as Cesium World Terrain and OSM Buildings. When configured, `cesiumAccess` takes precedence over the existing [`cesiumIonKey`]($frontend), and the existing `cesiumIonKey` option remains fully supported.
+
+This is the integration point for the **iTwin Platform Cesium Curated Content API**, which allows iTwin subscribers to access public Cesium assets using an iTwin access token without needing a personal Cesium ion subscription.
+
+```typescript
+// Example: implement CesiumAccessClient backed by the iTwin Platform Curated Content API.
+import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
+
+class ITPCesiumClient implements CesiumAccessClient {
+  constructor(private readonly getAccessToken: () => Promise<string>) {}
+
+  async getAssetEndpoint(assetId: number, iTwinId?: string): Promise<CesiumAssetEndpoint> {
+    const token = await this.getAccessToken();
+    const url = `https://api.bentley.com/curated-content/cesium/${assetId}`;
+    const params = iTwinId ? `?iTwinId=${iTwinId}` : "";
+    const res = await fetch(`${url}${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    return {
+      url: data.tilesetUrl,
+      accessToken: data.token,
+      expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+    };
+  }
+}
+
+// Configure at startup:
+IModelApp.startup({
+  tileAdmin: {
+    cesiumAccess: new ITPCesiumClient(() => myApp.getITwinAccessToken()),
+  },
+});
+```
+
+The new [`TileAdmin.hasCesiumAccess`]($frontend) getter returns `true` if either `cesiumAccess` or `cesiumIonKey` is configured, making it easy to conditionally enable Cesium-backed features.
+
+The optional [`iTwinId`]($frontend) field on `TerrainMeshProviderOptions` is now populated from the active `IModelConnection.iTwinId` so that `CesiumAccessClient.getAssetEndpoint` implementations can scope requests to the correct iTwin context.
 
 ## @itwin/map-layers-formats
 

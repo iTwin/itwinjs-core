@@ -2018,6 +2018,18 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface CesiumAccessClient {
+    getAssetEndpoint(assetId: number, iTwinId?: GuidString): Promise<CesiumAssetEndpoint>;
+}
+
+// @beta
+export interface CesiumAssetEndpoint {
+    accessToken?: string;
+    expiresAt?: Date;
+    url?: string;
+}
+
 // @public
 export enum ChangeFlag {
     All = 268435455,
@@ -10797,6 +10809,8 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
+    iTwinId?: string;
+    // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -11000,6 +11014,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
     // @beta (undocumented)
+    readonly cesiumAccess?: CesiumAccessClient;
+    // @beta (undocumented)
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11070,6 +11086,8 @@ export class TileAdmin {
     getTileUserSetForRequest(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet;
     get gpuMemoryLimit(): GpuMemoryLimit;
     set gpuMemoryLimit(limit: GpuMemoryLimit);
+    // @beta
+    get hasCesiumAccess(): boolean;
     // @internal (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // @internal (undocumented)
@@ -11149,6 +11167,8 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
+        // @beta
+        cesiumAccess?: CesiumAccessClient;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;

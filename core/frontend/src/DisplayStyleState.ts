@@ -9,7 +9,7 @@ import { assert, BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley"
 import { Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BaseLayerSettings, BaseMapLayerSettings, CesiumIonAssetId, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -436,7 +436,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined === url)
       return undefined;
 
-    return this.contextRealityModelStates.find((x) => x.url === url);
+    // Use startsWith to match both key-bearing URLs (legacy) and keyless URLs (cesiumAccess path).
+    const osmPrefix = `$CesiumIonAsset=${CesiumIonAssetId.OSMBuildings}:`;
+    return this.contextRealityModelStates.find((x) => x.url?.startsWith(osmPrefix));
   }
 
   /** Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
@@ -451,7 +453,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined === url)
       return false;
 
-    let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
+    // Use startsWith to match both key-bearing URLs (legacy) and keyless URLs (cesiumAccess path).
+    const osmPrefix = `$CesiumIonAsset=${CesiumIonAssetId.OSMBuildings}:`;
+    let model = this.settings.contextRealityModels.models.find((x) => x.url?.startsWith(osmPrefix));
     if (options.onOff === false) {
       const turnedOff = undefined !== model && this.settings.contextRealityModels.delete(model);
       if (turnedOff)

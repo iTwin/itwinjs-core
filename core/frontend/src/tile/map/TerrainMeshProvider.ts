@@ -39,6 +39,11 @@ export interface TerrainMeshProviderOptions {
   /** Optionally identifies a specific terrain data source supplied by the [[TerrainMeshProvider]]. */
   dataSource?: string;
 
+  /** Optional iTwin identifier providing context for resolving Cesium ion asset access tokens.
+   * @beta
+   */
+  iTwinId?: string;
+
   /** If true, the provider is being used to collect tiles from the tile tree.
    * @beta
    */

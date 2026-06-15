@@ -10,6 +10,7 @@ import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
+import { IModelApp } from "./IModelApp";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
@@ -111,10 +112,20 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     // The following is only if the reality data is not stored on PW Context Share.
     const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(url);
     if (cesiumAsset) {
-      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(`${cesiumAsset.id}`, cesiumAsset.key);
-      if (tokenAndUrl.url && tokenAndUrl.token) {
-        url = tokenAndUrl.url;
-        this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
+      if (cesiumAsset.key) {
+        // Legacy path: key-bearing URL — use Cesium ion REST API directly.
+        const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(`${cesiumAsset.id}`, cesiumAsset.key);
+        if (tokenAndUrl.url && tokenAndUrl.token) {
+          url = tokenAndUrl.url;
+          this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
+        }
+      } else if (IModelApp.tileAdmin.cesiumAccess) {
+        // New path: keyless URL — delegate to the configured cesiumAccess client.
+        const endpoint = await IModelApp.tileAdmin.cesiumAccess.getAssetEndpoint(cesiumAsset.id, iTwinId);
+        if (endpoint.url && endpoint.accessToken) {
+          url = endpoint.url;
+          this._requestAuthorization = `Bearer ${endpoint.accessToken}`;
+        }
       }
     }
 
