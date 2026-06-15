@@ -9,6 +9,7 @@
 import { Cartographic } from "@itwin/core-common";
 import { Range1d, Range2d } from "@itwin/core-geometry";
 import { IModelConnection } from "./IModelConnection";
+import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides terrain elevation data.
  * @beta
@@ -23,6 +24,22 @@ export interface ElevationProvider {
    * Returns undefined if elevation data is unavailable for the range.
    */
   getHeights(range: Range2d): Promise<number[] | undefined>;
+}
+
+/** Provides geoid undulation — the offset between the geodetic ellipsoid (WGS84) and sea level (EGM2008).
+ * @beta
+ */
+export interface GeoidProvider {
+  /** Return the offset from geodetic height to sea level height at the given cartographic location. */
+  getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+}
+
+/** Provides geocoding — converting a query string to a geographic location.
+ * @beta
+ */
+export interface LocationProvider {
+  /** Return the location for a query string, or undefined if not found. */
+  getLocation(query: string): Promise<GlobalLocation | undefined>;
 }
 
 /** Compute the elevation range for an iModel's project extents using the given provider.

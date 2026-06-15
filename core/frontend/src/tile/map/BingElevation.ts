@@ -9,8 +9,7 @@
 import { request } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import type { ElevationProvider } from "../../ElevationProvider";
-import type { GeoidProvider } from "../../GeoidProvider";
+import type { ElevationProvider, GeoidProvider } from "../../GeoProviders";
 import { Cartographic } from "@itwin/core-common";
 import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 
@@ -19,7 +18,7 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 /** Provides an interface to the [Bing Maps elevation services](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/).
  * Use of these services requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]]
  * passed to [[IModelApp.startup]].
- * @deprecated in 5.11.0. Use [[ElevationProvider]] and [[GeoidProvider]] via [[IModelAppOptions.elevationProvider]] and [[IModelAppOptions.geoidProvider]].
+ * @deprecated in 5.11.0. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.elevationProvider]] and [[IModelAppOptions.geoidProvider]].
  * @public
  * @extensions
  */

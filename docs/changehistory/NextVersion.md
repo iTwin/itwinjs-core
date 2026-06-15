@@ -88,7 +88,7 @@ await IModelApp.startup({
 });
 ```
 
-If not supplied, [BingElevationProvider]($frontend) and [BingLocationProvider]($frontend) are used as defaults for backward compatibility.
+If not supplied, [BingElevationProvider]($frontend) and [BingLocationProvider]($frontend) are used as defaults for backward compatibility. These Bing-backed defaults will be removed in a future major version; applications should migrate to a custom implementation before then.
 
 Standalone utility functions [getHeightRange]($frontend) and [getHeightAverage]($frontend) replace the convenience methods previously on `BingElevationProvider`.
 
