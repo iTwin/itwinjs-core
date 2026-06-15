@@ -80,19 +80,32 @@ export abstract class RealityTileLoader {
 
   /** Reality tile content is identified by the first 4 bytes of the stream. Binary formats (b3dm, glb, pnts, etc.) use a
    * recognizable magic number, but a tileset may also reference glTF content as a plain-text JSON `.gltf` file, which
-   * begins with a `{` character (optionally preceded by whitespace) instead of a magic number.
-   * Normalize such content to [[TileFormat.Gltf]] so it is routed to the glTF reader, which accepts both binary and JSON glTF.
+   * begins with a `{` character instead of a magic number and therefore matches no known format.
+   * JSON content is identified the same way the rest of the reality tile pipeline identifies content types: by the
+   * content URL's extension (see `expandSubTree` in RealityModelTileTree.ts, which uses `RealityDataSource.getTileContentType`
+   * to peel off external `tileset.json` content during tree construction), rather than by sniffing the bytes.
+   * A `.gltf` content URL is normalized to [[TileFormat.Gltf]] so it is routed to the glTF reader, which accepts both
+   * binary and JSON glTF. (External `tileset.json` content is resolved by `expandSubTree` before it reaches this point.)
    */
-  private _normalizeFormat(format: number): number {
+  private _normalizeFormat(format: number, tile: RealityTile): number {
     if (isKnownTileFormat(format))
       return format;
 
-    // The leading byte of a JSON glTF document is '{' (0x7b), '\t' (0x09), '\n' (0x0a), '\r' (0x0d) or ' ' (0x20).
-    const firstByte = format & 0xff;
-    if (0x7b === firstByte || 0x09 === firstByte || 0x0a === firstByte || 0x0d === firstByte || 0x20 === firstByte)
+    if (this._hasGltfExtension(tile.contentUrl))
       return TileFormat.Gltf;
 
     return format;
+  }
+
+  /** Returns whether the given content URL identifies a JSON glTF (`.gltf`) resource, ignoring any query string or
+   * fragment (e.g. `8/130/85.gltf?token=abc`).
+   */
+  private _hasGltfExtension(contentUrl: string | undefined): boolean {
+    if (undefined === contentUrl)
+      return false;
+
+    const path = contentUrl.split(/[?#]/, 1)[0];
+    return path.toLowerCase().endsWith(".gltf");
   }
 
   /** The base URL the glTF reader should resolve relatively-referenced resources (e.g. external images) against.
@@ -113,7 +126,7 @@ export abstract class RealityTileLoader {
   }
 
   public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
-    const format = this._normalizeFormat(this._getFormat(streamBuffer));
+    const format = this._normalizeFormat(this._getFormat(streamBuffer), tile);
     if (format !== TileFormat.B3dm && format !== TileFormat.Gltf) {
       return {};
     }
@@ -171,7 +184,7 @@ export abstract class RealityTileLoader {
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
-    const format = this._normalizeFormat(this._getFormat(streamBuffer));
+    const format = this._normalizeFormat(this._getFormat(streamBuffer), tile);
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 

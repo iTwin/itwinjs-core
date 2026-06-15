@@ -192,11 +192,9 @@ function createMinimalGlb(): Uint8Array {
   return glb;
 }
 
-/** Creates a minimal JSON-text glTF (a `.gltf` file rather than a binary `.glb`) for testing.
- * @param leadingWhitespace Optional whitespace prepended before the opening brace, to verify it is still detected as glTF.
- */
-function createJsonGltf(leadingWhitespace = ""): Uint8Array {
-  const json = `${leadingWhitespace}${JSON.stringify({ asset: { version: "2.0" }, meshes: [] })}`;
+/** Creates a minimal JSON-text glTF (a `.gltf` file rather than a binary `.glb`) for testing. */
+function createJsonGltf(): Uint8Array {
+  const json = JSON.stringify({ asset: { version: "2.0" }, meshes: [] });
   return new TextEncoder().encode(json);
 }
 
@@ -462,18 +460,33 @@ describe("RealityTileLoader", () => {
     vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
       .mockResolvedValue({ polyfaces: [mockPolyface] });
 
-    const tree = new TestRealityTree(0, imodel, reader, false);
-    const tile = tree.rootTile;
+    // A plain-text `.gltf` file has no binary magic number; its content begins with `{`. It is identified as glTF by
+    // the `.gltf` content URL extension (ignoring any query string) and must be routed to the glTF reader rather than discarded.
+    for (const contentUrl of ["8/130/85.gltf", "8/130/85.GLTF", "8/130/85.gltf?token=abc"]) {
+      const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, contentUrl);
+      const tile = tree.rootTile;
 
-    // A plain-text `.gltf` file has no binary magic number; it begins with `{` (optionally after whitespace).
-    // It must still be routed to the glTF reader rather than discarded.
-    for (const leading of ["", "  \n\t"]) {
-      const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf(leading));
+      const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
       const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
 
       expect(result.geometry).to.not.be.undefined;
       expect(result.geometry?.polyfaces).to.have.length(1);
     }
+  });
+
+  it("should discard JSON content that is not identified as glTF by its content URL", async () => {
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockResolvedValue({ polyfaces: [PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface()] });
+
+    // JSON content whose URL is not `.gltf` (e.g. a `.json` payload) has no recognizable magic number and must not be
+    // mistaken for glTF based on its leading `{` byte.
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, "8/130/85.json");
+    const tile = tree.rootTile;
+
+    const jsonStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.be.undefined;
   });
 
   it("should resolve glTF external image URLs against the tile content URL", async () => {
