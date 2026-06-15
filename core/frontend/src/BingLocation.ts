@@ -10,7 +10,7 @@ import { Cartographic } from "@itwin/core-common";
 import { request } from "./request/Request";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
-import { LocationProvider } from "./LocationProvider";
+import type { LocationProvider } from "./LocationProvider";
 
 /** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
  * Use of this service requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]] passed to [[IModelApp.startup]].
@@ -18,7 +18,10 @@ import { LocationProvider } from "./LocationProvider";
  * @public
  * @extensions
  */
-export class BingLocationProvider implements LocationProvider {
+export class BingLocationProvider {
+  // Note: this class structurally satisfies LocationProvider.
+  // We avoid an explicit `implements` clause because api-extractor forbids @public classes
+  // from referencing @beta interfaces in their signatures (ae-incompatible-release-tags).
   private _locationRequestTemplate: string;
 
   constructor() {

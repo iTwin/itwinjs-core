@@ -98,17 +98,17 @@ export interface IModelAppOptions {
   mapLayerOptions?: MapLayerOptions;
   /** Supplies the elevation provider for this session.
    * Defaults to [[BingElevationProvider]] if not specified.
-   * @public
+   * @beta
    */
   elevationProvider?: ElevationProvider;
   /** Supplies the geoid provider for this session.
    * Defaults to [[BingElevationProvider]] if not specified (it implements both interfaces).
-   * @public
+   * @beta
    */
   geoidProvider?: GeoidProvider;
   /** Supplies the location provider for this session.
    * Defaults to [[BingLocationProvider]] if not specified.
-   * @public
+   * @beta
    */
   locationProvider?: LocationProvider;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
@@ -262,15 +262,15 @@ export class IModelApp {
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[ElevationProvider]] for this session.
-   * @public
+   * @beta
    */
   public static get elevationProvider(): ElevationProvider { return this._elevationProvider; }
   /** The [[GeoidProvider]] for this session.
-   * @public
+   * @beta
    */
   public static get geoidProvider(): GeoidProvider { return this._geoidProvider; }
   /** The [[LocationProvider]] for this session.
-   * @public
+   * @beta
    */
   public static get locationProvider(): LocationProvider { return this._locationProvider; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
@@ -469,9 +469,11 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until a replacement is configured
     const defaultBingElevation = new BingElevationProvider();
     this._elevationProvider = opts.elevationProvider ?? defaultBingElevation;
     this._geoidProvider = opts.geoidProvider ?? defaultBingElevation;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._locationProvider = opts.locationProvider ?? new BingLocationProvider();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;

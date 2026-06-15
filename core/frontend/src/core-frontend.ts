@@ -139,6 +139,7 @@ export {
   Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes,
   TileUsageMarker,
   TileUser,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   BingElevationProvider,
   QuadId, type QuadIdProps,
   MapTilingScheme, GeographicTilingScheme, WebMercatorProjection, WebMercatorTilingScheme,

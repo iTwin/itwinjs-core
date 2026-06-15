@@ -1694,7 +1694,7 @@ export interface BeWheelEventProps extends BeButtonEventProps {
 }
 
 // @public @deprecated
-export class BingElevationProvider implements ElevationProvider, GeoidProvider {
+export class BingElevationProvider {
     constructor();
     getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
     // @internal @deprecated (undocumented)
@@ -1711,7 +1711,7 @@ export class BingElevationProvider implements ElevationProvider, GeoidProvider {
 }
 
 // @public @deprecated
-export class BingLocationProvider implements LocationProvider {
+export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
 }
@@ -3180,7 +3180,7 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
-// @public
+// @beta
 export interface ElevationProvider {
     getHeight(carto: Cartographic): Promise<number>;
     getHeights(range: Range2d): Promise<number[] | undefined>;
@@ -3816,7 +3816,7 @@ export class GeographicTilingScheme extends MapTilingScheme {
     yFractionToLatitude(yFraction: number): number;
 }
 
-// @public
+// @beta
 export interface GeoidProvider {
     getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
 }
@@ -3920,10 +3920,10 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
 // @beta
 export function getGoogle3dTilesUrl(): string;
 
-// @public
+// @beta
 export function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number>;
 
-// @public
+// @beta
 export function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d>;
 
 // @public
@@ -5045,6 +5045,7 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @beta
     static get elevationProvider(): ElevationProvider;
     // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
@@ -5053,6 +5054,7 @@ export class IModelApp {
     // @beta
     static get formatsProvider(): FormatsProvider;
     static set formatsProvider(provider: FormatsProvider);
+    // @beta
     static get geoidProvider(): GeoidProvider;
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
@@ -5065,6 +5067,7 @@ export class IModelApp {
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
+    // @beta
     static get locationProvider(): LocationProvider;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
@@ -5132,8 +5135,10 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
+    // @beta
     elevationProvider?: ElevationProvider;
     formatsProvider?: FormatsProvider;
+    // @beta
     geoidProvider?: GeoidProvider;
     hubAccess?: FrontendHubAccess;
     // @beta
@@ -5141,6 +5146,7 @@ export interface IModelAppOptions {
     localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
+    // @beta
     locationProvider?: LocationProvider;
     // @beta
     mapLayerOptions?: MapLayerOptions;
@@ -5839,7 +5845,7 @@ export class LocateResponse {
     snapStatus: SnapStatus;
 }
 
-// @public
+// @beta
 export interface LocationProvider {
     getLocation(query: string): Promise<GlobalLocation | undefined>;
 }

@@ -9,8 +9,8 @@
 import { request } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ElevationProvider } from "../../ElevationProvider";
-import { GeoidProvider } from "../../GeoidProvider";
+import type { ElevationProvider } from "../../ElevationProvider";
+import type { GeoidProvider } from "../../GeoidProvider";
 import { Cartographic } from "@itwin/core-common";
 import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 
@@ -23,7 +23,10 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
  * @public
  * @extensions
  */
-export class BingElevationProvider implements ElevationProvider, GeoidProvider {
+export class BingElevationProvider {
+  // Note: this class structurally satisfies both ElevationProvider and GeoidProvider.
+  // We avoid an explicit `implements` clause because api-extractor forbids @public classes
+  // from referencing @beta interfaces in their signatures (ae-incompatible-release-tags).
   private _heightRangeRequestTemplate: string;
   private _seaLevelOffsetRequestTemplate: string;
   private _heightListRequestTemplate: string;
