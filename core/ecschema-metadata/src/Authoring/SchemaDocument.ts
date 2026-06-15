@@ -385,14 +385,19 @@ export namespace Authoring {
   }
 
   /** A custom attribute instance: the custom-attribute class it instantiates, plus its value held in
-   * whichever raw form its source produced. The document has no CA class definition, so it resolves
-   * nothing until compile - the value is either an untyped JSON property object (from the JSON reader
-   * or in-memory authoring) or a raw ECXML body ({@link XmlString}, from the XML reader), tracked by
-   * {@link format}. Access the value through the matching {@link json} or {@link xml} accessor; the
-   * other throws, because reading the wrong side means a conversion was skipped. A writer emitting to
-   * the value's own format passes it through; crossing the boundary runs the
-   * {@link CustomAttributeConverter}. Build one directly (JSON form) or through
-   * {@link CustomAttributeSet.add}.
+   * whichever raw form its source produced. A custom attribute attaches extra information to metadata;
+   * the intent is to treat that information as data, needing the CA class only to validate it, not to
+   * read or write it. The ECInstance XML serialization format unfortunately works against that intent -
+   * an XML value cannot be understood as JSON and a JSON value cannot be emitted as XML without the CA
+   * class definition. (see the ECSchema XML reference docs for the specifics). Hence the two-form storage below: rather
+   * than force an eager, lossy conversion, the document holds the value exactly as its source produced
+   * it and converts only when a writer must emit the other format. The document has no CA class
+   * definition, so it resolves nothing until compile - the value is either an untyped JSON property
+   * object (from the JSON reader or in-memory authoring) or a raw ECXML body ({@link XmlString}, from
+   * the XML reader), tracked by {@link format}. Access the value through the matching {@link json} or
+   * {@link xml} accessor; the other throws, because reading the wrong side means a conversion was
+   * skipped. A writer emitting to the value's own format passes it through; crossing the boundary runs
+   * the {@link CustomAttributeConverter}.
    * @alpha
    */
   export class CustomAttribute implements CustomAttributeProps {

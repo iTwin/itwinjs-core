@@ -282,6 +282,17 @@ Each child element of `ECCustomAttributes` is an instance of an `ECCustomAttribu
 
 The type of each value is determined from the custom attribute class definition in the referenced schema. A schema item can have multiple custom attributes, but only one instance of a given custom attribute class may be applied to the same container.
 
+### Relationship to ECJSON
+
+A custom attribute attaches extra information to a piece of metadata. Its custom attribute class is meant to define the *shape* of that information - much as an XSD describes an XML document - so that, ideally, the value could be read and written as data without consulting the class. The ECInstance XML form falls short of that: a value cannot be converted between this form and its [ECJSON equivalent](./ec-custom-attributes.md) without loading the custom attribute class, because the two forms model the data differently. The XML form both omits and adds detail relative to JSON:
+
+- **It repeats the schema version.** The instance element's `xmlns` carries the version of the custom attribute's schema, which the schema's `ECSchemaReference` already states.
+- **It has no value types.** Every value is text. Whether `42` is an integer, a double, or a string is known only from the class definition.
+- **A struct and a single-entry struct array look identical.** Both serialize as a single nested element; only the class says which one a given element is.
+- **Struct-array entries are named for their struct class.** ECJSON identifies values by property name alone, so the struct class spelled into the XML element name has nowhere to come from or go to.
+
+Custom attributes are also persisted in this ECInstance XML form inside iModels, so the format is effectively fixed: changing it would break read compatibility with existing files. A consequence is that these stored fragments are not fully self-describing on their own - interpreting or reshaping a value still depends on its custom attribute class.
+
 ## Validation
 
 The XSD for ECSchema XML validates the XML document shape: allowed elements, attributes, simple value patterns, and some uniqueness rules. It does not express every semantic EC rule. Semantic rules such as relationship constraint compatibility, reference resolution, property override compatibility, and custom attribute applicability are covered by [EC Schema Validation](./ec-schema-validation.md).

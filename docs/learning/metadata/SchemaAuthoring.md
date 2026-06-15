@@ -176,6 +176,8 @@ This makes round-trip and migration testing direct: read, write, read back, comp
 
 ## Custom attributes
 
+A custom attribute attaches extra information to a piece of metadata. The aim is to treat that information as plain data - the custom attribute class defines its *shape*, but you should not need the class loaded just to read or write the value. The ECInstance XML serialization does not fully allow this: a value cannot be converted between XML and JSON without the class, because the two forms carry the information differently (the [ECSchema XML reference](../../bis/ec/ec-schema-xml.md#relationship-to-ecjson) lists exactly how they differ). The document works around that gap rather than hiding it.
+
 A custom attribute instance is held as its class name plus a value. Because the document has no resolved CA class definition (that arrives at compile), it keeps the value in whichever **raw form** its source produced and converts only when a writer crosses the format boundary:
 
 - **JSON form** - a plain property object (`{ [name]: value }`), the canonical ECJSON shape. This is what the JSON reader produces and what you write when authoring in code.
