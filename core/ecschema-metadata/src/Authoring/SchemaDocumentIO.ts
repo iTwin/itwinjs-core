@@ -203,3 +203,51 @@ export interface SchemaWriteResult {
   text?: string;
   issues: SchemaIssueList;
 }
+
+/** Where a streaming writer pushes its output, one chunk at a time. Symmetric to {@link SchemaText}
+ * on the read side: any platform can supply one, and a chunk boundary carries no meaning (chunks
+ * simply concatenate to the whole document). The sink may return a promise, so a file or network
+ * sink can apply backpressure - a Node write stream adapts in one line
+ * (`(chunk) => { stream.write(chunk); }`, or an awaitable form honoring the stream's drain event).
+ *
+ * Streaming exists for the same reason the readers stream: EC schema files reach hundreds of
+ * megabytes, and a single materialized string would approach (ECXML) the platform's maximum string
+ * length. Writers should never build the whole document as one string.
+ * @alpha
+ */
+export type SchemaTextSink = (chunk: string) => void | Promise<void>;
+
+/** The result a streaming writer returns. Mirrors {@link SchemaWriteResult} but carries no `text`:
+ * the text went to the sink. The same `issues` caveat applies - check
+ * {@link SchemaIssueList.hasErrors} before trusting the written output, since a recoverable problem
+ * (e.g. a dropped custom attribute) means what reached the sink is incomplete.
+ * @alpha
+ */
+export interface SchemaStreamWriteResult {
+  issues: SchemaIssueList;
+}
+
+/** The contract of a writer that serializes a {@link SchemaDocument} to text in some format (ECXML,
+ * ECJSON). Every writer offers both forms:
+ *  - {@link writeDocument} materializes the whole document as one string - convenient, and the right
+ *    choice for the ordinary small schema, but it builds a single string and so is bounded by the
+ *    platform's maximum string length (on V8, ~512 MB); a sufficiently large schema makes it throw.
+ *  - {@link writeDocumentTo} streams the document to a {@link SchemaTextSink} in chunks, never holding
+ *    it as one string - the form to use for very large schemas (performance-test fixtures, the
+ *    largest production schemas) and when piping straight to a file or socket.
+ *
+ * Whether {@link writeDocumentTo} achieves bounded memory or merely avoids the single-string ceiling
+ * is format-specific and documented on each writer (the ECXML writer streams; the ECJSON writer
+ * currently materializes internally - see {@link SchemaJsonWriter}).
+ * @alpha
+ */
+export interface SchemaDocumentTextWriter {
+  /** Writes the whole document as one string. Bounded by the platform's maximum string length; use
+   * {@link writeDocumentTo} for schemas large enough to approach it. Never throws on bad input data -
+   * problems land in the result's issues. */
+  writeDocument(document: SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult;
+  /** Streams the document to `sink` in chunks instead of returning it as one string, so an arbitrarily
+   * large schema can be written without a single oversized string. Never throws on bad input data -
+   * problems land in the result's issues. */
+  writeDocumentTo(document: SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult>;
+}

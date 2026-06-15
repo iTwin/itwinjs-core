@@ -30,6 +30,51 @@ describe("SchemaJsonWriter / SchemaJsonReader", () => {
     expect(secondWrite.text).to.equal(firstWrite.text);
   });
 
+  it("streams the same bytes writeDocument materializes", async () => {
+    const document = composeFullDocument();
+    const writer = new SchemaJsonWriter();
+
+    const materialized = writer.writeDocument(document);
+    expect(materialized.issues.hasErrors, JSON.stringify(materialized.issues)).to.be.false;
+
+    const chunks: string[] = [];
+    const streamed = await writer.writeDocumentTo(document, (chunk) => { chunks.push(chunk); });
+    expect(streamed.issues.hasErrors, JSON.stringify(streamed.issues)).to.be.false;
+    // The JSON writer materializes internally (documented), so it emits the whole text as one chunk;
+    // either way, concatenating the chunks must reproduce the materialized text exactly.
+    expect(chunks.join("")).to.equal(materialized.text);
+  });
+
+  it("reads an already-parsed object without a stringify round trip", () => {
+    const original = composeFullDocument();
+    const writer = new SchemaJsonWriter();
+    const reader = new SchemaJsonReader();
+
+    // The object path mirrors the iModel getSchemaProps flow: a live object in, no text in between.
+    const tree = writer.writeDocumentTree(original);
+    expect(tree.issues.hasErrors, JSON.stringify(tree.issues)).to.be.false;
+    expect(tree.tree).to.not.be.undefined;
+
+    const readObject = reader.readObject(tree.tree!, { source: "props" });
+    expect(readObject.issues.hasErrors, JSON.stringify(readObject.issues)).to.be.false;
+    expect(readObject.document).to.not.be.undefined;
+
+    // Reading the object must yield the same document as reading the equivalent text.
+    const viaText = writer.writeDocument(readObject.document!);
+    expect(viaText.text).to.equal(writer.writeDocument(original).text);
+  });
+
+  it("reads the header from an already-parsed object", () => {
+    const original = composeFullDocument();
+    const tree = new SchemaJsonWriter().writeDocumentTree(original);
+
+    const header = new SchemaJsonReader().readHeaderObject(tree.tree!, { source: "props" });
+    expect(header.issues.hasErrors, JSON.stringify(header.issues)).to.be.false;
+    expect(header.header!.name).to.equal(original.name);
+    expect(header.header!.minorVersion).to.equal(original.minorVersion);
+    expect(header.header!.references.length).to.equal(original.references.length);
+  });
+
   it("emits the ECJSON 3.2 shape", () => {
     const json = JSON.parse(new SchemaJsonWriter().writeDocument(composeFullDocument()).text!);
 

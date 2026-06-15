@@ -30,6 +30,21 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     expect(secondWrite.text).to.equal(firstWrite.text);
   });
 
+  it("streams the same bytes writeDocument materializes", async () => {
+    const document = composeFullDocument();
+    const writer = new SchemaXmlWriter();
+
+    const materialized = writer.writeDocument(document);
+    expect(materialized.issues.hasErrors, JSON.stringify(materialized.issues)).to.be.false;
+
+    const chunks: string[] = [];
+    const streamed = await writer.writeDocumentTo(document, (chunk) => { chunks.push(chunk); });
+    expect(streamed.issues.hasErrors, JSON.stringify(streamed.issues)).to.be.false;
+    expect(chunks.length).to.be.greaterThan(0);
+    // Concatenating the streamed chunks must reproduce the materialized text exactly.
+    expect(chunks.join("")).to.equal(materialized.text);
+  });
+
   it("hydrates the document shape from XML", async () => {
     const xml = new SchemaXmlWriter().writeDocument(composeFullDocument()).text!;
     const doc = (await new SchemaXmlReader().readDocument(xml, { source: "fixture" })).document!;

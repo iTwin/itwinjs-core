@@ -11,7 +11,7 @@ import { classModifierToString, containerTypeToString, parsePrimitiveType, Schem
 import { SchemaView } from "../SchemaView";
 import { customAttributeJsonToXml } from "./CustomAttributeConverter";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
-import { ECSpec, mapFormatStringReferences, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
+import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** The ECXML namespace URI of the 3.2 spec. */
@@ -25,17 +25,39 @@ const ECXML_3_2_NAMESPACE = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
  * best-effort text; only an unsupported target spec yields no text at all.
  * @alpha
  */
-export class SchemaXmlWriter {
-  /** Writes the document to ECXML text in the requested spec version (default {@link ECSpec.Latest}). */
+export class SchemaXmlWriter implements SchemaDocumentTextWriter {
+  /** Writes the document to ECXML text in the requested spec version (default {@link ECSpec.Latest}).
+   * Builds the whole document as one string; for a schema large enough to approach the platform's
+   * maximum string length use {@link writeDocumentTo} instead. */
   public writeDocument(document: SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
     const issues = new SchemaIssueList();
+    const emitter = this._prepare(document, issues, options);
+    if (emitter === undefined)
+      return { issues };
+    return { text: emitter.emit(), issues };
+  }
+
+  /** Streams the document to `sink` as ECXML text in chunks, never materializing it as one string, so
+   * a schema of any size can be written. The whole document still passes through `sink`; concatenating
+   * the chunks yields exactly what {@link writeDocument} returns. */
+  public async writeDocumentTo(document: SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult> {
+    const issues = new SchemaIssueList();
+    const emitter = this._prepare(document, issues, options);
+    if (emitter === undefined)
+      return { issues };
+    await emitter.emitTo(sink);
+    return { issues };
+  }
+
+  /** Validates the target spec and constructs the emitter, or reports an unsupported spec and returns
+   * `undefined`. Shared by the materializing and streaming entry points. */
+  private _prepare(document: SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXml32Emitter | undefined {
     const spec = options?.spec ?? ECSpec.Latest;
     if (spec !== ECSpec.V3_2) {
       issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}" - the XML writer currently supports only 3.2.`);
-      return { issues };
+      return undefined;
     }
-    const emitter = new EcXml32Emitter(document, issues, options?.schemaView);
-    return { text: emitter.emit(), issues };
+    return new ECXml32Emitter(document, issues, options?.schemaView);
   }
 }
 
@@ -56,6 +78,10 @@ type XmlAttribute = [name: string, value: string | number | boolean | undefined]
 class XmlStringBuilder {
   private readonly _lines: string[] = [];
   private _depth = 0;
+
+  /** How many lines each {@link drainTo} chunk joins. Large enough that the per-chunk join cost is
+   * negligible, small enough that the joined chunk stays far below any string-length limit. */
+  private static readonly _linesPerChunk = 4096;
 
   public openElement(name: string, attributes: XmlAttribute[] = []): void {
     this._lines.push(`${this._indent()}<${name}${this._formatAttributes(attributes)}>`);
@@ -88,6 +114,17 @@ class XmlStringBuilder {
     return `<?xml version="1.0" encoding="UTF-8"?>\n${this._lines.join("\n")}\n`;
   }
 
+  /** Streams the accumulated XML to `sink` in line-batches rather than building one string, so the
+   * output never has to fit in a single string (the document can exceed the platform's maximum string
+   * length). Concatenating every chunk yields exactly what {@link toString} returns. The batch join
+   * stays well under any limit, so this writes arbitrarily large documents; memory is still ~one
+   * serialized copy (the line array), which is the accepted tier-1 tradeoff. */
+  public async drainTo(sink: SchemaTextSink): Promise<void> {
+    await sink(`<?xml version="1.0" encoding="UTF-8"?>\n`);
+    for (let start = 0; start < this._lines.length; start += XmlStringBuilder._linesPerChunk)
+      await sink(`${this._lines.slice(start, start + XmlStringBuilder._linesPerChunk).join("\n")}\n`);
+  }
+
   private _indent(): string {
     return "    ".repeat(this._depth);
   }
@@ -112,7 +149,7 @@ function formatVersion(read: number, write: number, minor: number): string {
 }
 
 /** Emits one document as ECXML 3.2. Created per write; holds the document and the issue list. */
-class EcXml32Emitter {
+class ECXml32Emitter {
   private readonly _document: SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _schemaView: SchemaView | undefined;
@@ -125,6 +162,19 @@ class EcXml32Emitter {
   }
 
   public emit(): string {
+    this._build();
+    return this._xml.toString();
+  }
+
+  /** Builds the document, then streams it to `sink` in chunks instead of returning one string. */
+  public async emitTo(sink: SchemaTextSink): Promise<void> {
+    this._build();
+    await this._xml.drainTo(sink);
+  }
+
+  /** Walks the document and fills the builder. Synchronous - the chunking happens at drain time, so
+   * the emit walk itself stays a plain recursive descent. */
+  private _build(): void {
     const doc = this._document;
     this._xml.openElement("ECSchema", [
       ["schemaName", doc.name],
@@ -144,7 +194,6 @@ class EcXml32Emitter {
       this._emitItem(item);
 
     this._xml.closeElement("ECSchema");
-    return this._xml.toString();
   }
 
   private _emitSchemaReference(reference: Authoring.SchemaReference): void {

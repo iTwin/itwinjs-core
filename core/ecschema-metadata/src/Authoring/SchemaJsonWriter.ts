@@ -11,7 +11,7 @@ import { classModifierToString, containerTypeToString, parsePrimitiveType, Schem
 import { SchemaView } from "../SchemaView";
 import { customAttributeXmlToJson } from "./CustomAttributeConverter";
 import { Authoring, SchemaDocument } from "./SchemaDocument";
-import { ECSpec, mapFormatStringReferences, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
+import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** The `$schema` URL of the ECJSON 3.2 spec. */
@@ -43,13 +43,27 @@ interface JsonObject {
  * best-effort text; only an unsupported target spec yields no text at all.
  * @alpha
  */
-export class SchemaJsonWriter {
+export class SchemaJsonWriter implements SchemaDocumentTextWriter {
   /** Writes the document to ECJSON text in the requested spec version (default {@link ECSpec.Latest}). */
   public writeDocument(document: SchemaDocument, options?: SchemaJsonWriteOptions): SchemaWriteResult {
     const result = this.writeDocumentTree(document, options);
     if (result.tree === undefined)
       return { issues: result.issues };
     return { text: `${JSON.stringify(result.tree, undefined, 2)}\n`, issues: result.issues };
+  }
+
+  /** Streams the document to `sink` as ECJSON text. Present for parity with the
+   * {@link SchemaDocumentTextWriter} contract and {@link SchemaXmlWriter}, but - unlike the XML writer -
+   * it does **not** yet avoid the single-string ceiling: it materializes the whole document with
+   * {@link writeDocument} and hands the one string to `sink`. The reason is the same asymmetry that
+   * shaped the read side: native `JSON.stringify` is all-or-nothing (it produces the entire string in
+   * one step, with no streaming mode), so a true streaming ECJSON writer means hand-rolling a token
+   * serializer, which is deferred. A chunk-emitting walk slots in behind this same signature with no API change. */
+  public async writeDocumentTo(document: SchemaDocument, sink: SchemaTextSink, options?: SchemaJsonWriteOptions): Promise<SchemaStreamWriteResult> {
+    const result = this.writeDocument(document, options);
+    if (result.text !== undefined)
+      await sink(result.text);
+    return { issues: result.issues };
   }
 
   /** Writes the document as a plain ECJSON object tree instead of text - for consumers that want

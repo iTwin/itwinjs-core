@@ -297,10 +297,10 @@ export class IModelTestUtils {
 
   /** Import one or more authored [[SchemaDocument]]s into an iModel.
    *
-   * IModelDb currently consumes ECXML text, so each document is serialized through [[SchemaXmlWriter]]
-   * and forwarded to [[IModelDb.importSchemaStrings]]. This method is the single contact point for the
-   * document-to-iModel path: when IModelDb gains a SchemaDocument-aware import, only this body changes,
-   * not the tests that call it.
+   * IModelDb's importSchema methods currently consume ECXML text or files.
+   * This is a helper that takes [[SchemaDocument]]s, each document is serialized through [[SchemaXmlWriter]]
+   * and forwarded to [[IModelDb.importSchemaStrings]]. If we expose a method on IModelDb that takes SchemaDocuments directly,
+   * this helper can be removed and tests can call that method instead.
    */
   public static async importSchemaDocuments(iModel: IModelDb, schemaDocuments: SchemaDocument[]): Promise<void> {
     const serializedXmlSchemas = schemaDocuments.map((schemaDocument) => {

@@ -47,20 +47,52 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
     const parsed = await parseRoot(text, issues, options?.source);
     if (parsed === undefined)
       return { issues };
-    const walker = new EcJson32Walker(issues, options?.source);
-    return { document: walker.readSchema(parsed.root, parsed.specMajor, parsed.specMinor), issues };
+    return { document: this._readDocument(parsed, issues, options?.source), issues };
+  }
+
+  /** Reads a full document from an already-parsed ECJSON object, skipping the text decode and
+   * `JSON.parse` that {@link readDocument} performs. This is the entry for a JSON source that hands
+   * over a live object rather than text - notably an iModel's `getSchemaProps`, which crosses the
+   * native boundary as a JS object (never a string). Going through {@link readDocument} would force
+   * that object back through `JSON.stringify`/`JSON.parse`, two needless full-graph passes that also
+   * reintroduce the platform string-length ceiling on the one source most likely to hold a very large
+   * schema; this avoids both. The object is read, not retained. */
+  public readObject(props: object, options?: SchemaTextReadOptions): SchemaDocumentReadResult {
+    const issues = new SchemaIssueList();
+    const parsed = validateRoot(props, issues, options?.source);
+    if (parsed === undefined)
+      return { issues };
+    return { document: this._readDocument(parsed, issues, options?.source), issues };
   }
 
   /** Reads only the schema's identity and reference list. Parses the whole input (see the class
    * note), then extracts just the header fields. */
   public async readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult> {
     const issues = new SchemaIssueList();
-    const source = options?.source;
-    const parsed = await parseRoot(text, issues, source);
+    const parsed = await parseRoot(text, issues, options?.source);
     if (parsed === undefined)
       return { issues };
-    const root = parsed.root;
+    return this._readHeader(parsed.root, issues, options?.source);
+  }
 
+  /** Reads the header from an already-parsed ECJSON object, the {@link readHeader} counterpart to
+   * {@link readObject}; see that method for why an object entry exists. */
+  public readHeaderObject(props: object, options?: SchemaTextReadOptions): SchemaHeaderReadResult {
+    const issues = new SchemaIssueList();
+    const parsed = validateRoot(props, issues, options?.source);
+    if (parsed === undefined)
+      return { issues };
+    return this._readHeader(parsed.root, issues, options?.source);
+  }
+
+  /** Hydrates the document from a validated root. Shared by the text and object entries. */
+  private _readDocument(parsed: { root: JsonObject, specMajor: number, specMinor: number }, issues: SchemaIssueList, source: string | undefined): SchemaDocument | undefined {
+    const walker = new ECJson32Walker(issues, source);
+    return walker.readSchema(parsed.root, parsed.specMajor, parsed.specMinor);
+  }
+
+  /** Extracts the header fields from a validated root. Shared by the text and object entries. */
+  private _readHeader(root: JsonObject, issues: SchemaIssueList, source: string | undefined): SchemaHeaderReadResult {
     const name = asString(root.name);
     const version = parseVersionString(asString(root.version));
     if (name === undefined || version === undefined) {
@@ -89,7 +121,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   }
 }
 
-/** Collects and parses the input into the root schema object, validating that it is an ECJSON 3.x
+/** Collects and parses text input into the root schema object, validating that it is an ECJSON 3.x
  * schema. Returns `undefined` (after reporting) when the input is unusable. */
 async function parseRoot(text: SchemaText, issues: SchemaIssueList, source: string | undefined): Promise<{ root: JsonObject, specMajor: number, specMinor: number } | undefined> {
   let collected = "";
@@ -103,6 +135,13 @@ async function parseRoot(text: SchemaText, issues: SchemaIssueList, source: stri
     issues.addError("SchemaJson-0010", `Malformed JSON: ${error instanceof Error ? error.message : String(error)}`, { source });
     return undefined;
   }
+  return validateRoot(parsed, issues, source);
+}
+
+/** Validates an already-parsed value as an ECJSON 3.x schema root: it must be a plain object with a
+ * recognized `$schema` of a supported spec. Returns `undefined` (after reporting) when it is not.
+ * Shared by {@link parseRoot} (text path) and the reader's object entries. */
+function validateRoot(parsed: unknown, issues: SchemaIssueList, source: string | undefined): { root: JsonObject, specMajor: number, specMinor: number } | undefined {
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     issues.addError("SchemaJson-0011", "The input is not a JSON object.", { source });
     return undefined;
@@ -159,7 +198,7 @@ function asArray(value: unknown): unknown[] | undefined {
 }
 
 /** Walks a parsed ECJSON object tree into a SchemaDocument. Created per read. */
-class EcJson32Walker {
+class ECJson32Walker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
   private _documentInProgress?: SchemaDocument;
