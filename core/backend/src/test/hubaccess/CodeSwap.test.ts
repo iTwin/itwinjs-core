@@ -12,20 +12,12 @@ import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { withEditTxn } from "../../EditTxn";
-import { TestUtils } from "../TestUtils";
 
 chai.use(chaiAsPromised);
 
 describe("Code value management: null, swap, undo/redo, and cross-briefcase pull", function (this: Suite) {
   this.timeout(60000);
 
-  before(async () => {
-    await TestUtils.startBackend();
-  });
-
-  after(async () => {
-    await TestUtils.shutdownBackend();
-  });
   it("swap codeValues between two elements sharing the same codeSpec and codeScope, verify undo/redo in a single transaction", async () => {
     HubMock.startup("CodeSwapTest", KnownTestLocations.outputDir);
     let b1: BriefcaseDb | undefined;
