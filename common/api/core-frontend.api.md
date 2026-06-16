@@ -5139,19 +5139,19 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
-    // @beta
-    elevationProvider?: ElevationProvider;
     formatsProvider?: FormatsProvider;
     // @beta
-    geoidProvider?: GeoidProvider;
+    geospatialProviders?: {
+        elevationProvider?: ElevationProvider;
+        geoidProvider?: GeoidProvider;
+        locationProvider?: LocationProvider;
+    };
     hubAccess?: FrontendHubAccess;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
     localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
-    // @beta
-    locationProvider?: LocationProvider;
     // @beta
     mapLayerOptions?: MapLayerOptions;
     // @internal

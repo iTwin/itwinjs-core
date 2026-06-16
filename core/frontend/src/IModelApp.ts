@@ -94,27 +94,20 @@ export interface IModelAppOptions {
    * @beta
    */
   mapLayerOptions?: MapLayerOptions;
-  /** Supplies the elevation provider for this session.
-   * Defaults to [[BingElevationProvider]] if not specified.
-   * @note If you have not yet migrated to a custom provider, continue supplying the deprecated
-   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply a custom implementation here.
+  /** Geospatial service providers for elevation, geoid, and geocoding.
+   * If not supplied, deprecated Bing-backed defaults are used for backward compatibility.
+   * @note If you have not yet migrated to custom providers, continue supplying the deprecated
+   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply custom implementations here.
    * @beta
    */
-  elevationProvider?: ElevationProvider;
-  /** Supplies the geoid provider for this session.
-   * Defaults to [[BingElevationProvider]] if not specified, which implements both [[ElevationProvider]] and [[GeoidProvider]].
-   * @note If you have not yet migrated to a custom provider, continue supplying the deprecated
-   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply a custom implementation here.
-   * @beta
-   */
-  geoidProvider?: GeoidProvider;
-  /** Supplies the location provider for this session.
-   * Defaults to [[BingLocationProvider]] if not specified.
-   * @note If you have not yet migrated to a custom provider, continue supplying the deprecated
-   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply a custom implementation here.
-   * @beta
-   */
-  locationProvider?: LocationProvider;
+  geospatialProviders?: {
+    /** Terrain height lookup. Defaults to [[BingElevationProvider]]. */
+    elevationProvider?: ElevationProvider;
+    /** Geodetic-to-sea-level offset. Defaults to [[BingElevationProvider]] (which implements both). */
+    geoidProvider?: GeoidProvider;
+    /** Geocoding (query string to location). Defaults to [[BingLocationProvider]]. */
+    locationProvider?: LocationProvider;
+  };
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
@@ -478,12 +471,13 @@ export class IModelApp {
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until it is removed in a future major version
     let defaultBingElevation: BingElevationProvider | undefined;
+    const geo = opts.geospatialProviders;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const lazyBing = () => defaultBingElevation ??= new BingElevationProvider();
-    this._elevationProvider = opts.elevationProvider ?? lazyBing();
-    this._geoidProvider = opts.geoidProvider ?? lazyBing();
+    this._elevationProvider = geo?.elevationProvider ?? lazyBing();
+    this._geoidProvider = geo?.geoidProvider ?? lazyBing();
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this._locationProvider = opts.locationProvider ?? new BingLocationProvider();
+    this._locationProvider = geo?.locationProvider ?? new BingLocationProvider();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());

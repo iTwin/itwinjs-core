@@ -19,7 +19,7 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
  * passed to [[IModelApp.startup]].
  * @public
  * @extensions
- * @deprecated in 5.11.0. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.elevationProvider]] and [[IModelAppOptions.geoidProvider]].
+ * @deprecated in 5.11.0. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.geospatialProviders]].
  * @note This class structurally satisfies both [[ElevationProvider]] and [[GeoidProvider]] but does not use an explicit
  * `implements` clause because api-extractor forbids `@public` classes from referencing `@beta` interfaces (ae-incompatible-release-tags).
  */

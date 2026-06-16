@@ -49,7 +49,7 @@ describe("IModelApp provider injection", () => {
 
   it("uses injected elevationProvider", async () => {
     const mock = { getHeight: vi.fn().mockResolvedValue(123.4) };
-    await IModelApp.startup({ localization: new EmptyLocalization(), elevationProvider: mock });
+    await IModelApp.startup({ localization: new EmptyLocalization(), geospatialProviders: { elevationProvider: mock } });
     const carto = Cartographic.fromDegrees({ longitude: -75, latitude: 40, height: 0 });
     const result = await IModelApp.elevationProvider.getHeight(carto);
     expect(result).toBe(123.4);

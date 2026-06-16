@@ -73,13 +73,15 @@ New `@beta` interfaces decouple elevation, geoid, and location services from the
 - [GeoidProvider]($frontend) — geodetic-to-sea-level offset.
 - [LocationProvider]($frontend) — geocoding (query string to location).
 
-These can be supplied via new optional fields on [IModelAppOptions]($frontend):
+These can be supplied via the new `geospatialProviders` option on [IModelAppOptions]($frontend):
 
 ```typescript
 await IModelApp.startup({
-  elevationProvider: myElevationProvider,
-  geoidProvider: myGeoidProvider,
-  locationProvider: myLocationProvider,
+  geospatialProviders: {
+    elevationProvider: myElevationProvider,
+    geoidProvider: myGeoidProvider,
+    locationProvider: myLocationProvider,
+  },
 });
 ```
 
