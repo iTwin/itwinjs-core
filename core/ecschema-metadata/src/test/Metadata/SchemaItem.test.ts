@@ -76,7 +76,7 @@ describe("SchemaItem", () => {
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
       const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
-      const testClass = testEntity.toJSON(true, true);
+      const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
       assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
@@ -102,7 +102,7 @@ describe("SchemaItem", () => {
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
       const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
-      const testClass = testEntity.toJSON();
+      const testClass = testEntity!.toJSON();
       expect(testClass).to.exist;
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
       assert.strictEqual(testClass.label, "ExampleEntity");
