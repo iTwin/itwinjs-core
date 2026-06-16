@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
 import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, IModelReadRpcInterface } from "@itwin/core-common";
-import { Range2d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { getHeightAverage, getHeightRange } from "../GeoProviders";
