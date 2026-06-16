@@ -460,8 +460,6 @@ describe("RealityTileLoader", () => {
     vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
       .mockResolvedValue({ polyfaces: [mockPolyface] });
 
-    // A plain-text `.gltf` file has no binary magic number; its content begins with `{`. It is identified as glTF by
-    // the `.gltf` content URL extension (ignoring any query string) and must be routed to the glTF reader rather than discarded.
     for (const contentUrl of ["8/130/85.gltf", "8/130/85.GLTF", "8/130/85.gltf?token=abc"]) {
       const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, contentUrl);
       const tile = tree.rootTile;
@@ -478,8 +476,6 @@ describe("RealityTileLoader", () => {
     vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
       .mockResolvedValue({ polyfaces: [PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface()] });
 
-    // JSON content whose URL is not `.gltf` (e.g. a `.json` payload) has no recognizable magic number and must not be
-    // mistaken for glTF based on its leading `{` byte.
     const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, "8/130/85.json");
     const tile = tree.rootTile;
 
@@ -498,9 +494,6 @@ describe("RealityTileLoader", () => {
         return { polyfaces: [mockPolyface] };
       });
 
-    // Tileset is served from .../tileset-root/tileset.json; the tile content is the relative path "8/130/85.gltf".
-    // An image referenced relatively by that content (e.g. "85.webp") must resolve to .../tileset-root/8/130/85.webp,
-    // so the reader's base URL must be the absolute tile content URL, not the tileset root.
     const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json", "8/130/85.gltf");
     const tile = tree.rootTile;
 
@@ -520,9 +513,6 @@ describe("RealityTileLoader", () => {
         return { polyfaces: [mockPolyface] };
       });
 
-    // The tileset URL carries query/auth state (e.g. "?sig=abc") that the data source appends to every tile request.
-    // The glTF reader re-applies its base URL's query to relatively-referenced resources, so the reader base URL must
-    // retain "?sig=abc" — otherwise external textures (e.g. "85.webp") would be fetched without auth and 404/403.
     const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf");
     const tile = tree.rootTile;
 
@@ -542,8 +532,6 @@ describe("RealityTileLoader", () => {
         return { polyfaces: [mockPolyface] };
       });
 
-    // When the tile content URL already carries its own query, the data source does not append the tileset's query, so
-    // the reader base URL must keep the content URL's query rather than replacing it with the tileset's.
     const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf?token=xyz");
     const tile = tree.rootTile;
 
@@ -556,11 +544,6 @@ describe("RealityTileLoader", () => {
 
   it("should route JSON glTF content through the render path with the correct base URL via the real content-loading entrypoint", async () => {
     let readerBaseUrl: string | undefined;
-    // The other tests call loadGeometryFromStream directly. Here we go through the real entrypoint, loadTileContent.
-    // TestRealityTileLoader does not produce geometry, so loadTileContent routes content through the render path
-    // (loadGraphicsFromStream), whose glTF reader is exercised via read(). Capturing the base URL there proves the
-    // render path detects JSON glTF and resolves the base URL (subpath + query) identically to the geometry path,
-    // guarding against the two paths drifting apart.
     vi.spyOn(GltfGraphicsReader.prototype, "read")
       .mockImplementation(async function (this: GltfGraphicsReader) {
         readerBaseUrl = (this as any)._baseUrl?.toString();
