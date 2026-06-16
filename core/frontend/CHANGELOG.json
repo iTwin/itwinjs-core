@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.10.3",
+      "tag": "@itwin/core-frontend_v5.10.3",
+      "date": "Tue, 16 Jun 2026 12:58:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.10.2",
       "tag": "@itwin/core-frontend_v5.10.2",
       "date": "Thu, 11 Jun 2026 21:09:38 GMT",
