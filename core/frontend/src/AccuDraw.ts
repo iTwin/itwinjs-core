@@ -1509,7 +1509,8 @@ export class AccuDraw {
   /** @internal */
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
-    const snapDetail = snap.primitive?.closestPoint(snap.snapPoint, false);
+    const snapCurve = snap.getCurvePrimitive(true);
+    const snapDetail = snapCurve?.closestPoint(snap.snapPoint, false);
     const frame = snapDetail?.curve?.fractionToFrenetFrame(snapDetail.fraction);
 
     if (undefined === frame && undefined === snap.normal)
