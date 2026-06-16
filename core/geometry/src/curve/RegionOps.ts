@@ -796,13 +796,13 @@ export class RegionOps {
   }
   /**
    * Look for and simplify:
-   * * Contiguous `LineSegment3d`, `LineString3d`, or `Arc3d` objects.
+   * * Contiguous [[LineSegment3d]] and [[LineString3d]] objects:
    *   * collect all points
    *   * eliminate duplicated points
    *   * eliminate points colinear with surrounding points
-   *   * contiguous concentric circular or elliptic arcs
+   * * Contiguous concentric circular or elliptic [[Arc3d]] objects:
    *   * combine angular ranges
-   * * This function can be used to compress adjacent LineSegment3ds into a LineString3d
+   * * This function can be used to compress adjacent [[LineSegment3d]]s into a [[LineString3d]].
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
    */
