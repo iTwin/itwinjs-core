@@ -483,11 +483,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean, noUpdateLoop?: boolean) {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db[_nativeDb].applyChangeset(changesetFile, fastForward);
+    db[_nativeDb].applyChangeset(changesetFile, fastForward, noUpdateLoop);
     db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -562,7 +562,7 @@ export class BriefcaseManager {
    * @throws IModelError If the briefcase is not open in read-write mode, if there are pending transactions when reversing, or if applying a changeset fails.
    * @returns A promise that resolves when all required changesets have been applied.
    */
-  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
+  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & { /** @internal */ noUpdateLoop?: boolean }): Promise<void> {
     const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
     const nativeDb = db[_nativeDb];
 
@@ -653,7 +653,7 @@ export class BriefcaseManager {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       try {
-        await this.applySingleChangeset(db, changeset, false);
+        await this.applySingleChangeset(db, changeset, false, arg.noUpdateLoop);
         Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
       } catch (err: any) {
         if (err instanceof Error) {
