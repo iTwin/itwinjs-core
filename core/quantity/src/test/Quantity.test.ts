@@ -64,7 +64,7 @@ describe("Quantity", () => {
   });
 
   it("convertValue throws on invalid unit conversion metadata", () => {
-    expect(() => UnitConversions.convertValue(10, { factor: 1, offset: 0, error: true })).toThrowError(QuantityError);
+    expect(() => UnitConversions.convertValue(10, { factor: 1, offset: 0, error: true })).toThrow(QuantityError);
 
     let error: unknown;
     try {
@@ -86,7 +86,7 @@ describe("Quantity", () => {
       factor: 1,
       offset: 0,
       inversion: UnitConversionInvert.InvertPreConversion,
-    })).toThrowError(QuantityError);
+    })).toThrow(QuantityError);
   });
 
   it("convertValue throws when post-inversion would invert a zero result", () => {
@@ -94,7 +94,7 @@ describe("Quantity", () => {
       factor: 0,
       offset: 0,
       inversion: UnitConversionInvert.InvertPostConversion,
-    })).toThrowError(QuantityError);
+    })).toThrow(QuantityError);
   });
 
   it("applyConversion preserves existing behavior when conversion.error is true", () => {
@@ -141,7 +141,7 @@ describe("Quantity", () => {
   });
 
   it("UnitConversions.isCompatible throws for unknown built-in unit names", () => {
-    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT)).toThrowError(QuantityError);
+    expect(() => UnitConversions.isCompatible("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT)).toThrow(QuantityError);
   });
 
   it("UnitConversions lookup helpers reject inherited object property names as unknown units", () => {
@@ -224,12 +224,12 @@ describe("Quantity", () => {
 
   it("UnitConversions.getConversion throws for unknown built-in unit names", () => {
     expect(() => UnitConversions.getConversion("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT))
-      .toThrowError(QuantityError);
+      .toThrow(QuantityError);
   });
 
   it("UnitConversions.convert throws for unknown built-in unit names", () => {
     expect(() => UnitConversions.convert("Units.DOES_NOT_EXIST" as UnitName, Units.LENGTH.FT, 1))
-      .toThrowError(QuantityError);
+      .toThrow(QuantityError);
   });
 
   it("UnitConversions.convert throws for invalid built-in conversions with both unit names", () => {
