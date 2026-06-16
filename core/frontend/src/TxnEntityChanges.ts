@@ -14,11 +14,20 @@ import { NotifyEntitiesChangedArgs } from "@itwin/core-common";
  * @extensions
  */
 export interface TxnEntityMetadata {
-  /** The class's name in "Schema:Class" format. */
+  /** The class's name in "Schema:Class" format, e.g. `"BisCore:PhysicalElement"`. */
   readonly classFullName: string;
 
-  /** Returns true if this class is or is derived from the specified class.
-   * @note Class names are compared case-sensitively.
+  /** Returns true if this class is or is derived from `baseClassFullName`.
+   * Use this to match an element by base class without knowing its exact class name.
+   * @note The comparison is case-insensitive.
+   * @example
+   * ```ts
+   * // true for BisCore:PhysicalElement and any subclass thereof:
+   * metadata.is("BisCore:PhysicalElement")
+   *
+   * // also true — comparison is case-insensitive:
+   * metadata.is("biscore:physicalelement")
+   * ```
    */
   is(baseClassFullName: string): boolean;
 }
@@ -38,7 +47,18 @@ export interface TxnEntityChange {
   type: TxnEntityChangeType;
   /** The Id of the affected entity. */
   id: Id64String;
-  /** A representation of the BIS class of the affected entity. */
+  /** The BIS class of the affected entity.
+   * Use [[TxnEntityMetadata.classFullName]] to get the class name in "Schema:Class" format,
+   * or [[TxnEntityMetadata.is]] to test whether it derives from a given base class.
+   * @example
+   * ```ts
+   * // Exact class match:
+   * if (change.metadata.classFullName === "MySchema:MyElement") { ... }
+   *
+   * // Match any subclass of a base class:
+   * if (change.metadata.is("BisCore:GeometricElement")) { ... }
+   * ```
+   */
   metadata: TxnEntityMetadata;
 }
 
@@ -75,9 +95,26 @@ export interface TxnEntityChangesFilterOptions {
 
 /** Describes a set of elements or models that were modified as part of a transaction in a [[BriefcaseConnection]],
  * serving as the payload for the [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]] events.
- * The [[inserted]], [[deleted]], and [[updated]] compressed Id sets can be awkward to work with.
- * It can be more convenient to iterate over the individual [[TxnEntityChange]]s, especially if you wish to [[filter]] out some
- * changes.
+ *
+ * **Prefer iterating over accessing the raw [[inserted]], [[deleted]], and [[updated]] Id sets.**
+ * Iterating this object (or using [[filter]]) yields [[TxnEntityChange]] objects that include each
+ * entity's Id, change type, and ECClass — so you can filter by class without making any additional RPC calls.
+ *
+ * @example
+ * ```ts
+ * // Iterate all changes with class info:
+ * for (const change of changes) {
+ *   console.log(change.id, change.type, change.metadata.classFullName);
+ * }
+ *
+ * // Only process inserted GeometricElements (includes subclasses):
+ * for (const change of changes.filter({
+ *   includeTypes: ["inserted"],
+ *   includeMetadata: (m) => m.is("BisCore:GeometricElement"),
+ * })) {
+ *   console.log(change.id);
+ * }
+ * ```
  * @public
  * @extensions
  */
@@ -89,7 +126,11 @@ export interface TxnEntityChanges extends TxnEntityChangeIterable {
   /** The ids of entities that were modified during the Txn, including any [Element]($backend)s for which one of their [ElementAspect]($backend)s was changed. */
   readonly updated?: CompressedId64Set;
 
-  /** Obtain an iterator over changes meeting the criteria specified by `options`. */
+  /** Returns an iterable over only the changes that satisfy `options`.
+   * This is the recommended way to react to changes for a specific class or change type,
+   * as it avoids iterating irrelevant changes and requires no RPC calls to determine class information.
+   * @see [[TxnEntityChangesFilterOptions]]
+   */
   filter(options: TxnEntityChangesFilterOptions): TxnEntityChangeIterable;
 }
 
@@ -102,7 +143,7 @@ export class Metadata implements TxnEntityMetadata {
   }
 
   public is(baseName: string): boolean {
-    return baseName === this.classFullName || this.baseClasses.some((base) => base.is(baseName));
+    return baseName.toLowerCase() === this.classFullName.toLowerCase() || this.baseClasses.some((base) => base.is(baseName));
   }
 }
 

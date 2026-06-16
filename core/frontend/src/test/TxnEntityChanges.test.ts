@@ -19,6 +19,13 @@ describe("TxnEntityMetadata", () => {
       expect(a.is("a")).toBe(true);
     });
 
+    it("is case-insensitive", () => {
+      const a = new Metadata("BisCore:PhysicalElement");
+      expect(a.is("biscore:physicalelement")).toBe(true);
+      expect(a.is("BISCORE:PHYSICALELEMENT")).toBe(true);
+      expect(a.is("BisCore:PhysicalElement")).toBe(true);
+    });
+
     it("returns true for direct base class", () => {
       const a = new Metadata("a");
       const b = new Metadata("b");

@@ -44,12 +44,30 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
+   * Iterate the `changes` argument to access each element's Id, change type, and ECClass — no additional
+   * RPC calls are required to determine class information.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   * @see [[TxnEntityChanges]] for the full iteration and filtering API.
+   * @example
+   * ```ts
+   * iModel.txns.onElementsChanged.addListener((changes) => {
+   *   // React only to inserted or updated PhysicalElements (and subclasses):
+   *   for (const change of changes.filter({
+   *     includeTypes: ["inserted", "updated"],
+   *     includeMetadata: (m) => m.is("BisCore:PhysicalElement"),
+   *   })) {
+   *     console.log(`${change.type}: ${change.id} (${change.metadata.classFullName})`);
+   *   }
+   * });
+   * ```
    */
   public readonly onElementsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed models.
+   * Iterate the `changes` argument to access each model's Id, change type, and ECClass — no additional
+   * RPC calls are required to determine class information.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
+   * @see [[TxnEntityChanges]] for the full iteration and filtering API.
    */
   public readonly onModelsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
 

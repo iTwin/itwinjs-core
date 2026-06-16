@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "TxnEntityMetadata.is now compares class names case-insensitively.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "khanaffan@users.noreply.github.com"
+}
