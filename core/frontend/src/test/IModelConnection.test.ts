@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
-import { DbResponseKind, DbResponseStatus, EmptyLocalization, IModelReadRpcInterface } from "@itwin/core-common";
+import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, IModelReadRpcInterface } from "@itwin/core-common";
+import { Range2d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { getHeightAverage, getHeightRange } from "../GeoProviders";
 import { createBlankConnection } from "./createBlankConnection";
 
 function makeEmptyDoneResponse() {
@@ -40,6 +42,87 @@ describe("IModelConnection geo-elevation getters on non-geolocated iModels", () 
     const imodel = createNonGeoLocatedConnection();
     const result = imodel.projectCenterAltitude;
     expect(result).toBe(0);
+  });
+});
+
+describe("IModelApp provider injection", () => {
+  afterAll(async () => IModelApp.shutdown());
+
+  it("uses injected elevationProvider", async () => {
+    const mock = { getHeight: vi.fn().mockResolvedValue(123.4) };
+    await IModelApp.startup({ localization: new EmptyLocalization(), elevationProvider: mock });
+    const carto = Cartographic.fromDegrees({ longitude: -75, latitude: 40, height: 0 });
+    const result = await IModelApp.elevationProvider.getHeight(carto);
+    expect(result).toBe(123.4);
+    expect(mock.getHeight).toHaveBeenCalledWith(carto);
+  });
+
+  it("uses injected geoidProvider", async () => {
+    const mock = { getGeodeticToSeaLevelOffset: vi.fn().mockResolvedValue(-32.5) };
+    IModelApp.geoidProvider = mock;
+    const carto = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
+    const result = await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
+    expect(result).toBe(-32.5);
+    expect(mock.getGeodeticToSeaLevelOffset).toHaveBeenCalledWith(carto);
+  });
+
+  it("uses injected locationProvider", async () => {
+    const center = Cartographic.fromDegrees({ longitude: -122, latitude: 47, height: 0 });
+    const mock = { getLocation: vi.fn().mockResolvedValue({ center }) };
+    IModelApp.locationProvider = mock;
+    const result = await IModelApp.locationProvider.getLocation("Seattle");
+    expect(result).toEqual({ center });
+    expect(mock.getLocation).toHaveBeenCalledWith("Seattle");
+  });
+});
+
+describe("getHeightRange and getHeightAverage utilities", () => {
+  beforeAll(async () => {
+    if (!IModelApp.initialized)
+      await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+  afterAll(async () => IModelApp.shutdown());
+
+  it("getHeightRange returns null range for non-geolocated iModel", async () => {
+    const imodel = createBlankConnection();
+    imodel.ecefLocation = undefined;
+    const mock = { getHeight: vi.fn().mockResolvedValue(0), getHeights: vi.fn().mockResolvedValue([10, 20, 30]) };
+    const result = await getHeightRange(mock, imodel);
+    expect(result.isNull).toBe(true);
+    expect(mock.getHeights).not.toHaveBeenCalled();
+  });
+
+  it("getHeightAverage returns 0 for non-geolocated iModel", async () => {
+    const imodel = createBlankConnection();
+    imodel.ecefLocation = undefined;
+    const mock = { getHeight: vi.fn().mockResolvedValue(0), getHeights: vi.fn().mockResolvedValue([10, 20, 30]) };
+    const result = await getHeightAverage(mock, imodel);
+    expect(result).toBe(0);
+    expect(mock.getHeights).not.toHaveBeenCalled();
+  });
+
+  it("getHeightRange calls provider.getHeights for geolocated iModel", async () => {
+    const imodel = createBlankConnection();
+    expect(imodel.isGeoLocated).toBe(true);
+    const mock = { getHeight: vi.fn().mockResolvedValue(0), getHeights: vi.fn().mockResolvedValue([5, 15, 25]) };
+    const result = await getHeightRange(mock, imodel);
+    expect(result.low).toBe(5);
+    expect(result.high).toBe(25);
+    expect(mock.getHeights).toHaveBeenCalled();
+  });
+
+  it("getHeightAverage computes mean from provider.getHeights", async () => {
+    const imodel = createBlankConnection();
+    const mock = { getHeight: vi.fn().mockResolvedValue(0), getHeights: vi.fn().mockResolvedValue([10, 20, 30]) };
+    const result = await getHeightAverage(mock, imodel);
+    expect(result).toBe(20);
+  });
+
+  it("getHeightRange returns null range when provider lacks getHeights", async () => {
+    const imodel = createBlankConnection();
+    const mock = { getHeight: vi.fn().mockResolvedValue(0) };
+    const result = await getHeightRange(mock, imodel);
+    expect(result.isNull).toBe(true);
   });
 });
 

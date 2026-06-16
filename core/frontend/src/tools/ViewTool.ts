@@ -3415,9 +3415,9 @@ export class ViewGlobeLocationTool extends ViewTool {
 
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
-      const bingLocationProvider = IModelApp.locationProvider;
+      const locationProvider = IModelApp.locationProvider;
       try {
-        this._globalLocation = await bingLocationProvider.getLocation(locationString);
+        this._globalLocation = await locationProvider.getLocation(locationString);
         if (this._globalLocation !== undefined) {
           const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
           if (viewport !== undefined) {

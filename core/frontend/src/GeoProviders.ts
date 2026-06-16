@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tiles
+ * @module Views
  */
 
 import { Cartographic } from "@itwin/core-common";
 import { Range1d, Range2d } from "@itwin/core-geometry";
 import { IModelConnection } from "./IModelConnection";
-import { GlobalLocation } from "./ViewGlobalLocation";
+import type { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides terrain elevation data.
  * @beta
@@ -23,8 +23,9 @@ export interface ElevationProvider {
 
   /** Return a grid of elevations within the specified range.
    * Returns undefined if elevation data is unavailable for the range.
+   * Implementations that do not support bulk grid queries may omit this method.
    */
-  getHeights(range: Range2d): Promise<number[] | undefined>;
+  getHeights?(range: Range2d): Promise<number[] | undefined>;
 }
 
 /** Provides geoid undulation — the offset between the geodetic ellipsoid (WGS84) and sea level (EGM2008).
@@ -47,6 +48,9 @@ export interface LocationProvider {
  * @beta
  */
 export async function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d> {
+  if (!iModel.isGeoLocated)
+    return Range1d.createNull();
+
   const latLongRange = Range2d.createNull();
   const range = iModel.projectExtents.clone();
 
@@ -57,7 +61,7 @@ export async function getHeightRange(provider: ElevationProvider, iModel: IModel
     latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
   }
 
-  const heights = await provider.getHeights(latLongRange);
+  const heights = await provider.getHeights?.(latLongRange);
   return heights ? Range1d.createArray(heights) : Range1d.createNull();
 }
 
@@ -65,13 +69,16 @@ export async function getHeightRange(provider: ElevationProvider, iModel: IModel
  * @beta
  */
 export async function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number> {
+  if (!iModel.isGeoLocated)
+    return 0;
+
   const latLongRange = Range2d.createNull();
   for (const corner of iModel.projectExtents.corners()) {
     const carto = iModel.spatialToCartographicFromEcef(corner);
     latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
   }
 
-  const heights = await provider.getHeights(latLongRange);
+  const heights = await provider.getHeights?.(latLongRange);
   if (!heights || !heights.length)
     return 0;
 

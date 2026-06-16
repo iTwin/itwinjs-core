@@ -31,8 +31,9 @@ export class BingElevationProvider {
   /** @public */
   constructor() {
     let bingKey = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- this deprecated class reads from the deprecated BingMaps key by design
     if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps)
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value; // eslint-disable-line @typescript-eslint/no-deprecated
 
     this._heightRangeRequestTemplate =
       "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}"
@@ -49,7 +50,7 @@ export class BingElevationProvider {
    * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If geodetic is false then the sea level height id returned using the Earth Gravitational Model 2008 (EGM2008 2.5’).
    * @public
    */
-  public async getHeight(carto: Cartographic, geodetic = true) {
+  public async getHeight(carto: Cartographic, geodetic = true): Promise<number> {
     if (undefined === carto)
       return 0.0;
 
@@ -97,8 +98,6 @@ export class BingElevationProvider {
       carto = pointOrCarto;
     } else {
       carto = iModel!.spatialToCartographicFromEcef(pointOrCarto);
-      if (carto === undefined)
-        return 0.0;
     }
 
     const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);

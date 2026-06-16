@@ -96,22 +96,22 @@ export interface IModelAppOptions {
   mapLayerOptions?: MapLayerOptions;
   /** Supplies the elevation provider for this session.
    * Defaults to [[BingElevationProvider]] if not specified.
-   * @note The default [[BingElevationProvider]] reads its API key from the deprecated [[MapLayerOptions.BingMaps]] at startup.
-   * Ensure the Bing key is available via [[IModelAppOptions.mapLayerOptions]] for the default provider to work.
+   * @note If you have not yet migrated to a custom provider, continue supplying the deprecated
+   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply a custom implementation here.
    * @beta
    */
   elevationProvider?: ElevationProvider;
   /** Supplies the geoid provider for this session.
    * Defaults to [[BingElevationProvider]] if not specified, which implements both [[ElevationProvider]] and [[GeoidProvider]].
-   * @note The default [[BingElevationProvider]] reads its API key from the deprecated [[MapLayerOptions.BingMaps]] at startup.
-   * Ensure the Bing key is available via [[IModelAppOptions.mapLayerOptions]] for the default provider to work.
+   * @note If you have not yet migrated to a custom provider, continue supplying the deprecated
+   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply a custom implementation here.
    * @beta
    */
   geoidProvider?: GeoidProvider;
   /** Supplies the location provider for this session.
    * Defaults to [[BingLocationProvider]] if not specified.
-   * @note The default [[BingLocationProvider]] reads its API key from the deprecated [[MapLayerOptions.BingMaps]] at startup.
-   * Ensure the Bing key is available via [[IModelAppOptions.mapLayerOptions]] for the default provider to work.
+   * @note If you have not yet migrated to a custom provider, continue supplying the deprecated
+   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply a custom implementation here.
    * @beta
    */
   locationProvider?: LocationProvider;
@@ -236,9 +236,9 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _terrainProviderRegistry: TerrainProviderRegistry;
-  private static _elevationProvider: ElevationProvider;
-  private static _geoidProvider: GeoidProvider;
-  private static _locationProvider: LocationProvider;
+  private static _elevationProvider: ElevationProvider | undefined;
+  private static _geoidProvider: GeoidProvider | undefined;
+  private static _locationProvider: LocationProvider | undefined;
   private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
@@ -268,15 +268,18 @@ export class IModelApp {
   /** The [[ElevationProvider]] for this session.
    * @beta
    */
-  public static get elevationProvider(): ElevationProvider { return this._elevationProvider; }
+  public static get elevationProvider(): ElevationProvider { return expectDefined(this._elevationProvider); }
+  public static set elevationProvider(provider: ElevationProvider) { this._elevationProvider = provider; }
   /** The [[GeoidProvider]] for this session.
    * @beta
    */
-  public static get geoidProvider(): GeoidProvider { return this._geoidProvider; }
+  public static get geoidProvider(): GeoidProvider { return expectDefined(this._geoidProvider); }
+  public static set geoidProvider(provider: GeoidProvider) { this._geoidProvider = provider; }
   /** The [[LocationProvider]] for this session.
    * @beta
    */
-  public static get locationProvider(): LocationProvider { return this._locationProvider; }
+  public static get locationProvider(): LocationProvider { return expectDefined(this._locationProvider); }
+  public static set locationProvider(provider: LocationProvider) { this._locationProvider = provider; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
    * @beta
    */
@@ -474,9 +477,11 @@ export class IModelApp {
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until it is removed in a future major version
-    const defaultBingElevation = new BingElevationProvider();
-    this._elevationProvider = opts.elevationProvider ?? defaultBingElevation;
-    this._geoidProvider = opts.geoidProvider ?? defaultBingElevation;
+    let defaultBingElevation: BingElevationProvider | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const lazyBing = () => defaultBingElevation ??= new BingElevationProvider();
+    this._elevationProvider = opts.elevationProvider ?? lazyBing();
+    this._geoidProvider = opts.geoidProvider ?? lazyBing();
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._locationProvider = opts.locationProvider ?? new BingLocationProvider();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
@@ -523,6 +528,9 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this.tools.shutdown();
     this._renderSystem = dispose(this._renderSystem);
+    this._elevationProvider = undefined;
+    this._geoidProvider = undefined;
+    this._locationProvider = undefined;
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;

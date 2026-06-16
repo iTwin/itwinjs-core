@@ -24,8 +24,9 @@ export class BingLocationProvider {
 
   constructor() {
     let bingKey = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- this deprecated class reads from the deprecated BingMaps key by design
     if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value; // eslint-disable-line @typescript-eslint/no-deprecated
     }
     this._locationRequestTemplate = `https://dev.virtualearth.net/REST/v1/Locations?query={query}&key=${bingKey}`;
   }

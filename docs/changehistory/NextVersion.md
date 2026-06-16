@@ -101,8 +101,10 @@ const provider = new BingElevationProvider();
 const height = await provider.getHeightValue(point, iModel);
 
 // After
-const carto = iModel.spatialToCartographicFromEcef(point);
-const height = await IModelApp.elevationProvider.getHeight(carto);
+if (iModel.isGeoLocated) {
+  const carto = iModel.spatialToCartographicFromEcef(point);
+  const height = await IModelApp.elevationProvider.getHeight(carto);
+}
 ```
 
 ## @itwin/map-layers-formats

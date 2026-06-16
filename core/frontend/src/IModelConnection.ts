@@ -583,7 +583,7 @@ export abstract class IModelConnection extends IModel {
   private _projectCenterAltitude?: number | Promise<number>;
 
   /** Event called immediately after map elevation request is completed. This occurs only in the case where background map terrain is displayed
-   * with either geoid or ground offset. These require a query to BingElevation and therefore synching the view may be required
+   * with either geoid or ground offset. These require a query to the elevation/geoid provider and therefore synching the view may be required
    * when the request is completed.
    * @internal
    */

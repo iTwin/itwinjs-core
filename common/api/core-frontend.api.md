@@ -1700,7 +1700,7 @@ export class BingElevationProvider {
     getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
     // @internal @deprecated (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
     // @deprecated
     getHeightAverage(iModel: IModelConnection): Promise<number>;
     // @deprecated
@@ -3184,7 +3184,7 @@ export class ElementState extends EntityState implements ElementProps {
 // @beta
 export interface ElevationProvider {
     getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
-    getHeights(range: Range2d): Promise<number[] | undefined>;
+    getHeights?(range: Range2d): Promise<number[] | undefined>;
 }
 
 // @public
@@ -5048,6 +5048,7 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @beta
     static get elevationProvider(): ElevationProvider;
+    static set elevationProvider(provider: ElevationProvider);
     // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
@@ -5057,6 +5058,7 @@ export class IModelApp {
     static set formatsProvider(provider: FormatsProvider);
     // @beta
     static get geoidProvider(): GeoidProvider;
+    static set geoidProvider(provider: GeoidProvider);
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -5070,6 +5072,7 @@ export class IModelApp {
     static get locateManager(): ElementLocateManager;
     // @beta
     static get locationProvider(): LocationProvider;
+    static set locationProvider(provider: LocationProvider);
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
