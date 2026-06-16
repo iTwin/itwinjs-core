@@ -554,13 +554,17 @@ export namespace BlobContainer {
         label: string;
     }
     export interface MetadataResponse extends Metadata {
-        // (undocumented)
+        accountITwinId?: GuidString;
         containerId: string;
+        iTwinId?: GuidString;
     }
     export type Provider = "azure" | "google";
     export interface QueryContainerProps {
         containerType?: GuidString;
         iModelId?: GuidString;
+        includeParentITwins?: boolean | {
+            filter: "accountOnly";
+        };
         iTwinId: GuidString;
         label?: GuidString;
     }
@@ -716,7 +720,9 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
     // @internal
-    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
+    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & {
+        noUpdateLoop?: boolean;
+    }): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
     static queryChangeset(arg: {
@@ -6430,10 +6436,6 @@ export interface SettingsContainer {
 export namespace SettingsContainers {
     export function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined>;
     export function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps[] | undefined>;
-    export interface QueryArgs {
-        iTwinId: GuidString;
-        label?: string;
-    }
 }
 
 // @internal
