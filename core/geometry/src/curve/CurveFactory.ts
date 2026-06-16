@@ -133,7 +133,7 @@ export interface CreateFilletsInLineStringOptions {
    */
   filletClosure?: boolean;
   /**
-   * Maximum distance between input endpoints for the line string to be considered closed. Default value is
+   * Maximum distance between first and last input points for the line string to be considered closed. Default value is
    * [[Geometry.smallMetricDistance]].
    * * This distance is used when `filletClosure` is `true` to detect whether the last point is redundant and thus to
    * be ignored during processing.
@@ -141,7 +141,7 @@ export interface CreateFilletsInLineStringOptions {
   closureTolerance?: number;
   /**
    * Maximum allowable length of a cusp when `allowCusp` is `true`. Default value is [[Geometry.smallMetricDistance]].
-   * * A cusp's length is determined by the length of its "cusp segment", regardless of whether the cusp segment
+   * * A cusp's length is defined to be the length of its "cusp segment", regardless of whether the cusp segment
    * appears in the output `Path` (cf. option `cuspSegments`).
    * * A cusp whose length exceeds `cuspTolerance` is avoided by suppressing one or both of the cusp's constituent
    * fillets. Where two fillets combine to form such a cusp, but either fillet by itself produces a cusp shorter than
@@ -151,10 +151,10 @@ export interface CreateFilletsInLineStringOptions {
   cuspTolerance?: number;
   /**
    *  Whether to output a `LineSegment3d` for each cusp segment. Default value is `true`.
-   * * A _cusp segment_ bridges the gap formed by a cusp (cf. option `allowCusp` for how cusps form); it has direction
-   * opposite that of the line string edge consumed by the fillet(s) that generate the cusp.
-   * * When this option is `true`, the output `Path` is contiguous; otherwise it has a gap at each cusp, and downstream
-   * processing may not tolerate these gaps if they are too large.
+   * * The _cusp segment_ of a cusp is the retrograde line segment that bridges the gap formed by the cusp along its
+   * consumed line string edge, possibly extended.
+   * * When `allowCusp` and `cuspSegments` are `true`, the output `Path` is guaranteed to be continuous; otherwise, the
+   * output `Path` has a gap at each cusp, and downstream processing may not tolerate these gaps if they are too large.
    * * Compare this option to `allowCusp`, which controls the presence of the cusps themselves.
    */
   cuspSegments?: boolean;
