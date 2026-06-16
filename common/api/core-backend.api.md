@@ -720,7 +720,9 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
     // @internal
-    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
+    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & {
+        noUpdateLoop?: boolean;
+    }): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
     static queryChangeset(arg: {
