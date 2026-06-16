@@ -558,6 +558,47 @@ describe("RealityTileLoader", () => {
     expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?sig=abc");
   });
 
+  it("should resolve binary glTF (.glb) external image URLs against the tile content URL, preserving the tileset query", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.glb");
+    const tile = tree.rootTile;
+
+    const glbStreamBuffer = ByteStream.fromUint8Array(createMinimalGlb());
+    const result = await reader.loadGeometryFromStream(tile, glbStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.glb?sig=abc");
+  });
+
+  it("should leave the glTF reader base URL undefined for sources with no tree base URL (e.g. ContextShare/SAS), without failing the load", async () => {
+    let readerBaseUrl: string | undefined;
+    let readerCalled = false;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerCalled = true;
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(readerCalled).to.be.true;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.be.undefined;
+  });
+
   it("should return empty content for unsupported tile format", async () => {
     const buffer = new Uint8Array(16);
     const view = new DataView(buffer.buffer);
