@@ -8,7 +8,7 @@
 
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
-import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
+import { BatchType, CompositeTileHeader, isKnownTileFormat, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { RenderSystem } from "../../render/RenderSystem";
@@ -78,8 +78,64 @@ export abstract class RealityTileLoader {
 
   }
 
+  /** Reality tile content is identified by the first 4 bytes of the stream. Binary formats (b3dm, glb, pnts, etc.) use a
+   * recognizable magic number, but a tileset may also reference glTF content as a plain-text JSON `.gltf` file, which
+   * begins with a `{` character instead of a magic number and therefore matches no known format.
+   * JSON content is identified the same way the rest of the reality tile pipeline identifies content types: by the
+   * content URL's extension (see `expandSubTree` in RealityModelTileTree.ts, which uses `RealityDataSource.getTileContentType`
+   * to peel off external `tileset.json` content during tree construction), rather than by sniffing the bytes.
+   * A `.gltf` content URL is normalized to [[TileFormat.Gltf]] so it is routed to the glTF reader, which accepts both
+   * binary and JSON glTF. (External `tileset.json` content is resolved by `expandSubTree` before it reaches this point.)
+   */
+  private _normalizeFormat(format: number, tile: RealityTile): number {
+    if (isKnownTileFormat(format))
+      return format;
+
+    if (this._hasGltfExtension(tile.contentUrl))
+      return TileFormat.Gltf;
+
+    return format;
+  }
+
+  /** Returns whether the given content URL identifies a JSON glTF (`.gltf`) resource, ignoring any query string or
+   * fragment (e.g. `8/130/85.gltf?token=abc`).
+   */
+  private _hasGltfExtension(contentUrl: string | undefined): boolean {
+    if (undefined === contentUrl)
+      return false;
+
+    const path = contentUrl.split(/[?#]/, 1)[0];
+    return path.toLowerCase().endsWith(".gltf");
+  }
+
+  /** The base URL the glTF reader should resolve relatively-referenced resources (e.g. external images) against.
+   * Prefer the tile's own content URL so that images referenced relative to the content (typical of JSON `.gltf` tiles)
+   * resolve correctly, rather than against the tileset root. The tileset's query/authentication parameters (e.g.
+   * `?sig=abc`) are preserved on the returned URL: the data source appends them to every tile request, and the glTF
+   * reader re-applies the base URL's query string to each relatively-referenced resource (see `GltfReader.resolveUrl`),
+   * so external resources must be fetched with the same parameters.
+   */
+  private _getReaderBaseUrl(tile: RealityTile): string | undefined {
+    const treeBaseUrl = tile.tree.baseUrl;
+    if (undefined !== tile.contentUrl) {
+      if (undefined === treeBaseUrl)
+        return tile.contentUrl;
+
+      try {
+        const resolved = new URL(tile.contentUrl, treeBaseUrl);
+        if ("" === resolved.search)
+          resolved.search = new URL(treeBaseUrl).search;
+        return resolved.toString();
+      } catch {
+        // treeBaseUrl is not a valid absolute base against which to resolve contentUrl; fall back to the tree base URL.
+      }
+    }
+
+    return treeBaseUrl;
+  }
+
   public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
-    const format = this._getFormat(streamBuffer);
+    const format = this._normalizeFormat(this._getFormat(streamBuffer), tile);
     if (format !== TileFormat.B3dm && format !== TileFormat.Gltf) {
       return {};
     }
@@ -95,7 +151,7 @@ export abstract class RealityTileLoader {
 
     switch (format) {
       case TileFormat.Gltf:
-        const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, tile.tree.baseUrl);
+        const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, this._getReaderBaseUrl(tile));
 
         if (props) {
           reader = new GltfGraphicsReader(props, {
@@ -137,7 +193,7 @@ export abstract class RealityTileLoader {
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
-    const format = this._getFormat(streamBuffer);
+    const format = this._normalizeFormat(this._getFormat(streamBuffer), tile);
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 
@@ -200,8 +256,7 @@ export abstract class RealityTileLoader {
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices, tileData);
         break;
       case TileFormat.Gltf:
-        const tree = tile.tree;
-        const baseUrl = tree.baseUrl;
+        const baseUrl = this._getReaderBaseUrl(tile);
         const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, baseUrl);
         if (props) {
           reader = new GltfGraphicsReader(props, {
