@@ -28,7 +28,7 @@ Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is us
 
 **Iterating** the changes object yields [TxnEntityChange]($frontend) objects that include each element's `id`, `type` (`"inserted"` | `"deleted"` | `"updated"`), and ECClass via `metadata`. This means you can filter by class **without making any additional RPC calls** — the class information is already embedded in the notification.
 
-#### ❌ Anti-pattern — fetching props just to check the class
+#### Anti-pattern — fetching props just to check the class
 
 ```ts
 iModel.txns.onElementsChanged.addListener(async (changes) => {
@@ -42,7 +42,7 @@ iModel.txns.onElementsChanged.addListener(async (changes) => {
 });
 ```
 
-#### ✅ Correct approach — use the iteration API
+#### Correct approach — use the iteration API
 
 ```ts
 iModel.txns.onElementsChanged.addListener((changes) => {
@@ -55,7 +55,7 @@ iModel.txns.onElementsChanged.addListener((changes) => {
 });
 ```
 
-#### ✅ Filter by base class (includes all subclasses)
+#### Filter by base class (includes all subclasses)
 
 Use [TxnEntityChanges.filter]($frontend) with `includeMetadata` and [TxnEntityMetadata.is]($frontend) to efficiently restrict iteration to a class hierarchy. The comparison is **case-insensitive**:
 
