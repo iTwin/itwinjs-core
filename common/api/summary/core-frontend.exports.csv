@@ -70,7 +70,9 @@ public;interface;BeTouchEventProps
 public;class;BeWheelEvent
 public;interface;BeWheelEventProps
 public;class;BingElevationProvider
+deprecated;class;BingElevationProvider
 public;class;BingLocationProvider
+deprecated;class;BingLocationProvider
 public;class;BlankConnection
 public;interface;BlankConnectionProps
 public;class;BriefcaseConnection
@@ -167,6 +169,7 @@ public;class;ElementLocateManager
 public;class;ElementPicker
 public;class;ElementSetTool
 public;class;ElementState
+beta;interface;ElevationProvider
 public;class;EllipsoidTerrainProvider
 public;class;EmphasizeElements
 beta;class;EngineeringLengthDescription
@@ -221,6 +224,7 @@ beta;interface;GenericAbortSignal
 public;class;GeoConverter
 internal;interface;GeoConverterOptions
 beta;class;GeographicTilingScheme
+beta;interface;GeoidProvider
 public;class;GeometricModel2dState
 public;class;GeometricModel3dState
 public;class;GeometricModelState
@@ -234,6 +238,8 @@ public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getFrustumPlaneIntersectionDepthRange
 beta;function;getGoogle3dTilesUrl
+beta;function;getHeightAverage
+beta;function;getHeightRange
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -359,6 +365,7 @@ public;enum;LocateAction
 public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
+beta;interface;LocationProvider
 internal;enum;LockedStates
 alpha;interface;LockService
 alpha;type;LockServiceFactory

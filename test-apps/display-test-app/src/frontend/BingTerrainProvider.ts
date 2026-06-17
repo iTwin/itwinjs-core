@@ -27,6 +27,7 @@ const sizeM1 = size - 1;
  */
 export class BingTerrainMeshProvider extends TerrainMeshProvider {
   /** Provides elevation data. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: example consumer of the deprecated Bing provider
   private readonly _provider: BingElevationProvider;
   /** Scale factor applied to elevations, from `TerrainSettings.exaggeration`. */
   private readonly _exaggeration: number;
@@ -38,6 +39,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
   public constructor(options: TerrainMeshProviderOptions) {
     super();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: example consumer of the deprecated Bing provider
     this._provider = new BingElevationProvider();
     this._exaggeration = options.exaggeration;
     this._wantNormals = options.wantNormals;

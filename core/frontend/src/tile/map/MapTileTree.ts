@@ -23,7 +23,7 @@ import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
+  createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
   ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -669,17 +669,24 @@ class MapTreeSupplier implements TileTreeSupplier {
     return cmp;
   }
 
-  private async computeHeightBias(heightOrigin: number, heightOriginMode: TerrainHeightOriginMode, exaggeration: number, iModel: IModelConnection, elevationProvider: BingElevationProvider): Promise<number> {
+  private async computeHeightBias(heightOrigin: number, heightOriginMode: TerrainHeightOriginMode, exaggeration: number, iModel: IModelConnection): Promise<number> {
     const projectCenter = iModel.projectExtents.center;
     switch (heightOriginMode) {
-      case TerrainHeightOriginMode.Ground:
-        return heightOrigin + exaggeration * (await elevationProvider.getHeightValue(projectCenter, iModel, true));
-
+      case TerrainHeightOriginMode.Ground: {
+        // Non-geolocated iModels skip elevation lookup — matches previous BingElevationProvider fallback behavior.
+        if (!iModel.isGeoLocated) return heightOrigin;
+        const carto = iModel.spatialToCartographicFromEcef(projectCenter);
+        return heightOrigin + exaggeration * (await IModelApp.elevationProvider.getHeight(carto));
+      }
       case TerrainHeightOriginMode.Geodetic:
         return heightOrigin;
 
-      case TerrainHeightOriginMode.Geoid:
-        return heightOrigin + await elevationProvider.getGeodeticToSeaLevelOffset(projectCenter, iModel);
+      case TerrainHeightOriginMode.Geoid: {
+        // Non-geolocated iModels skip geoid lookup — matches previous BingElevationProvider fallback behavior.
+        if (!iModel.isGeoLocated) return heightOrigin;
+        const carto = iModel.spatialToCartographicFromEcef(projectCenter);
+        return heightOrigin + await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
+      }
     }
   }
 
@@ -699,10 +706,10 @@ class MapTreeSupplier implements TileTreeSupplier {
 
     if (id.applyTerrain) {
       await ApproximateTerrainHeights.instance.initialize();
-      const elevationProvider = new BingElevationProvider();
 
-      bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
-      geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
+      bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel);
+      const carto = iModel.isGeoLocated ? iModel.spatialToCartographicFromEcef(iModel.projectExtents.center) : undefined;
+      geodeticOffset = carto ? await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto) : 0;
       const provider = IModelApp.terrainProviderRegistry.find(id.terrainProviderName);
       if (provider)
         terrainProvider = await provider.createTerrainMeshProvider(terrainOpts);
