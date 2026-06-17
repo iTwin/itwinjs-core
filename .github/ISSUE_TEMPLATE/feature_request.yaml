@@ -1,0 +1,44 @@
+name: Request a feature
+description: New ideas & improvements to iTwin.js are always welcome.
+labels: ["needs triage", "type - enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make iTwin.js better!
+
+        When suggesting an idea, give examples of the intended use case. Features that benefit the wider community are more likely to be prioritized.
+  - type: textarea
+    id: new-feature
+    attributes:
+      label: Feature
+      description: A clear and concise description of the feature you'd like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+    validations:
+      required: false
+  - type: checkboxes
+    id: ai-acknowledgment
+    attributes:
+      label: AI acknowledgment
+      options:
+        - label: I used AI to generate this feature request.
+          required: false
+        - label: (If the above is checked) I have reviewed the AI-generated content before submitting.
+          required: false
+  - type: markdown
+    attributes:
+      value: |
+        The best way to get your ideas into iTwin.js is to help us! We love contributions and are always happy to provide feedback and advice. Check out the contributor guide to get started: [CONTRIBUTING.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md)
