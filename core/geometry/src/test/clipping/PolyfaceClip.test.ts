@@ -1546,6 +1546,7 @@ describe("PolyfaceClip", () => {
   });
 });
 
+// This suite measures the performance of curve segmentation via DTM facet clippers
 describe("PolyfaceClipPerformance", () => {
   /** Return a rectangle to visualize a clip plane. */
   function getClipPlaneForVisualization(clipPlane: ClipPlane): IndexedPolyface {
@@ -1571,7 +1572,7 @@ describe("PolyfaceClipPerformance", () => {
     numEarlyOuts: number;
   }
 
-  /** Compute xy-intersections between the curve and the facets, and convert to elevation section coordinates. */
+  /** Compute xy-intersections between the curve and the facets, and convert to elevation section (profile) coordinates. */
   function segmentCurveByFacetsForElevationSection(visitor: PolyfaceVisitor, curve: CurvePrimitive): SegmentResults {
     const primitiveRange = curve.range();
     const facetRange = Range3d.createNull();
@@ -1582,32 +1583,38 @@ describe("PolyfaceClipPerformance", () => {
     const segments: LineSegment3d[] = [];
     let numEarlyOuts = 0;
 
+    // generate a profile segment from the clip segment
     const announcer: AnnounceNumberNumberCurvePrimitive = (a0, a1, cp) => {
       const distanceAlong0 = cp.curveLengthBetweenFractions(0, a0);
       const distanceAlong1 = cp.curveLengthBetweenFractions(0, a1);
       const intersectionPoints = [cp.fractionToPoint(a0), cp.fractionToPoint(a1)];
-      PolygonOps.centroidAreaNormal(visitor.point, facetNormal);
-      if (facetNormal.getDirectionRef().normalizeInPlace()) {
-        const scale = 1.0 / unitZ.dotProduct(facetNormal.getDirectionRef());
-        const altitude0 = facetNormal.pointToFraction(intersectionPoints[0]);
-        const altitude1 = facetNormal.pointToFraction(intersectionPoints[1]);
-        intersectionPoints[0].z -= altitude0 * scale;
-        intersectionPoints[1].z -= altitude1 * scale;
+      if (undefined !== PolygonOps.centroidAreaNormal(visitor.point, facetNormal)) {
+        const scale = Geometry.safeDivideFraction(1.0, unitZ.dotProduct(facetNormal.getDirectionRef()), 0);
+        if (scale === 0) {
+          // for a vertical facet, arbitrarily assign facet z-extents from the facet range computed by the caller
+          intersectionPoints[0].z = facetRange.low.z;
+          intersectionPoints[1].z = facetRange.high.z;
+        } else {
+          const altitude0 = facetNormal.pointToFraction(intersectionPoints[0]);
+          const altitude1 = facetNormal.pointToFraction(intersectionPoints[1]);
+          intersectionPoints[0].z -= altitude0 * scale;
+          intersectionPoints[1].z -= altitude1 * scale;
+        }
+        // each 2D profile segment is the vertical projection of the curve clip points onto the facet, in these coords:
+        //    x = distance along the curve at the clip point
+        //    y = z-coordinate of the vertical projection of the clip point onto the facet
+        segments.push(LineSegment3d.createXYXY(distanceAlong0, intersectionPoints[0].z, distanceAlong1, intersectionPoints[1].z));
       }
-      // each segment is the z-projection of the curve segment points onto the DTM facet, in elevation section 2D coords:
-      //    x = distance along the curve at the point
-      //    y = z-coordinate of the vertical projection of the point onto the facet
-      segments.push(LineSegment3d.createXYXY(distanceAlong0, intersectionPoints[0].z, distanceAlong1, intersectionPoints[1].z));
     };
 
     while (visitor.moveToNextFacet()) {
+      if (visitor.pointCount < 3)
+        continue; // facet is degenerate
       visitor.range(facetRange);
       if (!facetRange.intersectsRangeXY(primitiveRange)) {
         numEarlyOuts++;
         continue; // when ranges don't intersect, we know the curve doesn't intersect either
       }
-      if (visitor.pointCount < 3)
-        continue; // facet is degenerate
       visitor.point.getPoint3dAtUncheckedPointIndex(0, facetPoints[0]);
       visitor.point.getPoint3dAtUncheckedPointIndex(1, facetPoints[1]);
       visitor.point.getPoint3dAtUncheckedPointIndex(2, facetPoints[2]);
@@ -1623,7 +1630,7 @@ describe("PolyfaceClipPerformance", () => {
     if (!GeometryCoreTestIO.enableLongTests)
       return;
 
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const polyfaceBuilder = PolyfaceBuilder.create();
     polyfaceBuilder.addTriangleFacet([Point3d.create(0, 0, 14), Point3d.create(1, 0, 13), Point3d.create(0, 1, 13)]);
     const polyface = polyfaceBuilder.claimPolyface(false);
