@@ -267,7 +267,7 @@ export class CurveFactory {
       fillet0.fraction12 + fillet1.fraction10 > 1;
     const cuspSegmentLength = (checkedEdgeIndex: number, fillet0: ArcBlendData, fillet1: ArcBlendData): number =>
       points.distanceUncheckedIndexIndex(checkedEdgeIndex, points.cyclicIndex(checkedEdgeIndex + 1)) * (fillet0.fraction12 + fillet1.fraction10 - 1);
-    const filletConsumesEdge = (fillet: ArcBlendData, filletIndex: 0 | 1): boolean =>
+    const filletOvershootsEdge = (fillet: ArcBlendData, filletIndex: 0 | 1): boolean =>
       filletIndex === 0 ? fillet.fraction12 > 1 : fillet.fraction10 > 1;
     const cuspNeedsRemoval = (checkedEdgeIndex: number, fillet0: ArcBlendData, fillet1: ArcBlendData): boolean =>
       edgeHasCusp(fillet0, fillet1) && (!allowCusp || cuspSegmentLength(checkedEdgeIndex, fillet0, fillet1) > cuspTolerance);
@@ -276,22 +276,21 @@ export class CurveFactory {
       const fillet0 = blendArray[iEdge];
       const fillet1 = blendArray[Geometry.modulo(iEdge + 1, n)];
       if (cuspNeedsRemoval(iEdge, fillet0, fillet1)) {
-        const fillet0ConsumesEdge = filletConsumesEdge(fillet0, 0);
-        const fillet1ConsumesEdge = filletConsumesEdge(fillet1, 1);
+        const fillet0OvershootsEdge = filletOvershootsEdge(fillet0, 0);
+        const fillet1OvershootsEdge = filletOvershootsEdge(fillet1, 1);
         // prefer to remove just one fillet
-        if (fillet0ConsumesEdge && !fillet1ConsumesEdge) {
+        if (fillet0OvershootsEdge && !fillet1OvershootsEdge) {
           removeFillet(fillet0);
-        } else if (!fillet0ConsumesEdge && fillet1ConsumesEdge) {
+        } else if (!fillet0OvershootsEdge && fillet1OvershootsEdge) {
           removeFillet(fillet1);
-        } else if (!fillet0ConsumesEdge && !fillet1ConsumesEdge) {
+        } else if (!fillet0OvershootsEdge && !fillet1OvershootsEdge) {
           removeFillet(fillet1); // fillets intersect (arbitrary choice)
         } else if (fillet1.fraction10 < fillet0.fraction12) {
           removeFillet(fillet0); // fillet1 yields smaller cusp segment
         } else {
           removeFillet(fillet1); // fillet0 yields smaller cusp segment, or they are equal (arbitrary choice)
         }
-        // removeFillet changes the inputs to cuspNeedsRemoval; we tried to remove just one fillet, but if the
-        // remaining fillet still causes a disallowable cusp, we have no choice but to remove the other fillet.
+        // re-evaluate the edge after removal of a fillet; if a disallowed cusp persists, remove the other fillet
         if (cuspNeedsRemoval(iEdge, fillet0, fillet1)) {
           removeFillet(fillet0);
           removeFillet(fillet1);
