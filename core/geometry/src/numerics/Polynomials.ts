@@ -1041,7 +1041,7 @@ export class AnalyticRoots {
     if (delta2 <= 0.0) {
       solutionType = (alpha === 0) ? -2 : -1;
     } else {
-      const lambda = - alpha / delta2;
+      const lambda = -alpha / delta2;
       const a2 = alpha2 / delta2;
       const D2 = 1.0 - a2;
       if (D2 < -twoTol) {

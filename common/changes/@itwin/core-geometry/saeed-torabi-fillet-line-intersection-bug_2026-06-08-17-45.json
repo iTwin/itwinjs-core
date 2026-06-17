@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Fixed arc-line tangency intersection issue",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

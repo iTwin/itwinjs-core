@@ -55,7 +55,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
-import { EditTxn } from "./EditTxn";
+import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -446,6 +446,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
+  private _schemasPromise?: Promise<SchemaView>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1061,6 +1062,7 @@ export abstract class IModelDb extends IModel {
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
@@ -1082,6 +1084,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
@@ -1152,6 +1155,11 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
+      if (this._schemasPromise) {
+        const old = this._schemasPromise;
+        this._schemasPromise = undefined;
+        old.then((view) => view.markOutdated()).catch(() => {});
+      }
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1165,7 +1173,7 @@ export abstract class IModelDb extends IModel {
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
    * ```
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this[_implicitTxn].updateProjectExtents(newExtents);
@@ -1191,14 +1199,14 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public updateEcefLocation(ecef: EcefLocation) {
     this[_implicitTxn].updateEcefLocation(ecef);
   }
 
   /** Update the IModelProps of this iModel in the database.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.updateIModelProps instead, within an explicit EditTxn scope (or via withEditTxn).
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateIModelProps instead, within an explicit EditTxn scope (or via withEditTxn).
    */
   public updateIModelProps(): void {
     this[_implicitTxn].updateIModelProps();
@@ -1210,7 +1218,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(description?: string): void;
 
@@ -1221,7 +1229,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(args: SaveChangesArgs): void;
 
@@ -1230,7 +1238,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.abandonChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.abandonChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
   */
   public abandonChanges(): void {
     this[_implicitTxn].abandonChanges();
@@ -1656,7 +1664,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1664,7 +1672,8 @@ export abstract class IModelDb extends IModel {
    * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1697,7 +1706,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
+   * Gets the context that allows accessing the metadata (`@itwin/ecschema-metadata` package) of this iModel.
+   *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need schema authoring
+   * (via `@itwin/ecschema-editing`), custom-attribute deserialization, or the full ecschema-metadata object graph.
    * @public @preview
    */
   public get schemaContext(): SchemaContext {
@@ -1711,6 +1724,57 @@ export abstract class IModelDb extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
+   * concurrent callers share a single in-flight build.
+   *
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
+   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   * @beta
+   */
+  public async getSchemaView(): Promise<SchemaView> {
+    if (this._schemasPromise) {
+      const ctx = await this._schemasPromise;
+      if (!ctx.isOutdated)
+        return ctx;
+    }
+    // Capture the in-flight promise locally so the rejection handler only clears
+    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
+    // re-fetch could otherwise replace the field before our hydrate fails, and a naive
+    // `_schemasPromise = undefined` would clobber that newer reference.
+    const inflight = this._hydrateSchemas();
+    this._schemasPromise = inflight;
+    inflight.catch(() => {
+      if (this._schemasPromise === inflight)
+        this._schemasPromise = undefined;
+    });
+    return inflight;
+  }
+
+  private async _hydrateSchemas(): Promise<SchemaView> {
+    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
+    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
+    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
+    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
+    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
+    // don't support OFFSET-based pagination.
+    // This implementation uses the non-pinned version of the pragma other than frontend - because backend
+    // is always strictly coupled with the native code.
+    const reader = this.createQueryReader("PRAGMA schema_view");
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned no rows");
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
+    return SchemaView.fromBinary(data, token ?? "");
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -1790,7 +1854,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1798,7 +1862,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1817,7 +1882,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1825,7 +1890,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1845,7 +1911,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1855,9 +1921,10 @@ export abstract class IModelDb extends IModel {
    * }, false);
    *
    * // Replacement:
-   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * }, false);
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1872,7 +1939,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1882,9 +1949,10 @@ export abstract class IModelDb extends IModel {
    * });
    *
    * // Replacement:
-   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * });
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -2024,7 +2092,7 @@ export abstract class IModelDb extends IModel {
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.saveFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
     this[_implicitTxn].saveFileProperty(prop, strValue, blobVal);
@@ -2033,7 +2101,7 @@ export abstract class IModelDb extends IModel {
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.deleteFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.deleteFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
     this[_implicitTxn].deleteFileProperty(prop);
@@ -2260,7 +2328,7 @@ export abstract class IModelDb extends IModel {
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
    * @see [[Settings.addDictionary]] to register a dictionary for the current session only without persisting it.
-   * @beta @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @beta @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
     this[_implicitTxn].saveSettingDictionary(name, dict);
@@ -2268,7 +2336,7 @@ export abstract class IModelDb extends IModel {
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
-   * @beta @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @beta @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteSettingDictionary(name: string) {
     this[_implicitTxn].deleteSettingDictionary(name);
@@ -2579,7 +2647,7 @@ export namespace IModelDb {
      * @param props The data for the new model.
      * @returns The newly inserted model's Id.
      * @throws [[IModelError]] if insertion fails.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertModel(props: ModelProps): Id64String {
       return this._iModel[_implicitTxn].insertModel(props);
@@ -2588,7 +2656,7 @@ export namespace IModelDb {
     /** Update an existing model.
      * @param props the properties of the model to change
      * @throws [[IModelError]] if update fails.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateModel(props: UpdateModelOptions): void {
       this._iModel[_implicitTxn].updateModel(props);
@@ -2600,7 +2668,7 @@ export namespace IModelDb {
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws [[IModelError]] if the update fails.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
@@ -2610,7 +2678,7 @@ export namespace IModelDb {
     /** Delete one or more existing models.
      * @param ids The Ids of the models to be deleted
      * @throws [[IModelError]] if deletion fails.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteModel(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteModel(ids);
@@ -2854,7 +2922,7 @@ export namespace IModelDb {
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       return this._iModel[_implicitTxn].insertElement(elProps, options);
@@ -2870,7 +2938,7 @@ export namespace IModelDb {
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
      * @throws [[ITwinError]] if update fails.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       this._iModel[_implicitTxn].updateElement(elProps);
@@ -2880,10 +2948,23 @@ export namespace IModelDb {
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteElement(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteElement(ids);
+    }
+
+    /**
+     * Delete multiple elements from the iModel.
+     * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+     * @param deleteOptions Options for the delete operation.
+     * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+     * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
+     * @deprecated in 5.1.9 - will not be removed until after 2026-08-15. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @beta
+     */
+    public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
+      return this._iModel[_implicitTxn].deleteElements(ids, deleteOptions);
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
@@ -2894,7 +2975,7 @@ export namespace IModelDb {
      * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
       return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
@@ -3101,7 +3182,7 @@ export namespace IModelDb {
      * @returns the id of the newly inserted aspect.
      * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
      *       use [EntityReference]($common) for that instead.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       return this._iModel[_implicitTxn].insertAspect(aspectProps);
@@ -3110,7 +3191,7 @@ export namespace IModelDb {
     /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
       this._iModel[_implicitTxn].updateAspect(aspectProps);
@@ -3119,7 +3200,7 @@ export namespace IModelDb {
     /** Delete one or more ElementAspects from this iModel.
      * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
@@ -3167,7 +3248,7 @@ export namespace IModelDb {
     }
 
     /**
-     * @beta @deprecated in 5.1.9 - will not be removed until after 2026-08-04. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @beta @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
       this._iModel[_implicitTxn].saveDefaultViewStore(arg);
@@ -3950,7 +4031,70 @@ export class BriefcaseDb extends IModelDb {
     return this[_nativeDb].getAllChangesetHealthData() as ChangesetHealthStats[];
   }
 
-  /** Revert timeline changes and then push resulting changeset */
+  /**
+   * Whether file-based transactions are enabled for this briefcase.
+   *
+   * When enabled, transaction data is stored in separate temporary `.txn` files rather than in the
+   * briefcase's internal transaction table. This avoids SQLite blob size limits and reduces memory
+   * pressure for very large changesets, at the cost of additional disk I/O.
+   * @see [[enableFileBasedTxns]] to enable, [[disableFileBasedTxns]] to disable.
+   * @internal
+   */
+  public get isFileBasedTxnsEnabled(): boolean {
+    return this[_nativeDb].queryLocalValue("fileBasedTxns") === "1";
+  }
+
+  /**
+   * Enable file-based transactions for this briefcase.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public enableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(true);
+  }
+
+  /**
+   * Disable file-based transactions for this briefcase, reverting to the default storage mode
+   * (transactions stored within the briefcase's internal transaction table).
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public disableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(false);
+  }
+
+  private _setFileBasedTxnsSetting(enabled: boolean): void {
+    if (this.isFileBasedTxnsEnabled === enabled)
+      return;
+
+    const nativeDb = this[_nativeDb];
+    if (nativeDb.hasUnsavedChanges())
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot change file-based transactions setting while there are unsaved changes");
+
+    if (nativeDb.hasPendingTxns())
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot change file-based transactions setting while there are pending transactions");
+
+    if (enabled)
+      nativeDb.saveLocalValue("fileBasedTxns", "1");
+    else
+      nativeDb.deleteLocalValue("fileBasedTxns");
+  }
+
+  /**
+   * Revert timeline changes and push the resulting changeset.
+   *
+   * Pulls the latest changes, acquires the schema lock, reverts the inclusive range of
+   * changesets `[toIndex..current]`, and pushes the revert as a new changeset. On failure,
+   * follow the behavior specified by `arg.inCaseOfFailure`, which may discard local changes,
+   * retain local changes, or delete the briefcase.
+   *
+   * @param arg - Arguments specifying the target changeset index, push options, access token, and failure handling behavior.
+   * @throws IModelError with [[ChangeSetStatus.ApplyError]] if `toIndex` is not specified.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   */
   public async revertAndPushChanges(arg: RevertChangesArgs): Promise<void> {
     const nativeDb = this[_nativeDb];
     if (arg.toIndex === undefined) {
@@ -3983,11 +4127,15 @@ export class BriefcaseDb extends IModelDb {
       arg.skipSchemaChanges = true;
     }
 
+    // The native side enables file-based txns during revert. Restore the original setting afterward.
+    const wasFileBasedTxnsEnabled = this.isFileBasedTxnsEnabled;
+    const preRevertIndex = this.changeset.index;
+
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
-      this[_nativeDb].saveChanges("Revert changes");
+      nativeDb.saveChanges("Revert changes");
       if (!arg.description) {
-        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+        arg.description = `Reverted changes from ${preRevertIndex} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
       const pushArgs = {
         description: arg.description,
@@ -4001,12 +4149,47 @@ export class BriefcaseDb extends IModelDb {
       await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
     } catch (err) {
-      if (!arg.retainLocks) {
-        await this.locks.releaseAllLocks();
-        throw err;
+      const failureAction = arg.inCaseOfFailure ?? "revert";
+      try {
+        switch (failureAction) {
+          case "revert":
+            // Restore the briefcase to its pre-revert state: save any unsaved changes into txns,
+            // reverse all txns, then delete them.
+            nativeDb.saveChanges();
+            if (nativeDb.hasPendingTxns())
+              nativeDb.reverseAll();
+            nativeDb.deleteAllTxns();
+            break;
+          case "delete":
+            // Clear local changes first so lock release can succeed.
+            nativeDb.abandonChanges();
+            nativeDb.deleteAllTxns();
+            if (!arg.retainLocks)
+              await this.locks.releaseAllLocks();
+            const filePath = this.pathName;
+            this.close();
+            await BriefcaseManager.deleteBriefcaseFiles(filePath, arg.accessToken);
+            break;
+          case "retain":
+            // Keep local changes as-is for caller inspection/recovery.
+            nativeDb.saveChanges();
+            break;
+        }
+      } catch (cleanupErr) {
+        Logger.logError(loggerCategory, `Failed to clean up after revert error (action=${failureAction}): ${String(cleanupErr)}`);
       }
+
+      if (!arg.retainLocks && this.isOpen) {
+        try {
+          await this.locks.releaseAllLocks();
+        } catch (lockErr) {
+          Logger.logError(loggerCategory, `Failed to release locks after revert failure (action=${failureAction}): ${String(lockErr)}`);
+        }
+      }
+      throw err;
     } finally {
-      this[_nativeDb].abandonChanges();
+      if (this.isOpen && !wasFileBasedTxnsEnabled && !nativeDb.hasPendingTxns() && !nativeDb.hasUnsavedChanges())
+        this.disableFileBasedTxns();
     }
   }
 

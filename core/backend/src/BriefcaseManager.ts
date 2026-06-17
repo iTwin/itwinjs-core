@@ -108,10 +108,17 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-  /** The index of the changeset to revert to */
+  /** The first changeset index to revert (inclusive). All changesets from `toIndex` through the current index are reverted, leaving the briefcase at `toIndex - 1`. */
   toIndex: ChangesetIndex;
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
+  /**
+   * Specifies the action to take in case of failure during the revert operation. Default is `"revert"`.
+   * - `"revert"`: Reverse all local transactions and delete them, restoring the briefcase to its pre-revert state.
+   * - `"retain"`: Keep local changes as-is for caller inspection or manual recovery.
+   * - `"delete"`: Close the briefcase and delete the local file. If an `accessToken` is available, also release the briefcaseId from iModelHub.
+   */
+  inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
@@ -476,11 +483,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean, noUpdateLoop?: boolean) {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db[_nativeDb].applyChangeset(changesetFile, fastForward);
+    db[_nativeDb].applyChangeset(changesetFile, fastForward, noUpdateLoop);
     db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -555,7 +562,7 @@ export class BriefcaseManager {
    * @throws IModelError If the briefcase is not open in read-write mode, if there are pending transactions when reversing, or if applying a changeset fails.
    * @returns A promise that resolves when all required changesets have been applied.
    */
-  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
+  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & { /** @internal */ noUpdateLoop?: boolean }): Promise<void> {
     const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
     const nativeDb = db[_nativeDb];
 
@@ -646,7 +653,7 @@ export class BriefcaseManager {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       try {
-        await this.applySingleChangeset(db, changeset, false);
+        await this.applySingleChangeset(db, changeset, false, arg.noUpdateLoop);
         Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
       } catch (err: any) {
         if (err instanceof Error) {

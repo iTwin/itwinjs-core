@@ -40,4 +40,4 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0

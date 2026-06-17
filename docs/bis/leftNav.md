@@ -134,6 +134,9 @@ defaultState: activeOpen
 
 - [Overview](./ec/index.md)
 - [ECSchema](./ec/ec-schema.md)
+- [ECSchema XML](./ec/ec-schema-xml.md)
+- [ECSchema JSON](./ec/ec-schema-json.md)
+- [EC Schema Validation](./ec/ec-schema-validation.md)
 - [ECClass](./ec/ec-class.md)
 - [ECEntityClass](./ec/ec-entity-class.md)
 - [ECMixinClass](./ec/ec-mixin-class.md)
@@ -143,7 +146,7 @@ defaultState: activeOpen
 - [ECProperty](./ec/ec-property.md)
 - [ECCustomAttributes](./ec/ec-custom-attributes.md)
 - [ECEnumeration](./ec/ec-enumeration.md)
-- [KindOfQuantity](./ec/kindofQuantity.md)
+- [KindOfQuantity](./ec/kindofquantity.md)
 - [PropertyCategory](./ec/property-category.md)
 - [PrimitiveTypes](./ec/primitive-types.md)
 - [CustomAttribute Container Types](./ec/customattribute-container-types.md)

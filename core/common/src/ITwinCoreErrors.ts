@@ -161,6 +161,7 @@ export namespace ITwinSettingsError {
   export const scope = "itwin-settings";
   export type Key =
     "failed-to-obtain-container-token" |
+    "missing-container-itwinid" |
     "multiple-itwin-settings-containers" |
     "no-cloud-container" |
     "blob-service-unavailable" |

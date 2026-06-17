@@ -1,4 +1,5 @@
 import { coverageConfigDefaults, defineConfig } from "vitest/config";
+import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
   esbuild: {
@@ -9,7 +10,7 @@ export default defineConfig({
     // include: ["**/<insert-file-name-here>.test.ts"],
     exclude: ["**/PrimitiveConverters.test.ts"],
     browser: {
-      provider: "playwright",
+      provider: playwright(),
       enabled: true,
       instances: [
         { browser: "chromium" }
@@ -40,5 +41,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
   }
 })

@@ -76,14 +76,12 @@ jobs:
         persistCredentials: true
       - task: UseNode@1
         inputs:
-          version: "24.x"
+          version: "24.15.0"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
-            branch=$(System.PullRequest.SourceBranch)
-
             # Use GH CLI to get the PR description, SHA and title in json format so it can be parsed
-            gh pr view $branch --json title,body,headRefOid >> pr_view.json
+            gh pr view "$PR_NUMBER" --json title,body,headRefOid >> pr_view.json
 
             #save SHA and PR description
             currentSHA=$(node -e "const data = require('./pr_view.json'); console.log(data.headRefOid)")
@@ -104,6 +102,7 @@ jobs:
 
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
+          PR_NUMBER: $(System.PullRequest.PullRequestNumber)
         name: checkForPr
 
   - job: ParseCommitNotes
@@ -218,12 +217,12 @@ jobs:
         retryCountOnTaskFailure: 1
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 24.x
+          nodeVersion: 24.15.0
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 
@@ -238,8 +237,7 @@ jobs:
 
     steps:
       - bash: |
-          branch=$(System.PullRequest.SourceBranch)
-          sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
+          sha=$(gh pr view "$PR_NUMBER" --json "headRefOid" -q ".headRefOid")
           echo "Posting 'success' status to current PR"
           gh api \
             --method POST \
@@ -251,3 +249,4 @@ jobs:
             -f description='No native PR was linked'
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
+          PR_NUMBER: $(System.PullRequest.PullRequestNumber)

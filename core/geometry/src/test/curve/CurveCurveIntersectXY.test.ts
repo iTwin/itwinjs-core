@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
@@ -2801,6 +2801,112 @@ describe("CurveCurveIntersectXY", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralIntersection");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("BSplineIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+
+    const rotationTransform0 = Transform.createFixedPointAndMatrix(
+      Point3d.create(70, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(180))!,
+    );
+    const rotationTransform1 = Transform.createFixedPointAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, 0), Angle.createDegrees(45))!,
+    );
+    const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
+    const compositeTransform = Transform.createZero();
+    compositeTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
+    compositeTransform.setMultiplyTransformTransform(rotationTransform1, compositeTransform);
+
+    const bspline0 = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(0, -20, 0),
+        Point3d.create(20, -20, 0),
+        Point3d.create(50, -10, 0),
+        Point3d.create(80, 0, 0),
+        Point3d.create(100, 0, 0),
+      ],
+      3,
+    )!;
+    const bspline1 = bspline0.cloneTransformed(rotationTransform0);
+    const bspline2 = bspline0.cloneTransformed(rotationTransform1);
+    const bspline3 = bspline0.cloneTransformed(moveTransform);
+    const bspline4 = bspline0.cloneTransformed(compositeTransform);
+    const bsplines = [bspline0, bspline1, bspline2, bspline3, bspline4];
+
+    const testTangencyAtBsplineInterior = (bspline: BSplineCurve3dBase, index: number, dx0: number) => {
+      const ray = bspline.fractionToPointAndDerivative(0.2);
+      const seg = LineString3d.create(
+        ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
+      );
+      const tangency = CurveCurve.intersectionXYPairs(bspline, false, seg, false);
+      if (ck.testDefined(tangency, `found closest points between the bspline${index} and the line`)) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx0);
+        for (const pair of tangency) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 5, dx0);
+          ck.testSmallRelative(pair.detailA.a, `bspline${index} closest point is an intersection`);
+          ck.testSmallRelative(pair.detailB.a, `bspline${index} closest point is an intersection`);
+          ck.testPoint3d(ray.origin, pair.detailA.point, undefined, `bspline${index} closest point is at the tangency`);
+        }
+      }
+    };
+    for (let i = 0; i < bsplines.length; i++) {
+      testTangencyAtBsplineInterior(bsplines[i], i, dx);
+      dx += 200;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "BSplineIntersection");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("FilletLineIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const lineSegment0 = LineString3d.create(
+      Point3d.create(207109.26432514057, 503380.8318704772, 0),
+      Point3d.create(207158.75937608397, 503380.8318704772, 0)
+    );
+    const lineSegment1 = LineString3d.create(
+      Point3d.create(207158.75937608397, 503380.8318704772, 0),
+      Point3d.create(207158.75937608397, 503346.97388452647, 0)
+    );
+    const fillet = Arc3d.create(
+      Point3d.create(207148.09137608396, 503370.1638704772, 0),
+      Vector3d.create(10.668000000000001, 0, 0),
+      Vector3d.create(0, 10.668000000000001, 0),
+      AngleSweep.createStartEndDegrees(0, 90)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fillet);
+
+    const worldToLocal = Matrix4d.createRowValues(
+      1, 0, 0, -207109.26432514057,
+      0, 1, 0, -503380.8318704772,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    );
+
+    const testFilletLineIntersection = (lineSegment: LineString3d, expectedPoint: Point3d, expectedNumIntersections: number) => {
+      const intersections = CurveCurve.intersectionProjectedXYPairs(worldToLocal, lineSegment, true, fillet, true);
+      if (ck.testExactNumber(expectedNumIntersections, intersections.length, "computed expected number of intersections between the fillet and line")) {
+        const intersection = intersections[0].detailA.point;
+        if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both fillet and line")) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 1);
+          ck.testPoint3d(expectedPoint, intersection, "expected intersection point");
+        }
+      }
+    };
+
+    testFilletLineIntersection(lineSegment0, Point3d.create(207148.09137608396, 503380.8318704772), 1);
+    testFilletLineIntersection(lineSegment1, Point3d.create(207158.75937608397, 503370.1638704772), 1);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
-import { QueryRowFormat } from "@itwin/core-common";
+import { assert, BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
+import { SchemaView } from "@itwin/ecschema-metadata";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage.js";
 import { IModelConnectionInitializationHandler, imodelInitializationHandlers } from "../IModelConnectionInitialization.js";
@@ -438,44 +438,18 @@ export class FavoritePropertiesManager implements Disposable {
   }
 
   private _getBaseClassesByClass = async (imodel: IModelConnection, neededClasses: Set<string>): Promise<{ [className: string]: string[] }> => {
-    const iTwinId = imodel.iTwinId!;
-    const imodelId = imodel.iModelId!;
-
-    const imodelInfo = getiModelInfo(iTwinId, imodelId);
-    let baseClasses: { [className: string]: string[] };
-    if (this._imodelBaseClassesByClass.has(imodelInfo)) {
-      baseClasses = this._imodelBaseClassesByClass.get(imodelInfo)!;
-    } else {
-      this._imodelBaseClassesByClass.set(imodelInfo, (baseClasses = {}));
+    const schemaView = await imodel.getSchemaView();
+    const getBaseClassNames = (currClass: SchemaView.Class): string[] => {
+      const base = currClass.baseClass;
+      return base ? [base.fullName, ...getBaseClassNames(base)] : [];
     }
-
-    const missingClasses = new Set<string>();
-    neededClasses.forEach((className) => {
-      if (!baseClasses.hasOwnProperty(className)) {
-        missingClasses.add(className);
-      }
-    });
-    if (missingClasses.size === 0) {
-      return baseClasses;
+    const result: { [className: string]: string[] } = {};
+    for (const className of neededClasses) {
+      const currClass = schemaView.findClass(className);
+      assert(!!currClass);
+      result[className] = getBaseClassNames(currClass);
     }
-
-    const query = `
-    SELECT (derivedSchema.Name || ':' || derivedClass.Name) AS "ClassFullName", (baseSchema.Name || ':' || baseClass.Name) AS "BaseClassFullName"
-    FROM ECDbMeta.ClassHasAllBaseClasses baseClassRels
-    INNER JOIN ECDbMeta.ECClassDef derivedClass ON derivedClass.ECInstanceId = baseClassRels.SourceECInstanceId
-    INNER JOIN ECDbMeta.ECSchemaDef derivedSchema ON derivedSchema.ECInstanceId = derivedClass.Schema.Id
-    INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
-    INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
-    const reader = imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    while (await reader.step()) {
-      const row = reader.current.toRow();
-      if (!(row.classFullName in baseClasses)) {
-        baseClasses[row.classFullName] = [];
-      }
-      baseClasses[row.classFullName].push(row.baseClassFullName);
-    }
-    return baseClasses;
+    return result;
   };
 
   /** Changes field properties priorities to lower than another fields priority
