@@ -18,7 +18,7 @@ publish: false
 
 ### Pluggable Cesium Ion authentication via `CesiumAccessClient`
 
-A new [`CesiumAccessClient`]($frontend) interface and [`TileAdmin.Props.cesiumAccess`]($frontend) option let apps plug in a custom Cesium asset resolver (such as the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/)) without requiring a personal Cesium Ion subscription or adding a platform dependency to `@itwin/core-frontend`.
+A new [CesiumAccessClient]($frontend) interface and [TileAdmin.Props.cesiumAccess]($frontend) option let apps plug in a custom Cesium asset resolver (such as the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/)) without requiring a personal Cesium Ion subscription or adding a platform dependency to `@itwin/core-frontend`.
 
 Two authentication paths coexist:
 
@@ -27,7 +27,7 @@ Two authentication paths coexist:
 | `cesiumIonKey` (existing) | App has a direct Cesium Ion subscription | `tileAdmin: { cesiumIonKey: "my-key" }` |
 | `cesiumAccess` (new, `@beta`) | iTwin Platform proxy or any custom resolver | `tileAdmin: { cesiumAccess: new MyClient() }` |
 
-When both are supplied, `cesiumAccess` takes precedence. The new [`TileAdmin.canAccessCesium`]($frontend) getter returns `true` if either option is configured.
+When both are supplied, `cesiumAccess` takes precedence. The new [TileAdmin.canAccessCesium]($frontend) getter returns `true` if either option is configured.
 
 ```typescript
 import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
