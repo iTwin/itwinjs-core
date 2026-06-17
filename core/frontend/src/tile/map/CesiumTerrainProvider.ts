@@ -28,7 +28,7 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** Return the URL for a Cesium ion asset from its asset ID and request Key.
+/** Return the URL for a Cesium Ion asset from its asset ID and request Key.
  * @public
  */
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
@@ -508,7 +508,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 }
 
-/** Default [[CesiumAccessClient]] that authenticates directly with Cesium ion using [[TileAdmin.cesiumIonKey]].
+/** Default [[CesiumAccessClient]] that authenticates directly with Cesium Ion using [[TileAdmin.cesiumIonKey]].
  * This is used when no custom [[CesiumAccessClient]] is registered via [[TileAdmin.Props.cesiumAccess]].
  * @internal
  */

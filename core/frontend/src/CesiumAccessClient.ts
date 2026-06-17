@@ -8,7 +8,7 @@
 
 import { GuidString } from "@itwin/core-bentley";
 
-/** Describes the endpoint for accessing a Cesium ion asset.
+/** Describes the endpoint for accessing a Cesium Ion asset.
  * @see [[CesiumAccessClient.getAssetEndpoint]]
  * @beta
  */
@@ -23,12 +23,12 @@ export interface CesiumAssetEndpoint {
   expiresAt?: Date;
 }
 
-/** Provides access tokens and endpoint URLs for [Cesium ion](https://cesium.com/platform/cesium-ion/) assets.
+/** Provides access tokens and endpoint URLs for [Cesium Ion](https://cesium.com/platform/cesium-ion/) assets.
  * Supply an implementation via [[TileAdmin.Props.cesiumAccess]] to control how Cesium assets are resolved.
  *
  * Two authentication paths:
- * - **Direct Cesium ion**: set [[TileAdmin.Props.cesiumIonKey]] — uses the built-in [[CesiumIonClient]] and
- *   authenticates directly with Cesium ion. Suitable for apps with their own Cesium ion subscription.
+ * - **Direct Cesium Ion**: set [[TileAdmin.Props.cesiumIonKey]] — uses the built-in [[CesiumIonClient]] and
+ *   authenticates directly with Cesium Ion. Suitable for apps with their own Cesium Ion subscription.
  * - **Custom / iTwin Platform proxy**: supply a `CesiumAccessClient` implementation — for example, one that
  *   calls the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/)
  *   using an iTwin access token.
@@ -39,8 +39,8 @@ export interface CesiumAssetEndpoint {
  * @beta
  */
 export interface CesiumAccessClient {
-  /** Obtain an endpoint URL and access token for the specified Cesium ion asset.
-   * @param assetId The Cesium ion asset identifier (e.g. `"1"` for Cesium World Terrain).
+  /** Obtain an endpoint URL and access token for the specified Cesium Ion asset.
+   * @param assetId The Cesium Ion asset identifier (e.g. `"1"` for Cesium World Terrain).
    * @param iTwinId Optional iTwin context identifier. May be used by implementations to scope requests
    * to a specific iTwin context, but is not required by the iTwin Platform Cesium Curated Content API.
    * @returns The resolved endpoint. Return an empty object `{}` if the asset cannot be accessed.
