@@ -1635,7 +1635,7 @@ describe("PolyfaceClipPerformance", () => {
     // polyface has a single triangle; visitor will visit that triangle nIterations times for performance testing
     const nIterations = 100000;
     const indices = new Array(nIterations).fill(0);
-    let visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+    const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices);
 
     visitor.reset();
     let actualIterations = 0;
@@ -1667,9 +1667,8 @@ describe("PolyfaceClipPerformance", () => {
     // arc all hit and all miss cases
     let dy = 5;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
-    visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
-    let arc = Arc3d.createXY(Point3d.create(2, 2, 0), 1.0);
-    arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+    visitor.reset();
+    let arc = Arc3d.createXY(Point3d.create(2, 2, 0), 1.0, AngleSweep.createStartEndDegrees(0, -90));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
     t0 = performance.now();
     let arcResults = segmentCurveByFacetsForElevationSection(visitor, arc);
@@ -1678,8 +1677,7 @@ describe("PolyfaceClipPerformance", () => {
     ck.testExactNumber(nIterations, arcResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
 
     visitor.reset();
-    arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5);
-    arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+    arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5, AngleSweep.createStartEndDegrees(0, -90));
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
     t0 = performance.now();
     arcResults = segmentCurveByFacetsForElevationSection(visitor, arc);
@@ -1690,7 +1688,7 @@ describe("PolyfaceClipPerformance", () => {
     // spiral all hit and all miss cases
     dy = 10;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
-    visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+    visitor.reset();
     let localToWorld = Transform.createRefs(Point3d.create(10, 10, 0), Matrix3d.createIdentity());
     let spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 10, Segment1d.create(0, 1), localToWorld)!;
     ck.testDefined(spiral, "created spiral");
