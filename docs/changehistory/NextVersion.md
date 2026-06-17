@@ -7,6 +7,7 @@ publish: false
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
+    - [Reality model tiles with JSON glTF content now render](#reality-model-tiles-with-json-gltf-content-now-render)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
@@ -48,6 +49,12 @@ const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
 await imodel.close(); // connection closes before iteration
 const rows = await reader.toArray(); // used to throw, now returns an empty array
 ```
+
+### Reality model tiles with JSON glTF content now render
+
+A 3D Tileset may reference its tile content as plain-text JSON glTF (`.gltf`) rather than binary glTF (`.glb`) or b3dm. Previously such tiles either rendered nothing (the JSON content was discarded because it has no binary magic number) or rendered untextured/white (externally-referenced images resolved against the tileset root instead of the tile's content URL).
+
+Reality tile content with no recognized binary magic number is now treated as glTF when the tile's content URL ends in `.gltf`, and externally-referenced resources resolve against the tile's own content URL so their textures load. No API or application changes are required.
 
 ### Quantity property description classes deprecated
 
