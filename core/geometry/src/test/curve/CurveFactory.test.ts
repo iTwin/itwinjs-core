@@ -333,7 +333,7 @@ describe("FilletedLineString", () => {
       ck.testTrue(chain.getChild(i) instanceof Arc3d, `expect child ${i} to be an Arc3d`);
       ck.testCoordinate((chain.children[i] as Arc3d).circularRadius()!, radius, `expect child ${i} to have radius ${radius}`);
     }
-  }
+  };
 
   it("FilletsInLineStringClosureTolerance", () => {
     const ck = new Checker();
