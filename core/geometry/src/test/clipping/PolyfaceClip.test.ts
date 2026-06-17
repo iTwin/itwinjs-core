@@ -1625,100 +1625,101 @@ describe("PolyfaceClipPerformance", () => {
   }
 
   it("MissAndHit", () => {
-    if (GeometryCoreTestIO.enableLongTests) {
-      const ck = new Checker();
-      const polyfaceBuilder = PolyfaceBuilder.create();
-      polyfaceBuilder.addTriangleFacet([Point3d.create(0, 0, 14), Point3d.create(1, 0, 13), Point3d.create(0, 1, 13)]);
-      const polyface = polyfaceBuilder.claimPolyface(false);
-      const allGeometry: GeometryQuery[] = [];
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
-      ck.testExactNumber(1, polyface.facetCount, "polyface has one facet");
-      ck.testExactNumber(3, polyface.pointCount, "polyface has three points");
+    if (!GeometryCoreTestIO.enableLongTests)
+      return;
 
-      // polyface has a single triangle; visitor will visit that triangle nIterations times for performance testing
-      const nIterations = 100000;
-      const indices = new Array(nIterations).fill(0);
-      let visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+    const ck = new Checker();
+    const polyfaceBuilder = PolyfaceBuilder.create();
+    polyfaceBuilder.addTriangleFacet([Point3d.create(0, 0, 14), Point3d.create(1, 0, 13), Point3d.create(0, 1, 13)]);
+    const polyface = polyfaceBuilder.claimPolyface(false);
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
+    ck.testExactNumber(1, polyface.facetCount, "polyface has one facet");
+    ck.testExactNumber(3, polyface.pointCount, "polyface has three points");
 
-      visitor.reset();
-      let actualIterations = 0;
-      while (visitor.moveToNextFacet())
-        actualIterations++;
-      ck.testExactNumber(nIterations, actualIterations, "visitor iterated the expected number of times");
+    // polyface has a single triangle; visitor will visit that triangle nIterations times for performance testing
+    const nIterations = 100000;
+    const indices = new Array(nIterations).fill(0);
+    let visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
 
-      const timings: string[] = [];
+    visitor.reset();
+    let actualIterations = 0;
+    while (visitor.moveToNextFacet())
+      actualIterations++;
+    ck.testExactNumber(nIterations, actualIterations, "visitor iterated the expected number of times");
 
-      // clip plane all hit and all miss cases
-      visitor.reset();
-      let clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(10, 0, 0))!;
-      ck.testDefined(clipPlane, "created clip plane");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
-      let t0 = performance.now();
-      let clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
-      timings.push(`elapsed misses (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
-      ck.testExactNumber(0, clipPlaneResults.length, "no results from sectionPolyfaceClipPlane (all misses)");
+    const timings: string[] = [];
 
-      visitor.reset();
-      clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(0.5, 0.5))!;
-      ck.testDefined(clipPlane, "created clip plane");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
-      t0 = performance.now();
-      clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
-      timings.push(`elapsed hits (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
-      ck.testExactNumber(nIterations, clipPlaneResults.length, "all results from sectionPolyfaceClipPlane (all hits)");
+    // clip plane all hit and all miss cases
+    visitor.reset();
+    let clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(10, 0, 0))!;
+    ck.testDefined(clipPlane, "created clip plane");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
+    let t0 = performance.now();
+    let clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+    timings.push(`elapsed misses (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(0, clipPlaneResults.length, "no results from sectionPolyfaceClipPlane (all misses)");
 
-      // arc all hit and all miss cases
-      let dy = 5;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
-      visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
-      let arc = Arc3d.createXY(Point3d.create(2, 2, 0), 1.0);
-      arc.sweep.setStartEndRadians(0, -Math.PI / 2);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
-      t0 = performance.now();
-      let arcResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, arc);
-      timings.push(`elapsed misses (arc): ${(performance.now() - t0).toFixed(4)} ms`);
-      ck.testExactNumber(0, arcResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
-      ck.testExactNumber(nIterations, arcResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+    visitor.reset();
+    clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(0.5, 0.5))!;
+    ck.testDefined(clipPlane, "created clip plane");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
+    t0 = performance.now();
+    clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+    timings.push(`elapsed hits (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(nIterations, clipPlaneResults.length, "all results from sectionPolyfaceClipPlane (all hits)");
 
-      visitor.reset();
-      arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5);
-      arc.sweep.setStartEndRadians(0, -Math.PI / 2);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
-      t0 = performance.now();
-      arcResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, arc);
-      timings.push(`elapsed hits (arc): ${(performance.now() - t0).toFixed(4)} ms`);
-      ck.testExactNumber(nIterations, arcResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
-      ck.testExactNumber(0, arcResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+    // arc all hit and all miss cases
+    let dy = 5;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
+    visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+    let arc = Arc3d.createXY(Point3d.create(2, 2, 0), 1.0);
+    arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
+    t0 = performance.now();
+    let arcResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, arc);
+    timings.push(`elapsed misses (arc): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(0, arcResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+    ck.testExactNumber(nIterations, arcResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
 
-      // spiral all hit and all miss cases
-      dy = 10;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
-      visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
-      let localToWorld = Transform.createRefs(Point3d.create(10, 10, 0), Matrix3d.createIdentity());
-      let spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 10, Segment1d.create(0, 1), localToWorld)!;
-      ck.testDefined(spiral, "created spiral");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
-      t0 = performance.now();
-      let spiralResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, spiral);
-      timings.push(`elapsed misses (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
-      ck.testExactNumber(0, spiralResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
-      ck.testExactNumber(nIterations, spiralResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+    visitor.reset();
+    arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5);
+    arc.sweep.setStartEndRadians(0, -Math.PI / 2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
+    t0 = performance.now();
+    arcResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, arc);
+    timings.push(`elapsed hits (arc): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(nIterations, arcResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+    ck.testExactNumber(0, arcResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
 
-      visitor.reset();
-      localToWorld = Transform.createRefs(Point3d.create(), Matrix3d.createIdentity());
-      spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 100, Segment1d.create(0, 1), localToWorld)!;
-      ck.testDefined(spiral, "created spiral");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
-      t0 = performance.now();
-      spiralResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, spiral);
-      timings.push(`elapsed hits (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
-      ck.testExactNumber(nIterations, spiralResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
-      ck.testExactNumber(0, spiralResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+    // spiral all hit and all miss cases
+    dy = 10;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
+    visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices, 0);
+    let localToWorld = Transform.createRefs(Point3d.create(10, 10, 0), Matrix3d.createIdentity());
+    let spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 10, Segment1d.create(0, 1), localToWorld)!;
+    ck.testDefined(spiral, "created spiral");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+    t0 = performance.now();
+    let spiralResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, spiral);
+    timings.push(`elapsed misses (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(0, spiralResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+    ck.testExactNumber(nIterations, spiralResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
 
-      for (const t of timings)
-        GeometryCoreTestIO.consoleLog(t);
-      GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClipPerformance", "MissAndHit");
-      expect(ck.getNumErrors()).toBe(0);
-    }
+    visitor.reset();
+    localToWorld = Transform.createRefs(Point3d.create(), Matrix3d.createIdentity());
+    spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 100, Segment1d.create(0, 1), localToWorld)!;
+    ck.testDefined(spiral, "created spiral");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+    t0 = performance.now();
+    spiralResults = sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(visitor, spiral);
+    timings.push(`elapsed hits (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(nIterations, spiralResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+    ck.testExactNumber(0, spiralResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+
+    for (const t of timings)
+      GeometryCoreTestIO.consoleLog(t);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClipPerformance", "MissAndHit");
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
