@@ -108,8 +108,9 @@ export interface MapLayerOptions {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MapboxImagery?: MapLayerKey;
   /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`.
-   * @note Bing Maps imagery is deprecated in 5.11.0. This key is retained for
-   * `BingElevationProvider` and `BingLocationProvider`. For basemap imagery, see `@itwin/map-layers-formats`.
+   * @deprecated in 5.11.0. All Bing Maps APIs are deprecated. Supply custom providers via
+   * [[IModelAppOptions.geospatialProviders]].
+   * For basemap imagery, use `@itwin/map-layers-formats`.
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
