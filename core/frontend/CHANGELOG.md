@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+### Updates
+
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
 
 ## 5.10.0
 Wed, 03 Jun 2026 20:19:46 GMT

@@ -16,10 +16,9 @@ import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
 } from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
-import { BingLocationProvider } from "../BingLocation";
 import { CoordSystem } from "../CoordSystem";
 import { IModelApp } from "../IModelApp";
-import { LengthDescription } from "../properties/LengthDescription";
+import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
 import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
@@ -83,6 +82,14 @@ const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
 // dampen an inertia vector according to tool settings
 const inertialDampen = (pt: Vector3d) => {
   pt.scaleInPlace(Geometry.clamp(ToolSettings.viewingInertia.damping, .75, .999));
+};
+
+const focusHome = (): void => {
+  const element = document.activeElement as HTMLElement | null;
+  if (element && element !== document.body)
+    element.blur();
+
+  document.body.focus();
 };
 
 /** An InteractiveTool that manipulates a view.
@@ -3113,6 +3120,11 @@ export class LookAndMoveTool extends ViewManip {
   protected override get isExitAllowedOnReinitialize(): boolean { return true; }
   protected override provideInitialToolAssistance(): void { this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
 
+  public override async onPostInstall(): Promise<void> {
+    await super.onPostInstall();
+    focusHome();
+  }
+
   public override provideToolAssistance(mainInstrKey: string): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -3403,9 +3415,9 @@ export class ViewGlobeLocationTool extends ViewTool {
 
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
-      const bingLocationProvider = new BingLocationProvider();
+      const locationProvider = IModelApp.locationProvider;
       try {
-        this._globalLocation = await bingLocationProvider.getLocation(locationString);
+        this._globalLocation = await locationProvider.getLocation(locationString);
         if (this._globalLocation !== undefined) {
           const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
           if (viewport !== undefined) {
@@ -4369,7 +4381,12 @@ export class SetupCameraTool extends PrimitiveTool {
   private _cameraHeightProperty: DialogProperty<number> | undefined;
   public get cameraHeightProperty() {
     if (!this._cameraHeightProperty)
-      this._cameraHeightProperty = new DialogProperty<number>(new LengthDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight")), 0.0);
+      this._cameraHeightProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "cameraHeight",
+        displayLabel: ViewTool.translate("SetupCamera.Labels.CameraHeight"),
+        kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+        persistenceUnitName: "Units.M",
+      }), 0.0);
     return this._cameraHeightProperty;
   }
   public get cameraHeight(): number { return this.cameraHeightProperty.value; }
@@ -4388,7 +4405,12 @@ export class SetupCameraTool extends PrimitiveTool {
   private _targetHeightProperty: DialogProperty<number> | undefined;
   public get targetHeightProperty() {
     if (!this._targetHeightProperty)
-      this._targetHeightProperty = new DialogProperty<number>(new LengthDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight")), 0.0);
+      this._targetHeightProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "targetHeight",
+        displayLabel: ViewTool.translate("SetupCamera.Labels.TargetHeight"),
+        kindOfQuantityName: "DefaultToolsUnits.LENGTH",
+        persistenceUnitName: "Units.M",
+      }), 0.0);
     return this._targetHeightProperty;
   }
   public get targetHeight(): number { return this.targetHeightProperty.value; }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "IModelHost.getITwinWorkspace() automatically gets settings for parent iTwins and treats those as a lower priority",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
