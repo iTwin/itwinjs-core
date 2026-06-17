@@ -5,6 +5,7 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-frontend](#itwincore-frontend)
+    - [Pluggable Cesium ion authentication via `CesiumAccessClient`](#pluggable-cesium-ion-authentication-via-cesiumaccessclient)
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
@@ -13,6 +14,48 @@ publish: false
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
 ## @itwin/core-frontend
+
+### Pluggable Cesium ion authentication via `CesiumAccessClient`
+
+A new [`CesiumAccessClient`]($frontend) interface and [`TileAdmin.Props.cesiumAccess`]($frontend) option let apps plug in a custom Cesium asset resolver (such as the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/)) without requiring a personal Cesium ion subscription or adding a platform dependency to `@itwin/core-frontend`.
+
+Two authentication paths coexist:
+
+| Path | When to use | How to configure |
+|---|---|---|
+| `cesiumIonKey` (existing) | App has a direct Cesium ion subscription | `tileAdmin: { cesiumIonKey: "my-key" }` |
+| `cesiumAccess` (new, `@beta`) | iTwin Platform proxy or any custom resolver | `tileAdmin: { cesiumAccess: new MyClient() }` |
+
+When both are supplied, `cesiumAccess` takes precedence. The new [`TileAdmin.hasCesiumAccess`]($frontend) getter returns `true` if either option is configured.
+
+```typescript
+import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
+
+// Example: implement CesiumAccessClient using the iTwin Platform Cesium Curated Content API.
+class ITPCesiumClient implements CesiumAccessClient {
+  constructor(private readonly getAccessToken: () => Promise<string>) {}
+
+  async getAssetEndpoint(assetId: string, _iTwinId?: string): Promise<CesiumAssetEndpoint> {
+    const token = await this.getAccessToken();
+    const response = await fetch(`https://api.bentley.com/curated-content/cesium/${assetId}/tiles`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const json = await response.json();
+    return {
+      accessToken: json.accessToken,
+      url: json.url,
+      expiresAt: json.expiresAt ? new Date(json.expiresAt) : undefined,
+    };
+  }
+}
+
+// Register at startup:
+await IModelApp.startup({
+  tileAdmin: {
+    cesiumAccess: new ITPCesiumClient(() => myAuthClient.getAccessToken()),
+  },
+});
+```
 
 ### Configurable precision for graphical editing at high coordinates
 
