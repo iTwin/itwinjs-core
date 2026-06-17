@@ -1548,6 +1548,82 @@ describe("PolyfaceClip", () => {
 });
 
 describe("PolyfaceClipPerformance", () => {
+  /** Return a rectangle to visualize a clip plane. */
+  function getClipPlaneForVisualization(clipPlane: ClipPlane): IndexedPolyface {
+    const normal = clipPlane.inwardNormalRef;
+    const origin = Point3d.createZero().plusScaled(normal, clipPlane.distance);
+    const perp0 = Matrix3d.createRigidHeadsUp(normal).columnX();
+    const perp1 = normal.crossProduct(perp0);
+    const s = 2;
+    const planeBuilder = PolyfaceBuilder.create();
+    planeBuilder.addQuadFacet([
+      origin.plusScaled(perp0, -s).plusScaled(perp1, -s),
+      origin.plusScaled(perp0, s).plusScaled(perp1, -s),
+      origin.plusScaled(perp0, s).plusScaled(perp1, s),
+      origin.plusScaled(perp0, -s).plusScaled(perp1, s),
+    ]);
+    return planeBuilder.claimPolyface(false);
+  }
+
+  /**
+   * Intersect each facet with an arc or spiral and return results in distance along format i.e.,
+   * (distanceAlong, elevation, 0)
+   ** Return all edges chained as array of LineString3d.
+  */
+  function sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(
+    visitor: PolyfaceVisitor, arcOrSpiral: Arc3d | TransitionSpiral3d
+  ): { profile: LineString3d[], numEarlyOuts: number } {
+    const primitiveRange = arcOrSpiral.range();
+    const workRange = Range3d.createNull();
+    const workPoints = [Point3d.create(), Point3d.create(), Point3d.create()];
+    let workClipShape: ClipShape | undefined;
+    const workRay = Ray3d.createZero();
+    const unitZ = Vector3d.unitZ();
+    const lineStrings: LineString3d[] = [];
+    let numEarlyOuts = 0;
+
+    const announcer: AnnounceNumberNumberCurvePrimitive = (a0, a1, cp) => {
+      const distanceAlong0 = cp.curveLengthBetweenFractions(0, a0);
+      const distanceAlong1 = cp.curveLengthBetweenFractions(0, a1);
+      const intersectionPoints = [cp.fractionToPoint(a0), cp.fractionToPoint(a1)];
+      PolygonOps.centroidAreaNormal(visitor.point, workRay);
+      if (workRay.getDirectionRef().normalizeInPlace()) {
+        const scale = 1.0 / unitZ.dotProduct(workRay.getDirectionRef());
+        const altitude0 = workRay.pointToFraction(intersectionPoints[0]);
+        const altitude1 = workRay.pointToFraction(intersectionPoints[1]);
+        intersectionPoints[0].z -= altitude0 * scale;
+        intersectionPoints[1].z -= altitude1 * scale;
+      }
+      // lineStrings show the cross-section profile of the triangle surface along the arc/spiral path:
+      //    X-axis = distance traveled along the arc/spiral
+      //    Y-axis = elevation (z-height) on the triangle surface at that point
+      //    Z-axis = 0 (flat 2D profile)
+      lineStrings.push(
+        LineString3d.createPoints([
+          Point3d.create(distanceAlong0, intersectionPoints[0].z, 0),
+          Point3d.create(distanceAlong1, intersectionPoints[1].z, 0)
+        ]),
+      );
+    };
+
+    while (visitor.moveToNextFacet()) {
+      visitor.range(workRange);
+      if (!workRange.intersectsRangeXY(primitiveRange)) {
+        numEarlyOuts++;
+        continue; // when ranges don't intersect, we know the arc/spiral doesn't intersect either
+      }
+      // assume we're dealing with triangles
+      visitor.point.getPoint3dAtUncheckedPointIndex(0, workPoints[0]);
+      visitor.point.getPoint3dAtUncheckedPointIndex(1, workPoints[1]);
+      visitor.point.getPoint3dAtUncheckedPointIndex(2, workPoints[2]);
+      workClipShape = ClipShape.createShape(workPoints, undefined, undefined, undefined, undefined, undefined, workClipShape);
+      if (!workClipShape)
+        continue;
+      arcOrSpiral.announceClipIntervals(workClipShape, announcer);
+    }
+    return { profile: lineStrings, numEarlyOuts };
+  }
+
   it("MissAndHit", () => {
     if (GeometryCoreTestIO.enableLongTests) {
       const ck = new Checker();
@@ -1646,79 +1722,3 @@ describe("PolyfaceClipPerformance", () => {
     }
   });
 });
-
-/** Return a rectangle to visualize a clip plane. */
-export function getClipPlaneForVisualization(clipPlane: ClipPlane): IndexedPolyface {
-  const normal = clipPlane.inwardNormalRef;
-  const origin = Point3d.createZero().plusScaled(normal, clipPlane.distance);
-  const perp0 = Matrix3d.createRigidHeadsUp(normal).columnX();
-  const perp1 = normal.crossProduct(perp0);
-  const s = 2;
-  const planeBuilder = PolyfaceBuilder.create();
-  planeBuilder.addQuadFacet([
-    origin.plusScaled(perp0, -s).plusScaled(perp1, -s),
-    origin.plusScaled(perp0, s).plusScaled(perp1, -s),
-    origin.plusScaled(perp0, s).plusScaled(perp1, s),
-    origin.plusScaled(perp0, -s).plusScaled(perp1, s),
-  ]);
-  return planeBuilder.claimPolyface(false);
-}
-
-/**
- * Intersect each facet with an arc or spiral and return results in distance along format i.e.,
- * (distanceAlong, elevation, 0)
- ** Return all edges chained as array of LineString3d.
- */
-export function sectionPolyfaceWithArcOrSpiralDistanceAlongCoords(
-  visitor: PolyfaceVisitor, arcOrSpiral: Arc3d | TransitionSpiral3d
-): { profile: LineString3d[], numEarlyOuts: number } {
-  const primitiveRange = arcOrSpiral.range();
-  const workRange = Range3d.createNull();
-  const workPoints = [Point3d.create(), Point3d.create(), Point3d.create()];
-  let workClipShape: ClipShape | undefined;
-  const workRay = Ray3d.createZero();
-  const unitZ = Vector3d.unitZ();
-  const lineStrings: LineString3d[] = [];
-  let numEarlyOuts = 0;
-
-  const announcer: AnnounceNumberNumberCurvePrimitive = (a0, a1, cp) => {
-    const distanceAlong0 = cp.curveLengthBetweenFractions(0, a0);
-    const distanceAlong1 = cp.curveLengthBetweenFractions(0, a1);
-    const intersectionPoints = [cp.fractionToPoint(a0), cp.fractionToPoint(a1)];
-    PolygonOps.centroidAreaNormal(visitor.point, workRay);
-    if (workRay.getDirectionRef().normalizeInPlace()) {
-      const scale = 1.0 / unitZ.dotProduct(workRay.getDirectionRef());
-      const altitude0 = workRay.pointToFraction(intersectionPoints[0]);
-      const altitude1 = workRay.pointToFraction(intersectionPoints[1]);
-      intersectionPoints[0].z -= altitude0 * scale;
-      intersectionPoints[1].z -= altitude1 * scale;
-    }
-    // lineStrings show the cross-section profile of the triangle surface along the arc/spiral path:
-    //    X-axis = distance traveled along the arc/spiral
-    //    Y-axis = elevation (z-height) on the triangle surface at that point
-    //    Z-axis = 0 (flat 2D profile)
-    lineStrings.push(
-      LineString3d.createPoints([
-        Point3d.create(distanceAlong0, intersectionPoints[0].z, 0),
-        Point3d.create(distanceAlong1, intersectionPoints[1].z, 0)
-      ]),
-    );
-  };
-
-  while (visitor.moveToNextFacet()) {
-    visitor.range(workRange);
-    if (!workRange.intersectsRangeXY(primitiveRange)) {
-      numEarlyOuts++;
-      continue; // when ranges don't intersect, we know the arc/spiral doesn't intersect either
-    }
-    // assume we're dealing with triangles
-    visitor.point.getPoint3dAtUncheckedPointIndex(0, workPoints[0]);
-    visitor.point.getPoint3dAtUncheckedPointIndex(1, workPoints[1]);
-    visitor.point.getPoint3dAtUncheckedPointIndex(2, workPoints[2]);
-    workClipShape = ClipShape.createShape(workPoints, undefined, undefined, undefined, undefined, undefined, workClipShape);
-    if (!workClipShape)
-      continue;
-    arcOrSpiral.announceClipIntervals(workClipShape, announcer);
-  }
-  return { profile: lineStrings, numEarlyOuts };
-}
