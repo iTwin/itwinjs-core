@@ -14,9 +14,10 @@ The goal of this document is to provide a high-level overview of how you can get
       - [Filtering Test Suites](#filtering-test-suites)
   - [Asking Questions](#asking-questions)
   - [Providing Feedback](#providing-feedback)
-  - [Reporting Issues](#reporting-issues)
+  - [Submitting an Issue](#submitting-an-issue)
     - [Look For an Existing Issue](#look-for-an-existing-issue)
-    - [Writing Good Bug Reports and Feature Requests](#writing-good-bug-reports-and-feature-requests)
+    - [Bug Reports](#bug-reports)
+    - [Feature Requests](#feature-requests)
     - [Follow Your Issue](#follow-your-issue)
   - [Contributing Guidelines](#contributing-guidelines)
     - [Branch Naming Policy](#branch-naming-policy)
@@ -182,7 +183,7 @@ The community will be eager to assist you. Your well-worded question will serve 
 
 Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/iTwin/itwinjs-core/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
-## Reporting Issues
+## Submitting an Issue
 
 Have you identified a reproducible problem in iTwin.js?
 Have a feature request?
@@ -201,29 +202,17 @@ Use a reaction in place of a "+1" comment:
 
 If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
 
-### Writing Good Bug Reports and Feature Requests
+### Bug Reports
 
-File a single issue per problem and feature request.
-Do not enumerate multiple bugs or feature requests in the same issue.
+File a single issue per problem using the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) label. A good bug report includes a clear title, the iTwin.js version and runtime environment, expected vs. actual behavior, and full error logs in code blocks.
 
-Do not add your issue as a comment to an existing issue unless it's for the identical input.
-Many issues look similar, but have different causes.
+**A Minimal Reproducible Example (MRE) is required.** Provide a self-contained code snippet, a link to a repo or CodeSandbox, or repro steps in [DTA (display-test-app)](./test-apps/display-test-app). You can also use the [DTA repro agent](https://github.com/iTwin/itwinjs-core/actions/workflows/dta-repro.yml) to automatically generate and validate a reproduction. The easier it is to reproduce, the faster the fix.
 
-The more information you can provide, the more likely someone will be successful reproducing the issue and finding a fix.
+Please also include the earliest date you can consume a fix and disclose if any part of the issue was generated with AI tools.
 
-Please include the following with each issue:
+### Feature Requests
 
-- A short description of the issue that becomes the title
-- Versions of relevant iTwin.js packages
-- Minimal steps to reproduce the issue or a code snippet that demonstrates the issue
-- What you expected to see, versus what you actually saw
-- Images that help explain the issue
-- Any relevant error messages, logs, or other details
-- Impact of the issue
-- Use the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) or [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label to identify the type of issue you are filing
-
-Don't feel bad if the developers can't reproduce the issue right away.
-They will simply ask for more information!
+File feature requests using the [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label. Focus on the problem to be solved — explain the real-world use case, suggest a solution, note what alternatives you've considered, and mention if you're willing to contribute the implementation.
 
 ### Follow Your Issue
 
