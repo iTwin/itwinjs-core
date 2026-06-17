@@ -162,9 +162,15 @@ export class TileAdmin {
   public readonly contextPreloadParentDepth: number;
   /** @internal */
   public readonly contextPreloadParentSkip: number;
-  /** @beta */
+  /** The Cesium Ion API key supplied via [[TileAdmin.Props.cesiumIonKey]], used by the built-in client to
+   * authenticate directly with Cesium Ion. See [[canAccessCesium]] to test whether any Cesium access is configured.
+   * @beta
+   */
   public readonly cesiumIonKey?: string;
-  /** @beta */
+  /** The custom [[CesiumAccessClient]] registered via [[TileAdmin.Props.cesiumAccess]], used to resolve Cesium
+   * asset endpoints. When defined, it takes precedence over [[cesiumIonKey]].
+   * @beta
+   */
   public readonly cesiumAccess?: CesiumAccessClient;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
@@ -211,11 +217,11 @@ export class TileAdmin {
     };
   }
 
-  /** Returns `true` if a custom [[CesiumAccessClient]] has been registered via [[TileAdmin.Props.cesiumAccess]],
-   * or if [[cesiumIonKey]] is set.
+  /** Returns `true` if any Cesium access is configured — that is, if a custom [[CesiumAccessClient]] has been
+   * registered via [[TileAdmin.Props.cesiumAccess]], or if [[cesiumIonKey]] is set.
    * @beta
    */
-  public get hasCesiumAccess(): boolean {
+  public get canAccessCesium(): boolean {
     return this.cesiumAccess !== undefined || this.cesiumIonKey !== undefined;
   }
 
@@ -1279,7 +1285,7 @@ export namespace TileAdmin {
      * such as the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/).
      * When supplied, this takes precedence over [[cesiumIonKey]].
      *
-     * @see [[TileAdmin.hasCesiumAccess]]
+     * @see [[TileAdmin.canAccessCesium]]
      * @beta
      */
     cesiumAccess?: CesiumAccessClient;

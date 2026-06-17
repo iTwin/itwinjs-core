@@ -2020,14 +2020,14 @@ export class CategorySelectorState extends ElementState {
 
 // @beta
 export interface CesiumAccessClient {
-    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint>;
+    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined>;
 }
 
 // @beta
 export interface CesiumAssetEndpoint {
-    accessToken?: string;
+    accessToken: string;
     expiresAt?: Date;
-    url?: string;
+    url: string;
 }
 
 // @public
@@ -11015,9 +11015,11 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
+    // @beta
+    get canAccessCesium(): boolean;
+    // @beta
     readonly cesiumAccess?: CesiumAccessClient;
-    // @beta (undocumented)
+    // @beta
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11088,8 +11090,6 @@ export class TileAdmin {
     getTileUserSetForRequest(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet;
     get gpuMemoryLimit(): GpuMemoryLimit;
     set gpuMemoryLimit(limit: GpuMemoryLimit);
-    // @beta
-    get hasCesiumAccess(): boolean;
     // @internal (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // @internal (undocumented)

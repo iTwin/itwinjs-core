@@ -114,7 +114,9 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
       let resolvedToken: string | undefined;
       let resolvedUrl: string | undefined;
       if (cesiumAsset.key) {
-        // key-bearing URL - use the Ion key directly
+        // Legacy key-bearing URL (e.g. persisted saved view) - authenticate directly with the embedded Ion key.
+        // Such URLs are intentionally exempt from the cesiumAccess-over-cesiumIonKey precedence rule and are not
+        // routed through a registered CesiumAccessClient; see [[CesiumAccessClient]].
         const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(`${cesiumAsset.id}`, cesiumAsset.key);
         resolvedToken = tokenAndUrl.token;
         resolvedUrl = tokenAndUrl.url;
@@ -122,8 +124,10 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
         // delegate to the registered CesiumAccessClient
         const client = getCesiumAccessClient();
         const endpoint = await client.getAssetEndpoint(`${cesiumAsset.id}`, iTwinId);
-        resolvedToken = endpoint.accessToken;
-        resolvedUrl = endpoint.url;
+        if (endpoint) {
+          resolvedToken = endpoint.accessToken;
+          resolvedUrl = endpoint.url;
+        }
       }
       if (resolvedUrl && resolvedToken) {
         url = resolvedUrl;

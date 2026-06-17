@@ -37,7 +37,7 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
-  if (!IModelApp.tileAdmin.hasCesiumAccess)
+  if (!IModelApp.tileAdmin.canAccessCesium)
     return undefined;
 
   return getCesiumAssetUrl(+CesiumIonAssetId.OSMBuildings, "");
@@ -48,6 +48,25 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
  */
 export function getCesiumAccessClient(): CesiumAccessClient {
   return IModelApp.tileAdmin.cesiumAccess ?? new CesiumIonClient();
+}
+
+const cesiumTokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);    // Request a new access token every 30 minutes...
+const cesiumMinTokenTimeoutInterval = BeDuration.fromSeconds(60);      // ...but never re-resolve more often than once per minute.
+
+/** Compute when to next re-resolve a Cesium access token. Honors the endpoint's `expiresAt` when it is a valid
+ * future time, but guards against an invalid (NaN) date - which would otherwise disable refresh entirely - and
+ * against a past/imminent expiry that would re-resolve the endpoint on essentially every tile read.
+ * @internal
+ */
+export function computeCesiumTokenTimeoutInterval(expiresAt: Date | undefined): BeDuration {
+  if (undefined === expiresAt)
+    return cesiumTokenTimeoutInterval;
+
+  const remainingMs = expiresAt.getTime() - Date.now();
+  if (!Number.isFinite(remainingMs))
+    return cesiumTokenTimeoutInterval;
+
+  return BeDuration.fromMilliseconds(Math.max(remainingMs, cesiumMinTokenTimeoutInterval.milliseconds));
 }
 
 /** @internal */
@@ -88,17 +107,20 @@ function notifyTerrainError(detailedDescription?: string): void {
 /** @internal */
 export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
   const assetId = opts.dataSource || CesiumTerrainAssetId.Default;
-  const client = IModelApp.tileAdmin.cesiumAccess ?? new CesiumIonClient();
+  const client = getCesiumAccessClient();
   const endpoint = await client.getAssetEndpoint(assetId, opts.iTwinId);
-  if (!endpoint.accessToken || !endpoint.url) {
+  if (!endpoint) {
     notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
   }
 
+  // Resource paths (layer.json, tiles) are appended directly to the base URL, so ensure it ends with a slash.
+  const baseUrl = endpoint.url.endsWith("/") ? endpoint.url : `${endpoint.url}/`;
+
   let layers;
   try {
     const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${endpoint.accessToken}` } };
-    const layerUrl = `${endpoint.url}layer.json`;
+    const layerUrl = `${baseUrl}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
   } catch {
     notifyTerrainError();
@@ -129,7 +151,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     }
   }
 
-  let tileUrlTemplate = endpoint.url + layers.tiles[0].replace("{version}", layers.version);
+  let tileUrlTemplate = baseUrl + layers.tiles[0].replace("{version}", layers.version);
   if (opts.wantNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
@@ -184,7 +206,6 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchNormal = Vector3d.createZero();
   private static _scratchHeightRange = Range1d.createNull();
-  private static _tokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);      // Request a new access token every 30 minutes...
   private _tokenTimeOut: BeTimePoint;
 
   public override forceTileLoad(tile: Tile): boolean {
@@ -208,10 +229,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._assetId = opts.dataSource || CesiumTerrainAssetId.Default;
     this._iTwinId = opts.iTwinId;
 
-    const initialTimeoutInterval = expiresAt
-      ? BeDuration.fromMilliseconds(Math.max(0, expiresAt.getTime() - Date.now()))
-      : CesiumTerrainProvider._tokenTimeoutInterval;
-    this._tokenTimeOut = BeTimePoint.now().plus(initialTimeoutInterval);
+    this._tokenTimeOut = BeTimePoint.now().plus(computeCesiumTokenTimeoutInterval(expiresAt));
   }
 
   /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
@@ -267,16 +285,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
-      const client = IModelApp.tileAdmin.cesiumAccess ?? new CesiumIonClient();
+      const client = getCesiumAccessClient();
       const endpoint = await client.getAssetEndpoint(this._assetId, this._iTwinId);
-      if (!endpoint.accessToken || args.isCanceled())
+      if (!endpoint || args.isCanceled())
         return undefined;
 
       this._accessToken = endpoint.accessToken;
-      const timeoutInterval = endpoint.expiresAt
-        ? BeDuration.fromMilliseconds(Math.max(0, endpoint.expiresAt.getTime() - Date.now()))
-        : CesiumTerrainProvider._tokenTimeoutInterval;
-      this._tokenTimeOut = BeTimePoint.now().plus(timeoutInterval);
+      this._tokenTimeOut = BeTimePoint.now().plus(computeCesiumTokenTimeoutInterval(endpoint.expiresAt));
     }
 
     const { data, tile } = args;
@@ -513,10 +528,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
  * @internal
  */
 class CesiumIonClient implements CesiumAccessClient {
-  public async getAssetEndpoint(assetId: string, _iTwinId?: GuidString): Promise<CesiumAssetEndpoint> {
+  public async getAssetEndpoint(assetId: string, _iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined> {
     const result = await getCesiumAccessTokenAndEndpointUrl(assetId);
     if (!result.token || !result.url)
-      return {};
+      return undefined;
 
     return { accessToken: result.token, url: result.url };
   }

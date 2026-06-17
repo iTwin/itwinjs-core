@@ -27,7 +27,7 @@ Two authentication paths coexist:
 | `cesiumIonKey` (existing) | App has a direct Cesium Ion subscription | `tileAdmin: { cesiumIonKey: "my-key" }` |
 | `cesiumAccess` (new, `@beta`) | iTwin Platform proxy or any custom resolver | `tileAdmin: { cesiumAccess: new MyClient() }` |
 
-When both are supplied, `cesiumAccess` takes precedence. The new [`TileAdmin.hasCesiumAccess`]($frontend) getter returns `true` if either option is configured.
+When both are supplied, `cesiumAccess` takes precedence. The new [`TileAdmin.canAccessCesium`]($frontend) getter returns `true` if either option is configured.
 
 ```typescript
 import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
@@ -36,11 +36,14 @@ import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
 class ITPCesiumClient implements CesiumAccessClient {
   constructor(private readonly getAccessToken: () => Promise<string>) {}
 
-  async getAssetEndpoint(assetId: string, _iTwinId?: string): Promise<CesiumAssetEndpoint> {
+  async getAssetEndpoint(assetId: string, _iTwinId?: string): Promise<CesiumAssetEndpoint | undefined> {
     const token = await this.getAccessToken();
     const response = await fetch(`https://api.bentley.com/curated-content/cesium/${assetId}/tiles`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (!response.ok)
+      return undefined; // asset cannot be accessed
+
     const json = await response.json();
     return {
       accessToken: json.accessToken,
