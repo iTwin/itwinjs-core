@@ -50,6 +50,8 @@ jobs:
     pool:
       name: iModelTechMacArm
       demands: Agent.OS -equals Darwin
+    variables:
+      npm_config_registry: https://registry.npmjs.org/
     steps:
       - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
@@ -124,9 +126,12 @@ jobs:
           useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
+      # override so this install resolves from the agent's default (internal) registry.
       - script: npm install @bentley/bemetalsmith@6.x
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
+        env:
+          npm_config_registry: ""
 
       # Update the bmsBuild step to include --siteRoot flag when archiveTag is defined.
       - script: |
