@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Cartographic, DbResponseKind, DbResponseStatus, EmptyLocalization, IModelReadRpcInterface } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -42,12 +42,48 @@ describe("IModelConnection geo-elevation getters on non-geolocated iModels", () 
     const result = imodel.projectCenterAltitude;
     expect(result).toBe(0);
   });
+
+  it("geodeticToSeaLevel delegates to injected geoidProvider on geolocated iModel", async () => {
+    const mock = { getGeodeticToSeaLevelOffset: vi.fn().mockResolvedValue(-30.5) };
+    IModelApp.geoidProvider = mock;
+    const imodel = createBlankConnection();
+    expect(imodel.isGeoLocated).toBe(true);
+
+    // First access returns undefined (async request in flight)
+    const initial = imodel.geodeticToSeaLevel;
+    expect(initial).toBeUndefined();
+    expect(mock.getGeodeticToSeaLevelOffset).toHaveBeenCalled();
+
+    // Wait for the promise to resolve and the event to fire
+    await vi.waitFor(() => {
+      expect(imodel.geodeticToSeaLevel).toBe(-30.5);
+    });
+  });
+
+  it("projectCenterAltitude delegates to injected elevationProvider on geolocated iModel", async () => {
+    const mock = { getHeight: vi.fn().mockResolvedValue(250.0) };
+    IModelApp.elevationProvider = mock;
+    const imodel = createBlankConnection();
+    expect(imodel.isGeoLocated).toBe(true);
+
+    // First access returns undefined (async request in flight)
+    const initial = imodel.projectCenterAltitude;
+    expect(initial).toBeUndefined();
+    expect(mock.getHeight).toHaveBeenCalled();
+
+    // Wait for the promise to resolve
+    await vi.waitFor(() => {
+      expect(imodel.projectCenterAltitude).toBe(250.0);
+    });
+  });
 });
 
 describe("IModelApp provider injection", () => {
-  afterAll(async () => IModelApp.shutdown());
+  beforeEach(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterEach(async () => IModelApp.shutdown());
 
-  it("uses injected elevationProvider", async () => {
+  it("uses injected elevationProvider via startup", async () => {
+    await IModelApp.shutdown();
     const mock = { getHeight: vi.fn().mockResolvedValue(123.4) };
     await IModelApp.startup({ localization: new EmptyLocalization(), geospatialProviders: { elevationProvider: mock } });
     const carto = Cartographic.fromDegrees({ longitude: -75, latitude: 40, height: 0 });
@@ -56,7 +92,7 @@ describe("IModelApp provider injection", () => {
     expect(mock.getHeight).toHaveBeenCalledWith(carto);
   });
 
-  it("uses injected geoidProvider", async () => {
+  it("uses injected geoidProvider via setter", async () => {
     const mock = { getGeodeticToSeaLevelOffset: vi.fn().mockResolvedValue(-32.5) };
     IModelApp.geoidProvider = mock;
     const carto = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
@@ -65,7 +101,7 @@ describe("IModelApp provider injection", () => {
     expect(mock.getGeodeticToSeaLevelOffset).toHaveBeenCalledWith(carto);
   });
 
-  it("uses injected locationProvider", async () => {
+  it("uses injected locationProvider via setter", async () => {
     const center = Cartographic.fromDegrees({ longitude: -122, latitude: 47, height: 0 });
     const mock = { getLocation: vi.fn().mockResolvedValue({ center }) };
     IModelApp.locationProvider = mock;
