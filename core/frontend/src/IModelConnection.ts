@@ -30,7 +30,6 @@ import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
@@ -584,20 +583,24 @@ export abstract class IModelConnection extends IModel {
   private _projectCenterAltitude?: number | Promise<number>;
 
   /** Event called immediately after map elevation request is completed. This occurs only in the case where background map terrain is displayed
-   * with either geoid or ground offset. These require a query to BingElevation and therefore synching the view may be required
+   * with either geoid or ground offset. These require a query to the elevation/geoid provider and therefore synching the view may be required
    * when the request is completed.
    * @internal
    */
   public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** The offset between sea level and the geodetic ellipsoid. This will return undefined only if the request for the offset to Bing Elevation
+  /** The offset between sea level and the geodetic ellipsoid. This will return undefined only if the request for the offset
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get geodeticToSeaLevel(): number | undefined {
     if (undefined === this._geodeticToSeaLevel) {
-      const elevationProvider = new BingElevationProvider();
-      this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
+      if (!this.isGeoLocated) {
+        this._geodeticToSeaLevel = 0.0;
+        return 0.0;
+      }
+      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
+      this._geodeticToSeaLevel = IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
       this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
         this._geodeticToSeaLevel = geodeticToSeaLevel;
         this.onMapElevationLoaded.raiseEvent(this);
@@ -606,14 +609,18 @@ export abstract class IModelConnection extends IModel {
     return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
   }
 
-  /** The altitude (geodetic) at the project center. This will return undefined only if the request for the offset to Bing Elevation
+  /** The altitude (geodetic) at the project center. This will return undefined only if the request for the altitude
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get projectCenterAltitude(): number | undefined {
     if (undefined === this._projectCenterAltitude) {
-      const elevationProvider = new BingElevationProvider();
-      this._projectCenterAltitude = elevationProvider.getHeightValue(this.projectExtents.center, this);
+      if (!this.isGeoLocated) {
+        this._projectCenterAltitude = 0.0;
+        return 0.0;
+      }
+      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
+      this._projectCenterAltitude = IModelApp.elevationProvider.getHeight(carto);
       this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;
         this.onMapElevationLoaded.raiseEvent(this);
