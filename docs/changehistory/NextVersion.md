@@ -9,7 +9,6 @@ publish: false
     - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
     - [Reality model tiles with JSON glTF content now render](#reality-model-tiles-with-json-gltf-content-now-render)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
-    - [Bing Maps imagery is deprecated](#bing-maps-imagery-is-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
