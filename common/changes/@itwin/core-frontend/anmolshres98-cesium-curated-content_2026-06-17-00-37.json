@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add CesiumAccessClient interface to allow applications to plug in custom Cesium ion authentication, with CesiumIonClient as the built-in fallback.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

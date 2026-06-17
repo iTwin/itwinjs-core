@@ -43,6 +43,11 @@ export interface TerrainMeshProviderOptions {
    * @beta
    */
   produceGeometry?: boolean;
+  /** Optional iTwin context identifier. Passed to [[CesiumAccessClient.getAssetEndpoint]] so implementations
+   * that scope requests to an iTwin context can use it. Not required by the iTwin Platform Cesium Curated Content API.
+   * @beta
+   */
+  iTwinId?: string;
 }
 
 /** Arguments supplied to [[TerrainMeshProvider.requestMeshData]].

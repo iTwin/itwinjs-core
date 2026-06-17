@@ -8,11 +8,11 @@
 import { request } from "./request/Request";
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
+import { CesiumIonAssetProvider, getCesiumAccessClient, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 
 /** This class provides access to the reality data provider services.
- * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
+ * It encapsulates access to a reality data whether it be from local access, http or ProjectWise Context Share.
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
@@ -111,10 +111,23 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     // The following is only if the reality data is not stored on PW Context Share.
     const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(url);
     if (cesiumAsset) {
-      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(`${cesiumAsset.id}`, cesiumAsset.key);
-      if (tokenAndUrl.url && tokenAndUrl.token) {
-        url = tokenAndUrl.url;
-        this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
+      let resolvedToken: string | undefined;
+      let resolvedUrl: string | undefined;
+      if (cesiumAsset.key) {
+        // key-bearing URL - use the Ion key directly
+        const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(`${cesiumAsset.id}`, cesiumAsset.key);
+        resolvedToken = tokenAndUrl.token;
+        resolvedUrl = tokenAndUrl.url;
+      } else {
+        // delegate to the registered CesiumAccessClient
+        const client = getCesiumAccessClient();
+        const endpoint = await client.getAssetEndpoint(`${cesiumAsset.id}`, iTwinId);
+        resolvedToken = endpoint.accessToken;
+        resolvedUrl = endpoint.url;
+      }
+      if (resolvedUrl && resolvedToken) {
+        url = resolvedUrl;
+        this._requestAuthorization = `Bearer ${resolvedToken}`;
       }
     }
 
