@@ -1566,7 +1566,7 @@ describe("PolyfaceClipPerformance", () => {
   }
 
   interface SegmentResults {
-    /** Unordered array of curve segments, each a pair of points in format (distanceAlong, elevation, 0). */
+    /** Unordered array of profile curve segments, each a pair of points in format (distanceAlong, elevation, 0). */
     profile: LineSegment3d[];
     /** Number of facet intersections avoided during segmentation. */
     numEarlyOuts: number;
@@ -1600,7 +1600,7 @@ describe("PolyfaceClipPerformance", () => {
           intersectionPoints[0].z -= altitude0 * scale;
           intersectionPoints[1].z -= altitude1 * scale;
         }
-        // each 2D profile segment is the vertical projection of the curve clip points onto the facet, in these coords:
+        // the endpoints of each 2D profile segment have these coords:
         //    x = distance along the curve at the clip point
         //    y = z-coordinate of the vertical projection of the clip point onto the facet
         segments.push(LineSegment3d.createXYXY(distanceAlong0, intersectionPoints[0].z, distanceAlong1, intersectionPoints[1].z));
