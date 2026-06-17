@@ -5,7 +5,7 @@ The application is built using [Vite](https://github.com/vitejs/vite), and scaff
 ## Setup
 
 - [Install necessary prerequisites](./development-prerequisites.md).
-- From a terminal, `npx degit iTwin/viewer/packages/templates/desktop#master your-app-name`
+- From a terminal, `npx degit itwin/viewer/packages/templates/desktop#master your-app-name`
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code and run `npm install` (or `pnpm install`). This will install all the dependencies listed in your package.json.
 - Follow these steps to obtain a new OIDC client to use in your viewer application:
@@ -38,7 +38,7 @@ Desktop apps can also open cloud hosted iModels. If you do not have access to on
 ## Useful Links
 
 - [iTwin Desktop Viewer React](https://www.npmjs.com/package/@itwin/desktop-viewer-react)
-- [iTwin Desktop Viewer Vite Template](https://github.com/iTwin/viewer/tree/master/packages/templates/desktop)
+- [iTwin Desktop Viewer Vite Template](https://github.com/itwin/viewer/tree/master/packages/templates/desktop)
 - [Vite](https://vite.dev/guide/)
 
 ## Next Steps

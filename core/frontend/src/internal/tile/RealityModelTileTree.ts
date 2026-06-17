@@ -329,6 +329,7 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly rangeCorners?: Point3d[];
   public readonly region?: RealityTileRegion;
   public readonly geometricError?: number;
+  public readonly contentUrl?: string;
 
   constructor(args: {
     json: any;
@@ -355,10 +356,12 @@ class RealityModelTileProps implements RealityTileParams {
     }
 
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
-    const hasContents = undefined !== getUrl(json.content);
-    if (hasContents)
+    const contentUrl = getUrl(json.content);
+    const hasContents = undefined !== contentUrl;
+    if (hasContents) {
+      this.contentUrl = contentUrl;
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
-    else {
+    } else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
       // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world building set.
       if (this.additiveRefinement || args.parent?.additiveRefinement)

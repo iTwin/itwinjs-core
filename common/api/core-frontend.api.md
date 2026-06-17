@@ -8493,6 +8493,8 @@ export class RealityTile extends Tile {
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // @internal
+    readonly contentUrl?: string;
     // @internal (undocumented)
     get copyright(): string | undefined;
     // @internal (undocumented)
