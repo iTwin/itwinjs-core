@@ -15,6 +15,8 @@ publish: false
     - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
+  - [@itwin/build-tools](#itwinbuild-tools)
+    - [`mocha` is now an optional peer dependency](#mocha-is-now-an-optional-peer-dependency)
 
 ## @itwin/core-frontend
 
@@ -184,3 +186,23 @@ if (iModel.isGeoLocated) {
 `@itwin/map-layers-formats` now registers Azure Maps imagery support through `MapLayersFormats.initialize()` and exposes a beta `AzureMaps` helper for applying Azure Maps Street, Aerial, and Hybrid basemaps.
 
 Applications configure the Azure Maps key when initializing `@itwin/map-layers-formats` with `MapLayersFormats.initialize({ azureMapsOpts: { subscriptionKey: ... } })`. After initializing `@itwin/map-layers-formats`, code that wants Azure-specific basemap helpers can import `AzureMaps` from that package.
+
+## @itwin/build-tools
+
+### `mocha` is now an optional peer dependency
+
+`@itwin/build-tools` no longer declares `mocha` as a direct dependency. It is now an optional [peer dependency](https://nodejs.org/en/blog/npm/peer-dependencies), because the only part of the package that uses `mocha` is the `mocha-reporter` (`BentleyMochaReporter`), which always runs inside a consumer that is already executing `mocha`.
+
+This removes `mocha` — and its vulnerable transitive dependencies such as `serialize-javascript` and `diff` — from the *direct* dependency closure of `@itwin/build-tools`. Consumers that do not use the reporter (and therefore do not run `mocha`) no longer pull `mocha` in through `@itwin/build-tools`, so it stops surfacing in their audits under pnpm and yarn. Note that `@itwin/build-tools` still depends on `mocha-junit-reporter`, which declares a required peer dependency on `mocha`; package managers that auto-install required peers (such as npm v7+) may therefore still resolve `mocha` transitively.
+
+If you consume the reporter via `@itwin/build-tools/mocha-reporter`, declare `mocha` in your own package's `devDependencies` (most packages running mocha already do):
+
+```json
+{
+  "devDependencies": {
+    "mocha": "^11.1.0"
+  }
+}
+```
+
+Packages that do not use the `mocha-reporter` are unaffected, and the optional peer dependency itself produces no installation warnings when `mocha` is absent under pnpm and yarn.
