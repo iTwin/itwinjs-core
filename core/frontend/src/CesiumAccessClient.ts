@@ -15,8 +15,12 @@ import { GuidString } from "@itwin/core-bentley";
 export interface CesiumAssetEndpoint {
   /** The access token to use for authenticated requests to [[url]]. */
   accessToken: string;
-  /** The base URL for the asset's tiles. Callers append resource paths (e.g. `layer.json`) directly to it;
-   * a trailing `/` is added automatically if not already present.
+  /** The endpoint URL for the asset, used together with [[accessToken]] to fetch its tiles.
+   * The exact shape depends on the asset type:
+   * - For terrain assets, this is the base URL to which callers append resource paths (e.g. `layer.json`);
+   *   a trailing `/` is added automatically if not already present.
+   * - For 3D Tiles assets, this is the URL of the tileset's root document (e.g. `tileset.json`), requested
+   *   directly, with child resources resolved relative to it.
    */
   url: string;
   /** The time at which [[accessToken]] expires, if known.

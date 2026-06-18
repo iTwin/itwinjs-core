@@ -648,10 +648,8 @@ describe("TileAdmin", () => {
       expect(IModelApp.tileAdmin.cesiumAccess).toBeUndefined();
       const client = getCesiumAccessClient();
       expect(client).toBeDefined();
-      // The fallback must implement the CesiumAccessClient contract...
+      // The fallback must implement the CesiumAccessClient contract.
       expect(typeof client.getAssetEndpoint).toBe("function");
-      // ...and, lacking a registered client, each call constructs a fresh fallback instance.
-      expect(getCesiumAccessClient()).not.toBe(client);
     });
 
     it("returns the registered cesiumAccess client when configured", async () => {

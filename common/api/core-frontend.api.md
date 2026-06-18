@@ -10854,7 +10854,7 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
-    iTwinId?: string;
+    iTwinId?: GuidString;
     // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
