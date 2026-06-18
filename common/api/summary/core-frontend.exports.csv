@@ -90,6 +90,8 @@ public;function;canvasToResizedCanvasWithBars
 beta;interface;CatalogConnection
 beta;namespace;CatalogConnection
 public;class;CategorySelectorState
+beta;interface;CesiumAccessClient
+beta;interface;CesiumAssetEndpoint
 public;enum;ChangeFlag
 public;class;ChangeFlags
 public;interface;ChangeViewedModel2dOptions

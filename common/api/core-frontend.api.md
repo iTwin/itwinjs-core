@@ -2023,6 +2023,18 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface CesiumAccessClient {
+    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined>;
+}
+
+// @beta
+export interface CesiumAssetEndpoint {
+    accessToken: string;
+    expiresAt?: Date;
+    url: string;
+}
+
 // @public
 export enum ChangeFlag {
     All = 268435455,
@@ -10842,6 +10854,8 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
+    iTwinId?: GuidString;
+    // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -11044,7 +11058,11 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
+    // @beta
+    get canAccessCesium(): boolean;
+    // @beta
+    readonly cesiumAccess?: CesiumAccessClient;
+    // @beta
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11194,6 +11212,8 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
+        // @beta
+        cesiumAccess?: CesiumAccessClient;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;

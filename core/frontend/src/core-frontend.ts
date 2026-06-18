@@ -12,6 +12,7 @@ export * from "./GeoProviders";
 export * from "./BriefcaseTxns";
 export * from "./CatalogConnection";
 export * from "./CategorySelectorState";
+export * from "./CesiumAccessClient";
 export * from "./ChangeFlags";
 export * from "./CheckpointConnection";
 export * from "./common";
