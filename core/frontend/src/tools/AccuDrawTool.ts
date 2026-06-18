@@ -15,7 +15,8 @@ import { SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputCollector, Tool } from "./Tool";
+import { BeButtonEvent, CoreTools, Tool } from "./Tool";
+import { AccuDrawShortcutImplementation, AccuDrawShortcutTool } from "./AccuDrawShortcutTool";
 
 // cSpell:ignore dont unlockedz
 
@@ -163,15 +164,12 @@ export class AccuDrawShortcuts {
     return accept;
   }
 
-  public static processPendingHints() { IModelApp.accuDraw.processHints(); }
+  public static processPendingHints() {
+    IModelApp.accuDraw.processHints();
+  }
 
   public static requestInputFocus() {
-    const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
-
-    accudraw.grabInputFocus();
-    accudraw.refreshDecorationsAndDynamics();
+    IModelApp.accuDraw.requestInputFocus();
   }
 
   // Helper method for GUI implementation...
@@ -1169,118 +1167,35 @@ export class AccuDrawRotate90AboutZTool extends Tool {
 }
 
 /** @internal */
-abstract class AccuDrawShortcutsTool extends InputCollector {
-  private _complete = false;
-  protected get allowShortcut(): boolean { return this.wantActivateOnStart ? IModelApp.accuDraw.isEnabled : true; }
-  protected get wantActivateOnStart(): boolean { return false; } // Whether to automatically enable AccuDraw before the 1st data button...
-  protected get wantClearSnapOnStart(): boolean { return false; } // Whether to preserve active Tentative/AccuSnap on install...
-  protected get wantManipulationImmediate(): boolean { return false; } // Whether additional input is required to process on install...
-  protected get wantExitOnDataButtonUp(): boolean { return false; } // Whether to exit on button up instead of down...
+class RotateAxesImplementation extends AccuDrawShortcutImplementation {
+  public constructor(private readonly _aboutCurrentZ: boolean) { super(); }
 
-  public override async onInstall(): Promise<boolean> {
-    if (!this.allowShortcut)
-      return false;
-    return super.onInstall();
-  }
-
-  public override async onPostInstall(): Promise<void> {
-    await super.onPostInstall();
-
-    if (this.wantActivateOnStart)
-      IModelApp.accuDraw.activate();
-
-    this.onManipulationStart();
-
-    if (this.wantManipulationImmediate && this.doManipulation(undefined, false)) {
-      this._complete = true;
-      return this.exitTool();
-    }
-
-    // NOTE: InputCollector inherits suspended primitive's state, set everything...
-    if (this.wantClearSnapOnStart) {
-      this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); // This clears the active Tentative/AccuSnap, some shortcuts have special behavior when invoked with an active snap...
-    } else {
-      IModelApp.locateManager.initLocateOptions();
-      this.changeLocateState(false, true, undefined, CoordinateLockOverrides.None);
-    }
-
-    this.doManipulation(undefined, true);;
-  }
-
-  public override async onCleanup(): Promise<void> {
-    if (this._complete)
-      IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete();
-  }
-
-  public override async exitTool(): Promise<void> {
-    await super.exitTool();
-    AccuDrawShortcuts.requestInputFocus(); // re-grab focus when auto-focus tool setting set...
-  }
-
-  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (this.doManipulation(ev, false)) {
-      this._complete = true;
-      if (!this.wantExitOnDataButtonUp)
-        await this.exitTool();
-    }
-
-    return EventHandled.No;
-  }
-
-  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    if (this._complete && this.wantExitOnDataButtonUp)
-      await this.exitTool();
-
-    return EventHandled.No;
-  }
-
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    this.doManipulation(ev, true);
-  }
-
-  protected onManipulationStart(): void { }
-  protected onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
-  protected abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-}
-
-/** @beta */
-export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
-  public static override toolId = "AccuDraw.RotateAxes";
-  public static override get maxArgs(): number { return 1; }
-  public constructor(public aboutCurrentZ: boolean = true) { super(); }
-
-  /** @internal */
   protected override get allowShortcut(): boolean { return IModelApp.accuDraw.isActive; } // Require compass to already be active for this shortcut...
-
-  /** @internal */
   protected override get wantActivateOnStart(): boolean { return true; } // State is demoted to inactive when a tool install, still need this...
 
-  /** @internal */
-  protected override get wantManipulationImmediate(): boolean {
+  protected override get wantAdditionalInput(): boolean {
     if (TentativeOrAccuSnap.isHot)
-      return true;
+      return false;
 
     const accudraw = IModelApp.accuDraw;
 
     if (CompassMode.Polar === accudraw.compassMode)
-      return accudraw.getFieldLock(ItemField.ANGLE_Item);
+      return !accudraw.getFieldLock(ItemField.ANGLE_Item);
 
-    return accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item);
+    return !(accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item));
   }
 
-  /** @internal */
-  protected override onManipulationStart(): void {
-    if (this.aboutCurrentZ)
+  protected override onInitialize(): void {
+    if (this._aboutCurrentZ)
       IModelApp.accuDraw.changeBaseRotationMode(RotationMode.Context); // Establish current orientation as base for when defining compass rotation by x axis...
     CoreTools.outputPromptByKey("AccuDraw.RotateAxes.Prompts.FirstPoint");
   }
 
-  /** @internal */
-  protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
+  public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
     if (!vp)
       return false;
-    if (!AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this.aboutCurrentZ))
+    if (!AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this._aboutCurrentZ))
       return false;
     vp.invalidateDecorations();
     if (!isMotion) {
@@ -1289,43 +1204,48 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
     }
     return true;
   }
+}
+
+/** @beta */
+export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
+  public static override toolId = "AccuDraw.RotateAxes";
+  public static override get maxArgs(): number { return 1; }
+  public constructor(public aboutCurrentZ: boolean = true) { super(); }
+
+  /** @internal */
+  protected override createImplementation(): AccuDrawShortcutImplementation {
+    return new RotateAxesImplementation(this.aboutCurrentZ);
+  }
 
   public override async parseAndRun(...args: any[]): Promise<boolean> {
     for (const arg of args) {
       if (arg.toLowerCase() === "unlockedz")
         this.aboutCurrentZ = false;
     }
-    return this.run(args);
+    return this.run();
   }
 }
 
-/** @beta */
-export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
-  public static override toolId = "AccuDraw.RotateElement";
+/** @internal */
+class RotateElementImplementation extends AccuDrawShortcutImplementation {
   private _moveOrigin = !IModelApp.accuDraw.isActive || IModelApp.tentativePoint.isActive; // Preserve current origin if AccuDraw already active and not tentative snap...
 
-  /** @internal */
   protected override get wantActivateOnStart(): boolean { return true; }
+  protected override get wantAdditionalInput(): boolean { return !IModelApp.tentativePoint.isSnapped; }
 
-  /** @internal */
-  protected override get wantManipulationImmediate(): boolean { return IModelApp.tentativePoint.isSnapped; }
-
-  /** @internal */
-  protected override onManipulationStart(): void {
+  protected override onInitialize(): void {
     IModelApp.accuDraw.setContext(AccuDrawFlags.FixedOrigin); // Don't move compass when updateOrientation returns false...
     CoreTools.outputPromptByKey("AccuDraw.RotateElement.Prompts.FirstPoint");
   }
 
-  /** @internal */
-  protected override onManipulationComplete(): AccuDrawFlags {
+  protected override onComplete(): AccuDrawFlags {
     let ignoreFlags = AccuDrawFlags.SetRMatrix | AccuDrawFlags.Disable; // If AccuDraw wasn't active when the shortcut started, let it remain active for suspended tool when shortcut completes...
     if (this._moveOrigin)
       ignoreFlags |= AccuDrawFlags.SetOrigin;
     return ignoreFlags;
   }
 
-  /** @internal */
-  protected updateOrientation(snap: SnapDetail, viewport: ScreenViewport, _isMotion: boolean): boolean {
+  private updateOrientation(snap: SnapDetail, viewport: ScreenViewport): boolean {
     const accudraw = IModelApp.accuDraw;
     const rMatrix = AccuDraw.getSnapRotation(snap, viewport);
     if (undefined === rMatrix)
@@ -1336,14 +1256,13 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
     return true;
   }
 
-  /** @internal */
-  protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
+  public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const viewport = ev ? ev.viewport : IModelApp.accuDraw.currentView;
     if (!viewport)
       return false;
 
     const snap = TentativeOrAccuSnap.getCurrentSnap(false);
-    if (undefined === snap || !this.updateOrientation(snap, viewport, isMotion))
+    if (undefined === snap || !this.updateOrientation(snap, viewport))
       return false;
 
     if (undefined === ev)
@@ -1355,17 +1274,24 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
 }
 
 /** @beta */
-export class DefineACSByElementTool extends AccuDrawShortcutsTool {
-  public static override toolId = "AccuDraw.DefineACSByElement";
+export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
+  public static override toolId = "AccuDraw.RotateElement";
+
+  /** @internal */
+  protected override createImplementation(): AccuDrawShortcutImplementation {
+    return new RotateElementImplementation();
+  }
+}
+
+/** @internal */
+class DefineACSByElementImplementation extends AccuDrawShortcutImplementation {
   private _origin = Point3d.create();
   private _rMatrix = Matrix3d.createIdentity();
   private _acs?: AuxCoordSystemState;
 
-  /** @internal */
-  protected override onManipulationStart(): void { CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint"); }
+  protected override onInitialize(): void { CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint"); }
 
-  /** @internal */
-  protected updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
+  private updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
     const rMatrix = AccuDraw.getSnapRotation(snap, vp);
     if (undefined === rMatrix)
       return false;
@@ -1374,8 +1300,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
     return true;
   }
 
-  /** @internal */
-  protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
+  public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const vp = ev ? ev.viewport : undefined;
     if (!vp)
       return false;
@@ -1398,8 +1323,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
     return true;
   }
 
-  /** @internal */
-  public override decorate(context: DecorateContext): void {
+  public override doDecorate(context: DecorateContext): void {
     const vp = context.viewport;
     if (!this._acs)
       this._acs = vp.view.auxiliaryCoordinateSystem.clone();
@@ -1410,13 +1334,21 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 }
 
 /** @beta */
-export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
-  public static override toolId = "AccuDraw.DefineACSByPoints";
+export class DefineACSByElementTool extends AccuDrawShortcutTool {
+  public static override toolId = "AccuDraw.DefineACSByElement";
+
+  /** @internal */
+  protected override createImplementation(): AccuDrawShortcutImplementation {
+    return new DefineACSByElementImplementation();
+  }
+}
+
+/** @internal */
+class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
   private readonly _points: Point3d[] = [];
   private _acs?: AuxCoordSystemState;
 
-  /** @internal */
-  protected override onManipulationStart(): void {
+  protected override onInitialize(): void {
     if (!IModelApp.tentativePoint.isActive) {
       CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.FirstPoint");
       return;
@@ -1429,8 +1361,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     IModelApp.tentativePoint.clear(true);
   }
 
-  /** @internal */
-  protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
+  public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     if (!ev || !ev.viewport)
       return false;
 
@@ -1455,8 +1386,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     return false;
   }
 
-  /** @internal */
-  public override decorate(context: DecorateContext): void {
+  public override doDecorate(context: DecorateContext): void {
     const tmpPoints: Point3d[] = [];
     this._points.forEach((pt) => tmpPoints.push(pt));
 
@@ -1470,5 +1400,15 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
 
     AccuDrawShortcuts.updateACSByPoints(this._acs, vp, tmpPoints, true);
     this._acs.display(context, ACSDisplayOptions.Active | ACSDisplayOptions.Dynamics);
+  }
+}
+
+/** @beta */
+export class DefineACSByPointsTool extends AccuDrawShortcutTool {
+  public static override toolId = "AccuDraw.DefineACSByPoints";
+
+  /** @internal */
+  protected override createImplementation(): AccuDrawShortcutImplementation {
+    return new DefineACSByPointsImplementation();
   }
 }
