@@ -203,16 +203,21 @@ Use a reaction in place of a "+1" comment:
 If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
 
 ### Bug Reports
-
-File a single issue per problem using the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) label. A good bug report includes a clear title, the iTwin.js version and runtime environment, expected vs. actual behavior, and full error logs in code blocks.
-
-**A Minimal Reproducible Example (MRE) is required.** Provide a self-contained code snippet, a link to a repo or CodeSandbox, or repro steps in [DTA (display-test-app)](./test-apps/display-test-app). You can also use the [DTA repro agent](https://github.com/iTwin/itwinjs-core/actions/workflows/dta-repro.yml) to automatically generate and validate a reproduction. The easier it is to reproduce, the faster the fix.
-
-Please also include the earliest date you can consume a fix and disclose if any part of the issue was generated with AI tools.
+- **Clear title:** State the problem concisely (e.g., "Crash in v2.0 when passing null to `user.update()`").
+- **Context:** iTwin.js version, runtime environment (e.g., Node.js 20, Electron 28, core-backend 5.11.0), platform/browser/OS.
+- **Expected vs. actual behavior:** Contrast what should have happened with what actually happened.
+- **Minimal Reproducible Example (MRE):**
+    - A self-contained code snippet or link to a repo/CodeSandbox that isolates the bug.
+    - Repro steps in Display Test App (in a branch if needed) or standalone tests.
+- **Stack traces and logs:** Paste full error logs in markdown code blocks, not screenshots.
+- **Priority/urgency:** Include the earliest date you can consume a fix.
+- **AI acknowledgment**
 
 ### Feature Requests
-
-File feature requests using the [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label. Focus on the problem to be solved — explain the real-world use case, suggest a solution, note what alternatives you've considered, and mention if you're willing to contribute the implementation.
+- **Use case:** Explain the real-world problem and how this benefits the wider community, not just your project.
+- **Proposed solution:** Suggest how it should work (e.g., API design ideas, new configuration flags).
+- **Alternatives considered:** Explain why current workarounds or existing features don't solve your problem.
+- **Willingness to contribute:** State if you're willing to write the code or documentation yourself.
 
 ### Follow Your Issue
 
