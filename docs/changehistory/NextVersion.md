@@ -32,13 +32,14 @@ Two authentication paths coexist:
 When both are supplied, `cesiumAccess` takes precedence. The new [TileAdmin.canAccessCesium]($frontend) getter returns `true` if either option is configured.
 
 ```typescript
+import { GuidString } from "@itwin/core-bentley";
 import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
 
 // Example: implement CesiumAccessClient using the iTwin Platform Cesium Curated Content API.
 class ITPCesiumClient implements CesiumAccessClient {
   constructor(private readonly getAccessToken: () => Promise<string>) {}
 
-  async getAssetEndpoint(assetId: string, _iTwinId?: string): Promise<CesiumAssetEndpoint | undefined> {
+  async getAssetEndpoint(assetId: string, _iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined> {
     const token = await this.getAccessToken();
     const response = await fetch(`https://api.bentley.com/curated-content/cesium/${assetId}/tiles`, {
       headers: { Authorization: `Bearer ${token}` },
