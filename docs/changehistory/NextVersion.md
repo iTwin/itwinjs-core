@@ -10,6 +10,8 @@ publish: false
     - [Reality model tiles with JSON glTF content now render](#reality-model-tiles-with-json-gltf-content-now-render)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
+  - [@itwin/core-geometry](#itwincore-geometry)
+    - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
 
@@ -115,6 +117,18 @@ if (iModel.isGeoLocated) {
   const height = await IModelApp.elevationProvider.getHeight(carto);
 }
 ```
+
+## @itwin/core-geometry
+
+### `CurveFactory.createFilletsInLineString` expanded options
+
+[CurveFactory.createFilletsInLineString]($core-geometry) has three new [CreateFilletsInLineStringOptions]($core-geometry) interface options to control the construction of the output `Path`, particularly with respect to the appearance of cusps in the output. A _cusp_ occurs when a fillet's radius is too large, and the arc consumes one or both adjacent line string edges. Cusps in the output of this method (especially large cusps) are generally considered to be undesirable.
+
+[CreateFilletsInLineStringOptions.closureTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.filletClosure]($core-geometry) is `true` to determine whether the final input point is to be considered equal to the first input point. If these points have distance less than `closureTolerance`, the final point is ignored when the input polygon is filleted. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), matching previous behavior.
+
+[CreateFilletsInLineStringOptions.cuspSegments]($core-geometry) is used when [CreateFilletsInLineStringOptions.allowCusp]($core-geometry) is `true` to insert a `LineSegment3d` in the output `Path` at each cusp. These extra `Path` children are retrograde line segments that bridge the gap formed by each cusp and thereby maintain the chain's continuity. To avoid these extra output segments, the caller can pass `cuspSegments = false` at the cost of chain discontinuity (if the gaps are small enough, they may be tolerated by chain processing downstream). The default value of this option is `true`, matching previous behavior.
+
+[CreateFilletsInLineStringOptions.cuspTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.allowCusp]($core-geometry) is `true` to determine whether to suppress large cusps in the output. A cusp segment whose length exceeds `cuspTolerance` will be eliminated in the output `Path` by the removal of one or both of its constituent fillet arcs. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), which is a slight deviation from previous default behavior. The new default behavior allows only miniscule cusps, whereas the old default behavior allowed cusps of any size. The old default behavior is considered to be a bug.
 
 ## @itwin/map-layers-formats
 
