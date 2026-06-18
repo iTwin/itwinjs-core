@@ -28,8 +28,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.11.9
-        version: 5.11.9
+        specifier: 5.11.10
+        version: 5.11.10
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -4770,8 +4770,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.11.9':
-    resolution: {integrity: sha512-Bpx8J1Ctb1fewp8xqq+1Wwux+VOC8R33ILsZ3cIRONPfZuR4+Vyk3Impjt+fXacQ86kLJxGEQL+SAiyK5s7PMw==}
+  '@bentley/imodeljs-native@5.11.10':
+    resolution: {integrity: sha512-8h2QRyR40k7ehTMCeVnAcqHcCsZFoZZeyDXZCc1jwqSSKycz6jBVV/2+uGZEa2n9R+WPugDaSW7Ahs2esm2u9g==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -9711,8 +9711,8 @@ packages:
       tedious:
         optional: true
 
-  serialize-javascript@7.0.5:
-    resolution: {integrity: sha512-F4LcB0UqUl1zErq+1nYEEzSHJnIwb3AF2XWB94b+afhrekOUijwooAYqFyRbjYkm2PAKBabx6oYv/xDxNi8IBw==}
+  serialize-javascript@7.0.6:
+    resolution: {integrity: sha512-ATTK5Q4gFVg0YDp1my2vqygyvhcklD/UV5GIlYHooGTn/NogJqIzpetkD6E5kmuVULqz/S9inUL25XcAgDRJQg==}
     engines: {node: '>=20.0.0'}
 
   serve-static@1.16.3:
@@ -11172,7 +11172,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.11.9': {}
+  '@bentley/imodeljs-native@5.11.10': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -15750,7 +15750,7 @@ snapshots:
       log-symbols: 4.1.0
       minimatch: 5.1.9
       ms: 2.1.3
-      serialize-javascript: 7.0.5
+      serialize-javascript: 7.0.6
       strip-json-comments: 3.1.1
       supports-color: 8.1.1
       workerpool: 6.5.1
@@ -16726,7 +16726,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serialize-javascript@7.0.5: {}
+  serialize-javascript@7.0.6: {}
 
   serve-static@1.16.3:
     dependencies:
