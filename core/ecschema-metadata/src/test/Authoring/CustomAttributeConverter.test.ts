@@ -9,7 +9,7 @@
 import { describe, expect, it } from "vitest";
 import { customAttributeJsonToXml, customAttributeXmlToJson, CustomAttributeConversionContext } from "../../Authoring/CustomAttributeConverter"; // eslint-disable-line sort-imports
 import { SchemaIssueList } from "../../Authoring/SchemaIssues";
-import { SchemaView } from "../../SchemaView";
+import { SchemaView } from "../../SchemaView/SchemaView";
 
 // The converter only touches a narrow slice of SchemaView: findClass -> getProperty ->
 // isStruct()/isArray() -> structClass.name/getProperty. A structural mock exercises exactly that

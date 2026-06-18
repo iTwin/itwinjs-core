@@ -18,7 +18,7 @@ import {
   RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { SchemaDocument, SchemaXmlWriter } from "@itwin/ecschema-metadata";
+import { Authoring } from "@itwin/ecschema-metadata";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointManager, CheckpointProps, DownloadRequest, V2CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
@@ -302,9 +302,9 @@ export class IModelTestUtils {
    * and forwarded to [[IModelDb.importSchemaStrings]]. If we expose a method on IModelDb that takes SchemaDocuments directly,
    * this helper can be removed and tests can call that method instead.
    */
-  public static async importSchemaDocuments(iModel: IModelDb, schemaDocuments: SchemaDocument[]): Promise<void> {
+  public static async importSchemaDocuments(iModel: IModelDb, schemaDocuments: Authoring.SchemaDocument[]): Promise<void> {
     const serializedXmlSchemas = schemaDocuments.map((schemaDocument) => {
-      const result = new SchemaXmlWriter().writeDocument(schemaDocument);
+      const result = new Authoring.SchemaXmlWriter().writeDocument(schemaDocument);
       if (result.text === undefined || result.issues.hasErrors) {
         const detail = result.issues.errors.map((issue) => `${issue.code}: ${issue.message}`).join("; ");
         throw new IModelError(IModelStatus.BadSchema, `Failed to serialize SchemaDocument '${schemaDocument.name}' to ECXML: ${detail}`);

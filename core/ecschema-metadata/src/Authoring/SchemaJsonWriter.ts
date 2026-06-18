@@ -8,9 +8,9 @@
 
 import { formatTraitsToArray, FormatType } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
-import { SchemaView } from "../SchemaView";
+import { SchemaView } from "../SchemaView/SchemaView";
 import { customAttributeXmlToJson } from "./CustomAttributeConverter";
-import { Authoring, SchemaDocument } from "./SchemaDocument";
+import * as Authoring from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
@@ -35,7 +35,7 @@ interface JsonObject {
   [name: string]: unknown;
 }
 
-/** Serializes a {@link SchemaDocument} to ECJSON text. The document always models the latest spec;
+/** Serializes a {@link Authoring.SchemaDocument} to ECJSON text. The document always models the latest spec;
  * the writer converts to the requested spec version at this boundary (currently only
  * {@link ECSpec.V3_2}). Unlike ECXML, ECJSON 3.2 carries mixins first-class and schema references
  * without aliases, so this writer has less conversion to do than its XML sibling - but the same
@@ -45,7 +45,7 @@ interface JsonObject {
  */
 export class SchemaJsonWriter implements SchemaDocumentTextWriter {
   /** Writes the document to ECJSON text in the requested spec version (default {@link ECSpec.Latest}). */
-  public writeDocument(document: SchemaDocument, options?: SchemaJsonWriteOptions): SchemaWriteResult {
+  public writeDocument(document: Authoring.SchemaDocument, options?: SchemaJsonWriteOptions): SchemaWriteResult {
     const result = this.writeDocumentTree(document, options);
     if (result.tree === undefined)
       return { issues: result.issues };
@@ -59,7 +59,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
    * shaped the read side: native `JSON.stringify` is all-or-nothing (it produces the entire string in
    * one step, with no streaming mode), so a true streaming ECJSON writer means hand-rolling a token
    * serializer, which is deferred. A chunk-emitting walk slots in behind this same signature with no API change. */
-  public async writeDocumentTo(document: SchemaDocument, sink: SchemaTextSink, options?: SchemaJsonWriteOptions): Promise<SchemaStreamWriteResult> {
+  public async writeDocumentTo(document: Authoring.SchemaDocument, sink: SchemaTextSink, options?: SchemaJsonWriteOptions): Promise<SchemaStreamWriteResult> {
     const result = this.writeDocument(document, options);
     if (result.text !== undefined)
       await sink(result.text);
@@ -69,7 +69,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
   /** Writes the document as a plain ECJSON object tree instead of text - for consumers that want
    * the props shape directly (feeding APIs that take parsed JSON, comparison) without a
    * stringify/parse round trip. Same conversion and issue reporting as {@link writeDocument}. */
-  public writeDocumentTree(document: SchemaDocument, options?: SchemaJsonWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
+  public writeDocumentTree(document: Authoring.SchemaDocument, options?: SchemaJsonWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
     const issues = new SchemaIssueList();
     const spec = options?.spec ?? ECSpec.Latest;
     if (spec !== ECSpec.V3_2) {
@@ -92,12 +92,12 @@ function formatVersion(read: number, write: number, minor: number): string {
 
 /** Emits one document as an ECJSON 3.2 object tree. Created per write. */
 class EcJson32Emitter {
-  private readonly _document: SchemaDocument;
+  private readonly _document: Authoring.SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _omitDefaults: boolean;
   private readonly _schemaView: SchemaView | undefined;
 
-  public constructor(document: SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean, schemaView: SchemaView | undefined) {
+  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean, schemaView: SchemaView | undefined) {
     this._document = document;
     this._issues = issues;
     this._omitDefaults = omitDefaults;

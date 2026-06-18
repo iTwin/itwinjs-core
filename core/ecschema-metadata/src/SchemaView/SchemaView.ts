@@ -8,7 +8,8 @@
 
 import { type ClassData, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
-import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "./ECObjects";
+import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "../ECObjects";
+import { CustomAttribute } from "../Metadata/CustomAttribute";
 
 // Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
 // core-backend/src/internal/Symbols.ts (e.g. `_nativeDb` on IModelDb): the data is reachable
@@ -1158,7 +1159,150 @@ export namespace SchemaView {
       return result;
     }
   }
+
+  /** The kind of container a custom attribute instance is attached to, as recorded in the
+   * `ContainerType` column of the `ec_CustomAttribute` table (exposed through
+   * `meta.CustomAttribute.ContainerType`). A provider uses these values directly as a query filter.
+   *
+   * This mirrors the `meta.CAContainerType` enumeration in ECDbMeta. It is just a foreign-key
+   * discriminator that says which table the row's `ContainerId` points into - only three coarse
+   * kinds exist: schema, class, or property. (Relationship-constraint custom attributes are not
+   * surfaced through this view.) The `ECDb` prefix flags it as an ECDb implementation detail leaking
+   * into this otherwise ECDb-independent package.
+   *
+   * Do not confuse this with the unrelated `CustomAttributeContainerType` enum (in `ECObjects`),
+   * which is a fine-grained, OR-able bit mask held on a custom attribute *class* declaring which
+   * container kinds the attribute may be applied to. Despite the similar name, that is a different
+   * mechanism.
+   * @beta
+   */
+  export enum ECDbCAContainerType {
+    /** The custom attribute is attached to a schema (`ContainerId` points into `ec_Schema`). */
+    Schema = 1, // eslint-disable-line @typescript-eslint/no-shadow
+    /** The custom attribute is attached to a class (`ContainerId` points into `ec_Class`). */
+    Class = 30, // eslint-disable-line @typescript-eslint/no-shadow
+    /** The custom attribute is attached to a property (`ContainerId` points into `ec_Property`). */
+    Property = 992, // eslint-disable-line @typescript-eslint/no-shadow
+  }
+
+  /** Options for the reverse custom-attribute lookups (`find*WithCustomAttribute`).
+   * @beta
+   */
+  export interface FindCustomAttributeOptions {
+    /** When `true`, only each matching container's identifying names are returned and the (relatively
+     * expensive) custom attribute value is not resolved - the `customAttribute` field of every match
+     * is left `undefined`. Use this when you only need to know *which* containers carry the attribute.
+     */
+    identifiersOnly?: boolean;
+  }
+
+  /** A schema that carries a queried custom attribute, returned by `find*SchemasWithCustomAttribute`.
+   * @beta
+   */
+  export interface SchemaCustomAttributeMatch {
+    /** Name of the schema. Resolve against the view with `view.getSchema(schemaName)`. */
+    readonly schemaName: string;
+    /** The custom attribute value, or `undefined` when `identifiersOnly` was requested. */
+    readonly customAttribute?: CustomAttribute;
+  }
+
+  /** A class that carries a queried custom attribute, returned by `find*ClassesWithCustomAttribute`.
+   * @beta
+   */
+  export interface ClassCustomAttributeMatch {
+    /** Name of the schema the class belongs to. */
+    readonly schemaName: string;
+    /** Local (unqualified) class name. Resolve against the view with
+     * ``view.findClass(`${schemaName}:${className}`)``. */
+    readonly className: string;
+    /** The custom attribute value, or `undefined` when `identifiersOnly` was requested. */
+    readonly customAttribute?: CustomAttribute;
+  }
+
+  /** A property that carries a queried custom attribute, returned by `find*PropertiesWithCustomAttribute`.
+   * @beta
+   */
+  export interface PropertyCustomAttributeMatch {
+    /** Name of the schema the property's class belongs to. */
+    readonly schemaName: string;
+    /** Local (unqualified) name of the class that declares the property. */
+    readonly className: string;
+    /** Property name. Resolve against the view with
+     * ``view.findClass(`${schemaName}:${className}`)?.getProperty(propertyName)``. */
+    readonly propertyName: string;
+    /** The custom attribute value, or `undefined` when `identifiersOnly` was requested. */
+    readonly customAttribute?: CustomAttribute;
+  }
+
+  /** Synchronous access to the custom attributes applied to the containers in a `SchemaView`.
+   *
+   * @beta
+   */
+  export interface CustomAttributeProvider {
+    /** The custom attributes applied directly to a schema, in application order. */
+    getSchemaCustomAttributes(schema: Schema): CustomAttribute[];
+    /** The custom attributes applied directly to a class, in application order. */
+    getClassCustomAttributes(cls: Class): CustomAttribute[];
+    /** The custom attributes applied directly to a property, in application order. */
+    getPropertyCustomAttributes(property: Property): CustomAttribute[];
+
+    /** The named custom attribute applied directly to a schema, or `undefined` if not applied. */
+    getSchemaCustomAttribute(schema: Schema, caClassFullName: string): CustomAttribute | undefined;
+    /** The named custom attribute applied directly to a class, or `undefined` if not applied. */
+    getClassCustomAttribute(cls: Class, caClassFullName: string): CustomAttribute | undefined;
+    /** The named custom attribute applied directly to a property, or `undefined` if not applied. */
+    getPropertyCustomAttribute(property: Property, caClassFullName: string): CustomAttribute | undefined;
+
+    /** Walk every schema that carries the named custom attribute. */
+    findSchemasWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): IterableIterator<SchemaCustomAttributeMatch>;
+    /** Walk every class that carries the named custom attribute. */
+    findClassesWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): IterableIterator<ClassCustomAttributeMatch>;
+    /** Walk every property that carries the named custom attribute. */
+    findPropertiesWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): IterableIterator<PropertyCustomAttributeMatch>;
+  }
+
+  /** Asynchronous access to the custom attributes applied to the containers in a `SchemaView`.
+   *
+   * This modality is backed by a database (and possibly an RPC round trip), so every call is a
+   * `Promise` (or an `AsyncIterableIterator` for the walks).
+   * @beta
+   */
+  export interface AsyncCustomAttributeProvider {
+    /** The custom attributes applied directly to a schema, in application order. */
+    getSchemaCustomAttributes(schema: Schema): Promise<CustomAttribute[]>;
+    /** The custom attributes applied directly to a class, in application order. */
+    getClassCustomAttributes(cls: Class): Promise<CustomAttribute[]>;
+    /** The custom attributes applied directly to a property, in application order. */
+    getPropertyCustomAttributes(property: Property): Promise<CustomAttribute[]>;
+
+    /** The named custom attribute applied directly to a schema, or `undefined` if not applied. */
+    getSchemaCustomAttribute(schema: Schema, caClassFullName: string): Promise<CustomAttribute | undefined>;
+    /** The named custom attribute applied directly to a class, or `undefined` if not applied. */
+    getClassCustomAttribute(cls: Class, caClassFullName: string): Promise<CustomAttribute | undefined>;
+    /** The named custom attribute applied directly to a property, or `undefined` if not applied. */
+    getPropertyCustomAttribute(property: Property, caClassFullName: string): Promise<CustomAttribute | undefined>;
+
+    /** Walk every schema that carries the named custom attribute. */
+    findSchemasWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): AsyncIterableIterator<SchemaCustomAttributeMatch>;
+    /** Walk every class that carries the named custom attribute. */
+    findClassesWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): AsyncIterableIterator<ClassCustomAttributeMatch>;
+    /** Walk every property that carries the named custom attribute. */
+    findPropertiesWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): AsyncIterableIterator<PropertyCustomAttributeMatch>;
+  }
 }
+
+/** A `SchemaView` backed by an iModel. Its `customAttributes` member resolves attributes
+ * asynchronously by querying the iModel. Returned by `IModelDb.getSchemaView` and
+ * `IModelConnection.getSchemaView`.
+ * @beta
+ */
+export type IModelSchemaView = SchemaView & { readonly customAttributes: SchemaView.AsyncCustomAttributeProvider };
+
+/** A `SchemaView` compiled from one or more `SchemaDocument`s. Its `customAttributes` member
+ * resolves attributes synchronously from data held in memory.
+ * @beta
+ */
+export type CompiledSchemaView = SchemaView & { readonly customAttributes: SchemaView.CustomAttributeProvider };
 
 // =====================================================================================
 // SchemaViewBuilder

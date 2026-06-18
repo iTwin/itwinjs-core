@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { CustomAttributeContainerType, StrengthType } from "../../ECObjects";
 import { compareSchemaDocuments, formatSchemaComparison } from "../../Authoring/SchemaComparison";
-import { Authoring, SchemaDocument } from "../../Authoring/SchemaDocument";
+import * as Authoring from "../../Authoring/SchemaDocument";
 import { SchemaJsonReader } from "../../Authoring/SchemaJsonReader";
 import { SchemaJsonWriter } from "../../Authoring/SchemaJsonWriter";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
@@ -37,8 +37,8 @@ describe("compareSchemaDocuments", () => {
   });
 
   it("compares item references resolved, not verbatim", () => {
-    function compose(baseClass: string): SchemaDocument {
-      const doc = new SchemaDocument("RefTest", "rt", 1, 0, 0, {
+    function compose(baseClass: string): Authoring.SchemaDocument {
+      const doc = new Authoring.SchemaDocument("RefTest", "rt", 1, 0, 0, {
         references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
       });
       doc.createEntity("Pump", { baseClass });
@@ -49,7 +49,7 @@ describe("compareSchemaDocuments", () => {
   });
 
   it("compares custom attribute values across the XML/JSON typing boundary", async () => {
-    const original = new SchemaDocument("CaTest", "ct", 1, 0, 0);
+    const original = new Authoring.SchemaDocument("CaTest", "ct", 1, 0, 0);
     original.createCustomAttributeClass("Marked", CustomAttributeContainerType.Schema);
     original.customAttributes.add({ className: "Marked", json: { Count: 5, Active: true } }); // eslint-disable-line @typescript-eslint/naming-convention
 
@@ -65,8 +65,8 @@ describe("compareSchemaDocuments", () => {
   });
 
   it("treats constraint classes as a set", () => {
-    function compose(constraintClasses: string[]): SchemaDocument {
-      const doc = new SchemaDocument("RelTest", "rl", 1, 0, 0);
+    function compose(constraintClasses: string[]): Authoring.SchemaDocument {
+      const doc = new Authoring.SchemaDocument("RelTest", "rl", 1, 0, 0);
       doc.createEntity("A");
       doc.createEntity("B");
       const rel = doc.createRelationship("Rel", { strength: StrengthType.Referencing });
@@ -113,8 +113,8 @@ describe("compareSchemaDocuments", () => {
   });
 
   it("reports schema-level differences", () => {
-    const left = new SchemaDocument("Versioned", "v", 1, 0, 0);
-    const right = new SchemaDocument("Versioned", "v", 1, 0, 1, { label: "Versioned" });
+    const left = new Authoring.SchemaDocument("Versioned", "v", 1, 0, 0);
+    const right = new Authoring.SchemaDocument("Versioned", "v", 1, 0, 1, { label: "Versioned" });
 
     const comparison = compareSchemaDocuments(left, right);
     expect(comparison.itemDifferences).to.be.empty;

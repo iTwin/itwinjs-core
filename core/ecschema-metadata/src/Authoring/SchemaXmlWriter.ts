@@ -8,16 +8,16 @@
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
-import { SchemaView } from "../SchemaView";
+import { SchemaView } from "../SchemaView/SchemaView";
 import { customAttributeJsonToXml } from "./CustomAttributeConverter";
-import { Authoring, SchemaDocument } from "./SchemaDocument";
+import * as Authoring from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** The ECXML namespace URI of the 3.2 spec. */
 const ECXML_3_2_NAMESPACE = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 
-/** Serializes a {@link SchemaDocument} to ECXML text. The document always models the latest spec;
+/** Serializes a {@link Authoring.SchemaDocument} to ECXML text. The document always models the latest spec;
  * the writer converts to the requested spec version at this boundary (currently only
  * {@link ECSpec.V3_2} - older specs are future work and a different writer subclass/branch).
  * Problems that do not prevent producing output (an item reference whose schema is missing from
@@ -29,7 +29,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
   /** Writes the document to ECXML text in the requested spec version (default {@link ECSpec.Latest}).
    * Builds the whole document as one string; for a schema large enough to approach the platform's
    * maximum string length use {@link writeDocumentTo} instead. */
-  public writeDocument(document: SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
+  public writeDocument(document: Authoring.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
     const issues = new SchemaIssueList();
     const emitter = this._prepare(document, issues, options);
     if (emitter === undefined)
@@ -40,7 +40,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
   /** Streams the document to `sink` as ECXML text in chunks, never materializing it as one string, so
    * a schema of any size can be written. The whole document still passes through `sink`; concatenating
    * the chunks yields exactly what {@link writeDocument} returns. */
-  public async writeDocumentTo(document: SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult> {
+  public async writeDocumentTo(document: Authoring.SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult> {
     const issues = new SchemaIssueList();
     const emitter = this._prepare(document, issues, options);
     if (emitter === undefined)
@@ -51,7 +51,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
 
   /** Validates the target spec and constructs the emitter, or reports an unsupported spec and returns
    * `undefined`. Shared by the materializing and streaming entry points. */
-  private _prepare(document: SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXml32Emitter | undefined {
+  private _prepare(document: Authoring.SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXml32Emitter | undefined {
     const spec = options?.spec ?? ECSpec.Latest;
     if (spec !== ECSpec.V3_2) {
       issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}" - the XML writer currently supports only 3.2.`);
@@ -150,12 +150,12 @@ function formatVersion(read: number, write: number, minor: number): string {
 
 /** Emits one document as ECXML 3.2. Created per write; holds the document and the issue list. */
 class ECXml32Emitter {
-  private readonly _document: SchemaDocument;
+  private readonly _document: Authoring.SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _schemaView: SchemaView | undefined;
   private readonly _xml = new XmlStringBuilder();
 
-  public constructor(document: SchemaDocument, issues: SchemaIssueList, schemaView: SchemaView | undefined) {
+  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList, schemaView: SchemaView | undefined) {
     this._document = document;
     this._issues = issues;
     this._schemaView = schemaView;

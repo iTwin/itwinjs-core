@@ -9,7 +9,7 @@ import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ECSpecVersion, EntityClass, Format, PrimitiveType, SchemaDocument } from "@itwin/ecschema-metadata";
+import { Authoring, ECSpecVersion, EntityClass, Format, PrimitiveType } from "@itwin/ecschema-metadata";
 
 describe("Schema XML Import Tests", () => {
   before(() => {
@@ -137,7 +137,7 @@ describe("exportSchemaXmlString", () => {
     const filePath = IModelTestUtils.prepareOutputFile("exportSchemaXmlString", "exportSchemaXmlString.bim");
     imodel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "exportSchemaXmlStringTest" } });
 
-    const schemaDocument = new SchemaDocument("TestSchema", "ts", 1, 0, 0, {
+    const schemaDocument = new Authoring.SchemaDocument("TestSchema", "ts", 1, 0, 0, {
       references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 23, alias: "bis" }],
     });
     const testClass = schemaDocument.createEntity("TestClass", { baseClass: "BisCore:GraphicalElement2d" });

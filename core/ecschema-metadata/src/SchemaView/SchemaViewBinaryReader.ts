@@ -8,7 +8,7 @@
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { SchemaView, SchemaViewBuilder } from "./SchemaView";
-import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "./ECObjects";
+import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "../ECObjects";
 import { ClassData, PropertyDef, schemaViewFormatVersion, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 
 /** Binary record tags for the SchemaView blob format.

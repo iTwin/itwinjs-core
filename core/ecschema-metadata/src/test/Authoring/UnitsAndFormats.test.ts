@@ -6,12 +6,12 @@
 import { FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { describe, expect, it } from "vitest";
 import { AbstractSchemaItemType, SchemaItemType } from "../../ECObjects";
-import { Authoring, SchemaDocument } from "../../Authoring/SchemaDocument";
+import * as Authoring from "../../Authoring/SchemaDocument";
 
-describe("SchemaDocument units / formats", () => {
+describe("Authoring.SchemaDocument units / formats", () => {
   describe("UnitSystem", () => {
     it("carries only the common item envelope", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const si = doc.createUnitSystem("SI", { label: "International System of Units", description: "desc" });
       expect(si.schemaItemType).to.equal(SchemaItemType.UnitSystem);
       expect(si.name).to.equal("SI");
@@ -23,7 +23,7 @@ describe("SchemaDocument units / formats", () => {
 
   describe("Phenomenon", () => {
     it("holds its defining expression as plain data", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const area = doc.createPhenomenon("AREA", "LENGTH(2)", { label: "Area" });
       expect(area.schemaItemType).to.equal(SchemaItemType.Phenomenon);
       expect(area.definition).to.equal("LENGTH(2)");
@@ -33,7 +33,7 @@ describe("SchemaDocument units / formats", () => {
 
   describe("Unit", () => {
     it("captures references and definition; factor components stay unset unless given", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const meter = doc.createUnit("M", "LENGTH", "SI", "M");
       expect(meter.schemaItemType).to.equal(SchemaItemType.Unit);
       expect(meter.phenomenon).to.equal("LENGTH");
@@ -46,7 +46,7 @@ describe("SchemaDocument units / formats", () => {
     });
 
     it("holds explicit factor components, including an offset", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const celsius = doc.createUnit("CELSIUS", "Units:TEMPERATURE", "Units:METRIC", "K", { offset: -273.15 });
       expect(celsius.offset).to.equal(-273.15);
       const mile = doc.createUnit("MILE", "LENGTH", "USCUSTOM", "YRD", { numerator: 1760.0 });
@@ -57,7 +57,7 @@ describe("SchemaDocument units / formats", () => {
 
   describe("InvertedUnit", () => {
     it("references the unit it inverts and its system, nothing of its own", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const inv = doc.createInvertedUnit("HORIZONTAL_PER_VERTICAL", "Units:VERTICAL_PER_HORIZONTAL", "Units:INTERNATIONAL");
       expect(inv.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
       expect(inv.invertsUnit).to.equal("Units:VERTICAL_PER_HORIZONTAL");
@@ -67,7 +67,7 @@ describe("SchemaDocument units / formats", () => {
 
   describe("Constant", () => {
     it("has a phenomenon and definition but no unit system or offset", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const pi = doc.createConstant("PI", "Units:LENGTH_RATIO", "ONE", { numerator: 3.1415926535897932384626433832795 });
       expect(pi.schemaItemType).to.equal(SchemaItemType.Constant);
       expect(pi.phenomenon).to.equal("Units:LENGTH_RATIO");
@@ -80,7 +80,7 @@ describe("SchemaDocument units / formats", () => {
 
   describe("Format", () => {
     it("only the type is mandatory; everything else stays unset (reads as the spec default)", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const fmt = doc.createFormat("DefaultReal", FormatType.Decimal);
       expect(fmt.schemaItemType).to.equal(SchemaItemType.Format);
       expect(fmt.type).to.equal(FormatType.Decimal);
@@ -93,7 +93,7 @@ describe("SchemaDocument units / formats", () => {
     });
 
     it("holds the full numeric configuration", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const fmt = doc.createFormat("Sci", FormatType.Scientific, {
         precision: 6,
         scientificType: ScientificType.Normalized,
@@ -114,7 +114,7 @@ describe("SchemaDocument units / formats", () => {
     });
 
     it("supports fractional precision and station fields", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const frac = doc.createFormat("Frac", FormatType.Fractional, { precision: FractionalPrecision.Eight });
       expect(frac.precision).to.equal(8);
       const station = doc.createFormat("Stat", FormatType.Station, { stationOffsetSize: 2, stationSeparator: "+" });
@@ -123,7 +123,7 @@ describe("SchemaDocument units / formats", () => {
     });
 
     it("copies the composite into an owned object", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const init: Authoring.FormatComposite = {
         spacer: "-",
         includeZero: false,
@@ -142,7 +142,7 @@ describe("SchemaDocument units / formats", () => {
 
   describe("integration with the item collection", () => {
     it("the units / formats kinds enumerate and narrow like any other item", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       doc.createUnitSystem("SI");
       doc.createPhenomenon("LENGTH", "LENGTH");
       doc.createUnit("M", "LENGTH", "SI", "M");

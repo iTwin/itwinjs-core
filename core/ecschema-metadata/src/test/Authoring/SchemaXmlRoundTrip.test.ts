@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { SchemaItemType, SchemaMatchType } from "../../ECObjects";
-import { Authoring, SchemaDocument } from "../../Authoring/SchemaDocument";
+import * as Authoring from "../../Authoring/SchemaDocument";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
 import { InMemorySchemaSource, SchemaSourceSet } from "../../Authoring/SchemaSources";
@@ -158,8 +158,8 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
 });
 
 describe("SchemaSourceSet", () => {
-  function makeDocument(name: string, minor: number, references: Array<{ name: string, minor?: number }> = []): SchemaDocument {
-    return new SchemaDocument(name, name.toLowerCase(), 1, 0, minor, {
+  function makeDocument(name: string, minor: number, references: Array<{ name: string, minor?: number }> = []): Authoring.SchemaDocument {
+    return new Authoring.SchemaDocument(name, name.toLowerCase(), 1, 0, minor, {
       references: references.map((r) => ({ name: r.name, readVersion: 1, writeVersion: 0, minorVersion: r.minor ?? 0, alias: r.name.toLowerCase() })),
     });
   }
@@ -198,7 +198,7 @@ describe("SchemaSourceSet", () => {
   it("reports conflicting version requirements", async () => {
     const source = new InMemorySchemaSource();
     source.addDocument(makeDocument("A", 0, [{ name: "C" }]));
-    const conflicting = new SchemaDocument("C", "c", 2, 0, 0); // only a 2.0.0 is available
+    const conflicting = new Authoring.SchemaDocument("C", "c", 2, 0, 0); // only a 2.0.0 is available
     source.addDocument(conflicting);
 
     const sources = new SchemaSourceSet();

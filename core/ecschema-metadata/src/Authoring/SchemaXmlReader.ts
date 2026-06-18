@@ -12,15 +12,15 @@ import {
   parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection, PrimitiveType,
 } from "../ECObjects";
 import { serializeCustomAttributeBody } from "./CustomAttributeConverter";
-import { Authoring, SchemaDocument } from "./SchemaDocument";
+import * as Authoring from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
-/** Reads {@link SchemaDocument}s from ECXML text. Accepts any ECXML 3.x source (3.0 and 3.1 are
+/** Reads {@link Authoring.SchemaDocument}s from ECXML text. Accepts any ECXML 3.x source (3.0 and 3.1 are
  * close subsets of 3.2) and records the source spec version on the document
- * ({@link SchemaDocument.originalECXmlVersionMajor}); EC 2.0 is a substantially different format
+ * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}); EC 2.0 is a substantially different format
  * and is rejected until a dedicated reader exists.
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
@@ -195,13 +195,13 @@ const ITEM_ELEMENT_NAMES = new Set([
   "kindofquantity", "propertycategory", "unitsystem", "phenomenon", "unit", "invertedunit", "constant", "format",
 ]);
 
-/** Walks a parsed element tree into a SchemaDocument. Created per read. */
+/** Walks a parsed element tree into a Authoring.SchemaDocument. Created per read. */
 class EcXml3Walker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
   /** Lowercased reference alias -> schema name, for normalizing alias-qualified references. */
   private readonly _aliasToSchemaName = new Map<string, string>();
-  private _documentInProgress?: SchemaDocument;
+  private _documentInProgress?: Authoring.SchemaDocument;
 
   public constructor(issues: SchemaIssueList, source: string | undefined) {
     this._issues = issues;
@@ -210,13 +210,13 @@ class EcXml3Walker {
 
   /** The document under construction. Set at the start of {@link readSchema}; every item/property
    * reader runs within that call, so accessing it earlier is a programming error. */
-  private get _document(): SchemaDocument {
+  private get _document(): Authoring.SchemaDocument {
     if (this._documentInProgress === undefined)
       throw new Error("SchemaXmlReader: the document is accessed before readSchema initialized it.");
     return this._documentInProgress;
   }
 
-  public readSchema(root: XmlElementNode): SchemaDocument | undefined {
+  public readSchema(root: XmlElementNode): Authoring.SchemaDocument | undefined {
     if (root.name.toLowerCase() !== "ecschema") {
       this._error("SchemaXml-0011", `Expected an ECSchema root element, found "${root.name}".`, root);
       return undefined;
@@ -244,7 +244,7 @@ class EcXml3Walker {
     if (alias === undefined)
       this._error("SchemaXml-0016", `The schema "${name}" is missing the required alias attribute.`, root);
 
-    const document = new SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
+    const document = new Authoring.SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
       label: root.attributes.displayLabel,
       description: root.attributes.description,
       originalECXmlVersionMajor: specMajor,
@@ -552,8 +552,7 @@ class EcXml3Walker {
   /** Resolves a primitive/array property's `typeName`: a primitive keyword parses to a
    * {@link PrimitiveType}, anything else is an enumeration reference and is normalized. Returns
    * `undefined` (after reporting it) when the attribute is missing. */
-  private resolvePrimitivePropertyType(node: XmlElementNode, propertyName: string, className: string):
-    { primitiveType: PrimitiveType } | { enumeration: string } | undefined {
+  private resolvePrimitivePropertyType(node: XmlElementNode, propertyName: string, className: string): { primitiveType: PrimitiveType } | { enumeration: string } | undefined {
     const typeName = node.attributes.typeName;
     if (typeName === undefined) {
       this._error("SchemaXml-0030", `The property "${className}.${propertyName}" is missing the required typeName attribute; the property was skipped.`, node);

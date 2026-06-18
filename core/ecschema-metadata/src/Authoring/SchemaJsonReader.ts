@@ -8,7 +8,7 @@
 
 import { parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption } from "@itwin/core-quantity";
 import { parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection, PrimitiveType } from "../ECObjects";
-import { Authoring, SchemaDocument } from "./SchemaDocument";
+import * as Authoring from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentHeader, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
@@ -22,10 +22,10 @@ interface JsonObject {
   [name: string]: unknown;
 }
 
-/** Reads {@link SchemaDocument}s from ECJSON text - the format `JSON.stringify` of a schema's
+/** Reads {@link Authoring.SchemaDocument}s from ECJSON text - the format `JSON.stringify` of a schema's
  * props produces, and what iModel APIs like `getSchemaProps` deliver. Accepts any ECJSON 3.x
  * `$schema` and records the source spec version on the document
- * ({@link SchemaDocument.originalECXmlVersionMajor}).
+ * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}).
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
  * keeps whatever it could extract, leaving semantic judgment to the compiler. Custom attribute
@@ -86,7 +86,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   }
 
   /** Hydrates the document from a validated root. Shared by the text and object entries. */
-  private _readDocument(parsed: { root: JsonObject, specMajor: number, specMinor: number }, issues: SchemaIssueList, source: string | undefined): SchemaDocument | undefined {
+  private _readDocument(parsed: { root: JsonObject, specMajor: number, specMinor: number }, issues: SchemaIssueList, source: string | undefined): Authoring.SchemaDocument | undefined {
     const walker = new ECJson32Walker(issues, source);
     return walker.readSchema(parsed.root, parsed.specMajor, parsed.specMinor);
   }
@@ -197,11 +197,11 @@ function asArray(value: unknown): unknown[] | undefined {
   return Array.isArray(value) ? value : undefined;
 }
 
-/** Walks a parsed ECJSON object tree into a SchemaDocument. Created per read. */
+/** Walks a parsed ECJSON object tree into a Authoring.SchemaDocument. Created per read. */
 class ECJson32Walker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
-  private _documentInProgress?: SchemaDocument;
+  private _documentInProgress?: Authoring.SchemaDocument;
 
   public constructor(issues: SchemaIssueList, source: string | undefined) {
     this._issues = issues;
@@ -210,13 +210,13 @@ class ECJson32Walker {
 
   /** The document under construction. Set at the start of {@link readSchema}; every item/property
    * reader runs within that call, so accessing it earlier is a programming error. */
-  private get _document(): SchemaDocument {
+  private get _document(): Authoring.SchemaDocument {
     if (this._documentInProgress === undefined)
       throw new Error("SchemaJsonReader: the document is accessed before readSchema initialized it.");
     return this._documentInProgress;
   }
 
-  public readSchema(root: JsonObject, specMajor: number, specMinor: number): SchemaDocument | undefined {
+  public readSchema(root: JsonObject, specMajor: number, specMinor: number): Authoring.SchemaDocument | undefined {
     const name = asString(root.name);
     const alias = asString(root.alias);
     const version = parseVersionString(asString(root.version));
@@ -227,7 +227,7 @@ class ECJson32Walker {
     if (alias === undefined)
       this._error("SchemaJson-0016", `The schema "${name}" is missing the required alias field.`);
 
-    const document = new SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
+    const document = new Authoring.SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
       label: asString(root.label),
       description: asString(root.description),
       originalECXmlVersionMajor: specMajor,
@@ -482,8 +482,7 @@ class ECJson32Walker {
 
   /** Resolves a primitive/array property's `typeName`: a primitive keyword parses to a
    * {@link PrimitiveType}, anything else is an enumeration reference and is normalized. */
-  private resolvePrimitivePropertyType(propertyObject: JsonObject, propertyName: string, className: string):
-    { primitiveType: PrimitiveType } | { enumeration: string } | undefined {
+  private resolvePrimitivePropertyType(propertyObject: JsonObject, propertyName: string, className: string): { primitiveType: PrimitiveType } | { enumeration: string } | undefined {
     const typeName = asString(propertyObject.typeName);
     if (typeName === undefined) {
       this._error("SchemaJson-0032", `The property "${className}.${propertyName}" is missing the required typeName field; the property was skipped.`);

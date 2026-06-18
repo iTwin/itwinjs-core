@@ -8,8 +8,8 @@
 
 import * as sax from "sax";
 import { parsePrimitiveType } from "../ECObjects";
-import { SchemaView } from "../SchemaView";
-import { Authoring } from "./SchemaDocument";
+import { SchemaView } from "../SchemaView/SchemaView";
+import * as Authoring from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** A custom attribute's value in canonical ECJSON form: a property-name -> value object. Values are
@@ -22,7 +22,7 @@ interface JsonObject { [name: string]: unknown }
  * string. Every wrinkle of the XML<->JSON custom-attribute representation gap is confined to this
  * module.
  *
- * A {@link SchemaDocument} deliberately has no resolved CA class definitions, so its readers store CA
+ * A {@link Authoring.SchemaDocument} deliberately has no resolved CA class definitions, so its readers store CA
  * values in whichever shape the source produced - the XML reader an {@link Authoring.XmlString}, the
  * JSON reader and in-memory construction a JSON object. Writing to the *same* format is then a
  * passthrough; only crossing the format boundary calls into here.

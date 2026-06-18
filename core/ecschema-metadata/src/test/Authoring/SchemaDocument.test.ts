@@ -8,12 +8,12 @@ import {
   AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, PrimitiveType, PropertyKind,
   RelationshipEnd, SchemaItemType, SchemaMatchType, StrengthDirection, StrengthType,
 } from "../../ECObjects";
-import { Authoring, SchemaDocument } from "../../Authoring/SchemaDocument";
+import * as Authoring from "../../Authoring/SchemaDocument";
 
-describe("SchemaDocument", () => {
+describe("Authoring.SchemaDocument", () => {
   describe("construction / version", () => {
     it("captures the envelope and the numeric version", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 2, 3, {
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 2, 3, {
         label: "My Domain", description: "desc",
         references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
       });
@@ -29,19 +29,19 @@ describe("SchemaDocument", () => {
     });
 
     it("records the deserialization source as plain data", () => {
-      expect(new SchemaDocument("S", "s", 1, 0, 0, { source: "/tmp/S.ecschema.xml" }).source).to.equal("/tmp/S.ecschema.xml");
-      expect(new SchemaDocument("S", "s", 1, 0, 0).source).to.be.undefined;
+      expect(new Authoring.SchemaDocument("S", "s", 1, 0, 0, { source: "/tmp/S.ecschema.xml" }).source).to.equal("/tmp/S.ecschema.xml");
+      expect(new Authoring.SchemaDocument("S", "s", 1, 0, 0).source).to.be.undefined;
     });
 
     it("treats the original EC XML version as an optional origin hint", () => {
-      expect(new SchemaDocument("S", "s", 1, 0, 0).originalECXmlVersionMajor).to.be.undefined; // in memory -> latest
-      const fromXml = new SchemaDocument("S", "s", 1, 0, 0, { originalECXmlVersionMajor: 3, originalECXmlVersionMinor: 2 });
+      expect(new Authoring.SchemaDocument("S", "s", 1, 0, 0).originalECXmlVersionMajor).to.be.undefined; // in memory -> latest
+      const fromXml = new Authoring.SchemaDocument("S", "s", 1, 0, 0, { originalECXmlVersionMajor: 3, originalECXmlVersionMinor: 2 });
       expect(fromXml.originalECXmlVersionMajor).to.equal(3);
       expect(fromXml.originalECXmlVersionMinor).to.equal(2);
     });
 
     it("derives a SchemaKey for matching / comparing", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 2, 3);
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 2, 3);
       expect(doc.key.name).to.equal("MyDomain");
       expect(doc.key.toString()).to.equal("MyDomain.01.02.03");
       doc.minorVersion++; // digits stay the source of truth; the key reflects the edit
@@ -50,7 +50,7 @@ describe("SchemaDocument", () => {
     });
 
     it("the key getter is the one throwing spot: out-of-range version digits are held, but not representable as a key", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       doc.readVersion = 1000; // beyond ECVersion's range; the validity-free document holds it anyway
       expect(doc.readVersion).to.equal(1000);
       expect(() => doc.key).to.throw();
@@ -63,8 +63,8 @@ describe("SchemaDocument", () => {
 
   describe("references", () => {
     it("setSchemaReference adds from a held document, copying identity and alias", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-      const other = new SchemaDocument("Other", "ot", 2, 3, 4);
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0);
+      const other = new Authoring.SchemaDocument("Other", "ot", 2, 3, 4);
 
       const ref = doc.setSchemaReference(other);
       expect(doc.references).to.deep.equal([{ name: "Other", readVersion: 2, writeVersion: 3, minorVersion: 4, alias: "ot" }]);
@@ -73,10 +73,10 @@ describe("SchemaDocument", () => {
     });
 
     it("setSchemaReference replaces an existing reference of the same name (case-insensitive)", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0, {
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0, {
         references: [{ name: "Other", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "old" }],
       });
-      const newer = new SchemaDocument("OTHER", "ot", 2, 0, 0);
+      const newer = new Authoring.SchemaDocument("OTHER", "ot", 2, 0, 0);
 
       doc.setSchemaReference(newer);
       expect(doc.references).to.have.lengthOf(1); // replaced, not appended
@@ -84,7 +84,7 @@ describe("SchemaDocument", () => {
     });
 
     it("setSchemaReference copies an explicit SchemaReference, preserving a null alias", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0);
       const ref: Authoring.SchemaReference = { name: "Other", readVersion: 1, writeVersion: 2, minorVersion: 3, alias: null };
       const stored = doc.setSchemaReference(ref);
       expect(stored).to.deep.equal(ref);
@@ -92,7 +92,7 @@ describe("SchemaDocument", () => {
     });
 
     it("setSchemaReference accepts any structural source (e.g. a SchemaView Schema)", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0);
       // A plain object standing in for a SchemaView `Schema` flyweight - same member shape.
       const viewSchema = { name: "Other", alias: "ot", readVersion: 3, writeVersion: 1, minorVersion: 0 };
 
@@ -101,7 +101,7 @@ describe("SchemaDocument", () => {
     });
 
     it("getSchemaReference reads back by name, case-insensitively", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0, {
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0, {
         references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
       });
       expect(doc.getSchemaReference("biscore")).to.equal(doc.references[0]);
@@ -109,7 +109,7 @@ describe("SchemaDocument", () => {
     });
 
     it("replacing a reference keeps its position in declaration order", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0, {
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0, {
         references: [
           { name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" },
           { name: "AecUnits", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "AECU" },
@@ -121,7 +121,7 @@ describe("SchemaDocument", () => {
     });
 
     it("duplicate names in init.references collapse to one entry, last wins", () => {
-      const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0, {
+      const doc = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0, {
         references: [
           { name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" },
           { name: "BISCORE", readVersion: 1, writeVersion: 0, minorVersion: 9, alias: "bis" },
@@ -134,7 +134,7 @@ describe("SchemaDocument", () => {
 
   describe("items / typed accessors", () => {
     it("createEntity constructs, appends, and returns the handle", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const widget = doc.createEntity("Widget", { label: "Widget", description: "d", modifier: ECClassModifier.Abstract });
 
       expect(widget.schemaItemType).to.equal(SchemaItemType.EntityClass);
@@ -146,14 +146,14 @@ describe("SchemaDocument", () => {
     });
 
     it("also supports direct construction + push (the power path)", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const widget = new Authoring.EntityClass("Widget");
       doc.items.push(widget);
       expect(doc.getEntity("Widget")).to.equal(widget);
     });
 
     it("getItemOfType narrows by kind and returns undefined for a mismatched kind", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const cat = doc.createPropertyCategory("Cat");
       doc.createEntity("Widget");
       expect(doc.getItemOfType("Cat", SchemaItemType.PropertyCategory)).to.equal(cat);
@@ -162,7 +162,7 @@ describe("SchemaDocument", () => {
     });
 
     it("getItemsOfType iterates one kind in declaration order", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       doc.createEntity("A");
       doc.createStructClass("S1");
       doc.createEntity("B");
@@ -171,7 +171,7 @@ describe("SchemaDocument", () => {
     });
 
     it("the Class grouping matches any class kind, but not a non-class item", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const widget = doc.createEntity("Widget");
       doc.createPropertyCategory("Cat");
 
@@ -180,7 +180,7 @@ describe("SchemaDocument", () => {
     });
 
     it("getItemsOfType over the Class grouping yields every class kind in declaration order", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       doc.createEntity("E");
       doc.createPropertyCategory("Cat"); // not a class - excluded
       doc.createStructClass("S1");
@@ -205,7 +205,7 @@ describe("SchemaDocument", () => {
     });
 
     it("removeItem removes by name (case-insensitive) and returns the item", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const widget = doc.createEntity("Widget");
       doc.createEntity("Other");
 
@@ -216,7 +216,7 @@ describe("SchemaDocument", () => {
 
     it("duplicate item names are tolerated; every name lookup is first-occurrence", () => {
       // The validity-free stance: duplicates are a compile diagnostic, never an edit-time rejection.
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const first = doc.createEntity("Foo");
       const second = doc.createEnumeration("FOO", "int"); // same folded name, different kind - accepted
       expect(doc.items).to.have.lengthOf(2);
@@ -250,7 +250,7 @@ describe("SchemaDocument", () => {
 
   describe("class kinds", () => {
     it("creates a mixin: appliesTo mandatory, modifier stays unset (abstract per spec)", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const mixin = doc.createMixin("IMixin", "BisCore:Element");
       expect(mixin.schemaItemType).to.equal(SchemaItemType.Mixin);
       expect(mixin.appliesTo).to.equal("BisCore:Element");
@@ -259,13 +259,13 @@ describe("SchemaDocument", () => {
     });
 
     it("creates a struct class (no extra fields, inherits ECClass)", () => {
-      const s = new SchemaDocument("S", "s", 1, 0, 0).createStructClass("Point", { description: "a point" });
+      const s = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createStructClass("Point", { description: "a point" });
       expect(s.schemaItemType).to.equal(SchemaItemType.StructClass);
       expect(s.description).to.equal("a point");
     });
 
     it("creates a custom attribute class with a container-type bitmask", () => {
-      const ca = new SchemaDocument("S", "s", 1, 0, 0).createCustomAttributeClass(
+      const ca = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createCustomAttributeClass(
         "MyCa", CustomAttributeContainerType.AnyClass | CustomAttributeContainerType.Schema,
       );
       expect(ca.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
@@ -275,7 +275,7 @@ describe("SchemaDocument", () => {
     });
 
     it("creates a relationship: strength / direction stay unset and two empty constraints", () => {
-      const rel = new SchemaDocument("S", "s", 1, 0, 0).createRelationship("ElementOwnsChildren");
+      const rel = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createRelationship("ElementOwnsChildren");
       expect(rel.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
       expect(rel.strength).to.be.undefined; // absent reads as Referencing per spec
       expect(rel.strengthDirection).to.be.undefined; // absent reads as Forward per spec
@@ -303,7 +303,7 @@ describe("SchemaDocument", () => {
 
   describe("referenced item kinds", () => {
     it("creates an enumeration with enumerators", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const color = doc.createEnumeration("Color", "int", { isStrict: false });
       expect(color.schemaItemType).to.equal(SchemaItemType.Enumeration);
       expect(color.backingType).to.equal("int");
@@ -334,7 +334,7 @@ describe("SchemaDocument", () => {
     });
 
     it("creates a kind of quantity: persistenceUnit and relativeError mandatory, formats appended", () => {
-      const koq = new SchemaDocument("S", "s", 1, 0, 0).createKindOfQuantity("Length", "Units:M", 0.001, {
+      const koq = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createKindOfQuantity("Length", "Units:M", 0.001, {
         presentationFormats: ["Formats:DefaultReal", "Formats:AmerFI"],
       });
       expect(koq.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
@@ -344,7 +344,7 @@ describe("SchemaDocument", () => {
     });
 
     it("creates a property category", () => {
-      const cat = new SchemaDocument("S", "s", 1, 0, 0).createPropertyCategory("Core", { priority: 10 });
+      const cat = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createPropertyCategory("Core", { priority: 10 });
       expect(cat.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
       expect(cat.priority).to.equal(10);
     });
@@ -436,7 +436,7 @@ describe("SchemaDocument", () => {
     });
 
     it("property factories live on the shared ECClass base, so every class kind has them", () => {
-      const rel = new SchemaDocument("S", "s", 1, 0, 0).createRelationship("R");
+      const rel = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createRelationship("R");
       const p = rel.createPrimitive("Note", PrimitiveType.String);
       expect(rel.getProperty("Note")).to.equal(p);
     });
@@ -464,7 +464,7 @@ describe("SchemaDocument", () => {
 
   describe("narrowing predicates and asserts", () => {
     it("item predicates narrow by kind; isClass spans every class kind", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const entity = doc.createEntity("E");
       const mixin = doc.createMixin("M", "S:E");
       const struct = doc.createStructClass("St");
@@ -485,7 +485,7 @@ describe("SchemaDocument", () => {
     });
 
     it("item asserts pass on a match and throw with kind and name on a mismatch", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       const entity = doc.createEntity("E");
       const enumeration = doc.createEnumeration("En", "int");
 
@@ -544,7 +544,7 @@ describe("SchemaDocument", () => {
 
   describe("custom attributes", () => {
     it("adds and looks up CAs by full name (separator- and case-insensitive) on schema, class, property, constraint", () => {
-      const doc = new SchemaDocument("S", "s", 1, 0, 0);
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
       doc.customAttributes.add({ className: "CoreCustomAttributes.DynamicSchema" });
       expect(doc.customAttributes.has("CoreCustomAttributes:DynamicSchema")).to.be.true; // `.` vs `:`
       expect(doc.customAttributes.has("corecustomattributes.dynamicschema")).to.be.true; // case
@@ -623,7 +623,7 @@ describe("SchemaDocument", () => {
 
   describe("Scenario A: compose a schema in code", () => {
     it("builds MyDomain:Pump with three properties (hiding via a plain CA)", () => {
-      const doc = new SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
+      const doc = new Authoring.SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
         references: [
           { name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" },
           { name: "AecUnits", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "AECU" },

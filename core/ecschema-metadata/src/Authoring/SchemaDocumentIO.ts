@@ -6,11 +6,11 @@
  * @module Schema
  */
 
-import { Authoring, SchemaDocument } from "./SchemaDocument";
+import * as Authoring from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
-import { SchemaView } from "../SchemaView";
+import { SchemaView } from "../SchemaView/SchemaView";
 
-/** The EC specification (serialization format) versions a {@link SchemaDocument} can be written to
+/** The EC specification (serialization format) versions a {@link Authoring.SchemaDocument} can be written to
  * or read from. The in-memory document always models the latest spec; readers and writers convert
  * at the boundary. `Latest` is an alias for the newest member and moves forward with the spec.
  * @alpha
@@ -30,14 +30,14 @@ export enum ECSpec {
  * @alpha
  */
 export interface SchemaDocumentReadResult {
-  document?: SchemaDocument;
+  document?: Authoring.SchemaDocument;
   issues: SchemaIssueList;
 }
 
 /** The identity-and-dependencies summary of a schema obtained without loading its full content:
  * name, version, alias, and the reference list. This is what schema discovery peeks out of each
  * candidate (the cheap pass over a directory or an iModel) to build the dependency graph before
- * any full document is hydrated. A fully-loaded {@link SchemaDocument} satisfies this shape, so a
+ * any full document is hydrated. A fully-loaded {@link Authoring.SchemaDocument} satisfies this shape, so a
  * document already in hand can stand in for its own header.
  * @alpha
  */
@@ -140,7 +140,7 @@ export function mapFormatStringReferences(formatString: string, mapReference: (r
     result += precision[0];
     rest = rest.substring(precision[0].length);
   }
-  for (;;) {
+  for (; ;) {
     const bracket = /^\[([^\]|]*)(\|[^\]]*)?\]/.exec(rest);
     if (bracket === null)
       break;
@@ -153,11 +153,11 @@ export function mapFormatStringReferences(formatString: string, mapReference: (r
 /** Options shared by the text readers. */
 export interface SchemaTextReadOptions {
   /** Origin of the text (file path, URL, ...), copied onto every reported issue and onto
-   * {@link SchemaDocument.source} so problems stay traceable to their file. */
+   * {@link Authoring.SchemaDocument.source} so problems stay traceable to their file. */
   source?: string;
 }
 
-/** The contract of a reader that hydrates a {@link SchemaDocument} from text in some format
+/** The contract of a reader that hydrates a {@link Authoring.SchemaDocument} from text in some format
  * (ECXML, ECJSON). Readers consume their input incrementally (see {@link SchemaText}): parsing a
  * chunk is synchronous work, but between chunks of a streamed input the event loop stays
  * responsive, so reading a very large file does not stall everything else. Readers for non-text
@@ -227,7 +227,7 @@ export interface SchemaStreamWriteResult {
   issues: SchemaIssueList;
 }
 
-/** The contract of a writer that serializes a {@link SchemaDocument} to text in some format (ECXML,
+/** The contract of a writer that serializes a {@link Authoring.SchemaDocument} to text in some format (ECXML,
  * ECJSON). Every writer offers both forms:
  *  - {@link writeDocument} materializes the whole document as one string - convenient, and the right
  *    choice for the ordinary small schema, but it builds a single string and so is bounded by the
@@ -245,9 +245,9 @@ export interface SchemaDocumentTextWriter {
   /** Writes the whole document as one string. Bounded by the platform's maximum string length; use
    * {@link writeDocumentTo} for schemas large enough to approach it. Never throws on bad input data -
    * problems land in the result's issues. */
-  writeDocument(document: SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult;
+  writeDocument(document: Authoring.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult;
   /** Streams the document to `sink` in chunks instead of returning it as one string, so an arbitrarily
    * large schema can be written without a single oversized string. Never throws on bad input data -
    * problems land in the result's issues. */
-  writeDocumentTo(document: SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult>;
+  writeDocumentTo(document: Authoring.SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult>;
 }

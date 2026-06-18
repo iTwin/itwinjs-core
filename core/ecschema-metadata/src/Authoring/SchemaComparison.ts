@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { SchemaDocument } from "./SchemaDocument";
+import * as Authoring from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
 import { SchemaJsonWriter } from "./SchemaJsonWriter";
 
@@ -84,7 +84,7 @@ export interface SchemaComparison {
  * struct-array CA value differs in shape from its JSON-read counterpart until a compiler types it.
  * @alpha
  */
-export function compareSchemaDocuments(left: SchemaDocument, right: SchemaDocument): SchemaComparison {
+export function compareSchemaDocuments(left: Authoring.SchemaDocument, right: Authoring.SchemaDocument): SchemaComparison {
   const issues = new SchemaIssueList();
   const writer = new SchemaJsonWriter();
   const leftResult = writer.writeDocumentTree(left, { omitDefaults: true });

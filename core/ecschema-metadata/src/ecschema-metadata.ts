@@ -3,16 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./Authoring/SchemaComparison";
-export * from "./Authoring/CustomAttributeConverter";
-export * from "./Authoring/SchemaDocument";
-export * from "./Authoring/SchemaDocumentIO";
-export * from "./Authoring/SchemaIssues";
-export * from "./Authoring/SchemaJsonReader";
-export * from "./Authoring/SchemaJsonWriter";
-export * from "./Authoring/SchemaSources";
-export * from "./Authoring/SchemaXmlReader";
-export * from "./Authoring/SchemaXmlWriter";
+export * as Authoring from "./Authoring";
 export * from "./Constants";
 export * from "./Context";
 export * from "./DelayedPromise";
@@ -60,9 +51,9 @@ export * from "./IncrementalLoading/ECSqlSchemaLocater";
 export * from "./IncrementalLoading/IncrementalSchemaLocater";
 export { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
-export * from "./SchemaViewBinaryReader";
-export * from "./SchemaView";
-export * from "./SchemaViewInterfaces";
+export * from "./SchemaView/SchemaViewBinaryReader";
+export * from "./SchemaView/SchemaView";
+export * from "./SchemaView/SchemaViewInterfaces";
 export * from "./Localization/LocalizationTypes";
 export * from "./Localization/LocalizationProvider";
 export * from "./Localization/SchemaLocalization";
