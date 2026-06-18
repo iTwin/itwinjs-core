@@ -132,7 +132,7 @@ Applications configure the Azure Maps key when initializing `@itwin/map-layers-f
 
 `@itwin/build-tools` no longer declares `mocha` as a direct dependency. It is now an optional [peer dependency](https://nodejs.org/en/blog/npm/peer-dependencies), because the only part of the package that uses `mocha` is the `mocha-reporter` (`BentleyMochaReporter`), which always runs inside a consumer that is already executing `mocha`.
 
-This removes `mocha` — and its vulnerable transitive dependencies such as `serialize-javascript` and `diff` — from the published dependency closure of `@itwin/build-tools`, so they no longer surface in downstream `npm audit` results.
+This removes `mocha` — and its vulnerable transitive dependencies such as `serialize-javascript` and `diff` — from the *direct* dependency closure of `@itwin/build-tools`. Consumers that do not use the reporter (and therefore do not run `mocha`) no longer pull `mocha` in through `@itwin/build-tools`, so it stops surfacing in their audits under pnpm and yarn. Note that `@itwin/build-tools` still depends on `mocha-junit-reporter`, which declares a required peer dependency on `mocha`; package managers that auto-install required peers (such as npm v7+) may therefore still resolve `mocha` transitively.
 
 If you consume the reporter via `@itwin/build-tools/mocha-reporter`, declare `mocha` in your own package's `devDependencies` (most packages running mocha already do):
 
@@ -144,4 +144,4 @@ If you consume the reporter via `@itwin/build-tools/mocha-reporter`, declare `mo
 }
 ```
 
-Packages that do not use the `mocha-reporter` are unaffected, and the optional peer dependency produces no installation warnings when `mocha` is absent.
+Packages that do not use the `mocha-reporter` are unaffected, and the optional peer dependency itself produces no installation warnings when `mocha` is absent under pnpm and yarn.

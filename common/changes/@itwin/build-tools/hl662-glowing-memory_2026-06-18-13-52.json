@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Made mocha an optional peer dependency so its vulnerable transitive dependencies no longer ship in the @itwin/build-tools published dependency closure.",
+      "comment": "Made mocha an optional peer dependency so it is no longer a direct dependency of @itwin/build-tools, removing its vulnerable transitive dependencies from the package's direct dependency closure for consumers that do not use the mocha reporter.",
       "type": "none",
       "packageName": "@itwin/build-tools"
     }
