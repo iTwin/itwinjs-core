@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { GuidString } from "@itwin/core-bentley";
+import type { GuidString } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
