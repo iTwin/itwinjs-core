@@ -571,6 +571,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElement(row.toRow() as TestElement, expectedValue);
       rowCount++;
@@ -623,6 +624,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElement(row.toRow() as TestElement, actualValue);
       rowCount++;
@@ -664,6 +666,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // Verify via a concurrent query
     let rowCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementAspect(row.toRow() as TestElementAspect, elementAspect);
       rowCount++;
@@ -803,6 +806,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const val = row.toRow() as TestElementRefersToElements;
       verifyTestElementRefersToElements(val, expectedRelationshipValue);
@@ -868,6 +872,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementRefersToElements(row.toRow() as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;

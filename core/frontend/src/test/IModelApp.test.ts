@@ -13,7 +13,7 @@ import { MockRender } from "../internal/render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
-import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
+import { LookAndMoveTool, PanViewTool, RotateViewTool } from "../tools/ViewTool";
 import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
@@ -190,6 +190,32 @@ describe("IModelApp startup tests", () => {
     await IModelApp.startup();
     expect(IModelApp.publicPath).toBe("");
     await IModelApp.shutdown();
+  });
+});
+
+describe("LookAndMoveTool keyboard focus", () => {
+  afterEach(async () => {
+    document.body.focus();
+
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("moves focus Home after installation", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+    button.focus();
+    expect(document.activeElement).toBe(button);
+
+    try {
+      // Exercise the normal tool install pipeline (onInstall, onPostInstall, etc.) rather than invoking onPostInstall directly.
+      if (await IModelApp.tools.run(LookAndMoveTool.toolId))
+        expect(document.activeElement).toBe(document.body);
+    } finally {
+      button.remove();
+    }
   });
 });
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove dormant internal Azure Maps imagery provider code from core frontend.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

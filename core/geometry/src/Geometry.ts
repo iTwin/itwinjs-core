@@ -588,6 +588,8 @@ export class Geometry {
    * Toleranced equality test.
    * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
+   * @see [[isSameFraction]], [[isSameCoordinate]], etc., which have more appropriate default absolute tolerances for
+   * inputs known to be fractions and distances/coordinates.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
@@ -1224,6 +1226,13 @@ export class Geometry {
   public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
     // Line equation is fTarget-f0 = (f1-f0)*x so x = (fTarget-f0)/(f1-f0)
     return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
+  }
+  /**
+   * Return `true` if `a` is a finite number.
+   * @param a value to test
+   */
+  public static isNumber(a: any): a is number {
+    return Number.isFinite(a);
   }
   /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including

@@ -140,12 +140,13 @@ export class RulesetEmbedder {
     const query = `
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
-      WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    const reader = this._imodel.createQueryReader(query, QueryBinder.from({ rulesetId: ruleset.id }), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId
+    `;
+    const reader = this._imodel.createQueryReader(query, QueryBinder.from({ rulesetId: ruleset.id }), { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes });
     while (await reader.step()) {
-      const row = reader.current.toRow();
-      const existingRulesetElementId: Id64String = row.id;
-      const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
+      const row = reader.current.toArray();
+      const existingRulesetElementId: Id64String = row[0];
+      const existingRuleset: Ruleset = JSON.parse(row[1]).jsonProperties;
       rulesetsWithSameId.push({
         id: existingRulesetElementId,
         ruleset: existingRuleset,

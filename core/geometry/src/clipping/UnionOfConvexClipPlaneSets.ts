@@ -196,7 +196,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
   }
   /** Returns 1, 2, or 3 based on whether point is strongly inside, ambiguous, or strongly outside respectively. */
-  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): number {
+  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment {
     for (const convexSet of this._convexSets) {
       const thisStatus = convexSet.classifyPointContainment(points, onIsOutside);
       if (thisStatus !== ClipPlaneContainment.StronglyOutside)
@@ -325,12 +325,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, zLow);
+      convexSet.addZClipPlanes(invisible, undefined, zLow);
       this._convexSets.push(convexSet);
     }
     if (zHigh) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, undefined, zHigh);
+      convexSet.addZClipPlanes(invisible, zHigh);
       this._convexSets.push(convexSet);
     }
   }
