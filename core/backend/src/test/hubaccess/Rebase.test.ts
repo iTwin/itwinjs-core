@@ -9,7 +9,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, SqliteChangesetReader, TxnIdString } from "../../core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, ElementGroupsMembers, RebaseContext, SqliteChangesetReader, TxnIdString } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { EditTxn } from "../../EditTxn";
@@ -1053,67 +1053,81 @@ for (const enableSemanticRebase of [false, true]) {
         .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
     });
 
-    // it("cross-txn element ID remapping", async () => {
-    //   /*
-    //    * This test reproduces a specific scenario in the iModel rebase logic:
-    //    *
-    //    * A local briefcase has multiple unpushed transactions where:
-    //    *  1. The earlier txn uses `shouldReinstate = false` + `recompute` to fully re-execute its command.
-    //    *  2. The re-execution logic assigns new element IDs (morphing an element) to the recreated elements while maintaining a common federationGUID.
-    //    *  3. A later txn references the element created by the earlier txn.
-    //    *
-    //    * In such a scenario, during a rebase, the first txn will recompute and create a new element.
-    //    * As a result, the subsequenet txn referencing the stale elementId will cause the rebase to fail with the error: "Foreign key conflicts in ChangeSet. Aborting rebase."
-    //    */
-    //   const userA = await testIModel.openBriefcase();
-    //   const userB = await testIModel.openBriefcase();
-    //   const userATxn = startTestTxn(userA, "cross-txn id remap b1");
-    //   const userBTxn = startTestTxn(userB, "cross-txn id remap b2");
+    it.only("cross-txn element ID remapping", async () => {
+      /*
+       * This test reproduces a specific scenario in the iModel rebase logic:
+       *
+       * A local briefcase has multiple unpushed transactions where:
+       *  1. The earlier txn uses `shouldReinstate = false` + `recompute` to fully re-execute its command.
+       *  2. The re-execution logic assigns new element IDs (morphing an element) to the recreated elements while maintaining a common federationGUID.
+       *  3. A later txn references the element created by the earlier txn.
+       *
+       * In such a scenario, during a rebase, the first txn will recompute and create a new element.
+       * As a result, the subsequenet txn referencing the stale elementId will cause the rebase to fail with the error: "Foreign key conflicts in ChangeSet. Aborting rebase."
+       */
+      const userA = await testIModel.openBriefcase();
+      const userB = await testIModel.openBriefcase();
+      const userATxn = startTestTxn(userA, "cross-txn id remap userA");
+      const userBTxn = startTestTxn(userB, "cross-txn id remap userB");
 
-    //   // Create a remote element to validate if pullChanges succeded
-    //   const remoteElementId = await testIModel.insertElement(userBTxn);
-    //   userBTxn.saveChanges("remote element");
-    //   await userB.pushChanges({ description: "remote element created" });
+      // UserB creates an unrelated element and pushes, forcing UserA to rebase.
+      const remoteElementId = await testIModel.insertElement(userBTxn);
+      userBTxn.saveChanges("remote element");
+      await userB.pushChanges({ description: "remote element created" });
 
-    //   // Insert an element
-    //   const firstTxnElementId = await testIModel.insertElement(userATxn);
-    //   userATxn.saveChanges("First Txn: Create new element (Needs recompute)");
+      // Txn 1: UserA creates an element that will be "morphed" during rebase.
+      const firstTxnElementId = await testIModel.insertElement(userATxn);
+      userATxn.saveChanges("Should recompute");
 
-    //   const firstTxnElementFedGUID = userA.elements.getFederationGuidFromId(firstTxnElementId);
-    //   chai.expect(firstTxnElementFedGUID).to.exist;
+      // Txn 2: UserA creates a child element that references the Txn-1 element.
+      const secondTxnElementId = await testIModel.insertElementEx(userATxn, {
+        parent: { id: firstTxnElementId, relClassName: "TestDomain:A1OwnsA1" },
+      });
+      userATxn.saveChanges("Should reinstate");
 
-    //   // Insert another element that references the element from the first txn.
-    //   const secondTxnElementId = await testIModel.insertElementEx(userATxn, {
-    //     parent: { id: firstTxnElementId, relClassName: "TestDomain:A1OwnsA1" },
-    //   });
-    //   userATxn.saveChanges("SecondTxn: Create another element that references the first txn element");
+      // Pre-rebase sanity checks.
+      chai.expect(userA.elements.tryGetElementProps(firstTxnElementId)).to.exist;
+      chai.expect(userA.elements.tryGetElementProps(secondTxnElementId)).to.exist;
+      chai.expect(userA.elements.getElementProps(secondTxnElementId).parent?.id).to.equal(firstTxnElementId);
+      chai.expect(userB.elements.tryGetElementProps(remoteElementId)).to.exist;
 
-    //   // Validate that all elements have been setup  correctly in their respective briefcases
-    //   chai.expect(userA.elements.tryGetElementProps(firstTxnElementId)).to.exist;
-    //   chai.expect(userA.elements.tryGetElementProps(secondTxnElementId)).to.exist;
-    //   chai.expect(userA.elements.getElementProps(secondTxnElementId).parent?.id).to.equal(firstTxnElementId);
-    //   chai.expect(userB.elements.tryGetElementProps(remoteElementId)).to.exist;
+      // Register the custom rebase handler.
+      // Txn 1 is fully recomputed (shouldReinstate=false): the handler creates a new
+      //  element under a new ID and explicitly records the mapping in context.idRemaps.
+      // Txn 2 is reinstated (shouldReinstate=true): reinstateWithRemapping reads the
+      //  stored instance data, patches the parent reference using idRemaps, and applies it.
+      let morphedElementId = "";
+      userA.txns.rebaser.setCustomHandler({
+        shouldReinstate: (txnProps: TxnProps) => txnProps.props.description === "Should reinstate",
+        recompute: async (txnProps: TxnProps, context: RebaseContext): Promise<void> => {
+          if (txnProps.props.description === "Should recompute") {
+            // Simulate the morph: create the replacement element (receives a new ID).
+            morphedElementId = await testIModel.insertElement(userATxn);
 
-    //   // Simulate a element morph where element is changed into a new element with the same federationGuid
-    //   let morphedElementId = "";
-    //   userA.txns.rebaser.setCustomHandler({
-    //     shouldReinstate: (txnProps: TxnProps) => txnProps.props.description !== "First Txn: Create new element (Needs recompute)",
-    //     recompute: async (txnProps: TxnProps) => {
-    //       if (txnProps.props.description === "First Txn: Create new element (Needs recompute)") {
-    //         morphedElementId = await testIModel.insertElementEx(userATxn, {
-    //           federationGuid: firstTxnElementFedGUID,
-    //         });
-    //       }
-    //     },
-    //   });
+            // Mark the original element for remapping after the recompute.
+            context.idRemaps.set(firstTxnElementId, morphedElementId);
+          }
+        },
+      });
 
-    //   // User A pulls the remote changes causing a rebase failure when reinstating the second txn
-    //   await userA.pullChanges();
+      // Pull and trigger a rebase.
+      // Without the instance patch, this throws "Foreign key conflicts in ChangeSet. Aborting rebase." as Txn 2's stored parent reference points to the no-longer-existing firstTxnElementId.
+      await userA.pullChanges();
 
-    //   chai.expect(morphedElementId).to.not.equal(firstTxnElementId);
-    //   chai.expect(userA.elements.tryGetElementProps(morphedElementId)).to.exist;
-    //   chai.expect(userA.elements.tryGetElementProps(remoteElementId)).to.exist;
-    // });
+      // The morphed element must have a different ID than the original.
+      chai.expect(morphedElementId).to.not.equal(firstTxnElementId);
+
+      // The original element no longer exists (Txn 1 was recomputed, not reinstated).
+      chai.expect(userA.elements.tryGetElementProps(firstTxnElementId)).to.be.undefined;
+
+      // The morphed and remote elements must exist.
+      chai.expect(userA.elements.tryGetElementProps(morphedElementId)).to.exist;
+      chai.expect(userA.elements.tryGetElementProps(remoteElementId)).to.exist;
+
+      // The child element (Txn 2) must now reference the morphed element not the stale original ID.
+      chai.expect(userA.elements.tryGetElementProps(secondTxnElementId)).to.exist;
+      chai.expect(userA.elements.getElementProps(secondTxnElementId).parent?.id).to.equal(morphedElementId);
+    });
 
     it("ECSqlReader unable to read updates after saveChanges()", async () => {
       const b1 = await testIModel.openBriefcase();

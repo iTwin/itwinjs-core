@@ -327,6 +327,10 @@ export class RebaseManager {
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
   private _disposed: boolean = false;
+  /** Instances captured before reversing.
+   * @internal
+   */
+  private _preCapturedInstances: Map<TxnIdString, InstancePatch[]> | undefined;
 
   /** Event raised before pull merge process begins.
    * @alpha
@@ -407,11 +411,30 @@ export class RebaseManager {
     this.onApplyIncomingChangesEnd.raiseEvent(changes);
     IpcHost.notifyTxns(this._iModel, "notifyApplyIncomingChangesEnd", changes);
   }
+
   /** @internal */
   public notifyReverseLocalChangesBegin() {
+    if (this._customHandler) {
+      this._preCapturedInstances = new Map<TxnIdString, InstancePatch[]>();
+
+      for (const txnProps of this._iModel.txns.queryTxns()) {
+        if (txnProps.reversed)
+          continue; // skip user-undone txns
+
+        const txnId = txnProps.id;
+        using reader = ChangesetReader.openTxn({ db: this._iModel, txnId, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+        using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+        while (reader.step()) {
+          pcu.appendFrom(reader);
+        }
+
+        this._preCapturedInstances.set(txnId, [...pcu.instances]);
+      }
+    }
     this.onReverseLocalChangesBegin.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyReverseLocalChangesBegin");
   }
+
   /** @internal */
   public notifyReverseLocalChangesEnd(txns: TxnProps[]) {
     this.onReverseLocalChangesEnd.raiseEvent(txns);
@@ -460,6 +483,8 @@ export class RebaseManager {
       return;
     this._disposed = true;
     this._customHandler?.dispose?.();
+    if (this._preCapturedInstances)
+      this._preCapturedInstances.clear();
     this.onPullMergeBegin.clear();
     this.onRebaseBegin.clear();
     this.onRebaseTxnBegin.clear();
@@ -497,10 +522,13 @@ export class RebaseManager {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
     try {
+      const txnInstances = this._preCapturedInstances ?? new Map<TxnIdString, InstancePatch[]>();
+
       const reversedTxns = nativeDb.pullMergeRebaseBegin();
       const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
       this.notifyRebaseBegin(reversedTxnProps);
 
+      const rebaseContext: RebaseContext = { idRemaps: new Map<Id64String, Id64String>() };
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
@@ -511,12 +539,19 @@ export class RebaseManager {
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
         const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
         if (shouldReinstate) {
-          nativeDb.pullMergeRebaseReinstateTxn();
-          Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+          const txnInstance = txnInstances.get(txnId);
+
+          if (rebaseContext.idRemaps.size > 0 && txnInstance !== undefined) {
+            this.reinstateWithRemapping(txnInstance ?? [], rebaseContext.idRemaps);
+            Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId} with ${rebaseContext.idRemaps.size} IDs being remapped.`);
+          } else {
+            nativeDb.pullMergeRebaseReinstateTxn();
+            Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+          }
         }
 
         if (this._customHandler) {
-          await this._customHandler.recompute(txnProps);
+          await this._customHandler.recompute(txnProps, rebaseContext);
         }
 
         nativeDb.pullMergeRebaseUpdateTxn();
@@ -536,6 +571,8 @@ export class RebaseManager {
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
       throw err;
+    } finally {
+      this._preCapturedInstances?.clear();
     }
   }
 
@@ -567,6 +604,7 @@ export class RebaseManager {
       const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
       this.notifyRebaseBegin(reversedTxnProps);
 
+      const rebaseContext: RebaseContext = { idRemaps: new Map<Id64String, Id64String>() };
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
@@ -583,7 +621,7 @@ export class RebaseManager {
         }
 
         if (this._customHandler) {
-          await this._customHandler.recompute(txnProps);
+          await this._customHandler.recompute(txnProps, rebaseContext);
         }
 
         nativeDb.pullMergeRebaseUpdateTxn();
@@ -709,6 +747,67 @@ export class RebaseManager {
   }
 
   /**
+   * Deep-walk every property of an instance props object and substitute any `Id64String` value that appears in `remapping`.
+   * @internal
+   */
+  private static remapInstanceProps(props: Record<string, any>, remapping: ReadonlyMap<Id64String, Id64String>, op: "Inserted" | "Updated" | "Deleted",): Record<string, any> {
+    const result: Record<string, any> = { ...props };
+
+    for (const [key, value] of Object.entries(props)) {
+      if (key === "id" && op === "Inserted")
+        continue;   // preserve original ECInstanceIds
+
+      const remappedValue = RebaseManager._remapValue(value, remapping);
+      if (remappedValue !== value)
+        result[key] = remappedValue;
+    }
+    return result;
+  }
+
+  private static _remapValue(value: any, remapping: ReadonlyMap<Id64String, Id64String>): any {
+    if (typeof value === "string" && Id64.isId64(value)) {
+      return remapping.get(value) ?? value;
+    }
+
+    if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+      if (ArrayBuffer.isView(value))
+        return value;
+
+      return Object.fromEntries(
+        Object.entries(value as Record<string, any>).map(([k, v]) => [k, RebaseManager._remapValue(v, remapping)]),
+      );
+    }
+
+    if (Array.isArray(value))
+      return (value as unknown[]).map((v) => RebaseManager._remapValue(v, remapping));
+
+    return value;
+  }
+
+  /**
+   * Replacement for `nativeDb.pullMergeRebaseReinstateTxn()` used when there are element Ids that have been remapped.
+   * Reads EC instance changes from the txn's changeset, applies the remapping to all element ID references and applies the patched instances to the database.
+   * @internal
+   */
+  private reinstateWithRemapping(instances: readonly InstancePatch[], remapping: ReadonlyMap<Id64String, Id64String>): void {
+    for (const instance of instances) {
+      const { $meta, ...rest } = instance;
+
+      const remappedRest = RebaseManager.remapInstanceProps(rest as Record<string, any>, remapping, $meta.op);
+      const patch: InstancePatch = {
+        ...remappedRest,
+        $meta: { op: $meta.op, stage: $meta.stage, isIndirectChange: $meta.isIndirectChange },
+      };
+
+      if (patch.$meta.isIndirectChange) {
+        this._iModel.txns.withIndirectTxnMode(() => this.applyInstancePatch(patch));
+      } else {
+        this.applyInstancePatch(patch);
+      }
+    }
+  }
+
+  /**
    * Determines whether the current transaction can be aborted.
    *
    * This method checks if a transaction is currently in progress and if a specific restore point,
@@ -742,6 +841,8 @@ export class RebaseManager {
         await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       } finally {
         this._aborting = false;
+        this._preCapturedInstances?.clear();
+        this._preCapturedInstances = undefined;
       }
     } else {
       throw new Error("No restore point to abort to");
@@ -1631,6 +1732,18 @@ export class TxnManager {
 }
 
 /**
+ * A mutable context which is shared across all txns within a single rebase session.
+ * @alpha
+ */
+export interface RebaseContext {
+  /**
+   * Populated by `RebaseHandler.recompute()` when a command creates elements under new IDs.
+   * Maps an old/existing element ID to the new ID it was recreated with during rebase.
+   */
+  readonly idRemaps: Map<Id64String, Id64String>;
+}
+
+/**
  * Interface for handling rebase operations on transactions.
  * @alpha
  */
@@ -1645,10 +1758,11 @@ export interface RebaseHandler {
   /**
    * Recompute the changes for a given transaction.
    * @param txn The transaction to recompute.
+   * @param context The rebase context to use for tracking element Id remaps.
    *
    * @alpha
    */
-  recompute(txn: TxnProps): Promise<void>;
+  recompute(txn: TxnProps, context: RebaseContext): Promise<void>;
   /**
    * Called when the owning [[RebaseManager]] is disposed (e.g. when the iModel is closed).
    * Override this method to unsubscribe from events or release resources held by this handler.

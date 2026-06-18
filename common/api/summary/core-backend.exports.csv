@@ -501,6 +501,7 @@ beta;interface;QueryMappedFamiliesArgs
 internal;function;queryStringResourceNames
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
+alpha;interface;RebaseContext
 alpha;interface;RebaseHandler
 alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement
