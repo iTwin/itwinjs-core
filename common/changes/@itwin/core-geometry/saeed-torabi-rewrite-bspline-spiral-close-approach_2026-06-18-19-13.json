@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "Rewrote CurveCurveCloseApproachXY.BsplineCloseApproach test",
+      "comment": "Rewrote CurveCurveCloseApproachXY Bspline and Spiral CloseApproach tests",
       "type": "none"
     }
   ],
