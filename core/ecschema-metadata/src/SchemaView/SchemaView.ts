@@ -8,7 +8,7 @@
 
 import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
-import { StrengthDirection, StrengthType } from "./ECObjects";
+import { StrengthDirection, StrengthType } from "../ECObjects";
 
 // Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
 // core-backend/src/internal/Symbols.ts (e.g. `_nativeDb` on IModelDb): the data is reachable
