@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { Arc3d, AxisOrder, Constant, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Arc3d, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder } from "../AccuDraw";
