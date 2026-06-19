@@ -24,10 +24,10 @@ import { EditManipulator } from "./EditManipulator";
 import { GraphicType } from "../common/render/GraphicType";
 
 const viewHandleWeight = {
-  normal: 1,
-  bold: 2,
-  thin: 0,
-  fatDot: 3,
+  normal: 2,
+  bold: 3,
+  thin: 1,
+  fatDot: 8,
 };
 
 /** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
