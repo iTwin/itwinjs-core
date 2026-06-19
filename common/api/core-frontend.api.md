@@ -1693,20 +1693,25 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @public
+// @public @deprecated
 export class BingElevationProvider {
     constructor();
-    // @internal (undocumented)
+    // @internal
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+    // @internal @deprecated (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
+    // @deprecated
     getHeightAverage(iModel: IModelConnection): Promise<number>;
+    // @deprecated
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
     // @beta
     getHeights(range: Range2d): Promise<number[] | undefined>;
+    // @deprecated
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
 }
 
-// @public
+// @public @deprecated
 export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
@@ -2016,6 +2021,18 @@ export class CategorySelectorState extends ElementState {
     get observableCategories(): ObservableSet<string>;
     // (undocumented)
     toJSON(): CategorySelectorProps;
+}
+
+// @beta
+export interface CesiumAccessClient {
+    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined>;
+}
+
+// @beta
+export interface CesiumAssetEndpoint {
+    accessToken: string;
+    expiresAt?: Date;
+    url: string;
 }
 
 // @public
@@ -3176,6 +3193,12 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
+// @beta
+export interface ElevationProvider {
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
+    getHeights?(range: Range2d): Promise<number[] | undefined>;
+}
+
 // @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
@@ -3806,6 +3829,11 @@ export class GeographicTilingScheme extends MapTilingScheme {
     yFractionToLatitude(yFraction: number): number;
 }
 
+// @beta
+export interface GeoidProvider {
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+}
+
 // @public
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
     constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
@@ -3904,6 +3932,12 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
 
 // @beta
 export function getGoogle3dTilesUrl(): string;
+
+// @beta
+export function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number>;
+
+// @beta
+export function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d>;
 
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
@@ -5024,6 +5058,9 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @beta
+    static get elevationProvider(): ElevationProvider;
+    static set elevationProvider(provider: ElevationProvider);
     // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
@@ -5031,6 +5068,9 @@ export class IModelApp {
     // @beta
     static get formatsProvider(): FormatsProvider;
     static set formatsProvider(provider: FormatsProvider);
+    // @beta
+    static get geoidProvider(): GeoidProvider;
+    static set geoidProvider(provider: GeoidProvider);
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -5042,6 +5082,9 @@ export class IModelApp {
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
+    // @beta
+    static get locationProvider(): LocationProvider;
+    static set locationProvider(provider: LocationProvider);
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
@@ -5109,6 +5152,12 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
     formatsProvider?: FormatsProvider;
+    // @beta
+    geospatialProviders?: {
+        elevationProvider?: ElevationProvider;
+        geoidProvider?: GeoidProvider;
+        locationProvider?: LocationProvider;
+    };
     hubAccess?: FrontendHubAccess;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
@@ -5812,6 +5861,11 @@ export class LocateResponse {
     snapStatus: SnapStatus;
 }
 
+// @beta
+export interface LocationProvider {
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
+}
+
 // @internal (undocumented)
 export enum LockedStates {
     // (undocumented)
@@ -6225,6 +6279,7 @@ export interface MapLayerInfoFromTileTree {
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
+    // @deprecated
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
 }
@@ -8481,6 +8536,8 @@ export class RealityTile extends Tile {
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // @internal
+    readonly contentUrl?: string;
     // @internal (undocumented)
     get copyright(): string | undefined;
     // @internal (undocumented)
@@ -10797,6 +10854,8 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
+    iTwinId?: GuidString;
+    // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -10999,7 +11058,11 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
+    // @beta
+    get canAccessCesium(): boolean;
+    // @beta
+    readonly cesiumAccess?: CesiumAccessClient;
+    // @beta
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11149,6 +11212,8 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
+        // @beta
+        cesiumAccess?: CesiumAccessClient;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;

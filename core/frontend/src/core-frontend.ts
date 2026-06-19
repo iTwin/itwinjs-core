@@ -8,9 +8,11 @@ export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./BingLocation";
 export * from "./BriefcaseConnection";
+export * from "./GeoProviders";
 export * from "./BriefcaseTxns";
 export * from "./CatalogConnection";
 export * from "./CategorySelectorState";
+export * from "./CesiumAccessClient";
 export * from "./ChangeFlags";
 export * from "./CheckpointConnection";
 export * from "./common";
@@ -136,6 +138,7 @@ export {
   Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes,
   TileUsageMarker,
   TileUser,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   BingElevationProvider,
   QuadId, type QuadIdProps,
   MapTilingScheme, GeographicTilingScheme, WebMercatorProjection, WebMercatorTilingScheme,
