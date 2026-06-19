@@ -142,9 +142,9 @@ export class SetupCameraTool extends PrimitiveTool {
 
     const xVec = new Vector3d();
     const yVec = Vector3d.unitZ();
-    if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < (1e-8))
+    if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
       return;
-    if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < (1e-8))
+    if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
       return;
 
     const lensAngle = ToolSettings.walkCameraAngle;
