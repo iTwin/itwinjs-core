@@ -1171,7 +1171,6 @@ class RotateAxesImplementation extends AccuDrawShortcutImplementation {
   public constructor(private readonly _aboutCurrentZ: boolean) { super(); }
 
   protected override get allowShortcut(): boolean { return IModelApp.accuDraw.isActive; } // Require compass to already be active for this shortcut...
-  protected override get wantActivateOnStart(): boolean { return true; } // State is demoted to inactive when a tool install, still need this...
 
   protected override get wantAdditionalInput(): boolean {
     if (TentativeOrAccuSnap.isHot)
@@ -1185,10 +1184,14 @@ class RotateAxesImplementation extends AccuDrawShortcutImplementation {
     return !(accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item));
   }
 
+  protected override onProvideToolAssistance(): void {
+    CoreTools.outputPromptByKey("AccuDraw.RotateAxes.Prompts.FirstPoint");
+  }
+
   protected override onInitialize(): void {
+    IModelApp.accuDraw.activate(); // State demoted to inactive by tool install...
     if (this._aboutCurrentZ)
       IModelApp.accuDraw.changeBaseRotationMode(RotationMode.Context); // Establish current orientation as base for when defining compass rotation by x axis...
-    CoreTools.outputPromptByKey("AccuDraw.RotateAxes.Prompts.FirstPoint");
   }
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
@@ -1230,12 +1233,16 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
 class RotateElementImplementation extends AccuDrawShortcutImplementation {
   private _moveOrigin = !IModelApp.accuDraw.isActive || IModelApp.tentativePoint.isActive; // Preserve current origin if AccuDraw already active and not tentative snap...
 
-  protected override get wantActivateOnStart(): boolean { return true; }
+  protected override get allowShortcut(): boolean { return IModelApp.accuDraw.isEnabled; } // Require AccuDraw to be enabled by the application for this shortcut...
   protected override get wantAdditionalInput(): boolean { return !IModelApp.tentativePoint.isSnapped; }
 
-  protected override onInitialize(): void {
-    IModelApp.accuDraw.setContext(AccuDrawFlags.FixedOrigin); // Don't move compass when updateOrientation returns false...
+  protected override onProvideToolAssistance(): void {
     CoreTools.outputPromptByKey("AccuDraw.RotateElement.Prompts.FirstPoint");
+  }
+
+  protected override onInitialize(): void {
+    IModelApp.accuDraw.activate();
+    IModelApp.accuDraw.setContext(AccuDrawFlags.FixedOrigin); // Don't move compass when updateOrientation returns false...
   }
 
   protected override onComplete(): AccuDrawFlags {
@@ -1267,6 +1274,11 @@ class RotateElementImplementation extends AccuDrawShortcutImplementation {
 
     if (undefined === ev)
       AccuDrawShortcuts.processPendingHints(); // Would normally be processed after button down, necessary when called from post install...
+
+    const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
+    if (vp)
+      vp.invalidateDecorations();
+
     if (!isMotion)
       IModelApp.accuDraw.changeBaseRotationMode(RotationMode.Context); // Hold temporary rotation for tool duration...
     return true;
@@ -1289,7 +1301,9 @@ class DefineACSByElementImplementation extends AccuDrawShortcutImplementation {
   private _rMatrix = Matrix3d.createIdentity();
   private _acs?: AuxCoordSystemState;
 
-  protected override onInitialize(): void { CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint"); }
+  protected override onProvideToolAssistance(): void {
+    CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint");
+  }
 
   private updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
     const rMatrix = AccuDraw.getSnapRotation(snap, vp);
@@ -1347,18 +1361,31 @@ export class DefineACSByElementTool extends AccuDrawShortcutTool {
 class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
   private readonly _points: Point3d[] = [];
   private _acs?: AuxCoordSystemState;
+  private _origin = IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint().clone() : undefined;
+
+  protected override onProvideToolAssistance(): void {
+    switch (this._points.length) {
+      case 0:
+        CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.FirstPoint");
+        break;
+
+      case 1:
+        CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.SecondPoint");
+        break;
+
+      default:
+        CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.NextPoint");
+        break;
+    }
+  }
 
   protected override onInitialize(): void {
-    if (!IModelApp.tentativePoint.isActive) {
-      CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.FirstPoint");
+    if (undefined === this._origin)
       return;
-    }
 
-    const origin = IModelApp.tentativePoint.getPoint().clone();
-    CoreTools.outputPromptByKey("AccuDraw.DefineACSByPoints.Prompts.SecondPoint");
-    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, origin);
-    this._points.push(origin);
-    IModelApp.tentativePoint.clear(true);
+    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, this._origin);
+    this._points.push(this._origin);
+    IModelApp.tentativePoint.clear(true); // Necessary when installed as an InputCollector...
   }
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
@@ -1382,7 +1409,7 @@ class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
       return true;
     }
 
-    CoreTools.outputPromptByKey(`AccuDraw.DefineACSByPoints.Prompts${1 === this._points.length ? ".SecondPoint" : ".NextPoint"}`);
+    this.onProvideToolAssistance();
     return false;
   }
 
