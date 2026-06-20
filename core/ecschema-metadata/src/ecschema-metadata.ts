@@ -53,6 +53,7 @@ export { SchemaGraph } from "./utils/SchemaGraph";
 export * from "./SchemaView/SchemaViewBinaryReader";
 export * from "./SchemaView/SchemaView";
 export * from "./SchemaView/SchemaViewInterfaces";
+export * from "./SchemaView/SchemaManifest";
 export * from "./Localization/LocalizationTypes";
 export * from "./Localization/LocalizationProvider";
 export * from "./Localization/SchemaLocalization";

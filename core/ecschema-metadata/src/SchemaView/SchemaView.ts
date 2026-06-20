@@ -7,7 +7,7 @@
  */
 
 import { type ClassData, ClassModifier, ClassType, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, PropertyKind, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
-import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
+import { parseSchemaViewBlob, SchemaViewMergeContext } from "./SchemaViewBinaryReader";
 import { StrengthDirection, StrengthType } from "../ECObjects";
 
 // Module-local symbol used as the storage key on SchemaView instances. Mirrors the pattern in
@@ -78,14 +78,20 @@ export class SchemaView {
   private _schemaToken: string;
   private _outdated = false;
 
+  /** When present, this view is a *husk* that can incrementally merge fragment blobs via
+   * `mergeFragment`. It retains the live builder and cross-reference maps used to append and
+   * resolve further fragments. Undefined for one-shot views built by `fromBinary`. */
+  private readonly _mergeContext?: SchemaViewMergeContext;
+
   /** @internal */
-  constructor(data: SchemaViewData, schemaToken?: string) {
+  constructor(data: SchemaViewData, schemaToken?: string, mergeContext?: SchemaViewMergeContext) {
     this[_storage] = {
       ...data,
       transitiveBaseCache: new Map<number, ReadonlySet<number>>(),
       derivedClassMap: undefined,
     };
     this._schemaToken = schemaToken ?? "";
+    this._mergeContext = mergeContext;
   }
 
   /** SHA3-256 content hash of the ec_ schema tables at the time this view was built.
@@ -176,6 +182,36 @@ export class SchemaView {
    */
   public static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView {
     return builder.build(schemaToken);
+  }
+
+  /** Create an empty, *mergeable* view (a "husk"). It contains no schemas until
+   * `mergeFragment` is called with one or more fragment blobs. Each merged fragment is appended
+   * into the same view instance, so flyweights and cached cross-references obtained earlier stay
+   * valid (indices are append-only and never reordered).
+   *
+   * Fragments must be merged in dependency order: a fragment may reference schemas in fragments
+   * already merged, but not ones merged later (forward references resolve to "not present",
+   * indistinguishable from an excluded schema).
+   * @internal
+   */
+  public static createMergeable(schemaToken?: string): SchemaView {
+    const ctx = new SchemaViewMergeContext();
+    return new SchemaView(ctx.builder.assembleData(), schemaToken, ctx);
+  }
+
+  /** Merge one fragment blob into this view. Only valid on a view created via `createMergeable`.
+   * Synchronous and atomic: on return the view reflects the merged schemas, and any flyweight or
+   * cached index obtained before the call remains valid. Throws if this view is not mergeable.
+   * @internal
+   */
+  public mergeFragment(blob: Uint8Array): void {
+    if (this._mergeContext === undefined)
+      throw new Error("SchemaView is not mergeable: create it via SchemaView.createMergeable to merge fragments.");
+    this._mergeContext.mergeBlob(blob);
+    // A new fragment can add subclasses to an already-present base class, so the derived-class map
+    // must be rebuilt. transitiveBaseCache stays valid: a class's ancestors are always merged
+    // before it (dependency order), so an append never adds an ancestor to an already-cached class.
+    this[_storage].derivedClassMap = undefined;
   }
 
   // --- Internal helpers used by view objects ---
@@ -1193,6 +1229,17 @@ export class SchemaViewBuilder {
   // For PropertyDef dedup
   private readonly _propDefMap = new Map<string, number>(); // signature string -> defIdx
 
+  // Lookup maps - owned by the builder so a husk can share and extend them across fragment
+  // merges. `build()` and each merge call `extendLookupMaps()` to bring them up to date; the
+  // view receives these same Map objects via `assembleData()`, so in-place growth is visible.
+  private readonly _schemaByName = new Map<string, number>();
+  private readonly _schemaByAlias = new Map<string, number>();
+  private readonly _classByName = new Map<number, Map<string, number>>();
+  private readonly _enumByName = new Map<number, Map<string, number>>();
+  private readonly _koqByName = new Map<number, Map<string, number>>();
+  private readonly _catByName = new Map<number, Map<string, number>>();
+  private _lookupMapsBuiltUpto = 0; // number of schemas whose lookup entries are already built
+
   /** Intern a string, returning its SID. Empty/undefined strings return 0.
    * Interning is case-sensitive - "MyLabel" and "MYLABEL" get distinct SIDs.
    * The `lowerStrings` array provides case-insensitive lookup without mutating display values.
@@ -1294,6 +1341,21 @@ export class SchemaViewBuilder {
   /** The current count of class mixins (used to set mixinStartIdx). */
   public get classMixinCount(): number { return this._classMixins.length; }
 
+  /** The current count of schemas. Used by fragment merging to compute global indices. @internal */
+  public get schemaCount(): number { return this._schemas.length; }
+
+  /** The current count of classes. Used by fragment merging to compute global indices. @internal */
+  public get classCount(): number { return this._classes.length; }
+
+  /** The current count of enumerations. Used by fragment merging to compute global indices. @internal */
+  public get enumerationCount(): number { return this._enumerations.length; }
+
+  /** The current count of KindOfQuantities. Used by fragment merging to compute global indices. @internal */
+  public get koqCount(): number { return this._koqs.length; }
+
+  /** The current count of property categories. Used by fragment merging to compute global indices. @internal */
+  public get propCategoryCount(): number { return this._propCategories.length; }
+
   /** Get a string by SID. @internal */
   public getString(sid: number): string { return this._strings[sid]; }
 
@@ -1308,46 +1370,54 @@ export class SchemaViewBuilder {
 
   /** Freeze all data and produce an immutable SchemaView. */
   public build(schemaToken?: string): SchemaView {
-    const schemaByName = new Map<string, number>();
-    const schemaByAlias = new Map<string, number>();
-    const classByName = new Map<number, Map<string, number>>();
-    const enumByName = new Map<number, Map<string, number>>();
-    const koqByName = new Map<number, Map<string, number>>();
-    const catByName = new Map<number, Map<string, number>>();
+    this.extendLookupMaps();
+    return new SchemaView(this.assembleData(), schemaToken);
+  }
 
-    // Build schema lookup maps
-    for (let i = 0; i < this._schemas.length; i++) {
+  /** Build lookup-map entries for any schemas added since the last call. Idempotent and
+   * append-only, so it is safe to call after each fragment merge. The owning schema's item
+   * ranges must already be finalized (via `updateSchemaRanges`) before the schema is processed.
+   * @internal */
+  public extendLookupMaps(): void {
+    for (let i = this._lookupMapsBuiltUpto; i < this._schemas.length; i++) {
       const s = this._schemas[i];
-      schemaByName.set(this._lowerStrings[s.nameStringIdx], i);
+      this._schemaByName.set(this._lowerStrings[s.nameStringIdx], i);
       if (s.aliasStringIdx !== 0)
-        schemaByAlias.set(this._lowerStrings[s.aliasStringIdx], i);
+        this._schemaByAlias.set(this._lowerStrings[s.aliasStringIdx], i);
 
       // Build class-by-name map for this schema
       const classMap = new Map<string, number>();
       for (let c = s.classRangeStart; c < s.classRangeStart + s.classCount; c++)
         classMap.set(this._lowerStrings[this._classes[c].nameStringIdx], c);
-      classByName.set(i, classMap);
+      this._classByName.set(i, classMap);
 
       // Build enum-by-name map for this schema
       const eMap = new Map<string, number>();
       for (let e = s.enumRangeStart; e < s.enumRangeStart + s.enumCount; e++)
         eMap.set(this._lowerStrings[this._enumerations[e].nameStringIdx], e);
-      enumByName.set(i, eMap);
+      this._enumByName.set(i, eMap);
 
       // Build koq-by-name map for this schema
       const kMap = new Map<string, number>();
       for (let k = s.koqRangeStart; k < s.koqRangeStart + s.koqCount; k++)
         kMap.set(this._lowerStrings[this._koqs[k].nameStringIdx], k);
-      koqByName.set(i, kMap);
+      this._koqByName.set(i, kMap);
 
       // Build category-by-name map for this schema
       const cMap = new Map<string, number>();
       for (let p = s.catRangeStart; p < s.catRangeStart + s.catCount; p++)
         cMap.set(this._lowerStrings[this._propCategories[p].nameStringIdx], p);
-      catByName.set(i, cMap);
+      this._catByName.set(i, cMap);
     }
+    this._lookupMapsBuiltUpto = this._schemas.length;
+  }
 
-    return new SchemaView({
+  /** Assemble a {@link SchemaViewData} bag that references this builder's live arrays and lookup
+   * maps. The result is a *live* view: continued building (e.g. fragment merges that append to
+   * the arrays and extend the maps in place) is reflected through the shared references, so a
+   * husk holding this data sees merged schemas without rebuilding. @internal */
+  public assembleData(): SchemaViewData {
+    return {
       strings: this._strings,
       lowerStrings: this._lowerStrings,
       schemas: this._schemas,
@@ -1361,14 +1431,15 @@ export class SchemaViewBuilder {
       enumerators: this._enumerators,
       koqs: this._koqs,
       propCategories: this._propCategories,
-      schemaByName,
-      schemaByAlias,
-      classByName,
-      enumByName,
-      koqByName,
-      catByName,
-    }, schemaToken);
+      schemaByName: this._schemaByName,
+      schemaByAlias: this._schemaByAlias,
+      classByName: this._classByName,
+      enumByName: this._enumByName,
+      koqByName: this._koqByName,
+      catByName: this._catByName,
+    };
   }
+
 
   /** Produce a dedup signature for a PropertyDef. Label and priority are excluded because
    * they are per-PropertyRef overrides, not part of the structural definition.

@@ -21,7 +21,7 @@ Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you
 
 |                       | SchemaView                                                              | SchemaContext                                            |
 | --------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Loading**           | Single binary blob, one RPC call                                        | One async RPC per schema (84 schemas = 84 round-trips)   |
+| **Loading**           | Single binary blob, one RPC call (or a schema subset, see below)        | One async RPC per schema (84 schemas = 84 round-trips)   |
 | **Memory**            | Flat arrays, string dedup, property dedup; 90-95% less memory           | Full object graph with cross-references                  |
 | **Parse time**        | Very fast (binary decode into typed arrays)                             | Slow (JSON parse + object construction per schema)       |
 | **Access**            | Synchronous after one async hydration                                   | Async throughout                                         |
@@ -65,6 +65,18 @@ The schema view is obtained from [IModelDb]($backend) (backend) or [IModelConnec
 ```
 
 The schema view is cached for the lifetime of the connection. Schema changes (via `importSchemas` or pulling changesets with schema changes) automatically invalidate the cache.
+
+### Loading only a subset of schemas (backend)
+
+By default `getSchemaView()` loads every (non-excluded) schema in the iModel. On a large iModel with many schemas, a consumer that only needs a few - for example a Models tree that starts from `BisCore` - can ask for just those schemas plus their reference closure:
+
+```ts
+[[include:SchemaView.obtain-subset]]
+```
+
+This is a [IModelDb]($backend)-only option today (`getSchemaView({ schemas })`). It fetches just the requested schemas' closure via `PRAGMA schema_view_fragment` and merges them into a single **accumulating** view: a later request for more schemas merges into the *same* instance, so schemas requested earlier stay available. Schemas that were never requested (and that nothing pulled in transitively) are simply absent - `findClass` and friends return `undefined` for them, exactly as for a schema the iModel does not contain. Re-requesting an already-loaded schema is a cheap no-op. Passing no argument, or an empty `schemas` array, behaves as before (an empty array yields an empty view; omitting the option yields the full view).
+
+The trade-off is the usual one: you pay only for the schemas you load, but downward/cross-schema navigation (`derivedClasses`, a base class in a not-yet-loaded schema) is incomplete until the relevant schemas are loaded. Reach for the full view when you need a complete picture.
 
 ## Navigating schemas and classes
 
