@@ -94,7 +94,8 @@ export class SchemaView {
     this._mergeContext = mergeContext;
   }
 
-  /** SHA3-256 content hash of the ec_ schema tables at the time this view was built.
+  /** Cache-invalidation token identifying the schemas this view was built from: a hash of every
+   * schema's name and version (see `PRAGMA schema_token`), not of their full contents.
    * Empty string if not set (e.g., when built from a builder without a token).
    * @beta
    */
@@ -111,6 +112,13 @@ export class SchemaView {
    * @internal
    */
   public markOutdated(): void { this._outdated = true; }
+
+  /** Set the cache-invalidation token. Called by the host after loading schema data into a husk,
+   * since the token is not known until the first blob is fetched. The token identifies the whole
+   * iModel's schema set, so it is the same for a full load or any fragment.
+   * @internal
+   */
+  public setSchemaToken(token: string): void { this._schemaToken = token; }
 
   /** Number of schemas in the view. */
   public get schemaCount(): number { return this[_storage].schemas.length; }
@@ -170,7 +178,7 @@ export class SchemaView {
 
   /** Parse a binary blob into a SchemaView. Synchronous.
    * @param blob - The binary blob from `PRAGMA schema_view`.
-   * @param schemaToken - Optional SHA3-256 content hash for cache invalidation.
+   * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA schema_token`).
    * @beta
    */
   public static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView {

@@ -28,13 +28,12 @@ async function openMockedConnection(): Promise<BriefcaseConnection> {
 }
 
 /**
- * Returns a minimal mock ECSqlReader whose single row reports the given checksum.
- * Used to simulate the response from `PRAGMA checksum(ecdb_schema)`.
+ * Returns a minimal mock ECSqlReader whose single row reports the given schema token.
+ * Used to simulate the response from `PRAGMA schema_token`.
  */
-function makeChecksumReader(checksum: string) {
-  // Property key must match the column name returned by PRAGMA checksum(ecdb_schema).
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  return { next: vi.fn().mockResolvedValue({ done: false, value: { "sha3_256": checksum } }) } as any;
+function makeSchemaTokenReader(token: string) {
+  // Property key must match the column name returned by PRAGMA schema_token.
+  return { next: vi.fn().mockResolvedValue({ done: false, value: { token } }) } as any;
 }
 
 describe("SchemaView frontend cache invalidation", () => {
@@ -58,14 +57,14 @@ describe("SchemaView frontend cache invalidation", () => {
     expect((conn as any)._schemasPromise).toBeUndefined();
   });
 
-  it("invalidateSchemaViewIfChanged preserves the cached view when the schema checksum is unchanged", async () => {
+  it("invalidateSchemaViewIfChanged preserves the cached view when the schema token is unchanged", async () => {
     const conn = await openMockedConnection();
-    const token = "sha3-256-checksum-abc";
+    const token = "sha3-256-token-abc";
     const view = new SchemaViewBuilder().build(token);
     (conn as any)._schemasPromise = Promise.resolve(view);
 
-    // PRAGMA checksum returns the same token - schemas did not change.
-    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeChecksumReader(token));
+    // PRAGMA schema_token returns the same token - schemas did not change.
+    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader(token));
 
     await (conn as any).invalidateSchemaViewIfChanged();
 
@@ -75,11 +74,11 @@ describe("SchemaView frontend cache invalidation", () => {
 
   it("invalidateSchemaViewIfChanged marks old view outdated and clears cache when schemas changed", async () => {
     const conn = await openMockedConnection();
-    const view = new SchemaViewBuilder().build("checksum-before");
+    const view = new SchemaViewBuilder().build("token-before");
     (conn as any)._schemasPromise = Promise.resolve(view);
 
-    // PRAGMA checksum returns a different token - schemas changed since the view was built.
-    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeChecksumReader("checksum-after"));
+    // PRAGMA schema_token returns a different token - schemas changed since the view was built.
+    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader("token-after"));
 
     await (conn as any).invalidateSchemaViewIfChanged();
 
@@ -89,11 +88,11 @@ describe("SchemaView frontend cache invalidation", () => {
 
   it("pullChanges invalidates schema view when a schema changeset was pulled", async () => {
     const conn = await openMockedConnection();
-    const view = new SchemaViewBuilder().build("checksum-before");
+    const view = new SchemaViewBuilder().build("token-before");
     (conn as any)._schemasPromise = Promise.resolve(view);
 
-    // Simulate that the pull brought in a schema changeset - checksum differs afterwards.
-    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeChecksumReader("checksum-after"));
+    // Simulate that the pull brought in a schema changeset - token differs afterwards.
+    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader("token-after"));
 
     await conn.pullChanges();
 
@@ -103,12 +102,12 @@ describe("SchemaView frontend cache invalidation", () => {
 
   it("pullChanges preserves schema view when no schema change was pulled", async () => {
     const conn = await openMockedConnection();
-    const token = "stable-checksum";
+    const token = "stable-token";
     const view = new SchemaViewBuilder().build(token);
     (conn as any)._schemasPromise = Promise.resolve(view);
 
-    // Checksum is unchanged - a data-only pull should leave the schema view intact.
-    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeChecksumReader(token));
+    // Token is unchanged - a data-only pull should leave the schema view intact.
+    vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader(token));
 
     await conn.pullChanges();
 
