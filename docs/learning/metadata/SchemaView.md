@@ -1,4 +1,4 @@
-# SchemaView
+# Intro
 
 The shape of data in iModels is expressed using [ECSchemas](../../bis/ec/ec-schema.md).
 Sometimes, these schemas can grow quite large and complex. It is possible to have a hundred schemas, thousands of classes and hundreds of thousands of properties flat, which expands to millions of properties when you include inherited properties.
