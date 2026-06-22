@@ -1446,15 +1446,34 @@ export class ToolAdmin {
     }
   }
 
-  private get _isFocusHome(): boolean {
+  private static isFocusHome(): boolean {
     return (document.body === document.activeElement);
   }
 
-  private _setFocusHome(): void {
-    const element = document.activeElement as HTMLElement;
-    if (element && element !== document.body)
+  private static setFocusHome(): void {
+    const element = document.activeElement;
+    if (element instanceof HTMLElement && element !== document.body)
       element.blur();
     document.body.focus();
+  }
+
+  private static isContextMenuOpen(): boolean {
+    const contextMenu = document.querySelector("div.core-context-menu-opened");
+    return contextMenu !== null && contextMenu !== undefined;
+  }
+
+  private static isElement(target: EventTarget | null): target is Element {
+    return target instanceof Element;
+  }
+
+  private static isEditable(element: Element): boolean {
+    const tagName = element.tagName.toLowerCase();
+    const editableTags = ["input", "textarea", "select"];
+    if (editableTags.includes(tagName))
+      return true;
+    if (element instanceof HTMLElement && element.isContentEditable)
+      return true;
+    return false;
   }
 
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
@@ -1503,17 +1522,25 @@ export class ToolAdmin {
    * @return true if handled and no further processing of event should occur.
    */
   protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
-    if (this._isFocusHome || undefined !== IModelApp.accuDraw.getFocusItem())
+    if (ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem())
       return false; // Focus is Home or AccuDraw, allow shortcuts...
 
     // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
     // Escape is the only practical choice with its default behavior that can cancel/close/blur.
     // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
     // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
-    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome && !keyEvent.defaultPrevented && !keyEvent.isComposing)
-      this._setFocusHome();
+    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome && !keyEvent.defaultPrevented && !keyEvent.isComposing) {
+      ToolAdmin.setFocusHome();
+      return true;
+    }
 
-    return true;
+    if (ToolAdmin.isContextMenuOpen())
+      return true; // Don't allow shortcuts if context menu is open...
+
+    if (ToolAdmin.isElement(keyEvent.target) && ToolAdmin.isEditable(keyEvent.target))
+      return true; // Don't allow shortcuts when event target is editable...
+
+    return false;
   }
 
   /** Need to check for modifier changes on capture phase as a ui element that calls stopPropagation
