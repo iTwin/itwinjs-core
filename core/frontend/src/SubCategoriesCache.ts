@@ -149,7 +149,7 @@ export class SubCategoriesCache {
             staleCategories.add(row.parentId);
 
         if (staleCategories.size > 0)
-          this.processResults(results.filter((row) => staleCategories.has(row.parentId)), staleCategories, false);
+          this.processResults(results.filter((row) => staleCategories.has(row.parentId)), staleCategories);
 
         for (const row of results)
           if (!staleCategories.has(row.parentId))
@@ -277,9 +277,10 @@ export class SubCategoriesCache {
     const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
     for (const categoryId of categoryIds) {
       const subCategoryIds = this._byCategoryId.get(categoryId);
-      const subCategories = subCategoryIds
-        ? this.mapSubCategoryInfos(categoryId, subCategoryIds)
-        : new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
+      if (!subCategoryIds)
+        continue;
+
+      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
       map.set(categoryId, { id: categoryId, subCategories });
     }
 

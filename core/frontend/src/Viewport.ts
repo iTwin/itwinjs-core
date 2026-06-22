@@ -1211,6 +1211,14 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateSubCategories(this.view.categorySelector.categories, undefined);
   }
 
+  private getSubCategoryReloadCategoryIds(): Id64Set {
+    const categoryIds = Id64.toIdSet(this.view.categorySelector.categories);
+    for (const { categoryId } of this.perModelCategoryVisibility)
+      categoryIds.add(categoryId);
+
+    return categoryIds;
+  }
+
   private registerViewListeners(): void {
     const view = this.view;
     const removals = this._detachFromView;
@@ -1228,7 +1236,7 @@ export abstract class Viewport implements Disposable, TileUser {
     }));
 
     removals.push(this.iModel.subcategories.addChangedListener(() => {
-      this.updateSubCategories(view.categorySelector.categories, undefined);
+      this.updateSubCategories(this.getSubCategoryReloadCategoryIds(), undefined);
     }));
 
     removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {

@@ -311,6 +311,33 @@ describe("SubCategoriesCache", () => {
     expect(cache.getSubCategoryAppearance(oldSubCategoryId)).toBeUndefined();
   });
 
+  it("overwrites stale subcategory appearances during the used spatial subcategory preload", async () => {
+    const categoryId = "0x1";
+    const subCategoryId = "0x2";
+    const staleAppearance = new SubCategoryAppearance({ invisible: true });
+    const freshAppearance = new SubCategoryAppearance();
+    const queryAllUsedSpatialSubCategories = vi.fn(async () => [{ parentId: categoryId, id: subCategoryId, appearance: {} }]);
+    const onElementsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
+
+    const iModel = {
+      isClosed: false,
+      isBriefcaseConnection: () => true,
+      queryAllUsedSpatialSubCategories,
+      txns: { onElementsChanged },
+    } as unknown as IModelConnection;
+    const cache = new SubCategoriesCache(iModel);
+    cache.add(categoryId, subCategoryId, staleAppearance, true);
+    cache.attachToBriefcase(iModel);
+
+    onElementsChanged.raiseEvent(createChanges(createSubCategoryChange("0x20", "inserted")));
+    await cache.loadAllUsedSpatialSubCategories();
+
+    const reloadedAppearance = cache.getSubCategoryAppearance(subCategoryId);
+    expect(queryAllUsedSpatialSubCategories).toHaveBeenCalledTimes(1);
+    expect(reloadedAppearance).not.toBeUndefined();
+    expect(reloadedAppearance!.equals(freshAppearance)).toBe(true);
+  });
+
   it("removes cached subcategory appearances when a category is deleted", async () => {
     const categoryId = "0x1";
     const subCategoryId = "0x2";
@@ -360,6 +387,21 @@ describe("SubCategoriesCache", () => {
     expect(retryRequest).not.toBeUndefined();
     expect(await retryRequest!.promise).toBe(true);
     expect(cache.getSubCategories(categoryId)?.has(subCategoryId)).toBe(true);
+  });
+
+  it("omits categories whose cache entry is still absent after a failed load", async () => {
+    const categoryId = "0x1";
+    const querySubCategories = vi.fn().mockRejectedValueOnce(new Error("backend error"));
+
+    const iModel = {
+      isClosed: false,
+      isBriefcaseConnection: () => true,
+      querySubCategories,
+    } as unknown as IModelConnection;
+    const cache = new SubCategoriesCache(iModel);
+
+    const categoryInfo = await cache.getCategoryInfo(categoryId);
+    expect(categoryInfo.has(categoryId)).toBe(false);
   });
 
   it("bumps generation on update/delete of subcategory not in cache when categories are stale", async () => {
