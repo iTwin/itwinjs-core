@@ -260,7 +260,6 @@ describe("RelationshipConstraintRule tests", () => {
       const baseJson = createBaseRelationship(false, sourceConstraints, targetConstraints);
       schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
-      console.log(schema);
 
       const targetResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.target);
       for await (const _diagnostic of targetResult) {
