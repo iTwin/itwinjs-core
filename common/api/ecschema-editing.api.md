@@ -467,6 +467,7 @@ export const DiagnosticCodes: {
     ConstraintClassesDeriveFromAbstractConstraint: string;
     AtLeastOneConstraintClassDefined: string;
     AbstractConstraintMustExistWithMultipleConstraints: string;
+    NonPolymorphicConstraintMustBeConcrete: string;
 };
 
 // @beta
@@ -745,6 +746,17 @@ export const Diagnostics: {
             category: DiagnosticCategory;
         };
     };
+    NonPolymorphicConstraintMustBeConcrete: {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string, string], category?: DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: DiagnosticType;
+            ecDefinition: RelationshipConstraint;
+            messageArgs?: [string, string, string] | undefined;
+            category: DiagnosticCategory;
+        };
+    };
 };
 
 // @beta
@@ -764,7 +776,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "Property" | "Schema" | "SchemaItem" | "RelationshipConstraint" | "CustomAttributeContainer" | "None";
 
 // @alpha
 export type DifferenceType = "add" | "modify";
@@ -1937,13 +1949,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [OverrideFormat | Format] | undefined;
+            messageArgs?: [Format | OverrideFormat] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
