@@ -210,8 +210,7 @@ If you cannot find an existing issue that describes your bug or feature, create 
     - A self-contained code snippet or link to a repo/CodeSandbox that isolates the bug.
     - Repro steps in Display Test App (in a branch if needed) or standalone tests.
 - **Stack traces and logs:** Paste full error logs in markdown code blocks, not screenshots.
-- **Priority/urgency:** Include the earliest date you can consume a fix.
-- **AI acknowledgment**
+- **Priority/urgency:** Describe if the bug is blocking, its severity, and earliest date a fix can be consumed
 
 ### Feature Requests
 - **Use case:** Explain the real-world problem and how this benefits the wider community, not just your project.
