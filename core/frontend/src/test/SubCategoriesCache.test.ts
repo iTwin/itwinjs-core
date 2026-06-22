@@ -285,16 +285,21 @@ describe("SubCategoriesCache", () => {
     expect((await cache.getSubCategoryInfo(categoryId, oldSubCategoryId)).has(oldSubCategoryId)).toBe(false);
   });
 
-  it("reconciles stale categories loaded by the used spatial subcategory preload", async () => {
+  it("keeps stale categories reloadable when the used spatial subcategory preload returns partial results", async () => {
     const categoryId = "0x1";
     const oldSubCategoryId = "0x2";
     const freshSubCategoryId = "0x3";
     const queryAllUsedSpatialSubCategories = vi.fn(async () => [{ parentId: categoryId, id: freshSubCategoryId, appearance: {} }]);
+    const querySubCategories = vi.fn(async () => [
+      { parentId: categoryId, id: oldSubCategoryId, appearance: {} },
+      { parentId: categoryId, id: freshSubCategoryId, appearance: {} },
+    ]);
     const onElementsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
 
     const iModel = {
       isClosed: false,
       isBriefcaseConnection: () => true,
+      querySubCategories,
       queryAllUsedSpatialSubCategories,
       txns: { onElementsChanged },
     } as unknown as IModelConnection;
@@ -306,9 +311,17 @@ describe("SubCategoriesCache", () => {
     await cache.loadAllUsedSpatialSubCategories();
 
     expect(queryAllUsedSpatialSubCategories).toHaveBeenCalledTimes(1);
-    expect(cache.getSubCategories(categoryId)?.has(oldSubCategoryId)).toBe(false);
+    expect(cache.getSubCategories(categoryId)?.has(oldSubCategoryId)).toBe(true);
     expect(cache.getSubCategories(categoryId)?.has(freshSubCategoryId)).toBe(true);
-    expect(cache.getSubCategoryAppearance(oldSubCategoryId)).toBeUndefined();
+    expect(cache.getSubCategoryAppearance(oldSubCategoryId)).not.toBeUndefined();
+
+    const request = cache.load([categoryId]);
+    expect(request).not.toBeUndefined();
+    expect(await request!.promise).toBe(true);
+
+    expect(querySubCategories).toHaveBeenCalledTimes(1);
+    expect(cache.getSubCategories(categoryId)?.has(oldSubCategoryId)).toBe(true);
+    expect(cache.getSubCategories(categoryId)?.has(freshSubCategoryId)).toBe(true);
   });
 
   it("overwrites stale subcategory appearances during the used spatial subcategory preload", async () => {
@@ -389,7 +402,7 @@ describe("SubCategoriesCache", () => {
     expect(cache.getSubCategories(categoryId)?.has(subCategoryId)).toBe(true);
   });
 
-  it("omits categories whose cache entry is still absent after a failed load", async () => {
+  it("returns requested categories with empty subcategory maps when load fails", async () => {
     const categoryId = "0x1";
     const querySubCategories = vi.fn().mockRejectedValueOnce(new Error("backend error"));
 
@@ -401,7 +414,9 @@ describe("SubCategoriesCache", () => {
     const cache = new SubCategoriesCache(iModel);
 
     const categoryInfo = await cache.getCategoryInfo(categoryId);
-    expect(categoryInfo.has(categoryId)).toBe(false);
+    expect(categoryInfo.size).toBe(1);
+    expect(categoryInfo.get(categoryId)?.id).toBe(categoryId);
+    expect(categoryInfo.get(categoryId)?.subCategories.size).toBe(0);
   });
 
   it("bumps generation on update/delete of subcategory not in cache when categories are stale", async () => {

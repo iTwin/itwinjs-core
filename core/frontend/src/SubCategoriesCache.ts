@@ -141,19 +141,14 @@ export class SubCategoriesCache {
       const generation = this._invalidationGeneration;
       const results = await this._imodel.queryAllUsedSpatialSubCategories();
       if (generation === this._invalidationGeneration && undefined !== results) {
-        // Stale categories get a full reset+repopulate (removes outdated subcategory entries).
-        // Non-stale categories get an additive update to preserve any manually-added entries.
-        const staleCategories = new Set<string>();
+        const staleCategories = new Set(this._staleCategoryIds);
+        // This preload can return partial results on very large iModels, so keep stale categories additive and
+        // preserve their stale state until a targeted reload can fully reconcile them.
         for (const row of results)
-          if (this.isCategoryStale(row.parentId))
-            staleCategories.add(row.parentId);
+          this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), staleCategories.has(row.parentId));
 
         if (staleCategories.size > 0)
-          this.processResults(results.filter((row) => staleCategories.has(row.parentId)), staleCategories);
-
-        for (const row of results)
-          if (!staleCategories.has(row.parentId))
-            this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), false);
+          this.markCategoriesStale(staleCategories);
       }
     } catch {
       // In case of a truncated response, gracefully handle the error and exit.
@@ -277,10 +272,7 @@ export class SubCategoriesCache {
     const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
     for (const categoryId of categoryIds) {
       const subCategoryIds = this._byCategoryId.get(categoryId);
-      if (!subCategoryIds)
-        continue;
-
-      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
+      const subCategories = undefined !== subCategoryIds ? this.mapSubCategoryInfos(categoryId, subCategoryIds) : new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
       map.set(categoryId, { id: categoryId, subCategories });
     }
 
