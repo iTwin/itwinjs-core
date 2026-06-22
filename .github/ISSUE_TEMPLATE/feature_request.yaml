@@ -9,26 +9,33 @@ body:
 
         When suggesting an idea, give examples of the intended use case. Features that benefit the wider community are more likely to be prioritized.
   - type: textarea
-    id: new-feature
+    id: use-case
     attributes:
-      label: Feature
-      description: A clear and concise description of the feature you'd like to see.
+      label: Use case
+      description: "Explain the real-world problem this solves and how it benefits the wider community, not just your project."
     validations:
       required: true
   - type: textarea
-    id: problem
+    id: proposed-solution
     attributes:
-      label: Is your feature request related to a problem?
-      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+      label: Proposed solution
+      description: "Suggest how it should work (e.g., API design ideas, new configuration flags, expected behavior)."
     validations:
-      required: false
+      required: true
   - type: textarea
     id: alternatives
     attributes:
       label: Alternatives considered
-      description: A clear and concise description of any alternative solutions or features you've considered.
+      description: "Explain why current workarounds or existing features don't solve your problem."
     validations:
-      required: false
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Willingness to contribute
+      options:
+        - label: I am willing to write the code or documentation for this feature.
+          required: false
   - type: checkboxes
     id: ai-acknowledgment
     attributes:

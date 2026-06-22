@@ -5,12 +5,23 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping us improve iTwin.js! Please describe what the expected behavior is vs what actually happens.
+        Thanks for helping us improve iTwin.js! Please provide as much detail as possible so we can reproduce and fix the issue quickly.
+  - type: input
+    id: title-hint
+    attributes:
+      label: Clear title
+      description: "State the problem concisely (e.g., \"Crash in v2.0 when passing null to `user.update()`\"). Your issue title above should reflect this."
+      placeholder: "Brief summary of the bug"
+    validations:
+      required: false
   - type: textarea
     id: what-happened
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
+      label: Expected vs. actual behavior
+      description: "Contrast what should have happened with what actually happened."
+      placeholder: |
+        Expected: ...
+        Actual: ...
     validations:
       required: true
   - type: textarea
@@ -25,17 +36,41 @@ body:
         ...
     validations:
       required: true
+  - type: input
+    id: repro-link
+    attributes:
+      label: Minimal reproducible example
+      description: "Link to a self-contained repo, CodeSandbox, or Display Test App branch that isolates the bug."
+      placeholder: "https://github.com/..."
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Stack traces and logs
+      description: "Paste full error logs in a code block (not screenshots). Include any relevant console output."
+      render: shell
+    validations:
+      required: false
   - type: textarea
     id: environment
     attributes:
       label: Environment
-      description: What OS, Browser, and iTwin.js version are you experiencing this issue on?
+      description: "iTwin.js version, runtime (Node.js, Electron), platform/browser/OS, and any relevant package versions."
       value: |
         iTwin.js Version:
+        Runtime (e.g., Node.js 20, Electron 28):
         Operating System:
         Browser (if applicable):
     validations:
       required: true
+  - type: textarea
+    id: priority
+    attributes:
+      label: Priority / urgency
+      description: "Is this blocking you? Describe severity and the earliest date you could consume a fix."
+    validations:
+      required: false
   - type: checkboxes
     id: ai-acknowledgment
     attributes:

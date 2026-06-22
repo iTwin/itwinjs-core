@@ -2,4 +2,4 @@ blank_issues_enabled: true
 contact_links:
   - name: Ask a question
     url: https://github.com/iTwin/itwinjs-core/discussions
-    about: iTwin.js is a big project, so we use GitHub Issues for feature requests and bug tracking exclusively. Please use the community forum for general questions. The iTwin.js team actively monitors it and loves seeing what people are working on!
+    about: iTwin.js is a big project, so we use GitHub Issues for feature requests and bug tracking exclusively. Please use the Discussions tab for general questions. The iTwin.js team actively monitors it and would love to see what you're working on!
