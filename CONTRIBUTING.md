@@ -203,6 +203,9 @@ Use a reaction in place of a "+1" comment:
 If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
 
 ### Bug Reports
+
+When reporting a bug, include:
+
 - **Clear title:** State the problem concisely (e.g., "Crash in v2.0 when passing null to `user.update()`").
 - **Context:** iTwin.js version, runtime environment (e.g., Node.js 20, Electron 28, core-backend 5.11.0), platform/browser/OS.
 - **Expected vs. actual behavior:** Contrast what should have happened with what actually happened.
@@ -213,6 +216,9 @@ If you cannot find an existing issue that describes your bug or feature, create 
 - **Priority/urgency:** Describe if the bug is blocking, its severity, and earliest date a fix can be consumed
 
 ### Feature Requests
+
+When suggesting a new feature, include
+
 - **Use case:** Explain the real-world problem and how this benefits the wider community, not just your project.
 - **Proposed solution:** Suggest how it should work (e.g., API design ideas, new configuration flags).
 - **Alternatives considered:** Explain why current workarounds or existing features don't solve your problem.
