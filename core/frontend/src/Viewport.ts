@@ -804,8 +804,11 @@ export abstract class Viewport implements Disposable, TileUser {
       if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
-      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded)
+      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded) {
         this._changeFlags.setViewedCategories();
+        this.maybeInvalidateScene();
+        IModelApp.requestNextAnimation();
+      }
     });
   }
 
@@ -1222,6 +1225,10 @@ export abstract class Viewport implements Disposable, TileUser {
       this._changeFlags.setViewedCategories();
       this.updateSubCategories(view.categorySelector.categories, undefined);
       this.maybeInvalidateScene();
+    }));
+
+    removals.push(this.iModel.subcategories.addChangedListener(() => {
+      this.updateSubCategories(view.categorySelector.categories, undefined);
     }));
 
     removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
