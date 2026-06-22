@@ -6,6 +6,7 @@
  * @module Tiles
  */
 
+import type { GuidString } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
@@ -43,6 +44,11 @@ export interface TerrainMeshProviderOptions {
    * @beta
    */
   produceGeometry?: boolean;
+  /** Optional iTwin context identifier. Passed to [[CesiumAccessClient.getAssetEndpoint]] so implementations
+   * that scope requests to an iTwin context can use it. Not required by the iTwin Platform Cesium Curated Content API.
+   * @beta
+   */
+  iTwinId?: GuidString;
 }
 
 /** Arguments supplied to [[TerrainMeshProvider.requestMeshData]].

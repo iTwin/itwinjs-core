@@ -535,6 +535,8 @@ export class AccuDraw {
     // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
     // @internal (undocumented)
+    requestInputFocus(): void;
+    // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
     rotationMode: RotationMode;
     // @internal (undocumented)
@@ -724,26 +726,18 @@ export class AccuDrawRotate90AboutZTool extends Tool {
 }
 
 // @beta (undocumented)
-export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
+export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     constructor(aboutCurrentZ?: boolean);
     // (undocumented)
     aboutCurrentZ: boolean;
     // @internal (undocumented)
-    protected get allowShortcut(): boolean;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static get maxArgs(): number;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
     // (undocumented)
     parseAndRun(...args: any[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected get wantActivateOnStart(): boolean;
-    // @internal (undocumented)
-    protected get wantManipulationImmediate(): boolean;
 }
 
 // @beta (undocumented)
@@ -755,21 +749,11 @@ export class AccuDrawRotateCycleTool extends Tool {
 }
 
 // @beta (undocumented)
-export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
+export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationComplete(): AccuDrawFlags;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, viewport: ScreenViewport, _isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected get wantActivateOnStart(): boolean;
-    // @internal (undocumented)
-    protected get wantManipulationImmediate(): boolean;
 }
 
 // @beta (undocumented)
@@ -2023,6 +2007,18 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface CesiumAccessClient {
+    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined>;
+}
+
+// @beta
+export interface CesiumAssetEndpoint {
+    accessToken: string;
+    expiresAt?: Date;
+    url: string;
+}
+
 // @public
 export enum ChangeFlag {
     All = 268435455,
@@ -2586,27 +2582,17 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 }
 
 // @beta (undocumented)
-export class DefineACSByElementTool extends AccuDrawShortcutsTool {
+export class DefineACSByElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
 }
 
 // @beta (undocumented)
-export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
+export class DefineACSByPointsTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
 }
@@ -10842,6 +10828,8 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
+    iTwinId?: GuidString;
+    // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -11044,7 +11032,11 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
+    // @beta
+    get canAccessCesium(): boolean;
+    // @beta
+    readonly cesiumAccess?: CesiumAccessClient;
+    // @beta
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11194,6 +11186,8 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
+        // @beta
+        cesiumAccess?: CesiumAccessClient;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
