@@ -436,7 +436,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined === url)
       return undefined;
 
-    return this.contextRealityModelStates.find((x) => x.url === url);
+    return this.contextRealityModelStates.find((x) => x.url?.startsWith(url));
   }
 
   /** Set the display of the OpenStreetMap worldwide building layer in this display style by attaching or detaching the reality model displaying the buildings.
@@ -451,7 +451,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined === url)
       return false;
 
-    let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
+    let model = this.settings.contextRealityModels.models.find((x) => x.url?.startsWith(url));
     if (options.onOff === false) {
       const turnedOff = undefined !== model && this.settings.contextRealityModels.delete(model);
       if (turnedOff)
