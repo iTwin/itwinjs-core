@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { assert, BeEvent, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
  * @see SubCategoriesCache
@@ -15,14 +15,12 @@ export interface SubCategoriesRequest {
   /** The Ids of any categories which were requested but were not yet loaded. */
   readonly missingCategoryIds: Id64Set;
   /** A promise which resolves to true when all of the requested categories have been loaded, or to false if not all categories were loaded.
-   * Categories may fail to load if the request is explicitly canceled or if the IModelConnection is closed before all categories are loaded.
+   * Categories may fail to load if the request is explicitly canceled, if the IModelConnection is closed before all categories are loaded, or if the query fails.
    */
   readonly promise: Promise<boolean>;
   /** Cancels the request. */
   cancel(): void;
 }
-
-const invalidCategoryIdEntry = new Set<string>();
 
 /** A cache of information about the subcategories contained within an [[IModelConnection]]. It is populated on demand.
  * @internal
@@ -30,8 +28,11 @@ const invalidCategoryIdEntry = new Set<string>();
 export class SubCategoriesCache {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
+  private readonly _staleCategoryIds = new Set<string>();
   private readonly _imodel: IModelConnection;
-  private _missingAtTimeOfPreload: Id64Set | undefined;
+  private _invalidationGeneration = 0;
+
+  private readonly _onChanged = new BeEvent<() => void>();
 
   public constructor(imodel: IModelConnection) {
     this._imodel = imodel;
@@ -44,37 +45,62 @@ export class SubCategoriesCache {
     assert(imodel.isBriefcaseConnection());
     imodel.txns.onElementsChanged.addListener((changes) => {
       const affectedSubCategories = new Set<string>();
+      const affectedCategories = new Set<string>();
+      let invalidateAllCategories = false;
+      let changed = false;
       for (const change of changes) {
         if (change.metadata.is("BisCore:Category")) {
           if (change.type === "deleted") {
-            this._byCategoryId.delete(change.id);
+            this.deleteCategory(change.id);
+            changed = true;
           }
         } else if (change.metadata.is("BisCore:SubCategory")) {
           if (change.type === "inserted") {
-            // We don't know to which category the subcategory belongs. Blow away the entire cache.
-            this._byCategoryId.clear();
-            this._appearances.clear();
-            return;
+            // We don't know to which category the subcategory belongs, so every cached category may be stale.
+            invalidateAllCategories = true;
+            changed = true;
+            continue;
           }
 
-          this._appearances.delete(change.id);
           affectedSubCategories.add(change.id);
         }
       }
 
-      if (affectedSubCategories.size > 0) {
+      if (invalidateAllCategories) {
+        this.markAllCategoriesStale();
+      } else if (affectedSubCategories.size > 0) {
         for (const [catId, subCatIds] of this._byCategoryId) {
           for (const subCatId of affectedSubCategories) {
             if (subCatIds.has(subCatId)) {
-              this._byCategoryId.delete(catId);
+              affectedCategories.add(catId);
+              changed = true;
               affectedSubCategories.delete(subCatId);
               break;
             }
           }
         }
+
+        if (affectedCategories.size > 0)
+          this.markCategoriesStale(affectedCategories);
+
+        // If any affected subcategories were NOT found in cache and categories are currently stale,
+        // bump generation to invalidate in-flight reload queries that may return stale data.
+        if (affectedSubCategories.size > 0 && this.hasStaleCategories()) {
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        this._invalidationGeneration++;
+        this._onChanged.raiseEvent();
       }
     });
   }
+  /** Register a listener to be notified when transaction changes invalidate cached subcategory information.
+   * @internal
+   */
+  public addChangedListener(listener: () => void): () => void { return this._onChanged.addListener(listener); }
+
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
@@ -92,11 +118,15 @@ export class SubCategoriesCache {
       return undefined;
 
     const request = new SubCategoriesCache.Request(missing, this._imodel);
+    const generation = this._invalidationGeneration;
     const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
-      if (undefined !== result)
+      const completed = undefined !== result && !request.wasCanceled && generation === this._invalidationGeneration;
+      if (completed)
         this.processResults(result, missing);
 
-      return !request.wasCanceled;
+      // On failure (result undefined due to query error), do NOT cache empty sets for uncached categories.
+      // Leave them absent so getMissing() will include them in subsequent load() retries.
+      return completed;
     });
     return {
       missingCategoryIds: missing,
@@ -108,9 +138,17 @@ export class SubCategoriesCache {
   /** Load all subcategories that come from used spatial categories of the iModel into the cache. */
   public async loadAllUsedSpatialSubCategories(): Promise<void> {
     try {
+      const generation = this._invalidationGeneration;
       const results = await this._imodel.queryAllUsedSpatialSubCategories();
-      if (undefined !== results) {
-        this.processResults(results, new Set<string>(), false);
+      if (generation === this._invalidationGeneration && undefined !== results) {
+        const staleCategories = new Set(this._staleCategoryIds);
+        // This preload can return partial results on very large iModels, so keep stale categories additive and
+        // preserve their stale state until a targeted reload can fully reconcile them.
+        for (const row of results)
+          this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), staleCategories.has(row.parentId));
+
+        if (staleCategories.size > 0)
+          this.markCategoriesStale(staleCategories);
       }
     } catch {
       // In case of a truncated response, gracefully handle the error and exit.
@@ -121,7 +159,7 @@ export class SubCategoriesCache {
   private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
     let missing: Id64Set | undefined;
     for (const catId of Id64.iterable(categoryIds)) {
-      if (undefined === this._byCategoryId.get(catId)) {
+      if (undefined === this._byCategoryId.get(catId) || this.isCategoryStale(catId)) {
         if (undefined === missing)
           missing = new Set<string>();
 
@@ -135,6 +173,8 @@ export class SubCategoriesCache {
   public clear(): void {
     this._byCategoryId.clear();
     this._appearances.clear();
+    this._staleCategoryIds.clear();
+    this._invalidationGeneration++;
   }
 
   public onIModelConnectionClose(): void {
@@ -149,15 +189,28 @@ export class SubCategoriesCache {
     return new SubCategoryAppearance(props);
   }
 
-  private processResults(result: SubCategoriesCache.Result, missing: Id64Set, override: boolean = true): void {
+  private processResults(result: SubCategoriesCache.Result, refreshedCategoryIds: Id64Set, override: boolean = true): void {
+    const previousSubCategoryIds = new Map<Id64String, Id64Set>();
+    for (const id of refreshedCategoryIds) {
+      const previous = this._byCategoryId.get(id);
+      if (undefined !== previous)
+        previousSubCategoryIds.set(id, previous);
+
+      this._byCategoryId.set(id, new Set<string>());
+      this.markCategoryFresh(id);
+    }
+
     for (const row of result) {
       this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
     }
 
-    // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
-    for (const id of missing)
-      if (undefined === this._byCategoryId.get(id))
-        this._byCategoryId.set(id, invalidCategoryIdEntry);
+    for (const [categoryId, previous] of previousSubCategoryIds) {
+      const current = this._byCategoryId.get(categoryId);
+      for (const subCategoryId of previous) {
+        if (!current?.has(subCategoryId))
+          this._appearances.delete(subCategoryId);
+      }
+    }
   }
 
   /** Exposed strictly for tests.
@@ -169,8 +222,44 @@ export class SubCategoriesCache {
       this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
+    this.markCategoryFresh(categoryId);
     if (override || !this._appearances.has(subCategoryId))
       this._appearances.set(subCategoryId, appearance);
+  }
+
+  private isCategoryStale(categoryId: Id64String): boolean {
+    return this._staleCategoryIds.has(categoryId);
+  }
+
+  private markCategoryFresh(categoryId: Id64String): void {
+    this._staleCategoryIds.delete(categoryId);
+  }
+
+  private markAllCategoriesStale(): void {
+    // We don't know which cached category the inserted subcategory belongs to, so every currently-cached
+    // category may now be missing a subcategory. Mark them all stale so they are re-requested on next load.
+    // Categories cached after this point are loaded fresh and are intentionally left out.
+    for (const categoryId of this._byCategoryId.keys())
+      this._staleCategoryIds.add(categoryId);
+  }
+
+  private markCategoriesStale(categoryIds: Iterable<Id64String>): void {
+    for (const categoryId of categoryIds)
+      this._staleCategoryIds.add(categoryId);
+  }
+
+  private hasStaleCategories(): boolean {
+    return this._staleCategoryIds.size > 0;
+  }
+
+  private deleteCategory(categoryId: Id64String): void {
+    const subCategoryIds = this._byCategoryId.get(categoryId);
+    if (undefined !== subCategoryIds)
+      for (const subCategoryId of subCategoryIds)
+        this._appearances.delete(subCategoryId);
+
+    this._byCategoryId.delete(categoryId);
+    this._staleCategoryIds.delete(categoryId);
   }
 
   public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
@@ -183,10 +272,7 @@ export class SubCategoriesCache {
     const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
     for (const categoryId of categoryIds) {
       const subCategoryIds = this._byCategoryId.get(categoryId);
-      if (!subCategoryIds)
-        continue;
-
-      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
+      const subCategories = undefined !== subCategoryIds ? this.mapSubCategoryInfos(categoryId, subCategoryIds) : new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
       map.set(categoryId, { id: categoryId, subCategories });
     }
 
@@ -255,9 +341,7 @@ export namespace SubCategoriesCache {
         if (this.wasCanceled)
           return undefined;
       } catch {
-        // ###TODO: detect cases in which retry is warranted
-        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
-        // incomplete results. Since we're not retrying, that's the best we can do.
+        return undefined;
       }
 
       // Finished with current batch of categoryIds. Dispatch the next batch if one exists.

@@ -10392,6 +10392,7 @@ export { Storage_2 as Storage }
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
+    addChangedListener(listener: () => void): () => void;
     // (undocumented)
     attachToBriefcase(imodel: IModelConnection): void;
     // (undocumented)
