@@ -101,7 +101,7 @@ describe("ECDb", () => {
       });
     }
     const runDbListPragmaCCQ = async (ecdb: ECDb) => {
-      const reader = ecdb.createQueryReader("PRAGMA db_list");
+      const reader = ecdb.createQueryReader("PRAGMA db_list", undefined, new QueryOptionsBuilder().setUsePrimaryConnection(true).getOptions());
       const result: { alias: string, filename: string, profile: string }[] = [];
       while (await reader.step()) {
         result.push(reader.current.toRow());
@@ -164,7 +164,7 @@ describe("ECDb", () => {
         alias: "source",
         fileName: path.join(outDir, "source_file.ecdb"),
         profile: "SQLite"
-      }
+      },
     ]);
     testECDb1.detachDb("source");
     expect(await runDbListPragmaCCQ(testECDb1)).deep.equals([
