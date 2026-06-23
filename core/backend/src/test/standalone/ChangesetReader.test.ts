@@ -3853,7 +3853,7 @@ describe("ChangesetReader: overflow table graceful recovery when ExclusiveRootCl
 describe("ChangesetReader: instance reused with a different class (class change in Updated row)", () => {
   it("openFile() correctly identifies ECClassId change from T1 to T2 in a buggy changeset", async () => {
     /**
-     * Same scenario as ChangesetReader.test.ts: "Instance update to a different class (bug)".
+     * Same scenario as SQliteChangesetReaderAndChangesetECAdaptor.test.ts: "Instance update to a different class (bug)".
      * Verifies ChangesetReader behaviour when an instance ID is reused with a different class.
      *
      * Steps:
