@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Stop clearing SubCategoriesCache on subcategory insert; reload instead",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
