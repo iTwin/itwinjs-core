@@ -68,7 +68,7 @@ body:
     id: priority
     attributes:
       label: Priority / urgency
-      description: "Is this blocking you? Describe severity and the earliest date you could consume a fix."
+      description: "Is this blocking you? Describe severity and the earliest date you could consume a fix. Then please set the priority level in github when issue is filed"
     validations:
       required: true
   - type: checkboxes
