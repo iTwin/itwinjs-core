@@ -174,10 +174,23 @@ To distinguish whether a package is using vitest or mocha, look at the `package.
 
 ## Asking Questions
 
-Have a question?
-Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/iTwin/itwinjs-core/discussions).
+Have a question? The [GitHub Discussions page](https://github.com/iTwin/itwinjs-core/discussions) is the place for any and all questions about iTwin.js — no question is too small or too broad. Rather than opening an issue, please post your question there.
 
-The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
+Questions we encourage include:
+
+- **How-to questions:** "How do I set up a custom tool?", "How do I render a reality model?"
+- **Best practices:** "What's the recommended pattern for managing element state?", "Should I use RPC or IPC for my Electron app?"
+- **Troubleshooting:** "Why am I getting this error when I build?", "My viewport isn't rendering — what should I check?"
+- **Architecture and design:** "What's the best way to structure my iTwin.js extension?", "How do frontend and backend communicate?"
+- **Migration help:** "How do I upgrade from v3 to v4?", "What changed in this release?"
+
+**Tips for getting a great answer:**
+
+- Search existing discussions first — your question may already be answered.
+- Provide context: iTwin.js version, runtime environment, and relevant code snippets.
+- Keep questions focused — one topic per discussion makes answers easier to find later.
+
+The community and the core iTwin.js team actively monitor discussions. Your well-worded question will serve as a resource to others searching for help.
 
 ## Providing Feedback
 
