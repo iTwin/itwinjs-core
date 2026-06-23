@@ -70,7 +70,7 @@ body:
       label: Priority / urgency
       description: "Is this blocking you? Describe severity and the earliest date you could consume a fix."
     validations:
-      required: false
+      required: true
   - type: checkboxes
     id: ai-acknowledgment
     attributes:
