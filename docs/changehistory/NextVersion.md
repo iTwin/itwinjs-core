@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [Move elements between models and parents](#move-elements-between-models-and-parents)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Pluggable Cesium Ion authentication via `CesiumAccessClient`](#pluggable-cesium-ion-authentication-via-cesiumaccessclient)
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
@@ -18,6 +20,27 @@ publish: false
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
   - [@itwin/build-tools](#itwinbuild-tools)
     - [`mocha` is now an optional peer dependency](#mocha-is-now-an-optional-peer-dependency)
+
+## @itwin/core-backend
+
+### Move elements between models and parents
+
+New `@beta` methods on [EditTxn]($backend) move an element to a different parent or model without deleting and re-inserting it. Only the target element is moved — its child elements are left in place.
+
+- [EditTxn.changeElementParent]($backend) changes an element's parent. The new parent must be in the **same model** as the element; to move an element into a different model, use [EditTxn.changeElementModel]($backend) instead. It accepts [ChangeElementParentProps]($backend) (the element id and the new parent id).
+- [EditTxn.changeElementModel]($backend) changes the model of a **root** element (one with no parent), making it a root element in the target model. The source and target models must be of the same class (for example, both `PhysicalModel`). It accepts [ChangeElementModelProps]($backend) (the element id and the target model id).
+
+Both operations enforce code-scope rules and throw when the move would invalidate the element's code: an element with a `ParentElement`-scoped code cannot be reparented, and an element with a `Model`-scoped or `ParentElement`-scoped code cannot be moved to another model. Elements with `Repository`-scoped, `RelatedElement`-scoped, or empty codes are allowed. Failures are reported through the new [ElementError]($common) namespace.
+
+```typescript
+withEditTxn(iModel, (txn) => {
+  // Reparent an element within its model (only this element moves; its children are unaffected).
+  txn.changeElementParent({ id: elementId, parentId: newParentId });
+
+  // Move a root element to a different model of the same class.
+  txn.changeElementModel({ id: elementId, modelId: newModelId });
+});
+```
 
 ## @itwin/core-frontend
 

@@ -261,6 +261,7 @@ public;type;ElementAlignedBox2d
 public;type;ElementAlignedBox3d
 public;interface;ElementAspectProps
 preview;interface;ElementAspectProps
+beta;namespace;ElementError
 beta;namespace;ElementGeometry
 public;interface;ElementGeometryBuilderParams
 public;interface;ElementGeometryBuilderParamsForPart

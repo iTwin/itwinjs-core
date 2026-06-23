@@ -69,7 +69,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb, _verifyChannel } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -140,6 +140,53 @@ export interface InsertElementOptions {
    * @beta
    */
   forceUseId?: boolean;
+}
+
+/** Options for [[EditTxn.changeElementParent]].
+ * Changes the parent of an element within its model. The new parent must be in the same model as the
+ * element; reparenting across models is not allowed (use [[EditTxn.changeElementModel]] for that).
+ * Only the target element is reparented — its children and their model membership are unaffected.
+ *
+ * **Blocked cases** (will throw):
+ * - The new parent is in a different model than the element.
+ * - Element has a `ParentElement`-scoped code (code uniqueness is tied to parent; use delete+insert instead).
+ *
+ * **Allowed cases**:
+ * - Element has a `Repository`-scoped code (unique across entire iModel — unaffected by the parent change).
+ * - Element has a `RelatedElement`-scoped code (scope element is independent of parent).
+ * - Element has a `Model`-scoped code (the model does not change, so the code remains valid).
+ * - Element has no meaningful code (empty code).
+ *
+ * @beta
+ */
+export interface ChangeElementParentProps {
+  /** The Id of the element to reparent. */
+  id: Id64String;
+  /** The Id of the new parent element. Must be in the same model as the element. */
+  parentId: Id64String;
+}
+
+/** Options for [[EditTxn.changeElementModel]].
+ * Changes the model of a root element (one with no parent), making it a root element in the new model.
+ * Only the target element is moved — its children remain in their current model.
+ *
+ * **Blocked cases** (will throw):
+ * - Element has a parent (only root elements can be moved between models; reparent first with [[EditTxn.changeElementParent]]).
+ * - Element has a `Model`-scoped code (code uniqueness is tied to source model; use delete+insert instead).
+ * - Element has a `ParentElement`-scoped code (use delete+insert instead).
+ *
+ * **Allowed cases**:
+ * - Element has a `Repository`-scoped code (unique across entire iModel — unaffected by model change).
+ * - Element has a `RelatedElement`-scoped code (scope element is independent of model).
+ * - Element has no meaningful code (empty code).
+ *
+ * @beta
+ */
+export interface ChangeElementModelProps {
+  /** The Id of the element to move. Must be a root element (no parent). */
+  id: Id64String;
+  /** The Id of the target model. The element becomes a root element (no parent) in this model. */
+  modelId: Id64String;
 }
 
 /** Options supplied to [[IModelDb.clearCaches]].
@@ -3204,6 +3251,26 @@ export namespace IModelDb {
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
+    }
+
+    /** Change the parent of an element.
+     * @param props The properties specifying the element to reparent and its new parent.
+     * @throws [[IModelError]] if unable to change the element's parent.
+     * @beta
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
+    public changeElementParent(props: ChangeElementParentProps): void {
+      this._iModel[_implicitTxn].changeElementParent(props);
+    }
+
+    /** Change the model of an element.
+     * @param props The properties specifying the element to move and its new model.
+     * @throws [[IModelError]] if unable to change the element's model.
+     * @beta
+     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
+    public changeElementModel(props: ChangeElementModelProps): void {
+      this._iModel[_implicitTxn].changeElementModel(props);
     }
   }
 

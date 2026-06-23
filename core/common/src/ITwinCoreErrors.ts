@@ -279,3 +279,25 @@ export namespace ServerBasedLocksError {
     return ITwinError.isError<ITwinError>(error, scope, key);
   }
 }
+
+/**
+ * An error originating from element operations.
+ * @beta
+ */
+export namespace ElementError {
+  export const scope = "itwin-element";
+  export type Key =
+    /** The element's model type does not match the expected model type for the operation */
+    "model-type-mismatch" |
+    /** Invalid arguments were provided to an element operation */
+    "invalid-arguments";
+
+  /** Instantiate and throw an ElementError */
+  export function throwError(key: Key, message: string): never {
+    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
+  }
+  /** Determine whether an error object is an ElementError */
+  export function isError(error: unknown, key?: Key): error is ITwinError {
+    return ITwinError.isError<ITwinError>(error, scope, key);
+  }
+}
