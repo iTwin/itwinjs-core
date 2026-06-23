@@ -699,7 +699,7 @@ export abstract class IModelConnection extends IModel {
    * returns only the new changeset id, not the list of applied changesets with their types.
    * Unconditionally discarding the cached [[SchemaView]] after every such operation would cause
    * unnecessary reloads in the common case where schemas are unchanged. This method avoids that
-   * cost by fetching a lightweight schema token via `PRAGMA schema_token` and
+   * cost by fetching a lightweight schema token via `PRAGMA checksum(schema_token)` and
    * comparing it against the token stored in the cached view. Only when the token differs is the
    * cache discarded.
    *
@@ -723,11 +723,11 @@ export abstract class IModelConnection extends IModel {
     if (!existing.schemaToken)
       return;
     try {
-      const reader = this.createQueryReader("PRAGMA schema_token");
+      const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
       const result = await reader.next();
       if (result.done)
-        throw new Error("PRAGMA schema_token returned no rows");
-      const liveToken = result.value.token as string;
+        throw new Error("PRAGMA checksum(schema_token) returned no rows");
+      const liveToken = result.value.sha3_256 as string;
       if (liveToken !== existing.schemaToken) {
         if (this._schemasPromise === existingPromise)
           this._schemasPromise = undefined;

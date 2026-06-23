@@ -10,7 +10,7 @@ PRAGMA help
 
 | pragma                        | type   | descr                                                                           |
 | ----------------------------- | ------ | ------------------------------------------------------------------------------- |
-| checksum                      | global | checksum([ecdb_schema\|ecdb_map\|sqlite_schema]) return sha3 checksum for data. |
+| checksum                      | global | checksum([ecdb_schema\|ecdb_map\|sqlite_schema\|schema_token]) return sha3 checksum for data. |
 | ecdb_ver                      | global | return current and file profile versions                                        |
 | experimental_features_enabled | global | enable/disable experimental features                                            |
 | validate_ecsql_writes         | global | enable/disable validation for values in an ecsql statement                      |
@@ -20,7 +20,6 @@ PRAGMA help
 | parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                                   |
 | schema_view                   | global | returns a curated subset of schema metadata as a binary blob                    |
 | schema_view_fragment          | global | returns a chosen subset of schemas as a binary blob, for incremental loading    |
-| schema_token                  | global | returns a cheap hash of all schema names and versions, for cache invalidation   |
 | disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                          |
 
 ## `PRAGMA checksum`
@@ -36,6 +35,7 @@ PRAGMA checksum('ecdb_map')
 - **ecdb_map** - Includes only the ec mapping tables but not the ec definition tables
   > `ec_PropertyPath`, `ec_ClassMap`, `ec_Table`, `ec_Column`, `ec_Index`, `ec_IndexColumn`, `ec_PropertyMap`
 - **sqlite_schema** - Includes information in the `sqlite_master` table
+- **schema_token** - A cheap schema-**identity** hash (every schema's name and version only, one tiny row per schema), intended as a cache-invalidation key for [`SchemaView`](../metadata/SchemaView.md).
 
 ## `PRAGMA ecdb_ver`
 
@@ -228,7 +228,7 @@ The result is a single row with the following columns:
 | format        | string  | Format identifier (currently `binary`)                                        |
 | formatVersion | integer | The format version of the returned blob                                       |
 | data          | binary  | The schema metadata blob                                                      |
-| schemaToken   | string  | Cheap schema-identity hash (see [`schema_token`](#pragma-schema_token)), usable as a cache-invalidation key |
+| schemaToken   | string  | Cheap schema-identity hash (see [`checksum(schema_token)`](#using-schema_token-for-cache-invalidation)), usable as a cache-invalidation key |
 
 The pragma is read-only. Attempting to set a value returns an error.
 
@@ -269,30 +269,14 @@ The fragment pragma needs two independent inputs - the blob format version and t
 
 The embedded `v<N>;` prefix is self-describing (`v1` reads as "version 1"), cannot collide with the id list (`v`, `;`, and `,` never appear in a decimal id), and is read **first** so a future format that changes the id-list encoding can dispatch on the version before parsing the rest - the role a leading version byte plays in any binary wire format. It also keeps this pragma consistent with `schema_view`, where the format version is likewise the single optional leading argument; the common case `schema_view_fragment('131,145,150')` stays clean and means "latest version." The choice is reversible: if pragmas ever gain real multi-argument support, the prefix can be promoted to a proper second argument while the string form is accepted during a deprecation window.
 
-## `PRAGMA schema_token`
+## Using `schema_token` for cache invalidation
 
-Returns a cheap hash that identifies the current set of schemas - their **names and versions only**. It is intended as a cache-invalidation key for a [`SchemaView`](../metadata/SchemaView.md): hold onto the `schemaToken` column returned by [`schema_view`](#pragma-schema_view) / [`schema_view_fragment`](#pragma-schema_view_fragment), and later compare it against `PRAGMA schema_token` to decide whether the cached view is stale. The value is **identical** to that `schemaToken` column, by construction.
+`PRAGMA checksum(schema_token)` returns a cheap hash that identifies the current set of schemas - their **names and versions only**. It is intended as a cache-invalidation key for a [`SchemaView`](../metadata/SchemaView.md): hold onto the `schemaToken` column returned by [`schema_view`](#pragma-schema_view) / [`schema_view_fragment`](#pragma-schema_view_fragment), and later compare it against `PRAGMA checksum(schema_token)` to decide whether the cached view is stale.
 
 ```sql
-PRAGMA schema_token
+PRAGMA checksum(schema_token)
 ```
 
-The result is a single row with one column:
-
-| Column | Type   | Description                                              |
-| ------ | ------ | -------------------------------------------------------- |
-| token  | string | SHA3-256 hash of every schema's name and version digits |
-
-The pragma is read-only. Attempting to set a value returns an error.
-
-### Why a dedicated token instead of `checksum(ecdb_schema)`
-
-`PRAGMA checksum(ecdb_schema)` hashes the full contents of every `ec_` metadata table - every class, property, relationship constraint, and custom-attribute instance in the file. On a large iModel that is a multi-second, full-schema scan (it is dominated by the `ec_CustomAttribute` XML blobs), which defeats the point of incremental schema loading: each fragment fetch would re-hash the entire schema. `schema_token` instead hashes only the `ec_Schema` rows (name + version), which is one tiny row per schema, so it is effectively free regardless of iModel size.
-
-### Limitation: same-version content changes are not detected
-
-Because `schema_token` hashes schema **identity** (name + version), not schema **contents**, it does not change when a schema is modified without bumping its version. ECDb normally forbids re-importing changed schema content without a version increment, so in practice this only affects **dynamic schemas**, which ECDb permits to be re-imported in place. There is no cheap way to detect a content change without reading the contents, which is exactly the cost this pragma exists to avoid.
-
-For the SchemaView use case this is acceptable: dynamic schemas are predominantly imported via changesets generated by connectors, and frontend code already invalidates the cached view after pulling changes. Consumers that must be robust against in-place dynamic-schema edits should invalidate their cached view explicitly after such an import rather than relying on the token. If this ever proves to be a real problem, a cheap per-schema content checksum column on `ec_Schema` could be introduced later without changing this pragma's contract.
+Like the other `checksum` keys, the result is a single row whose `sha3_256` column holds the SHA3-256 hash - here, of every schema's name and version digits.
 
 [ECSql Syntax](./index.md)

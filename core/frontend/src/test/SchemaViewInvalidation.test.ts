@@ -29,11 +29,11 @@ async function openMockedConnection(): Promise<BriefcaseConnection> {
 
 /**
  * Returns a minimal mock ECSqlReader whose single row reports the given schema token.
- * Used to simulate the response from `PRAGMA schema_token`.
+ * Used to simulate the response from `PRAGMA checksum(schema_token)`.
  */
 function makeSchemaTokenReader(token: string) {
-  // Property key must match the column name returned by PRAGMA schema_token.
-  return { next: vi.fn().mockResolvedValue({ done: false, value: { token } }) } as any;
+  // Property key must match the column name returned by PRAGMA checksum(schema_token).
+  return { next: vi.fn().mockResolvedValue({ done: false, value: { sha3_256: token } }) } as any;
 }
 
 describe("SchemaView frontend cache invalidation", () => {
@@ -63,7 +63,7 @@ describe("SchemaView frontend cache invalidation", () => {
     const view = new SchemaViewBuilder().build(token);
     (conn as any)._schemasPromise = Promise.resolve(view);
 
-    // PRAGMA schema_token returns the same token - schemas did not change.
+    // PRAGMA checksum(schema_token) returns the same token - schemas did not change.
     vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader(token));
 
     await (conn as any).invalidateSchemaViewIfChanged();
@@ -77,7 +77,7 @@ describe("SchemaView frontend cache invalidation", () => {
     const view = new SchemaViewBuilder().build("token-before");
     (conn as any)._schemasPromise = Promise.resolve(view);
 
-    // PRAGMA schema_token returns a different token - schemas changed since the view was built.
+    // PRAGMA checksum(schema_token) returns a different token - schemas changed since the view was built.
     vi.spyOn(conn, "createQueryReader").mockReturnValue(makeSchemaTokenReader("token-after"));
 
     await (conn as any).invalidateSchemaViewIfChanged();

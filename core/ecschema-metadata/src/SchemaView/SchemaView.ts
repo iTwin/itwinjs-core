@@ -95,7 +95,7 @@ export class SchemaView {
   }
 
   /** Cache-invalidation token identifying the schemas this view was built from: a hash of every
-   * schema's name and version (see `PRAGMA schema_token`), not of their full contents.
+   * schema's name and version (see `PRAGMA checksum(schema_token)`), not of their full contents.
    * Empty string if not set (e.g., when built from a builder without a token).
    * @beta
    */
@@ -178,7 +178,7 @@ export class SchemaView {
 
   /** Parse a binary blob into a SchemaView. Synchronous.
    * @param blob - The binary blob from `PRAGMA schema_view`.
-   * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA schema_token`).
+   * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA checksum(schema_token)`).
    * @beta
    */
   public static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView {
