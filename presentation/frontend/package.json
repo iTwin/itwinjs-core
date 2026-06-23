@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.11.0-dev.10",
+  "version": "5.11.0-dev.15",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -47,7 +47,7 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
-    "@itwin/unified-selection": "^1.2.0",
+    "@itwin/unified-selection": "^1.4.0",
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0"
   },

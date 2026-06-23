@@ -113,20 +113,51 @@ interface SmoothCurveData {
  */
 export interface CreateFilletsInLineStringOptions {
   /**
-   * Allow creation of retrograde edges to join large-radius fillets.
-   * * If `true` (default), cusps are present in the output `Path` when the radius is too large.
-   * * If `false`, a fillet with overly large radius is disallowed, resulting in a simple corner.
+  * Whether to allow cusps in the output `Path`. Default value is `true`.
+  * * A _cusp_ forms when a fillet's radius is large enough to consume an adjacent line string segment, or when two
+  * fillets intersect.
+  * * Each cusp results in a retrograde "cusp segment" or gap in the output `Path`, as per the `cuspSegments` option.
+  * * The length of cusp segments in the output `Path` is bounded above by the `cuspTolerance` option.
+  * * When this option is `false`, cusps are avoided by suppressing one or both of their constituent fillets. Where two
+  * fillets combine to form a cusp, but either fillet by itself does not form a cusp, the fillet with smaller chain
+  * index survives.
   */
   allowCusp?: boolean;
   /**
-   * Whether to fillet the closure.
+   * Whether to fillet the closure of the input line string. Default value is `false`.
    * * If `true`, the input line string is treated as a polygon (closure point optional), and the output `Path` is
    * closed and has a fillet at its start point. If both first and last input points are identical, the last point's
    * entry in the radius array is ignored.
-   * * If `false` (default), the first and last points receive no fillet and their respective entries in the radius
-   * array are ignored.
+   * * If `false`, the first and last points receive no fillet and their respective entries in the radius array are
+   * ignored.
    */
   filletClosure?: boolean;
+  /**
+   * Maximum distance between first and last input points for the line string to be considered closed. Default value is
+   * [[Geometry.smallMetricDistance]].
+   * * This distance is used when `filletClosure` is `true` to detect whether the last point is redundant and thus to
+   * be ignored during processing.
+   */
+  closureTolerance?: number;
+  /**
+   * Maximum allowable length of a cusp when `allowCusp` is `true`. Default value is [[Geometry.smallMetricDistance]].
+   * * A cusp's length is defined to be the length of its "cusp segment", regardless of whether the cusp segment
+   * appears in the output `Path` (cf. option `cuspSegments`).
+   * * A cusp whose length exceeds `cuspTolerance` is avoided by suppressing one or both of the cusp's constituent
+   * fillets. Where two fillets combine to form such a cusp, but either fillet by itself produces a cusp shorter than
+   * `cuspTolerance`, the fillet that generates the shorter cusp survives; if the fillets by themselves generate equal
+   * length cusps, the fillet with smaller chain index survives.
+   */
+  cuspTolerance?: number;
+  /**
+   *  Whether to output a `LineSegment3d` for each cusp segment. Default value is `true`.
+   * * The _cusp segment_ of a cusp is the retrograde line segment that bridges the gap formed by the cusp along its
+   * consumed line string edge, possibly extended.
+   * * When `allowCusp` and `cuspSegments` are `true`, the output `Path` is guaranteed to be continuous; otherwise, the
+   * output `Path` has a gap at each cusp, and downstream processing may not tolerate these gaps if they are too large.
+   * * Compare this option to `allowCusp`, which controls the presence of the cusps themselves.
+   */
+  cuspSegments?: boolean;
 }
 
 /**
@@ -180,7 +211,7 @@ export class CurveFactory {
       return undefined;
   }
   /**
-   * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
+   * Construct a sequence of alternating lines and arcs with each arc creating a smooth transition between consecutive edges.
    *  * If the radius parameter is a number, that radius is used throughout.
    *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.
    *  * A zero radius for any point indicates to leave the as a simple corner.
@@ -197,19 +228,18 @@ export class CurveFactory {
       return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowCuspOrOptions);
     if (points instanceof LineString3d)
       return this.createFilletsInLineString(points.packedPoints, radius, allowCuspOrOptions);
-    let allowCusp = true;
-    let filletClosure = false;
-    if (typeof allowCuspOrOptions === "boolean") {
-      allowCusp = allowCuspOrOptions;
-    } else {
-      allowCusp = allowCuspOrOptions.allowCusp ?? true;
-      filletClosure = allowCuspOrOptions.filletClosure ?? false;
-    }
+    const haveBoolean = typeof allowCuspOrOptions === "boolean";
+    const allowCusp = haveBoolean ? allowCuspOrOptions : allowCuspOrOptions.allowCusp ?? true;
+    const filletClosure = haveBoolean ? false : allowCuspOrOptions.filletClosure ?? false;
+    const closureTolerance = haveBoolean ? Geometry.smallMetricDistance : allowCuspOrOptions.closureTolerance ?? Geometry.smallMetricDistance;
+    const cuspTolerance = haveBoolean ? Geometry.smallMetricDistance : allowCuspOrOptions.cuspTolerance ?? Geometry.smallMetricDistance;
+    const cuspSegments = haveBoolean ? true : allowCuspOrOptions.cuspSegments ?? true;
     let n = points.length;
-    if (filletClosure && points.almostEqualIndexIndex(0, n - 1))
+    if (filletClosure && points.almostEqualIndexIndex(0, n - 1, closureTolerance))
       n--; // ignore closure point
     if (n <= 1)
       return undefined;
+    // create blend data at each vertex
     const pointA = Point3d.create();
     const pointB = Point3d.create();
     const pointC = Point3d.create();
@@ -229,17 +259,41 @@ export class CurveFactory {
       }
     }
     assert(blendArray.length === n);
-    if (!allowCusp) {
-      // suppress arcs that overlap a neighboring arc, or that consume the entire segment
-      for (let i = 0; i < n; i++) {
-        const bB = blendArray[i];
-        if (!bB.arc)
-          continue;
-        const bA = blendArray[Geometry.modulo(i - 1, n)];
-        const bC = blendArray[Geometry.modulo(i + 1, n)];
-        if (bB.fraction10 > 1 || bB.fraction12 > 1 || bB.fraction10 + bA.fraction12 > 1 || bB.fraction12 + bC.fraction10 > 1) {
-          bB.fraction10 = bB.fraction12 = 0;
-          bB.arc = undefined;
+    // For each edge, look at its 0|1|2 fillets to determine whether/which to suppress.
+    // When a cusp is generated by 2 fillets, use this HEURISTIC:
+    // * Prefer to keep the fillet that results in the smaller allowable cusp segment.
+    // * If by itself, each fillet results in a cusp segment of equal allowable length (possibly zero), keep the first.
+    const edgeHasCusp = (fillet0: ArcBlendData, fillet1: ArcBlendData): boolean =>
+      fillet0.fraction12 + fillet1.fraction10 > 1;
+    const cuspSegmentLength = (checkedEdgeIndex: number, fillet0: ArcBlendData, fillet1: ArcBlendData): number =>
+      points.distanceUncheckedIndexIndex(checkedEdgeIndex, points.cyclicIndex(checkedEdgeIndex + 1)) * (fillet0.fraction12 + fillet1.fraction10 - 1);
+    const filletOvershootsEdge = (fillet: ArcBlendData, filletIndex: 0 | 1): boolean =>
+      filletIndex === 0 ? fillet.fraction12 > 1 : fillet.fraction10 > 1;
+    const cuspNeedsRemoval = (checkedEdgeIndex: number, fillet0: ArcBlendData, fillet1: ArcBlendData): boolean =>
+      edgeHasCusp(fillet0, fillet1) && (!allowCusp || cuspSegmentLength(checkedEdgeIndex, fillet0, fillet1) > cuspTolerance);
+    const removeFillet = (fillet: ArcBlendData): void => { fillet.fraction10 = fillet.fraction12 = 0; fillet.arc = undefined; };
+    for (let iEdge = 0; iEdge < (filletClosure ? n : n - 1); iEdge++) {
+      const fillet0 = blendArray[iEdge];
+      const fillet1 = blendArray[Geometry.modulo(iEdge + 1, n)];
+      if (cuspNeedsRemoval(iEdge, fillet0, fillet1)) {
+        const fillet0OvershootsEdge = filletOvershootsEdge(fillet0, 0);
+        const fillet1OvershootsEdge = filletOvershootsEdge(fillet1, 1);
+        // prefer to remove just one fillet
+        if (fillet0OvershootsEdge && !fillet1OvershootsEdge) {
+          removeFillet(fillet0);
+        } else if (!fillet0OvershootsEdge && fillet1OvershootsEdge) {
+          removeFillet(fillet1);
+        } else if (!fillet0OvershootsEdge && !fillet1OvershootsEdge) {
+          removeFillet(fillet1); // fillets intersect (arbitrary choice)
+        } else if (fillet1.fraction10 < fillet0.fraction12) {
+          removeFillet(fillet0); // fillet1 yields smaller cusp segment
+        } else {
+          removeFillet(fillet1); // fillet0 yields smaller cusp segment, or they are equal (arbitrary choice)
+        }
+        // re-evaluate the edge after removal of a fillet; if a disallowed cusp persists, remove the other fillet
+        if (cuspNeedsRemoval(iEdge, fillet0, fillet1)) {
+          removeFillet(fillet0);
+          removeFillet(fillet1);
         }
       }
     }
@@ -249,7 +303,7 @@ export class CurveFactory {
       path.tryAddChild(b0.arc);
       if (i + 1 < n || filletClosure) {
         const b1 = blendArray[Geometry.modulo(i + 1, n)];
-        this.addPartialSegment(path, allowCusp, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
+        this.addPartialSegment(path, cuspSegments, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
       }
     }
     return path;

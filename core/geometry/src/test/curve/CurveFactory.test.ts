@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
-import { CurveCollection } from "../../curve/CurveCollection";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { CreateFilletsInLineStringOptions, CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -154,7 +154,7 @@ describe("FilletedLineString", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("FilletsInLinestring", () => {
+  it("FilletsInLineString", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
@@ -189,7 +189,7 @@ describe("FilletedLineString", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineString");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("FilletsInPolygon", () => {
+  it("FilletsInLineString2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -201,24 +201,15 @@ describe("FilletedLineString", () => {
       Point3d.create(6, 2, 1),
       Point3d.create(2, 0, 0),
     ];
-    // largest cusp-less seam fillet radius depends on the 3 nearby line string angles
     ck.testPoint3d(points[0], points[points.length - 1], "points array has closure point");
-    const angle0 = Vector3d.createStartEnd(points[0], points[1]).radiansTo(Vector3d.createStartEnd(points[points.length - 1], points[points.length - 2]));
-    const angle1 = Vector3d.createStartEnd(points[1], points[0]).radiansTo(Vector3d.createStartEnd(points[1], points[2]));
-    const angleN = Vector3d.createStartEnd(points[points.length - 2], points[points.length - 1]).radiansTo(Vector3d.createStartEnd(points[points.length - 2], points[points.length - 3]));
-    const len0 = points[0].distance(points[1]);
-    const lenN = points[points.length - 2].distance(points[points.length - 1]);
-    const maxRadius0 = len0 / ((1 / Math.tan(angle0 / 2)) + (1 / Math.tan(angle1 / 2)));
-    const maxRadiusN = lenN / ((1 / Math.tan(angle0 / 2)) + (1 / Math.tan(angleN / 2)));
-    const maxRadiusAtSeam = Math.min(maxRadius0, maxRadiusN);
-
     const lineString0 = LineString3d.create(points);
     points.reverse();
     const lineString1 = LineString3d.create(points);
 
     const verifyFilletedPolygon = (chain0: Path, options: CreateFilletsInLineStringOptions, radius0: number) => {
-      ck.testPoint3d(chain0.startPoint()!, chain0.endPoint()!, "fillet polygon should be closed");
-      ck.testBoolean(radius0 > 0 && (options.filletClosure ?? false) && ((options.allowCusp ?? true) || radius0 <= maxRadiusAtSeam), chain0.getChild(0) instanceof Arc3d, "necessary and sufficient condition for output to start with fillet");
+      ck.testPoint3d(chain0.startPoint()!, chain0.endPoint()!, "polygon should be closed");
+      if (!options.filletClosure)
+        ck.testFalse(chain0.children[0] instanceof Arc3d, "expect no fillet at the seam when filletClosure is false");
       for (const child of chain0.children) {
         if (child instanceof Arc3d) {
           ck.testTrue(child.isCircular, "expect fillet to be circular");
@@ -233,7 +224,7 @@ describe("FilletedLineString", () => {
       for (const lineString of [lineString0, lineString1]) {
         for (const allowCusp of [true, false]) {
           for (const filletClosure of [true, false]) {
-            const filletOptions: CreateFilletsInLineStringOptions = { allowCusp, filletClosure };
+            const filletOptions: CreateFilletsInLineStringOptions = { allowCusp, filletClosure, cuspTolerance: 20 };
             const chain0 = CurveFactory.createFilletsInLineString(lineString, radius0, filletOptions)!;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
             verifyFilletedPolygon(chain0, filletOptions, radius0);
@@ -251,6 +242,13 @@ describe("FilletedLineString", () => {
     for (const filletClosure of [true, false]) {
       const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, { allowCusp: true, filletClosure })!;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, y0);
+      ck.testExactNumber(chain2.children.length, 5, "expect 5 children in the chain");
+      for (const i of [0, 2, 4])
+        ck.testTrue(chain2.getChild(i) instanceof LineSegment3d, `expect child ${i} to be a LineSegment`);
+      for (const i of [1, 3]) {
+        ck.testTrue(chain2.getChild(i) instanceof Arc3d, `expect child ${i} to be an Arc3d`);
+        ck.testCoordinate((chain2.children[i] as Arc3d).circularRadius()!, radii[i], `expect fillet ${i} to have radius === radii[${i}]`);
+      }
       y0 += 8;
     }
 
@@ -324,10 +322,237 @@ describe("FilletedLineString", () => {
     ck.testExactNumber(numArcChildren, 1, "expect 1 arc in the linestring chain with 3 points and filletClosure false");
     ck.testTrue(chain.children[1] instanceof Arc3d, "expect child 1 to be arc");
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygon");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineString2");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("fromFilletedLineString", () => { // TODO: split this mega test into multiple tiny tests
+
+  const verifyChain = (ck: Checker, chain: Path, radius: number, segmentIndices: number[], arcIndices: number[]) => {
+    for (const i of segmentIndices)
+      ck.testTrue(chain.getChild(i) instanceof LineSegment3d, `expect child ${i} to be a LineSegment`);
+    for (const i of arcIndices) {
+      ck.testTrue(chain.getChild(i) instanceof Arc3d, `expect child ${i} to be an Arc3d`);
+      ck.testCoordinate((chain.children[i] as Arc3d).circularRadius()!, radius, `expect child ${i} to have radius ${radius}`);
+    }
+  };
+
+  it("FilletsInLineStringClosureTolerance", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const points = [
+      Point3d.create(2, 4, 0),
+      Point3d.create(0, 0, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(2.05, 4, 0),
+    ];
+    const lineString = LineString3d.create(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0);
+    const radius = 0.2;
+
+    x0 += 6;
+    let filletOptions: CreateFilletsInLineStringOptions = { filletClosure: false };
+    const chain0 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0);
+    ck.testFalse(chain0.startPoint()!.isAlmostEqual(chain0.endPoint()!), "chain0 must be open");
+    ck.testExactNumber(chain0.children.length, 5, "expect 5 children in chain0");
+    verifyChain(ck, chain0, radius, [0, 2, 4], [1, 3]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, closureTolerance: 0.1 };
+    const chain1 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1, x0);
+    ck.testPoint3d(chain1.startPoint()!, chain1.endPoint()!, "chain1 must be closed");
+    ck.testExactNumber(chain1.children.length, 6, "expect 6 children in chain1");
+    verifyChain(ck, chain1, radius, [1, 3, 5], [0, 2, 4]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, cuspTolerance: 1 }; // default closure tolerance
+    const chain2 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0);
+    ck.testPoint3d(chain2.startPoint()!, chain2.endPoint()!, "chain2 must be closed");
+    ck.testExactNumber(chain2.children.length, 8, "expect 8 children in chain2");
+    verifyChain(ck, chain2, radius, [1, 3, 5, 7], [0, 2, 4, 6]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, allowCusp: false }; // default closure tolerance
+    const chain3 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain3, x0);
+    ck.testPoint3d(chain3.startPoint()!, chain3.endPoint()!, "chain3 must be closed");
+    ck.testExactNumber(chain3.children.length, 6, "expect 6 children in chain3");
+    verifyChain(ck, chain3, radius, [0, 2, 4, 5], [1, 3]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineStringClosureTolerance");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("FilletsInLineStringCuspTolerance", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let points = [
+      Point3d.create(2, 4),
+      Point3d.create(0, 0),
+      Point3d.create(4, 0),
+      Point3d.create(2.05, 4),
+    ];
+    let lineString = LineString3d.create(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0);
+    let radius = 0.2;
+
+    x0 += 6;
+    let filletOptions: CreateFilletsInLineStringOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 0.2 };
+    const chain0 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0);
+    ck.testPoint3d(chain0.startPoint()!, chain0.endPoint()!, "chain0 must be closed");
+    ck.testExactNumber(chain0.children.length, 8, "expect 8 children in chain0");
+    verifyChain(ck, chain0, radius, [1, 3, 5, 7], [0, 2, 4, 6]);
+
+    // The last (closure) edge has a cusp formed by intersecting fillets at points 0 and 3.
+    // Since the cusp segment has length longer than cuspTolerance, at least one of the fillets must be suppressed.
+    // Removing either one of these fillets results in a cusp segment of length < cuspTolerance, so we keep the fillet
+    // that results in the smaller cusp segment (0.074 to keep fillet at point 0 vs 0.075 to keep fillet at point 3).
+    x0 += 6;
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 0.1 };
+    const chain1 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1, x0);
+    ck.testPoint3d(chain1.startPoint()!, chain1.endPoint()!, "chain1 must be closed");
+    ck.testExactNumber(chain1.children.length, 7, "expect 7 children in chain1");
+    verifyChain(ck, chain1, radius, [1, 3, 5, 6], [0, 2, 4]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, allowCusp: true }; // default cusp tolerance
+    const chain2 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0);
+    ck.testPoint3d(chain2.startPoint()!, chain2.endPoint()!, "chain2 must be closed");
+    ck.testExactNumber(chain2.children.length, 6, "expect 6 children in chain2");
+    verifyChain(ck, chain2, radius, [0, 2, 4, 5], [1, 3]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 0.2, cuspSegments: false };
+    const chain3 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, BagOfCurves.create(...chain3.children), x0);
+    ck.testFalse(chain3.startPoint()!.isAlmostEqual(chain3.endPoint()!), "chain3 must be open");
+    ck.testExactNumber(chain3.children.length, 7, "expect 7 children in chain3");
+    verifyChain(ck, chain3, radius, [1, 3, 5], [0, 2, 4, 6]);
+
+    x0 = 0;
+    let y0 = 5;
+    points = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(4, 4, 0),
+      Point3d.create(0, 4, 0),
+    ];
+    lineString = LineString3d.create(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0, y0);
+
+    x0 += 6;
+    radius = 0.5;
+    filletOptions = { filletClosure: true, allowCusp: true };
+    const chain4 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain4, x0, y0);
+    ck.testPoint3d(chain4.startPoint()!, chain4.endPoint()!, "chain4 must be closed");
+    ck.testExactNumber(chain4.children.length, 8, "expect 8 children in chain4");
+    verifyChain(ck, chain4, radius, [1, 3, 5, 7], [0, 2, 4, 6]);
+
+    x0 += 6;
+    radius = 2;
+    filletOptions = { filletClosure: true, allowCusp: true };
+    const chain5 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain5, x0, y0);
+    ck.testPoint3d(chain5.startPoint()!, chain5.endPoint()!, "chain5 must be closed");
+    ck.testExactNumber(chain5.children.length, 4, "expect 4 children in chain5");
+    verifyChain(ck, chain5, radius, [], [0, 1, 2, 3]);
+
+    x0 += 6;
+    radius = 2.5; // yields cusp segments of length 1
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 1 + Geometry.smallMetricDistance }; // allow all cusps
+    const chain6 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain6, x0, y0);
+    ck.testPoint3d(chain6.startPoint()!, chain6.endPoint()!, "chain6 must be closed");
+    ck.testExactNumber(chain6.children.length, 8, "expect 8 children in chain6");
+    verifyChain(ck, chain6, radius, [1, 3, 5, 7], [0, 2, 4, 6]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true }; // default cusp options (some fillets get removed to avoid cusps)
+    const chain7 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain7, x0, y0);
+    ck.testPoint3d(chain7.startPoint()!, chain7.endPoint()!, "chain7 must be closed");
+    ck.testExactNumber(chain7.children.length, 6, "expect 6 children in chain7");
+    verifyChain(ck, chain7, radius, [1, 2, 4, 5], [0, 3]);
+
+    x0 += 6;
+    filletOptions = { filletClosure: true, cuspTolerance: 1 + Geometry.smallMetricDistance, cuspSegments: false };
+    const chain8 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, BagOfCurves.create(...chain8.children), x0, y0);
+    ck.testFalse(chain8.startPoint()!.isAlmostEqual(chain8.endPoint()!), "chain8 must be open");
+    ck.testExactNumber(chain8.children.length, 4, "expect 4 children in chain8");
+    verifyChain(ck, chain8, radius, [], [0, 1, 2, 3]);
+
+    x0 = 0;
+    y0 = 10;
+    points = [
+      Point3d.create(0.1, 0),
+      Point3d.create(3.9, 0),
+      Point3d.create(4, 0.1),
+      Point3d.create(4, 1.9),
+      Point3d.create(3.9, 2),
+      Point3d.create(0.1, 2),
+      Point3d.create(0, 1.9),
+      Point3d.create(0, 0.1),
+    ];
+    lineString = LineString3d.create(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0, y0);
+
+    x0 += 6;
+    radius = 0.5;
+    filletOptions = { filletClosure: true, allowCusp: true }; // default cusp tolerance
+    const chain9 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain9, x0, y0);
+    ck.testPoint3d(chain9.startPoint()!, chain9.endPoint()!, "chain9 must be closed");
+    ck.testExactNumber(chain9.children.length, 8, "expect 8 children in chain9");
+    verifyChain(ck, chain9, radius, [0, 1, 2, 3, 4, 5, 6, 7], []);
+
+    x0 += 6;
+    radius = 0.5;
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 1 };
+    const chain10 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain10, x0, y0);
+    ck.testPoint3d(chain10.startPoint()!, chain10.endPoint()!, "chain10 must be closed");
+    ck.testExactNumber(chain10.children.length, 16, "expect 16 children in chain10");
+    verifyChain(ck, chain10, radius, [1, 3, 5, 7, 9, 11, 13, 15], [0, 2, 4, 6, 8, 10, 12, 14]);
+
+    x0 += 6;
+    radius = 0.5;
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 1, cuspSegments: false };
+    const chain11 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, BagOfCurves.create(...chain11.children), x0, y0);
+    ck.testFalse(chain11.startPoint()!.isAlmostEqual(chain11.endPoint()!), "chain11 must be open");
+    ck.testExactNumber(chain11.children.length, 12, "expect 12 children in chain11");
+    verifyChain(ck, chain11, radius, [1, 4, 7, 10], [0, 2, 3, 5, 6, 8, 9, 11]);
+
+    x0 += 6;
+    radius = 3;
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 5 };
+    const chain12 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, BagOfCurves.create(...chain12.children), x0, y0);
+    ck.testPoint3d(chain12.startPoint()!, chain12.endPoint()!, "chain12 must be closed");
+    ck.testExactNumber(chain12.children.length, 16, "expect 16 children in chain12");
+    verifyChain(ck, chain12, radius, [1, 3, 5, 7, 9, 11, 13, 15], [0, 2, 4, 6, 8, 10, 12, 14]);
+
+    x0 += 6;
+    radius = 3;
+    filletOptions = { filletClosure: true, allowCusp: true, cuspTolerance: 5, cuspSegments: false };
+    const chain13 = CurveFactory.createFilletsInLineString(lineString, radius, filletOptions)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, BagOfCurves.create(...chain13.children), x0, y0);
+    ck.testFalse(chain13.startPoint()!.isAlmostEqual(chain13.endPoint()!), "chain13 must be open");
+    ck.testExactNumber(chain13.children.length, 10, "expect 10 children in chain13");
+    verifyChain(ck, chain13, radius, [1, 6], [0, 2, 3, 4, 5, 7, 8, 9]);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineStringCuspTolerance");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("FromFilletedLineString", () => { // TODO: split this mega test into multiple tiny tests
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -400,7 +625,9 @@ describe("FilletedLineString", () => {
     x0 += 5;
     y0 = 0;
     let radius = 2;
-    let chain = CurveFactory.createFilletsInLineString(lineString0, radius, { allowCusp: true, filletClosure: true })!;
+    let chain = CurveFactory.createFilletsInLineString(
+      lineString0, radius, { allowCusp: true, cuspTolerance: 10, filletClosure: true }
+    )!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
     let pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
     ck.testUndefined(
@@ -409,7 +636,9 @@ describe("FilletedLineString", () => {
     );
     y0 += 10;
     radius = 4;
-    chain = CurveFactory.createFilletsInLineString(lineString0, radius, { allowCusp: true, filletClosure: true })!;
+    chain = CurveFactory.createFilletsInLineString(
+      lineString0, radius, { allowCusp: true, cuspTolerance: 10, filletClosure: true }
+    )!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
     ck.testUndefined(
@@ -685,6 +914,9 @@ describe("FilletedLineString", () => {
       [0, 5, 0, 5, 0]
     );
 
+    let expectedLineString0: LineString3d;
+    let expectedRadii0: number[] | number;
+
     // special degenerate cases where a fillet takes up the entire edge
     for (const filletClosure of [true, false]) {
       // case 1
@@ -712,8 +944,6 @@ describe("FilletedLineString", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 1 with relaxed validation"
       );
-      let expectedLineString0: LineString3d;
-      let expectedRadii0: number[] | number;
       // joints between arcs are added to the output
       if (filletClosure) {
         expectedLineString0 = LineString3d.create([0, s / 2], [0, 0], [s / 2, 0], [s, 0], [s, s / 2], [s, s], [s / 2, s], [0, s], [0, s / 2]);
@@ -762,31 +992,28 @@ describe("FilletedLineString", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 2 with relaxed validation"
       );
-      if (filletClosure)
-        expectedLineString0 = LineString3d.create([0, 0], [s, 0], [s, s], [0, s], [0, 0]);
-      else
+      if (filletClosure) {
+        expectedLineString0 = LineString3d.create([0, s], [0, 0], [s, 0], [s, s], [0, s]);
+        expectedRadii0 = [0, s, 0, s, 0];
+      } else {
         expectedLineString0 = square;
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
+        expectedRadii0 = radius;
+      }
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
       // insert 0-length segments where arc tangent is not parallel to line segment tangent to make the chain valid
       y0 += 10;
       validChain = new Path();
       for (let i = 0; i < chain.children.length; i += 1) {
-        const insertIndex = filletClosure ? 2 : 1;
-        if (i === insertIndex)
+        if (i === 0 && filletClosure)
           validChain.tryAddChild(LineSegment3d.create(chain.children[i].startPoint(), chain.children[i].startPoint()));
         validChain.tryAddChild(chain.children[i]);
-        if (i === insertIndex && filletClosure)
+        if (i === 0)
           validChain.tryAddChild(LineSegment3d.create(chain.children[i].endPoint(), chain.children[i].endPoint()));
       }
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, validChain, x0, y0);
       pointsAndRadii = CurveFactory.fromFilletedLineString(validChain);
-      ck.testDefined(
-        pointsAndRadii,
-        "expect to be able to extract points and radii from filleted linestring for " +
-        "special degenerate case 2 with zero length segments added to make chain valid"
-      );
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
-
+      if (ck.testDefined(pointsAndRadii, "expect to be able to extract points and radii from filleted linestring for special degenerate case 2 with zero length segments added to make chain valid"))
+        verifyPointsAndRadii(pointsAndRadii, expectedLineString0, expectedRadii0);
       // case 3
       y0 += 10;
       radii = [0, s, 0, s];
@@ -809,7 +1036,14 @@ describe("FilletedLineString", () => {
         pointsAndRadii,
         "expect to be able to extract points and radii from filleted linestring for special degenerate case 3 with relaxed validation"
       );
-      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, radius);
+      if (filletClosure) {
+        expectedLineString0 = LineString3d.create(...[square.points, square.pointAtUnchecked(0)]);
+        expectedRadii0 = [...radii, radii[0]];
+      } else {
+        expectedLineString0 = square;
+        expectedRadii0 = radii;
+      }
+      verifyPointsAndRadii(pointsAndRadii!, expectedLineString0, expectedRadii0);
       // insert 0-length segments where arc tangent is not parallel to line segment tangent to make the chain valid
       y0 += 10;
       validChain = new Path();
@@ -975,14 +1209,12 @@ describe("FilletedLineString", () => {
     // case 4
     y0 += 10;
     lineString = LineString3d.create([0, 0], [2, 2], [4, 2], [6, -2], [8, -2], [8, 2]);
-    radii = [0, 0, 2, 2, 2, 0];
-    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false, filletClosure: false })!;
+    radii = [0, 0, 2, 2, 2, 0]; // last fillet is suppressed because penultimate edge would have a cusp
+    chain = CurveFactory.createFilletsInLineString(lineString, radii, { allowCusp: false })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, y0);
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain);
-    ck.testUndefined(
-      pointsAndRadii,
-      "expect fromFilletedLineString to return undefined for extra special degenerate case 4"
-    );
+    if (ck.testDefined(pointsAndRadii, "expect fromFilletedLineString to return defined for extra special degenerate case 4"))
+      verifyPointsAndRadii(pointsAndRadii, lineString, [0, 0, 2, 2, 0, 0]);
     // call with relaxed validation
     childCountBefore = chain.children.length;
     pointsAndRadii = CurveFactory.fromFilletedLineString(chain, { relaxedValidation: true });
@@ -1278,9 +1510,10 @@ describe("FilletedLineString", () => {
       "fromFilletedLineString must not mutate the input path (case 3)",
     );
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "fromFilletedLineString");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FromFilletedLineString");
     expect(ck.getNumErrors()).toBe(0);
   });
+
   it("filletedLineStringRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -1481,6 +1714,7 @@ describe("FilletedLineString", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "filletedLineStringRoundTrip");
     expect(ck.getNumErrors()).toBe(0);
   });
+
   it("InflationFactor", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -1500,12 +1734,13 @@ describe("FilletedLineString", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "FilletedLineString", "InflationFactor");
     expect(ck.getNumErrors()).toBe(0);
   });
+
   it("Parse2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const path = Path.createArray([
-      LineSegment3d.create(Point3d.createZero(), Point3d.create(6.675087145995349,0.024659754941239953)),
+      LineSegment3d.create(Point3d.createZero(), Point3d.create(6.675087145995349, 0.024659754941239953)),
       LineSegment3d.create(Point3d.create(6.675087145995349, 0.024659754941239953), Point3d.create(6.641416417667642, 5.989662684500217)),
       LineSegment3d.create(Point3d.create(6.641416417667642, 5.989662684500217), Point3d.create(2.0645099801477045, 5.972754232469015)),
       LineSegment3d.create(Point3d.create(2.0645099801477045, 5.972754232469015), Point3d.create(2.051741350442171, 10.239936180296354)),
@@ -1552,7 +1787,7 @@ describe("FilletedLineString", () => {
       }
     }
 
-    const output3 = CurveFactory.fromFilletedLineString(path, { relaxedValidation: true, parallelOptions: { radianSquaredTol: 100 * Geometry.smallAngleRadiansSquared }});
+    const output3 = CurveFactory.fromFilletedLineString(path, { relaxedValidation: true, parallelOptions: { radianSquaredTol: 100 * Geometry.smallAngleRadiansSquared } });
     if (ck.testDefined(output3, "expect fromFilletedLineString success due to relaxed validation")) {
       const roundtripPath3 = CurveFactory.createFilletsInLineString(output3.map((entry) => entry[0]), output3.map((entry) => entry[1]));
       if (ck.testDefined(roundtripPath3, "expect roundtrip success")) {
@@ -1631,6 +1866,7 @@ describe("PipeConnections", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
+
   it("createArcFromSectionData", () => {
     const ck = new Checker();
 
@@ -1830,6 +2066,7 @@ describe("PipeConnections", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createArcPointTangentPoint");
     expect(ck.getNumErrors()).toBe(0);
   });
+
   it("createRectangleXY", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
