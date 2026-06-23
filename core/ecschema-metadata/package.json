@@ -37,8 +37,12 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "dependencies": {
+    "sax": "^1.6.0"
+  },
   "devDependencies": {
     "@bentley/aec-units-schema": "^1.0.3",
+    "@bentley/bis-core-schema": "^1.0.15",
     "@bentley/bis-custom-attributes-schema": "^1.0.0",
     "@bentley/cif-units-schema": "^1.0.7",
     "@bentley/core-custom-attributes-schema": "^1.0.4",
@@ -51,6 +55,7 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/benchmark": "^2.1.0",
     "@types/node": "~20.17.0",
+    "@types/sax": "^1.2.7",
     "@vitest/coverage-v8": "^4.1.8",
     "@xmldom/xmldom": "~0.8.13",
     "benchmark": "^2.1.4",

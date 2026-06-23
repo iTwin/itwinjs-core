@@ -1,6 +1,7 @@
 import { BeEvent, DbResult, Guid, Id64String, IModelStatus, StopWatch } from "@itwin/core-bentley";
 import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Authoring, PrimitiveType, StrengthType } from "@itwin/ecschema-metadata";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SpatialCategory } from "../Category";
@@ -350,26 +351,23 @@ export class NetworkSchema extends Schema {
     if (iModel.querySchemaVersion("Network"))
       return;
 
-    const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
-        <ECSchema schemaName="Network" alias="net" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-            <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
-            <ECEntityClass typeName="Node">
-                <BaseClass>bis:GraphicalElement3d</BaseClass>
-                <ECProperty propertyName="op" typeName="string" />
-                <ECProperty propertyName="val" typeName="double" />
-            </ECEntityClass>
-            <ECRelationshipClass typeName="InputDrivesOutput" modifier="None" strength="referencing">
-                <BaseClass>bis:ElementDrivesElement</BaseClass>
-                <Source multiplicity="(0..1)" roleLabel="drives" polymorphic="true">
-                    <Class class="Node"/>
-                </Source>
-                <Target multiplicity="(0..*)" roleLabel="is driven by" polymorphic="false">
-                    <Class class="Node"/>
-                </Target>
-                <ECProperty propertyName="prop" typeName="double" />
-            </ECRelationshipClass>
-        </ECSchema>`;
-    await iModel.importSchemaStrings([schema1]);
+    const schemaDocument = new Authoring.SchemaDocument("Network", "net", 1, 0, 0, {
+      references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
+    });
+
+    const node = schemaDocument.createEntity("Node", { baseClass: "BisCore:GraphicalElement3d" });
+    node.createPrimitive("op", PrimitiveType.String);
+    node.createPrimitive("val", PrimitiveType.Double);
+
+    const inputDrivesOutput = schemaDocument.createRelationship("InputDrivesOutput", {
+      baseClass: "BisCore:ElementDrivesElement",
+      strength: StrengthType.Referencing,
+      source: { multiplicity: Authoring.Multiplicity.ZeroOne, roleLabel: "drives", polymorphic: true, constraintClasses: ["Node"] },
+      target: { multiplicity: Authoring.Multiplicity.ZeroMany, roleLabel: "is driven by", polymorphic: false, constraintClasses: ["Node"] },
+    });
+    inputDrivesOutput.createPrimitive("prop", PrimitiveType.Double);
+
+    await IModelTestUtils.importSchemaDocuments(iModel, [schemaDocument]);
   }
 }
 

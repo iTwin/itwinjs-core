@@ -241,6 +241,7 @@ public;interface;SchemaItemOverrideFormatProps
 preview;interface;SchemaItemOverrideFormatProps
 public;interface;SchemaItemProps
 preview;interface;SchemaItemProps
+alpha;class;SchemaItemReference
 public;enum;SchemaItemType
 preview;enum;SchemaItemType
 beta;function;schemaItemTypeToString

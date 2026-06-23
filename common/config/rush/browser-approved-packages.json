@@ -16,7 +16,7 @@
     },
     {
       "name": "@bentley/bis-core-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
@@ -833,6 +833,10 @@
     {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sax",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "semver",

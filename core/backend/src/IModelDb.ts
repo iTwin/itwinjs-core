@@ -69,8 +69,9 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
+import { IModelCustomAttributeProvider } from "./internal/SchemaViewCustomAttributeProvider";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, IModelSchemaView, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -446,7 +447,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  private _schemasPromise?: Promise<SchemaView>;
+  private _schemasPromise?: Promise<IModelSchemaView>;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1735,10 +1736,13 @@ export abstract class IModelDb extends IModel {
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is the recommended default for runtime read-only metadata access and is significantly
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
-   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   * or anywhere you need the full ecschema-metadata object graph.
+   *
+   * The returned view is an `IModelSchemaView`: its `customAttributes` member resolves custom
+   * attributes asynchronously by querying the iModel.
    * @beta
    */
-  public async getSchemaView(): Promise<SchemaView> {
+  public async getSchemaView(): Promise<IModelSchemaView> {
     if (this._schemasPromise) {
       const ctx = await this._schemasPromise;
       if (!ctx.isOutdated)
@@ -1757,7 +1761,7 @@ export abstract class IModelDb extends IModel {
     return inflight;
   }
 
-  private async _hydrateSchemas(): Promise<SchemaView> {
+  private async _hydrateSchemas(): Promise<IModelSchemaView> {
     // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
     // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
     // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
@@ -1774,7 +1778,11 @@ export abstract class IModelDb extends IModel {
     const token = result.value.schemaToken as string | undefined;
     if (data === undefined || data === null)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
-    return SchemaView.fromBinary(data, token ?? "");
+    const view = SchemaView.fromBinary(data, token ?? "");
+    // The iModel is the source, so it owns the modality: attach an async (ECSql-backed) provider and
+    // expose the view as an `IModelSchemaView`. `SchemaView` itself stays unaware of custom attributes.
+    const customAttributes = new IModelCustomAttributeProvider((ecsql, params) => this.createQueryReader(ecsql, params));
+    return Object.assign(view, { customAttributes });
   }
 
   /** Get the linkTableRelationships for this IModel */

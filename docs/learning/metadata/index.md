@@ -6,6 +6,8 @@ The metadata packages implement the abstract concepts of EC in typescript [EC ov
 
 For schema access optimized for performance and synchronous lookups, see [SchemaView](./SchemaView.md).
 
+For composing, loading, editing, comparing, and serializing schemas, see [Schema Authoring with SchemaDocument](./SchemaAuthoring.md) (alpha).
+
 The API is split into these packages:
 
 - ($ecschema-metadata) is the basic package that exposes metadata objects.

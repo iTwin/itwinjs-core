@@ -14,40 +14,6 @@
  */
 export const schemaViewFormatVersion = 1;
 
-/** Matches ec_Class.Type values in ECDb.
- * @beta
- */
-export enum ClassType {
-  Entity = 0,
-  Relationship = 1,
-  Struct = 2,
-  CustomAttribute = 3,
-  /** Not stored in ec_Class.Type - synthesized from IsMixin CA during cache population. */
-  Mixin = 4,
-  /** Synthesized from the QueryView custom attribute. */
-  View = 5,
-}
-
-/** Matches ec_Class.Modifier values.
- * @beta
- */
-export enum ClassModifier {
-  None = 0,
-  Abstract = 1,
-  Sealed = 2,
-}
-
-/** Matches ec_Property.Kind values.
- * @beta
- */
-export enum PropertyKind {
-  Primitive = 0,
-  Struct = 1,
-  PrimitiveArray = 2,
-  StructArray = 3,
-  Navigation = 4,
-}
-
 /** Matches ec_ PrimitiveType values.
  * @beta
  */
@@ -65,7 +31,10 @@ export enum SchemaViewPrimitiveType {
   IGeometry = 0xa01,
 }
 
-import { StrengthDirection, StrengthType } from "./ECObjects";
+// ClassType, ClassModifier and PropertyKind are shared EC vocabulary that now live in ECObjects,
+// alongside PrimitiveType and the other EC enums; imported here for this module's own type references.
+// ClassModifier is an alias of ECClassModifier (same ec_Class.Modifier values) - see ECObjects.
+import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "../ECObjects";
 
 /** Internal storage for a schema. Schemas own contiguous ranges of classes, enums, KoQs, and categories.
  * @internal

@@ -2354,6 +2354,18 @@ export interface SchemaItemProps {
     readonly schemaVersion?: string;
 }
 
+// @alpha
+export class SchemaItemReference {
+    constructor(name: string, schemaNameOrAlias?: string);
+    equals(other: SchemaItemReference): boolean;
+    static from(value: string | SchemaItemReference): SchemaItemReference;
+    get isLocal(): boolean;
+    readonly name: string;
+    static parse(text: string): SchemaItemReference;
+    readonly schemaNameOrAlias?: string;
+    toString(): string;
+}
+
 // @public @preview
 export enum SchemaItemType {
     // (undocumented)

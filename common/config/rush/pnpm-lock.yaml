@@ -28,8 +28,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.11.10
-        version: 5.11.10
+        specifier: 5.11.4
+        version: 5.11.4
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -458,10 +458,17 @@ importers:
         version: 5.6.2
 
   ../../core/ecschema-metadata:
+    dependencies:
+      sax:
+        specifier: ^1.6.0
+        version: 1.6.0
     devDependencies:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
+      '@bentley/bis-core-schema':
+        specifier: ^1.0.15
+        version: 1.0.15
       '@bentley/bis-custom-attributes-schema':
         specifier: ^1.0.0
         version: 1.0.0
@@ -498,6 +505,9 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
+      '@types/sax':
+        specifier: ^1.2.7
+        version: 1.2.7
       '@vitest/coverage-v8':
         specifier: ^4.1.8
         version: 4.1.8(@vitest/browser@4.1.8)(vitest@4.1.8)
@@ -4164,6 +4174,9 @@ importers:
       glob:
         specifier: ^10.5.0
         version: 10.5.0
+      mocha:
+        specifier: ^11.1.0
+        version: 11.1.0
       mocha-junit-reporter:
         specifier: ^2.0.2
         version: 2.0.2(mocha@11.1.0)
@@ -4198,9 +4211,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
 
   ../../tools/certa:
     dependencies:
@@ -4770,8 +4780,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.11.10':
-    resolution: {integrity: sha512-8h2QRyR40k7ehTMCeVnAcqHcCsZFoZZeyDXZCc1jwqSSKycz6jBVV/2+uGZEa2n9R+WPugDaSW7Ahs2esm2u9g==}
+  '@bentley/imodeljs-native@5.11.4':
+    resolution: {integrity: sha512-rBBbwB3dWfHQqMpXYcCF2l2vh73JFI1w3F2Q/Cy7OvdXsclPQAQgsOhE7xQUB1laQTrKNMpy05XI4ed3UrGcaQ==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5950,6 +5960,9 @@ packages:
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
+
+  '@types/sax@1.2.7':
+    resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
 
   '@types/semver@7.3.10':
     resolution: {integrity: sha512-zsv3fsC7S84NN6nPK06u79oWgrPVd0NvOyqgghV1haPaFcVxIrP4DLomRwGAXk0ui4HZA7mOcSFL98sMVW9viw==}
@@ -9711,8 +9724,8 @@ packages:
       tedious:
         optional: true
 
-  serialize-javascript@7.0.6:
-    resolution: {integrity: sha512-ATTK5Q4gFVg0YDp1my2vqygyvhcklD/UV5GIlYHooGTn/NogJqIzpetkD6E5kmuVULqz/S9inUL25XcAgDRJQg==}
+  serialize-javascript@7.0.5:
+    resolution: {integrity: sha512-F4LcB0UqUl1zErq+1nYEEzSHJnIwb3AF2XWB94b+afhrekOUijwooAYqFyRbjYkm2PAKBabx6oYv/xDxNi8IBw==}
     engines: {node: '>=20.0.0'}
 
   serve-static@1.16.3:
@@ -11172,7 +11185,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.11.10': {}
+  '@bentley/imodeljs-native@5.11.4': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -12145,7 +12158,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/responselike': 1.0.3
 
   '@types/caseless@0.12.5': {}
@@ -12176,7 +12189,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/cookiejar@2.1.5': {}
 
@@ -12212,14 +12225,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.8':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/qs': 6.15.1
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
 
   '@types/express-serve-static-core@5.1.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/qs': 6.15.1
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -12247,7 +12260,7 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/geojson@7946.0.14': {}
 
@@ -12288,11 +12301,11 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/lodash@4.14.202': {}
 
@@ -12330,7 +12343,7 @@ snapshots:
 
   '@types/readable-stream@4.0.23':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/request@2.48.13':
     dependencies:
@@ -12341,18 +12354,22 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
+
+  '@types/sax@1.2.7':
+    dependencies:
+      '@types/node': 20.17.58
 
   '@types/semver@7.3.10': {}
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/sinon-chai@3.2.0':
     dependencies:
@@ -12410,7 +12427,7 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -12420,7 +12437,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.61.1(@typescript-eslint/parser@8.61.1(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)':
@@ -15307,7 +15324,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -15750,7 +15767,7 @@ snapshots:
       log-symbols: 4.1.0
       minimatch: 5.1.9
       ms: 2.1.3
-      serialize-javascript: 7.0.6
+      serialize-javascript: 7.0.5
       strip-json-comments: 3.1.1
       supports-color: 8.1.1
       workerpool: 6.5.1
@@ -16281,7 +16298,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.1
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       long: 5.3.2
 
   protocols@2.0.2: {}
@@ -16726,7 +16743,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serialize-javascript@7.0.6: {}
+  serialize-javascript@7.0.5: {}
 
   serve-static@1.16.3:
     dependencies:
@@ -17762,7 +17779,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   wms-capabilities@0.4.0:
     dependencies:

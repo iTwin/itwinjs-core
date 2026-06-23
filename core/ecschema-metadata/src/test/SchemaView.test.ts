@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { SchemaView } from "../SchemaView";
-import { schemaViewFormatVersion } from "../SchemaViewInterfaces";
+import { SchemaView } from "../SchemaView/SchemaView";
+import { schemaViewFormatVersion } from "../SchemaView/SchemaViewInterfaces";
 
 /** Build the smallest valid SchemaView blob: header + empty PropertyDefTable, SchemaTable,
  * EnumTable, KoQTable, PropCatTable, ClassTable, then a string table with one empty entry. */
