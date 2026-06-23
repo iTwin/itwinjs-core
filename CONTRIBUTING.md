@@ -222,7 +222,7 @@ When reporting a bug, include:
 
 ### Feature Requests
 
-When suggesting a new feature, include
+When suggesting a new feature, include:
 
 - **Use case:** Explain the real-world problem and how this benefits the wider community, not just your project.
 - **Proposed solution:** Suggest how it should work (e.g., API design ideas, new configuration flags).
