@@ -51,7 +51,6 @@ body:
       description: "Paste full error logs in a code block (not screenshots). Include any relevant console output."
       placeholder: |
         Add some logs here!
-      render: shell
     validations:
       required: false
   - type: textarea
