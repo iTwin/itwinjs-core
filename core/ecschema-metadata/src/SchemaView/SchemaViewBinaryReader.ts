@@ -343,7 +343,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
     const schemaIdx = trackItem(schemaEcId, builder.enumerationCount, schemaEnumStarts, schemaEnumCounts);
 
     const eName = reader.readSRef();
-    const ePrimType = reader.readU8();
+    const ePrimType = reader.readU16();
     const eIsStrict = reader.readU8() !== 0;
     const eLabel = reader.readSRef();
     const eDesc = reader.readSRef();

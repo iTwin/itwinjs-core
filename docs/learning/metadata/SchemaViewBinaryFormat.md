@@ -111,7 +111,7 @@ Each enumeration record:
 | ------ | -------------- | --------------------------------------- |
 | uint32 | schemaECId     | ec_Schema.Id of the owning schema       |
 | uint32 | nameSid        | Enumeration name (SRef)                 |
-| uint8  | primitiveType  | Underlying primitive type               |
+| uint16 | primitiveType  | Underlying primitive type               |
 | uint8  | isStrict       | 1 if strict, 0 otherwise                |
 | uint32 | labelSid       | Display label (SRef)                    |
 | uint32 | descriptionSid | Description (SRef)                      |
