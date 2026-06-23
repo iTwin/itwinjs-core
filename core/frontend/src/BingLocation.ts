@@ -15,14 +15,18 @@ import { GlobalLocation } from "./ViewGlobalLocation";
  * Use of this service requires an API key to be supplied via [[MapLayerOptions.BingMaps]] in the [[IModelAppOptions.mapLayerOptions]] passed to [[IModelApp.startup]].
  * @public
  * @extensions
+ * @deprecated in 5.11.0. Provide a [[LocationProvider]] implementation via [[IModelAppOptions.geospatialProviders]].
+ * @note This class structurally satisfies [[LocationProvider]] but does not use an explicit `implements` clause
+ * because api-extractor forbids `@public` classes from referencing `@beta` interfaces (ae-incompatible-release-tags).
  */
 export class BingLocationProvider {
   private _locationRequestTemplate: string;
 
   constructor() {
     let bingKey = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- this deprecated class reads from the deprecated BingMaps key by design
     if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value; // eslint-disable-line @typescript-eslint/no-deprecated
     }
     this._locationRequestTemplate = `https://dev.virtualearth.net/REST/v1/Locations?query={query}&key=${bingKey}`;
   }

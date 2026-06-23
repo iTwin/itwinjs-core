@@ -480,8 +480,9 @@ describe("SubCategoriesCache", () => {
 
       const s2 = await ipc.insertElement(bc.key, s2Props);
       await saveAndExpectChanges([s2]);
-      expectCachedSubCategories(cat, undefined);
-      expectAppearance(s1, undefined);
+      // Soft invalidation: stale data is preserved for rendering continuity
+      expectCachedSubCategories(cat, [s1]);
+      expectAppearance(s1, ColorDef.blue);
       expectAppearance(s2, undefined);
 
       await bc.subcategories.load(cat)?.promise;
@@ -494,9 +495,10 @@ describe("SubCategoriesCache", () => {
       s2Props.appearance = { color: ColorDef.green.toJSON() };
       await ipc.updateElement(bc.key, s2Props);
       await saveAndExpectChanges([s2]);
-      expectCachedSubCategories(cat, undefined);
+      // Soft invalidation: stale subcategory IDs and appearances are preserved
+      expectCachedSubCategories(cat, [s1, s2]);
       expectAppearance(s1, ColorDef.blue);
-      expectAppearance(s2, undefined);
+      expectAppearance(s2, ColorDef.red);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1, s2]);
@@ -506,9 +508,10 @@ describe("SubCategoriesCache", () => {
       // Delete a subcategory
       await ipc.deleteDefinitionElements(bc.key, [s2]);
       await saveAndExpectChanges([s2]);
-      expectCachedSubCategories(cat, undefined);
+      // Soft invalidation: stale data (including the deleted s2) is preserved until reload
+      expectCachedSubCategories(cat, [s1, s2]);
       expectAppearance(s1, ColorDef.blue);
-      expectAppearance(s2, undefined);
+      expectAppearance(s2, ColorDef.green);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
@@ -516,7 +519,8 @@ describe("SubCategoriesCache", () => {
       // Undo
       await bc.txns.reverseSingleTxn();
       expectChanges([s2]);
-      expectCachedSubCategories(cat, undefined);
+      // Soft invalidation: stale data from last reload (s1 only) is preserved
+      expectCachedSubCategories(cat, [s1]);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1, s2]);
@@ -525,7 +529,8 @@ describe("SubCategoriesCache", () => {
       // Redo
       await bc.txns.reinstateTxn();
       expectChanges([s2]);
-      expectCachedSubCategories(cat, undefined);
+      // Soft invalidation: stale data from last reload (s1 + s2) is preserved
+      expectCachedSubCategories(cat, [s1, s2]);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
