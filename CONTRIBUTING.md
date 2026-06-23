@@ -212,7 +212,7 @@ If you cannot find an existing issue that describes your bug or feature, create 
 When reporting a bug, include:
 
 - **Clear title:** State the problem concisely (e.g., "Crash in v2.0 when passing null to `user.update()`").
-- **Context:** iTwin.js version, runtime environment (e.g., Node.js 20, Electron 28, core-backend 5.11.0), platform/browser/OS.
+- **Context:** iTwin.js version, runtime environment (e.g., Node.js 24, Electron 42, core-backend 5.11.0), platform/browser/OS.
 - **Expected vs. actual behavior:** Contrast what should have happened with what actually happened.
 - **Minimal Reproducible Example (MRE):**
     - A self-contained code snippet or link to a repo/CodeSandbox that isolates the bug.
