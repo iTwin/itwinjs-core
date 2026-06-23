@@ -1458,8 +1458,7 @@ export class ToolAdmin {
   }
 
   private static isContextMenuOpen(): boolean {
-    const contextMenu = document.querySelector("div.core-context-menu-opened");
-    return contextMenu !== null && contextMenu !== undefined;
+    return document.querySelector(".core-context-menu-opened") !== null;
   }
 
   private static isElement(target: EventTarget | null): target is Element {
