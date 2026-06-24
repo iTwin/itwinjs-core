@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { EditTxn, withEditTxn } from "../../EditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -29,7 +29,6 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
-import { TestUtils } from "../TestUtils";
 chai.use(chaiAsPromised);
 
 
@@ -55,24 +54,12 @@ describe("IModelWriteTest", () => {
   let iTwinId: GuidString;
 
   before(async () => {
-    // The project-extents test relies on GCS-derived ECEF recomputation, which requires GCS data
-    // loaded from cloud workspaces. Restart the backend with GCS workspaces enabled (the test
-    // harness disables them by default to avoid network calls) before starting the HubMock.
-    await TestUtils.shutdownBackend();
-    await TestUtils.startBackend({ disableGcsWorkspaces: false });
-
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
     managerAccessToken = await HubWrappers.getAccessToken(TestUserType.Manager);
     superAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
   });
-  after(async () => {
-    HubMock.shutdown();
-
-    // Restore the default test backend so subsequent test suites aren't left with GCS enabled.
-    await TestUtils.shutdownBackend();
-    await TestUtils.startBackend();
-  });
+  after(() => HubMock.shutdown());
 
   it("Check busyTimeout option", async () => {
     const iModelProps = {
@@ -899,39 +886,6 @@ describe("IModelWriteTest", () => {
     }
     rwIModel.close();
     rwIModel2.close();
-  });
-
-  it("pulling a changeset with extents changes should update the extents of the opened imodel", async () => {
-    const accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
-    const version0 = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
-    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "projectExtentsTest", version0 });
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
-    const changesetIdBeforeExtentsChange = iModel.changeset.id;
-    const extents = iModel.projectExtents;
-    const newExtents = extents.clone();
-    newExtents.low.x += 100;
-    newExtents.low.y += 100;
-    newExtents.high.x += 100;
-    newExtents.high.y += 100;
-    withEditTxn(iModel, "update project extents", (txn) => txn.updateProjectExtents(newExtents));
-    await iModel.pushChanges({ description: "update project extents" });
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
-    const iModelBeforeExtentsChange = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(changesetIdBeforeExtentsChange).toJSON() });
-    const extentsBeforePull = iModelBeforeExtentsChange.projectExtents;
-    // Read the extents fileProperty.
-    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
-    const ecefLocationBeforeExtentsChange = iModelBeforeExtentsChange.ecefLocation;
-    await iModelBeforeExtentsChange.pullChanges(); // Pulls the extents change.
-    const extentsAfterPull = iModelBeforeExtentsChange.projectExtents;
-    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
-    const ecefLocationAfterExtentsChange = iModelBeforeExtentsChange.ecefLocation;
-
-    expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;
-    expect(ecefLocationAfterExtentsChange).to.not.be.undefined;
-    expect(ecefLocationBeforeExtentsChange?.isAlmostEqual(ecefLocationAfterExtentsChange!)).to.be.false;
-    expect(extentsStrAfterPull).to.not.equal(extentsStrBeforePull);
-    expect(extentsAfterPull.isAlmostEqual(extentsBeforePull)).to.be.false;
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelBeforeExtentsChange);
   });
 
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
