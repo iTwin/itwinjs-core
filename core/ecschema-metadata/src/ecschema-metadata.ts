@@ -53,6 +53,9 @@ export { SchemaGraph } from "./utils/SchemaGraph";
 export * from "./SchemaViewBinaryReader";
 export * from "./SchemaView";
 export * from "./SchemaViewInterfaces";
+export * from "./Localization/LocalizationTypes";
+export * from "./Localization/LocalizationProvider";
+export * from "./Localization/SchemaLocalization";
 
 /** @docs-package-description
  * The ecschema-metadata package contains classes for working with ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

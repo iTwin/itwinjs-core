@@ -150,7 +150,7 @@ export class RegionOps {
    * Return an area tolerance for a given xy-range and optional distance tolerance.
    * @param range range of planar region to tolerance.
    * @param distanceTolerance optional absolute distance tolerance.
-  */
+   */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
     // ensure the result is nonzero: we never want to report a zero-area loop as a signed-area loop
     if (distanceTolerance === 0)
@@ -796,13 +796,13 @@ export class RegionOps {
   }
   /**
    * Look for and simplify:
-   * * Contiguous `LineSegment3d` and `LineString3d` objects.
+   * * Contiguous [[LineSegment3d]] and [[LineString3d]] objects:
    *   * collect all points
    *   * eliminate duplicated points
    *   * eliminate points colinear with surrounding points
-   *   * contiguous concentric circular or elliptic arcs
+   * * Contiguous concentric circular or elliptic [[Arc3d]] objects:
    *   * combine angular ranges
-   * * This function can be used to compress adjacent LineSegment3ds into a LineString3d
+   * * This function can be used to compress adjacent [[LineSegment3d]]s into a [[LineString3d]].
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
    */

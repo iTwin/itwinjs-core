@@ -227,7 +227,7 @@ export class ClipUtilities {
     curve.announceClipIntervals(
       clipper,
       (fraction0: number, fraction1: number, curveA: CurvePrimitive) => {
-        if (fraction1 !== fraction0) {
+        if (fraction0 !== fraction1) {
           const partialCurve = curveA.clonePartialCurve(fraction0, fraction1);
           if (partialCurve)
             result.push(partialCurve);

@@ -165,7 +165,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
     const resp = await this.runWithRetry(request);
-    this._globalDone = resp.status === DbResponseStatus.Done;
+    this._globalDone = resp.status === DbResponseStatus.Done || resp.status === DbResponseStatus.NotOpen;
     if (this._props.length === 0 && resp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(resp.meta);
     }

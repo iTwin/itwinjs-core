@@ -6,6 +6,8 @@ It lives in `@itwin/ecschema-metadata` and should be the first choice for access
 
 For the binary transport format specification, see [SchemaViewBinaryFormat.md](./SchemaViewBinaryFormat.md).
 
+`SchemaView` is a **lossy runtime** projection - it omits units, formats, and custom attribute instances. For the full, authoritative EC schema model and its interchange formats, see [ECSchema XML](../../bis/ec/ec-schema-xml.md) and [ECSchema JSON](../../bis/ec/ec-schema-json.md).
+
 ## When to use SchemaView
 
 Use `SchemaView` when you need fast, synchronous, repeated lookups at runtime:
@@ -238,3 +240,7 @@ If you need "give me all classes where property X has extended type Y" - use ECS
 At the time of writing, some concepts are not exposed through ECDbMeta, and some iModels may not have updated to its latest version which added CustomAttributes. Walking all flattened properties of a class is currently not something that ECDbMeta supports.
 
 </details>
+
+## Schema Localization
+
+To use schema localization for SchemaView items, see [SchemaLocalization.md](./SchemaLocalization.md).

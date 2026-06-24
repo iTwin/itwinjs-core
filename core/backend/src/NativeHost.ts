@@ -200,7 +200,7 @@ export class NativeHost {
     if (this._reachability !== status) {
       this._reachability = status;
       this.onInternetConnectivityChanged.raiseEvent(status);
-      if (ProcessDetector.isMobileAppBackend) {
+      if (ProcessDetector.isMobileAppBackend || ProcessDetector.isElectronAppBackend) {
         // Merely referencing NativeHost from a non-native backend causes a runtime exception (even
         // inside an if statement that checks that the backend is a mobile backend). This allows code
         // that needs to check connectivity to do so without referencing NativeHost directly.

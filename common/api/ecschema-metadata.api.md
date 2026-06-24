@@ -931,6 +931,11 @@ export interface HasMixins {
     readonly mixins: ReadonlyArray<LazyLoadedMixin>;
 }
 
+// @beta
+export interface ILocalizationProvider {
+    getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
+}
+
 // @internal
 export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     constructor(options?: SchemaLocaterOptions);
@@ -1145,6 +1150,27 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 
 // @public @preview (undocumented)
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
+
+// @beta
+export class LocalizationProvider implements ILocalizationProvider {
+    constructor(_loader: (schemaName: string, locale: string) => Promise<SchemaLocalizationJson | undefined>);
+    getLocalization(schemaName: string, locale: string): Promise<SchemaLocalizationJson | undefined>;
+}
+
+// @beta
+export interface LocalizedItemText extends LocalizedText {
+    members?: {
+        [memberName: string]: LocalizedText;
+    };
+}
+
+// @beta
+export interface LocalizedText {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    label?: string;
+}
 
 // @public @preview
 export class Mixin extends ECClass {
@@ -2429,6 +2455,36 @@ export class SchemaLoader {
     get context(): SchemaContext;
     getSchema(schemaName: string): Schema;
     tryGetSchema(schemaName: string): Schema | undefined;
+}
+
+// @beta
+export class SchemaLocalization {
+    static create(provider: ILocalizationProvider, locale: string, schemaKeys: Iterable<SchemaKey>): Promise<SchemaLocalization>;
+    getDescription(schemaName: string, itemName?: string, memberName?: string): string | undefined;
+    getLabel(schemaName: string, itemName?: string, memberName?: string): string | undefined;
+    getLocalizedEnumerator(enumeration: Enumeration | SchemaView.Enumeration, enumerator: AnyEnumerator | SchemaView.Enumerator): LocalizedText;
+    getLocalizedProperty(ecClass: ECClass | SchemaView.Class, property: Property | SchemaView.Property): LocalizedText;
+    getLocalizedSchema(schema: Schema | SchemaView.Schema): LocalizedText;
+    getLocalizedSchemaItem(item: SchemaItem | SchemaViewItem): LocalizedText;
+    loadLocalizations(schemaKeys: Iterable<SchemaKey>): Promise<void>;
+    // (undocumented)
+    get locale(): string;
+    get provider(): ILocalizationProvider;
+    // (undocumented)
+    setLocale(locale: string): void;
+}
+
+// @beta
+export interface SchemaLocalizationJson {
+    $schema: string;
+    description?: string;
+    items?: {
+        [itemName: string]: LocalizedItemText;
+    };
+    label?: string;
+    locale: string;
+    name: string;
+    version: string;
 }
 
 // @beta

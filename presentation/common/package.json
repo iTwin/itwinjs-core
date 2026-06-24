@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "5.11.0-dev.2",
+  "version": "5.11.0-dev.16",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -66,7 +66,7 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
-    "@itwin/presentation-shared": "^1.2.1"
+    "@itwin/presentation-shared": "^1.2.2"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",

@@ -1,6 +1,31 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Mon, 01 Jun 2026 17:37:05 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Added BasicUnitsProvider (bundled BIS units), createUnitsProvider factory, and CreateUnitsProviderOptions interface. Added UnitConversion math, parseDefinition, and Graph utilities (moved from ecschema-metadata). Added SerializedUnitSchema types and UnitDefinitionResolver.
+- Add generated unit schema names and UnitConversions helpers backed by bundled basic units
+- Fix FormatSpecHandle stale state during onFormattingReady
+- Use units schema 01.00.10
 
 ## 5.9.5
 Mon, 01 Jun 2026 17:34:00 GMT
