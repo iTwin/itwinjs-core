@@ -3630,6 +3630,23 @@ describe("ECSqlStatement", () => {
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT NULL"), 3);
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE NULL IS S2"), 2);
 
+      // The operands may be ANY value expression, not just a property or the NULL literal.
+      // String literal operand: matches rows where S1 IS 'a' (null-safe).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS 'a'"), 3);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT 'a'"), 2);
+      // Function call operand (LOWER(S2) equals S2 for these lowercase values).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS LOWER(S2)"), 2);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT LOWER(S2)"), 3);
+      // Function call on the left-hand side.
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE LOWER(S1) IS S2"), 2);
+      // A parenthesized unqualified name is a value expression here, not an IS (ClassName) type predicate.
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS (S2)"), 2);
+      // Parameter operand, bound to a value and to NULL (null-safe either way).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS ?", new QueryBinder().bindString(1, "a")), 3);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS ?", new QueryBinder().bindNull(1)), 2);
+      // Regression: the IS (ClassName) type predicate is unaffected (all rows are ts.Foo).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE ECClassId IS (ts.Foo)"), 5);
+
       // operands of incompatible types are rejected (string vs point)
       let threw = false;
       try {
