@@ -64,13 +64,21 @@ async function getStagedChangeDescriptionCoverage() {
   if (changedProjects.length === 0)
     return { ok: false, reason: "No published Rush project changes detected in the staged tree." };
 
-  const changeFilesOutput = await runCommand("git", ["ls-tree", "-r", "--name-only", stagedTree, "common/changes"]);
-  const changeFiles = changeFilesOutput
-    ? changeFilesOutput.split("\n").filter((path) => path.endsWith(".json"))
+  const stagedChangeFilesOutput = await runCommand("git", [
+    "diff",
+    "--name-only",
+    "--diff-filter=AM",
+    baseCommit,
+    stagedTree,
+    "--",
+    "common/changes",
+  ]);
+  const stagedChangeFiles = stagedChangeFilesOutput
+    ? stagedChangeFilesOutput.split("\n").filter((path) => path.endsWith(".json"))
     : [];
 
   const coveredPackages = new Set();
-  for (const changeFilePath of changeFiles) {
+  for (const changeFilePath of stagedChangeFiles) {
     const raw = await runCommand("git", ["show", `${stagedTree}:${changeFilePath}`]);
     try {
       const parsed = JSON.parse(raw);
