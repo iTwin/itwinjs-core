@@ -171,3 +171,117 @@ SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, i, l, d, b, dt, s, bi
 | 0x1b         | AllProperties:TestElement | 107 | 1007 | 7.1 | true | 2010-01-01T11:11:11.000 | str7 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11, "Y": 2222.22} | {"X": -111.11, "Y": -222.22, "Z": -333.33} |
 | 0x1c         | AllProperties:TestElement | 108 | 1008 | 8.1 | true | 2017-01-01T00:00:00.000 | str8 | BIN(1,2,3)                         | {"X": 1.034, "Y": 2.034}     | {"X": -1, "Y": 2.3, "Z": 3.0001}           |
 | 0x1d         | AllProperties:TestElement | 109 | 1009 | 9.1 | true | 2010-01-01T11:11:11.000 | str9 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11, "Y": 2222.22} | {"X": -111.11, "Y": -222.22, "Z": -333.33} |
+
+# IS operator with string literal
+
+- dataset: AllProperties.bim
+
+The `IS` operator performs a null-safe comparison between two value expressions. Here the right-hand operand is a string literal, so this matches the rows whose `NullProp` equals `'NotNull'`.
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, NullProp FROM aps.TestElement WHERE NullProp IS 'NotNull'
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
+| AllProperties:TestElement | NullProp     | false     | 2     | nullProp  | NullProp     | undefined    | string   | String | NullProp           |
+
+| ECInstanceId | ClassName                 | NullProp |
+| ------------ | ------------------------- | -------- |
+| 0x15         | AllProperties:TestElement | NotNull  |
+| 0x17         | AllProperties:TestElement | NotNull  |
+| 0x19         | AllProperties:TestElement | NotNull  |
+| 0x1b         | AllProperties:TestElement | NotNull  |
+| 0x1d         | AllProperties:TestElement | NotNull  |
+
+# IS NOT operator with string literal (null-safe)
+
+- dataset: AllProperties.bim
+
+Unlike `<>`, the `IS NOT` operator treats `NULL` as a comparable value, so the rows where `NullProp` is `NULL` (the even-indexed elements) are returned here. A `NullProp <> 'NotNull'` filter would exclude them because `NULL <> 'NotNull'` is _unknown_.
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, NullProp FROM aps.TestElement WHERE NullProp IS NOT 'NotNull'
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
+| AllProperties:TestElement | NullProp     | false     | 2     | nullProp  | NullProp     | undefined    | string   | String | NullProp           |
+
+| ECInstanceId | ClassName                 |
+| ------------ | ------------------------- |
+| 0x14         | AllProperties:TestElement |
+| 0x16         | AllProperties:TestElement |
+| 0x18         | AllProperties:TestElement |
+| 0x1a         | AllProperties:TestElement |
+| 0x1c         | AllProperties:TestElement |
+
+# IS operator with integer literal
+
+- dataset: AllProperties.bim
+
+The operands of `IS` may be any value expression, including a numeric literal.
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, I FROM aps.TestElement WHERE I IS 104
+```
+
+| className                | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                          | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                          | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
+| AllProperties:IPrimitive | i            | false     | 2     | i         | i            | undefined    | int      | Int    | i                  |
+
+| ECInstanceId | ClassName                 | i   |
+| ------------ | ------------------------- | --- |
+| 0x18         | AllProperties:TestElement | 104 |
+
+# IS operator with function call
+
+- dataset: AllProperties.bim
+
+The right-hand operand may also be a function call (here `LOWER('STR0')`, which evaluates to `str0`).
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, S FROM aps.TestElement WHERE S IS LOWER('STR0')
+```
+
+| className                | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                          | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                          | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
+| AllProperties:IPrimitive | s            | false     | 2     | s         | s            | undefined    | string   | String | s                  |
+
+| ECInstanceId | ClassName                 | s    |
+| ------------ | ------------------------- | ---- |
+| 0x14         | AllProperties:TestElement | str0 |
+
+# IS operator with parameter binding
+
+- dataset: AllProperties.bim
+
+The right-hand operand may be a parameter. Bound to `'NotNull'`, this matches the same rows as the string-literal form above.
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, NullProp FROM aps.TestElement WHERE NullProp IS ?
+```
+
+- bindString 1, NotNull
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
+| AllProperties:TestElement | NullProp     | false     | 2     | nullProp  | NullProp     | undefined    | string   | String | NullProp           |
+
+| ECInstanceId | ClassName                 | NullProp |
+| ------------ | ------------------------- | -------- |
+| 0x15         | AllProperties:TestElement | NotNull  |
+| 0x17         | AllProperties:TestElement | NotNull  |
+| 0x19         | AllProperties:TestElement | NotNull  |
+| 0x1b         | AllProperties:TestElement | NotNull  |
+| 0x1d         | AllProperties:TestElement | NotNull  |
