@@ -20,10 +20,23 @@ export interface SourceSchemaLike {
   readonly items: { readonly [name: string]: any };
 }
 
-export interface GeneratedEntry {
+export interface GeneratedEntry<TValue = unknown> {
   readonly key: string;
-  readonly value: any;
+  readonly value: TValue;
 }
+
+export type BasicConversionValue =
+  | readonly [
+    phenomenon: string,
+    factor: number,
+    offset: number,
+  ]
+  | readonly [
+    phenomenon: string,
+    factor: number,
+    offset: number,
+    invertsUnitName: string,
+  ];
 
 export type AssertUniqueGeneratedKeys = (entries: ReadonlyArray<{ key: string }>, description: string) => void;
 
@@ -111,9 +124,9 @@ function normalizeGeneratedUnitKey(name: string): string {
 export function buildBasicConversionEntries(
   source: SourceSchemaLike,
   assertUniqueGeneratedKeys: AssertUniqueGeneratedKeys,
-): GeneratedEntry[] {
+): Array<GeneratedEntry<BasicConversionValue>> {
   const resolved = resolveAll(source);
-  const entries: GeneratedEntry[] = [];
+  const entries: Array<GeneratedEntry<BasicConversionValue>> = [];
 
   for (const [unqualifiedName, unit] of resolved) {
     entries.push({
@@ -151,7 +164,7 @@ export function buildBasicConversionEntries(
 export function buildDefaultPersistenceUnitEntries(
   source: SourceSchemaLike,
   assertUniqueGeneratedKeys: AssertUniqueGeneratedKeys,
-): GeneratedEntry[] {
+): Array<GeneratedEntry<string>> {
   const resolved = resolveAll(source);
   const qualifiedSchemaItemName = (name: string) => `${source.name}.${name}`;
   // Default persistence units are generated when a phenomenon has exactly one built-in SI candidate.
@@ -193,7 +206,7 @@ export function buildDefaultPersistenceUnitEntries(
     unitsByPhenomenon.set(phenomenon, bucket);
   }
 
-  const entries: GeneratedEntry[] = [];
+  const entries: Array<GeneratedEntry<string>> = [];
   const unresolved: Array<{ phenomenon: string; candidates: string[] }> = [];
 
   for (const [name, item] of Object.entries(source.items).sort(([a], [b]) => a.localeCompare(b))) {
@@ -237,21 +250,10 @@ function formatGeneratedNumber(value: number): string {
   if (!Number.isFinite(value))
     return String(value);
 
-  // Start with a conservative 16-significant-digit normalization so we stay close to the
-  // provider's raw recomputation while collapsing most Node/V8 drift in generated constants.
-  const normalized = Number.parseFloat(value.toPrecision(16));
-
-  // Then prefer short fixed-point decimals only when that shorter text is already within one ULP
-  // of the normalized value. This cleans up cases like 0.009999999999999998 -> 0.01 without
-  // pulling broader engineering constants into a coarser rounding policy.
-  const scale = Math.max(1, Math.abs(normalized));
-  for (let decimals = 0; decimals <= 12; decimals++) {
-    const candidate = Number.parseFloat(normalized.toFixed(decimals));
-    if (Math.abs(normalized - candidate) <= Number.EPSILON * scale)
-      return Object.is(candidate, -0) ? "0" : String(candidate);
-  }
-
-  return Object.is(normalized, -0) ? "0" : String(normalized);
+  // Canonicalize just below the IEEE-754 double precision floor so last-bit Node/V8 drift
+  // collapses to stable emitted text without layering on a second rounding heuristic.
+  const canonicalized = Number.parseFloat(value.toPrecision(15));
+  return String(canonicalized);
 }
 
 export function buildGeneratedBasicConversionModule(
@@ -271,14 +273,8 @@ export function buildGeneratedBasicConversionModule(
   ];
 
   for (const entry of entries) {
-    const tuple = (entry.value as unknown[])
-      .map((value) => {
-        if (typeof value === "string")
-          return JSON.stringify(value);
-        if (typeof value === "number")
-          return formatGeneratedNumber(value);
-        throw new Error(`Unsupported generated conversion value type: ${typeof value}`);
-      })
+    const tuple = entry.value
+      .map((value) => typeof value === "string" ? JSON.stringify(value) : formatGeneratedNumber(value))
       .join(", ");
     lines.push(`  ${JSON.stringify(entry.key)}: [${tuple}],`);
   }
@@ -385,7 +381,7 @@ function collectGroupedUnitSections(source: SourceSchemaLike): Array<{ key: stri
     .map((entry) => ({
       key: normalizeGeneratedUnitKey(stripSchemaPrefix(entry.key, source.name)),
       value: entry.key,
-      phenomenon: stripSchemaPrefix((entry.value as unknown[])[0] as string, source.name),
+      phenomenon: stripSchemaPrefix(entry.value[0], source.name),
     }));
 
   for (const entry of unitEntries) {

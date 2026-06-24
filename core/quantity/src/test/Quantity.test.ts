@@ -14,6 +14,8 @@ import { almostEqual, applyConversion, Quantity } from "../Quantity";
 import type { SerializedUnitSchema } from "../SerializedUnitSchema";
 import { isUnitName, UnitConversions } from "../UnitConversions";
 
+// Test-only acceptance budget for canonicalized generated constants versus provider recomputation.
+const generatedConversionDriftTolerance = 1e-12;
 const unitsSchemaItems = unitsSchema.items as Record<string, { schemaItemType: string }>;
 
 function expectedBuiltInConversionUnitNames(): string[] {
@@ -191,7 +193,6 @@ describe("Quantity", () => {
 
   it("generated basic conversion data matches provider-backed conversions for every bundled same-phenomenon unit pair", async () => {
     const provider = new BasicUnitsProvider();
-    const canonicalizedGeneratedDataTolerance = 5e-12;
     const resolvedUnits = new Map<string, Awaited<ReturnType<BasicUnitsProvider["findUnitByName"]>>>();
     const unitsByPhenomenon = new Map<string, string[]>();
 
@@ -215,8 +216,8 @@ describe("Quantity", () => {
           // The generated built-in conversions are canonicalized for deterministic cross-Node output.
           // Provider recomputation may still differ in the last bits, but the drift stays well below
           // engineering-significant precision for quantity display and conversion.
-          expect(almostEqual(UnitConversions.convertValue(1.2345, actual), UnitConversions.convertValue(1.2345, expected), canonicalizedGeneratedDataTolerance)).toBe(true);
-          expect(almostEqual(UnitConversions.convertValue(9876.54321, actual), UnitConversions.convertValue(9876.54321, expected), canonicalizedGeneratedDataTolerance)).toBe(true);
+          expect(almostEqual(UnitConversions.convertValue(1.2345, actual), UnitConversions.convertValue(1.2345, expected), generatedConversionDriftTolerance)).toBe(true);
+          expect(almostEqual(UnitConversions.convertValue(9876.54321, actual), UnitConversions.convertValue(9876.54321, expected), generatedConversionDriftTolerance)).toBe(true);
         }
       }
     }

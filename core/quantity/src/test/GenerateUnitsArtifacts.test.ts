@@ -100,9 +100,9 @@ describe("Generated Units artifacts", () => {
   it("canonicalizes generated conversion values that drift across Node runtimes", () => {
     const generatedSource = buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys);
 
-    expect(generatedSource).toContain('"Units.AT": ["Units.PRESSURE", 0.00001019716212977928, 0]');
-    expect(generatedSource).toContain('"Units.AT_GAUGE": ["Units.PRESSURE", 0.00001019716212977928, -1.033227452799886]');
-    expect(generatedSource).toContain('"Units.FT_TO_THE_FOURTH": ["Units.AREA_MOMENT_INERTIA", 115.8617674589521, 0]');
+    expect(generatedSource).toContain('"Units.AT": ["Units.PRESSURE", 0.0000101971621297793, 0]');
+    expect(generatedSource).toContain('"Units.AT_GAUGE": ["Units.PRESSURE", 0.0000101971621297793, -1.03322745279989]');
+    expect(generatedSource).toContain('"Units.FT_TO_THE_FOURTH": ["Units.AREA_MOMENT_INERTIA", 115.861767458952, 0]');
     expect(generatedSource).toContain('"Units.N_CM_PER_SQ_CM": ["Units.AREA_TORQUE", 0.01, 0]');
     expect(generatedSource).toContain('"Units.PER_FT": ["Units.LINEAR_RATE", 0.3048, 0]');
   });
