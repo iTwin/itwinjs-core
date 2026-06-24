@@ -233,6 +233,27 @@ export function buildDefaultPersistenceUnitEntries(
   return entries;
 }
 
+function formatGeneratedNumber(value: number): string {
+  if (!Number.isFinite(value))
+    return String(value);
+
+  // Start with a conservative 16-significant-digit normalization so we stay close to the
+  // provider's raw recomputation while collapsing most Node/V8 drift in generated constants.
+  const normalized = Number.parseFloat(value.toPrecision(16));
+
+  // Then prefer short fixed-point decimals only when that shorter text is already within one ULP
+  // of the normalized value. This cleans up cases like 0.009999999999999998 -> 0.01 without
+  // pulling broader engineering constants into a coarser rounding policy.
+  const scale = Math.max(1, Math.abs(normalized));
+  for (let decimals = 0; decimals <= 12; decimals++) {
+    const candidate = Number.parseFloat(normalized.toFixed(decimals));
+    if (Math.abs(normalized - candidate) <= Number.EPSILON * scale)
+      return Object.is(candidate, -0) ? "0" : String(candidate);
+  }
+
+  return Object.is(normalized, -0) ? "0" : String(normalized);
+}
+
 export function buildGeneratedBasicConversionModule(
   source: SourceSchemaLike,
   assertUniqueGeneratedKeys: AssertUniqueGeneratedKeys,
@@ -251,7 +272,13 @@ export function buildGeneratedBasicConversionModule(
 
   for (const entry of entries) {
     const tuple = (entry.value as unknown[])
-      .map((value) => typeof value === "string" ? JSON.stringify(value) : String(value))
+      .map((value) => {
+        if (typeof value === "string")
+          return JSON.stringify(value);
+        if (typeof value === "number")
+          return formatGeneratedNumber(value);
+        throw new Error(`Unsupported generated conversion value type: ${typeof value}`);
+      })
       .join(", ");
     lines.push(`  ${JSON.stringify(entry.key)}: [${tuple}],`);
   }
