@@ -78,6 +78,7 @@ export class TestUtils {
     cfg.cacheDir = TestUtils.getCacheDir(cfg.cacheDir);
     cfg.allowSharedChannel ??= false; // Override default to test shared channel enforcement. Remove in version 5.0.
     cfg.implicitWriteEnforcement ??= "throw";
+    cfg.disableGcsWorkspaces ??= true; // Unit tests should not make GCS network requests. Opt in explicitly when GCS data is required.
     await IModelHost.startup(cfg);
   }
 

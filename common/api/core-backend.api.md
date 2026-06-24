@@ -4518,6 +4518,8 @@ export interface IModelHostOptions {
     // @internal
     crashReportingConfig?: CrashReportingConfig;
     // @beta
+    disableGcsWorkspaces?: boolean;
+    // @beta
     disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;

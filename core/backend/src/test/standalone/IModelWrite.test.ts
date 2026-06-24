@@ -29,7 +29,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
-
+import { TestUtils } from "../TestUtils";
 chai.use(chaiAsPromised);
 
 
@@ -55,12 +55,24 @@ describe("IModelWriteTest", () => {
   let iTwinId: GuidString;
 
   before(async () => {
+    // The project-extents test relies on GCS-derived ECEF recomputation, which requires GCS data
+    // loaded from cloud workspaces. Restart the backend with GCS workspaces enabled (the test
+    // harness disables them by default to avoid network calls) before starting the HubMock.
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend({ disableGcsWorkspaces: false });
+
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
     managerAccessToken = await HubWrappers.getAccessToken(TestUserType.Manager);
     superAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
   });
-  after(() => HubMock.shutdown());
+  after(async () => {
+    HubMock.shutdown();
+
+    // Restore the default test backend so subsequent test suites aren't left with GCS enabled.
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
+  });
 
   it("Check busyTimeout option", async () => {
     const iModelProps = {

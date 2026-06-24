@@ -12,12 +12,23 @@ import { IModelNative } from "../../internal/NativePlatform";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
 import { getAvailableCoordinateReferenceSystems, getAvailableCRSUnits } from "../../GeographicCRSServices";
+import { TestUtils } from "../TestUtils";
 
 // spell-checker: disable
 
 describe("GeoServices", () => {
-  before(() => {
+  before(async () => {
+    // These tests exercise GCS data loaded from cloud workspaces, so restart the backend with
+    // GCS workspaces enabled (the test harness disables them by default to avoid network calls).
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend({ disableGcsWorkspaces: false });
     GeoCoordConfig.loadDefaultDatabases();
+  });
+
+  after(async () => {
+    // Restore the default test backend so subsequent test suites aren't left with GCS enabled.
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
   });
 
   const completionTest = async (incompleteGCS: GeographicCRSProps, completeCRS: GeographicCRSProps) => {

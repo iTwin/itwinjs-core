@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added IModelHostOptions.disableGcsWorkspaces option to suppress loading of Geographic Coordinate System (GCS) workspaces from cloud containers, and the network requests they issue, when iModels are opened.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "anmolshres98@users.noreply.github.com"
+}

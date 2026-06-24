@@ -12,6 +12,8 @@ publish: false
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
     - [Graphics no longer disappear when a new category is inserted](#graphics-no-longer-disappear-when-a-new-category-is-inserted)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [Suppress GCS workspace loading at startup](#suppress-gcs-workspace-loading-at-startup)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
@@ -173,6 +175,20 @@ if (iModel.isGeoLocated) {
 Inserting a new `Category` also inserts that category's default `SubCategory`. The frontend's subcategory cache previously responded to *any* `SubCategory` insertion by clearing its entire contents, as the change notification does not identify which category the new subcategory belongs to. Because [Viewport]($frontend) rendering derives the set of visible subcategories from that cache, clearing it made every already-viewed category appear to have no subcategories, so all graphics disappeared until an unrelated action (such as toggling a category in the [CategorySelectorState]($frontend)) repopulated the cache.
 
 The cache now keeps serving the previously-loaded data and instead marks the affected categories as stale, reloading them in the background. Already-viewed graphics remain visible throughout, and the [Viewport]($frontend) automatically reloads and repaints the affected categories.
+
+## @itwin/core-backend
+
+### Suppress GCS workspace loading at startup
+
+When an iModel is opened, the backend loads Geographic Coordinate System (GCS) workspaces from public cloud containers so that coordinate reprojection and similar geospatial operations work out of the box. This loading issues network requests, which is undesirable for unit tests and other offline scenarios that don't need GCS data and can introduce noticeable startup delays when the network is slow or unavailable.
+
+The new [IModelHostOptions.disableGcsWorkspaces]($backend) option suppresses this behavior. When set to `true`, no GCS workspaces are loaded and no associated network requests are made:
+
+```typescript
+await IModelHost.startup({ disableGcsWorkspaces: true });
+```
+
+The option defaults to `false`, preserving the existing behavior. Only enable it when your workflow does not rely on GCS data loaded from cloud workspaces (for example, coordinate reprojection between different geographic coordinate systems).
 
 ## @itwin/core-geometry
 
