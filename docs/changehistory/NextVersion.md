@@ -11,6 +11,7 @@ publish: false
     - [Reality model tiles with JSON glTF content now render](#reality-model-tiles-with-json-gltf-content-now-render)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
+    - [Graphics no longer disappear when a new category is inserted](#graphics-no-longer-disappear-when-a-new-category-is-inserted)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
@@ -166,6 +167,12 @@ if (iModel.isGeoLocated) {
   const height = await IModelApp.elevationProvider.getHeight(carto);
 }
 ```
+
+### Graphics no longer disappear when a new category is inserted
+
+Inserting a new `Category` also inserts that category's default `SubCategory`. The frontend's subcategory cache previously responded to *any* `SubCategory` insertion by clearing its entire contents, as the change notification does not identify which category the new subcategory belongs to. Because [Viewport]($frontend) rendering derives the set of visible subcategories from that cache, clearing it made every already-viewed category appear to have no subcategories, so all graphics disappeared until an unrelated action (such as toggling a category in the [CategorySelectorState]($frontend)) repopulated the cache.
+
+The cache now keeps serving the previously-loaded data and instead marks the affected categories as stale, reloading them in the background. Already-viewed graphics remain visible throughout, and the [Viewport]($frontend) automatically reloads and repaints the affected categories.
 
 ## @itwin/core-geometry
 
