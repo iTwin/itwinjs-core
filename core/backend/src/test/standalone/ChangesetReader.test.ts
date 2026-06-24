@@ -5200,6 +5200,18 @@ describe("ChangesetReader: throwIfAlreadyStepped guard", () => {
     expect(() => reader.disableStrictMode()).to.throw("filters and strict mode must be configured before the first call to step()");
   });
 
+  it("setBatchSize throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.setBatchSize(10)).to.throw("filters and strict mode must be configured before the first call to step()");
+  });
+
+  it("setBatchSize throws with zero or negative value", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    expect(() => reader.setBatchSize(0)).to.throw("batchSize must be a positive integer");
+    expect(() => reader.setBatchSize(-1)).to.throw("batchSize must be a positive integer");
+  });
+
   it("filters can be set before any step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     // None of these should throw before step() is called
@@ -5211,6 +5223,7 @@ describe("ChangesetReader: throwIfAlreadyStepped guard", () => {
     expect(() => reader.clearClassNameFilters()).to.not.throw();
     expect(() => reader.enableStrictMode()).to.not.throw();
     expect(() => reader.disableStrictMode()).to.not.throw();
+    expect(() => reader.setBatchSize(5)).to.not.throw();
   });
 });
 
@@ -5267,6 +5280,31 @@ describe("ChangesetReader: batched stepping behavior", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     while (reader.step()) { /* consume */ }
     expect(() => reader.op).to.throw("no current row");
+  });
+
+  it("setBatchSize(1) produces same instances as default batch size", () => {
+    const defaultInstances: string[] = [];
+    {
+      using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step()) pcu.appendFrom(reader);
+      for (const inst of pcu.instances)
+        defaultInstances.push(inst.ECInstanceId as string);
+    }
+    defaultInstances.sort();
+
+    const batchOneInstances: string[] = [];
+    {
+      using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+      reader.setBatchSize(1);
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step()) pcu.appendFrom(reader);
+      for (const inst of pcu.instances)
+        batchOneInstances.push(inst.ECInstanceId as string);
+    }
+    batchOneInstances.sort();
+
+    assert.deepEqual(batchOneInstances, defaultInstances);
   });
 });
 

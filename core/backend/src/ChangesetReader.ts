@@ -39,6 +39,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   private readonly _nativeReader: IModelJsNative.ChangesetReader = new IModelNative.platform.ChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private _rowOptions?: RowFormatOptions;
+  private _setBatchSize?: number;
   private _propFilter: PropertyFilter = PropertyFilter.All;
   private _changeIndex = 0;
   /** Rows fetched in the most recent native batch call. */
@@ -63,10 +64,11 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /** Returns the batch size to use for native step() calls based on the active property filter.
    * @internal */
   private get _batchSize(): number {
-    switch (this._propFilter) {
-      case PropertyFilter.InstanceKey: return 50;
-      case PropertyFilter.BisCoreElement: return 25;
-      default: return 10;
+    if (this._setBatchSize !== undefined) return this._setBatchSize;
+    if (this._propFilter === PropertyFilter.InstanceKey) return 100;
+    else {
+      if (this._rowOptions?.abbreviateBlobs === false) return 5;
+      return 25;
     }
   }
 
@@ -169,8 +171,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Open a changeset file from disk.
    * @param args.fileName Absolute path to the changeset file.
    * @param args.db Database at or after the changeset's ending state, used for schema resolution.
-   * @param args.invert When `true`, invert all operations (Insert↔Delete).
-   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.invert When `true`, invert all operations (Insert↔Delete, New↔Old).
+   * @param args.rowOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @throws if the native layer fails to open the file.
    * @beta
@@ -194,7 +196,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Concatenate multiple changeset files and read them as a single logical stream.
    * @param args.changesetFiles Ordered list of changeset file paths.
    * @param args.db Database with schema at or ahead of the last changeset.
-   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.invert When `true`, invert all operations (Insert↔Delete, New↔Old).
+   * @param args.rowOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @param args.spillThresholdInBytes When the total size of the changeset data in the change group exceeds this threshold (in bytes),
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
@@ -225,7 +228,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Read pending (not yet pushed) local changes from an open IModelDb.
    * @param args.db Must be an [IModelDb]($backend) (not [ECDb]($backend)).
    * @param args.includeInMemoryChanges Also include in-memory (not yet saved to disk) changes.
-   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.invert When `true`, invert all operations (Insert↔Delete, New↔Old).
+   * @param args.rowOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @param args.spillThresholdInBytes When the total size of all local un-pushed saved changes exceeds this threshold (in bytes),
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
@@ -254,7 +258,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Read the in-memory (not yet saved to disk) changes of an open IModelDb.
    * @param args.db Must be an [IModelDb]($backend).
-   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.invert When `true`, invert all operations (Insert↔Delete, New↔Old).
+   * @param args.rowOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @param args.spillThresholdInBytes When the total size of the in-memory (unsaved) change data exceeds this threshold (in bytes),
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
@@ -283,7 +288,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Read a single saved transaction by its id.
    * @param args.db Must be an [IModelDb]($backend) ([ECDb]($backend) does not support transactions).
    * @param args.txnId The id of the saved transaction to read.
-   * @param args.valueOptions Row adaptor options controlling how EC property values are formatted.
+   * @param args.invert When `true`, invert all operations (Insert↔Delete, New↔Old).
+   * @param args.rowOptions Row adaptor options controlling how EC property values are formatted.
    * @param args.propFilter Controls which properties are included. Defaults to `All`.
    * @param args.spillThresholdInBytes When the total size of the transaction's change data exceeds this threshold (in bytes),
    * the reader writes the data to a temporary file on disk and streams it from there instead of buffering everything in memory.
@@ -326,6 +332,22 @@ export class ChangesetReader implements Disposable, ChangeSource {
       releasing native resources which also failed with failure ${closeError instanceof Error ? closeError.message : String(closeError)}.
       Check native error logs for more details.`);
     }
+  }
+
+  /**
+   * Set the number of rows to fetch and cache while stepping.
+   * This is an advanced option that can be used to tune performance for large changesets.
+   * If the property filter is set to `InstanceKey`, the default is 100.
+   * If property filter is set to `All` or `BisCoreElement`, the default is 25 if [[abbreviateBlobs]] is not set to false, otherwise the default is 5.
+   * @param batchSize Number of rows to fetch and cache while stepping. Must be a positive integer.
+   * @throws [[IModelError]] if [[step]] has already been called successfully, or if `batchSize` is not a positive integer.
+   * @beta
+   */
+  public setBatchSize(batchSize: number): void {
+    this.throwIfAlreadyStepped();
+    if (batchSize <= 0)
+      throw new IModelError(IModelStatus.BadArg, "ChangesetReader: batchSize must be a positive integer.");
+    this._setBatchSize = batchSize;
   }
 
   // ---------------------------------------------------------------------------
@@ -465,14 +487,9 @@ export class ChangesetReader implements Disposable, ChangeSource {
     } else {
       // Cache empty or fully consumed — fetch next batch from native
       const nativeRowOpts = this._rowOptions ? this.toNativeRowOptions(this._rowOptions) : {};
-      const rows = this._nativeReader.step(this._batchSize, nativeRowOpts);
-      if (rows.length === 0) {
-        this._cache = [];
-        this._cacheIndex = 0;
-        return false;
-      }
-      this._cache = rows;
+      this._cache = this._nativeReader.step(this._batchSize, nativeRowOpts);
       this._cacheIndex = 0;
+      if (this._cache.length === 0) return false;
     }
     this._changeIndex++;
     return true;

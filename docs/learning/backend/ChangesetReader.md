@@ -16,7 +16,7 @@ A single EC entity may typically map to multiple tables or a single table.
 [[include:ChangesetReader.BasicPipeline]]
 ```
 
-After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables.
+After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables. Use `pcu.instanceCount` to check how many merged instances were accumulated before iterating.
 
 ### [ChangeInstance]($backend) shape
 
@@ -119,6 +119,14 @@ OR order them appropriately if you are sure only the last disposal might throw:
 
 ```ts
 [[include:ChangesetReader.BasicPipeline]]
+```
+
+### `invert` — reading a changeset in reverse
+
+All `open*` methods accept an optional `invert: true` argument. When set, every operation is flipped: Inserts become Deletes, Deletes become Inserts, and for Updates the `"New"` and `"Old"` stages are swapped. This is useful when you need to *undo* the effect of a changeset — for example, rolling back to a previous state for auditing.
+
+```ts
+[[include:ChangesetReader.InvertChangeset]]
 ```
 
 ### [ChangesetReader.openGroup]($backend) — read multiple changesets as a single stream
@@ -288,12 +296,14 @@ Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling t
 [[include:ChangesetReader.FilterClassNames]]
 ```
 
-### Clearing filters at runtime
+### Clearing filters
 
-All three filters can be cleared individually without reopening the reader:
+All three filters can be cleared individually. Like the setters, the clear methods must be called **before** the first successful [ChangesetReader.step]($backend) call:
 
 ```ts
-reader.clearTableNameFilters();
+// All filter configuration (set or clear) must happen before step() returns true.
+reader.setTableNameFilters(new Set(["bis_Element"]));
+reader.clearTableNameFilters(); // removes the table filter again
 reader.clearOpCodeFilters();
 reader.clearClassNameFilters();
 ```
@@ -332,7 +342,27 @@ To return to the default lenient behaviour at any time:
 reader.disableStrictMode();
 ```
 
-Both methods can be called between [ChangesetReader.step]($backend) calls to toggle the mode mid-stream.
+> **Important:** Both `enableStrictMode` and `disableStrictMode` must be called **before** the first successful [ChangesetReader.step]($backend) call. Calling either method after iteration has begun will throw an `IModelError`.
+
+---
+
+## Batch size — tuning native fetch performance
+
+[ChangesetReader]($backend) exposes a `setBatchSize(n: number)` method that controls how many change rows are fetched and cached per native call. Increasing the batch size improves throughput when iterating large changesets at the cost of higher peak memory usage; decreasing it keeps memory consumption lower. Like filters and strict mode, `setBatchSize` must be called **before** the first [ChangesetReader.step]($backend) call.
+
+| Active configuration | Default batch size |
+|---|---|
+| `propFilter: InstanceKey` | 100 |
+| `propFilter: All` or `BisCoreElement`, `abbreviateBlobs: false` | 5 |
+| `propFilter: All` or `BisCoreElement` (all other cases) | 25 |
+
+Call `setBatchSize` before the first [ChangesetReader.step]($backend) call:
+
+```ts
+[[include:ChangesetReader.SetBatchSize]]
+```
+
+> **Note:** `setBatchSize` throws if called after the first successful `step()` call, or if the supplied value is not a positive integer.
 
 ---
 
@@ -361,7 +391,7 @@ The following example imports a custom schema, inserts an element, pushes a seco
 > **See also:** the test suite `"ChangesetReader: behaviour in case imodel is not in sync with change file or transaction being read"` in
 > `core/backend/src/test/standalone/ChangesetReader.test.ts`.
 
-[ChangesetReader]($backend) uses the **live iModel** in two ways: to resolve `ECClassId` in case it is not part of the changeset or transaction(very common in cases of `Update` because generally only element props are updated not the class of the instance), and to fill in the non-changed components of compound property values. For compound types — `Point2d`, `Point3d`, and navigation properties - when a changeset records a change to only one component, the reader must fetch the remaining components from the live iModel to reconstruct the full value. For example, if only `X` changes in a `Point2d` property, `Y` is read from the current live database state. This means the reader's output quality depends on the current state of the iModel — specifically whether the entity being read still exists in the database at the time of reading, and whether subsequent transactions have already modified the components that were not part of the recorded changeset delta.
+[ChangesetReader]($backend) uses the **live iModel** in two ways: to resolve `ECClassId` when it is absent from the changeset (this is typical for `Update` operations, where only changed properties are recorded, not the class identity), and to fill in the non-changed components of compound property values. For compound types — `Point2d`, `Point3d`, and navigation properties — when a changeset records a change to only one component, the reader fetches the remaining components from the live iModel to reconstruct the full value. For example, if only `X` changes in a `Point2d` property, `Y` is read from the current live database state. This means the reader's output quality depends on the current state of the iModel — specifically whether the entity still exists at the time of reading, and whether subsequent transactions have already modified the compound property components that were not part of the recorded delta.
 
 Two concrete failure modes arise:
 
@@ -369,7 +399,7 @@ Two concrete failure modes arise:
 
 **Scenario:** An element is inserted, updated, then deleted across three changesets. The update changeset (the "middle" one) is read **after** the element has already been deleted from the live iModel.
 
-**What happens:** As in the update changeset obviously the ECClassId was not updated for the instance, only some properties might have been updated so `ECClassId` was not part of the changeset. So when the reader resolves the `ECClassId` for a row, it performs a lookup in the live iModel's table. Because the element no longer exists, the native layer cannot determine which leaf domain class the row belongs to. It falls back to the per-table base class (`BisCore.Element` for `bis_Element`, `BisCore.GeometricElement2d` for `bis_GeometricElement2d`). The per-table instances are **not merged** into a single `TestDomain.Test2dElement` instance; instead they appear as separate entries under their base-class identities.
+**What happens:** In an update changeset the `ECClassId` is typically not included in the change data — only the modified properties are recorded. When the reader resolves the `ECClassId` for a row, it performs a lookup in the live iModel's table. Because the element no longer exists, the native layer cannot determine which leaf domain class the row belongs to. It falls back to the per-table base class (`BisCore.Element` for `bis_Element`, `BisCore.GeometricElement2d` for `bis_GeometricElement2d`). The per-table instances are **not merged** into a single `TestDomain.Test2dElement` instance; instead they appear as separate entries under their base-class identities.
 
 ```ts
 // After push 2 (insert), push 3 (update), push 4 (delete):
@@ -390,7 +420,7 @@ using reader = ChangesetReader.openFile({
 //   { ECClassId: "BisCore.GeometricElement2d",   stage: "Old" }
 ```
 
-**Rule of thumb:** To read a changeset reliably, the iModel's current state should be **at** the change being read or the consumers of the api must be sure that, the instance was not deleted and for the compound properties of the instance like `Point2d`, `Point3d` or `NavProps`, no change was done to them subsequently after. In practice this means: read changesets in order and keep the iModel at the point being inspected.
+**Rule of thumb:** For reliable results, the iModel's state should match the point at which the change was recorded. In practice: read changesets in order and keep the iModel at the state being inspected.
 
 ### 2. Subsequent unsaved transaction pollutes property values
 
@@ -422,7 +452,7 @@ const newX = elementNew.s.X; // 100 — correct
 
 ### Summary
 
-It doesnot depend on whether a change group or a changeset or a transaction is opened. It might happen when the iModel's state is not in sync with the change being read. In other words it might happen when the iModel's state is not **at** the change being read.
+This risk is not specific to changesets — it arises any time the iModel's state is not synchronized with the change being read.
 
 | Scenario | Risk | Mitigation |
 |---|---|---|

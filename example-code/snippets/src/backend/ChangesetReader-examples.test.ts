@@ -122,6 +122,9 @@ describe("ChangesetReader Examples", () => {
       pcu.appendFrom(reader);
     }
 
+    // pcu.instanceCount tells you how many merged instances were accumulated.
+    expect(pcu.instanceCount).to.be.greaterThan(0);
+
     for (const instance of pcu.instances) {
       expect(instance.ECInstanceId).to.exist;
       expect(instance.$meta.op).to.exist;
@@ -181,6 +184,29 @@ describe("ChangesetReader Examples", () => {
     } finally {
       pcu[Symbol.dispose]();
       reader[Symbol.dispose]();
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("invert — reading a changeset in reverse", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.InvertChangeset
+    // Pass invert: true to flip every operation:
+    //   Inserts become Deletes, Deletes become Inserts,
+    //   and for Updates the "New" and "Old" stages are swapped.
+    // Useful for rolling back or auditing what a changeset *undid*.
+    using reader = ChangesetReader.openFile({
+      db,
+      fileName: insertChangesetPath,
+      invert: true,
+    });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (reader.step()) pcu.appendFrom(reader);
+
+    for (const instance of pcu.instances) {
+      // The original changeset was an insert, so with invert:true op becomes "Deleted"
+      // and every instance appears in the "Old" stage.
+      expect(instance.$meta.op).to.equal("Deleted");
+      expect(instance.$meta.stage).to.equal("Old");
     }
     // __PUBLISH_EXTRACT_END__
   });
@@ -416,7 +442,23 @@ describe("ChangesetReader Examples", () => {
       expect(instance.$meta.op).to.exist;
       expect(instance.ECInstanceId).to.exist;
       expect(instance.ECClassId).to.exist;
+      // The active filter is recorded on every instance's $meta:
+      expect(instance.$meta.propFilter).to.equal(PropertyFilter.InstanceKey);
     }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("setBatchSize — tuning native fetch performance", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SetBatchSize
+    // setBatchSize controls how many rows are fetched and cached per native call.
+    // Must be called before the first step().
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    reader.setBatchSize(10); // fetch 10 rows per native batch
+
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (reader.step()) pcu.appendFrom(reader);
+
+    expect(pcu.instanceCount).to.be.greaterThan(0);
     // __PUBLISH_EXTRACT_END__
   });
 
