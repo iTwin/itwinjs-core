@@ -5122,10 +5122,6 @@ describe("ChangesetReader: strict mode (column-count mismatch)", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// New tests for uncommitted ChangesetReader changes
-// ---------------------------------------------------------------------------
-
 describe("ChangesetReader: throwIfAlreadyStepped guard", () => {
   let iModel: BriefcaseDb;
   let txn: EditTxn;
@@ -5155,55 +5151,55 @@ describe("ChangesetReader: throwIfAlreadyStepped guard", () => {
   it("setTableNameFilters throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.setTableNameFilters(new Set(["bis_Element"]))).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.setTableNameFilters(new Set(["bis_Element"]))).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("setOpCodeFilters throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.setOpCodeFilters(new Set(["Inserted"]))).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.setOpCodeFilters(new Set(["Inserted"]))).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("setClassNameFilters throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.setClassNameFilters(new Set(["BisCore:Element"]))).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.setClassNameFilters(new Set(["BisCore:Element"]))).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("clearTableNameFilters throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.clearTableNameFilters()).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.clearTableNameFilters()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("clearOpCodeFilters throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.clearOpCodeFilters()).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.clearOpCodeFilters()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("clearClassNameFilters throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.clearClassNameFilters()).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.clearClassNameFilters()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("enableStrictMode throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.enableStrictMode()).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.enableStrictMode()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("disableStrictMode throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.disableStrictMode()).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.disableStrictMode()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("setBatchSize throws after step()", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     assert.isTrue(reader.step());
-    expect(() => reader.setBatchSize(10)).to.throw("filters and strict mode must be configured before the first call to step()");
+    expect(() => reader.setBatchSize(10)).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
   });
 
   it("setBatchSize throws with zero or negative value", () => {
