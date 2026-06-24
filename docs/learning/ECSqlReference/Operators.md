@@ -50,7 +50,7 @@ The `IS` and `IS NOT` operators compare two operands using **null-safe** semanti
 - `NULL IS NULL` is `TRUE` (whereas `NULL = NULL` is _unknown_, so the row is filtered out).
 - `<value> IS NULL` is `FALSE` when `<value>` is not `NULL`.
 
-Each operand may be a property/value expression or the `NULL` literal, and the `NULL` literal may appear on either side.
+Each operand may be any value expression — a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, and so on — and the `NULL` literal may appear on either side.
 
 ```sql
 -- Rows where CodeValue and UserLabel differ, treating NULL as a comparable value
@@ -58,6 +58,9 @@ SELECT * FROM [bis].[Element] WHERE [CodeValue] IS NOT [UserLabel]
 
 -- Equivalent to "CodeValue IS NULL"
 SELECT * FROM [bis].[Element] WHERE NULL IS [CodeValue]
+
+-- The right-hand side can be any value expression, e.g. a function call
+SELECT * FROM [bis].[Element] WHERE [CodeValue] IS json_extract([JsonProperties], '$.code')
 ```
 
 For multi-column operands such as `Point2d`/`Point3d` and navigation properties, the comparison is expanded column-wise (consistent with `=` and `<>`): `IS` joins the per-column comparisons with `AND`, while `IS NOT` joins them with `OR`.
@@ -72,6 +75,6 @@ SELECT * FROM [ts].[Child] WHERE [ParentA] IS NOT [ParentB]
 
 Both operands must be type-compatible; comparing incompatible types (for example a `string` against a `Point3d`) is rejected when the statement is prepared.
 
-> Note: `IS [NOT]` is also used by the unrelated [ECClass filter](./ECClassFilter.md) predicate (`<classId> IS [NOT] (<class-name>, ...)`) and by the boolean truth tests `IS [NOT] TRUE`/`FALSE`/`UNKNOWN`. Those forms are unchanged.
+> Note: `IS [NOT]` is also used by the unrelated [ECClass filter](./ECClassFilter.md) predicate (`<classId> IS [NOT] (<class-name>, ...)`) and by the boolean truth tests `IS [NOT] TRUE`/`FALSE`/`UNKNOWN`. Those forms take precedence: a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized `(ClassName)`, keeps its original meaning. Write such a value expression without the outer parentheses (for example `x IS y + 1` rather than `x IS (y + 1)`) when it could be mistaken for a type predicate.
 
 [ECSql Syntax](./index.md)
