@@ -6,10 +6,9 @@
 import { assert, expect } from "chai";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
-import { IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
-import { setupIntegrationLogging } from "./StartupShutdown";
+import "./StartupShutdown"; // starts/shuts down the shared IModelHost before/after all integration tests
 
 // These tests exercise GCS-derived ECEF recomputation, which requires GCS data loaded from cloud
 // workspaces. They run as integration tests because they make network requests to download GCS
@@ -18,15 +17,14 @@ describe("IModelWrite GCS", () => {
   let iTwinId: GuidString;
 
   before(async () => {
-    setupIntegrationLogging();
-    await IModelHost.startup();
+    // The shared IModelHost is owned by StartupShutdown's global hooks; only manage HubMock here so
+    // we don't tear down the host that subsequent integration test files rely on.
     HubMock.startup("IModelWriteGcsTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
 
   after(async () => {
     HubMock.shutdown();
-    await IModelHost.shutdown();
   });
 
   it("pulling a changeset with extents changes should update the extents of the opened imodel", async () => {
