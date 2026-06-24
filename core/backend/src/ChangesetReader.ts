@@ -319,7 +319,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @internal */
   private throwIfAlreadyStepped(): void {
     if (this._changeIndex > 0)
-      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader: filters and strict mode must be configured before the first call to step().");
+      throw new IModelError(IModelStatus.BadRequest, "ChangesetReader: filters and strict mode and batch size must be configured before the first call to step().");
   }
 
   /** Handle errors that occur while auto closing the reader if there is also an error while opening the reader */
@@ -345,7 +345,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    */
   public setBatchSize(batchSize: number): void {
     this.throwIfAlreadyStepped();
-    if (batchSize <= 0)
+    if (!Number.isInteger(batchSize) || batchSize <= 0)
       throw new IModelError(IModelStatus.BadArg, "ChangesetReader: batchSize must be a positive integer.");
     this._setBatchSize = batchSize;
   }
@@ -415,7 +415,6 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Remove the class-name filters
    * @throws if [[step]] has already been called and the reader successfully stepped at least once(i.e. returned true for a step() call) or if the native layer encounters an error.
-   * @throws if the native layer encounters an error.
    * @beta
    */
   public clearClassNameFilters(): void {

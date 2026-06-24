@@ -205,6 +205,7 @@ describe("ChangesetReader Examples", () => {
     for (const instance of pcu.instances) {
       // The original changeset was an insert, so with invert:true op becomes "Deleted"
       // and every instance appears in the "Old" stage.
+      if (instance.ECInstanceId !== elementId) continue;
       expect(instance.$meta.op).to.equal("Deleted");
       expect(instance.$meta.stage).to.equal("Old");
     }

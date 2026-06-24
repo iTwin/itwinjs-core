@@ -1024,10 +1024,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
     clearTableNameFilters(): void;
     close(): void;
     readonly db: AnyDb;
-    deleted?: ChangeInstance;
+    get deleted(): ChangeInstance | undefined;
     disableStrictMode(): void;
     enableStrictMode(): void;
-    inserted?: ChangeInstance;
+    get inserted(): ChangeInstance | undefined;
     get isECTable(): boolean;
     get isIndirectChange(): boolean;
     get op(): SqliteChangeOp;
@@ -1052,6 +1052,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
         txnId: Id64String;
         spillThresholdInBytes?: number;
     }): ChangesetReader;
+    setBatchSize(batchSize: number): void;
     setClassNameFilters(classNames: Set<string>): void;
     setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
     setTableNameFilters(tableNames: Set<string>): void;
