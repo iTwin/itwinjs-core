@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "",
+      "comment": "Added tests and documentation for the new ECSQL `IS` / `IS NOT` operator (null-safe comparison between value expressions).",
       "type": "none"
     }
   ],
