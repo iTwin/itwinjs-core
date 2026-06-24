@@ -5,6 +5,7 @@
   - [Arithmetic operator](./Operators.md#arithmetic-operator)
   - [String operator](./Operators.md#string-operator)
   - [Boolean operator](./Operators.md#boolean-operator)
+  - [`IS` / `IS NOT` operator (null-safe comparison)](./Operators.md#is--is-not-operator-null-safe-comparison)
 - Built-in functions
   - [Scalar SQLite built-in functions](./SQLiteScalarFunctions.md)
   - [ECSQL Built-In functions](./ECSqlFunctions.md)
