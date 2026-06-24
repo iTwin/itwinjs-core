@@ -354,7 +354,7 @@ reader.disableStrictMode();
 |---|---|
 | `propFilter: InstanceKey` | 100 |
 | `propFilter: All` or `BisCoreElement`, `abbreviateBlobs: false` | 5 |
-| `propFilter: All` or `BisCoreElement` (all other cases) | 25 |
+| `propFilter: All` or `BisCoreElement` (all other cases) | 20 |
 
 Call `setBatchSize` before the first [ChangesetReader.step]($backend) call:
 

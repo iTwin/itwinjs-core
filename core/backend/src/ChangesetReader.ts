@@ -68,7 +68,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     if (this._propFilter === PropertyFilter.InstanceKey) return 100;
     else {
       if (this._rowOptions?.abbreviateBlobs === false) return 5;
-      return 25;
+      return 20;
     }
   }
 
@@ -338,7 +338,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Set the number of rows to fetch and cache while stepping.
    * This is an advanced option that can be used to tune performance for large changesets.
    * If the property filter is set to `InstanceKey`, the default is 100.
-   * If property filter is set to `All` or `BisCoreElement`, the default is 25 if [[abbreviateBlobs]] is not set to false, otherwise the default is 5.
+   * If property filter is set to `All` or `BisCoreElement`, the default is 20 if [[abbreviateBlobs]] is not set to false, otherwise the default is 5.
    * @param batchSize Number of rows to fetch and cache while stepping. Must be a positive integer.
    * @throws [[IModelError]] if [[step]] has already been called successfully, or if `batchSize` is not a positive integer.
    * @beta

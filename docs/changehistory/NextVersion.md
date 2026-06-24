@@ -200,7 +200,7 @@ Default batch sizes (unchanged behaviour when `setBatchSize` is not called):
 |---|---|
 | `propFilter: InstanceKey` | 100 |
 | `propFilter: All` or `BisCoreElement`, `abbreviateBlobs: false` | 5 |
-| `propFilter: All` or `BisCoreElement` (other cases) | 25 |
+| `propFilter: All` or `BisCoreElement` (other cases) | 20 |
 
 ```ts
 using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
