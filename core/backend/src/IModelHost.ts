@@ -250,7 +250,7 @@ export interface IModelHostOptions {
    * data when iModels are opened. Setting this to `true` suppresses those requests, which is
    * useful for unit tests and other offline scenarios that don't require GCS data.
    * Defaults to `false`.
-   * @beta
+   * @internal
    */
   disableGcsWorkspaces?: boolean;
 }

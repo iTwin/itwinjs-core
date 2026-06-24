@@ -4517,7 +4517,7 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
-    // @beta
+    // @internal
     disableGcsWorkspaces?: boolean;
     // @beta
     disableRestorePointOnPullMerge?: true;
