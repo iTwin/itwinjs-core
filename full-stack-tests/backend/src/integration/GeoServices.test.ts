@@ -8,9 +8,8 @@ import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
   Helmert2DWithZOffset,
 } from "@itwin/core-common";
-import { getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, IModelNative } from "@itwin/core-backend";
+import { GeoCoordConfig, getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, IModelNative } from "@itwin/core-backend";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
-import { GeoCoordConfig } from "@itwin/core-backend/lib/cjs/GeoCoordConfig";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 // spell-checker: disable
