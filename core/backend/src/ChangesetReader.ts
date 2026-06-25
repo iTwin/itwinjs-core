@@ -39,7 +39,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   private readonly _nativeReader: IModelJsNative.ChangesetReader = new IModelNative.platform.ChangesetReader();
   // Internal options — keep ECClassId as raw Id so the unifier can use it as-is.
   private _rowOptions?: RowFormatOptions;
-  private _setBatchSize?: number;
+  private _batchSizeOverride?: number;
   private _propFilter: PropertyFilter = PropertyFilter.All;
   private _changeIndex = 0;
   /** Rows fetched in the most recent native batch call. */
@@ -64,7 +64,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /** Returns the batch size to use for native step() calls based on the active property filter.
    * @internal */
   private get _batchSize(): number {
-    if (this._setBatchSize !== undefined) return this._setBatchSize;
+    if (this._batchSizeOverride !== undefined) return this._batchSizeOverride;
     if (this._propFilter === PropertyFilter.InstanceKey) return 100;
     if (this._propFilter === PropertyFilter.BisCoreElement) return 20; // because BisCore Element class do not contain any GeomStream property so abbreviateBlobs is not relevant here
     if (this._rowOptions?.abbreviateBlobs === false) return 5;
@@ -98,6 +98,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Post-change (inserted or updated-new) EC instance, computed lazily after each [[step]] call.
    * `undefined` when the current row is a Delete or a non-EC table row or [[step]] returned false.
+   * For UPDATE,inserted instances indicate the new state of the instance after the change has been applied and
+   * deleted instances indicate the old state of the instance before the change has been applied.
+   * For INSERT, inserted instances indicate the new state of the instance after the change has been applied and deleted instances are undefined.
+   * For DELETE, deleted instances indicate the old state of the instance before the change has been applied and inserted instances are undefined.
    * @beta
    */
   public get inserted(): ChangeInstance | undefined {
@@ -352,7 +356,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     this.throwIfAlreadyStepped();
     if (!Number.isInteger(batchSize) || batchSize <= 0)
       throw new IModelError(IModelStatus.BadArg, "ChangesetReader: batchSize must be a positive integer.");
-    this._setBatchSize = batchSize;
+    this._batchSizeOverride = batchSize;
   }
 
   // ---------------------------------------------------------------------------
@@ -478,7 +482,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   // ---------------------------------------------------------------------------
 
   /**
-   * Advance to the next change and populate `inserted` and/or `deleted`.
+   * Advance to the next change.
    * @returns `true` while positioned on a valid change; `false` when the stream is exhausted.
    * @throws if the native layer encounters an error while reading or decoding
    * the next change.
