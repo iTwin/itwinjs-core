@@ -101,7 +101,7 @@ describe("ECDb", () => {
       });
     }
     const runDbListPragmaCCQ = async (ecdb: ECDb) => {
-      const reader = ecdb.createQueryReader("PRAGMA db_list", undefined, new QueryOptionsBuilder().setUsePrimaryConnection(true).getOptions());
+      const reader = ecdb.createQueryReader("PRAGMA db_list");
       const result: { alias: string, filename: string, profile: string }[] = [];
       while (await reader.step()) {
         result.push(reader.current.toRow());

@@ -3432,7 +3432,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(Id64.isValidId64(parentHasChildrenClassId));
 
       // When the ECSql insert validation is set to true, the invalid relClassId is detected and an error is thrown.
-      assert.isTrue(await (ecdb.createQueryReader("PRAGMA validate_ecsql_writes=true", undefined, new QueryOptionsBuilder().setUsePrimaryConnection(true).getOptions())).step());
+      assert.isTrue(await (ecdb.createQueryReader("PRAGMA validate_ecsql_writes=true")).step());
 
       reader = ecdb.createQueryReader("SELECT ECInstanceId FROM meta.ECClassDef WHERE Name='ParentHasChildren'");
       assert.isTrue(await reader.step());
