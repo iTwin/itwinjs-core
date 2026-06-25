@@ -226,6 +226,60 @@ describe("changeElementParent and changeElementModel", () => {
       assert.equal(movedGrandchild.parent?.id, child, "grandchild still parented to child");
     });
 
+    it("invalidates cached descendant props after the subtree move", () => {
+      // Reading descendant props before the move populates the element cache with the source model.
+      // Since the entire subtree is relocated, those cached entries become stale and must be invalidated;
+      // otherwise a subsequent read returns the old model. This regresses the bug where only the moved
+      // root's cache was invalidated.
+      const root = insertElement(modelAId);
+      const child = insertElement(modelAId, { parentId: root });
+      const grandchild = insertElement(modelAId, { parentId: child });
+
+      // Prime the cache while the subtree is still in ModelA.
+      assert.equal(iModelDb.elements.getElementProps(child).model, modelAId, "child starts in ModelA");
+      assert.equal(iModelDb.elements.getElementProps(grandchild).model, modelAId, "grandchild starts in ModelA");
+
+      txn.changeElementModel({ id: root, modelId: modelBId });
+      txn.saveChanges();
+
+      // Reads after the move must reflect the new model, not the stale cached value.
+      assert.equal(iModelDb.elements.getElementProps(root).model, modelBId, "root cache must reflect ModelB");
+      assert.equal(iModelDb.elements.getElementProps(child).model, modelBId, "child cache must be invalidated and reflect ModelB");
+      assert.equal(iModelDb.elements.getElementProps(grandchild).model, modelBId, "grandchild cache must be invalidated and reflect ModelB");
+    });
+
+    it("recursively moves a multi-level subtree with multiple children at each level", () => {
+      // A subtree is more than a single chain: a node can have several children, each with their own
+      // descendants. The recursive move must relocate every node in the tree, not just one branch.
+      //   root
+      //    ├── childA
+      //    │     ├── grandchildA1
+      //    │     └── grandchildA2
+      //    └── childB
+      //          └── grandchildB1
+      const root = insertElement(modelAId);
+      const childA = insertElement(modelAId, { parentId: root });
+      const childB = insertElement(modelAId, { parentId: root });
+      const grandchildA1 = insertElement(modelAId, { parentId: childA });
+      const grandchildA2 = insertElement(modelAId, { parentId: childA });
+      const grandchildB1 = insertElement(modelAId, { parentId: childB });
+
+      txn.changeElementModel({ id: root, modelId: modelBId });
+      txn.saveChanges();
+
+      // Every node in the tree must be relocated to the target model.
+      for (const id of [root, childA, childB, grandchildA1, grandchildA2, grandchildB1])
+        assert.equal(iModelDb.elements.getElementProps(id).model, modelBId, `element ${id} must move to ModelB`);
+
+      // The parent-child hierarchy must be preserved across the move.
+      assert.isUndefined(iModelDb.elements.getElementProps(root).parent, "root stays a root in ModelB");
+      assert.equal(iModelDb.elements.getElementProps(childA).parent?.id, root, "childA still parented to root");
+      assert.equal(iModelDb.elements.getElementProps(childB).parent?.id, root, "childB still parented to root");
+      assert.equal(iModelDb.elements.getElementProps(grandchildA1).parent?.id, childA, "grandchildA1 still parented to childA");
+      assert.equal(iModelDb.elements.getElementProps(grandchildA2).parent?.id, childA, "grandchildA2 still parented to childA");
+      assert.equal(iModelDb.elements.getElementProps(grandchildB1).parent?.id, childB, "grandchildB1 still parented to childB");
+    });
+
     it("blocks an element with a Model-scoped code", () => {
       const elem = insertElement(modelAId, {
         codeSpec: modelScopedCodeSpecId,
@@ -234,6 +288,70 @@ describe("changeElementParent and changeElementModel", () => {
       });
 
       expect(() => txn.changeElementModel({ id: elem, modelId: modelBId })).to.throw();
+    });
+
+    it("blocks the subtree move when a descendant has a Model-scoped code, leaving the whole subtree untouched", () => {
+      // A Model-scoped code cannot survive a model change. Because the entire subtree is validated before
+      // anything moves, a Model-scoped code anywhere in the subtree (here on a grandchild) rejects the whole
+      // operation — and nothing is moved. This exercises the validate-first atomicity of the recursive move.
+      const root = insertElement(modelAId);
+      const child = insertElement(modelAId, { parentId: root });
+      const grandchild = insertElement(modelAId, {
+        parentId: child,
+        codeSpec: modelScopedCodeSpecId,
+        codeScope: modelAId,
+        codeValue: "DescendantModelScoped",
+      });
+
+      expect(() => txn.changeElementModel({ id: root, modelId: modelBId })).to.throw();
+
+      // Atomicity: the rejected move must leave the entire subtree in the source model.
+      assert.equal(iModelDb.elements.getElementProps(root).model, modelAId, "root must stay in ModelA");
+      assert.equal(iModelDb.elements.getElementProps(child).model, modelAId, "child must stay in ModelA");
+      assert.equal(iModelDb.elements.getElementProps(grandchild).model, modelAId, "grandchild must stay in ModelA");
+    });
+
+    it("allows the subtree move when a descendant has a ParentElement-scoped code (its parent moves with it)", () => {
+      // A ParentElement-scoped code is anchored to the element's parent. When the subtree moves, a descendant
+      // keeps its parent (the parent moves too), so the code stays valid and the move is allowed. This is the
+      // descendant counterpart to the blocked root case below, exercising the isRoot distinction in the addon.
+      const root = insertElement(modelAId);
+      const child = insertElement(modelAId, {
+        parentId: root,
+        codeSpec: parentElementCodeSpecId,
+        codeScope: root,
+        codeValue: "DescendantParentScoped",
+      });
+      const grandchild = insertElement(modelAId, {
+        parentId: child,
+        codeSpec: parentElementCodeSpecId,
+        codeScope: child,
+        codeValue: "DeeperParentScoped",
+      });
+
+      txn.changeElementModel({ id: root, modelId: modelBId });
+      txn.saveChanges();
+
+      assert.equal(iModelDb.elements.getElementProps(root).model, modelBId, "root moves to ModelB");
+      const movedChild = iModelDb.elements.getElementProps(child);
+      assert.equal(movedChild.model, modelBId, "child with parent-scoped code moves with the subtree");
+      assert.equal(movedChild.parent?.id, root, "child remains parented to root");
+      const movedGrandchild = iModelDb.elements.getElementProps(grandchild);
+      assert.equal(movedGrandchild.model, modelBId, "grandchild with parent-scoped code moves with the subtree");
+      assert.equal(movedGrandchild.parent?.id, child, "grandchild remains parented to child");
+    });
+
+    it("blocks moving a root element that has a ParentElement-scoped code", () => {
+      // The moved root has no parent to anchor a ParentElement-scoped code, so the move is blocked
+      // (use delete+insert instead). Contrast with the descendant case above, which is allowed.
+      const scopeElem = insertElement(modelAId);
+      const root = insertElement(modelAId, {
+        codeSpec: parentElementCodeSpecId,
+        codeScope: scopeElem,
+        codeValue: "RootParentScoped",
+      });
+
+      expect(() => txn.changeElementModel({ id: root, modelId: modelBId })).to.throw();
     });
 
     it("allows an element with a RelatedElement-scoped code", () => {

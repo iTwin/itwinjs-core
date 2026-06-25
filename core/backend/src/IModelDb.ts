@@ -168,17 +168,19 @@ export interface ChangeElementParentProps {
 
 /** Options for [[EditTxn.changeElementModel]].
  * Changes the model of a root element (one with no parent), making it a root element in the new model.
- * Only the target element is moved — its children remain in their current model.
+ * The element's entire subtree moves with it — BIS requires a parent and all of its children to reside in
+ * the same model, so every descendant is relocated into the target model as well. The hierarchy is preserved.
+ * The whole subtree is validated before anything is moved, so a rejected change leaves the iModel untouched.
  *
  * **Blocked cases** (will throw):
  * - Element has a parent (only root elements can be moved between models; reparent first with [[EditTxn.changeElementParent]]).
- * - Element has a `Model`-scoped code (code uniqueness is tied to source model; use delete+insert instead).
- * - Element has a `ParentElement`-scoped code (use delete+insert instead).
+ * - Any element in the subtree has a `Model`-scoped code (code uniqueness is tied to source model; use delete+insert instead).
+ * - The moved (root) element has a `ParentElement`-scoped code (use delete+insert instead). A descendant's `ParentElement`-scoped code is allowed, because its parent moves with it.
  *
- * **Allowed cases**:
- * - Element has a `Repository`-scoped code (unique across entire iModel — unaffected by model change).
- * - Element has a `RelatedElement`-scoped code (scope element is independent of model).
- * - Element has no meaningful code (empty code).
+ * **Allowed cases** (for any element in the subtree):
+ * - A `Repository`-scoped code (unique across entire iModel — unaffected by model change).
+ * - A `RelatedElement`-scoped code (scope element is independent of model).
+ * - No meaningful code (empty code).
  *
  * @beta
  */

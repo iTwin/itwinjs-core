@@ -335,17 +335,20 @@ export class EditTxn {
   /** Change the model of a root element, making it a root element in the new model.
    *
    * The element must not have a parent; reparent it first with [[changeElementParent]] if needed.
-   * Only the target element is moved — its children remain in their current model.
+   * The element's entire subtree moves with it: BIS requires a parent and all of its children to reside
+   * in the same model, so every descendant of the element is relocated into the target model as well.
+   * The parent-child hierarchy is preserved. The whole subtree is validated before anything is moved, so
+   * a rejected change leaves the iModel untouched.
    *
    * **Blocked cases** (will throw):
    * - Element has a parent (only root elements can be moved between models).
-   * - Element has a `Model`-scoped code (code uniqueness is tied to the source model; use delete+insert instead).
-   * - Element has a `ParentElement`-scoped code (use delete+insert instead).
+   * - Any element in the subtree has a `Model`-scoped code (code uniqueness is tied to the source model; use delete+insert instead).
+   * - The moved (root) element has a `ParentElement`-scoped code (use delete+insert instead). A descendant's `ParentElement`-scoped code is allowed, because its parent moves with it.
    *
-   * **Allowed cases**:
-   * - Element has a `Repository`-scoped code (unique across entire iModel — unaffected by the model change).
-   * - Element has a `RelatedElement`-scoped code (scope element is independent of the model).
-   * - Element has no meaningful code (empty code).
+   * **Allowed cases** (for any element in the subtree):
+   * - A `Repository`-scoped code (unique across entire iModel — unaffected by the model change).
+   * - A `RelatedElement`-scoped code (scope element is independent of the model).
+   * - No meaningful code (empty code).
    *
    * The source and target models must be of the same class (classFullName must match exactly).
    * Channel verification is performed on both the source and target models.
@@ -392,9 +395,27 @@ export class EditTxn {
       throw err;
     }
 
-    // Only the moved element changes model; descendants are not moved, so only its cache is stale.
-    iModel.elements[_cache].delete({ id: props.id });
-    iModel.elements[_instanceKeyCache].deleteById(props.id);
+    // The move relocates the element's entire subtree into the target model (BIS requires a parent and
+    // its children to reside in the same model). Every descendant's cached props therefore hold a stale
+    // `model`, so invalidate the whole subtree rather than just the target element.
+    for (const id of this.collectSubtreeIds(props.id)) {
+      iModel.elements[_cache].delete({ id });
+      iModel.elements[_instanceKeyCache].deleteById(id);
+    }
+  }
+
+  /** Collect an element together with all of its descendants by walking the `ElementOwnsChildElements`
+   * hierarchy depth-first. Used to invalidate the cached props of every element affected by a subtree move.
+   */
+  private collectSubtreeIds(rootId: Id64String): Id64String[] {
+    const ids: Id64String[] = [];
+    const stack: Id64String[] = [rootId];
+    for (let id = stack.pop(); undefined !== id; id = stack.pop()) {
+      ids.push(id);
+      for (const childId of this.iModel.elements.queryChildren(id))
+        stack.push(childId);
+    }
+    return ids;
   }
 
   /**
