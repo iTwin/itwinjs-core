@@ -3639,7 +3639,10 @@ describe("ECSqlStatement", () => {
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT LOWER(S2)"), 3);
       // Function call on the left-hand side.
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE LOWER(S1) IS S2"), 2);
-      // A parenthesized unqualified name is a value expression here, not an IS (ClassName) type predicate.
+      // A parenthesized unqualified name is a value expression here, not an IS (ClassName) type predicate:
+      // `S2` is a property, so `S1 IS (S2)` is the null-safe value comparison `S1 IS S2` and matches the same
+      // 2 rows. The type-predicate form is taken only when the parenthesized name resolves to an ECClass, as in
+      // the `ECClassId IS (ts.Foo)` regression check below.
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS (S2)"), 2);
       // Parameter operand, bound to a value and to NULL (null-safe either way).
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS ?", new QueryBinder().bindString(1, "a")), 3);
