@@ -74,6 +74,7 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
   public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
   public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
   public get isOutlineEdge(): boolean { return PolylineTypeFlags.Outline === this.type; }
+  public override get numDrawVertices(): number { return this.numIndices; }
 
   public get renderOrder(): RenderOrder {
     if (this.isAnyEdge)

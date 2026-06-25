@@ -607,3 +607,29 @@ export class ChangeCameraTool extends Tool {
     return this.run(camera);
   }
 }
+
+/** Sets how many tile levels from the deepest leaf to skip during camera motion.
+ * A value of 0 (default) disables the feature. A value of 1 means don't recurse past
+ * (deepest leaf level - 1), 2 means (deepest leaf level - 2), etc.
+ * @beta
+ */
+export class SetMovingDepthReductionTool extends Tool {
+  public static override toolId = "SetMovingDepthReduction";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  public override async run(value?: number): Promise<boolean> {
+    if (undefined !== value)
+      IModelApp.tileAdmin.movingDepthReduction = value;
+
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    const value = Number.parseInt(args[0], 10);
+    if (Number.isNaN(value) || value < 0)
+      return true;
+
+    return this.run(value);
+  }
+}

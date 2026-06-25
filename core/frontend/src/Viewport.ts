@@ -522,6 +522,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   private _debugBoundingBoxes: TileBoundingBoxes = TileBoundingBoxes.None;
   private _freezeScene = false;
+  private _isViewChanging = false;
+  private _lastViewChangeTime?: BeTimePoint;
+  private static readonly _viewChangingCooldown = BeDuration.fromMilliseconds(250);
   private _viewingSpace!: ViewingSpace;
   private _target?: RenderTarget;
   private _fadeOutActive = false;
@@ -1650,7 +1653,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
     for (const provider of this.tiledGraphicsProviders) {
-      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+      yield* TiledGraphicsProvider.getTileTreeRefs(provider, this);
     }
   }
 
@@ -1679,9 +1682,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.view.getTileTreeRefs();
-    yield * this.mapTileTreeRefs;
-    yield * this.tiledGraphicsProviderRefs();
+    yield* this.view.getTileTreeRefs();
+    yield* this.mapTileTreeRefs;
+    yield* this.tiledGraphicsProviderRefs();
   }
 
   /**
@@ -2030,6 +2033,11 @@ export abstract class Viewport implements Disposable, TileUser {
   private doSetupFromView(view: ViewState) {
     if (this._inViewChangedEvent)
       return ViewStatus.Success; // ignore echos
+
+    if (!this._isViewChanging)
+      console.log("Viewport: idle -> moving");
+    this._isViewChanging = true;
+    this._lastViewChangeTime = BeTimePoint.now();
 
     if (!this.isAspectRatioLocked)
       view.fixAspectRatio(this.viewRect.aspect);
@@ -2519,6 +2527,12 @@ export abstract class Viewport implements Disposable, TileUser {
       this._flashUpdateTime = BeTimePoint.now();
       this._lastFlashedElem = this.flashedId; // flashing has begun; this is now the previous flash
       needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+
+      // When depth reduction is active, skip the fade-in animation and highlight in a single frame.
+      if (IModelApp.tileAdmin.movingDepthReduction > 0 && this.flashedId !== undefined) {
+        this._flashIntensity = this.flashSettings.maxIntensity;
+        needsFlashUpdate = true;
+      }
     }
 
     if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
@@ -2727,7 +2741,17 @@ export abstract class Viewport implements Disposable, TileUser {
       }
     }
 
-    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering)
+    if (this._isViewChanging) {
+      const isMouseDragging = IModelApp.toolAdmin.currentInputState.button.some((b) => b.isDown);
+      if (!isMouseDragging && this._lastViewChangeTime && BeTimePoint.now().milliseconds - this._lastViewChangeTime.milliseconds >= Viewport._viewChangingCooldown.milliseconds) {
+        console.log("Viewport: moving -> idle");
+        this._isViewChanging = false;
+        if (IModelApp.tileAdmin.movingDepthReduction > 0)
+          this.invalidateScene();
+      }
+    }
+
+    if (requestNextAnimation || undefined !== this._animator || this.continuousRendering || this._isViewChanging)
       IModelApp.requestNextAnimation();
   }
 
@@ -2979,6 +3003,21 @@ export abstract class Viewport implements Disposable, TileUser {
     this._tileSizeModifier = modifier;
     this.invalidateScene();
   }
+
+  /** When the camera is moving, reduce the effective tile tree depth by this many levels from the deepest known leaf.
+   * A value of 0 (default) disables the feature. A value of 1 means don't recurse past (deepest leaf - 1), etc.
+   * @deprecated in 5.0. Use IModelApp.tileAdmin.movingDepthReduction instead.
+   * @internal
+   */
+  public get movingDepthReduction(): number { return IModelApp.tileAdmin.movingDepthReduction; }
+  public set movingDepthReduction(value: number) {
+    IModelApp.tileAdmin.movingDepthReduction = value;
+  }
+
+  /** True if the viewport's view is currently changing (e.g., during camera pan/orbit/zoom).
+   * @internal
+   */
+  public get isViewChanging(): boolean { return this._isViewChanging; }
 
   /** The device pixel ratio used by this Viewport. This value is *not* necessarily equal to `window.devicePixelRatio`.
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
