@@ -199,9 +199,9 @@ Default batch sizes (unchanged behaviour when `setBatchSize` is not called):
 | Active configuration | Default |
 |---|---|
 | `propFilter: InstanceKey` | 100 |
-| `abbreviateBlobs: false` (any filter) | 5 |
-| `propFilter: BisCoreElement` (blobs abbreviated) | 20 |
-| `propFilter: All` (blobs abbreviated) | 10 |
+| `propFilter: BisCoreElement` | 20 |
+| `propFilter: All`, `abbreviateBlobs: false` | 5 |
+| `propFilter: All` (blobs abbreviated or unset) | 10 |
 
 The `All` filter default is reduced from 20 to **10** in this release. When `propFilter` is `All`, the reader fetches every EC property across all tables that the instance maps to — row payloads are substantially heavier than `BisCoreElement` (which is limited to base element columns only). The lower default keeps peak memory usage in the same ballpark as `BisCoreElement` when processing the same changeset. Callers that need maximum throughput and can tolerate higher memory usage can restore the previous behavior with `reader.setBatchSize(20)`.
 

@@ -66,8 +66,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
   private get _batchSize(): number {
     if (this._setBatchSize !== undefined) return this._setBatchSize;
     if (this._propFilter === PropertyFilter.InstanceKey) return 100;
+    if (this._propFilter === PropertyFilter.BisCoreElement) return 20; // because BisCore Element class do not contain any GeomStream property so abbreviateBlobs is not relevant here
     if (this._rowOptions?.abbreviateBlobs === false) return 5;
-    if (this._propFilter === PropertyFilter.BisCoreElement) return 20;
     return 10; // PropertyFilter.All
   }
 
@@ -339,10 +339,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * Increasing the batch size improves throughput at the cost of higher peak memory; decreasing it keeps memory consumption lower.
    *
    * Default batch sizes when `setBatchSize` is not called:
-   * - `InstanceKey` filter: **100** — only ECInstanceId + ECClassId per row (~50 B), so a large batch is cheap.
-   * - `abbreviateBlobs: false` (any filter): **5** — full binary blobs can be 10–100+ KB each; small batch bounds peak memory.
-   * - `BisCoreElement` filter (blobs abbreviated): **20** — only BisCore.Element base columns (~500 B–2 KB/row).
-   * - `All` filter (blobs abbreviated): **10** — all mapped tables per instance; row payloads are substantially heavier than `BisCoreElement`, so the batch is halved to keep memory footprint comparable.
+   * - `InstanceKey` filter: **100**.
+   * - `BisCoreElement` filter (any `abbreviateBlobs` setting): **20**.
+   * - `All` filter, `abbreviateBlobs: false`: **5**.
+   * - `All` filter (blobs abbreviated or unset): **10**.
    *
    * @param batchSize Number of rows to fetch and cache while stepping. Must be a positive integer.
    * @throws [[IModelError]] if [[step]] has already been called successfully, or if `batchSize` is not a positive integer.
