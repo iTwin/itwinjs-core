@@ -200,6 +200,32 @@ describe("changeElementParent and changeElementModel", () => {
       expect(() => txn.changeElementModel({ id: child, modelId: modelBId })).to.throw();
     });
 
+    it("moves the whole subtree when changing the model of a root element with children", () => {
+      // A root element (no parent) may itself have children. BIS requires a parent and all of its
+      // children to reside in the same model (see element-fundamentals: "Both the parent and the
+      // children must live in the same Model"). Moving such a root must therefore move its entire
+      // subtree, never leave the children orphaned in the source model.
+      const root = insertElement(modelAId);
+      const child = insertElement(modelAId, { parentId: root });
+      const grandchild = insertElement(modelAId, { parentId: child });
+
+      txn.changeElementModel({ id: root, modelId: modelBId });
+      txn.saveChanges();
+
+      const movedRoot = iModelDb.elements.getElementProps(root);
+      const movedChild = iModelDb.elements.getElementProps(child);
+      const movedGrandchild = iModelDb.elements.getElementProps(grandchild);
+
+      // The root moves to the target model.
+      assert.equal(movedRoot.model, modelBId, "root should move to ModelB");
+      // The descendants must move with it - otherwise the assembly spans two models (BIS-invalid).
+      assert.equal(movedChild.model, modelBId, "child must move with its parent (same-model invariant)");
+      assert.equal(movedGrandchild.model, modelBId, "grandchild must move with the subtree");
+      // The hierarchy itself must be preserved.
+      assert.equal(movedChild.parent?.id, root, "child still parented to root");
+      assert.equal(movedGrandchild.parent?.id, child, "grandchild still parented to child");
+    });
+
     it("blocks an element with a Model-scoped code", () => {
       const elem = insertElement(modelAId, {
         codeSpec: modelScopedCodeSpecId,
