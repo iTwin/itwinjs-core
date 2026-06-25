@@ -19,12 +19,12 @@ import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 // cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan newcommand diagonalization
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
- * * The Float64Array contains the matrix entries in row-major order
- * @internal
+ * * The Float64Array contains the matrix entries in row-major order:
  * ```
  * equation
- * \newcommand[1]\mij{#1_{00}\ #1_{01}\ a_{02}}
+ * \mij{a}
  * ```
+ * @internal
  */
 export class PackedMatrix3dOps {
   /**
