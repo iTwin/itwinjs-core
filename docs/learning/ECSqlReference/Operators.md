@@ -73,7 +73,7 @@ SELECT * FROM [bis].[GeometricElement3d] WHERE [Origin] IS [BBoxLow]
 SELECT * FROM [ts].[Child] WHERE [ParentA] IS NOT [ParentB]
 ```
 
-Both operands must be type-compatible; comparing incompatible types (for example a `string` against a `Point3d`) is rejected when the statement is prepared.
+Both operands must be type-compatible, following the same rules as `=` and `<>`: comparable primitive types (for example two strings, or numeric types compared with each other) or composite types of the same shape (`Point2d` with `Point2d`, a navigation property with a navigation property), with the `NULL` literal allowed against any type. Comparing unrelated types — for example a `string` against a `Point3d` — is rejected when the statement is prepared.
 
 > Note: `IS [NOT]` is also used by the unrelated [ECClass filter](./ECClassFilter.md) predicate (`<classId> IS [NOT] (<class-name>, ...)`) and by the boolean truth tests `IS [NOT] TRUE`/`FALSE`/`UNKNOWN`. Those forms take precedence: a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized `(ClassName)`, keeps its original meaning. Write such a value expression without the outer parentheses (for example `x IS y + 1` rather than `x IS (y + 1)`) when it could be mistaken for a type predicate.
 

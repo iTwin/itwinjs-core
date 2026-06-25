@@ -212,13 +212,13 @@ SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, NullProp FROM aps.Tes
 |                           | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
 | AllProperties:TestElement | NullProp     | false     | 2     | nullProp  | NullProp     | undefined    | string   | String | NullProp           |
 
-| ECInstanceId | ClassName                 |
-| ------------ | ------------------------- |
-| 0x14         | AllProperties:TestElement |
-| 0x16         | AllProperties:TestElement |
-| 0x18         | AllProperties:TestElement |
-| 0x1a         | AllProperties:TestElement |
-| 0x1c         | AllProperties:TestElement |
+| ECInstanceId | ClassName                 | NullProp  |
+| ------------ | ------------------------- | --------- |
+| 0x14         | AllProperties:TestElement | undefined |
+| 0x16         | AllProperties:TestElement | undefined |
+| 0x18         | AllProperties:TestElement | undefined |
+| 0x1a         | AllProperties:TestElement | undefined |
+| 0x1c         | AllProperties:TestElement | undefined |
 
 # IS operator with integer literal
 
