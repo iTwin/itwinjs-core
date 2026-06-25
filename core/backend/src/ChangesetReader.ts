@@ -50,8 +50,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * initial state, after exhaustion, or after close().
    */
   private _cacheIndex = 0;
-  /** The db used for EC schema resolution. */
-  public readonly db: AnyDb;
+  /** Cached result of the `inserted` getter for the current row. `undefined` when not yet computed or not applicable. */
+  private _cachedInserted: ChangeInstance | undefined = undefined;
+  /** Cached result of the `deleted` getter for the current row. `undefined` when not yet computed or not applicable. */
+  private _cachedDeleted: ChangeInstance | undefined = undefined;
 
   /** Returns the active cached row, throwing if no row is current.
    * @internal */
@@ -105,11 +107,12 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public get inserted(): ChangeInstance | undefined {
+    if (this._cachedInserted !== undefined) return this._cachedInserted;
     const row = this._cacheIndex < this._cache.length ? this._cache[this._cacheIndex] : undefined;
-    if (!row || !row.metadata.isECTable || !row.newValues)
+    if (!row || !row.newValues)
       return undefined;
     const op = this.op;
-    return {
+    return (this._cachedInserted = {
       ...row.newValues.data,
       $meta: {
         op,
@@ -122,7 +125,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
         rowOptions: this._rowOptions,
         isIndirectChange: row.metadata.isIndirectChange,
       },
-    };
+    });
   }
 
   /**
@@ -131,11 +134,12 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public get deleted(): ChangeInstance | undefined {
+    if (this._cachedDeleted !== undefined) return this._cachedDeleted;
     const row = this._cacheIndex < this._cache.length ? this._cache[this._cacheIndex] : undefined;
-    if (!row || !row.metadata.isECTable || !row.oldValues)
+    if (!row || !row.oldValues)
       return undefined;
     const op = this.op;
-    return {
+    return (this._cachedDeleted = {
       ...row.oldValues.data,
       $meta: {
         op,
@@ -148,13 +152,11 @@ export class ChangesetReader implements Disposable, ChangeSource {
         rowOptions: this._rowOptions,
         isIndirectChange: row.metadata.isIndirectChange,
       },
-    };
+    });
   }
 
   // Private — callers use static factory methods.
-  private constructor(db: AnyDb) {
-    this.db = db;
-  }
+  private constructor() { }
 
   /** Map public RowFormatOptions to the native adaptor options.
    * @internal */
@@ -181,7 +183,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public static openFile(args: { readonly fileName: string } & ChangesetReaderArgs): ChangesetReader {
-    const reader = new ChangesetReader(args.db);
+    const reader = new ChangesetReader();
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -213,7 +215,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openGroup(args: { readonly changesetFiles: string[], spillThresholdInBytes?: number } & ChangesetReaderArgs): ChangesetReader {
     if (args.changesetFiles.length === 0)
       throw new IModelError(IModelStatus.BadArg, "changesetFiles must contain at least one file.");
-    const reader = new ChangesetReader(args.db);
+    const reader = new ChangesetReader();
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -245,7 +247,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openLocalChanges(
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean, spillThresholdInBytes?: number },
   ): ChangesetReader {
-    const reader = new ChangesetReader(args.db);
+    const reader = new ChangesetReader();
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -274,7 +276,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openInMemoryChanges(
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb, spillThresholdInBytes?: number },
   ): ChangesetReader {
-    const reader = new ChangesetReader(args.db);
+    const reader = new ChangesetReader();
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -305,7 +307,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openTxn(
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String, spillThresholdInBytes?: number },
   ): ChangesetReader {
-    const reader = new ChangesetReader(args.db);
+    const reader = new ChangesetReader();
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -489,6 +491,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public step(): boolean {
+    this._cachedInserted = undefined;
+    this._cachedDeleted = undefined;
     if (this._cacheIndex + 1 < this._cache.length) {
       // Still have rows in cache — advance the pointer
       this._cacheIndex++;
@@ -532,6 +536,8 @@ export class ChangesetReader implements Disposable, ChangeSource {
     this._changeIndex = 0;
     this._cache = [];
     this._cacheIndex = 0;
+    this._cachedInserted = undefined;
+    this._cachedDeleted = undefined;
     this._nativeReader.close();
   }
 
