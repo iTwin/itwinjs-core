@@ -66,10 +66,9 @@ export class ChangesetReader implements Disposable, ChangeSource {
   private get _batchSize(): number {
     if (this._setBatchSize !== undefined) return this._setBatchSize;
     if (this._propFilter === PropertyFilter.InstanceKey) return 100;
-    else {
-      if (this._rowOptions?.abbreviateBlobs === false) return 5;
-      return 20;
-    }
+    if (this._rowOptions?.abbreviateBlobs === false) return 5;
+    if (this._propFilter === PropertyFilter.BisCoreElement) return 20;
+    return 10; // PropertyFilter.All
   }
 
   /**
@@ -337,8 +336,14 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /**
    * Set the number of rows to fetch and cache while stepping.
    * This is an advanced option that can be used to tune performance for large changesets.
-   * If the property filter is set to `InstanceKey`, the default is 100.
-   * If property filter is set to `All` or `BisCoreElement`, the default is 20 if [[abbreviateBlobs]] is not set to false, otherwise the default is 5.
+   * Increasing the batch size improves throughput at the cost of higher peak memory; decreasing it keeps memory consumption lower.
+   *
+   * Default batch sizes when `setBatchSize` is not called:
+   * - `InstanceKey` filter: **100** — only ECInstanceId + ECClassId per row (~50 B), so a large batch is cheap.
+   * - `abbreviateBlobs: false` (any filter): **5** — full binary blobs can be 10–100+ KB each; small batch bounds peak memory.
+   * - `BisCoreElement` filter (blobs abbreviated): **20** — only BisCore.Element base columns (~500 B–2 KB/row).
+   * - `All` filter (blobs abbreviated): **10** — all mapped tables per instance; row payloads are substantially heavier than `BisCoreElement`, so the batch is halved to keep memory footprint comparable.
+   *
    * @param batchSize Number of rows to fetch and cache while stepping. Must be a positive integer.
    * @throws [[IModelError]] if [[step]] has already been called successfully, or if `batchSize` is not a positive integer.
    * @beta

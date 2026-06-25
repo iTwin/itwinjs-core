@@ -350,11 +350,12 @@ reader.disableStrictMode();
 
 [ChangesetReader]($backend) exposes a `setBatchSize(n: number)` method that controls how many change rows are fetched and cached per native call. Increasing the batch size improves throughput when iterating large changesets at the cost of higher peak memory usage; decreasing it keeps memory consumption lower. Like filters and strict mode, `setBatchSize` must be called **before** the first [ChangesetReader.step]($backend) call.
 
-| Active configuration | Default batch size |
-|---|---|
-| `propFilter: InstanceKey` | 100 |
-| `propFilter: All` or `BisCoreElement`, `abbreviateBlobs: false` | 5 |
-| `propFilter: All` or `BisCoreElement` (all other cases) | 20 |
+| Active configuration | Default batch size | Rationale |
+|---|---|---|
+| `propFilter: InstanceKey` | 100 | Only `ECInstanceId` + `ECClassId` per row (~50 B); 100 rows ≈ 5 KB — trivial memory cost |
+| `abbreviateBlobs: false` (any filter) | 5 | Full binary blobs can be 10–100+ KB each; 5 rows bounds peak memory regardless of filter |
+| `propFilter: BisCoreElement` (blobs abbreviated) | 20 | Only `BisCore.Element` base columns (~500 B–2 KB/row); 20 rows ≈ 10–40 KB |
+| `propFilter: All` (blobs abbreviated) | 10 | All mapped tables per instance (multiple tables × many props + structs); row payloads are substantially heavier than `BisCoreElement`, so the batch is halved to keep the memory footprint comparable |
 
 Call `setBatchSize` before the first [ChangesetReader.step]($backend) call:
 
