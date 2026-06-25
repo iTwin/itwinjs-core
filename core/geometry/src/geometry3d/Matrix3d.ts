@@ -20,8 +20,7 @@ import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order:
- * ```
- * equation
+ * ```equation
  * \mij{a}
  * ```
  * @internal
@@ -186,13 +185,11 @@ export enum InverseMatrixState {
  * * A very common use is to hold a rigid body rotation (which has no scaling or skew), but the 3x3 contents can
  * also hold scaling and skewing.
  * * The matrix with 2-dimensional layout (note: a 2d array can be shown by a matrix)
- * ```
- * equation
+ * ```equation
  *      \matrixXY{A}
  * ```
  * is stored as 9 numbers in "row-major" order in a `Float64Array`, viz
- * ```
- * equation
+ * ```equation
  *      \rowMajorMatrixXY{A}
  * ```
  * * If the matrix inverse is known it is stored in the inverseCoffs array.
@@ -216,8 +213,7 @@ export class Matrix3d implements BeJSONFunctions {
   public static numComputeCache = 0;
   /**
    * Matrix contents as a flat array of numbers in row-major order.
-   * ```
-   * equation
+   * ```equation
    * \mxy{B}
    * \mij{B}
    * ```
@@ -226,8 +222,7 @@ export class Matrix3d implements BeJSONFunctions {
   public coffs: Float64Array;
   /**
    * Matrix inverse contents.
-   * ```
-   * equation
+   * ```equation
    * \mxy{A}
    * ```
    * * DO NOT directly modify this array. It will destroy integrity of the cached inverse state.
@@ -412,8 +407,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Returns a Matrix3d populated by numeric values given in row-major order.
    * Sets all entries in the matrix from call parameters appearing in row-major order, i.e.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}a_{xx}\ a_{xy}\ a_{xz}\\ a_{yx}\ a_{yy}\ a_{yz}\\ a_{zx}\ a_{zy}\ a_{zz}\end{bmatrix}
    * ```
    * @param axx Row x, column x(0, 0) entry
@@ -582,8 +576,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * Note that for geometry transformations "all zeros" is not a useful default state.
    * * Hence, almost always use `createIdentity` for graphics transformations.
    * * "All zeros" is appropriate for summing moment data.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}0 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0\end{bmatrix}
    * ```
    */
@@ -597,8 +590,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * All diagonal entries (xx,yy,zz) are one
    * * All others are zero.
    * * This (rather than "all zeros") is the useful state for most graphics transformations.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1\end{bmatrix}
    * ```
    *
@@ -610,8 +602,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix with distinct x,y,z diagonal (scale) entries.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}s_x & 0 & 0 \\ 0 & s_y & 0\\ 0 & 0 & s_z\end{bmatrix}
    * ```
    */
@@ -639,8 +630,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix with uniform scale factor "s":
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}s & 0 & 0 \\ 0 & s & 0\\ 0 & 0 & s\end{bmatrix}
    * ```
    */
@@ -841,8 +831,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix from column vectors.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ U_z & V_z & W_z \end{bmatrix}
    * ```
    */
@@ -857,8 +846,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ u & v & w \end{bmatrix}
    * ```
    */
@@ -1621,8 +1609,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix from row vectors.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}U_x & U_y & U_z \\ V_x & V_y & V_z \\ W_x & W_y & W_z \end{bmatrix}
    * ```
    */
@@ -1643,8 +1630,7 @@ export class Matrix3d implements BeJSONFunctions {
    * mirror of the `vector` across the `plane`. In general, When scale != 0, the result is computed by first
    * projecting the `vector` to the `plane`, then translating that projection along the `direction` (if scale > 0)
    * or in opposite direction (if scale < 0).
-   * ```
-   * equation
+   * ```equation
    * \text{The matrix is } I + (s-1) D D^T
    * \\ \text{with }D\text{ being the normalized direction vector and }s\text{ being the scale.}
    * ```
@@ -1700,8 +1686,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
   * Multiply `matrix * point`, treating the point as a column vector on the right.
-  * ```
-  * equation
+  * ```equation
   * \matrixXY{A}\columnSubXYZ{U}
   * ```
   * @return the point result
@@ -1719,8 +1704,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Multiply `matrix * vector`, treating the vector is a column vector on the right.
-   * ```
-   * equation
+   * ```equation
    * \matrixXY{A}\columnSubXYZ{U}
    * ```
    * @return the vector result
@@ -1805,8 +1789,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
    * Multiply the 4x4 matrix by `[x,y,z,w]`
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz \\ 0 & 0 & 0 & 1\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}
    * ```
    * @param origin translation part (xyz in column 3)
@@ -1831,8 +1814,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
    * Multiply the 4x4 matrix by `[x,y,z,w]`
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz \\ 0 & 0 & 0 & 1\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}
    * ```
    * @param origin translation part (xyz in column 3)
@@ -1857,8 +1839,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Treat the 3x3 matrix and origin as a 3x4 matrix.
    * * Multiply the 3x4 matrix by `[x,y,z,1]`
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ 1\end{bmatrix}
    * ```
    * @param origin translation part (xyz in column 3)
@@ -1881,8 +1862,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply the transpose matrix times a vector.
    * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    * \text{Treating U as a column to the right of transposed matrix\:  return column}&\columnSubXYZ{V}&=&\matrixTransposeSubXY{A}\columnSubXYZ{U} \\
    * \text{Treating U as a row to the left of untransposed matrix\: return row}&\rowSubXYZ{V}&=&\rowSubXYZ{U}\matrixXY{A}
@@ -1978,14 +1958,13 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply the transpose matrix times column using individual numeric inputs.
    * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    * \text{treating the input as a column vector } \columnXYZ{x}{y}{z}\text{ compute  }&\columnSubXYZ{V} &= &A^T \columnXYZ{x}{y}{z} \\
    * \text{or as a row vector } \rowXYZ{x}{y}{z} \text{ compute }&\rowSubXYZ{V} &= &\rowXYZ{x}{y}{z} A \\
    * \phantom{8888}\text{and return V as a Vector3d} & & &
    * \end{matrix}
-   * ````
+   * ```
    * @param result the vector result (optional)
    */
   public multiplyTransposeXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d {
@@ -2180,8 +2159,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Multiply `this` matrix times the transpose of `other` matrix
-   * ```
-   * equation
+   * ```equation
    * \text{for instance matrix }A\text{ and matrix }B\text{ return matrix }C{\text where }\\\matrixXY{C}=\matrixXY{A}\matrixTransposeSubXY{B}
    * ```
    * @return the matrix result: this*otherTranspose
@@ -2199,8 +2177,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Multiply the transpose of `this` matrix times `other` matrix
-   * ```
-   * equation
+   * ```equation
    * \matrixXY{result}=\matrixXY{\text{this}}\matrixTransposeSubXY{\text{other}}
    * ```
    * @return the matrix result: thisTranspose*other
@@ -2219,8 +2196,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply `this` Matrix3d (considered to be a Transform with 0 `origin`) times `other` Transform.
    * * **Note:** If `this = [A   0]` and `other = [B   b]`, then `this * other` is defined as [A*B   Ab] because:
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    * \text{this matrix }\bold{A}\text{ promoted to block Transform} & \blockTransform{A}{0} \\
    * \text{other Transform with `matrix` part }\bold{B}\text{ and origin part }\bold{b} & \blockTransform{B}{b}\\
@@ -2595,8 +2571,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Add scaled values from an outer product of vectors U and V.
    * * The scaled outer product is a matrix with `rank 1` (all columns/rows are linearly dependent).
    * * This is useful in constructing mirrors and directional scales.
-   * ```
-   * equation
+   * ```equation
    * A += s \columnSubXYZ{U}\rowSubXYZ{V}
    * \\ \matrixXY{A} += s \begin{bmatrix}
    * U_x * V_x & U_x * V_y & U_x * V_z \\
