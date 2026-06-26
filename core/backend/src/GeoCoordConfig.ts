@@ -24,6 +24,12 @@ const makeSettingName = (name: string) => `${"itwin/core/gcs"}/${name}`;
 /**
  * Internal class to configure and load the gcs workspaces for an iModel.
  * @internal
+ * @note GCS workspaces are loaded by default (the `disableWorkspaces` setting defaults to `false`). To
+ * suppress loading them from cloud containers and the network requests they issue when iModels are
+ * opened — override the `disableWorkspaces` setting (e.g. via [Settings.addDictionary]($backend)
+ * at [SettingsPriority.application]($backend)), which is useful for unit tests and other offline
+ * scenarios that don't require GCS data. GCS workspaces load lazily on first iModel open, so applying
+ * the override any time after `IModelHost.startup` is sufficient.
  */
 export class GeoCoordConfig {
   /** array of cloud prefetch tasks that may be awaited to permit offline usage */
@@ -31,13 +37,6 @@ export class GeoCoordConfig {
   public static readonly settingName = {
     databases: makeSettingName("databases"),
     defaultDatabases: makeSettingName("default/databases"),
-    /**
-     * Setting that, when `true`, suppresses loading of GCS workspaces from cloud containers and the
-     * network requests they issue when iModels are opened. Override it (e.g. via
-     * [WorkspaceSettings.addDictionary]($backend) at [SettingsPriority.application]($backend)) for
-     * unit tests or other offline scenarios that don't require GCS data. GCS workspaces load lazily
-     * on first iModel open, so applying the override any time after `IModelHost.startup` is sufficient.
-     */
     disableWorkspaces: makeSettingName("disableWorkspaces"),
   };
 
