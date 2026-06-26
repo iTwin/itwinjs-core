@@ -3304,6 +3304,61 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.equal(elemNew!.$meta.isIndirectChange, false);
     }
   });
+
+  it("openGroup: insert in one changeset then delete in another yields no instances for the element (net no-op)", async () => {
+    const adminToken = "super manager token";
+    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
+
+    // Record how many changesets already exist so we can identify the new ones by index
+    let changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    const baseCount = changesets.length;
+
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the insert txn
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // --- Push baseCount+1: insert a brand-new element ---
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    const noOpElementId: Id64String = txn.insertElement({
+      classFullName: "TestDomain:SimpleElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      BinProp: new Uint8Array([0xde, 0xad, 0xbe, 0xef]),
+    } as any);
+    txn.saveChanges("insert no-op element");
+    await rwIModel.pushChanges({ description: "insert no-op element", accessToken: adminToken });
+
+    changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    expect(changesets.length).to.equal(baseCount + 1);
+    const insertCs = changesets[baseCount];
+
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the delete txn
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // --- Push baseCount+2: delete the same element ---
+    await rwIModel.locks.acquireLocks({ exclusive: noOpElementId });
+    txn.deleteElement(noOpElementId);
+    txn.saveChanges("delete no-op element");
+    await rwIModel.pushChanges({ description: "delete no-op element", accessToken: adminToken });
+
+    changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    expect(changesets.length).to.equal(baseCount + 2);
+    const deleteCs = changesets[baseCount + 1];
+
+    // === openGroup: insert + delete streamed together — element never existed net, so no instances ===
+    {
+      using reader = ChangesetReader.openGroup({ db: rwIModel, changesetFiles: [insertCs.pathname, deleteCs.pathname] });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step())
+        pcu.appendFrom(reader);
+      const instances = Array.from(pcu.instances);
+
+      // Insert followed immediately by delete cancels out: the unifier must produce zero instances
+      // for this element because the net effect on the database is nothing changed.
+      const elemInstances = instances.filter((i) => i.ECInstanceId === noOpElementId);
+      expect(elemInstances).to.have.length(0, `expected no-op for element ${noOpElementId} but got ${elemInstances.length} instance(s)`);
+    }
+  });
 });
 
 describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
