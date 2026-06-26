@@ -306,7 +306,7 @@ export function buildGeneratedDefaultPersistenceModule(
 
   for (const entry of entries) {
     const phenomenonName = stripSchemaPrefix(entry.key, source.name);
-    const unitName = stripSchemaPrefix(entry.value as string, source.name);
+    const unitName = stripSchemaPrefix(entry.value, source.name);
     lines.push(`  [Phenomena.${phenomenonName}]: Units.${phenomenonName}.${unitName},`);
   }
 
