@@ -629,7 +629,40 @@ export class BriefcaseManager {
       Logger.logInfo(loggerCategory, `Using semantic rebase (incoming schema change: ${hasIncomingSchemaChange}, local schema txn: ${hasLocalSchemaTxn})`);
     }
 
-    if (!reverse) {
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
+    }
+
+    // Attempt a "fast-forward" merge where we apply the incoming changesets directly on top of the
+    // briefcase without reversing any local changes first. Any conflicts - including in indirect
+    // changes - will cause this process to fail, and a rebase will be required.
+    // TODO: Raise notifyApplyIncomingChangesBegin/End? Maybe not, because no one really needs to worry
+    // about a successful fast-forward merge, right?
+    let rebaseChangesets: ChangesetFileProps[] = [];
+    for (const changeset of changesets) {
+      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting fast-forward application of changeset with id ${stopwatch.description}`);
+      try {
+        // TODO: This is not right. Even with fastForward=true, applySingleChangeset will not fail if there are conflicts
+        // only in indirect changes. We need it to fail on _any_ conflict. This is likely to require imodel-native changes.
+        // It looks like fastForward=true isn't used anywhere, so we can change the meaning of this flag without breaking
+        // anyone. Maybe.
+        await this.applySingleChangeset(db, changeset, true, arg.noUpdateLoop);
+        Logger.logInfo(loggerCategory, `Fast-forwarded changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        // A failure to fast-forward means we need to rebase, starting with the failed changeset.
+        Logger.logInfo(loggerCategory, `Fast-forward failed for changeset with id ${stopwatch.description}, starting rebase`);
+        rebaseChangesets = changesets.slice(changesets.indexOf(changeset));
+        break;
+      }
+    }
+
+    if (changesets.length > 0 && rebaseChangesets.length < changesets.length) {
+      nativeDb.saveChanges("Fast-forward merge.");
+    }
+
+    // If we need to rebase, reverse the local changes first.
+    if (rebaseChangesets.length > 0 && !reverse) {
       if (briefcaseDb) {
         briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
         const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
@@ -644,12 +677,8 @@ export class BriefcaseManager {
       }
     }
 
-    if (isPullMerge) {
-      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
-    }
-
-    // apply incoming changes
-    for (const changeset of changesets) {
+    // Apply the incoming changesets that weren't successfully fast-forwarded. This should now succeed because we reversed all local changes first.
+    for (const changeset of rebaseChangesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       try {
@@ -667,24 +696,26 @@ export class BriefcaseManager {
       briefcaseDb.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
     }
     if (!reverse) {
-      if (briefcaseDb) {
-        if (useSemanticRebase)
-          await briefcaseDb.txns.rebaser.resumeSemantic();
-        else
-          await briefcaseDb.txns.rebaser.resume();
-      } else {
-        // Only Briefcase has change management. Following is
-        // for test related to standalone db with txn enabled.
-        nativeDb.pullMergeRebaseBegin();
-        let txnId = nativeDb.pullMergeRebaseNext();
-        while (txnId) {
-          nativeDb.pullMergeRebaseReinstateTxn();
-          nativeDb.pullMergeRebaseUpdateTxn();
-          txnId = nativeDb.pullMergeRebaseNext();
-        }
-        nativeDb.pullMergeRebaseEnd();
-        if (!nativeDb.isReadonly) {
-          nativeDb.saveChanges("Merge.");
+      if (rebaseChangesets.length > 0) {
+        if (briefcaseDb) {
+          if (useSemanticRebase)
+            await briefcaseDb.txns.rebaser.resumeSemantic();
+          else
+            await briefcaseDb.txns.rebaser.resume();
+        } else {
+          // Only Briefcase has change management. Following is
+          // for test related to standalone db with txn enabled.
+          nativeDb.pullMergeRebaseBegin();
+          let txnId = nativeDb.pullMergeRebaseNext();
+          while (txnId) {
+            nativeDb.pullMergeRebaseReinstateTxn();
+            nativeDb.pullMergeRebaseUpdateTxn();
+            txnId = nativeDb.pullMergeRebaseNext();
+          }
+          nativeDb.pullMergeRebaseEnd();
+          if (!nativeDb.isReadonly) {
+            nativeDb.saveChanges("Merge.");
+          }
         }
       }
 
