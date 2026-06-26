@@ -203,13 +203,20 @@ Default batch sizes (unchanged behaviour when `setBatchSize` is not called):
 | `propFilter: All`, `abbreviateBlobs: false` | 5 |
 | `propFilter: All` (blobs abbreviated or unset) | 10 |
 
-The `All` filter default is reduced from 20 to **10** in this release. When `propFilter` is `All`, the reader fetches every EC property across all tables that the instance maps to — row payloads are substantially heavier than `BisCoreElement` (which is limited to base element columns only). The lower default keeps peak memory usage in the same ballpark as `BisCoreElement` when processing the same changeset. Callers that need maximum throughput and can tolerate higher memory usage can restore the previous behavior with `reader.setBatchSize(20)`.
-
 ```ts
 using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
 reader.setBatchSize(10);
 while (reader.step()) { /* ... */ }
 ```
+
+**Performance improvement with new caching behaviour in ChangesetReader`**:
+
+| Cache type | Inserts | Before (s) | After (s) | Improvement |
+|---|---|---|---|---|
+| InMemoryCache | 1,000 | 0.220 | 0.204 | 7.3% |
+| InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
+| SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
+| SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
 
 ## @itwin/map-layers-formats
 
