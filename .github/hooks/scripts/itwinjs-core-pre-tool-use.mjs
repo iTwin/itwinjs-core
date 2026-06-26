@@ -6,7 +6,8 @@ import { compactJson, getBashCommand, isGitCommitCommand, readHookInput } from "
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const rushLauncherPath = resolve(repoRoot, "common/scripts/install-run-rush.js");
-const targetBranch = "origin/master";
+const fallbackTargetBranch = "origin/master";
+const rushChangeHint = "Run 'rush change' to generate or update a missing change description.";
 
 function runCommand(command, args, timeout = 30_000) {
   return new Promise((resolve, reject) => {
@@ -22,6 +23,15 @@ function runCommand(command, args, timeout = 30_000) {
 
 function runRushChangeVerify() {
   return runCommand(process.execPath, [rushLauncherPath, "change", "--verify"]);
+}
+
+async function resolveTargetBranch() {
+  try {
+    const remoteHead = await runCommand("git", ["symbolic-ref", "refs/remotes/origin/HEAD"]);
+    return remoteHead.replace(/^refs\/remotes\//, "");
+  } catch {
+    return fallbackTargetBranch;
+  }
 }
 
 async function loadPublishedProjects() {
@@ -56,7 +66,15 @@ function collectPackageNamesFromChangeFile(changeFile) {
 }
 
 async function getStagedChangeDescriptionCoverage() {
-  const baseCommit = await runCommand("git", ["merge-base", "HEAD", targetBranch]);
+  const targetBranch = await resolveTargetBranch();
+  let baseCommit;
+  try {
+    baseCommit = await runCommand("git", ["merge-base", "HEAD", targetBranch]);
+  } catch (error) {
+    throw new Error(
+      `${error instanceof Error ? error.message.trim() : String(error)}\nHint: ensure '${targetBranch}' is fetched locally — try: git fetch origin`,
+    );
+  }
   const stagedTree = await runCommand("git", ["write-tree"]);
   const changedPathsOutput = await runCommand("git", ["diff", "--name-only", baseCommit, stagedTree]);
   const changedPaths = changedPathsOutput ? changedPathsOutput.split("\n").filter(Boolean) : [];
@@ -126,7 +144,7 @@ try {
         permissionDecision: "deny",
         permissionDecisionReason: `rush change --verify failed before git commit: ${
           error instanceof Error ? error.message.trim() : String(error)
-        }\nStaged-tree fallback check: ${stagedCoverage.reason}`,
+        }\nStaged-tree fallback check: ${stagedCoverage.reason}\n${rushChangeHint}`,
       }),
     );
   } catch (fallbackError) {
@@ -135,7 +153,7 @@ try {
         permissionDecision: "deny",
         permissionDecisionReason: `rush change --verify failed before git commit: ${
           error instanceof Error ? error.message.trim() : String(error)
-        }\nStaged-tree fallback check also failed: ${fallbackError instanceof Error ? fallbackError.message.trim() : String(fallbackError)}`,
+        }\nStaged-tree fallback check also failed: ${fallbackError instanceof Error ? fallbackError.message.trim() : String(fallbackError)}\n${rushChangeHint}`,
       }),
     );
   }

@@ -246,13 +246,17 @@ export function buildDefaultPersistenceUnitEntries(
   return entries;
 }
 
-function formatGeneratedNumber(value: number): string {
+export function formatGeneratedNumber(value: number): string {
   if (!Number.isFinite(value))
     return String(value);
 
-  // Canonicalize just below the IEEE-754 double precision floor so last-bit Node/V8 drift
-  // collapses to stable emitted text without layering on a second rounding heuristic.
+  // Round to 15 significant decimal digits (IEEE-754 doubles carry about 15.95).
+  // This collapses last-bit Node/V8 runtime drift into stable emitted text without
+  // introducing engineering-significant precision loss for generated conversion data.
   const canonicalized = Number.parseFloat(value.toPrecision(15));
+  if (!Number.isFinite(canonicalized))
+    return String(value);
+
   return String(canonicalized);
 }
 
