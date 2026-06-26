@@ -37,9 +37,9 @@ export abstract class DisplayStyle extends DefinitionElement {
     const displayOptions = props.options?.element?.displayStyle;
     // Uncompress excludedElements if they are compressed
     if (!displayOptions?.compressExcludedElementIds) {
-      const excludedElements = elProps.jsonProperties?.styles?.excludedElements;
-      if (CompressedId64Set.isValid(excludedElements)) {
-        elProps.jsonProperties!.styles!.excludedElements = CompressedId64Set.decompressArray(excludedElements);
+      const styles = elProps.jsonProperties?.styles;
+      if (styles && CompressedId64Set.isValid(styles.excludedElements)) {
+        styles.excludedElements = CompressedId64Set.decompressArray(styles.excludedElements);
       }
     }
     // Omit Schedule Script Element Ids if the option is set
