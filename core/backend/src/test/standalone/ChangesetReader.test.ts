@@ -5340,7 +5340,7 @@ describe("ChangesetReader: lazy inserted/deleted getters", () => {
     assert.isUndefined(reader.deleted);
   });
 
-  it("inserted returns a fresh object on each access", () => {
+  it("inserted returns a fresh object on first access, cached object on subsequent access", () => {
     using reader = ChangesetReader.openTxn({ db: iModel, txnId });
     // Find an Inserted row
     let found = false;
@@ -5348,8 +5348,7 @@ describe("ChangesetReader: lazy inserted/deleted getters", () => {
       if (reader.inserted) {
         const first = reader.inserted;
         const second = reader.inserted;
-        // Each access should produce a distinct object (lazy computation, no caching)
-        assert.notStrictEqual(first, second);
+        assert.strictEqual(first, second);
         assert.deepEqual(first, second);
         found = true;
         break;
