@@ -38,12 +38,8 @@ export abstract class DisplayStyle extends DefinitionElement {
     // Uncompress excludedElements if they are compressed
     if (!displayOptions?.compressExcludedElementIds && elProps.jsonProperties?.styles?.excludedElements) {
       const excludedElements = elProps.jsonProperties.styles.excludedElements;
-      if (typeof excludedElements === "string" && excludedElements.startsWith("+")) {
-        const ids: string[] = [];
-        CompressedId64Set.decompressSet(excludedElements).forEach((id: string) => {
-          ids.push(id);
-        });
-        elProps.jsonProperties.styles.excludedElements = ids;
+      if (CompressedId64Set.isValid(excludedElements)) {
+        elProps.jsonProperties.styles.excludedElements = CompressedId64Set.decompressArray(excludedElements);
       }
     }
     // Omit Schedule Script Element Ids if the option is set

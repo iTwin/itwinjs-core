@@ -631,6 +631,25 @@ describe("CompressedId64Set", () => {
     expect(CompressedId64Set.compressArray(["0"])).to.equal("");
     expect(CompressedId64Set.compressArray(["garbage", "0", "0x1", "0x4", "0", "0x5abc", "0x5xyz", "zzzzzzzz"])).to.equal("+1+3+5AB8");
   });
+
+  it("isValid", () => {
+    // valid: empty string = empty set
+    expect(CompressedId64Set.isValid("")).to.be.true;
+    // valid: non-empty compressed strings start with "+"
+    expect(CompressedId64Set.isValid("+1")).to.be.true;
+    expect(CompressedId64Set.isValid("+1*3")).to.be.true;
+    expect(CompressedId64Set.isValid("+1+3+5AB8")).to.be.true;
+
+    // invalid: Id64String
+    expect(CompressedId64Set.isValid("0x1")).to.be.false;
+    // invalid: arbitrary string
+    expect(CompressedId64Set.isValid("hello")).to.be.false;
+    // invalid: non-string types
+    expect(CompressedId64Set.isValid(undefined)).to.be.false;
+    expect(CompressedId64Set.isValid(null)).to.be.false;
+    expect(CompressedId64Set.isValid(42)).to.be.false;
+    expect(CompressedId64Set.isValid(new Set())).to.be.false;
+  });
 });
 
 describe("MutableCompressedId64Set", () => {

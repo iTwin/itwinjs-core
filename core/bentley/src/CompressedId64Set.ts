@@ -24,6 +24,16 @@ export type CompressedId64Set = string;
  * @public
  */
 export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Returns `true` if `ids` is a valid [[CompressedId64Set]] — either an empty string
+   * (representing an empty set) or a non-empty string beginning with `'+'`.
+   * Useful as a type guard to distinguish a compressed set from an [[Id64String]] or other
+   * value when the type of a string is not known statically.
+   * @see [[CompressedId64Set.iterable]] to iterate the Ids represented by a compressed string.
+   */
+  export function isValid(ids: unknown): ids is CompressedId64Set {
+    return typeof ids === "string" && (ids.length === 0 || ids[0] === "+");
+  }
+
   function isHexDigit(ch: number): boolean {
     // ascii values:
     // '0' = 48
