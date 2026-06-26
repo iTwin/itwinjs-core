@@ -15,6 +15,22 @@ A primary `Element` instance will have a relationship (e.g. `PhysicalElementIsOf
 
 If the primary `Element` instance has an ECProperty with the same name as one in its `TypeDefinition`, the instance-specific value overrides the type-specific value. This is similar to [how IFC works with Property Sets applied to an instance or to the type](https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD2_TC1/HTML/schema/templates/property-sets-with-override.htm).
 
+## Choosing between a Type, an ElementAspect, and an element-level override
+
+These three tools solve different modeling problems:
+
+Option | Use it when
+--- | ---
+`TypeDefinitionElement` | Many Elements are expected to share the same set of values, often like reusable catalog or family data.
+[`ElementAspect`](./elementaspect-fundamentals.md) | The data belongs to exactly one Element, is not meant to be shared as a reusable type, and is often optional or context-specific.
+Element-level override | Most instances should inherit the shared type value, but one specific Element needs a different value for a property that already exists on both the Element and its type.
+
+Rule of thumb:
+
+- If you want **reuse across many Elements**, start with a type.
+- If you want **extra information attached to one Element**, start with an aspect.
+- If you already have a type and just need **an exception for one instance**, use an override instead of creating a brand-new type for that one case.
+
 For example, let's say that we are modeling a double-hung window using ECEntityClass `DoubleHungWindow`. Most double-hung windows are ordered from a catalog, and the only permutations of height and width of window that you can get are those that are listed in the catalog. The author of the DoubleHungWindow ECEntityClass with also define a subclass of `TypeDefinition` (or its subclass `PhysicalType`) `DoubleHungWindowType` that has ECProperties for all properties of double-hung windows that vary per-type (per catalog-entry) rather than per instance, e.g. `Height`, `Width` and `IsInsulated`. For many products, not much other than the spatial placement of the entity will vary per instance. For our double-hung window, there might be 4 types, where each has a `CodeValue` that is its product-model-number: 2x4I, 2x3I, 2x4U, 2x3U. In a GUI, the list of `TypeDefinitionElement` instances that are applicable to a given primary `Element` ECEntityClass can be used to populate a drop-down list of available "types" for the given ECEntityClass. The list of available types can be narrowed-down by defining specializations of the `PhysicalElementIsOfType` relationship.
 
 The following diagram shows both the class hierarchy for a `PhysicalElement` modeling a centrifugal pump along with an associated `PhysicalType` and a specialized relationship to relate them. See [Class-diagram Conventions](../references/class-diagram-conventions.md) for details about the conventions used.
