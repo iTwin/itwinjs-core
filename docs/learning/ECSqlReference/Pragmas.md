@@ -261,7 +261,7 @@ The caller must pass a **dependency-closed** id set - every schema referenced by
 
 The result row has the same columns as [`schema_view`](#pragma-schema_view): `format`, `formatVersion`, `data`, `schemaToken`.
 
-The pragma is read-only. It fails (returning no blob, not a partial one) on an empty list, a non-integer or non-existent schema id, a duplicate id, or a malformed or unsupported `v<N>;` prefix.
+The pragma is read-only. It fails (returning no blob, not a partial one) on an empty list, a non-integer or non-existent schema id, or a malformed or unsupported `v<N>;` prefix.
 
 ### Why the format version is embedded in the argument string
 

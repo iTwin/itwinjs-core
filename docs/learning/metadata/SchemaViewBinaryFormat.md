@@ -295,7 +295,7 @@ No encoding change is needed because the format already addresses every cross-sc
 ### Producing a fragment
 
 - `PRAGMA schema_view(N)` emits a whole-schema blob: every non-excluded schema in the iModel.
-- `PRAGMA schema_view_fragment('id,id,...')` emits a fragment containing exactly the schemas whose `ec_Schema.Id` appears in the comma-delimited list. The caller passes a dependency-closed set of schema ids (computed from the schema reference graph - `meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`, outside the blob). Unknown, duplicate, or unparseable ids fail the pragma rather than emit a partial blob. The format version is an optional `v<N>;` prefix on the same string (e.g. `'v1;131,145,150'`); omitted means the latest version. See [PRAGMA schema_view_fragment](../ECSqlReference/Pragmas.md#pragma-schema_view_fragment) for the argument grammar and why the version is carried inside the string.
+- `PRAGMA schema_view_fragment('id,id,...')` emits a fragment containing exactly the schemas whose `ec_Schema.Id` appears in the comma-delimited list. The caller passes a dependency-closed set of schema ids (computed from the schema reference graph - `meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`, outside the blob). Unknown or unparseable ids fail the pragma rather than emit a partial blob. The format version is an optional `v<N>;` prefix on the same string (e.g. `'v1;131,145,150'`); omitted means the latest version. See [PRAGMA schema_view_fragment](../ECSqlReference/Pragmas.md#pragma-schema_view_fragment) for the argument grammar and why the version is carried inside the string.
 
 Both pragmas produce identical byte layout; a fragment that happens to contain every schema is byte-for-byte the same as the whole-schema blob.
 
