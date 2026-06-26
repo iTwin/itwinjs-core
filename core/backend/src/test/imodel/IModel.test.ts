@@ -81,7 +81,7 @@ describe("iModel", () => {
     // GCS data loaded from cloud workspaces, so restart the backend with GCS workspaces enabled
     // (the test harness disables them by default to avoid network calls).
     await TestUtils.shutdownBackend();
-    await TestUtils.startBackend({ disableGcsWorkspaces: false });
+    await TestUtils.startBackend({ loadGcsWorkspaces: true });
 
     IModelTestUtils.registerTestBimSchema();
     imodel1 = await generateTestSnapshot("test.bim", "test.bim");

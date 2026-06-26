@@ -11,7 +11,6 @@ import { EditTxn } from "../EditTxn";
 import { IModelJsFs } from "../IModelJsFs";
 import { SnapshotDb, StandaloneDb } from "../IModelDb";
 import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
-import { GeoCoordConfig } from "../GeoCoordConfig";
 import { Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { AzureServerStorage } from "@itwin/object-storage-azure";
@@ -50,18 +49,6 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
     expect(EditTxn.implicitWriteEnforcement).to.equal("allow");
-  });
-
-  it("should not disable GCS workspaces by default", async () => {
-    await IModelHost.startup(opts);
-    expect(IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false)).to.be.false;
-  });
-
-  it("should disable GCS workspaces when configured", async () => {
-    await IModelHost.startup({ ...opts, disableGcsWorkspaces: true });
-    // The startup option flips the underlying app-workspace setting that short-circuits GCS
-    // workspace loading (and the network requests it issues) in GeoCoordConfig.
-    expect(IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false)).to.be.true;
   });
 
   it("should allow configuring explicit transaction behavior", async () => {

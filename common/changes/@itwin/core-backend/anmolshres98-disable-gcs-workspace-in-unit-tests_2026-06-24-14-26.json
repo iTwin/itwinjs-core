@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Added internal IModelHostOptions.disableGcsWorkspaces option to suppress loading of Geographic Coordinate System (GCS) workspaces from cloud containers, and the network requests they issue, when iModels are opened. Used by the backend test harness to keep unit tests offline.",
+      "comment": "Backend unit tests no longer load Geographic Coordinate System (GCS) workspaces from cloud containers (and the network requests they issue) when opening iModels. The test harness disables GCS workspace loading by overriding the existing GeoCoordConfig setting; tests that require GCS data opt back in.",
       "type": "none",
       "packageName": "@itwin/core-backend"
     }

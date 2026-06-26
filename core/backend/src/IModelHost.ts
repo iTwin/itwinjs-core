@@ -46,11 +46,6 @@ import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
-/** The name of the in-memory settings dictionary used to disable GCS workspace loading when
- * [[IModelHostOptions.disableGcsWorkspaces]] is set.
- */
-const gcsDisableWorkspacesDictionaryName = "itwin/core/gcs/disableWorkspaces/override";
-
 // cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
 /** @internal */
@@ -243,16 +238,6 @@ export interface IModelHostOptions {
    * @beta
    */
   implicitWriteEnforcement?: ImplicitWriteEnforcement;
-
-  /**
-   * If `true`, disables loading of Geographic Coordinate System (GCS) workspaces from cloud
-   * containers. Loading these workspaces issues network requests to resolve coordinate system
-   * data when iModels are opened. Setting this to `true` suppresses those requests, which is
-   * useful for unit tests and other offline scenarios that don't require GCS data.
-   * Defaults to `false`.
-   * @internal
-   */
-  disableGcsWorkspaces?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -629,15 +614,6 @@ export class IModelHost {
     }
 
     this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
-
-    if (configuration.disableGcsWorkspaces) {
-      // Suppress loading of GCS workspaces (and the network requests they issue) by setting the
-      // existing override at application priority, above the default databases dictionary.
-      this.appWorkspace.settings.addDictionary(
-        { name: gcsDisableWorkspacesDictionaryName, priority: SettingsPriority.application },
-        { [GeoCoordConfig.settingName.disableWorkspaces]: true },
-      );
-    }
 
     GeoCoordConfig.onStartup();
     // allow applications to load their default settings

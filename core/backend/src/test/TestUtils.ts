@@ -9,6 +9,8 @@ import { BentleyLoggerCategory, Logger, LogLevel, ProcessDetector } from "@itwin
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostOptions } from "../IModelHost";
 import { IModelNative } from "../internal/NativePlatform";
+import { GeoCoordConfig } from "../GeoCoordConfig";
+import { SettingsPriority } from "../workspace/Settings";
 
 /** Class for simple test timing */
 export class Timer {
@@ -66,20 +68,40 @@ export class TestUtils {
     return fallback ?? path.join(__dirname, ".cache"); // Set the cache dir to be under the lib directory.
   }
 
-  /** Handles the startup of IModelHost.
+  /** Handles the startup of IModelHost for unit tests.
    * The provided config is used and will override any of the default values used in this method.
    *
    * The default includes:
    * - cacheDir = path.join(__dirname, ".cache")
    * - allowSharedChannel = false;
+   *
+   * GCS (Geographic Coordinate System) workspace loading is disabled by default, since unit tests
+   * should not make network requests. Pass `loadGcsWorkspaces: true` for the rare test that genuinely
+   * needs GCS data (which then belongs in the integration suite). This flag is test-only and is not
+   * forwarded to `IModelHost.startup`.
    */
-  public static async startBackend(config?: IModelHostOptions): Promise<void> {
-    const cfg = config ?? {};
+  public static async startBackend(config?: IModelHostOptions & { loadGcsWorkspaces?: boolean }): Promise<void> {
+    const { loadGcsWorkspaces, ...cfg } = config ?? {};
     cfg.cacheDir = TestUtils.getCacheDir(cfg.cacheDir);
     cfg.allowSharedChannel ??= false; // Override default to test shared channel enforcement. Remove in version 5.0.
     cfg.implicitWriteEnforcement ??= "throw";
-    cfg.disableGcsWorkspaces ??= true; // Unit tests should not make GCS network requests. Opt in explicitly when GCS data is required.
     await IModelHost.startup(cfg);
+    if (!loadGcsWorkspaces)
+      TestUtils.disableGcsWorkspaces();
+  }
+
+  /**
+   * Suppress loading of Geographic Coordinate System (GCS) workspaces from cloud containers (and the
+   * network requests they issue when iModels are opened) by overriding the existing GeoCoordConfig
+   * setting. Unit tests should not make network calls; tests that genuinely require GCS data belong
+   * in the integration suite. GCS workspaces load lazily on first iModel open, so overriding the
+   * setting any time after `IModelHost.startup` is sufficient.
+   */
+  public static disableGcsWorkspaces(): void {
+    IModelHost.appWorkspace.settings.addDictionary(
+      { name: "test-gcs-disable-override", priority: SettingsPriority.application },
+      { [GeoCoordConfig.settingName.disableWorkspaces]: true },
+    );
   }
 
   public static async shutdownBackend(): Promise<void> {

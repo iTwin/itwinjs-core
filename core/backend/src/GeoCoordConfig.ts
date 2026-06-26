@@ -31,6 +31,13 @@ export class GeoCoordConfig {
   public static readonly settingName = {
     databases: makeSettingName("databases"),
     defaultDatabases: makeSettingName("default/databases"),
+    /**
+     * Setting that, when `true`, suppresses loading of GCS workspaces from cloud containers and the
+     * network requests they issue when iModels are opened. Override it (e.g. via
+     * [WorkspaceSettings.addDictionary]($backend) at [SettingsPriority.application]($backend)) for
+     * unit tests or other offline scenarios that don't require GCS data. GCS workspaces load lazily
+     * on first iModel open, so applying the override any time after `IModelHost.startup` is sufficient.
+     */
     disableWorkspaces: makeSettingName("disableWorkspaces"),
   };
 
