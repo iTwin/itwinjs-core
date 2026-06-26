@@ -649,6 +649,12 @@ describe("CompressedId64Set", () => {
     expect(CompressedId64Set.isValid(null)).to.be.false;
     expect(CompressedId64Set.isValid(42)).to.be.false;
     expect(CompressedId64Set.isValid(new Set())).to.be.false;
+
+    // prefix check only — passes isValid but throws during iteration
+    expect(CompressedId64Set.isValid("+0")).to.be.true;
+    expect(CompressedId64Set.isValid("+garbage")).to.be.true;
+    expect(() => [...CompressedId64Set.iterable("+0")]).to.throw();
+    expect(() => [...CompressedId64Set.iterable("+garbage")]).to.throw();
   });
 });
 

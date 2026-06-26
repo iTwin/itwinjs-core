@@ -28,6 +28,9 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
    * (representing an empty set) or a non-empty string beginning with `'+'`.
    * Useful as a type guard to distinguish a compressed set from an [[Id64String]] or other
    * value when the type of a string is not known statically.
+   * @note This is a syntactic prefix check only — it does not validate the encoded content
+   * after `'+'`. A value may pass this guard and still throw during [[CompressedId64Set.iterator]]
+   * (e.g. `'+0'` or `'+garbage'`).
    * @see [[CompressedId64Set.iterable]] to iterate the Ids represented by a compressed string.
    */
   export function isValid(ids: unknown): ids is CompressedId64Set {
