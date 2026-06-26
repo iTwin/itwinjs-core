@@ -28,11 +28,11 @@ publish: false
 [CompressedId64Set.isValid]($bentley) is a new type guard that returns `true` if a value is a valid `CompressedId64Set` — either an empty string (representing an empty set) or a non-empty string beginning with `"+"`. This lets callers safely distinguish a compressed Id set from a plain [Id64String]($bentley) or any other value without duplicating the internal format heuristic:
 
 ```typescript
-function processIds(ids: CompressedId64Set | Id64String): void {
+function processIds(ids: unknown): void {
   if (CompressedId64Set.isValid(ids)) {
     for (const id of CompressedId64Set.iterable(ids))
       doSomething(id);
-  } else {
+  } else if (typeof ids === "string" && Id64.isValidId64(ids)) {
     doSomething(ids);
   }
 }
