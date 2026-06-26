@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Use `CompressedId64Set.isValid` in `DisplayStyle.deserialize` instead of an inline heuristic.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
