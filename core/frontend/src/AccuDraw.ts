@@ -3132,6 +3132,15 @@ export class AccuDraw {
   }
 
   /** @internal */
+  public requestInputFocus(): void {
+    if (!this.isEnabled)
+      return;
+
+    this.grabInputFocus();
+    this.refreshDecorationsAndDynamics();
+  }
+
+  /** @internal */
   public upgradeToActiveState(): boolean {
     if (!this.isEnabled)
       return false;
