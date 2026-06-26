@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "Replaced an invalid inline KaTeX \\newcommand in a doc comment with a correct illustrative equation, defined the \\mxy and \\mij matrix macros centrally, and migrated the geometry doc-comment equation blocks to the standard fenced syntax (```equation) so they render correctly on the docs site.",
+      "comment": "",
       "type": "none"
     }
   ],
