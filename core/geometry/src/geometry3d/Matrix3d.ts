@@ -16,7 +16,7 @@ import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
 /* eslint-disable @itwin/prefer-get */
-// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan newcommand diagonalization
+// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan diagonalization
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order:
