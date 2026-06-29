@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { SERIALIZED_UNIT_SCHEMA_VERSION } from "../src/SerializedUnitSchema";
@@ -21,12 +21,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 const schemaPath = require.resolve("@bentley/units-schema/Units.ecschema.json");
-const schema = JSON.parse(readFileSync(schemaPath, "utf8")) as SourceSchemaLike & { version: string };
-
-const unitsJsonPath = join(__dirname, "../src/assets/Units.json");
-const generatedTsPath = join(__dirname, "../src/generated/Units.generated.ts");
-const basicConversionTsPath = join(__dirname, "../src/internal/BasicUnitConversions.generated.ts");
-const defaultPersistenceTsPath = join(__dirname, "../src/internal/DefaultPersistenceUnits.generated.ts");
+const generatedArtifactRelativePaths = {
+  unitsJson: "src/assets/Units.json",
+  generatedTs: "src/generated/Units.generated.ts",
+  basicConversionTs: "src/internal/BasicUnitConversions.generated.ts",
+  defaultPersistenceTs: "src/internal/DefaultPersistenceUnits.generated.ts",
+} as const;
 
 const assertUniqueGeneratedKeys: AssertUniqueGeneratedKeys = (entries, schemaItemType) => {
   const seen = new Set<string>();
@@ -51,28 +51,62 @@ function writeIfChanged(filePath: string, content: string): boolean {
   return true;
 }
 
-function main(): void {
+function loadSourceSchema(): SourceSchemaLike & { version: string } {
+  return JSON.parse(readFileSync(schemaPath, "utf8")) as SourceSchemaLike & { version: string };
+}
+
+function buildGeneratedArtifactContents(schema: SourceSchemaLike & { version: string }) {
+  const unitsJson = buildSerializedUnitsJson(schema, SERIALIZED_UNIT_SCHEMA_VERSION);
+  return {
+    unitsJson: `${JSON.stringify(unitsJson, null, 2)}\n`,
+    generatedTs: buildGeneratedUnitsModule(schema),
+    basicConversionTs: buildGeneratedBasicConversionModule(schema, assertUniqueGeneratedKeys),
+    defaultPersistenceTs: buildGeneratedDefaultPersistenceModule(schema, assertUniqueGeneratedKeys),
+  };
+}
+
+function generateUnitsArtifacts(destinationRoot = join(__dirname, "..")): {
+  readonly anyChanged: boolean;
+  readonly destinationRoot: string;
+  readonly schemaVersion: string;
+} {
+  const schema = loadSourceSchema();
+  const resolvedDestinationRoot = resolve(destinationRoot);
+  const contents = buildGeneratedArtifactContents(schema);
+  let anyChanged = false;
+  for (const [artifactName, relativePath] of Object.entries(generatedArtifactRelativePaths)) {
+    if (writeIfChanged(join(resolvedDestinationRoot, relativePath), contents[artifactName as keyof typeof contents]))
+      anyChanged = true;
+  }
+
+  return {
+    anyChanged,
+    destinationRoot: resolvedDestinationRoot,
+    schemaVersion: schema.version,
+  };
+}
+
+function main(args: string[]): void {
   // Build every artifact in memory before writing any file so generator bugs fail before we
   // mutate the checked-in outputs. Each file is then updated independently only when its
   // content actually changed, which avoids churn while still letting partial artifact updates
   // land when a change is scoped to one generated output.
-  const unitsJson = buildSerializedUnitsJson(schema, SERIALIZED_UNIT_SCHEMA_VERSION);
-  const unitsJsonContent = `${JSON.stringify(unitsJson, null, 2)}\n`;
-  const generatedTsContent = buildGeneratedUnitsModule(schema);
-  const basicConversionTsContent = buildGeneratedBasicConversionModule(schema, assertUniqueGeneratedKeys);
-  const defaultPersistenceTsContent = buildGeneratedDefaultPersistenceModule(schema, assertUniqueGeneratedKeys);
+  const requestedDestinationRoot = args[0];
+  const destinationRoot = requestedDestinationRoot ? resolve(requestedDestinationRoot) : join(__dirname, "..");
+  const { anyChanged, destinationRoot: resolvedDestinationRoot, schemaVersion } = generateUnitsArtifacts(destinationRoot);
 
-  const jsonChanged = writeIfChanged(unitsJsonPath, unitsJsonContent);
-  const tsChanged = writeIfChanged(generatedTsPath, generatedTsContent);
-  const basicTsChanged = writeIfChanged(basicConversionTsPath, basicConversionTsContent);
-  const defaultPersistenceTsChanged = writeIfChanged(defaultPersistenceTsPath, defaultPersistenceTsContent);
-
-  if (!jsonChanged && !tsChanged && !basicTsChanged && !defaultPersistenceTsChanged) {
-    console.log(`Units artifacts up to date (schema ${schema.version})`);
+  if (!anyChanged) {
+    console.log(`Units artifacts up to date (schema ${schemaVersion})`);
     return;
   }
 
-  console.log(`Generated Units artifacts from @bentley/units-schema ${schema.version}`);
+  if (!requestedDestinationRoot) {
+    console.log(`Generated Units artifacts from @bentley/units-schema ${schemaVersion}`);
+    return;
+  }
+
+  console.log(`Generated Units artifacts from @bentley/units-schema ${schemaVersion} into ${resolvedDestinationRoot}`);
 }
 
-main();
+if (process.argv[1] === fileURLToPath(import.meta.url))
+  main(process.argv.slice(2));

@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
@@ -21,6 +24,7 @@ const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") a
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
 const generatedDefaultPersistenceSource = readFileSync(require.resolve("../internal/DefaultPersistenceUnits.generated.ts"), "utf8");
+const packageRoot = join(dirname(require.resolve("../assets/Units.json")), "..", "..");
 
 function normalizeLineEndings(source: string): string {
   return source.replace(/\r\n/g, "\n");
@@ -134,5 +138,27 @@ describe("Generated Units artifacts", () => {
 
   it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
     expect(normalizeLineEndings(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+  });
+
+  it("generates the tracked artifacts exactly into a temporary destination", () => {
+    const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
+
+    try {
+      execFileSync("npm", ["run", "-s", "generate", "--", destinationRoot], { cwd: packageRoot, stdio: "pipe" });
+
+      const generatedArtifactPaths = {
+        unitsJson: join(destinationRoot, "src/assets/Units.json"),
+        generatedTs: join(destinationRoot, "src/generated/Units.generated.ts"),
+        basicConversionTs: join(destinationRoot, "src/internal/BasicUnitConversions.generated.ts"),
+        defaultPersistenceTs: join(destinationRoot, "src/internal/DefaultPersistenceUnits.generated.ts"),
+      };
+
+      expect(readFileSync(generatedArtifactPaths.unitsJson, "utf8")).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.generatedTs, "utf8"))).toBe(normalizeLineEndings(generatedIdentifiersSource));
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.basicConversionTs, "utf8"))).toBe(normalizeLineEndings(generatedBasicConversionsSource));
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.defaultPersistenceTs, "utf8"))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+    } finally {
+      rmSync(destinationRoot, { recursive: true, force: true });
+    }
   });
 });
