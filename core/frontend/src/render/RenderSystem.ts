@@ -450,7 +450,7 @@ export abstract class RenderSystem implements Disposable {
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
-  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform and symbology overrides applied to the list */
+  /** Create a RenderGraphic consisting of a list of Graphics, with the specified transform and any symbology overrides applied to the list. */
   public createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
     return this.createGraphicBranch(branch, transform, options);
   }

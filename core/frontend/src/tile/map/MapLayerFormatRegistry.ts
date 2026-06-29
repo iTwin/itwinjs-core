@@ -96,6 +96,7 @@ export interface MapLayerSourceValidation {
  * Options supplied at startup via [[IModelAppOptions.mapLayerOptions]] to specify access keys for various map layer formats.
  * 'BingMaps' must have it's key value set to 'key'
  * 'MapboxImagery' must have it's key value set to 'access_token'
+ * Some format-specific options, including `BingMaps`, are retained for compatibility.
  *
  * @public
  */
@@ -106,7 +107,11 @@ export interface MapLayerOptions {
   /** Access key for Mapbox in the format `{ key: "access_token", value: "your-mapbox-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MapboxImagery?: MapLayerKey;
-  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`. */
+  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`.
+   * @deprecated in 5.11.0. All Bing Maps APIs are deprecated. Supply custom providers via
+   * [[IModelAppOptions.geospatialProviders]].
+   * For basemap imagery, use `@itwin/map-layers-formats`.
+   */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
   /** Access keys for additional map layer formats. */
@@ -170,7 +175,7 @@ export class MapLayerFormatRegistry {
       Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
       return undefined;
     }
-    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel);
   }
 
   /**

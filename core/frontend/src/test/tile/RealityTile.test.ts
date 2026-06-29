@@ -5,8 +5,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
-import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
-import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
+import { GltfV2ChunkTypes, GltfVersions, TileFormat, TileReadStatus } from "@itwin/core-common";
+import { Angle, Matrix3d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
@@ -22,11 +22,12 @@ class TestRealityTile extends RealityTile {
   public visible = true;
   public override transformToRoot?: Transform | undefined;
 
-  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform) {
+  public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform, contentUrl?: string) {
     super({
       contentId: contentSize.toString(),
       range: new Range3d(0, 0, 0, 1, 1, 1),
       maximumSize: 42,
+      contentUrl,
     }, tileTree);
 
     this._contentSize = contentSize;
@@ -98,7 +99,7 @@ class TestRealityTree extends RealityTileTree {
   public readonly contentSize: number;
   protected override readonly _rootTile: TestRealityTile;
 
-  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform) {
+  public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform, iModelTransform?: Transform, baseUrl?: string, contentUrl?: string) {
     super({
       loader,
       rootTile: {
@@ -108,19 +109,19 @@ class TestRealityTree extends RealityTileTree {
       },
       id: (++TestRealityTree._nextId).toString(),
       modelId: "0",
-      location: Transform.createTranslationXYZ(2, 2, 2),
+      location: iModelTransform ?? Transform.createIdentity(),
       priority: TileLoadPriority.Primary,
       iModel,
       gcsConverterAvailable: false,
       reprojectGeometry,
       rootToEcef: Transform.createIdentity(),
+      baseUrl,
     });
 
     this.treeId = TestRealityTree._nextId;
     this.contentSize = contentSize;
 
-    const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
-    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
+    this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, undefined, contentUrl);
   }
 
   public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -153,7 +154,7 @@ class TestRealityTree extends RealityTileTree {
 }
 
 class TestB3dmReader extends B3dmReader {
-  public override async readGltfAndCreateGeometry(_transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): Promise<RealityTileGeometry> {
+  public override async readGltfAndCreateGeometry(transformToRoot?: Transform, _needNormals?: boolean, _needParams?: boolean): Promise<RealityTileGeometry> {
     // Create mock geometry data with a simple polyface
     const options = StrokeOptions.createForFacets();
     const polyBuilder = PolyfaceBuilder.create(options);
@@ -162,7 +163,10 @@ class TestB3dmReader extends B3dmReader {
       Point3d.create(1, 0, 0),
       Point3d.create(1, 1, 0)
     ]);
-    const originalPolyface = polyBuilder.claimPolyface();
+    let originalPolyface = polyBuilder.claimPolyface();
+    if (transformToRoot) {
+      originalPolyface = originalPolyface.cloneTransformed(transformToRoot);
+    }
     const mockGeometry = { polyfaces: [originalPolyface] };
     return mockGeometry;
   }
@@ -186,6 +190,12 @@ function createMinimalGlb(): Uint8Array {
   glb.set(jsonBytes, 20);
 
   return glb;
+}
+
+/** Creates a minimal JSON-text glTF (a `.gltf` file rather than a binary `.glb`) for testing. */
+function createJsonGltf(): Uint8Array {
+  const json = JSON.stringify({ asset: { version: "2.0" }, meshes: [] });
+  return new TextEncoder().encode(json);
 }
 
 function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
@@ -316,8 +326,9 @@ describe("RealityTile", () => {
 
 describe("RealityTileLoader", () => {
   it("when loading geometry should apply both tile tree's iModelTransform and tile's transformToRoot", async () => {
-    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, Transform.createTranslationXYZ(2, 2, 2));
     const tile = tree.rootTile;
+    tile.transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
 
     const expectedTransform = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
     await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
@@ -329,7 +340,7 @@ describe("RealityTileLoader", () => {
   });
 
   it("when loading geometry should use only iModelTransform when transformToRoot is undefined", async () => {
-    const tree = new TestRealityTree(0, imodel, reader, false);
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, Transform.createTranslationXYZ(2, 2, 2));
     const tile = tree.rootTile;
     tile.transformToRoot = undefined;
 
@@ -340,6 +351,92 @@ describe("RealityTileLoader", () => {
 
     const geometryTransform = createGeometrySpy.mock.calls[0][0];
     expect(geometryTransform).toEqual(expectedTransform);
+  });
+
+  it("should apply reprojection transform correctly when tile tree's CRS differs from iModel CRS", async () => {
+    // iModelTransform: 90 degree rotation around Z, scale by 2, translate by (10, 20, 30)
+    const rotation = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(90));
+    const rotationAndScale = rotation.scale(2);
+    const iModelTransform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 30), rotationAndScale);
+
+    // Reprojection transform: translation of (1, 0, 0) in root tile CRS
+    const reprojectTransform = Transform.createTranslationXYZ(1, 0, 0);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, iModelTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // Step 1: readGltfAndCreateGeometry applies iModelTransform to original points
+      // 90 degree rotation around Z + scale 2: (x,y,z) → (-2y, 2x, 2z) + origin (10,20,30)
+      // (0,0,0) → (10,20,30), (1,0,0) → (10,22,30), (1,1,0) → (8,22,30)
+      //
+      // Step 2: Conjugated reprojection: iModelTransform * xForm * iModelTransform.inverse()
+      // xForm Translation(1,0,0) in root tile CRS → (0,2,0) in iModel CRS after conjugation
+      // Final: (10,22,30), (10,24,30), (8,24,30)
+      expectPointToEqual(points[0], 10, 22, 30);
+      expectPointToEqual(points[1], 10, 24, 30);
+      expectPointToEqual(points[2], 8, 24, 30);
+    }
+  });
+
+  it("should apply reprojection transform correctly when tile tree's iModelTransform is identity", async () => {
+    const iModelTransform = Transform.createIdentity();
+
+    // Reprojection transform is a translation
+    const reprojectTransform = Transform.createTranslationXYZ(3, 4, 5);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, iModelTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // With identity iModelTransform, conjugation has no effect - xForm is applied directly
+      // Original points: (0,0,0), (1,0,0), (1,1,0)
+      // After reprojection: shift by (3,4,5)
+      expectPointToEqual(points[0], 3, 4, 5);
+      expectPointToEqual(points[1], 4, 4, 5);
+      expectPointToEqual(points[2], 4, 5, 5);
+    }
+  });
+
+  it("should skip reprojection when tile tree's iModelTransform is not invertible", async () => {
+    // Create a singular (non-invertible) transform by scaling X to 0
+    const singularMatrix = Matrix3d.createScale(0, 1, 1);
+    const nonInvertibleTransform = Transform.createOriginAndMatrix(Point3d.createZero(), singularMatrix);
+
+    // Reprojection transform that would shift points if applied
+    const reprojectTransform = Transform.createTranslationXYZ(100, 100, 100);
+
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectTransform, nonInvertibleTransform);
+    const result = await reader.loadGeometryFromStream(tree.rootTile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // iModelTransform scales X to 0, so all X coordinates become 0
+      // Since iModelTransform.inverse() returns undefined, reprojection is skipped
+      // Original points: (0,0,0), (1,0,0), (1,1,0)
+      // After non-invertible iModelTransform: (0,0,0), (0,0,0), (0,1,0)
+      // Reprojection NOT applied (would have added 100,100,100)
+      expectPointToEqual(points[0], 0, 0, 0);
+      expectPointToEqual(points[1], 0, 0, 0);
+      expectPointToEqual(points[2], 0, 1, 0);
+    }
   });
 
   it("should load geometry from tiles in glTF format", async () => {
@@ -356,6 +453,150 @@ describe("RealityTileLoader", () => {
 
     expect(result.geometry).to.not.be.undefined;
     expect(result.geometry?.polyfaces).to.have.length(1);
+  });
+
+  it("should load geometry from tiles in JSON glTF format", async () => {
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockResolvedValue({ polyfaces: [mockPolyface] });
+
+    for (const contentUrl of ["8/130/85.gltf", "8/130/85.GLTF", "8/130/85.gltf?token=abc"]) {
+      const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, contentUrl);
+      const tile = tree.rootTile;
+
+      const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+      const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+      expect(result.geometry).to.not.be.undefined;
+      expect(result.geometry?.polyfaces).to.have.length(1);
+    }
+  });
+
+  it("should discard JSON content that is not identified as glTF by its content URL", async () => {
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockResolvedValue({ polyfaces: [PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface()] });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, "8/130/85.json");
+    const tile = tree.rootTile;
+
+    const jsonStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.be.undefined;
+  });
+
+  it("should resolve glTF external image URLs against the tile content URL", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json", "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf");
+  });
+
+  it("should preserve the tileset's query/authentication parameters in the glTF reader base URL", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?sig=abc");
+  });
+
+  it("should not override a tile content URL's own query with the tileset's query", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf?token=xyz");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?token=xyz");
+  });
+
+  it("should route JSON glTF content through the render path with the correct base URL via the real content-loading entrypoint", async () => {
+    let readerBaseUrl: string | undefined;
+    vi.spyOn(GltfGraphicsReader.prototype, "read")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { readStatus: TileReadStatus.Success, isLeaf: true };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    await reader.loadTileContent(tile, createJsonGltf(), IModelApp.renderSystem);
+
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.gltf?sig=abc");
+  });
+
+  it("should resolve binary glTF (.glb) external image URLs against the tile content URL, preserving the tileset query", async () => {
+    let readerBaseUrl: string | undefined;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, "https://example.com/tileset-root/tileset.json?sig=abc", "8/130/85.glb");
+    const tile = tree.rootTile;
+
+    const glbStreamBuffer = ByteStream.fromUint8Array(createMinimalGlb());
+    const result = await reader.loadGeometryFromStream(tile, glbStreamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.equal("https://example.com/tileset-root/8/130/85.glb?sig=abc");
+  });
+
+  it("should leave the glTF reader base URL undefined for sources with no tree base URL (e.g. ContextShare/SAS), without failing the load", async () => {
+    let readerBaseUrl: string | undefined;
+    let readerCalled = false;
+    const mockPolyface = PolyfaceBuilder.create(StrokeOptions.createForFacets()).claimPolyface();
+    vi.spyOn(GltfGraphicsReader.prototype, "readGltfAndCreateGeometry")
+      .mockImplementation(async function (this: GltfGraphicsReader) {
+        readerCalled = true;
+        readerBaseUrl = (this as any)._baseUrl?.toString();
+        return { polyfaces: [mockPolyface] };
+      });
+
+    const tree = new TestRealityTree(0, imodel, reader, false, undefined, undefined, undefined, "8/130/85.gltf");
+    const tile = tree.rootTile;
+
+    const jsonGltfStreamBuffer = ByteStream.fromUint8Array(createJsonGltf());
+    const result = await reader.loadGeometryFromStream(tile, jsonGltfStreamBuffer, IModelApp.renderSystem);
+
+    expect(readerCalled).to.be.true;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+    expect(readerBaseUrl).to.be.undefined;
   });
 
   it("should return empty content for unsupported tile format", async () => {

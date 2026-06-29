@@ -23,18 +23,18 @@ import { Point4d } from "./geometry4d/Point4d";
  * @public
  */
 export enum AxisOrder {
-  /** Right handed system, X then Y then Z */
+  /** Right-handed system, X then Y then Z. */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   XYZ = 0,
-  /** Right handed system, Y then Z then X */
+  /** Right-handed system, Y then Z then X. */
   YZX = 1,
-  /** Right handed system, Z then X then Y */
+  /** Right-handed system, Z then X then Y. */
   ZXY = 2,
-  /** Left handed system, X then Z then Y */
+  /** Left-handed system, X then Z then Y. For a right-handed alternative, swap the first two axes and use `AxisOrder.ZXY`. */
   XZY = 4,
-  /** Left handed system, Y then X then Z */
+  /** Left-handed system, Y then X then Z. For a right-handed alternative, swap the first two axes and use `AxisOrder.XYZ`.*/
   YXZ = 5,
-  /** Left handed system, Z then Y then X */
+  /** Left-handed system, Z then Y then X. For a right-handed alternative, swap the first two axes and use `AxisOrder.YZX`.*/
   ZYX = 6,
 }
 /**
@@ -226,7 +226,8 @@ export interface ICloneable<T> {
    */
   clone(result?: T): T;
 }
-/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
+/**
+ * Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
  * @public
  */
 export interface PerpParallelOptions {
@@ -265,6 +266,8 @@ export class Geometry {
   public static readonly smallAngleSeconds = 2e-7;
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
+  /** Relative fraction tolerance for Newton iterations. */
+  public static readonly smallNewtonStep = 1.0e-11;
   /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
   public static readonly smallFloatingPoint = 1.0e-15;
   /** Radians value for full circle 2PI radians minus [[smallAngleRadians]]. */
@@ -585,6 +588,8 @@ export class Geometry {
    * Toleranced equality test.
    * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
+   * @see [[isSameFraction]], [[isSameCoordinate]], etc., which have more appropriate default absolute tolerances for
+   * inputs known to be fractions and distances/coordinates.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
@@ -788,24 +793,24 @@ export class Geometry {
     return Geometry.hypotenuseXY(x1 - x0, y1 - y0);
   }
   /**
-   * Return the squared distance between xy points given as numbers.
-   * @param x0 x coordinate of point 0
-   * @param y0 y coordinate of point 0
-   * @param x1 x coordinate of point 1
-   * @param y1 y coordinate of point 1
-   */
+  * Return the squared distance between xy points given as numbers.
+  * @param x0 x coordinate of point 0
+  * @param y0 y coordinate of point 0
+  * @param x1 x coordinate of point 1
+  * @param y1 y coordinate of point 1
+  */
   public static distanceSquaredXYXY(x0: number, y0: number, x1: number, y1: number): number {
     return Geometry.hypotenuseSquaredXY(x1 - x0, y1 - y0);
   }
   /**
-   * Return the distance between xyz points given as numbers.
-   * @param x0 x coordinate of point 0
-   * @param y0 y coordinate of point 0
-   * @param z0 z coordinate of point 0
-   * @param x1 x coordinate of point 1
-   * @param y1 y coordinate of point 1
-   * @param z1 z coordinate of point 1
-   */
+    * Return the distance between xyz points given as numbers.
+    * @param x0 x coordinate of point 0
+    * @param y0 y coordinate of point 0
+    * @param z0 z coordinate of point 0
+    * @param x1 x coordinate of point 1
+    * @param y1 y coordinate of point 1
+    * @param z1 z coordinate of point 1
+    */
   public static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
     return Geometry.hypotenuseXYZ(x1 - x0, y1 - y0, z1 - z0);
   }
@@ -902,7 +907,7 @@ export class Geometry {
    * @see crossProductXYXY for interpretations of the result.
    */
   public static crossProductToPointsXY(origin: XAndY, target0: XAndY, target1: XAndY): number {
-   return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
+    return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
   }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductMagnitude(
@@ -929,6 +934,27 @@ export class Geometry {
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
+  /**
+   * Return fractional length of the projection of the first vector ("the space vector") ux,uy to the vector vx,vy ("the direction vector")
+   * @param ux x component of space vector
+   * @param uy y component of space vector
+   * @param vx x component of direction vector
+   * @param vy y component of direction vector
+   * @param defaultFraction the returned value in case the magnitude of the direction vector is too small
+   * @returns the signed length of the projection divided by the length of the direction vector
+   */
+  public static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction: number = 0): number {
+    /*
+     * projection length is (this.target)/||target||
+     * but here we return (this.target)/||target||^2
+     */
+    const denominator = vx * vx + vy * vy;
+    if (denominator < Geometry.smallMetricDistanceSquared)
+      return defaultFraction;
+    const numerator = ux * vx + uy * vy;
+    return numerator / denominator;
+  }
+
   /**
    * Return the mean curvature for two radii.
    * * Curvature is the reciprocal of radius.
@@ -1202,6 +1228,13 @@ export class Geometry {
     return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
   }
   /**
+   * Return `true` if `a` is a finite number.
+   * @param a value to test
+   */
+  public static isNumber(a: any): a is number {
+    return Number.isFinite(a);
+  }
+  /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including
    * those beyond minEntries).
    */
@@ -1417,3 +1450,4 @@ export class Geometry {
     return clonedArray;
   }
 }
+

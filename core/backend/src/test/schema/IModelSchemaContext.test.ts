@@ -18,6 +18,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { TestUtils } from "../TestUtils";
 import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
 describe("IModel Schema Context", () => {
@@ -39,6 +40,7 @@ describe("IModel Schema Context", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const ecClass = await el.getMetaData();
       assert.exists(ecClass);
       assert.equal(ecClass.schema.name, el.schemaName);
@@ -61,7 +63,7 @@ describe("IModel Schema Context", () => {
       if (undefined === property)
         return;
 
-      if(!property.isPrimitive())
+      if (!property.isPrimitive())
         assert.fail("Property is not primitive");
 
       assert.equal(property.extendedTypeName, "BeGuid");
@@ -70,6 +72,7 @@ describe("IModel Schema Context", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el2.getMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
@@ -86,7 +89,7 @@ describe("IModel Schema Context", () => {
       assert.equal(baseClass.fullName, ViewDefinition3d.schemaItemKey.fullName);
       const prop = metaData.getPropertySync("modelSelector");
       assert.isDefined(prop);
-      if(!prop?.isNavigation())
+      if (!prop?.isNavigation())
         assert.fail("Property is not navigation property");
 
       assert.equal((await prop.relationshipClass).fullName, "BisCore.SpatialViewDefinitionUsesModelSelector");
@@ -97,7 +100,7 @@ describe("IModel Schema Context", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
-    const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1,0,0));
+    const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1, 0, 0));
     const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");
     const baseClassFullNames = Array.from(testDomainClass!.getAllBaseClassesSync() ?? []).map(baseClass => baseClass.fullName);
     assert.equal(baseClassFullNames.length, 4);
@@ -126,7 +129,7 @@ describe("getDerivedClasses returns only loaded schemas", () => {
   before(async () => {
     // Ensure IModelHost is startup (idempotent check)
     if (!IModelHost.isValid) {
-        await IModelHost.startup();
+      await TestUtils.startBackend();
     }
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
@@ -197,3 +200,4 @@ describe("getDerivedClasses returns only loaded schemas", () => {
     ecdb.closeDb();
   });
 });
+

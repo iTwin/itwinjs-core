@@ -38,6 +38,7 @@ public;class;ActivityMessageDetails
 public;enum;ActivityMessageEndReason
 internal;class;AlternateUnitLabelsRegistry
 beta;class;AngleDescription
+deprecated;class;AngleDescription
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
@@ -69,7 +70,9 @@ public;interface;BeTouchEventProps
 public;class;BeWheelEvent
 public;interface;BeWheelEventProps
 public;class;BingElevationProvider
+deprecated;class;BingElevationProvider
 public;class;BingLocationProvider
+deprecated;class;BingLocationProvider
 public;class;BlankConnection
 public;interface;BlankConnectionProps
 public;class;BriefcaseConnection
@@ -87,6 +90,8 @@ public;function;canvasToResizedCanvasWithBars
 beta;interface;CatalogConnection
 beta;namespace;CatalogConnection
 public;class;CategorySelectorState
+beta;interface;CesiumAccessClient
+beta;interface;CesiumAssetEndpoint
 public;enum;ChangeFlag
 public;class;ChangeFlags
 public;interface;ChangeViewedModel2dOptions
@@ -116,6 +121,8 @@ internal;class;CoreTools
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
+beta;function;createQuantityDescription
+beta;interface;CreateQuantityDescriptionProps
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
 internal;function;createSpatialTileTreeReferences
@@ -162,9 +169,11 @@ public;class;ElementLocateManager
 public;class;ElementPicker
 public;class;ElementSetTool
 public;class;ElementState
+beta;interface;ElevationProvider
 public;class;EllipsoidTerrainProvider
 public;class;EmphasizeElements
 beta;class;EngineeringLengthDescription
+deprecated;class;EngineeringLengthDescription
 public;class;EntityState
 internal;class;EnvironmentDecorations
 public;class;EventController
@@ -193,9 +202,10 @@ public;class;FlyViewTool
 internal;function;formatAnimationBranchId
 internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+deprecated;class;FormattedQuantityDescription
 beta;interface;FormattedQuantityDescriptionArgs
+deprecated;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
-beta;interface;FormattingSpecEntry
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
 internal;interface;FrameCameraFrustumData
@@ -214,6 +224,7 @@ beta;interface;GenericAbortSignal
 public;class;GeoConverter
 internal;interface;GeoConverterOptions
 beta;class;GeographicTilingScheme
+beta;interface;GeoidProvider
 public;class;GeometricModel2dState
 public;class;GeometricModel3dState
 public;class;GeometricModelState
@@ -227,6 +238,8 @@ public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getFrustumPlaneIntersectionDepthRange
 beta;function;getGoogle3dTilesUrl
+beta;function;getHeightAverage
+beta;function;getHeightRange
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -342,6 +355,7 @@ internal;enum;KeyinStatus
 internal;class;LayerTileTreeHandler
 internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
+deprecated;class;LengthDescription
 internal;function;linePlaneIntersect
 alpha;class;LocalExtensionProvider
 alpha;interface;LocalExtensionProviderProps
@@ -352,7 +366,10 @@ public;enum;LocateAction
 public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
+beta;interface;LocationProvider
 internal;enum;LockedStates
+alpha;interface;LockService
+alpha;type;LockServiceFactory
 internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
@@ -617,6 +634,7 @@ internal;class;SubCategoriesCache
 internal;namespace;SubCategoriesCache
 internal;interface;SubCategoriesRequest
 beta;class;SurveyLengthDescription
+deprecated;class;SurveyLengthDescription
 internal;class;SuspendedToolState
 public;function;synchronizeViewportFrusta
 public;type;SynchronizeViewports
@@ -751,6 +769,7 @@ public;interface;ViewportGraphicBuilderOptions
 public;class;ViewPose
 public;class;ViewPose2d
 public;class;ViewPose3d
+beta;interface;ViewRealityModel
 public;class;ViewRect
 public;class;ViewRedoTool
 public;class;ViewState

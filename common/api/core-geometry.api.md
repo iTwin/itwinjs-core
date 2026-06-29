@@ -127,6 +127,7 @@ export class AngleSweep implements BeJSONFunctions {
     clone(): AngleSweep;
     cloneComplement(reverseDirection?: boolean, result?: AngleSweep): AngleSweep;
     cloneMinusRadians(radians: number): AngleSweep;
+    clonePlusRadians(radians: number): AngleSweep;
     static create(data?: AngleSweep | Angle): AngleSweep;
     static create360(startRadians?: number, result?: AngleSweep): AngleSweep;
     static createFullLatitude(): AngleSweep;
@@ -282,8 +283,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial;
     isAlmostEqual(otherGeometry: GeometryQuery, distanceTol?: number, radianTol?: number): boolean;
     get isCircular(): boolean;
+    get isCircularXY(): boolean;
+    get isDegenerateCircle(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    isPhysicallyClosedCurve(tolerance?: number, xyOnly?: boolean): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     matrixClone(): Matrix3d;
     get matrixRef(): Matrix3d;
@@ -688,6 +692,7 @@ export class Box extends SolidPrimitive {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     readonly solidPrimitiveType = "box";
     strokeConstantVSection(zFraction: number): LineString3d;
     tryTransformInPlace(transform: Transform): boolean;
@@ -1036,6 +1041,7 @@ export class ClippedPolyfaceBuilders {
 // @public
 export interface Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedCurveIntervals?(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendPolygonClip?: AppendPolygonClipFunction;
     isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
@@ -1046,7 +1052,8 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
-    announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
+    announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     clipConvexPolygonInPlace(xyz: GrowableXYZArray, work?: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
@@ -1112,9 +1119,10 @@ export interface ClipPlaneProps {
 export class ClipPrimitive implements Clipper {
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     arePlanesDefined(): boolean;
-    classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment;
+    classifyPointContainment(points: Point3d[], _ignoreMasks?: boolean): ClipPlaneContainment;
     protected _clipPlanes?: UnionOfConvexClipPlaneSets;
     clone(): ClipPrimitive;
     containsZClip(): boolean;
@@ -1160,6 +1168,7 @@ export interface ClipPrimitiveShapeProps {
 // @public
 export class ClipShape extends ClipPrimitive {
     protected constructor(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean);
+    classifyPointContainment(points: Point3d[], ignoreMasks: boolean): ClipPlaneContainment;
     clone(result?: ClipShape): ClipShape;
     static createBlock(extremities: Range3d, clipMask: ClipMaskXYZRangePlanes, isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createEmpty(isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
@@ -1264,6 +1273,7 @@ export class ClipUtilities {
 // @public
 export class ClipVector implements Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendClone(clip: ClipPrimitive): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
@@ -1370,6 +1380,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined;
     static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone;
     static createDgnCone(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined;
+    cylinderRadius(allowSkew?: boolean): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getCenterA(): Point3d;
@@ -1383,6 +1394,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "cone";
     strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d;
@@ -1416,6 +1428,58 @@ export class Constant {
     static readonly oneMillimeter: number;
 }
 
+// @alpha
+export class ConstrainedCurve2d {
+    static circlesTangentCircleCircleCircle(circleA: Arc3d, circleB: Arc3d, circleC: Arc3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleCircleLine(circleA: Arc3d, circleB: Arc3d, line: LineSegment3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleCircleRadius(circleA: Arc3d, circleB: Arc3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentCircleLineRadius(circle: Arc3d, line: LineSegment3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineCircle(lineA: LineSegment3d, lineB: LineSegment3d, circle: Arc3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineLine(lineA: LineSegment3d, lineB: LineSegment3d, lineC: LineSegment3d): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static circlesTangentLineLineRadius(lineA: LineSegment3d, lineB: LineSegment3d, radius: number): {
+        curve: Arc3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpCirclePerpCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpCircleTangentCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpLinePerpCircle(line: LineSegment3d, circle: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesPerpLineTangentCircle(line: LineSegment3d, circle: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+    static linesTangentCircleCircle(circleA: Arc3d, circleB: Arc3d): {
+        curve: LineSegment3d;
+        details: CurveLocationDetailPair[];
+    }[] | undefined;
+}
+
 // @public
 export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     handleArc3d(arc0: Arc3d): any;
@@ -1429,6 +1493,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     addPlaneToConvexSet(plane: ClipPlane | Plane3dByOriginAndUnitNormal | undefined): void;
     addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number): void;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment;
@@ -1519,6 +1584,9 @@ export class CoordinateXYZ extends GeometryQuery {
 // @public
 export interface CreateFilletsInLineStringOptions {
     allowCusp?: boolean;
+    closureTolerance?: number;
+    cuspSegments?: boolean;
+    cuspTolerance?: number;
     filletClosure?: boolean;
 }
 
@@ -1559,8 +1627,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     computeChainDetail(childDetail: CurveLocationDetail, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-    // @internal
     static convertChildDetailToChainDetail(pairs: CurveLocationDetailPair[], index0: number, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex, compressAdjacent?: boolean): CurveLocationDetailPair[];
+    static convertChildDetailToChainDetailSingle(pair: CurveLocationDetailPair, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex): CurveLocationDetailPair;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
     curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
@@ -1638,8 +1706,8 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 // @public
 export class CurveCurve {
     static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance?: number): CurveLocationDetailPair[];
-    static closeApproachProjectedXYPairs(curveA: AnyCurve, curveB: AnyCurve, maxDistance: number): CurveLocationDetailPair[];
-    static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve): CurveLocationDetailPair | undefined;
+    static closeApproachProjectedXYPairs(curveA: AnyCurve, curveB: AnyCurve, maxDistanceOrOptions?: number | CurveCurveOptions): CurveLocationDetailPair[];
+    static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve, options?: CurveCurveOptions): CurveLocationDetailPair | undefined;
     static intersectionProjectedXYPairs(worldToLocal: Matrix4d | undefined, curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     static intersectionXYPairs(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     static intersectionXYZPairs(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean): CurveLocationDetailPair[];
@@ -1651,6 +1719,14 @@ export enum CurveCurveApproachType {
     Intersection = 0,
     ParallelGeometry = 3,
     PerpendicularChord = 1
+}
+
+// @public
+export interface CurveCurveOptions {
+    maxDistance?: number;
+    maxIterations?: number;
+    newtonTolerance?: number;
+    xyTolerance?: number;
 }
 
 // @public
@@ -1686,6 +1762,7 @@ export class CurveFactory {
     static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain, initialSection: AnyCurve, options?: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
+    static fromFilletedLineString(filletedLineString: CurveChain, options?: FilletedLineStringOptions): Array<[Point3d, number]> | undefined;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
 }
 
@@ -1762,6 +1839,8 @@ export class CurveLocationDetailPair {
     constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail);
     approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
+    static comparePairsByFractions(fractionTol?: number, pointTol?: number, xyOnly?: boolean, equateClosedCurveFractions?: boolean): OrderedComparator<CurveLocationDetailPair>;
+    static comparePairsByPoints(pointTol?: number, xyOnly?: boolean): OrderedComparator<CurveLocationDetailPair>;
     static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     detailA: CurveLocationDetail;
@@ -1796,7 +1875,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     protected constructor();
     addMappedStrokesToLineString3D(map: StrokeCountMap, linestring: LineString3d): number;
     allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined;
-    announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     abstract clone(): CurvePrimitive;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
@@ -2116,6 +2195,13 @@ export interface FacetProjectedVolumeSums {
 }
 
 // @public
+export interface FilletedLineStringOptions {
+    distanceTol?: number;
+    parallelOptions?: PerpParallelOptions;
+    relaxedValidation?: boolean;
+}
+
+// @public
 export type FractionMapper = (f: number) => number;
 
 // @public
@@ -2212,6 +2298,7 @@ export class Geometry {
     static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static equalStringNoCase(string1: string, string2: string): boolean;
     static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean;
+    static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction?: number): number;
     static readonly fullCircleRadiansMinusSmallAngle: number;
     // @deprecated
     static readonly hugeCoordinate = 1000000000000;
@@ -2242,6 +2329,7 @@ export class Geometry {
     static isIn01(x: number, apply01?: boolean): boolean;
     static isIn01WithTolerance(x: number, tolerance: number): boolean;
     static isLargeCoordinateResult(x: number): boolean;
+    static isNumber(a: any): a is number;
     static isNumberArray(json: any, minEntries?: number): json is number[];
     static isOdd(x: number): boolean;
     static isSameCoordinate(x: number, y: number, tolerance?: number): boolean;
@@ -2287,6 +2375,7 @@ export class Geometry {
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
+    static readonly smallNewtonStep = 1e-11;
     static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined;
     static split3Way01(x: number, tolerance?: number): -1 | 0 | 1;
     static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number;
@@ -3307,6 +3396,7 @@ export class LinearSweep extends SolidPrimitive {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     readonly solidPrimitiveType = "linearSweep";
     tryTransformInPlace(transform: Transform): boolean;
 }
@@ -3589,6 +3679,7 @@ export class Matrix3d implements BeJSONFunctions {
     coffs: Float64Array;
     columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number): number;
     columnX(result?: Vector3d): Vector3d;
+    columnXCrossColumnY(result?: Vector3d): Vector3d;
     columnXDotColumnY(): number;
     columnXDotColumnZ(): number;
     columnXMagnitude(): number;
@@ -4340,6 +4431,7 @@ export class Point2d extends XY implements BeJSONFunctions {
     static createAdd3Scaled(pointA: XAndY, scaleA: number, pointB: XAndY, scaleB: number, pointC: XAndY, scaleC: number, result?: Point2d): Point2d;
     static createAdd3ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, cx: number, cy: number, scaleC: number, result?: Point2d): Point2d;
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
+    static createInterpolated(xyA: XAndY, fraction: number, xyB: XAndY): Point2d;
     static createZero(result?: Point2d): Point2d;
     crossProductToPoints(target1: XAndY, target2: XAndY): number;
     dotVectorsToTargets(targetA: XAndY, targetB: XAndY): number;
@@ -5510,6 +5602,8 @@ export class RegionOps {
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
     static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeToleranceOrOptions?: number | RegionBooleanXYOptions): AnyRegion | undefined;
     // @internal
+    static removeExtraneousBridgeEdges(graph: HalfEdgeGraph, isBridgeEdge?: HalfEdgeToBooleanFunction, faceToArea?: HalfEdgeToNumberFunction): number;
+    // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static simplifyRegion(region: AnyRegion): AnyRegion | undefined;
     static simplifyRegionType(region: AnyRegion): AnyRegion;
@@ -5542,7 +5636,7 @@ export class RotationalSweep extends SolidPrimitive {
     static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(range: Range3d, transform?: Transform): void;
-    getConstructiveFrame(): Transform | undefined;
+    getConstructiveFrame(options?: RotationalSweepConstructiveFrameOptions): Transform | undefined;
     getCurves(): CurveCollection;
     getFractionalRotationTransform(vFraction: number, result?: Transform): Transform;
     getSweep(): Angle;
@@ -5550,8 +5644,14 @@ export class RotationalSweep extends SolidPrimitive {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     readonly solidPrimitiveType = "rotationalSweep";
     tryTransformInPlace(transform: Transform): boolean;
+}
+
+// @public
+export class RotationalSweepConstructiveFrameOptions extends SolidPrimitiveConstructiveFrameOptions {
+    alignToSweep?: boolean;
 }
 
 // @public
@@ -5712,9 +5812,14 @@ export abstract class SolidPrimitive extends GeometryQuery {
     protected _capped: boolean;
     abstract constantVSection(_vFraction: number): CurveCollection | undefined;
     readonly geometryCategory = "solid";
-    abstract getConstructiveFrame(): Transform | undefined;
+    abstract getConstructiveFrame(_options?: SolidPrimitiveConstructiveFrameOptions): Transform | undefined;
     abstract get isClosedVolume(): boolean;
+    get isSkew(): boolean;
     abstract readonly solidPrimitiveType: SolidPrimitiveType;
+}
+
+// @public
+export class SolidPrimitiveConstructiveFrameOptions {
 }
 
 // @public
@@ -5773,6 +5878,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     get latitudeSweepFraction(): number;
     maxAxisRadius(): number;
     maxIsoParametricDistance(): Vector2d;
@@ -5972,6 +6078,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     isAlmostEqual(other: GeometryQuery): boolean;
     get isClosedVolume(): boolean;
     isSameGeometryClass(other: any): boolean;
+    get isSkew(): boolean;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "torusPipe";
     tryTransformInPlace(transform: Transform): boolean;
@@ -6161,14 +6268,30 @@ export interface TrigValues {
 }
 
 // @public
+export class UniformStrokeCollector implements IStrokeHandler {
+    constructor(cp?: CurvePrimitive, fractionTol?: number);
+    announceIntervalForUniformStepStrokes(_c: CurvePrimitive, numStrokes: number, f0: number, f1: number): void;
+    announcePointTangent(_p: Point3d, f: number, _v: Vector3d): void;
+    announceSegmentInterval(_c: CurvePrimitive, _p0: Point3d, _p1: Point3d, _numStrokes: number, f0: number, f1: number): void;
+    claimFractions(remove01?: boolean): number[];
+    claimLineString(result?: LineString3d): LineString3d | undefined;
+    endCurvePrimitive(_c: CurvePrimitive): void;
+    endParentCurvePrimitive(_c: CurvePrimitive): void;
+    needPrimaryGeometryForStrokes(): boolean;
+    startCurvePrimitive(cp: CurvePrimitive): void;
+    startParentCurvePrimitive(_c: CurvePrimitive): void;
+}
+
+// @public
 export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     addConvexSet(toAdd: ConvexClipPlaneSet | undefined): void;
     addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number): void;
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
-    announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
+    announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
-    classifyPointContainment(points: Point3d[], onIsOutside: boolean): number;
+    classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment;
     clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;
     computePlanePlanePlaneIntersectionsInAllConvexSets(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment?: boolean): number;
     get convexSets(): ConvexClipPlaneSet[];

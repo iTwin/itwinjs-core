@@ -9,13 +9,15 @@ The goal of this document is to provide a high-level overview of how you can get
   - [Repo Setup](#repo-setup)
   - [Source Code Edit Workflow](#source-code-edit-workflow)
     - [Other NPM Scripts](#other-npm-scripts)
+    - [Documentation Code Snippets](#documentation-code-snippets)
     - [Debugging](#debugging)
       - [Filtering Test Suites](#filtering-test-suites)
   - [Asking Questions](#asking-questions)
   - [Providing Feedback](#providing-feedback)
-  - [Reporting Issues](#reporting-issues)
+  - [Submitting an Issue](#submitting-an-issue)
     - [Look For an Existing Issue](#look-for-an-existing-issue)
-    - [Writing Good Bug Reports and Feature Requests](#writing-good-bug-reports-and-feature-requests)
+    - [Bug Reports](#bug-reports)
+    - [Feature Requests](#feature-requests)
     - [Follow Your Issue](#follow-your-issue)
   - [Contributing Guidelines](#contributing-guidelines)
     - [Branch Naming Policy](#branch-naming-policy)
@@ -78,6 +80,32 @@ Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/
 
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
+
+### Documentation Code Snippets
+
+Documentation code snippets are extracted from actively tested code to ensure they stay up-to-date and working. To add documentation snippets to a package:
+
+1. **Create the test file**: Place testable documentation snippets in `src/test/example-code/` directory within the package
+2. **Mark extraction regions**: Wrap code to be extracted with comment markers:
+   ```typescript
+   // __PUBLISH_EXTRACT_START__ SnippetName
+   // Your code here that will be extracted
+   // __PUBLISH_EXTRACT_END__
+   ```
+3. **Add extraction script**: In `package.json`, add:
+   ```json
+   "extract": "betools extract --fileExt=ts --extractFrom=./src/test/example-code --recursive --out=../../generated-docs/extract"
+   ```
+4. **Update docs script**: Chain extraction with documentation generation:
+   ```json
+   "docs": "betools docs --json=../../generated-docs/{package}/file.json --tsIndexFile=./{package}.ts --onlyJson && npm run -s extract"
+   ```
+5. **Reference in documentation**: In markdown files, reference the snippets using:
+   <pre>```ts
+   [[include:SnippetName]]
+   ```</pre>
+
+This pattern separates documentation examples from unit tests, emphasizing code that a user should adopt, and keeps documentation synchronized with working code.
 
 ### Debugging
 
@@ -146,16 +174,21 @@ To distinguish whether a package is using vitest or mocha, look at the `package.
 
 ## Asking Questions
 
-Have a question?
-Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/iTwin/itwinjs-core/discussions).
+Have a question? Rather than opening an issue, please use [GitHub Discussions](https://github.com/iTwin/itwinjs-core/discussions). This applies to all questions — how-tos, best practices, troubleshooting, architecture guidance, migration help, and anything else related to iTwin.js.
 
-The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
+A few tips for a useful discussion post:
+
+- Search existing discussions first — your question may already be answered.
+- Include relevant context: iTwin.js version, runtime environment, and code snippets.
+- Keep it focused — one topic per post makes answers easier to find later.
+
+The core team monitors discussions and your well-worded question will serve as a resource to others searching for help.
 
 ## Providing Feedback
 
 Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/iTwin/itwinjs-core/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
-## Reporting Issues
+## Submitting an Issue
 
 Have you identified a reproducible problem in iTwin.js?
 Have a feature request?
@@ -174,29 +207,27 @@ Use a reaction in place of a "+1" comment:
 
 If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
 
-### Writing Good Bug Reports and Feature Requests
+### Bug Reports
 
-File a single issue per problem and feature request.
-Do not enumerate multiple bugs or feature requests in the same issue.
+When reporting a bug, include:
 
-Do not add your issue as a comment to an existing issue unless it's for the identical input.
-Many issues look similar, but have different causes.
+- **Clear title:** State the problem concisely (e.g., "Crash in v2.0 when passing null to `user.update()`").
+- **Context:** iTwin.js version, runtime environment (e.g., Node.js 24, Electron 42, core-backend 5.11.0), platform/browser/OS.
+- **Expected vs. actual behavior:** Contrast what should have happened with what actually happened.
+- **Minimal Reproducible Example (MRE):**
+    - A self-contained code snippet or link to a repo/CodeSandbox that isolates the bug.
+    - Repro steps in Display Test App (in a branch if needed) or standalone tests.
+- **Stack traces and logs:** Paste full error logs in markdown code blocks, not screenshots.
+- **Priority/urgency:** Describe if the bug is blocking, its severity, and earliest date a fix can be consumed
 
-The more information you can provide, the more likely someone will be successful reproducing the issue and finding a fix.
+### Feature Requests
 
-Please include the following with each issue:
+When suggesting a new feature, include:
 
-- A short description of the issue that becomes the title
-- Versions of relevant iTwin.js packages
-- Minimal steps to reproduce the issue or a code snippet that demonstrates the issue
-- What you expected to see, versus what you actually saw
-- Images that help explain the issue
-- Any relevant error messages, logs, or other details
-- Impact of the issue
-- Use the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) or [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label to identify the type of issue you are filing
-
-Don't feel bad if the developers can't reproduce the issue right away.
-They will simply ask for more information!
+- **Use case:** Explain the real-world problem and how this benefits the wider community, not just your project.
+- **Proposed solution:** Suggest how it should work (e.g., API design ideas, new configuration flags).
+- **Alternatives considered:** Explain why current workarounds or existing features don't solve your problem.
+- **Willingness to contribute:** State if you're willing to write the code or documentation yourself.
 
 ### Follow Your Issue
 

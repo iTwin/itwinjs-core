@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { Code, DisplayStyle3dProps, EmptyLocalization, GlobeMode, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { DisplayStyle3dState } from "../DisplayStyleState";
+import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
+import { getCesiumOSMBuildingsUrl } from "../tile/internal";
 import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './../common/internal/Symbols';
 
 describe("DisplayStyleState", () => {
@@ -232,6 +235,105 @@ describe("DisplayStyleState", () => {
 
       await style.changeRenderTimeline("0x3");
       expect(style[_scheduleScriptReference]).toBeUndefined();
+    });
+  });
+
+  describe("getGlobalGeometryAndHeightRange", () => {
+    let iModel: IModelConnection;
+
+    beforeAll(async () => {
+      await IModelApp.startup({ localization: new EmptyLocalization() });
+      iModel = createBlankConnection();
+    });
+
+    afterAll(async () => {
+      await iModel.close();
+      await IModelApp.shutdown();
+    });
+
+    function makeStyle(): DisplayStyle3dState {
+      const props: DisplayStyle3dProps = {
+        id: "0xbeef",
+        code: Code.createEmpty(),
+        model: IModelConnection.dictionaryId,
+        classFullName: "BisCore:DisplayStyle3d",
+      };
+      return new DisplayStyle3dState(props, iModel);
+    }
+
+    it("does not construct an ellipsoid fallback when the iModel has no Earth anchor", () => {
+      const style = makeStyle();
+      expect(style.globeMode).toBe(GlobeMode.Ellipsoid);
+
+      const fakeGlobalModel = { isGlobal: true } as unknown as ContextRealityModelState;
+      vi.spyOn(style, "contextRealityModelStates", "get").mockReturnValue([fakeGlobalModel]);
+
+      expect(iModel.ecefLocation).toBeDefined();
+      expect(style.getGlobalGeometryAndHeightRange()).toBeDefined();
+
+      const originalEcefLocation = iModel.ecefLocation;
+      try {
+        (iModel as any).ecefLocation = undefined;
+
+        const oldFallback = (() => {
+          let geometry = style.getIsBackgroundMapVisible() ? style.getBackgroundMapGeometry() : undefined;
+          if (style.globeMode === GlobeMode.Ellipsoid && style.contextRealityModelStates.find((model) => model.isGlobal))
+            geometry ??= new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, iModel);
+
+          return geometry;
+        })();
+
+        expect(oldFallback).toBeDefined();
+        expect(style.getGlobalGeometryAndHeightRange()).toBeUndefined();
+      } finally {
+        (iModel as any).ecefLocation = originalEcefLocation;
+      }
+    });
+  });
+
+  describe("getOSMBuildingRealityModel", () => {
+    let iModel: IModelConnection;
+
+    beforeAll(async () => {
+      await IModelApp.startup({ localization: new EmptyLocalization(), tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      iModel = createBlankConnection();
+    });
+
+    afterAll(async () => {
+      await iModel.close();
+      await IModelApp.shutdown();
+    });
+
+    function makeStyle(): DisplayStyle3dState {
+      const props: DisplayStyle3dProps = {
+        id: "0xbeef",
+        code: Code.createEmpty(),
+        model: IModelConnection.dictionaryId,
+        classFullName: "BisCore:DisplayStyle3d",
+      };
+      return new DisplayStyle3dState(props, iModel);
+    }
+
+    it("matches a reality model persisted with a legacy key-bearing URL", () => {
+      // getCesiumOSMBuildingsUrl now returns a keyless prefix (e.g. `$CesiumIonAsset=96188:`). Reality models
+      // saved before this change embed the Ion key (`$CesiumIonAsset=96188:<key>`); the `startsWith` match must
+      // still find them so toggling OSM buildings off keeps working for legacy saved views.
+      const style = makeStyle();
+      const keylessPrefix = getCesiumOSMBuildingsUrl();
+      expect(keylessPrefix).toBeDefined();
+
+      const legacyModel = { url: `${keylessPrefix}LEGACY_EMBEDDED_KEY` } as unknown as ContextRealityModelState;
+      vi.spyOn(style, "contextRealityModelStates", "get").mockReturnValue([legacyModel]);
+
+      expect(style.getOSMBuildingRealityModel()).toBe(legacyModel);
+    });
+
+    it("returns undefined when no reality model matches the OSM buildings URL", () => {
+      const style = makeStyle();
+      const unrelatedModel = { url: "https://example.com/some-other-tileset/" } as unknown as ContextRealityModelState;
+      vi.spyOn(style, "contextRealityModelStates", "get").mockReturnValue([unrelatedModel]);
+
+      expect(style.getOSMBuildingRealityModel()).toBeUndefined();
     });
   });
 });

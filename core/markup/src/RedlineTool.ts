@@ -9,6 +9,7 @@
 // cspell:ignore rtmp stmp
 
 import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { expectDefined } from "@itwin/core-bentley";
 import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
@@ -39,7 +40,9 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected createMarkup(_svgMarkup: G, _ev: BeButtonEvent, _isDynamics: boolean): void { }
-  protected clearDynamicsMarkup(_isDynamics: boolean): void { this.markup.svgDynamics!.clear(); }
+  protected clearDynamicsMarkup(_isDynamics: boolean): void {
+    expectDefined(this.markup.svgDynamics).clear();
+  }
 
   public override async onRestartTool() { return this.exitTool(); } // Default to single shot and return control to select tool...
   public override async onCleanup() { this.clearDynamicsMarkup(false); }
@@ -57,7 +60,7 @@ export abstract class RedlineTool extends MarkupTool {
     if (undefined === ev.viewport || this._points.length < this._minPoints)
       return;
     this.clearDynamicsMarkup(true);
-    this.createMarkup(this.markup.svgDynamics!, ev, true);
+    this.createMarkup(expectDefined(this.markup.svgDynamics), ev, true);
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -70,7 +73,7 @@ export abstract class RedlineTool extends MarkupTool {
       return EventHandled.No;
     }
 
-    this.createMarkup(this.markup.svgMarkup!, ev, false);
+    this.createMarkup(expectDefined(this.markup.svgMarkup), ev, false);
     await this.onReinitialize();
     return EventHandled.No;
   }
@@ -497,8 +500,9 @@ export class SymbolTool extends RedlineTool {
       svgMarkup.add(this._symbol);
     }
     const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
-    if (!isDynamics && this._points.length === this._minPoints)
-      this._symbol.size(ev.viewport!.viewRect.width * 0.1).center(offset.x, offset.y);
+    if (!isDynamics && this._points.length === this._minPoints) {
+      this._symbol.size(expectDefined(ev.viewport).viewRect.width * 0.1).center(offset.x, offset.y);
+    }
     else if (!ev.isShiftKey)
       this._symbol.size(width).move(offset.x, offset.y);
     else
@@ -519,7 +523,7 @@ export class SymbolTool extends RedlineTool {
     if (undefined === ev.viewport || this._points.length !== this._minPoints)
       return EventHandled.No;
 
-    this.createMarkup(this.markup.svgMarkup!, ev, false);
+    this.createMarkup(expectDefined(this.markup.svgMarkup), ev, false);
     await this.onReinitialize();
     return EventHandled.No;
   }

@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BeTimePoint, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -16,7 +16,7 @@ import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
-import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
+import { MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
@@ -483,6 +483,18 @@ export class ToolAdmin {
       ToolAdmin.addEvent(ev);
   };
 
+  /** Handler for modifier key transitions captured before focused UI elements can stop propagation. */
+  private static _keyEventCaptureHandler = async (event: Event): Promise<void> => {
+    const ev = event as KeyboardEvent;
+    if (!ev.repeat) {
+      try {
+        await IModelApp.toolAdmin.onKeyTransitionCaptured(ev);
+      } catch (err) {
+        await ToolAdmin.exceptionHandler(err);
+      }
+    }
+  };
+
   /** @internal */
   public onInitialized() {
     if (typeof document === "undefined")
@@ -491,6 +503,9 @@ export class ToolAdmin {
     this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
     ["keydown", "keyup"].forEach((type) => {
+      document.addEventListener(type, ToolAdmin._keyEventCaptureHandler, true);
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventCaptureHandler, true));
+
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
       ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
     });
@@ -1431,6 +1446,35 @@ export class ToolAdmin {
     }
   }
 
+  private static isFocusHome(): boolean {
+    return (document.body === document.activeElement);
+  }
+
+  private static setFocusHome(): void {
+    const element = document.activeElement;
+    if (element instanceof HTMLElement && element !== document.body)
+      element.blur();
+    document.body.focus();
+  }
+
+  private static isContextMenuOpen(): boolean {
+    return document.querySelector(".core-context-menu-opened") !== null;
+  }
+
+  private static isElement(target: EventTarget | null): target is Element {
+    return target instanceof Element;
+  }
+
+  private static isEditable(element: Element): boolean {
+    const tagName = element.tagName.toLowerCase();
+    const editableTags = ["input", "textarea", "select"];
+    if (editableTags.includes(tagName))
+      return true;
+    if (element instanceof HTMLElement && element.isContentEditable)
+      return true;
+    return false;
+  }
+
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
       case "Alt": return BeModifierKeys.Alt;
@@ -1465,20 +1509,59 @@ export class ToolAdmin {
     return { handled, result };
   }
 
-  /** Process shortcut key events */
+  /** Sub-classes should override to process shortcut key events.
+   * @return true if handled and no further processing of event should occur.
+   */
   public async processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean> {
     return false;
+  }
+
+  /** Event for every key down and up transition.
+   * @note Called before processShortcutKey.
+   * @return true if handled and no further processing of event should occur.
+   */
+  protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
+    if (ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem())
+      return false; // Focus is Home or AccuDraw, allow shortcuts...
+
+    if (keyEvent.defaultPrevented || keyEvent.isComposing)
+      return true; // Respect UI handling / IME composition; don't process shortcuts
+
+    // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
+    // Escape is the only practical choice with its default behavior that can cancel/close/blur.
+    // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
+    // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
+    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome) {
+      ToolAdmin.setFocusHome();
+      return true;
+    }
+
+    if (ToolAdmin.isContextMenuOpen())
+      return true; // Don't allow shortcuts if context menu is open...
+
+    if (ToolAdmin.isElement(keyEvent.target) && ToolAdmin.isEditable(keyEvent.target))
+      return true; // Don't allow shortcuts when event target is editable...
+
+    return false;
+  }
+
+  /** Need to check for modifier changes on capture phase as a ui element that calls stopPropagation
+   * prevents onKeyTransition from being called when bubbling.
+   */
+  private async onKeyTransitionCaptured(keyEvent: KeyboardEvent): Promise<void> {
+    this.currentInputState.setKeyQualifiers(keyEvent);
+    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
+
+    if (BeModifierKeys.None !== modifierKey)
+      return this.onModifierKeyTransition("keydown" === keyEvent.type, modifierKey, keyEvent);
   }
 
   /** Event for every key down and up transition. */
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
-    this.currentInputState.setKeyQualifiers(keyEvent);
 
-    const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-
-    if (BeModifierKeys.None !== modifierKey)
-      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
+    if (this.processKeyboardEvent(keyEvent, wentDown))
+      return EventHandled.Yes;
 
     if (wentDown && keyEvent.ctrlKey) {
       const { handled, result } = await this.onCtrlKeyPressed(keyEvent);
@@ -1498,6 +1581,24 @@ export class ToolAdmin {
     return EventHandled.No;
   }
 
+  /** Finish the active edit command before performing a transaction operation like undo/redo.
+   * @internal
+   */
+  public async finishEditCommandForTxnOperation(): Promise<boolean> {
+    // NOTE: Because restartPrimitiveTool is called after an undo/redo the active tool won't be left in an invalid state...
+    if (undefined === this._editCommandHandler)
+      return true;
+
+    try {
+      await this._editCommandHandler.finishCommand();
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : IModelApp.localization.getLocalizedString("iModelJs:Errors.UnableToFinishActiveEditCommand");
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, message));
+      return false;
+    }
+  }
+
   /** Called to undo previous data button for primitive tools or undo last write operation. */
   public async doUndoOperation(): Promise<boolean> {
     const activeTool = this.activeTool;
@@ -1511,7 +1612,10 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    return (IModelStatus.Success === await imodel.txns.reverseSingleTxn() ? true : false);
+    if (!await this.finishEditCommandForTxnOperation())
+      return false;
+
+    return imodel.txns.reverseSingleTxnAsync().then(() => true).catch(() => false);
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1527,7 +1631,10 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    return (IModelStatus.Success === await imodel.txns.reinstateTxn() ? true : false);
+    if (!await this.finishEditCommandForTxnOperation())
+      return false;
+
+    return imodel.txns.reinstateTxnAsync().then(() => true).catch(() => false);
   }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
@@ -1706,7 +1813,12 @@ export class ToolAdmin {
         await this.setPrimitiveTool(newTool);
       }
       // it is important to raise event after setPrimitiveTool is called
-      this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
+      const activeTool = newTool ?? this._idleTool;
+      // _idleTool is cleared during onShutDown(); skip the event if shutdown has already run
+      // to avoid emitting activeToolChanged with an undefined tool.
+      if (undefined === activeTool)
+        return;
+      this.onActiveToolChanged(activeTool, StartOrResume.Start);
     } finally {
       if (resolveStarting)
         resolveStarting();

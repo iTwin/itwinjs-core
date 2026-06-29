@@ -79,6 +79,7 @@ internal;class;Complex
 public;class;Cone
 public;class;ConsolidateAdjacentCurvePrimitivesOptions
 public;class;Constant
+alpha;class;ConstrainedCurve2d
 public;class;ConstructCurveBetweenCurves
 public;class;ConvexClipPlaneSet
 public;type;ConvexClipPlaneSetProps
@@ -92,6 +93,7 @@ public;class;CurveCollection
 public;type;CurveCollectionType
 public;class;CurveCurve
 public;enum;CurveCurveApproachType
+public;interface;CurveCurveOptions
 public;enum;CurveExtendMode
 public;class;CurveExtendOptions
 public;class;CurveFactory
@@ -121,6 +123,7 @@ public;class;FacetIntersectOptions
 public;interface;FacetLocationDetail
 public;class;FacetLocationDetailPair
 public;interface;FacetProjectedVolumeSums
+public;interface;FilletedLineStringOptions
 public;type;FractionMapper
 public;class;FrameBuilder
 internal;class;GaussMapper
@@ -259,6 +262,7 @@ internal;class;RegionMomentsXY
 public;class;RegionOps
 public;class;ReusableObjectCache
 public;class;RotationalSweep
+public;class;RotationalSweepConstructiveFrameOptions
 public;class;RuledSweep
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
@@ -267,6 +271,7 @@ public;interface;SignedLoops
 public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
+public;class;SolidPrimitiveConstructiveFrameOptions
 public;type;SolidPrimitiveType
 public;class;SortableEdge
 public;type;SortableEdgeCluster
@@ -290,6 +295,7 @@ public;class;TriangleLocationDetail
 public;class;TriangularFacetLocationDetail
 internal;class;TriDiagonalSystem
 public;interface;TrigValues
+public;class;UniformStrokeCollector
 public;class;UnionOfConvexClipPlaneSets
 public;type;UnionOfConvexClipPlaneSetsProps
 public;class;UnionRegion

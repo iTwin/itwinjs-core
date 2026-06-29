@@ -1,6 +1,175 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 26 Feb 2026 22:18:10 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+### Updates
+
+- Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Allow reversing schema changeset
+- ECSQL: Allow optional ON clause with CROSS JOIN
+- Improve revert timeline changes to handle large number of changesets
+- Add SettingsSchemas.groups to expose registered SettingGroupSchema metadata, including user-facing titles and descriptions
+- Added `SettingsSchemas.getResolvedSettingDef` for resolving nested object properties and array items.
+- Fixed `SettingsSchemas.removeGroup` to remove registered type definitions correctly.
+- Add an optional user-facing title to SettingGroupSchema so settings UIs do not need to rely on schemaPrefix for display text
+- Add lastEditedAt metadata to WorkspaceDb manifests.
+- Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications.
+- Optimized EditTxn.deleteElements for better performance and clearer reporting; added batch lifecycle callbacks Element.onBulkDeleted, Element.onBulkChildDeleted, and Model.onBulkModelEvents to avoid per-element notification overhead.
+- Added `IModelDb.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc.
+- Add outline geometry as Path instead of Loop in text annotations
+- Semantic Rebase uses the new ChangesetReader api. Also while doing semantic rebase we now stream the changed instances onto the temp file while writing as well as stream changed instances from the file while reading.
+- Added spillThresholdInBytes parameter to openGroup, openLocalChanges, openInMemoryChanges, openTxn methods of ChangesetReader api
+- Added strict mode to changeset reader api
+- Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones.
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+### Updates
+
+- Added a deprecated bulk element delete api to IModelDb until EditTxns are more widely used by applications.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Added batching while writing instance patches to the file during semantic rebase. Also reduced the $meta field in instance patches to include only the necessary properties and skip unnecessary ones.
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+### Updates
+
+- Semantic Rebase uses the new ChangesetReader api. Also while doing semantic rebase we now stream the changed instances onto the temp file while writing as well as stream changed instances from the file while reading.
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Expose unit on list of available GCS; allow filtering GCS by unit
+- Improve IdSet virtual table performance
+- Add dispose method to RebaseManager
+- Added IModelHost APIs to save and delete iTwin-scoped setting dictionaries in SettingsDb.
+- added EditTxn apis
+- Added the ability to release locks associated with reversed Txns.
+- Update integrityCheck to use primary connection
+- Updated TSDoc for Settings and IModelDb to reference current EditTxn APIs instead of deprecated methods.
+- Added deleteElements method for bulk element deletion with automatic cascade, constraint checking, and cleanup.
+- Optimized EditTxn.deleteElements for better performance and clearer reporting; added batch lifecycle callbacks Element.onBulkDeleted, Element.onBulkChildDeleted, and Model.onBulkModelEvents to avoid per-element notification overhead.
+- Added a beta api to allow schema xml serialization to any ECSpecVersion.
+- Added ECSql nav prop corresponding `RelatedElementProps` members to the backend `ViewDefinition`, `SpatialViewDefinition`, and `ViewDefinition2d` classes.
+- Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
+- Added ChangesetReader api(along with new unifier apis) and deprecated ChangesetECAdaptor apis(including unifier apis)
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:13 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+### Updates
+
+- Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Patches
+
+- Fix operator precedence bug in WorkspaceImpl.getContainerAsync that silently discarded explicit access tokens
+
+### Updates
+
+- For StandaloneDb make sure to delete txns
+- Remove unnecessary warning when calling `IModelDb.saveChanges` with no unsaved changes.
+- QueryBinder should not fail on bind empty array
+- Fix WorkspaceDb/SettingsDb instance caching, cloud version defaulting, and `getSetting` prototype-chain guard.
+- Added SettingsDb and SettingsEditor APIs for dedicated JSON settings storage, separate from WorkspaceDb.
+- Fix nested Error objects losing non-enumerable properties (message, stack) during IPC serialization in IpcHandler
+- Added withQueryReader to ECDb and iModel and also created ECSqlSyncReader to query imodels in true row by row fashion
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Clarify what inProgress does in documentation
+- Add lifecycle events for pull merge.
+- Changed the tolerance for comparing coordinate in CRS tests
+- Added IModelDb.exportGraphicsAsync and exportPartGraphicsAsync.
+- Validate that ViewDefinition2d has a valid baseModelId.
+- Add iModelDb.integrityCheck function that checks imodel database for corruption and reports results
+- Swap deprecated calls to logException for new logError
+- Change CloudSqlite `validateDbVersion` to fallback to default when version is any falsy value
+- Added semantic rebase support to allow merging incoming or local schema changes without full lock.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

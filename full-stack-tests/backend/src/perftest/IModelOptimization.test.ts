@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { IModelDb, IModelHost, IModelJsFs, PhysicalObject, SpatialCategory } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Code, ColorByName, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
@@ -27,60 +27,63 @@ describe("iModelOptimization", () => {
 
   function editImodel(testImodel: IModelDb) {
     // Create model and category
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(testImodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "TestCategory");
     if (!spatialCategoryId) {
-      spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+      spatialCategoryId = withEditTxn(testImodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     }
     const initialFileSize = IModelJsFs.lstatSync(testImodel.pathName)!.size;
 
     const elementIds: Id64String[] = [];
 
     // Insert a lot of elements
-    for (let i = 0; i < numOfElements; i++) {
-      const elementProps: GeometricElementProps = {
-        classFullName: PhysicalObject.classFullName,
-        model: newModelId,
-        category: spatialCategoryId,
-        code: Code.createEmpty(),
-        userLabel: `Element-${i}-${"X".repeat(200)}`,
-      };
-      const element = testImodel.elements.createElement(elementProps);
-      element.setUserProperties("design", {
-        version: 1,
-        author: "UserA",
-        notes: `ElementInserted!`.repeat(10),
-        metadata: `Data-${i}`.repeat(20),
-        description: `Description for element ${i}`.repeat(5),
-      });
-      const elementId = testImodel.elements.insertElement(element.toJSON());
-      elementIds.push(elementId);
-    }
-    testImodel.saveChanges();
+    withEditTxn(testImodel, (txn) => {
+      for (let i = 0; i < numOfElements; i++) {
+        const elementProps: GeometricElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: newModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          userLabel: `Element-${i}-${"X".repeat(200)}`,
+        };
+        const element = testImodel.elements.createElement(elementProps);
+        element.setUserProperties("design", {
+          version: 1,
+          author: "UserA",
+          notes: `ElementInserted!`.repeat(10),
+          metadata: `Data-${i}`.repeat(20),
+          description: `Description for element ${i}`.repeat(5),
+        });
+        const elementId = txn.insertElement(element.toJSON());
+        elementIds.push(elementId);
+      }
+    }); // auto-saves
 
     // Update the elements in multiple passes to simulate an editing workflow
     for (let pass = 0; pass < 5; pass++) {
-      for (let i = 0; i < elementIds.length; i++) {
-        const element = testImodel.elements.getElement(elementIds[i]);
-        element.userLabel = `Updated-Pass${pass}-${i}-${"Y".repeat(i * pass)}`;
-        element.setUserProperties("design", {
-          version: pass + 2,
-          author: `User-${String.fromCharCode(65 + pass)}`,
-          notes: `Update-Pass${pass}`.repeat(10),
-          metadata: `UpdatedData-${i}-Pass${pass}`.repeat(20),
-          description: `Modified in pass ${pass}`.repeat(5),
-        });
-        testImodel.elements.updateElement(element.toJSON());
-      }
-      testImodel.saveChanges();
+      withEditTxn(testImodel, (txn) => {
+        for (let i = 0; i < elementIds.length; i++) {
+          const element = testImodel.elements.getElement(elementIds[i]);
+          element.userLabel = `Updated-Pass${pass}-${i}-${"Y".repeat(i * pass)}`;
+          element.setUserProperties("design", {
+            version: pass + 2,
+            author: `User-${String.fromCharCode(65 + pass)}`,
+            notes: `Update-Pass${pass}`.repeat(10),
+            metadata: `UpdatedData-${i}-Pass${pass}`.repeat(20),
+            description: `Modified in pass ${pass}`.repeat(5),
+          });
+          txn.updateElement(element.toJSON());
+        }
+      }); // auto-saves after each pass
     }
 
     // Delete 70% of elements to create some fragmentation
     elementIds.sort(() => Math.random() - 0.5);
-    for (let i = 0; i < numOfElements * 0.7; i++) {
-      testImodel.elements.deleteElement(elementIds[i]);
-    }
-    testImodel.saveChanges();
+    withEditTxn(testImodel, (txn) => {
+      for (let i = 0; i < numOfElements * 0.7; i++) {
+        txn.deleteElement(elementIds[i]);
+      }
+    }); // auto-saves
 
     testImodel.performCheckpoint();
 
@@ -119,7 +122,6 @@ describe("iModelOptimization", () => {
 
     // Optimize the iModel by resolving fragmentation
     briefcaseDb.optimize();
-    briefcaseDb.saveChanges();
     briefcaseDb.performCheckpoint();
     briefcaseDb.close();
 
@@ -160,25 +162,26 @@ describe("iModelOptimization", () => {
     const briefcaseDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "User1", iTwinId: HubMock.iTwinId, iModelId });
 
     // Create some data for analysis
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcaseDb, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(briefcaseDb, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(briefcaseDb, IModel.dictionaryId, "TestCategory");
     if (!spatialCategoryId) {
-      spatialCategoryId = SpatialCategory.insert(briefcaseDb, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+      spatialCategoryId = withEditTxn(briefcaseDb, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })));
     }
 
     // Insert more elements to ensure statistics are meaningful
-    for (let i = 0; i < 500; i++) {
-      const elementProps: GeometricElementProps = {
-        classFullName: PhysicalObject.classFullName,
-        model: newModelId,
-        category: spatialCategoryId,
-        code: Code.createEmpty(),
-        userLabel: `AnalyzeTest-${i}`,
-      };
-      briefcaseDb.elements.insertElement(elementProps);
-    }
+    withEditTxn(briefcaseDb, (txn) => {
+      for (let i = 0; i < 500; i++) {
+        const elementProps: GeometricElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: newModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          userLabel: `AnalyzeTest-${i}`,
+        };
+        txn.insertElement(elementProps);
+      }
+    }); // auto-saves
     briefcaseDb.performCheckpoint();
-    briefcaseDb.saveChanges();
 
     // Check statistics data before analyze
     const getStatsCount = (): number => {
@@ -194,7 +197,7 @@ describe("iModelOptimization", () => {
 
     // Run analyze
     briefcaseDb.analyze();
-    briefcaseDb.saveChanges();
+    withEditTxn(briefcaseDb, () => undefined);
 
     // Check statistics after analyze
     const statsAfterAnalyze = getStatsCount();

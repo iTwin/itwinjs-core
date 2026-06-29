@@ -1,0 +1,81 @@
+name: Rush Setup
+description: >
+  Installs Node, restores the pnpm content-addressable store from cache,
+  runs `rush install`, and verifies store integrity.
+
+  Security notes:
+  - Only the pnpm content-addressable store is cached (never node_modules).
+    The store is keyed by OS + pnpm-lock.yaml hash; an attacker changing
+    pnpm-lock.yaml produces a new key, so a poisoned cache entry cannot be
+    restored by a legitimate run with the original lockfile hash.
+  - No restore-keys are used. Partial-key matches can restore a cache built
+    from a different lockfile, opening a vector for supply-chain attacks.
+    Exact-key only means a cache miss results in a clean install.
+  - `pnpm store status` is run after every cache restore. pnpm stores
+    packages by SHA-512 content hash; this command exits non-zero if any
+    file in the store has been modified since it was unpacked.
+  - All third-party actions are pinned to full commit SHAs, not mutable tags,
+    to prevent tag-hijacking supply-chain attacks.
+  - Never use this action in workflows triggered by `pull_request_target`.
+    That event runs with write access to the base repository's secrets even
+    for fork PRs, giving a malicious fork full write access to the cache.
+    `pull_request`, `schedule`, and `push` are safe: fork PRs on
+    `pull_request` get only read access to the parent cache and cannot
+    write poisoned entries back.
+
+inputs:
+  node-version:
+    description: Node.js version to install
+    required: false
+    default: "24.15.0"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      # Pin to a full commit SHA instead of a mutable tag to prevent tag-hijacking
+      # supply-chain attacks. To update: find the desired tag at
+      # https://github.com/actions/setup-node/releases, click the tag, copy the
+      # full commit SHA from the URL, and update both the SHA and the version comment.
+      # actions/setup-node v6.4.0
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install pnpm (for store path detection)
+      shell: bash
+      run: npm install -g pnpm@$(node -e "const r=require('./rush.json'); console.log(r.pnpmVersion)")
+
+    - name: Get pnpm store path
+      id: pnpm-store-path
+      shell: bash
+      run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore pnpm store cache
+      id: cache-restore
+      # Pin to full commit SHA — same rationale as setup-node above.
+      # actions/cache v5.0.5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: ${{ steps.pnpm-store-path.outputs.path }}
+        # Exact-key only — no restore-keys. See security notes above.
+        # Include rush.json hash so a pnpmVersion bump (or any toolchain change) busts the cache.
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ hashFiles('rush.json') }}
+
+    - name: Verify pnpm store integrity after cache restore
+      if: steps.cache-restore.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        echo "Cache hit — verifying pnpm store integrity..."
+        pnpm store status
+        echo "pnpm store integrity check passed."
+
+    - name: Configure git
+      shell: bash
+      run: |
+        git config --local user.email imodeljs-admin@users.noreply.github.com
+        git config --local user.name imodeljs-admin
+
+    - name: Rush install
+      shell: bash
+      run: node common/scripts/install-run-rush.js install

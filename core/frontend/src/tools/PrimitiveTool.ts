@@ -221,9 +221,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return true;
   }
 
-  /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool flyover for the undo description. */
+  /**
+   * If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool flyover for the undo description.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on [[EditCommand]] IPC instead.
+   */
   public async saveChanges(): Promise<void> {
     if (this.iModel.isBriefcaseConnection())
-      return this.iModel.saveChanges(this.flyover);
+      return this.iModel.saveChanges(this.flyover); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 }

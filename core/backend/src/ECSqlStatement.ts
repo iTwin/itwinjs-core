@@ -348,10 +348,12 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
 
     args = args ?? {};
     if (args.rowFormat === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
     const resp = this._stmt.toRow({
       classIdsToClassNames: args.classIdsToClassNames,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
       abbreviateBlobs: false,
       // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
@@ -362,6 +364,43 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     return this.formatCurrentRow(resp, args.rowFormat);
   }
 
+  /**
+   * Used by ECSqlRowExecutor to get row data as json with options determined by request parameters.
+   * @internal */
+  public toRow(args: IModelJsNative.ECSqlRowAdaptorOptions): any {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    const resp = this._stmt.toRow(args);
+    return resp;
+  }
+
+  /**
+   * Used by ECSqlRowExecutor to get metadata as json.
+   * @internal */
+  public getMetadata(args: IModelJsNative.ECSqlRowAdaptorOptions): PropertyMetaDataMap {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    const resp = this._stmt.getMetadata(args);
+    return new PropertyMetaDataMap(resp.meta);
+  }
+
+  /**
+   * Used by ECSqlRowExecutor to bind params to the statement.
+   * @internal */
+  public bindParams(args: object): void {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    this._stmt.reset();
+    this._stmt.clearBindings();
+    const { status, message } = this._stmt.bindParams(args);
+    if (!status)
+      throw new Error(`Failed to bind parameters: ${message}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
@@ -375,6 +414,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     }
     const formattedRow = {};
     for (const prop of this._props) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = currentResp.data[prop.index];
       if (typeof val !== "undefined" && val !== null) {
@@ -873,7 +913,7 @@ export class ECSqlValue {
 
   /** Get information about the query result's column this value refers to. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
+  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo(); }
 
   /** Get the value of this ECSQL value */
   public get value(): any { return ECSqlValueHelper.getValue(this); }

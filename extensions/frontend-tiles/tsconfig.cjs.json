@@ -4,6 +4,7 @@
     "outDir": "lib/cjs"
   },
   "exclude": [
+    "lib/**/*",
     "src/test/**/*",
   ]
 }

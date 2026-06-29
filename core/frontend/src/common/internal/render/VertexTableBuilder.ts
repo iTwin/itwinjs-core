@@ -21,6 +21,59 @@ import { createEdgeParams } from "./EdgeParams";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { PolylineArgs } from "../../../render/PolylineArgs";
 
+const scratchU32 = new Uint32Array(1);
+const scratchF32 = new Float32Array(scratchU32.buffer);
+
+function floatToUint32(val: number): number {
+  scratchF32[0] = val;
+  return scratchU32[0];
+}
+
+function computePolylineCumulativeDistances(args: PolylineArgs): Float32Array {
+  if (args.cumulativeDistances !== undefined)
+    return args.cumulativeDistances;
+
+  const positions: Point3d[] = [];
+  if (args.points instanceof QPoint3dList) {
+    positions.length = args.points.length;
+    for (let i = 0; i < args.points.length; i++)
+      positions[i] = args.points.list[i].unquantize(args.points.params);
+  } else {
+    positions.length = args.points.length;
+    for (let i = 0; i < args.points.length; i++)
+      positions[i] = args.points[i];
+  }
+
+  const cumulativeDistances = new Float32Array(positions.length);
+  cumulativeDistances.fill(Number.NaN);
+
+  for (const line of args.polylines) {
+    if (line.length < 2)
+      continue;
+
+    let dist = 0.0;
+    for (let i = 0; i < line.length; i++) {
+      const idx = line[i];
+      if (i > 0) {
+        const p0 = positions[line[i - 1]];
+        const p1 = positions[idx];
+        dist += p0.distance(p1);
+      }
+
+      // Preserve the first assignment if a vertex is shared across lines.
+      if (Number.isNaN(cumulativeDistances[idx]))
+        cumulativeDistances[idx] = dist;
+    }
+  }
+
+  for (let i = 0; i < cumulativeDistances.length; i++) {
+    if (Number.isNaN(cumulativeDistances[i]))
+      cumulativeDistances[i] = 0.0;
+  }
+
+  return cumulativeDistances;
+}
+
 /** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {
   const builder = createMeshBuilder(args);
@@ -222,6 +275,27 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       } else {
         this.advance(4);
       }
+    }
+  }
+
+  export class PolylineBuilder extends SimpleBuilder<Quantized<PolylineArgs>> {
+    private readonly _cumDist: Float32Array;
+
+    public constructor(args: Quantized<PolylineArgs>) {
+      super(args);
+      this._cumDist = computePolylineCumulativeDistances(args);
+    }
+
+    public override get numRgbaPerVertex() { return 4; }
+
+    public override appendVertex(vertIndex: number): void {
+      super.appendVertex(vertIndex);
+      this.appendCumulativeDistance(vertIndex);
+    }
+
+    private appendCumulativeDistance(vertIndex: number): void {
+      const dist = vertIndex < this._cumDist.length ? this._cumDist[vertIndex] : 0.0;
+      this.append32(floatToUint32(dist));
     }
   }
 
@@ -431,6 +505,27 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
     }
   }
 
+  export class PolylineBuilder extends SimpleBuilder<Unquantized<PolylineArgs>> {
+    private readonly _cumDist: Float32Array;
+
+    public constructor(args: Unquantized<PolylineArgs>) {
+      super(args);
+      this._cumDist = computePolylineCumulativeDistances(args);
+    }
+
+    public override get numRgbaPerVertex() { return 6; }
+
+    public override appendVertex(vertIndex: number): void {
+      super.appendVertex(vertIndex);
+      this.appendCumulativeDistance(vertIndex);
+    }
+
+    private appendCumulativeDistance(vertIndex: number): void {
+      const dist = vertIndex < this._cumDist.length ? this._cumDist[vertIndex] : 0.0;
+      this.append32(floatToUint32(dist));
+    }
+  }
+
   export class MeshBuilder extends SimpleBuilder<Unquantized<MeshArgs>> {
     public readonly type: SurfaceType;
 
@@ -541,8 +636,14 @@ function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: Surface
 }
 
 function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
-  if (args.points instanceof QPoint3dList)
-    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
-  else
-    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
+  const quantized = args.points instanceof QPoint3dList;
+  if (args.flags.isDisjoint) {
+    return quantized
+      ? new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>)
+      : new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
+  }
+
+  return quantized
+    ? new Quantized.PolylineBuilder(args as Quantized<PolylineArgs>)
+    : new Unquantized.PolylineBuilder(args as Unquantized<PolylineArgs>);
 }

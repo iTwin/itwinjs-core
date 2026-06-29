@@ -1,6 +1,18 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { createRequire } from 'module';
+import path from 'path';
 import * as packageJson from "./package.json";
+
+const require = createRequire(import.meta.url);
+
+// Resolve test schema JSON files from node_modules (follows pnpm symlinks)
+const testSchemaFiles = [
+  '@bentley/units-schema/Units.ecschema.json',
+  '@bentley/formats-schema/Formats.ecschema.json',
+  '@bentley/aec-units-schema/AecUnits.ecschema.json',
+].map((specifier) => require.resolve(specifier).replace(/\\/g, "/"));
 
 const includePackages: string[] = [
   ...Object.entries(packageJson.peerDependencies)
@@ -20,7 +32,7 @@ export default defineConfig({
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/<insert-file-name-here>.test.ts"],
     browser: {
-      provider: "playwright",
+      provider: playwright(),
       enabled: true,
       instances: [
         { browser: "chromium" }
@@ -63,7 +75,12 @@ export default defineConfig({
         {
           src: 'src/test/public/*',
           dest: '.'
-        }
+        },
+        // Serve EC schema JSON files for example-code tests (resolved through pnpm symlinks)
+        ...testSchemaFiles.map((filePath) => ({
+          src: filePath,
+          dest: 'assets/schemas'
+        }))
       ]
     })
   ],
@@ -75,5 +92,8 @@ export default defineConfig({
   optimizeDeps: {
     include: includePackages,
     force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
   },
 })

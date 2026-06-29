@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { ITwinError } from "@itwin/core-bentley";
+import { GuidString, ITwinError } from "@itwin/core-bentley";
 
 /**
  * An error originating from the [SQLiteDb]($backend) API.
@@ -145,6 +145,40 @@ export namespace WorkspaceError {
   }
 }
 
+/**
+ * Errors thrown by iTwin settings container APIs.
+ * @beta
+ */
+export interface ITwinSettingsError extends ITwinError {
+  /** The iTwin associated with this settings error, when available. */
+  readonly iTwinId?: GuidString;
+  /** The priority associated with this settings error, when available. */
+  readonly priority?: number;
+}
+
+/** @beta */
+export namespace ITwinSettingsError {
+  export const scope = "itwin-settings";
+  export type Key =
+    "failed-to-obtain-container-token" |
+    "missing-container-itwinid" |
+    "multiple-itwin-settings-containers" |
+    "no-cloud-container" |
+    "blob-service-unavailable" |
+    "invalid-priority" |
+    "unknown-setting";
+
+  /** Determine whether an error object is an ITwinSettingsError. */
+  export function isError(error: unknown, key?: Key): error is ITwinSettingsError {
+    return ITwinError.isError<ITwinSettingsError>(error, scope, key);
+  }
+
+  /** Instantiate and throw an ITwinSettingsError. */
+  export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
+    ITwinError.throwError<ITwinSettingsError>({ ...e, iTwinErrorId: { scope, key } });
+  }
+}
+
 
 /** Errors originating from the [ChannelControl]($backend) interface.
  * @beta
@@ -175,5 +209,73 @@ export namespace ChannelControlError {
   /** Determine whether an error object is a ChannelControlError */
   export function isError(error: unknown, key?: Key): error is ChannelControlError {
     return ITwinError.isError<ChannelControlError>(error, scope, key) && typeof error.channelKey === "string";
+  }
+}
+
+/**
+ * An error originating from the [EditTxn]($backend) API.
+ * @beta
+ */
+export interface EditTxnError extends ITwinError {
+  /** The iModel key associated with the error. */
+  readonly iModelKey?: string;
+  /** The description of the EditTxn that caused the error, if applicable. */
+  readonly description?: string;
+}
+
+/** @beta */
+export namespace EditTxnError {
+  /** the ITwinError scope for `EditTxnError`s. */
+  export const scope = "itwin-EditTxn";
+
+  /** Keys that identify `EditTxnError`s */
+  export type Key =
+    /** an attempt to start an EditTxn when one is already active */
+    "already-active" |
+    /** an attempt to modify an iModel through the implicit transaction when explicit transactions are enforced */
+    "implicit-txn-write-disallowed" |
+    /** an attempt to start an EditTxn when unsaved changes are already present */
+    "unsaved-changes" |
+    /** an attempt to perform an operation that requires an active EditTxn when none is active */
+    "not-active" |
+    /** an attempt to use an EditTxn with the wrong iModel */
+    "wrong-imodel";
+
+  /** Instantiate and throw an EditTxnError */
+  export function throwError(key: Key, message: string, iModelKey?: string, description?: string): never {
+    ITwinError.throwError<EditTxnError>({ iTwinErrorId: { scope, key }, message, iModelKey, description });
+  }
+
+  /** Determine whether an error object is an EditTxnError */
+  export function isError(error: unknown, key?: Key): error is EditTxnError {
+    return ITwinError.isError<EditTxnError>(error, scope, key);
+  }
+}
+
+/** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
+ * @beta
+ */
+export namespace ServerBasedLocksError {
+  /** the ITwinError scope for `ServerBasedLocksError`s. */
+  export const scope = "itwin-ServerBasedLocks";
+
+  /** Keys that identify `ServerBasedLocksError`s */
+  export type Key =
+    /** The briefcase contains unsaved changes */
+    "has-unsaved-changes" |
+    /** A SQLite error occurred while reading or writing the "locks" database */
+    "lock-database-problem" |
+    /** The specified Txn ID is not known to the TxnManager */
+    "txn-id-not-found" |
+    /** Attempted to abandon locks for a Txn that has not yet been reversed */
+    "txn-not-reversed";
+
+  /** Instantiate and throw a ServerBasedLocksError */
+  export function throwError(key: Key, message: string): never {
+    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
+  }
+  /** Determine whether an error object is a ServerBasedLocksError */
+  export function isError(error: unknown, key?: Key): error is ITwinError {
+    return ITwinError.isError<ITwinError>(error, scope, key);
   }
 }

@@ -90,6 +90,8 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   private loadRefs(): void {
+    for (const ref of this._refs)
+      ref.detachLayerListeners();
     this._refs.length = 0;
     const groups = this._groups.groups;
     const args: BatchedTileTreeReferenceArgs = {
@@ -135,6 +137,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   public detachFromViewport(): void {
+    for (const ref of this._refs)
+      ref.detachLayerListeners();
+
     this._onModelSelectorChanged = undefined;
     this._excludedRefs.detachFromViewport();
 

@@ -1,9 +1,16 @@
-import { assert, expect } from "chai";
+import { assert, expect, use as useFromChai } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as sinon from "sinon";
 import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import * as path from "path";
+import * as fs from "fs";
+import { setupIntegrationLogging } from "./StartupShutdown";
+
+useFromChai(chaiAsPromised);
 
 describe("Discarding local txns test", async () => {
   let briefcases: BriefcaseDb[];
@@ -12,6 +19,7 @@ describe("Discarding local txns test", async () => {
   let drawingModelId: GuidString;
 
   before(async () => {
+    setupIntegrationLogging();
     await IModelHost.startup();
     HubMock.startup("discardLocalTxnsTest", KnownTestLocations.outputDir);
   });
@@ -22,7 +30,7 @@ describe("Discarding local txns test", async () => {
   });
 
   afterEach(() => {
-    briefcases.forEach(briefcase => { briefcase.close(); });
+    briefcases.forEach(briefcase => { if (briefcase.isOpen) briefcase.close(); });
   });
 
   // Helper to setup schema/model/category without XML string
@@ -66,12 +74,11 @@ describe("Discarding local txns test", async () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     await firstBriefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, createdDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(firstBriefcase, codeProps, true);
+    const [, createdDrawingModelId] = withEditTxn(firstBriefcase, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
     drawingModelId = createdDrawingModelId;
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
     if (!drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
-    firstBriefcase.saveChanges();
+      drawingCategoryId = withEditTxn(firstBriefcase, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance()));
     await firstBriefcase.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
     await secondBriefcase.pullChanges();
 
@@ -85,13 +92,12 @@ describe("Discarding local txns test", async () => {
 
   async function insertElement(briefcase: BriefcaseDb, name: string) {
     await briefcase.locks.acquireLocks({ shared: drawingModelId });
-    const elementId = briefcase.elements.insertElement({
+    const elementId = withEditTxn(briefcase, (txn) => txn.insertElement({
       ...elementPropsTemplate,
       elementName: name,
       elementState: "Inserted",
-    });
+    }));
     assert.isTrue(Id64.isValidId64(elementId));
-    briefcase.saveChanges();
 
     testElement(briefcase, elementId, "Inserted");
     return elementId;
@@ -106,16 +112,14 @@ describe("Discarding local txns test", async () => {
     }
     assert.isDefined(props);
     (props as any).elementState = state;
-    briefcase.elements.updateElement(props as any);
-    briefcase.saveChanges();
+    withEditTxn(briefcase, (txn) => txn.updateElement(props as any));
 
     testElement(briefcase, id, state);
   }
 
   async function deleteElement(briefcase: BriefcaseDb, id: Id64String) {
     await briefcase.locks.acquireLocks({ exclusive: id });
-    briefcase.elements.deleteElement(id);
-    briefcase.saveChanges();
+    withEditTxn(briefcase, (txn) => txn.deleteElement(id));
 
     testElement(briefcase, id);
   }
@@ -266,7 +270,7 @@ describe("Discarding local txns test", async () => {
         sourceId: el1Id,
         targetId: el2Id,
       };
-      const relId = briefcase.relationships.insertInstance(relProps);
+      const relId = withEditTxn(briefcase, (txn) => txn.insertRelationship(relProps));
       assert.isTrue(Id64.isValidId64(relId));
 
       assert.isUndefined(briefcase.relationships.tryGetInstance("TestSchema:ElementConnectsToElement", relId));
@@ -443,6 +447,178 @@ describe("Discarding local txns test", async () => {
       // This essentially ends with both briefcases out of sync with no direct means to resync as all record of txns were cleared !!
       testElement(firstBriefcase, el1Id, "Inserted"); // Element will still be present in the first briefcase
       testElement(secondBriefcase, el1Id);  // Element will be absent from the second briefcase
+    });
+  });
+
+  describe("revertAndPushChanges", () => {
+    it("should revert last 2 changesets (schema + data) from second briefcase and verify on first", async () => {
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase, secondBriefcase] = briefcases;
+      const iModelId = firstBriefcase.iModelId;
+      const targetDir = path.join(KnownTestLocations.outputDir, iModelId, "changesets");
+
+      // 1. First briefcase pushes a data changeset
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
+      await firstBriefcase.pushChanges({ description: "data: insert first element", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+
+      // 2. First briefcase pushes a schema changeset
+      await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="ElementName" typeName="string" />
+            <ECProperty propertyName="ElementState" typeName="string" />
+            <ECProperty propertyName="ExtraProp" typeName="string" />
+          </ECEntityClass>
+          <ECRelationshipClass typeName="ElementConnectsToElement" strength="referencing" modifier="Sealed">
+            <BaseClass>bis:ElementRefersToElements</BaseClass>
+            <Source multiplicity="(0..1)" roleLabel="connects to" polymorphic="false">
+              <Class class="TestElement"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="is connected to" polymorphic="false">
+              <Class class="TestElement"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>`]);
+      await firstBriefcase.pushChanges({ description: "schema: add ExtraProp", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+
+      // 3. First briefcase pushes another data changeset
+      const el2Id = await insertElement(firstBriefcase, "SecondElement");
+      await firstBriefcase.pushChanges({ description: "data: insert second element", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+
+      // Verify both elements exist on both briefcases before revert
+      testElement(firstBriefcase, el1Id, "Inserted");
+      testElement(firstBriefcase, el2Id, "Inserted");
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id, "Inserted");
+
+      // Verify changeset history on the hub before revert
+      let changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+      assert.equal(changesets.length, 4, "Expected 4 changesets: setup + data + schema + data");
+      assert.equal(changesets[1].description, "data: insert first element");
+      assert.equal(changesets[2].description, "schema: add ExtraProp");
+      assert.equal(changesets[3].description, "data: insert second element");
+
+      // 4. Second briefcase reverts the last 2 changesets (schema + data) from timeline and pushes
+      // Timeline: index 1 = setup, index 2 = data (el1), index 3 = schema, index 4 = data (el2)
+      // toIndex is inclusive in the revert range, so toIndex=3 reverts changesets 3 and 4,
+      // leaving the state at changeset 2 (el1 exists, schema change and el2 are gone)
+      const currentIndex = secondBriefcase.changeset.index!;
+      assert.equal(currentIndex, 4, "Expected current index to be 4");
+      await secondBriefcase.revertAndPushChanges({ toIndex: currentIndex - 1, description: "revert last 2 changesets" });
+
+      // Verify the revert changeset was pushed to the hub
+      changesets = await HubMock.downloadChangesets({ iModelId, targetDir });
+      assert.equal(changesets.length, 5, "Expected 5 changesets after revert push");
+      assert.equal(changesets[4].description, "revert last 2 changesets");
+
+      // 5. First briefcase pulls and verifies revert
+      await firstBriefcase.pullChanges();
+
+      // The first element should still exist (it was in the first data changeset, not reverted)
+      testElement(firstBriefcase, el1Id, "Inserted");
+      // The second element should be gone (it was in the last data changeset, which was reverted)
+      testElement(firstBriefcase, el2Id);
+
+      // The schema change (ExtraProp) should also be reverted
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const propsAfterRevert = Object.getOwnPropertyNames(firstBriefcase.getMetaData("TestSchema:TestElement").properties);
+      assert.include(propsAfterRevert, "elementName", "Original properties should still exist");
+      assert.include(propsAfterRevert, "elementState", "Original properties should still exist");
+      assert.notInclude(propsAfterRevert, "extraProp", "ExtraProp should be reverted");
+
+      // Verify second briefcase also reflects the reverted state
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const propsOnSecond = Object.getOwnPropertyNames(secondBriefcase.getMetaData("TestSchema:TestElement").properties);
+      assert.notInclude(propsOnSecond, "extraProp", "ExtraProp should be reverted on second briefcase too");
+    });
+
+    it("inCaseOfFailure='revert' should restore briefcase to pre-revert state on push failure", async () => {
+      await setupTestSchemaAndModel();
+      const [firstBriefcase] = briefcases;
+
+      // Push a data changeset so we have something to revert
+      const el1Id = await insertElement(firstBriefcase, "Element1");
+      await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
+
+      // Stub pushChanges to simulate a push failure
+      const pushStub = sinon.stub(BriefcaseDb.prototype, "pushChanges").rejects(new Error("Simulated push failure"));
+      try {
+        const currentIndex = firstBriefcase.changeset.index!;
+        await assert.isRejected(
+          firstBriefcase.revertAndPushChanges({ toIndex: currentIndex, inCaseOfFailure: "revert", accessToken: adminToken }),
+          "Simulated push failure",
+        );
+      } finally {
+        pushStub.restore();
+      }
+
+      // Briefcase should be restored — element should still exist and no pending txns
+      assert.isFalse(firstBriefcase[_nativeDb].hasPendingTxns(), "Should have no pending txns after revert cleanup");
+      testElement(firstBriefcase, el1Id, "Inserted");
+    });
+
+    it("inCaseOfFailure='retain' should keep local changes on push failure", async () => {
+      await setupTestSchemaAndModel();
+      const [firstBriefcase] = briefcases;
+
+      // Push a data changeset so we have something to revert
+      await insertElement(firstBriefcase, "Element1");
+      await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
+
+      // Stub pushChanges to simulate a push failure
+      const pushStub = sinon.stub(BriefcaseDb.prototype, "pushChanges").rejects(new Error("Simulated push failure"));
+      try {
+        const currentIndex = firstBriefcase.changeset.index!;
+        await assert.isRejected(
+          firstBriefcase.revertAndPushChanges({ toIndex: currentIndex, inCaseOfFailure: "retain", accessToken: adminToken }),
+          "Simulated push failure",
+        );
+      } finally {
+        pushStub.restore();
+      }
+
+      // Briefcase should still have local changes (pending txns from the revert)
+      assert.isTrue(firstBriefcase[_nativeDb].hasPendingTxns(), "Should retain pending txns");
+    });
+
+    it("inCaseOfFailure='delete' should close and delete the briefcase file on push failure", async () => {
+      await setupTestSchemaAndModel();
+      const [firstBriefcase] = briefcases;
+
+      // Push a data changeset so we have something to revert
+      await insertElement(firstBriefcase, "Element1");
+      await firstBriefcase.pushChanges({ description: "data: insert element", accessToken: adminToken });
+
+      const filePath = firstBriefcase.pathName;
+      assert.isTrue(fs.existsSync(filePath), "Briefcase file should exist before revert");
+
+      // Stub pushChanges to simulate a push failure
+      const pushStub = sinon.stub(BriefcaseDb.prototype, "pushChanges").rejects(new Error("Simulated push failure"));
+      try {
+        const currentIndex = firstBriefcase.changeset.index!;
+        await assert.isRejected(
+          firstBriefcase.revertAndPushChanges({ toIndex: currentIndex, inCaseOfFailure: "delete", accessToken: adminToken }),
+          "Simulated push failure",
+        );
+      } finally {
+        pushStub.restore();
+      }
+
+      // Briefcase file should be deleted and it should no longer be open
+      assert.isFalse(firstBriefcase.isOpen, "Briefcase should be closed after delete");
+      assert.isFalse(fs.existsSync(filePath), "Briefcase file should be deleted");
+
+      // Remove from briefcases array so afterEach doesn't try to close it
+      briefcases = briefcases.filter((b) => b !== firstBriefcase);
     });
   });
 

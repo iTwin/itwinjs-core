@@ -186,6 +186,7 @@ export * from "./numerics/SmallSystem";
 export * from "./numerics/TriDiagonalSystem";
 
 export * from "./curve/Arc3d";
+export * from "./curve/ConstrainedCurve2d";
 export * from "./curve/ConstructCurveBetweenCurves";
 export * from "./curve/CoordinateXYZ";
 export * from "./curve/CurveTypes";
