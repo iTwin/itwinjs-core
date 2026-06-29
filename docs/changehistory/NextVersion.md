@@ -29,18 +29,18 @@ publish: false
 
 New `@beta` methods on [EditTxn]($backend) move an element to a different parent or model without deleting and re-inserting it.
 
-- [EditTxn.changeElementParent]($backend) changes an element's parent. The new parent must be in the **same model** as the element; to move an element into a different model, use [EditTxn.changeElementModel]($backend) instead. Only the reparented element is affected — its own children stay attached to it (and, since the model is unchanged, in the same model). It accepts [ChangeElementParentProps]($backend) (the element id and the new parent id).
+- [EditTxn.changeElementParent]($backend) changes an element's parent. The new parent must be in the **same model** as the element; cross-model reparenting is not allowed. Only the reparented element is affected — its own children stay attached to it (and, since the model is unchanged, in the same model). It accepts [ChangeElementParentProps]($backend) (the element id and the new parent id).
 - [EditTxn.changeElementModel]($backend) changes the model of a **root** element (one with no parent), making it a root element in the target model. BIS requires a parent and all of its children to reside in the same model, so the element's **entire subtree** is relocated into the target model as well, preserving the parent-child hierarchy. The source and target models must be of the same class (for example, both `PhysicalModel`). It accepts [ChangeElementModelProps]($backend) (the element id and the target model id).
 
-Both operations enforce code-scope rules and throw when the move would invalidate an element's code. An element with a `ParentElement`-scoped code cannot be reparented. When changing an element's model, the **whole subtree** is validated before anything moves (so a rejected move leaves the iModel untouched): a `Model`-scoped code anywhere in the subtree blocks the move, as does a `ParentElement`-scoped code on the moved root (a descendant's `ParentElement`-scoped code is fine, because its parent moves with it). Elements with `Repository`-scoped, `RelatedElement`-scoped, or empty codes are allowed. Failures are reported through the new [ElementError]($common) namespace.
+Both operations enforce code-scope rules and throw when the move would invalidate an element's code. An element with a `ParentElement`-scoped code cannot be reparented. When changing an element's model, the **whole subtree** is validated before anything moves (so a rejected move leaves the iModel untouched): a `Model`-scoped code anywhere in the subtree blocks the move, as does a `ParentElement`-scoped code on the moved root (a descendant's `ParentElement`-scoped code is fine, because its parent moves with it). Elements with `Repository`-scoped, `RelatedElement`-scoped, or empty codes are allowed. Explicit validation failures such as different-model reparenting or model-type mismatches are reported through the new [ElementError]($common) namespace.
 
 ```typescript
 withEditTxn(iModel, (txn) => {
   // Reparent an element within its model (only this element moves; its children stay attached to it).
-  txn.changeElementParent({ id: elementId, parentId: newParentId });
+  txn.changeElementParent({ id: childElementId, parentId: newParentId });
 
   // Move a root element to a different model of the same class (its entire subtree moves with it).
-  txn.changeElementModel({ id: elementId, modelId: newModelId });
+  txn.changeElementModel({ id: rootElementId, modelId: newModelId });
 });
 ```
 

@@ -275,8 +275,8 @@ export class EditTxn {
 
   /** Change the parent of an element within its model.
    *
-   * The new parent must be in the same model as the element. Reparenting across models is not
-   * allowed; to move an element into a different model use [[changeElementModel]] instead.
+   * The new parent must be in the same model as the element. Cross-model reparenting is not allowed;
+   * use [[changeElementModel]] only to move root elements between models.
    * Only the target element is reparented — its children and their model membership are unaffected.
    *
    * **Blocked cases** (will throw):
@@ -304,13 +304,13 @@ export class EditTxn {
     iModel.locks.checkExclusiveLock(props.id, "element", "changeParent");
     iModel.locks.checkSharedLock(props.parentId, "parent", "changeParent");
 
-    // The new parent must be in the same model as the element. Reparenting across models is not
-    // allowed here — use changeElementModel to move an element into a different model. Check this up
+    // The new parent must be in the same model as the element. Cross-model reparenting is not
+    // allowed here; changeElementModel only moves root elements between models. Check this up
     // front so consumers get a clear error instead of the addon's lower-level "wrong model" status.
     const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
     const parentModelId = iModel.elements.getElementProps({ id: props.parentId }).model;
     if (sourceModelId !== parentModelId)
-      ElementError.throwError("invalid-arguments", `cannot reparent element '${props.id}' to a parent in a different model ('${parentModelId}' != '${sourceModelId}'); use changeElementModel to move an element to a different model`);
+      ElementError.throwError("invalid-arguments", `cannot reparent element '${props.id}' to a parent in a different model ('${parentModelId}' != '${sourceModelId}'); changeElementModel only moves root elements between models`);
 
     // Channel verification on the element's model.
     iModel.channels[_verifyChannel](sourceModelId);
@@ -334,7 +334,7 @@ export class EditTxn {
 
   /** Change the model of a root element, making it a root element in the new model.
    *
-   * The element must not have a parent; reparent it first with [[changeElementParent]] if needed.
+   * The element must not have a parent.
    * The element's entire subtree moves with it: BIS requires a parent and all of its children to reside
    * in the same model, so every descendant of the element is relocated into the target model as well.
    * The parent-child hierarchy is preserved. The whole subtree is validated before anything is moved, so
@@ -352,7 +352,7 @@ export class EditTxn {
    *
    * The source and target models must be of the same class (classFullName must match exactly).
    * Channel verification is performed on both the source and target models.
-   * Lock enforcement: requires an exclusive lock on the element, and a shared lock on the target model.
+   * Lock enforcement: requires an exclusive lock on every element in the moved subtree, and a shared lock on the target model.
    * @param props The model change parameters: element id and target model id.
    * @throws EditTxnError if this EditTxn is not active.
    * @throws [[ITwinError]] if the operation fails.
@@ -361,9 +361,6 @@ export class EditTxn {
   public changeElementModel(props: ChangeElementModelProps): void {
     this.verifyWriteable();
     const iModel = this.iModel;
-
-    // Lock enforcement: exclusive lock on element
-    iModel.locks.checkExclusiveLock(props.id, "element", "changeModel");
 
     // Resolve the source model
     const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
@@ -379,6 +376,11 @@ export class EditTxn {
 
     // Shared lock on target model
     iModel.locks.checkSharedLock(props.modelId, "model", "changeModel");
+
+    // Lock enforcement: every element in the subtree is updated by the native bulk move.
+    const subtreeIds = this.collectSubtreeIds(props.id);
+    for (const id of subtreeIds)
+      iModel.locks.checkExclusiveLock(id, "element", "changeModel");
 
     // Channel verification on the target model
     iModel.channels[_verifyChannel](props.modelId);
@@ -398,7 +400,7 @@ export class EditTxn {
     // The move relocates the element's entire subtree into the target model (BIS requires a parent and
     // its children to reside in the same model). Every descendant's cached props therefore hold a stale
     // `model`, so invalidate the whole subtree rather than just the target element.
-    for (const id of this.collectSubtreeIds(props.id)) {
+    for (const id of subtreeIds) {
       iModel.elements[_cache].delete({ id });
       iModel.elements[_instanceKeyCache].deleteById(id);
     }

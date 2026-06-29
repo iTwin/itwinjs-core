@@ -144,7 +144,7 @@ export interface InsertElementOptions {
 
 /** Options for [[EditTxn.changeElementParent]].
  * Changes the parent of an element within its model. The new parent must be in the same model as the
- * element; to move an element into a different model use [[EditTxn.changeElementModel]] instead.
+ * element; cross-model reparenting is not allowed.
  *
  * See [[EditTxn.changeElementParent]] for the allowed and blocked cases.
  * @beta
