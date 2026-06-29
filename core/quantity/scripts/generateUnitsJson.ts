@@ -65,7 +65,7 @@ function buildGeneratedArtifactContents(schema: SourceSchemaLike & { version: st
   };
 }
 
-function generateUnitsArtifacts(destinationRoot = join(__dirname, "..")): {
+export function generateUnitsArtifacts(destinationRoot = join(__dirname, "..")): {
   readonly anyChanged: boolean;
   readonly destinationRoot: string;
   readonly schemaVersion: string;

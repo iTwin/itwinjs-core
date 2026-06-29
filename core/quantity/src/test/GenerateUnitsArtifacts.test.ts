@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
@@ -17,6 +16,7 @@ import {
   buildSerializedUnitsJson,
   formatGeneratedNumber,
 } from "../../scripts/generatedModuleBuilders";
+import { generateUnitsArtifacts } from "../../scripts/generateUnitsJson";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
@@ -24,8 +24,6 @@ const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") a
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
 const generatedDefaultPersistenceSource = readFileSync(require.resolve("../internal/DefaultPersistenceUnits.generated.ts"), "utf8");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const packageRoot = join(dirname(require.resolve("../assets/Units.json")), "..", "..");
 
 function normalizeLineEndings(source: string): string {
   return source.replace(/\r\n/g, "\n");
@@ -145,7 +143,7 @@ describe("Generated Units artifacts", () => {
     const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
 
     try {
-      execFileSync(npmCommand, ["run", "-s", "generate", "--", destinationRoot], { cwd: packageRoot, stdio: "pipe" });
+      generateUnitsArtifacts(destinationRoot);
 
       const generatedArtifactPaths = {
         unitsJson: join(destinationRoot, "src/assets/Units.json"),
