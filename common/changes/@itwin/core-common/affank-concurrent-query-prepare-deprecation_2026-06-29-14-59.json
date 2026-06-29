@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Deprecated the no-op `doNotUsePrimaryConnToPrepare` concurrent query config option. Worker connections now always prepare against a shared, dedicated schema-source connection (falling back to their own connection) to avoid a deadlock with the primary connection; the option is retained only for backward-compatible config serialization and no longer affects behavior.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "khanaffan@users.noreply.github.com"
+}

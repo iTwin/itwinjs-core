@@ -184,7 +184,6 @@ describe("ConcurrentQuery", () => {
     const config = {
       requestQueueSize: 1000,
       statementCacheSizePerWorker: 1, // Force frequent prepare calls
-      doNotUsePrimaryConnToPrepare: false, // Force primary connection usage
     };
 
     // Reset configuration
