@@ -3,10 +3,9 @@
 The shape of data in iModels is expressed using [ECSchemas](../../bis/ec/ec-schema.md).
 Sometimes, these schemas can grow quite large and complex. It is possible to have a hundred schemas, thousands of classes and hundreds of thousands of properties flat, which expands to millions of properties when you include inherited properties.
 
-There have been several libraries and approaches for holding ECSchemas in memory, all of them scale poorly with larger schemas.
-Loading single schema items gets too chatty via RPC and hard to manage while a full-fidelity library that loads the schemas from XML/Json documents is slow and heavy on memory.
+When that happens, a few things usually happen: performance and memory consumption suffer, plus in typescript there is the additional caveat of our metadata library loading its info synchronously, which blocks the backend. So a web service may actually freeze for multiple seconds while loading huge schemas, which is not acceptable.
 
-`SchemaView` is the first library primarily aimed at memory consumption and performance. It uses a binary blob to fetch exactly the data it needs from the iModel in as few calls as possible, including string and property deduplication. It is read-only and designed for synchronous access to schema metadata that is held in memory for the lifetime of a connection.
+`SchemaView` is the first library primarily aimed at memory consumption and performance. It uses a binary blob to fetch exactly the data it needs from the iModel in as few (async) calls as possible, including string and property deduplication. It is read-only and designed for synchronous access to schema metadata that is held in memory for the lifetime of a connection.
 
 It lives in `@itwin/ecschema-metadata` and should be the first choice for accessing schema metadata at runtime - for example in presentation layers, property grids, or data-driven UI.
 
