@@ -3651,14 +3651,17 @@ describe("ECSqlStatement", () => {
       // Regression: the IS (ClassName) type predicate is unaffected (all rows are ts.Foo).
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE ECClassId IS (ts.Foo)"), 5);
 
-      // operands of incompatible types are rejected (string vs point)
-      let threw = false;
+      // Operands of incompatible types are rejected at prepare time (string vs point) — assert the
+      // specific type-mismatch failure so the test proves IS was rejected for the intended reason
+      // rather than passing on any unrelated error (e.g. a typo or schema-setup failure).
+      let error: any;
       try {
         await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS P1");
-      } catch {
-        threw = true;
+      } catch (err) {
+        error = err;
       }
-      assert.isTrue(threw, "IS between incompatible types (string vs point) should fail to prepare");
+      assert.isDefined(error, "IS between incompatible types (string vs point) should fail to prepare");
+      assert.match(error.message, /Type mismatch in expression '\[S1\] IS \[P1\]'/, "IS should be rejected for the type mismatch, not an unrelated failure");
     });
 
     it("expands point operands column-wise (IS joins with AND, IS NOT with OR)", async () => {
