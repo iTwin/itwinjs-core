@@ -280,12 +280,15 @@ export namespace ServerBasedLocksError {
   }
 }
 
-/**
- * An error originating from element operations.
+/** Errors originating from element operations such as [EditTxn.changeElementParent]($backend) and
+ * [EditTxn.changeElementModel]($backend).
  * @beta
  */
 export namespace ElementError {
-  export const scope = "itwin-element";
+  /** the ITwinError scope for `ElementError`s. */
+  export const scope = "itwin-Element";
+
+  /** Keys that identify `ElementError`s */
   export type Key =
     /** The element's model type does not match the expected model type for the operation */
     "model-type-mismatch" |

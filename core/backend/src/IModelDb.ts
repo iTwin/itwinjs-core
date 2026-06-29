@@ -69,7 +69,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb, _verifyChannel } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -144,19 +144,9 @@ export interface InsertElementOptions {
 
 /** Options for [[EditTxn.changeElementParent]].
  * Changes the parent of an element within its model. The new parent must be in the same model as the
- * element; reparenting across models is not allowed (use [[EditTxn.changeElementModel]] for that).
- * Only the target element is reparented — its children and their model membership are unaffected.
+ * element; to move an element into a different model use [[EditTxn.changeElementModel]] instead.
  *
- * **Blocked cases** (will throw):
- * - The new parent is in a different model than the element.
- * - Element has a `ParentElement`-scoped code (code uniqueness is tied to parent; use delete+insert instead).
- *
- * **Allowed cases**:
- * - Element has a `Repository`-scoped code (unique across entire iModel — unaffected by the parent change).
- * - Element has a `RelatedElement`-scoped code (scope element is independent of parent).
- * - Element has a `Model`-scoped code (the model does not change, so the code remains valid).
- * - Element has no meaningful code (empty code).
- *
+ * See [[EditTxn.changeElementParent]] for the allowed and blocked cases.
  * @beta
  */
 export interface ChangeElementParentProps {
@@ -168,20 +158,9 @@ export interface ChangeElementParentProps {
 
 /** Options for [[EditTxn.changeElementModel]].
  * Changes the model of a root element (one with no parent), making it a root element in the new model.
- * The element's entire subtree moves with it — BIS requires a parent and all of its children to reside in
- * the same model, so every descendant is relocated into the target model as well. The hierarchy is preserved.
- * The whole subtree is validated before anything is moved, so a rejected change leaves the iModel untouched.
+ * The element's entire subtree moves with it, preserving the parent-child hierarchy.
  *
- * **Blocked cases** (will throw):
- * - Element has a parent (only root elements can be moved between models; reparent first with [[EditTxn.changeElementParent]]).
- * - Any element in the subtree has a `Model`-scoped code (code uniqueness is tied to source model; use delete+insert instead).
- * - The moved (root) element has a `ParentElement`-scoped code (use delete+insert instead). A descendant's `ParentElement`-scoped code is allowed, because its parent moves with it.
- *
- * **Allowed cases** (for any element in the subtree):
- * - A `Repository`-scoped code (unique across entire iModel — unaffected by model change).
- * - A `RelatedElement`-scoped code (scope element is independent of model).
- * - No meaningful code (empty code).
- *
+ * See [[EditTxn.changeElementModel]] for the allowed and blocked cases.
  * @beta
  */
 export interface ChangeElementModelProps {
@@ -3257,9 +3236,9 @@ export namespace IModelDb {
 
     /** Change the parent of an element.
      * @param props The properties specifying the element to reparent and its new parent.
-     * @throws [[IModelError]] if unable to change the element's parent.
+     * @throws [[ITwinError]] if the operation fails.
      * @beta
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.11.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public changeElementParent(props: ChangeElementParentProps): void {
       this._iModel[_implicitTxn].changeElementParent(props);
@@ -3267,9 +3246,9 @@ export namespace IModelDb {
 
     /** Change the model of an element.
      * @param props The properties specifying the element to move and its new model.
-     * @throws [[IModelError]] if unable to change the element's model.
+     * @throws [[ITwinError]] if the operation fails.
      * @beta
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.11.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public changeElementModel(props: ChangeElementModelProps): void {
       this._iModel[_implicitTxn].changeElementModel(props);

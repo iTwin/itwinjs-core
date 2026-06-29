@@ -3013,10 +3013,8 @@ export interface ElementAspectProps extends EntityProps {
 
 // @beta
 export namespace ElementError {
-    const // (undocumented)
-    scope = "itwin-element";
+    const scope = "itwin-Element";
     export function isError(error: unknown, key?: Key): error is ITwinError;
-    // (undocumented)
     export type Key =
     /** The element's model type does not match the expected model type for the operation */
     "model-type-mismatch" |
