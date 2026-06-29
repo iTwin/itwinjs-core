@@ -1,0 +1,91 @@
+name: Report a bug
+description: Let us know so we can fix it!
+labels: ["needs triage", "type - bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve iTwin.js! Please provide as much detail as possible so we can reproduce and fix the issue quickly.
+  - type: input
+    id: title-hint
+    attributes:
+      label: Clear title
+      description: "State the problem concisely (e.g., \"Crash in v2.0 when passing null to `user.update()`\"). Your issue title above should reflect this."
+      placeholder: "Brief summary of the bug"
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Expected vs. actual behavior
+      description: "Contrast what should have happened with what actually happened."
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      value: |
+        1.
+        2.
+        3.
+        ...
+    validations:
+      required: true
+  - type: input
+    id: repro-link
+    attributes:
+      label: Minimal reproducible example
+      description: "Link to a self-contained repo, CodeSandbox, or Display Test App branch that isolates the bug."
+      placeholder: "https://github.com/..."
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Stack traces and logs
+      description: "Paste full error logs in a code block (not screenshots). Include any relevant console output."
+      placeholder: |
+        Add some logs here!
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: "iTwin.js version, runtime (Node.js, Electron), platform/browser/OS, and any relevant package versions."
+      value: |
+        iTwin.js Version:
+        Runtime (e.g., Node.js 20, Electron 28):
+        Operating System:
+        Browser (if applicable):
+    validations:
+      required: true
+  - type: textarea
+    id: priority
+    attributes:
+      label: Priority / urgency
+      description: "Is this blocking you? Describe severity and the earliest date you could consume a fix. Then please set the priority level in github when issue is filed"
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai-acknowledgment
+    attributes:
+      label: AI acknowledgment
+      options:
+        - label: I used AI to generate this issue report.
+          required: false
+        - label: (If the above is checked) I have reviewed the AI-generated content before submitting.
+          required: false
+  - type: markdown
+    attributes:
+      value: |
+        If you can also contribute a fix, we'd absolutely appreciate it!
+
+        Check out the contributor guide to get started: [CONTRIBUTING.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md)
+
+        Just let us know you're working on it and we'd be happy to provide advice and feedback.

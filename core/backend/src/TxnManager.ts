@@ -8,11 +8,12 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, TxnProps } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
+import { Element } from "./Element";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
@@ -20,6 +21,8 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { ChangesetReader } from "./ChangesetReader";
+import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -147,7 +150,7 @@ class ChangedEntitiesProc {
 
   public static maxPerEvent = 1000;
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+  public static process(iModel: BriefcaseDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
       // The iModel is being closed. Do not prepare new sqlite statements.
       return;
@@ -157,7 +160,7 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
+  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
@@ -217,7 +220,7 @@ class ChangedEntitiesProc {
     return result;
   }
 
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private sendEvent(iModel: BriefcaseDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     if (this._currSize === 0)
       return;
 
@@ -253,7 +256,7 @@ class ChangedEntitiesProc {
     this._currSize = 0;
   }
 
-  private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private static processChanges(iModel: BriefcaseDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
@@ -303,7 +306,7 @@ interface IConflictHandler {
 export type TxnMode = "direct" | "indirect";
 
 /**
- * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]] or [[StandaloneDb]].
+ * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]].
  *
  * The `RebaseManager` coordinates the rebase of local transactions when pulling and merging changes from other sources,
  * such as remote repositories or other users. It provides mechanisms to handle transaction conflicts, register custom conflict
@@ -323,6 +326,7 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   private _aborting: boolean = false;
+  private _disposed: boolean = false;
 
   /** Event raised before pull merge process begins.
    * @alpha
@@ -444,7 +448,31 @@ export class RebaseManager {
     IpcHost.notifyTxns(this._iModel, "notifyRebaseTxnEnd", txnProps);
   }
 
-  public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  public constructor(private _iModel: BriefcaseDb) { }
+
+  /** Disposes of this RebaseManager, clearing all event listeners.
+   * Also calls [[RebaseHandler.dispose]] on the registered custom handler, if any.
+   * Subsequent calls are ignored.
+   * @alpha
+   */
+  public dispose(): void {
+    if (this._disposed)
+      return;
+    this._disposed = true;
+    this._customHandler?.dispose?.();
+    this.onPullMergeBegin.clear();
+    this.onRebaseBegin.clear();
+    this.onRebaseTxnBegin.clear();
+    this.onRebaseTxnEnd.clear();
+    this.onRebaseEnd.clear();
+    this.onPullMergeEnd.clear();
+    this.onApplyIncomingChangesBegin.clear();
+    this.onApplyIncomingChangesEnd.clear();
+    this.onReverseLocalChangesBegin.clear();
+    this.onReverseLocalChangesEnd.clear();
+    this.onDownloadChangesetsBegin.clear();
+    this.onDownloadChangesetsEnd.clear();
+  }
 
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
@@ -625,16 +653,15 @@ export class RebaseManager {
         throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
-      const changedInstances = BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id);
-      changedInstances.forEach((instance: InstancePatch) => {
-        if (instance.isIndirect) {
+      for await (const instance of BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id)) {
+        if (instance.$meta.isIndirectChange) {
           this._iModel.txns.withIndirectTxnMode(() => {
             this.applyInstancePatch(instance);
           });
-          return;
+          continue;
         }
         this.applyInstancePatch(instance);
-      });
+      }
 
       BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
     }
@@ -650,27 +677,34 @@ export class RebaseManager {
    */
   private applyInstancePatch(instance: InstancePatch) {
     const nativeDb = this._iModel[_nativeDb];
-    switch (instance.op) {
+    const { $meta, ...props } = instance;
+    switch ($meta.op) {
       case "Inserted": {
-        if (!instance.props)
+        if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
         const options = { forceUseId: true, useJsNames: true };
-        nativeDb.insertInstance(instance.props, options);
+        const id = nativeDb.insertInstance(props, options);
+        if (!Id64.isValidId64(id))
+          throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.id}`);
         break;
       }
       case "Updated": {
-        if (!instance.props)
+        if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
-        nativeDb.updateInstance(instance.props, { useJsNames: true });
+        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
         break;
       }
       case "Deleted": {
-        const key = { id: instance.key.id, classFullName: instance.key.classFullName };
-        nativeDb.deleteInstance(key, { useJsNames: true });
+        const key = { id: props.id, classFullName: props.className };
+        const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
         break;
       }
       default:
-        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${instance.op as string}'`);
+        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
     }
   }
 
@@ -703,7 +737,7 @@ export class RebaseManager {
       try {
 
         if (this._iModel.txns.hasUnsavedChanges) {
-          this._iModel.abandonChanges();
+          this._iModel[_nativeDb].abandonChanges();
         }
         await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       } finally {
@@ -843,7 +877,7 @@ export class RebaseManager {
   }
 }
 
-/** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
+/** Manages local changes to a [[BriefcaseDb]] via [Txns]($docs/learning/InteractiveEditing.md)
  * @public @preview
  */
 export class TxnManager {
@@ -860,10 +894,11 @@ export class TxnManager {
   public readonly rebaser: RebaseManager;
 
   /** @internal */
-  constructor(private _iModel: BriefcaseDb | StandaloneDb) {
+  constructor(private _iModel: BriefcaseDb) {
     this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
+      this.rebaser.dispose();
     });
   }
 
@@ -872,7 +907,7 @@ export class TxnManager {
 
   private get _nativeDb() { return this._iModel[_nativeDb]; }
   private _getElementClass(elClassName: string): typeof Element {
-    return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
+    return this._iModel.getJsClass<typeof Element>(elClassName);
   }
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
@@ -890,19 +925,33 @@ export class TxnManager {
 
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
+    // as any necessary to access protected static method on Element and subclasses).
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onBeforeOutputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
+    // as any necessary to access protected static method on Element and subclasses).
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    (this._getElementClass(elClassName) as any).onAllInputsHandledArg({ elId, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onRootChangedArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
+    const iModel = this._iModel;
+    const indirectEditTxn = iModel.getIndirectTxn();
+    assert(undefined !== indirectEditTxn);
+    this._getRelationshipClass(props.classFullName).onDeletedDependencyArg({ props, iModel, indirectEditTxn });
   }
   /** @internal */
   protected _onBeginValidate() { this.validationErrors.length = 0; }
@@ -914,6 +963,26 @@ export class TxnManager {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onEndValidation.raiseEvent();
     // TODO: if (this.validationErrors.length !== 0) throw new IModelError(validation ...)
+  }
+
+  /** Called by native code during semantic rebase while reversing local changes to create instance patches to be used for reinstating changes.
+   * @internal */
+  protected _captureInstanceChanges(id: TxnIdString) {
+    if (BriefcaseManager.semanticRebaseDataFolderExists(this._iModel, id)) return; // if folder already exists that means we have already captured the changes for this txn during this rebase so we can skip capturing again
+
+    // We shouldn't use strict mode here because lets think of a scenario:
+    // 1) an element is inserted in a txn which inserted some data in table A first row
+    // 2) In second txn, importing a schema increased the number of columns of table A
+    // 3) During rebase when we are reversing the schema txn, the newly added columns are not deleted
+    // so using strict mode will cause error in this case when we will try to capture changes for first txn
+    // because the number of columns in table A will be different than what it was when the changes were originally made.
+    // So to avoid this issue we are not using strict mode here.
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+    while (reader.step()) {
+      pcu.appendFrom(reader);
+    }
+    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
@@ -1221,6 +1290,7 @@ export class TxnManager {
   public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
+   * @note Consider using [[reverseTxnsAsync]] instead.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
    * @note If there are any outstanding uncommitted changes, they are reversed.
@@ -1229,34 +1299,211 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
+    if (this._nativeDb.hasUnsavedChanges())
+      this._nativeDb.abandonChanges();
     return this._nativeDb.reverseTxns(numOperations);
   }
 
-  /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+  /** Reverse the most recent operation.
+   * @note Consider using [[reverseSingleTxnAsync]] instead.
+   */
+  public reverseSingleTxn(): IModelStatus {
+    return this.reverseTxns(1);
+  }
 
-  /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  /** Reverse all changes back to the beginning of the session.
+   * @note Consider using [[reverseAllTxnsAsync]] instead.
+   */
+  public reverseAll(): IModelStatus {
+    return this._nativeDb.reverseAll();
+  }
 
   /** Reverse all changes back to a previously saved TxnId.
+   * @note Consider using [[reverseToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.reverseTo(txnId);
+  }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
+   * @note Consider using [[cancelToTxnAsync]] instead.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.cancelTo(txnId);
+  }
+
+  /** Reverse (undo) the most recent operation(s) to this IModelDb. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If you do not want to abandon any locks, set [ReverseTxnArgs.retainLocks]($common) to true.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If numOperations is too large only the operations are reversible are reversed.
+   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
+   *  be reinstated together when/if ReinstateTxn is called.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTxns(numOperations));
+  }
+
+  /** Reverse (undo) the most recent operation to this IModelDb. By default, this method also
+   * abandons the locks that were acquired for that operation.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even though this method reverses only one operation, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.reverseTxnsAsync(1, args);
+  }
+
+  /** Reverse (undo) all operations back to the beginning of the session. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note If there are no reversible operations, this method does nothing and returns Success.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to retain locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   */
+  public async reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseAll());
+  }
+
+  /** Reverse (undo) all operations back to a previously saved TxnId. By default, this method also
+   * abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to abandon locks.
+   * @returns A Promise that resolves to success if the transactions were reversed, or rejects with an IModelError otherwise.
+   * @see  [[getCurrentTxnId]] [[cancelTo]]
+   */
+  public async reverseToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void> {
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTo(txnId));
+  }
+
+  /** Reverse and then cancel (make non-reinstatable) all operations back to a previous TxnId. By default, this
+   * method also abandons the locks that were acquired for those operations.
+   * @beta
+   * @note This method will also abandon locks associated with any later, reversed Txns, if they have not
+   * already been abandoned. For example, if a call to [[reverseTxns]] reverses Txn 2 without abandoning
+   * its locks, and then this method is called to reverse Txn 1, it will abandon the locks associated
+   * with _both_ Txn 1 and Txn 2.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
+   * @param args Optional arguments to control the behavior of the reverse operation, such as whether to abandon locks.
+   * @returns A promise that resolves to success if the transactions were reversed and cleared, or rejects with an IModelError otherwise.
+   */
+  public async cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void> {
+    // First reverse and abandon locks. Only cancel if that succeeds.
+    // This is important because the locks would become unabandonable if we canceled first and
+    // _then_ the abandonment failed. We expect the call to cancelTo to return "NothingToUndo",
+    // but that's ok - it will still clear the already-reversed txns.
+    await this.withLockAbandonment(args, () => this._nativeDb.reverseTo(txnId));
+    const status = this._nativeDb.cancelTo(txnId);
+    if (status !== IModelStatus.Success && status !== IModelStatus.NothingToUndo)
+      throw new IModelError(status, IModelError.getErrorKey(status));
+    this._iModel.locks.clearTxnLockRecords(txnId);
+  }
+
+  private async withLockAbandonment(args: ReverseTxnArgs | undefined, doReverseCallback: () => IModelStatus): Promise<void> {
+    const result = doReverseCallback();
+    if (result === IModelStatus.Success) {
+      if (!args?.retainLocks) {
+        // Abandon locks for the earliest txn, which abandons locks for the later ones, too.
+        await this._iModel.locks.abandonLocksForReversedTxn(this.getCurrentTxnId());
+      }
+    } else {
+      throw new IModelError(result, IModelError.getErrorKey(result));
+    }
+  }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
+   * @note This method will return [[IModelStatus.LockNotHeld]] and will not reinstate the Txn if the locks
+   * originally acquired by the Txn have been abandoned. Use [[reinstateTxnAsync]] to re-acquire the locks
+   * and reinstate the Txn in a single operation.
    */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus {
+    // Verify that the locks required by this txn have not been abandoned.
+    // If so, this method has no way to re-acquire them because it is synchronous. This
+    // is basically a developer error, mixing reverseTxnAsync with reinstateTxn (non-Async).
+    const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
+    if (
+      this.isTxnIdValid(reinstateRange.firstTxnId) &&
+      !this._iModel.locks.holdsNecessaryLocksForReinstatingTxn(this.queryPreviousTxnId(reinstateRange.lastTxnId))
+    ) {
+      return IModelStatus.LockNotHeld;
+    }
+
+    return this._iModel.reinstateTxn();
+  }
+
+  /** Reinstate the most recently reversed transaction. This method will first attempt
+   * to re-acquire the required locks, if they were abandoned after the operation was reversed.
+   * Since at any time multiple transactions can be reversed, it may take multiple calls to this
+   * method to reinstate all reversed operations.
+   * @beta
+   * @note If there are any outstanding unsaved changes, they are canceled before the Txn is reinstated. Unless
+   * [ReinstateTxnArgs.retainLocks]($common) is true, the locks associated with the unsaved changes are also abandoned.
+   * @param args Optional arguments to control the behavior of the reinstate operation, such as whether to retain
+   * locks when abandoning unsaved changes.
+   * @returns A Promise that resolves to success if a reversed transaction was reinstated, or rejects with an IModelError otherwise.
+   */
+  public async reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void> {
+    // We must abandon any unsaved changes here because it will be too late
+    // when reinstateTxn does it.
+    if (this.hasUnsavedChanges) {
+      this._iModel.clearCaches({ instanceCachesOnly: true });
+      this._iModel[_nativeDb].abandonChanges();
+    }
+
+    if (!args?.retainLocks) {
+      await this._iModel.locks.abandonLocksForCurrentUnsavedTxn();
+    }
+
+    const reinstateRange: { firstTxnId: TxnIdString, lastTxnId: TxnIdString } = this._nativeDb.getNextReinstateTxnRange();
+    if (!this.isTxnIdValid(reinstateRange.firstTxnId)) {
+      throw new IModelError(IModelStatus.NothingToRedo, IModelError.getErrorKey(IModelStatus.NothingToRedo));
+    }
+
+    // Reacquire locks for the latest txn in the range, which will reacquire locks for all earlier txns, too.
+    await this._iModel.locks.acquireLocksForReinstatingTxn(this.queryPreviousTxnId(reinstateRange.lastTxnId));
+
+    const status = this.reinstateTxn();
+    if (status !== IModelStatus.Success) {
+      throw new IModelError(status, IModelError.getErrorKey(status));
+    }
+  }
 
   /** Get the Id of the first transaction, if any.
    */
@@ -1309,7 +1556,7 @@ export class TxnManager {
 
   /** Destroy the record of all local changes that have yet to be saved and/or pushed.
    * This permanently eradicates your changes - use with caution!
-   * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
+   * Typically, callers will want to subsequently use [[LockControl.abandonAllLocks]].
    * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
    */
   public deleteAllTxns(): void {
@@ -1402,4 +1649,11 @@ export interface RebaseHandler {
    * @alpha
    */
   recompute(txn: TxnProps): Promise<void>;
+  /**
+   * Called when the owning [[RebaseManager]] is disposed (e.g. when the iModel is closed).
+   * Override this method to unsubscribe from events or release resources held by this handler.
+   *
+   * @alpha
+   */
+  dispose?(): void;
 }

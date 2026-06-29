@@ -17,7 +17,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 it("MedialCurveCC", () => {
-  const ck = new Checker(true, true);
+  const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
   const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1);
@@ -55,7 +55,7 @@ it("MedialCurveCC", () => {
 });
 
 it("MedialCurveCL", () => {
-  const ck = new Checker(true, true);
+  const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
   const lineA = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0)!;
@@ -94,7 +94,7 @@ it("MedialCurveCL", () => {
 });
 
 it("UnboundedHyperbola2d", () => {
-  const ck = new Checker(true, true);
+  const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
   const curveA = UnboundedHyperbola2d.createCenterAndAxisVectors(

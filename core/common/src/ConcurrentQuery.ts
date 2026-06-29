@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { Point2d, Point3d } from "@itwin/core-geometry";
+import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
 /**
@@ -27,7 +27,7 @@ export enum QueryRowFormat {
   UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
    * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
-   * @depreacted in 4.11.  Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
    */
   UseJsPropertyNames,
 }
@@ -352,15 +352,29 @@ export enum QueryParamType {
  *
  * @example
  * Parameter By Index:
- * ```sql
- * SELECT a, v FROM test.Foo WHERE a=? AND b=?
+ * ```ts
+ * const binder = new QueryBinder();
+ * binder.bindString(1, "MyCode");
+ * binder.bindInt(2, 42);
+ *
+ * const reader = iModel.createQueryReader("SELECT a, v FROM test.Foo WHERE a=? AND b=?", binder);
+ * for await (const row of reader) {
+ *   // do something with the query result
+ * }
  * ```
  * The first `?` is index 1 and the second `?` is index 2. The parameter index starts with 1 and not 0.
  *
  * @example
  * Parameter By Name:
- * ```sql
- * SELECT a, v FROM test.Foo WHERE a=:name_a AND b=:name_b
+ * ```ts
+ * const binder = new QueryBinder();
+ * binder.bindString("name_a", "A");
+ * binder.bindString("name_b", "B");
+ *
+ * const reader = iModel.createQueryReader("SELECT a, v FROM test.Foo WHERE a=:name_a AND b=:name_b", binder);
+ * for await (const row of reader) {
+ *   // do something with the query result
+ * }
  * ```
  * Using "name_a" as the `indexOrName` will bind the provided value to `name_a` in the query. And the same goes for
  * using "name_b" and the `name_b` binding respectively.
@@ -603,6 +617,26 @@ export class QueryBinder {
     return this;
   }
 
+  /**
+   * Bind range3d value to ECSQL statement.
+   * @param indexOrName Specify parameter index or its name used in ECSQL statement.
+   * @param val Value to bind to ECSQL statement.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
+  public bindRange3d(indexOrName: string | number, val: LowAndHighXYZ) {
+    this.verify(indexOrName);
+    const name = String(indexOrName);
+    const buffer = new Uint8Array(Range3d.toFloat64Array(val).buffer);
+    const base64 = Base64.fromUint8Array(buffer);
+    Object.defineProperty(this._args, name, {
+      enumerable: true, value: {
+        type: QueryParamType.Blob,
+        value: base64,
+      },
+    });
+    return this;
+  }
+
   private static bind(params: QueryBinder, nameOrId: string | number, val: any) {
     if (typeof val === "boolean") {
       params.bindBoolean(nameOrId, val);
@@ -616,6 +650,8 @@ export class QueryBinder {
       params.bindPoint2d(nameOrId, val);
     } else if (val instanceof Point3d) {
       params.bindPoint3d(nameOrId, val);
+    } else if (val instanceof Range3d) {
+      params.bindRange3d(nameOrId, val);
     } else if (val instanceof Array && (val.length === 0 || (val.every((item) => typeof item === "string" && Id64.isValidId64(item))))) {
       params.bindIdSet(nameOrId, val);
     } else if (typeof val === "undefined" || val === null) {
@@ -670,19 +706,34 @@ export enum DbResponseKind {
 
 /** @internal */
 export enum DbResponseStatus {
-  Done = 1,  /* query ran to completion. */
-  Cancel = 2, /*  Requested by user.*/
-  Partial = 3, /*  query was running but ran out of quota.*/
-  Timeout = 4, /*  query time quota expired while it was in queue.*/
-  QueueFull = 5, /*  could not submit the query as queue was full.*/
-  ShuttingDown = 6, /*  Shutdown is in progress. */
-  Error = 100, /*  generic error*/
-  Error_ECSql_PreparedFailed = Error + 1, /*  ecsql prepared failed*/
-  Error_ECSql_StepFailed = Error + 2, /*  ecsql step failed*/
-  Error_ECSql_RowToJsonFailed = Error + 3, /*  ecsql failed to serialized row to json.*/
-  Error_ECSql_BindingFailed = Error + 4, /*  ecsql binding failed.*/
-  Error_BlobIO_OpenFailed = Error + 5, /*  class or property or instance specified was not found or property as not of type blob.*/
-  Error_BlobIO_OutOfRange = Error + 6, /*  range specified is invalid based on size of blob.*/
+  /** Query ran to completion. */
+  Done = 1,
+  /** Requested by user. */
+  Cancel = 2,
+  /** Query was running but ran out of quota. */
+  Partial = 3,
+  /** Query time quota expired while it was in queue. */
+  Timeout = 4,
+  /** Could not submit the query because the queue was full. */
+  QueueFull = 5,
+  /** Shutdown is in progress. */
+  ShuttingDown = 6,
+  /** iModel is not open. */
+  NotOpen = 7,
+  /** Generic error. */
+  Error = 100,
+  /** ECSQL prepare failed. */
+  Error_ECSql_PreparedFailed = Error + 1,
+  /** ECSQL step failed. */
+  Error_ECSql_StepFailed = Error + 2,
+  /** ECSQL failed to serialize row to JSON. */
+  Error_ECSql_RowToJsonFailed = Error + 3,
+  /** ECSQL binding failed. */
+  Error_ECSql_BindingFailed = Error + 4,
+  /** Class, property, or instance specified was not found, or property is not of type blob. */
+  Error_BlobIO_OpenFailed = Error + 5,
+  /** Range specified is invalid based on size of blob. */
+  Error_BlobIO_OutOfRange = Error + 6,
 }
 
 /** @internal */
@@ -737,7 +788,7 @@ export class DbQueryError extends BentleyError {
     super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, { response, request });
   }
   public static throwIfError(response: any, request?: any) {
-    if ((response.status as number) >= (DbResponseStatus.Error as number)) {
+    if ((response.status as number) >= (DbResponseStatus.Error)) {
       throw new DbQueryError(response, request);
     }
     if (response.status === DbResponseStatus.Cancel) {

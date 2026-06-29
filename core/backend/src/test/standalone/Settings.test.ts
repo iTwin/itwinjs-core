@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
+import { withEditTxn } from "../../EditTxn";
 import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
 import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -29,6 +30,7 @@ describe("Settings", () => {
   const app1: SettingGroupSchema = {
     description: "",
     schemaPrefix: "app1",
+    title: "App 1",
     settingDefs: {
       sub1: {
         type: "string",
@@ -290,20 +292,22 @@ describe("Settings", () => {
     const gcsDbDict: SettingsContainer = {
       "gcs/databases": ["gcs/Usa", "gcs/Canada"],
     };
-    iModel2.saveSettingDictionary("gcs-dbs", gcsDbDict);
-    iModel2.saveSettingDictionary("test1", setting1);
+    withEditTxn(iModel2, (txn) => {
+      txn.saveSettingDictionary("gcs-dbs", gcsDbDict);
+      txn.saveSettingDictionary("test1", setting1);
+    });
     iModel2.close();
 
     let iModel3 = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
     expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1["imodel/setting1"]);
 
-    iModel3.saveSettingDictionary("test1", setting1changed);
+    withEditTxn(iModel3, (txn) => txn.saveSettingDictionary("test1", setting1changed));
     iModel3.close();
     iModel3 = StandaloneDb.openFile(iModelName);
     expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1changed["imodel/setting1"]);
-    iModel3.deleteSettingDictionary("test1");
+    withEditTxn(iModel3, (txn) => txn.deleteSettingDictionary("test1"));
     iModel3.close();
 
     iModel3 = StandaloneDb.openFile(iModelName);
@@ -317,6 +321,7 @@ describe("Settings", () => {
       const group: SettingGroupSchema = {
         description: "",
         schemaPrefix,
+        title: schemaPrefix,
         settingDefs: {
           array: {
             type: "array",
@@ -330,7 +335,7 @@ describe("Settings", () => {
     }
 
     function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority | number): void {
-      const settings: SettingsContainer = { };
+      const settings: SettingsContainer = {};
       settings[`${schemaPrefix}/array`] = value;
 
       IModelHost.appWorkspace.settings.addDictionary({
@@ -417,4 +422,35 @@ describe("Settings", () => {
 
     settings.dropDictionary({ name: "toJsonTest" });
   });
+
+  it("dictionaries with same name but different workspaceDb are independent", () => {
+    const settings = iModel.workspace.settings;
+    const fakeWorkspaceDb1 = { name: "fakeDb1" } as any;
+    const fakeWorkspaceDb2 = { name: "fakeDb2" } as any;
+
+    settings.addDictionary(
+      { name: "shared-name", priority: SettingsPriority.iTwin, workspaceDb: fakeWorkspaceDb1 },
+      { "test/value": "from-db1" },
+    );
+    settings.addDictionary(
+      { name: "shared-name", priority: SettingsPriority.iTwin, workspaceDb: fakeWorkspaceDb2 },
+      { "test/value": "from-db2" },
+    );
+
+    // Both dictionaries should exist since they have different workspaceDb
+    const dict1 = settings.getDictionary({ name: "shared-name", workspaceDb: fakeWorkspaceDb1 });
+    const dict2 = settings.getDictionary({ name: "shared-name", workspaceDb: fakeWorkspaceDb2 });
+    expect(dict1).to.not.be.undefined;
+    expect(dict2).to.not.be.undefined;
+    expect(dict1!.getSetting<string>("test/value")).to.equal("from-db1");
+    expect(dict2!.getSetting<string>("test/value")).to.equal("from-db2");
+
+    // Drop only one — the other should remain
+    settings.dropDictionary({ name: "shared-name", workspaceDb: fakeWorkspaceDb1 });
+    expect(settings.getDictionary({ name: "shared-name", workspaceDb: fakeWorkspaceDb1 })).to.be.undefined;
+    expect(settings.getDictionary({ name: "shared-name", workspaceDb: fakeWorkspaceDb2 })).to.not.be.undefined;
+
+    settings.dropDictionary({ name: "shared-name", workspaceDb: fakeWorkspaceDb2 });
+  });
+
 });

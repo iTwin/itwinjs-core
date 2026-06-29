@@ -98,6 +98,7 @@ describe("ECSql Query", () => {
     ];
     assert.equal(results.length, 18);
     const builder = new QueryOptionsBuilder();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     let expectedRows = 0;
     for (let i = 0; i < queries.length; i++) {
@@ -371,6 +372,7 @@ describe("ECSql Query", () => {
     ];
     /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     builder.setConvertClassIdsToNames(true);
@@ -409,7 +411,7 @@ describe("ECSql Query", () => {
     // expect log message when statement fails
     let slm = new SequentialLogMatcher();
     slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ true), "no such table: def (BE_SQLITE_ERROR)");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
@@ -422,7 +424,7 @@ describe("ECSql Query", () => {
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ true), "ECClass 'abc.def' does not exist or could not be loaded.");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
@@ -714,6 +716,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const rs = await db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: pageSize, offset: k * pageSize } }).toArray();
         assert.equal(rs.length, rowPerPage[k]);
       }
@@ -722,6 +725,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         resultSet.push(row);
@@ -799,6 +803,7 @@ describe("ECSql Query", () => {
          WHERE s.Name = 'BisCore' AND supports_instance_query(c.ECInstanceId) = 1
          LIMIT 5`,
         undefined,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         { rowFormat: QueryRowFormat.UseJsPropertyNames },
       )) {
         rows.push(row.toRow());
@@ -819,6 +824,7 @@ describe("ECSql Query", () => {
       for await (const row of imodel1.createQueryReader(
         "SELECT $ FROM BisCore.ModelSelectorRefersToModels",
         undefined,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         { rowFormat: QueryRowFormat.UseJsPropertyNames },
       )) {
         const instance = row.toRow();

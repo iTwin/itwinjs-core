@@ -282,6 +282,98 @@ describe("BeEvent tests", () => {
       expect(hasOnceFn, "Handler should not be present because it was dropped.").to.equal(false);
     });
 
+    it("re-entrant emit preserves deferred removal", () => {
+      const event = new BeEvent<() => void>();
+      const calls: string[] = [];
+      let nestOnce = true;
+
+      const listenerA = () => {
+        calls.push("A");
+        if (nestOnce) {
+          nestOnce = false;
+          event.raiseEvent(); // nested emit
+        }
+      };
+      const removeA = event.addListener(listenerA);
+
+      event.addListener(() => {
+        calls.push("B");
+        removeA(); // remove A during emit — deferred while depth > 0
+      });
+
+      event.addListener(() => calls.push("C"));
+
+      event.raiseEvent();
+
+      // A was tombstoned during nested emit, cleaned up when outermost emit finishes
+      expect(event.numberOfListeners).toEqual(2); // B and C remain
+      expect(event.has(listenerA)).toBe(false);
+    });
+
+    it("nested emit does not skip listeners due to premature array filter", () => {
+      const event = new BeEvent<() => void>();
+      const calls: string[] = [];
+      let nestOnce = true;
+
+      event.addListener(() => {
+        calls.push("A");
+        if (nestOnce) {
+          nestOnce = false;
+          event.raiseEvent(); // nested emit — only once
+        }
+      });
+
+      event.addListener(() => calls.push("B"));
+
+      event.raiseEvent();
+
+      // Outer emit visits A then B; A triggers nested emit which also visits A (skipped by flag) then B
+      // Outer: A, nested: A, B, then outer continues: B
+      expect(calls).toEqual(["A", "A", "B", "B"]);
+      expect(event.numberOfListeners).toBe(2);
+    });
+
+    it("listener removes itself during emit — others still fire", () => {
+      const event = new BeEvent<() => void>();
+      const calls: string[] = [];
+
+      const selfRemover = () => {
+        calls.push("self-remover");
+        event.removeListener(selfRemover);
+      };
+      event.addListener(selfRemover);
+      event.addListener(() => calls.push("other"));
+
+      event.raiseEvent();
+      expect(calls).toContain("self-remover");
+      expect(calls).toContain("other");
+      expect(event.has(selfRemover)).toBe(false);
+      expect(event.numberOfListeners).toBe(1);
+    });
+
+    it("exception isolation — one listener throws, others still run", () => {
+      const event = new BeEvent<() => void>();
+      const calls: string[] = [];
+
+      event.addListener(() => calls.push("before"));
+      event.addListener(() => { throw new Error("boom"); });
+      event.addListener(() => calls.push("after"));
+
+      event.raiseEvent();
+      expect(calls).toContain("before");
+      expect(calls).toContain("after");
+    });
+
+    it("1000-listener scale", () => {
+      const event = new BeEvent<(x: number) => void>();
+      let count = 0;
+      for (let i = 0; i < 1000; i++)
+        event.addListener(() => count++);
+
+      event.raiseEvent(1);
+      expect(count).toBe(1000);
+    });
+
   });
 
   describe("BeEventList", () => {

@@ -83,7 +83,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
   }
 
   /**
-   * @deprecated in 5.6. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
    */
   public setParams(param: QueryBinder) {
     if (this._lockArgs) {
@@ -92,7 +92,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     this._param = param.serialize();
   }
   /**
-   * @deprecated in 5.6. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
    */
   public reset(options?: QueryOptions) {
     if (options) {
@@ -117,7 +117,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
 
   /**
    * Clear all bindings.
-   * @deprecated in 5.6. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
+   * @deprecated in 5.6 - will not be removed until after 2027-04-02. Will not be removed until 2027-02-18. Should not be used. Will be made private in a future release.
    */
   public resetBindings() {
     this._param = new QueryBinder().serialize();
@@ -153,6 +153,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     if (this._globalCount === 0) {
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
     const request: DbQueryRequest = {
       ... this._options,
@@ -164,7 +165,7 @@ export class ECSqlReader extends ECSqlReaderBase implements AsyncIterableIterato
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
     const resp = await this.runWithRetry(request);
-    this._globalDone = resp.status === DbResponseStatus.Done;
+    this._globalDone = resp.status === DbResponseStatus.Done || resp.status === DbResponseStatus.NotOpen;
     if (this._props.length === 0 && resp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(resp.meta);
     }

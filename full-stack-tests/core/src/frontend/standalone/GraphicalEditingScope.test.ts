@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -9,12 +9,12 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, StandardViewId, TileLoadPriority,
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelApp, OnScreenTarget, StandardViewId, TileLoadPriority,
   ViewCreator3d
 } from "@itwin/core-frontend";
 import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
 import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
-import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
 
@@ -92,6 +92,36 @@ describe("GraphicalEditingScope", () => {
       expect(imodel.editingScope).to.be.undefined;
     });
 
+    it("exposes a configurable dynamicGraphicsAbsolutePositionThreshold", async () => {
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
+      const scope = await imodel.enterEditingScope();
+      try {
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(10_000);
+
+        scope.dynamicGraphicsAbsolutePositionThreshold = 25_000;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(25_000);
+
+        scope.dynamicGraphicsAbsolutePositionThreshold = 0;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(0);
+
+        scope.dynamicGraphicsAbsolutePositionThreshold = Number.POSITIVE_INFINITY;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(Number.POSITIVE_INFINITY);
+
+        // Negative values are clamped to zero.
+        scope.dynamicGraphicsAbsolutePositionThreshold = -100;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(0);
+
+        // Non-finite values other than +Infinity are ignored.
+        scope.dynamicGraphicsAbsolutePositionThreshold = 5_000;
+        scope.dynamicGraphicsAbsolutePositionThreshold = Number.NaN;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(5_000);
+        scope.dynamicGraphicsAbsolutePositionThreshold = Number.NEGATIVE_INFINITY;
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(5_000);
+      } finally {
+        await scope.exit();
+      }
+    });
+
     async function openWritable(): Promise<BriefcaseConnection> {
       expect(imodel).to.be.undefined;
       const rwConn = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
@@ -151,10 +181,10 @@ describe("GraphicalEditingScope", () => {
 
     it.skip("accumulates geometry changes", async () => {
       imodel = await openWritable();
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
-      await imodel.saveChanges();
+      const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      await saveBriefcaseChanges(imodel);
 
       // Enter an editing scope.
       const scope = await imodel.enterEditingScope();
@@ -185,7 +215,7 @@ describe("GraphicalEditingScope", () => {
       expect(scope.getGeometryChangesForModel(modelId)).to.be.undefined;
       const elem1 = await insertLineElement(imodel, modelId, category);
       // Events not dispatched until changes saved.
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
       const insertElem1 = makeInsert(elem1);
       expectChanges([insertElem1]);
       expect(changedElements!.deleted).to.be.undefined;
@@ -195,13 +225,13 @@ describe("GraphicalEditingScope", () => {
       // Modify the line element.
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
       const updateElem1 = makeUpdate(elem1);
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
       expectChanges([updateElem1]);
 
       // Modify the line element twice.
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 1, 0));
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(-1, 0, 0));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
       expectChanges([updateElem1]);
 
       // Insert a new line element, modify both elements, then delete the old line element.
@@ -210,7 +240,7 @@ describe("GraphicalEditingScope", () => {
       await deleteElements(imodel, [elem1]);
       const deleteElem1 = makeDelete(elem1);
       const insertElem2 = makeInsert(elem2);
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
       expectChanges([deleteElem1, insertElem2]);
 
       // Undo
@@ -253,11 +283,11 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       await imodel.models.load([modelId]);
       const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
@@ -332,7 +362,7 @@ describe("GraphicalEditingScope", () => {
 
       // Insert a new element.
       const elem2 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(-10, 0, 0)));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       // Newly-inserted elements don't exist in tiles, therefore don't need to be hidden.
       // ###TODO: Test changes to range and content range...
@@ -344,7 +374,7 @@ describe("GraphicalEditingScope", () => {
 
       // Modify an element.
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 5, 0));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       const range3 = range2.clone();
       range3.high.y += 5;
@@ -354,14 +384,14 @@ describe("GraphicalEditingScope", () => {
 
       // Delete the same element.
       await deleteElements(imodel, [elem1]);
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
       trees.push(createTileTree());
       await expectTreeState(tree0, "disposed", 0, modelRange);
       await expectTreeState(trees, "dynamic", 1, range2);
 
       // Delete the other element.
       await deleteElements(imodel, [elem2]);
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
       trees.push(createTileTree());
       await expectTreeState(tree0, "disposed", 0, modelRange);
       await expectTreeState(trees, "dynamic", 2, modelRange);
@@ -394,11 +424,11 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(4, 4, 4)));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       await imodel.models.load([modelId]);
       const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
@@ -470,7 +500,7 @@ describe("GraphicalEditingScope", () => {
 
       // Move an element (+1 in Y).
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 1, 0));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       elementRange.high.y += 1;
       elementRange.low.y += 1;
@@ -478,7 +508,7 @@ describe("GraphicalEditingScope", () => {
 
       // Move it again (this time +1 in X).
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       elementRange.high.x += 1;
       elementRange.low.x += 1;
@@ -486,7 +516,7 @@ describe("GraphicalEditingScope", () => {
 
       // Delete the element.
       await deleteElements(imodel, [elem1]);
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       // Terminate the scope.
       await scope.exit();
@@ -502,7 +532,7 @@ describe("GraphicalEditingScope", () => {
 
       // Move the element up by 1 unit to place it in the dynamic state.
       await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, 1));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       // Define a script that changes the color of the element to red at time 1.
       const props: RenderSchedule.ScriptProps = [{
@@ -543,7 +573,7 @@ describe("GraphicalEditingScope", () => {
 
       // Restore the element to its original position.
       await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, -1));
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       await scope.exit();
     });
@@ -552,16 +582,16 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Set up an empty geometric model.
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
-      const category2 = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category2 = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
 
       if (prep) {
         await prep(imodel, modelId, category2);
       }
 
-      await imodel.saveChanges();
+      await saveBriefcaseChanges(imodel);
 
       // Set up a view of the model
       const viewCreator = new ViewCreator3d(imodel);
@@ -600,7 +630,7 @@ describe("GraphicalEditingScope", () => {
         // Insert a new line element. It should draw using dynamic graphics.
         const ext = bc.projectExtents;
         const lineElementId = await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
-        await bc.saveChanges();
+        await saveBriefcaseChanges(bc);
 
         const waitTime = 150;
         await BeDuration.wait(waitTime);
@@ -626,5 +656,95 @@ describe("GraphicalEditingScope", () => {
     it("refreshes viewport contents when geometry is added to an empty model", async () => {
       await testViewportRefresh();
     });
+
+    it("threads dynamicGraphicsAbsolutePositionThreshold through to dynamic graphics requests", async () => {
+      // The setter test above only verifies the property; this verifies the value actually reaches the
+      // `useAbsolutePositions` flag of the element graphics request produced for a modified element, and that
+      // the `maxCoord < threshold` comparison is exercised against the element's real world-space coordinates.
+      // `thresholdFactor` is multiplied by the element's coordinate magnitude: factors below 1 produce a threshold
+      // beneath it (=> rtcCenter, false), factors above 1 produce a threshold above it (=> absolute, true). 0 and
+      // +Infinity cover the degenerate extremes.
+      await expectUseAbsolutePositions(0, false);
+      await closeIModel();
+      await expectUseAbsolutePositions(0.5, false);
+      await closeIModel();
+      await expectUseAbsolutePositions(2, true);
+      await closeIModel();
+      await expectUseAbsolutePositions(Number.POSITIVE_INFINITY, true);
+    });
+
+    async function expectUseAbsolutePositions(thresholdFactor: number, expected: boolean): Promise<void> {
+      imodel = await openWritable();
+
+      const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const dictModelId = await imodel.models.getDictionaryModel();
+      const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      await saveBriefcaseChanges(imodel);
+
+      const viewCreator = new ViewCreator3d(imodel);
+      const view = await viewCreator.createDefaultView({
+        cameraOn: false,
+        skyboxOn: false,
+        standardViewId: StandardViewId.Top,
+        useSeedView: false,
+      }, [modelId]);
+      view.categorySelector.categories.clear();
+      view.categorySelector.categories.add(category);
+      view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
+
+      const bc = imodel;
+
+      // The element spans the project extents, so its world-space center - and thus the `maxCoord` the tile computes -
+      // is the midpoint of these endpoints. The seed iModel is georeferenced away from the origin, so this is non-zero.
+      const p0 = new Point3d(bc.projectExtents.low.x, bc.projectExtents.high.y, 0);
+      const p1 = new Point3d(bc.projectExtents.high.x, bc.projectExtents.low.y, 0);
+      const center = p0.interpolate(0.5, p1);
+      const maxCoord = Math.max(Math.abs(center.x), Math.abs(center.y), Math.abs(center.z));
+      expect(maxCoord).to.be.greaterThan(0);
+      const threshold = maxCoord * thresholdFactor; // 0, below maxCoord, above maxCoord, or +Infinity
+
+      const tileAdmin = IModelApp.tileAdmin;
+      const original = tileAdmin.requestElementGraphics.bind(tileAdmin);
+      const requested: Array<boolean | undefined> = [];
+      let capture = false;
+      tileAdmin.requestElementGraphics = async (iModel, props) => {
+        if (capture)
+          requested.push(props.useAbsolutePositions);
+        return original(iModel, props);
+      };
+
+      try {
+        await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
+          await vp.waitForAllTilesToRender();
+
+          // The threshold is captured when the model's first element is modified, so set it before editing.
+          const scope = await bc.enterEditingScope();
+          scope.dynamicGraphicsAbsolutePositionThreshold = threshold;
+          try {
+            // Only capture requests made after the edit - i.e. the dynamic element graphics.
+            capture = true;
+
+            await insertLineElement(bc, modelId, category, makeLineSegment(p0, p1));
+            await saveBriefcaseChanges(bc);
+
+            await BeDuration.wait(150);
+            await vp.waitForAllTilesToRender();
+
+            expect(requested.length).to.be.greaterThan(0);
+            for (const useAbsolutePositions of requested)
+              expect(useAbsolutePositions).to.equal(expected);
+          } finally {
+            await scope.exit().catch(() => { });
+          }
+        });
+      } finally {
+        tileAdmin.requestElementGraphics = original;
+      }
+    }
   }
 });
+
+
+
+
+

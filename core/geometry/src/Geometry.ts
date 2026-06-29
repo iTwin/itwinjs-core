@@ -23,18 +23,18 @@ import { Point4d } from "./geometry4d/Point4d";
  * @public
  */
 export enum AxisOrder {
-  /** Right handed system, X then Y then Z */
+  /** Right-handed system, X then Y then Z. */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   XYZ = 0,
-  /** Right handed system, Y then Z then X */
+  /** Right-handed system, Y then Z then X. */
   YZX = 1,
-  /** Right handed system, Z then X then Y */
+  /** Right-handed system, Z then X then Y. */
   ZXY = 2,
-  /** Left handed system, X then Z then Y */
+  /** Left-handed system, X then Z then Y. For a right-handed alternative, swap the first two axes and use `AxisOrder.ZXY`. */
   XZY = 4,
-  /** Left handed system, Y then X then Z */
+  /** Left-handed system, Y then X then Z. For a right-handed alternative, swap the first two axes and use `AxisOrder.XYZ`.*/
   YXZ = 5,
-  /** Left handed system, Z then Y then X */
+  /** Left-handed system, Z then Y then X. For a right-handed alternative, swap the first two axes and use `AxisOrder.YZX`.*/
   ZYX = 6,
 }
 /**
@@ -226,7 +226,8 @@ export interface ICloneable<T> {
    */
   clone(result?: T): T;
 }
-/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
+/**
+ * Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
  * @public
  */
 export interface PerpParallelOptions {
@@ -265,6 +266,8 @@ export class Geometry {
   public static readonly smallAngleSeconds = 2e-7;
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
+  /** Relative fraction tolerance for Newton iterations. */
+  public static readonly smallNewtonStep = 1.0e-11;
   /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
   public static readonly smallFloatingPoint = 1.0e-15;
   /** Radians value for full circle 2PI radians minus [[smallAngleRadians]]. */
@@ -585,6 +588,8 @@ export class Geometry {
    * Toleranced equality test.
    * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
+   * @see [[isSameFraction]], [[isSameCoordinate]], etc., which have more appropriate default absolute tolerances for
+   * inputs known to be fractions and distances/coordinates.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
@@ -1221,6 +1226,13 @@ export class Geometry {
   public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
     // Line equation is fTarget-f0 = (f1-f0)*x so x = (fTarget-f0)/(f1-f0)
     return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
+  }
+  /**
+   * Return `true` if `a` is a finite number.
+   * @param a value to test
+   */
+  public static isNumber(a: any): a is number {
+    return Number.isFinite(a);
   }
   /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including

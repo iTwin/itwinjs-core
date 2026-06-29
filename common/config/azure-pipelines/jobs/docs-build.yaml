@@ -38,9 +38,6 @@ parameters:
   - name: shouldPublish
     type: boolean
     default: false
-  - name: ignoreAudit
-    type: boolean
-    default: false
   - name: isExternalBuild
     type: boolean
     default: false
@@ -58,25 +55,20 @@ jobs:
         path: itwinjs-core
         clean: true
       - task: UseNode@1
-        displayName: Use Node 24
+        displayName: Use Node 24.15.0
         inputs:
-          version: 24.x
+          version: 24.15.0
           checkLatest: false
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup git config
 
-      # Only install, audit, and build the docs if not using the core artifact
+      # Only install and build the docs if not using the core artifact
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
-
-      - script: node common/scripts/install-run-rush.js audit
-        displayName: rush audit
-        workingDirectory: ${{ parameters.workingDir }}
-        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false), eq('${{ parameters.ignoreAudit }}', false))
 
       - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
@@ -96,12 +88,10 @@ jobs:
           archiveTag=""
 
           # Add conditions here for branches that should produce archives
-          # For example, 'refs/heads/release/4.11.x' should be archived as 'v4':
-
-          if [[ $branchName == "refs/heads/release/4.11.x" ]]; then
-            echo "matches branch name"
-            archiveTag="v4"
-          fi
+          # For example, 'refs/heads/release/5.10.x' should be archived as 'v5':
+          # if [[ $branchName == "refs/heads/release/5.10.x" ]]; then
+          #   archiveTag="v5"
+          # fi
 
           if [[ -n "$archiveTag" ]]; then
             echo "Adding output variable $archiveTag"

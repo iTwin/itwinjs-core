@@ -128,6 +128,20 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
+// @beta
+export class BeUnorderedEvent<T extends Listener> {
+    addListener(listener: T, scope?: any): () => void;
+    addOnce(listener: T, scope?: any): () => void;
+    clear(): void;
+    get numberOfListeners(): number;
+    raiseEvent(...args: Parameters<T>): void;
+}
+
+// @beta
+export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
+    emit(args: TEventArgs): void;
+}
+
 // @public
 export enum BriefcaseStatus {
     // (undocumented)
@@ -262,6 +276,7 @@ export namespace CompressedId64Set {
     export function compressSet(ids: Id64Set): CompressedId64Set;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
+    export function isValid(ids: unknown): ids is CompressedId64Set;
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
     export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
     export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set;
@@ -1376,6 +1391,11 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     reset(ids?: CompressedId64Set): void;
 }
 
+// @beta
+export type NestedValueOf<T> = ValueOf<{
+    [K in keyof T]: ValueOf<T[K]>;
+}>;
+
 // @public
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
 
@@ -1816,6 +1836,12 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
+
+// @beta
+export type ValueOf<T> = T[keyof T];
+
+// @beta
+export function wrapTimerCallback(timerPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
 
 // @public
 export class YieldManager {

@@ -30,19 +30,28 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   private _xyzInUse: number;
   /** Capacity in xyz triples (not floats). */
   private _xyzCapacity: number;
-  /** Multiplier used by ensureCapacity to expand requested reallocation size. */
+  /** Multiplier used by [[ensureCapacity]] to expand requested reallocation size. */
   private _growthFactor: number;
   /**
-   * Construct a new GrowablePoint3d array.
-   * @param numPoints initial capacity in xyz triples (default 8).
-   * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5).
-   * @param data optional pre-existing Float64Array to use as the backing memory. If supplied, numPoints is ignored.
+   * Construct a new growable array.
+   * @param numPoints initial capacity in xyz tuples. Default value is 8.
+   * @param growthFactor used by [[ensureCapacity]] to expand requested reallocation size. Default value is 1.5.
+   * For no expansion, use 1.
+   * @param data optional array to serve as the point source. If `data` is supplied, `numPoints` is reinterpreted as
+   * the initial point count, defaulting to and bounded above by the array's point capacity. If a subsequent [[push]]
+   * would exceed the array's capacity, a new Float64Array of the same buffer type is allocated and filled.
    */
-  public constructor(numPoints: number = 8, growthFactor?: number, data?: Float64Array) {
+  public constructor(numPoints?: number, growthFactor?: number, data?: Float64Array) {
     super();
-    this._data = data || new Float64Array(numPoints * 3); // 3 values per point
-    this._xyzInUse = 0;
-    this._xyzCapacity = data ? data.length / 3 : numPoints;
+    if (data) {
+      this._xyzCapacity = data.length / 3;
+      this._xyzInUse = Math.min(numPoints ?? Infinity, this._xyzCapacity);
+      this._data = data;
+    } else {
+      this._xyzCapacity = numPoints ?? 8;
+      this._xyzInUse = 0;
+      this._data = new Float64Array(3 * this._xyzCapacity); // 3 values per point
+    }
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
   /**
@@ -99,7 +108,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return this._data;
   }
   /**
-   * If necessary, increase the capacity to the new number of points.  Current coordinates and point count (length) are
+   * If necessary, increase the capacity to the new number of points. Current coordinates and point count (length) are
    * unchanged.
    */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {

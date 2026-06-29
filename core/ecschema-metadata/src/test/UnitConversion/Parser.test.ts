@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { describe, expect, it } from "vitest";
-import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
+import { type DefinitionFragment, parseDefinition } from "@itwin/core-quantity";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [
@@ -133,7 +133,7 @@ describe("DefinitionParser tests", () => {
 
   function testInvalidToken(definition: string) {
     it(`invalid definition ${definition} throws`, async () => {
-      expect(() => [...parseDefinition(definition)]).toThrowError();
+      expect(() => [...parseDefinition(definition)]).toThrow();
     });
   }
 

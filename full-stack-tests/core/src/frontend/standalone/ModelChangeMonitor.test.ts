@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, initializeEditTools, insertLineElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 if (!ProcessDetector.isMobileAppFrontend) {
@@ -49,13 +49,13 @@ if (!ProcessDetector.isMobileAppFrontend) {
       let elemId: string;
 
       beforeEach(async () => {
-        const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+        const modelId = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
         const dictId = await imodel.models.getDictionaryModel();
-        const categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictId, Guid.createValue(), { color: 0 });
+        const categoryId = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(imodel.key, dictId, Guid.createValue(), { color: 0 });
         elemId = await insertLineElement(imodel, modelId, categoryId);
 
         // Make sure the event produced by saveChanges doesn't pollute our tests.
-        await getBufferedChanges(async () => imodel.saveChanges());
+        await getBufferedChanges(async () => saveBriefcaseChanges(imodel));
 
         await imodel.models.load(modelId);
         model = imodel.models.getLoaded(modelId) as GeometricModelState;
@@ -66,7 +66,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
       async function moveElement(): Promise<void> {
         const transform = Transform.createTranslationXYZ(0, 0, ++zTranslation);
         await transformElements(imodel, [elemId], transform);
-        await imodel.saveChanges();
+        await saveBriefcaseChanges(imodel);
       }
 
       it("at transaction boundaries outside of a graphical editing scope", async () => {
@@ -126,3 +126,8 @@ if (!ProcessDetector.isMobileAppFrontend) {
     });
   });
 }
+
+
+
+
+

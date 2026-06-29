@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { AddFormattingSpecArgs } from '@itwin/core-quantity';
 import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
 import { AnalysisStyle } from '@itwin/core-common';
@@ -32,6 +33,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
+import { BeUnorderedUiEvent } from '@itwin/core-bentley';
 import { BoundingSphere } from '@itwin/core-common';
 import { BriefcaseConnectionProps } from '@itwin/core-common';
 import { BriefcaseDownloader } from '@itwin/core-common';
@@ -110,8 +112,13 @@ import { FontMap } from '@itwin/core-common';
 import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatSpecHandle } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
+import { FormattingReadyCollector } from '@itwin/core-quantity';
+import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormattingSpecEntry } from '@itwin/core-quantity';
+import { FormattingSpecProvider } from '@itwin/core-quantity';
 import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
@@ -262,6 +269,7 @@ import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
 import { RealityDataStatus } from '@itwin/core-bentley';
 import { RealityModelDisplaySettings } from '@itwin/core-common';
+import { ReinstateTxnArgs } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -274,12 +282,14 @@ import { RenderTexture } from '@itwin/core-common';
 import { RenderTextureParams } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RenderType } from '@itwin/webgl-compatibility';
+import { ReverseTxnArgs } from '@itwin/core-common';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -525,6 +535,8 @@ export class AccuDraw {
     // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
     // @internal (undocumented)
+    requestInputFocus(): void;
+    // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
     rotationMode: RotationMode;
     // @internal (undocumented)
@@ -714,26 +726,18 @@ export class AccuDrawRotate90AboutZTool extends Tool {
 }
 
 // @beta (undocumented)
-export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
+export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     constructor(aboutCurrentZ?: boolean);
     // (undocumented)
     aboutCurrentZ: boolean;
     // @internal (undocumented)
-    protected get allowShortcut(): boolean;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static get maxArgs(): number;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
     // (undocumented)
     parseAndRun(...args: any[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected get wantActivateOnStart(): boolean;
-    // @internal (undocumented)
-    protected get wantManipulationImmediate(): boolean;
 }
 
 // @beta (undocumented)
@@ -745,21 +749,11 @@ export class AccuDrawRotateCycleTool extends Tool {
 }
 
 // @beta (undocumented)
-export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
+export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationComplete(): AccuDrawFlags;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, viewport: ScreenViewport, _isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected get wantActivateOnStart(): boolean;
-    // @internal (undocumented)
-    protected get wantManipulationImmediate(): boolean;
 }
 
 // @beta (undocumented)
@@ -1224,7 +1218,7 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
     getAlternateUnitLabels(unit: UnitProps): string[] | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class AngleDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -1683,20 +1677,25 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @public
+// @public @deprecated
 export class BingElevationProvider {
     constructor();
-    // @internal (undocumented)
+    // @internal
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+    // @internal @deprecated (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
+    // @deprecated
     getHeightAverage(iModel: IModelConnection): Promise<number>;
+    // @deprecated
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
     // @beta
     getHeights(range: Range2d): Promise<number[] | undefined>;
+    // @deprecated
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
 }
 
-// @public
+// @public @deprecated
 export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
@@ -1728,6 +1727,7 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: BriefcaseConnectionProps, openMode: OpenMode);
+    // @deprecated
     abandonChanges(): Promise<void>;
     // @beta
     readonly briefcaseId?: number;
@@ -1756,6 +1756,7 @@ export class BriefcaseConnection extends IModelConnection {
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
+    // @deprecated
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
@@ -1890,10 +1891,18 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @alpha
     readonly onReverseLocalChangesEnd: BeEvent<(txns: TxnProps[]) => void>;
     reinstateTxn(): Promise<IModelStatus>;
+    // @beta
+    reinstateTxnAsync(args?: ReinstateTxnArgs): Promise<void>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
+    // @beta
+    reverseAllTxnsAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseSingleTxn(): Promise<IModelStatus>;
+    // @beta
+    reverseSingleTxnAsync(args?: ReverseTxnArgs): Promise<void>;
     reverseTxns(numOperations: number): Promise<IModelStatus>;
+    // @beta
+    reverseTxnsAsync(numOperations: number, args?: ReverseTxnArgs): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -1996,6 +2005,18 @@ export class CategorySelectorState extends ElementState {
     get observableCategories(): ObservableSet<string>;
     // (undocumented)
     toJSON(): CategorySelectorProps;
+}
+
+// @beta
+export interface CesiumAccessClient {
+    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined>;
+}
+
+// @beta
+export interface CesiumAssetEndpoint {
+    accessToken: string;
+    expiresAt?: Date;
+    url: string;
 }
 
 // @public
@@ -2155,6 +2176,8 @@ export class ContextRealityModelState extends ContextRealityModel {
     // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     get classifiers(): SpatialClassifiersState;
+    // @internal (undocumented)
+    detachLayerListeners(): void;
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
@@ -2294,6 +2317,18 @@ export interface CreateGraphicFromDescriptionArgs {
 export interface CreateGraphicFromTemplateArgs {
     instances?: RenderInstances;
     template: GraphicTemplate;
+}
+
+// @beta
+export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription;
+
+// @beta
+export interface CreateQuantityDescriptionProps {
+    displayLabel: string;
+    kindOfQuantityName: string;
+    name: string;
+    parseError?: string;
+    persistenceUnitName: string;
 }
 
 // @beta
@@ -2547,27 +2582,17 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 }
 
 // @beta (undocumented)
-export class DefineACSByElementTool extends AccuDrawShortcutsTool {
+export class DefineACSByElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
 }
 
 // @beta (undocumented)
-export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
+export class DefineACSByPointsTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
 }
@@ -3142,6 +3167,12 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
+// @beta
+export interface ElevationProvider {
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
+    getHeights?(range: Range2d): Promise<number[] | undefined>;
+}
+
 // @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
@@ -3206,7 +3237,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     wantEmphasis: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -3525,12 +3556,12 @@ export class FormatsProviderManager implements FormatsProvider {
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
-// @beta
+// @beta @deprecated
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(args: FormattedQuantityDescriptionArgs);
     constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
@@ -3548,7 +3579,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface FormattedQuantityDescriptionArgs {
     // (undocumented)
     displayLabel: string;
@@ -3565,14 +3596,6 @@ export interface FormatterParserSpecsProvider {
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
     quantityType: QuantityTypeArg;
-}
-
-// @beta
-export interface FormattingSpecEntry {
-    // (undocumented)
-    formatterSpec: FormatterSpec;
-    // (undocumented)
-    parserSpec: ParserSpec;
 }
 
 // @public
@@ -3780,6 +3803,11 @@ export class GeographicTilingScheme extends MapTilingScheme {
     yFractionToLatitude(yFraction: number): number;
 }
 
+// @beta
+export interface GeoidProvider {
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+}
+
 // @public
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
     constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
@@ -3878,6 +3906,12 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
 
 // @beta
 export function getGoogle3dTilesUrl(): string;
+
+// @beta
+export function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number>;
+
+// @beta
+export function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d>;
 
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
@@ -4028,6 +4062,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
         };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
+        BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
     };
     indices?: GltfId;
     material?: GltfId;
@@ -4055,7 +4090,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean, isPointPrimitive?: boolean, lineStyle?: MaterialLineStyle): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
@@ -4270,6 +4305,9 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     get briefcaseChannelName(): "itwinjs-core/editing-scope";
     // @deprecated (undocumented)
     dispose(): void;
+    // @beta
+    get dynamicGraphicsAbsolutePositionThreshold(): number;
+    set dynamicGraphicsAbsolutePositionThreshold(value: number);
     // @internal
     static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
     exit(): Promise<void>;
@@ -4994,6 +5032,9 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @beta
+    static get elevationProvider(): ElevationProvider;
+    static set elevationProvider(provider: ElevationProvider);
     // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
@@ -5001,6 +5042,9 @@ export class IModelApp {
     // @beta
     static get formatsProvider(): FormatsProvider;
     static set formatsProvider(provider: FormatsProvider);
+    // @beta
+    static get geoidProvider(): GeoidProvider;
+    static set geoidProvider(provider: GeoidProvider);
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -5012,6 +5056,9 @@ export class IModelApp {
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
+    // @beta
+    static get locationProvider(): LocationProvider;
+    static set locationProvider(provider: LocationProvider);
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
@@ -5079,6 +5126,12 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
     formatsProvider?: FormatsProvider;
+    // @beta
+    geospatialProviders?: {
+        elevationProvider?: ElevationProvider;
+        geoidProvider?: GeoidProvider;
+        locationProvider?: LocationProvider;
+    };
     hubAccess?: FrontendHubAccess;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
@@ -5148,8 +5201,12 @@ export abstract class IModelConnection extends IModel {
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
+    // @internal
+    protected invalidateSchemaViewIfChanged(): Promise<void>;
     get isBlank(): boolean;
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
@@ -5651,6 +5708,8 @@ export class LayerTileTreeReferenceHandler {
     // (undocumented)
     clearLayers(): void;
     // (undocumented)
+    detachFromDisplayStyle(): void;
+    // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     initializeLayers(context: SceneContext): boolean;
@@ -5670,7 +5729,7 @@ export class LayerTileTreeReferenceHandler {
     setLayerSettings(layerSettings: MapLayerSettings[]): void;
 }
 
-// @beta
+// @beta @deprecated
 export class LengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -5776,6 +5835,11 @@ export class LocateResponse {
     snapStatus: SnapStatus;
 }
 
+// @beta
+export interface LocationProvider {
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
+}
+
 // @internal (undocumented)
 export enum LockedStates {
     // (undocumented)
@@ -5825,6 +5889,8 @@ export class LookAndMoveTool extends ViewManip {
     static iconSpec: string;
     // (undocumented)
     protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    onPostInstall(): Promise<void>;
     // (undocumented)
     protected provideInitialToolAssistance(): void;
     // (undocumented)
@@ -6187,6 +6253,7 @@ export interface MapLayerInfoFromTileTree {
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
+    // @deprecated
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
 }
@@ -6361,6 +6428,8 @@ export class MapTile extends RealityTile {
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
+    // @internal
+    computeVisibilityFactor(args: TileDrawArgs): number;
     // @internal (undocumented)
     protected _cornerRays?: Ray3d[];
     // @internal (undocumented)
@@ -7943,6 +8012,7 @@ export class PlanarGridTransparency {
 // @public
 export interface PolylineArgs {
     colors: ColorIndex;
+    cumulativeDistances?: Float32Array;
     features: FeatureIndex;
     flags: PolylineFlags;
     linePixels: LinePixels;
@@ -7986,6 +8056,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
     run(..._args: any[]): Promise<boolean>;
+    // @deprecated
     saveChanges(): Promise<void>;
     // (undocumented)
     targetIsLocked: boolean;
@@ -8070,7 +8141,7 @@ export interface QuantityFormatsChangedArgs {
 }
 
 // @public
-export class QuantityFormatter implements UnitsProvider {
+export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider {
     // (undocumented)
     [Symbol.dispose](): void;
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
@@ -8080,7 +8151,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
     // @beta
-    addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void>;
+    addFormattingSpecsToRegistry(args: AddFormattingSpecArgs): Promise<void>;
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     clearAllOverrideFormats(): Promise<void>;
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
@@ -8099,10 +8170,12 @@ export class QuantityFormatter implements UnitsProvider {
     }): Promise<string>;
     formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
     // @beta
-    protected _formatSpecsRegistry: Map<string, FormattingSpecEntry>;
+    protected _formatSpecsRegistry: Map<string, Map<string, Map<UnitSystemKey, FormattingSpecEntry>>>;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
+    // @beta
+    getFormatSpecHandle(koqName: string, persistenceUnit: string, system?: UnitSystemKey): FormatSpecHandle;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
@@ -8110,14 +8183,24 @@ export class QuantityFormatter implements UnitsProvider {
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): FormattingSpecEntry | undefined;
+    getSpecsByName(name: string, options?: {
+        system?: UnitSystemKey;
+    }): ReadonlyMap<string, FormattingSpecEntry> | undefined;
+    // @beta
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
     protected initializeQuantityTypesRegistry(): Promise<void>;
+    // @beta
+    get isReady(): boolean;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
+    // @beta
+    readonly onBeforeFormattingReady: BeEvent<(collector: FormattingReadyCollector) => void>;
+    // @beta
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
@@ -8134,6 +8217,8 @@ export class QuantityFormatter implements UnitsProvider {
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     resetToUseInternalUnitsProvider(): Promise<void>;
+    // @internal
+    protected scheduleReload(intent: ReloadIntent): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
@@ -8142,6 +8227,8 @@ export class QuantityFormatter implements UnitsProvider {
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
+    // @beta
+    get whenInitialized(): Promise<void>;
 }
 
 // @public
@@ -8179,7 +8266,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -8423,6 +8510,8 @@ export class RealityTile extends Tile {
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // @internal
+    readonly contentUrl?: string;
     // @internal (undocumented)
     get copyright(): string | undefined;
     // @internal (undocumented)
@@ -10303,6 +10392,7 @@ export { Storage_2 as Storage }
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
+    addChangedListener(listener: () => void): () => void;
     // (undocumented)
     attachToBriefcase(imodel: IModelConnection): void;
     // (undocumented)
@@ -10366,7 +10456,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @beta
+// @beta @deprecated
 export class SurveyLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -10739,6 +10829,8 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
+    iTwinId?: GuidString;
+    // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -10941,7 +11033,11 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
+    // @beta
+    get canAccessCesium(): boolean;
+    // @beta
+    readonly cesiumAccess?: CesiumAccessClient;
+    // @beta
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11091,6 +11187,8 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
+        // @beta
+        cesiumAccess?: CesiumAccessClient;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
@@ -11823,6 +11921,8 @@ export class ToolAdmin {
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
     protected filterViewport(vp: ScreenViewport): boolean;
     // @internal
+    finishEditCommandForTxnOperation(): Promise<boolean>;
+    // @internal
     forgetViewport(vp: ScreenViewport): void;
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
@@ -11856,6 +11956,7 @@ export class ToolAdmin {
     get primitiveTool(): PrimitiveTool | undefined;
     // @internal
     processEvent(): Promise<void>;
+    protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean;
     processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean>;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
     get reloadToolSettingsHandler(): (() => void) | undefined;
@@ -12035,6 +12136,8 @@ export class ToolSettings {
     static enableVirtualCursorForLocate: boolean;
     // @beta
     static enableVolumeSelection: boolean;
+    // @beta
+    static escapeMovesFocusToHome: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
@@ -13612,6 +13715,13 @@ export class ViewPose3d extends ViewPose {
     get target(): Point3d;
 }
 
+// @beta
+export interface ViewRealityModel {
+    readonly description: string | undefined;
+    readonly name: string;
+    readonly treeRef: TileTreeReference;
+}
+
 // @public
 export class ViewRect {
     constructor(left?: number, top?: number, right?: number, bottom?: number);
@@ -13741,12 +13851,13 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     abstract getModelTreeRefs(): Iterable<TileTreeReference>;
     abstract getOrigin(): Point3d;
+    // @beta
+    getRealityModelTreeRefs(): Iterable<ViewRealityModel>;
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
     static getStandardViewMatrix(id: StandardViewId): Matrix3d;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getTargetPoint(result?: Point3d): Point3d;
-    // (undocumented)
     getTileTreeRefs(): Iterable<TileTreeReference>;
     getUpVector(point: Point3d): Vector3d;
     getViewClip(): ClipVector | undefined;
