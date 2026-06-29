@@ -10,6 +10,7 @@ import { ChannelControl, DefinitionModel, EditTxn, IModelJsFs, PhysicalModel, Sn
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
+import { _cache } from "../../internal/Symbols";
 
 describe("changeElementParent and changeElementModel", () => {
   let seedDb: SnapshotDb;
@@ -246,6 +247,27 @@ describe("changeElementParent and changeElementModel", () => {
       assert.equal(iModelDb.elements.getElementProps(root).model, modelBId, "root cache must reflect ModelB");
       assert.equal(iModelDb.elements.getElementProps(child).model, modelBId, "child cache must be invalidated and reflect ModelB");
       assert.equal(iModelDb.elements.getElementProps(grandchild).model, modelBId, "grandchild cache must be invalidated and reflect ModelB");
+    });
+
+    it("invalidates the source and target model cache entries after the move", () => {
+      // Moving an element between models changes the membership - and therefore the geometry-derived state
+      // such as GeometricModel.geometryGuid - of both the source and target models. Element insert/update/
+      // delete invalidate models[_cache] via Element.onInserted/onUpdated/onDeleted for the same reason, but
+      // the native changeElementModel does not fire those element callbacks. The wrapper must therefore evict
+      // both affected models so a subsequent getModelProps does not return stale, pre-move ModelProps.
+      const elem = insertElement(modelAId);
+
+      // Prime the model cache for both the source and target models.
+      iModelDb.models.getModelProps(modelAId);
+      iModelDb.models.getModelProps(modelBId);
+      assert.isDefined(iModelDb.models[_cache].get(modelAId), "source model should be cached before the move");
+      assert.isDefined(iModelDb.models[_cache].get(modelBId), "target model should be cached before the move");
+
+      txn.changeElementModel({ id: elem, modelId: modelBId });
+
+      // Both affected models must be evicted from the cache after the native move.
+      assert.isUndefined(iModelDb.models[_cache].get(modelAId), "source model cache must be invalidated after the move");
+      assert.isUndefined(iModelDb.models[_cache].get(modelBId), "target model cache must be invalidated after the move");
     });
 
     it("recursively moves a multi-level subtree with multiple children at each level", () => {

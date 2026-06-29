@@ -402,6 +402,14 @@ export class EditTxn {
       iModel.elements[_cache].delete({ id });
       iModel.elements[_instanceKeyCache].deleteById(id);
     }
+
+    // Moving the subtree changes the membership - and therefore the geometry-derived state such as
+    // GeometricModel.geometryGuid - of both the source and target models. Element insert/update/delete
+    // invalidate models[_cache] via Element.onInserted/onUpdated/onDeleted for the same reason, but the
+    // native changeElementModel does not fire those element callbacks, so invalidate both affected models
+    // here to keep the model cache contract local to this wrapper.
+    iModel.models[_cache].delete(sourceModelId);
+    iModel.models[_cache].delete(props.modelId);
   }
 
   /** Collect an element together with all of its descendants by walking the `ElementOwnsChildElements`
