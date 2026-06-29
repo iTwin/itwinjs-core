@@ -5,8 +5,9 @@
 
 import { assert, expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, DefinitionElementProps, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, DefinitionModel, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { LineSegment3d, Point3d } from "@itwin/core-geometry";
+import { Code, CodeScopeSpec, DefinitionElementProps, GeometryStreamBuilder, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { ChannelControl, DefinitionModel, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
@@ -73,14 +74,19 @@ describe("changeElementParent and changeElementModel", () => {
       seedDb.close();
   });
 
-  const insertElement = (modelId: Id64String, opts: { parentId?: Id64String; codeSpec?: Id64String; codeScope?: Id64String; codeValue?: string } = {}): Id64String => {
-    const { parentId, codeSpec, codeScope, codeValue } = opts;
+  const insertElement = (modelId: Id64String, opts: { parentId?: Id64String; codeSpec?: Id64String; codeScope?: Id64String; codeValue?: string; withGeometry?: boolean } = {}): Id64String => {
+    const { parentId, codeSpec, codeScope, codeValue, withGeometry } = opts;
+    const builder = new GeometryStreamBuilder();
+    if (withGeometry)
+      builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(1, 0, 0)));
+
     const props: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
       model: modelId,
       category: categoryId,
       code: codeSpec && codeScope && codeValue ? { spec: codeSpec, scope: codeScope, value: codeValue } : Code.createEmpty(),
       placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+      ...(withGeometry ? { geom: builder.geometryStream } : {}),
       ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
     };
     const id = txn.insertElement(props);
@@ -167,6 +173,16 @@ describe("changeElementParent and changeElementModel", () => {
       expect(() => txn.changeElementParent({ id: leaf, parentId: parentB })).to.throw();
     });
 
+    it("rejects self-parenting and leaves the element unchanged", () => {
+      const elem = insertElement(modelAId);
+
+      expect(() => txn.changeElementParent({ id: elem, parentId: elem })).to.throw();
+
+      const unchanged = iModelDb.elements.getElementProps(elem);
+      assert.equal(unchanged.model, modelAId, "model should remain unchanged");
+      assert.isUndefined(unchanged.parent, "element should remain a root");
+    });
+
     it("rejects reparenting to a parent in a different model", () => {
       const parentInA = insertElement(modelAId);
       const leaf = insertElement(modelAId, { parentId: parentInA });
@@ -197,7 +213,7 @@ describe("changeElementParent and changeElementModel", () => {
       const parent = insertElement(modelAId);
       const child = insertElement(modelAId, { parentId: parent });
 
-      // Only root elements (no parent) can be moved between models. Reparent first if needed.
+      // Only root elements (no parent) can be moved between models.
       expect(() => txn.changeElementModel({ id: child, modelId: modelBId })).to.throw();
     });
 
@@ -268,6 +284,81 @@ describe("changeElementParent and changeElementModel", () => {
       // Both affected models must be evicted from the cache after the native move.
       assert.isUndefined(iModelDb.models[_cache].get(modelAId), "source model cache must be invalidated after the move");
       assert.isUndefined(iModelDb.models[_cache].get(modelBId), "target model cache must be invalidated after the move");
+    });
+
+    it("requires exclusive locks for every element in the moved subtree", () => {
+      const root = insertElement(modelAId);
+      const child = insertElement(modelAId, { parentId: root });
+      const grandchild = insertElement(modelAId, { parentId: child });
+      const originalLocks = iModelDb.locks;
+      const checkedIds: Id64String[] = [];
+
+      (iModelDb as any)._locks = new Proxy(originalLocks, {
+        get(target, prop, receiver) {
+          if (prop === "checkExclusiveLock")
+            return (id: Id64String) => {
+              checkedIds.push(id);
+              if (id === child)
+                throw new Error(`missing child lock ${child}`);
+            };
+
+          return Reflect.get(target, prop, receiver);
+        },
+      });
+
+      try {
+        expect(() => txn.changeElementModel({ id: root, modelId: modelBId })).to.throw(`missing child lock ${child}`);
+      } finally {
+        (iModelDb as any)._locks = originalLocks;
+      }
+
+      assert.includeMembers(checkedIds, [root, child], "root and child locks must be checked before the native move");
+      assert.equal(iModelDb.elements.getElementProps(root).model, modelAId, "root must remain in ModelA");
+      assert.equal(iModelDb.elements.getElementProps(child).model, modelAId, "child must remain in ModelA");
+      assert.equal(iModelDb.elements.getElementProps(grandchild).model, modelAId, "grandchild must remain in ModelA");
+    });
+
+    it("updates source and target model geometry guids when moving geometric elements", () => {
+      const fileName = IModelTestUtils.prepareOutputFile("ChangeElementParentModel", "GeometryGuidMove.bim");
+      const db = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "GeometryGuidMove" }, enableTransactions: true });
+      db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      try {
+        const ids = withEditTxn(db, "setup geometry guid move test", (editTxn) => {
+          const sourceModelId = PhysicalModel.insert(editTxn, IModel.rootSubjectId, "SourceModel");
+          const targetModelId = PhysicalModel.insert(editTxn, IModel.rootSubjectId, "TargetModel");
+          const localCategoryId = SpatialCategory.insert(editTxn, IModel.dictionaryId, "GeometryGuidCategory", new SubCategoryAppearance());
+          const builder = new GeometryStreamBuilder();
+          builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(1, 0, 0)));
+          const elementProps: PhysicalElementProps = {
+            classFullName: "Generic:PhysicalObject",
+            model: sourceModelId,
+            category: localCategoryId,
+            code: Code.createEmpty(),
+            placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+            geom: builder.geometryStream,
+          };
+          const elementId = editTxn.insertElement(elementProps);
+          return { elementId, sourceModelId, targetModelId };
+        });
+
+        const sourceGuidBefore = db.models.getModel<PhysicalModel>(ids.sourceModelId).geometryGuid;
+        const targetGuidBefore = db.models.getModel<PhysicalModel>(ids.targetModelId).geometryGuid;
+
+        withEditTxn(db, "move geometry between models", (editTxn) => {
+          editTxn.changeElementModel({ id: ids.elementId, modelId: ids.targetModelId });
+        });
+
+        const sourceGuidAfter = db.models.getModel<PhysicalModel>(ids.sourceModelId).geometryGuid;
+        const targetGuidAfter = db.models.getModel<PhysicalModel>(ids.targetModelId).geometryGuid;
+        assert.isDefined(sourceGuidBefore, "source model should have a geometry guid after inserting geometry");
+        assert.notEqual(sourceGuidAfter, sourceGuidBefore, "source model geometry guid must change after losing geometry");
+        assert.isDefined(targetGuidAfter, "target model should have a geometry guid after receiving geometry");
+        assert.notEqual(targetGuidAfter, targetGuidBefore, "target model geometry guid must change after receiving geometry");
+      } finally {
+        db.close();
+        IModelJsFs.removeSync(fileName);
+      }
     });
 
     it("recursively moves a multi-level subtree with multiple children at each level", () => {
