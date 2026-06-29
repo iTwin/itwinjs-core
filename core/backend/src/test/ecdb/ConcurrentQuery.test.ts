@@ -72,7 +72,10 @@ describe("ConcurrentQuery", () => {
     expect(resp.stats.cpuTime).to.be.closeTo(1000970, 500000);
     expect(resp.stats.totalTime).to.be.closeTo(1001, 100);
     expect(resp.stats.memUsed).to.be.closeTo(2, 3);
-    expect(resp.stats.prepareTime).to.be.closeTo(0, 4);
+    // prepareTime varies on CI: the first query prepares against the (cold) shared schema-source
+    // connection, so assert only that it is negligible relative to the ~1000ms execution rather than
+    // pinning it to a tight tolerance (which flakes -- e.g. observed 7ms against a 0 +/- 4 bound).
+    expect(resp.stats.prepareTime).to.be.lessThan(100);
     db.close();
   });
 
