@@ -12,6 +12,7 @@ import {
   buildGeneratedDefaultPersistenceModule,
   buildGeneratedUnitsModule,
   buildSerializedUnitsJson,
+  formatGeneratedNumber,
 } from "../../scripts/generatedModuleBuilders";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -95,6 +96,22 @@ describe("Generated Units artifacts", () => {
   it("rebuilds the checked-in Units.json artifact exactly from the source schema", () => {
     const rebuiltUnitsJson = `${JSON.stringify(buildSerializedUnitsJson(sourceUnitsSchema, unitsSchema.version), null, 2)}\n`;
     expect(rebuiltUnitsJson).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
+  });
+
+  it("canonicalizes generated conversion values that drift across Node runtimes", () => {
+    const generatedSource = buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys);
+
+    expect(generatedSource).toContain('"Units.AT": ["Units.PRESSURE", 0.0000101971621297793, 0]');
+    expect(generatedSource).toContain('"Units.AT_GAUGE": ["Units.PRESSURE", 0.0000101971621297793, -1.03322745279989]');
+    expect(generatedSource).toContain('"Units.FT_TO_THE_FOURTH": ["Units.AREA_MOMENT_INERTIA", 115.861767458952, 0]');
+    expect(generatedSource).toContain('"Units.NG": ["Units.MASS", 1000000000000, 0]');
+    expect(generatedSource).toContain('"Units.N_CM_PER_SQ_CM": ["Units.AREA_TORQUE", 0.01, 0]');
+    expect(generatedSource).toContain('"Units.NMOL_PER_CUB_DM": ["Units.MOLAR_CONCENTRATION", 1000000, 0]');
+    expect(generatedSource).toContain('"Units.PER_FT": ["Units.LINEAR_RATE", 0.3048, 0]');
+  });
+
+  it("preserves finite values when canonicalization would overflow on reparse", () => {
+    expect(formatGeneratedNumber(Number.MAX_VALUE)).toBe(String(Number.MAX_VALUE));
   });
 
   it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
