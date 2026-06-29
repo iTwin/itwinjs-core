@@ -285,3 +285,33 @@ SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, NullProp FROM aps.Tes
 | 0x19         | AllProperties:TestElement | NotNull  |
 | 0x1b         | AllProperties:TestElement | NotNull  |
 | 0x1d         | AllProperties:TestElement | NotNull  |
+
+# IS operator between two properties (parenthesized operand)
+
+- dataset: AllProperties.bim
+
+Both operands of `IS` may be properties. The right-hand operand here is written in parentheses as `(DirectStr)`; because `DirectStr` is an unqualified name it is parsed as a value expression (the property), not as an `IS (ClassName)` ECClass type predicate. Every `TestElement` stores the same value in `s` and `DirectStr`, so this null-safe property-to-property comparison returns every row.
+
+```sql
+SELECT ECInstanceId, ec_classname(ECClassId) as ClassName, s, DirectStr FROM aps.TestElement WHERE s IS (DirectStr)
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ClassName    | true      | 1     | className | ClassName    | undefined    | string   | String | undefined          |
+| AllProperties:IPrimitive  | s            | false     | 2     | s         | s            | undefined    | string   | String | s                  |
+| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
+
+| ECInstanceId | ClassName                 | s    | DirectStr |
+| ------------ | ------------------------- | ---- | --------- |
+| 0x14         | AllProperties:TestElement | str0 | str0      |
+| 0x15         | AllProperties:TestElement | str1 | str1      |
+| 0x16         | AllProperties:TestElement | str2 | str2      |
+| 0x17         | AllProperties:TestElement | str3 | str3      |
+| 0x18         | AllProperties:TestElement | str4 | str4      |
+| 0x19         | AllProperties:TestElement | str5 | str5      |
+| 0x1a         | AllProperties:TestElement | str6 | str6      |
+| 0x1b         | AllProperties:TestElement | str7 | str7      |
+| 0x1c         | AllProperties:TestElement | str8 | str8      |
+| 0x1d         | AllProperties:TestElement | str9 | str9      |
