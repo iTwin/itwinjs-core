@@ -29,9 +29,7 @@ interface CapturedNativeLog {
  * dropped before they ever reach JS. To observe them we must (1) raise each monitored category to
  * Warning - which fires onLogLevelChanged, prompting the native side to re-read levels and start
  * emitting (Warning and anything more severe, i.e. Error too) - and (2) install sinks to collect
- * what arrives. Returns the captured logs so the caller can assert none were produced. This makes
- * the SchemaViewWriter SafeU8/SafeU16 saturation warnings (and any other native warning/error
- * during the body) a hard test signal instead of silently vanishing into a disabled log.
+ * what arrives. Returns the captured logs so the caller can assert none were produced.
  */
 async function captureNativeLogs(body: () => Promise<void>): Promise<CapturedNativeLog[]> {
   const logs: CapturedNativeLog[] = [];
@@ -46,7 +44,6 @@ async function captureNativeLogs(body: () => Promise<void>): Promise<CapturedNat
       logs.push({ level: "Error", category, message: typeof messageOrError === "string" ? messageOrError : String(messageOrError) });
   });
 
-  // Warning is the least-severe level we care about; raising to it also lets Errors through.
   for (const category of monitoredNativeCategories)
     Logger.setLevel(category, LogLevel.Warning);
 
@@ -94,10 +91,10 @@ const schemaC = `<?xml version="1.0" encoding="UTF-8"?>
 
 /**
  * Tests the incremental ("husk") schema-view path: `getSchemaView({ schemas: [...] })` loads only
- * the requested schemas plus their reference closure via `PRAGMA schema_view_fragment`, accumulating
+ * the requested schemas plus their references via `PRAGMA schema_view_fragment`, accumulating
  * across calls. These run against a real iModel - the blob is exercised end to end (native writer ->
  * TS reader/merge), which is where the fragment mechanism actually has to work. The blob format
- * itself is an internal C++-writer-to-TS-reader contract and is intentionally not probed directly.
+ * itself is an internal C++-writer-to-TS-reader contract.
  */
 describe("SchemaView fragment loading", () => {
   before(async () => {
@@ -109,8 +106,6 @@ describe("SchemaView fragment loading", () => {
   async function createIModelWithFragSchemas(): Promise<SnapshotDb> {
     const filePath = path.join(KnownTestLocations.outputDir, `SchemaViewFragment-${Guid.createValue()}.bim`);
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "SchemaViewFragmentLoading" } });
-    // importSchemaStrings persists the schema changes to this connection, so the PRAGMA reads see
-    // them without an explicit saveChanges (which the implicit-transaction policy now disallows).
     await iModel.importSchemaStrings([schemaB, schemaA]);
     return iModel;
   }
@@ -192,7 +187,7 @@ describe("SchemaView fragment loading", () => {
     try {
       const view = await iModel.getSchemaView({ schemas: ["DoesNotExist"] });
       expect(view.getSchema("DoesNotExist")).to.be.undefined;
-      // The request resolved to an empty closure; the view is a valid, empty husk.
+      // No real schemas requested; the view is a valid, empty husk.
       expect(view.schemaCount).to.equal(0);
     } finally {
       iModel.close();
@@ -259,21 +254,18 @@ describe("SchemaView fragment loading", () => {
   });
 
   it("loads a real domain schema's reference closure, dropping references that are excluded", async () => {
-    // Walk against real schemas rather than synthetic ones. Generic
-    // references BisCore plus three schemas that are all on SchemaView's exclusion list
-    // (CoreCustomAttributes, BisCustomAttributes, ECDbMap); BisCore in turn references four schemas
-    // that are ALL excluded (CoreCustomAttributes, BisCustomAttributes, ECDbMap, ECDbSchemaPolicies).
-    // So requesting Generic must yield a view containing exactly Generic + BisCore - the closure walk
-    // pulls BisCore, and every excluded reference contributes no rows. See SchemaView.md "What is excluded".
+    // Walk against real schemas. Generic references BisCore plus three schemas that are all on SchemaView's
+    // exclusion list. BisCore in turn references four schemas that are ALL excluded.
+    // So requesting Generic must yield a view containing exactly Generic + BisCore - the walk
+    // pulls BisCore, and every excluded reference contributes no rows.
     GenericSchema.registerSchema();
     const filePath = path.join(KnownTestLocations.outputDir, `SchemaViewFragmentGeneric-${Guid.createValue()}.bim`);
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "SchemaViewFragmentGeneric" } });
     try {
       await iModel.importSchemas([GenericSchema.schemaFilePath]);
 
-      // Capture native warnings and errors while the fragment blob is written + parsed. A
-      // SafeU8/SafeU16 saturation in SchemaViewWriter (e.g. a re-introduced PrimitiveType
-      // truncation) would warn here; assert nothing was logged as a safeguard against regressions.
+      // Capture native warnings and errors while the fragment blob is written + parsed.
+      // assert nothing was logged as a safeguard against regressions.
       let schemaView: Awaited<ReturnType<typeof iModel.getSchemaView>> | undefined;
       const nativeLogs = await captureNativeLogs(async () => {
         schemaView = await iModel.getSchemaView({ schemas: ["Generic"] });
@@ -313,9 +305,7 @@ describe("SchemaView fragment loading", () => {
       expect(physicalObject!.getOwnProperties(), "PhysicalObject has no own properties").to.have.lengthOf(0);
 
       // Expected primitive type for a sampling of inherited primitive properties, one (or more) from
-      // each ancestor. Binary (0x101), String (0x901) and Integer (0x501) all truncate to 0x01 if a
-      // PrimitiveType is ever written through a too-narrow byte, so asserting these are distinct is a
-      // direct regression guard for the kind of narrowing bug we fixed in the enum primitiveType.
+      // each ancestor.
       const expectedPrimitiveTypes = new Map<string, SchemaViewPrimitiveType>([
         ["FederationGuid", SchemaViewPrimitiveType.Binary],   // Element, binary
         ["CodeValue", SchemaViewPrimitiveType.String],        // Element, string
@@ -326,7 +316,7 @@ describe("SchemaView fragment loading", () => {
         ["Yaw", SchemaViewPrimitiveType.Double],              // GeometricElement3d, double
         ["GeometryStream", SchemaViewPrimitiveType.Binary],   // GeometricElement3d, binary
       ]);
-      // Navigation properties contributed by the chain - present, but carry no primitive type.
+      // Navigation properties contributed by the chain
       const expectedNavProperties = ["Model", "CodeSpec", "Category", "PhysicalMaterial"];
 
       // First walk: getProperties() returns the full inherited set. Verify each expected property is
