@@ -24,6 +24,7 @@ const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") a
 const generatedIdentifiersSource = readFileSync(require.resolve("../generated/Units.generated.ts"), "utf8");
 const generatedBasicConversionsSource = readFileSync(require.resolve("../internal/BasicUnitConversions.generated.ts"), "utf8");
 const generatedDefaultPersistenceSource = readFileSync(require.resolve("../internal/DefaultPersistenceUnits.generated.ts"), "utf8");
+const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 const packageRoot = join(dirname(require.resolve("../assets/Units.json")), "..", "..");
 
 function normalizeLineEndings(source: string): string {
@@ -144,7 +145,7 @@ describe("Generated Units artifacts", () => {
     const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
 
     try {
-      execFileSync("npm", ["run", "-s", "generate", "--", destinationRoot], { cwd: packageRoot, stdio: "pipe" });
+      execFileSync(npmCommand, ["run", "-s", "generate", "--", destinationRoot], { cwd: packageRoot, stdio: "pipe" });
 
       const generatedArtifactPaths = {
         unitsJson: join(destinationRoot, "src/assets/Units.json"),
