@@ -75,7 +75,10 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
-      buildTag: hasDocs
+      # TEMP test pointer (nam): pull transformer build 5364309 (branch nam/transformer-docs-ssot,
+      # carries learning/transformer incl v2-migration.md). buildTag blanked because it wins over
+      # specificBuild in copy-docs-artifact.yaml. REVERT to `buildTag: hasDocs` before merge.
+      specificBuild: "5364309"
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
   # Auth Clients
