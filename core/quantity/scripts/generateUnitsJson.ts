@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { SERIALIZED_UNIT_SCHEMA_VERSION } from "../src/SerializedUnitSchema";
 import {
@@ -17,9 +15,7 @@ import {
   type SourceSchemaLike,
 } from "./generatedModuleBuilders";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
-
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const schemaPath = require.resolve("@bentley/units-schema/Units.ecschema.json");
 const generatedArtifactRelativePaths = {
   unitsJson: "src/assets/Units.json",
@@ -108,5 +104,6 @@ function main(args: string[]): void {
   console.log(`Generated Units artifacts from @bentley/units-schema ${schemaVersion} into ${resolvedDestinationRoot}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url))
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+if (require.main === module)
   main(process.argv.slice(2));
