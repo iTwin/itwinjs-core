@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-bentley](#itwincore-bentley)
+    - [`CompressedId64Set.isValid` type guard](#compressedid64setisvalid-type-guard)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Pluggable Cesium Ion authentication via `CesiumAccessClient`](#pluggable-cesium-ion-authentication-via-cesiumaccessclient)
     - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
@@ -18,6 +20,23 @@ publish: false
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
   - [@itwin/build-tools](#itwinbuild-tools)
     - [`mocha` is now an optional peer dependency](#mocha-is-now-an-optional-peer-dependency)
+
+## @itwin/core-bentley
+
+### `CompressedId64Set.isValid` type guard
+
+[CompressedId64Set.isValid]($bentley) is a new type guard that returns `true` if a value is a valid `CompressedId64Set` — either an empty string (representing an empty set) or a non-empty string beginning with `"+"`. This lets callers safely distinguish a compressed Id set from a plain [Id64String]($bentley) or any other value without duplicating the internal format heuristic:
+
+```typescript
+function processIds(ids: unknown): void {
+  if (CompressedId64Set.isValid(ids)) {
+    for (const id of CompressedId64Set.iterable(ids))
+      doSomething(id);
+  } else if (typeof ids === "string" && Id64.isValidId64(ids)) {
+    doSomething(ids);
+  }
+}
+```
 
 ## @itwin/core-frontend
 

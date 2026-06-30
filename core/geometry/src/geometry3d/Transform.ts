@@ -715,8 +715,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Multiply `this` Transform times `other` Transform.
    * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as `[A*B   Ab+a]` because:
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    *    \text{this Transform with matrix part }\bold{A}\text{ and origin part }\bold{a} & \blockTransform{A}{a}\\
    *    \text{other Transform with matrix part }\bold{B}\text{ and origin part }\bold{b} & \blockTransform{B}{b} \\
@@ -738,8 +737,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Multiply `this` Transform times `other` Matrix3d (considered to be a Transform with 0 `origin`).
    * * **Note:** If `this = [A   a]` and `other = [B   0]`, then `this * other` is defined as [A*B   a] because:
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    *    \text{this Transform with matrix part }\bold{A}\text{ and origin part }\bold{a} & \blockTransform{A}{a}\\
    *    \text{other matrix }\bold{B}\text{ promoted to block Transform} & \blockTransform{B}{0} \\
