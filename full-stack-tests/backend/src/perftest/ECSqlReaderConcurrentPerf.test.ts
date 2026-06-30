@@ -379,7 +379,10 @@ describe("ECSqlReaderConcurrentPerformanceTests", () => {
             const median = runs[Math.floor(runs.length / 2)];
             const minQps = runs[0].throughputQps;
             const maxQps = runs[runs.length - 1].throughputQps;
-            totalErrors.push(...median.errorSamples);
+            // Aggregate errors from every repeat, not just the median run, so the
+            // zero-error assertion below cannot pass while a non-median run had errors.
+            for (const run of runs)
+              totalErrors.push(...run.errorSamples);
 
             console.log(
               `vary=${varyStatements ? "Y" : "N"} maxConc=${String(maxConcurrent).padStart(3)} workers=${String(workerThreads).padStart(2)} (applied=${appliedWorkers}) | ` +
