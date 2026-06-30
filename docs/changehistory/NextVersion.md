@@ -15,8 +15,8 @@ For apps with a dedicated backend, the backend can now invoke methods on the fro
 
 The new `@alpha` APIs are:
 
-- [IpcHost.invoke]($backend) and `IpcHost.makeIpcProxy` on the backend to call frontend handlers.
-- [IpcApp.handle]($frontend) and a new `IpcHandler` base class on the frontend to implement them.
+- `IpcHost.invoke` and `IpcHost.makeIpcProxy` on the backend to call frontend handlers.
+- `IpcApp.handle` and a new `IpcHandler` base class on the frontend to implement them.
 - `IpcHost.invokeTimeout` to optionally bound how long an invocation waits for a response.
 - [FrontendError]($common) to represent a `BentleyError` thrown by a frontend handler, surfaced to the backend caller.
 
