@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@itwin/core-quantity"
+      "packageName": "@itwin/core-extension"
     }
   ],
-  "packageName": "@itwin/core-quantity",
+  "packageName": "@itwin/core-extension",
   "email": "50554904+hl662@users.noreply.github.com"
 }
