@@ -20,6 +20,12 @@ Under the hood, an iModel is a standard SQLite file.  Two standard SQLite extens
 While iModels physically store data using a SQL persistence schema, they expose that data as BIS entities. The [ECSQL](./ECSQL.md) language allows you to use SQL syntax to query data in an iModel based on its conceptual schema rather than in terms of the underlying database structure. The data tables in an iModel are defined by the imported BIS schemas. Additionally, the database includes metadata tables that store these schemas and define how the persistence layer maps to the logical layer.
 
 
+### BIS Basics
+
+[Base Infrastructure Schemas](https://github.com/itwin/bis-schemas) (BIS) is an open source ecosystem of modular and coordinated schemas.  The [BisCore](https://www.itwinjs.org/bis/domains/biscore.ecschema/) schema defines the foundational data model of an iModel, and all other schemas derive from the base classes BisCore defines.  BisCore defines [**Elements**](https://www.itwinjs.org/bis/guide/fundamentals/element-fundamentals/) as the primary data-carrying entities and [**Models**](https://www.itwinjs.org/bis/guide/fundamentals/model-fundamentals/) which contain Elements.  Elements may also be extended via [**ElementAspects**](https://www.itwinjs.org/bis/guide/fundamentals/elementaspect-fundamentals/) which can store additional data and are considered conceptually to be part of the Element.  Individual Elements are connected via [**Relationships**](https://www.itwinjs.org/bis/guide/fundamentals/relationship-fundamentals/), which can also store data, to build assemblies, systems, networks, hierarchies or other arbitrary connections.
+
+BIS enables modeling real world objects from multiple [**Perspectives**](https://www.itwinjs.org/bis/guide/intro/modeling-with-bis/). Different Elements are used to represent the real world object in each perspective. For example, a pump can have a **functional perspective** defining the requirements of a functional pump (e.g. flow rate or pressure), a **physical perspective** defining the pump location in space (e.g. location, geometry, materials), and an **analytical perspective** defining the attributes needed for flow simulation.
+
 ### Change History and Versioning
 
 iModels are stored as a seed SQLite file plus a sequence of SQLite changesets making a linear and immutable change history. Thus, it is always possible to recreate a version of an iModel by applying changesets in order up to the revision desired.
@@ -35,12 +41,6 @@ Under the default **pessimistic** concurrency policy, locks are required before 
 As multiple users edit an iModel, they will push changesets with their changes and pull in changesets with others' changes. A briefcase must be at the tip of the change history to push a changeset. If it is not, incoming changesets need to be pulled, and local changes are merged with them. Once conflicts are resolved, the local changes are pushed as one or more changesets.
 
 Forks create an independent copy of the change history, creating an iModel which can be edited independently from the source iModel. Changes must be merged back using [iModel Transformation](https://www.itwinjs.org/learning/transformer/) which works at the BIS Element level rather than with SQLite changesets.
-
-### BIS Basics
-
-[Base Infrastructure Schemas](https://github.com/itwin/bis-schemas) (BIS) is an open source ecosystem of modular and coordinated schemas.  The [BisCore](https://www.itwinjs.org/bis/domains/biscore.ecschema/) schema defines the foundational data model of an iModel, and all other schemas derive from the base classes BisCore defines.  BisCore defines [**Elements**](https://www.itwinjs.org/bis/guide/fundamentals/element-fundamentals/) as the primary data-carrying entities and [**Models**](https://www.itwinjs.org/bis/guide/fundamentals/model-fundamentals/) which contain Elements.  Elements may also be extended via [**ElementAspects**](https://www.itwinjs.org/bis/guide/fundamentals/elementaspect-fundamentals/) which can store additional data and are considered conceptually to be part of the Element.  Individual Elements are connected via [**Relationships**](https://www.itwinjs.org/bis/guide/fundamentals/relationship-fundamentals/), which can also store data, to build assemblies, systems, networks, hierarchies or other arbitrary connections.
-
-BIS enables modeling real world objects from multiple [**Perspectives**](https://www.itwinjs.org/bis/guide/intro/modeling-with-bis/). Different Elements are used to represent the real world object in each perspective. For example, a pump can have a **functional perspective** defining the requirements of a functional pump (e.g. flow rate or pressure), a **physical perspective** defining the pump location in space (e.g. location, geometry, materials), and an **analytical perspective** defining the attributes needed for flow simulation.
 
 ### Code Basics
 
