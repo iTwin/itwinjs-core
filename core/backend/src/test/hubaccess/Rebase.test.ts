@@ -186,7 +186,8 @@ class TestIModel {
   }
   public async updateElement(txn: EditTxn, id: Id64String, markAsIndirect?: true, updateGeom?: boolean) {
     const b = txn.iModel as BriefcaseDb;
-    await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
+    if (!markAsIndirect)
+      await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
     const elProps = b.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(id);
 
     if (updateGeom) {
@@ -935,17 +936,27 @@ for (const enableSemanticRebase of [false, true]) {
     it("abort rebase", async () => {
       const b1 = await testIModel.openBriefcase();
       const b2 = await testIModel.openBriefcase();
+
+      const txn = startTestTxn(b1, "setup");
+      const e1 = await testIModel.insertElement(txn);
+      txn.end("save");
+      await b1.pushChanges({ description: `${e1} inserted` });
+      await b2.pullChanges();
+
+      // Create conflicting changes so that fast-forward fails.
       const b1Txn = startTestTxn(b1, "abort rebase b1");
       const b2Txn = startTestTxn(b2, "abort rebase b2");
 
-      const e1 = await testIModel.insertElement(b1Txn);
-      b1Txn.saveChanges();
-      await b1.pushChanges({ description: `${e1} inserted` });
+      await testIModel.updateElement(b1Txn, e1);
+      b1Txn.end("save");
+      const b1Prop = b1.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1;
+      await testIModel.updateElement(b2Txn, e1, true);
+      b2Txn.saveChanges(); // commit, but don't end the EditTxn
+      const b2Prop = b2.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1;
 
-      const e2 = await testIModel.insertElement(b2Txn);
-      chai.expect(e2).to.exist;
+      await b1.pushChanges({ description: `${e1} updated` });
+
       let e3 = "";
-      b2Txn.saveChanges();
       b2.txns.rebaser.setCustomHandler({
         shouldReinstate: (_txnProps: TxnProps) => {
           return true;
@@ -957,16 +968,13 @@ for (const enableSemanticRebase of [false, true]) {
         },
       });
 
-      chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
-      chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
       chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
-      chai.expect(b2.changeset.index).to.equals(2);
+      chai.expect(b2.changeset.index).to.equals(3);
       await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
 
-      chai.expect(b2.changeset.index).to.equals(3);
+      chai.expect(b2.changeset.index).to.equals(4);
       chai.expect(e3).to.exist;
-      chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;     // came from incoming changeset
-      chai.expect(b2.elements.tryGetElementProps(e2)).to.undefined; // was local change and reversed during rebase.
+      chai.expect(b2.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1).to.equals(b1Prop); // came from incoming changeset
       chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // was insert by reCompute() but due to exception the rebase attempt was abandoned.
 
       chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
@@ -974,9 +982,8 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(b2.txns.rebaser.canAbort()).is.true;
       await b2.txns.rebaser.abort();
 
-      chai.expect(b2.changeset.index).to.equals(2);
-      chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined; // reset briefcase should move tip back to where it was before pull
-      chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;  // abort should put back e2 which was only change at the time of pull
+      chai.expect(b2.changeset.index).to.equals(3);
+      chai.expect(b2.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1).to.equals(b2Prop); // abort should put back b2 prop value which was only change at the time of pull
       chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // add by rebase so should not exist either
 
       chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
@@ -1895,17 +1902,27 @@ for (const enableSemanticRebase of [false, true]) {
     it("abort rebase should discard in-memory changes", async () => {
       const b1 = await testIModel.openBriefcase();
       const b2 = await testIModel.openBriefcase();
-      const b1Txn = startTestTxn(b1, "abort rebase discard memory b1");
-      const b2Txn = startTestTxn(b2, "abort rebase discard memory b2");
 
-      const e1 = await testIModel.insertElement(b1Txn);
-      b1Txn.saveChanges();
+      const txn = startTestTxn(b1, "setup");
+      const e1 = await testIModel.insertElement(txn);
+      txn.end("save");
       await b1.pushChanges({ description: `${e1} inserted` });
+      await b2.pullChanges();
 
-      const e2 = await testIModel.insertElement(b2Txn);
-      chai.expect(e2).to.exist;
+      // Create conflicting changes so that fast-forward fails.
+      const b1Txn = startTestTxn(b1, "abort rebase b1");
+      const b2Txn = startTestTxn(b2, "abort rebase b2");
+
+      await testIModel.updateElement(b1Txn, e1);
+      b1Txn.end("save");
+      const b1Prop = b1.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1;
+      await testIModel.updateElement(b2Txn, e1, true);
+      b2Txn.saveChanges(); // commit, but don't end the EditTxn
+      const b2Prop = b2.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1;
+
+      await b1.pushChanges({ description: `${e1} updated` });
+
       let e3 = "";
-      b2Txn.saveChanges();
       b2.txns.rebaser.setCustomHandler({
         shouldReinstate: (_txnProps: TxnProps) => {
           return true;
@@ -1917,16 +1934,13 @@ for (const enableSemanticRebase of [false, true]) {
         },
       });
 
-      chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
-      chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
       chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
-      chai.expect(b2.changeset.index).to.equals(2);
+      chai.expect(b2.changeset.index).to.equals(3);
       await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
 
-      chai.expect(b2.changeset.index).to.equals(3);
+      chai.expect(b2.changeset.index).to.equals(4);
       chai.expect(e3).to.exist;
-      chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;     // came from incoming changeset
-      chai.expect(b2.elements.tryGetElementProps(e2)).to.undefined; // was local change and reversed during rebase.
+      chai.expect(b2.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1).to.equals(b1Prop); // came from incoming changeset
       chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // was insert by reCompute() but due to exception the rebase attempt was abandoned.
 
       chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
@@ -1936,12 +1950,12 @@ for (const enableSemanticRebase of [false, true]) {
       chai.expect(b2.txns.hasUnsavedChanges).is.true;
 
       chai.expect(b2.txns.rebaser.canAbort()).is.true;
-      // should abort with unsaved local changes
       await b2.txns.rebaser.abort();
 
-      chai.expect(b2.changeset.index).to.equals(2);
-      chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined; // reset briefcase should move tip back to where it was before pull
-      chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;  // abort should put back e2 which was only change at the time of pull
+      chai.expect(b2.txns.hasUnsavedChanges).is.false;
+
+      chai.expect(b2.changeset.index).to.equals(3);
+      chai.expect(b2.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(e1).prop1).to.equals(b2Prop); // abort should put back b2 prop value which was only change at the time of pull
       chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // add by rebase so should not exist either
 
       chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;

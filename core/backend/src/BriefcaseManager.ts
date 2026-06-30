@@ -629,36 +629,36 @@ export class BriefcaseManager {
       Logger.logInfo(loggerCategory, `Using semantic rebase (incoming schema change: ${hasIncomingSchemaChange}, local schema txn: ${hasLocalSchemaTxn})`);
     }
 
+    let rebaseChangesets = changesets;
+
     if (isPullMerge) {
       briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
-    }
 
-    // Attempt a "fast-forward" merge where we apply the incoming changesets directly on top of the
-    // briefcase without reversing any local changes first. Any conflicts - including in indirect
-    // changes - will cause this process to fail, and a rebase will be required.
-    // TODO: Raise notifyApplyIncomingChangesBegin/End? Maybe not, because no one really needs to worry
-    // about a successful fast-forward merge, right?
-    let rebaseChangesets: ChangesetFileProps[] = [];
-    for (const changeset of changesets) {
-      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-      Logger.logInfo(loggerCategory, `Starting fast-forward application of changeset with id ${stopwatch.description}`);
-      try {
-        // TODO: This is not right. Even with fastForward=true, applySingleChangeset will not fail if there are conflicts
-        // only in indirect changes. We need it to fail on _any_ conflict. This is likely to require imodel-native changes.
-        // It looks like fastForward=true isn't used anywhere, so we can change the meaning of this flag without breaking
-        // anyone. Maybe.
-        await this.applySingleChangeset(db, changeset, true, arg.noUpdateLoop);
-        Logger.logInfo(loggerCategory, `Fast-forwarded changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-      } catch (err: any) {
-        // A failure to fast-forward means we need to rebase, starting with the failed changeset.
-        Logger.logInfo(loggerCategory, `Fast-forward failed for changeset with id ${stopwatch.description}, starting rebase`);
-        rebaseChangesets = changesets.slice(changesets.indexOf(changeset));
-        break;
-      }
-    }
+      // Attempt a "fast-forward" merge where we apply the incoming changesets directly on top of the
+      // briefcase without reversing any local changes first. Any conflicts - including in indirect
+      // changes - will cause this process to fail, and a rebase will be required.
+      rebaseChangesets = await briefcaseDb.withFastForwardOnlyMerge(async () => {
+        for (const changeset of changesets) {
+          const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+          Logger.logInfo(loggerCategory, `Starting fast-forward application of changeset with id ${stopwatch.description}`);
+          try {
+            await this.applySingleChangeset(db, changeset, true, arg.noUpdateLoop);
+            nativeDb.saveChanges(`Fast-forward merge changeset with id ${changeset.id}.`);
+            Logger.logInfo(loggerCategory, `Fast-forwarded changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+          } catch (err: any) {
+            // A failure to fast-forward means we need to rebase, starting with the failed changeset.
+            Logger.logInfo(loggerCategory, `Fast-forward failed for changeset with id ${stopwatch.description}, starting rebase`);
+            nativeDb.abandonChanges();
 
-    if (changesets.length > 0 && rebaseChangesets.length < changesets.length) {
-      nativeDb.saveChanges("Fast-forward merge.");
+            // Return the remaining changesets starting from the failed one. These are the changesets that will need to
+            // be applied after reversing local changes.
+            return changesets.slice(changesets.indexOf(changeset));
+          }
+        }
+
+        // All changesets have been successfully fast-forwarded. No rebase is required.
+        return [];
+      });
     }
 
     // If we need to rebase, reverse the local changes first.
@@ -688,7 +688,7 @@ export class BriefcaseManager {
         if (err instanceof Error) {
           Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
         }
-        db[_nativeDb].abandonChanges();
+        nativeDb.abandonChanges();
         throw err;
       }
     }

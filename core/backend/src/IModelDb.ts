@@ -1158,7 +1158,7 @@ export abstract class IModelDb extends IModel {
       if (this._schemasPromise) {
         const old = this._schemasPromise;
         this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => {});
+        old.then((view) => view.markOutdated()).catch(() => { });
       }
       this[_nativeDb].clearECDbCache();
     }
@@ -3813,9 +3813,28 @@ export class BriefcaseDb extends IModelDb {
     return txnProps.some((props) => props.type === "Schema" || props.type === "ECSchema");
   }
 
+  private _fastForwardOnlyMerge: boolean = false;
+
+  public async withFastForwardOnlyMerge<T>(callback: () => Promise<T>): Promise<T> {
+    // Implementation for fast-forward only merging
+    try {
+      this._fastForwardOnlyMerge = true;
+      return await callback();
+    } finally {
+      this._fastForwardOnlyMerge = false;
+    }
+  }
+
   /**  This is called by native code when applying a changeset */
   private onChangesetConflict(args: DbMergeChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
+
+    // During a fast-forward merge, _any_ conflict is a fatal error.
+    // When fast-forward fails, we'll rebase instead.
+    // Many conflicts are trivially resolved during rebasing.
+    if (this._fastForwardOnlyMerge) {
+      return DbConflictResolution.Abort;
+    }
 
     const category = "DgnCore";
     const interpretConflictCause = (cause: DbConflictCause) => {
