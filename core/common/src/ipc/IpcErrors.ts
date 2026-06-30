@@ -6,8 +6,7 @@
  * @module IpcSocket
  */
 
-import { BentleyError, JsonUtils } from "@itwin/core-bentley";
-import { FrontendError } from "../IModelError";
+import { BentleyError, JsonUtils, LoggingMetaData } from "@itwin/core-bentley";
 import { IpcInvokeReturn } from "./IpcSocket";
 
 /**
@@ -84,24 +83,31 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
 }
 
 /**
- * Reconstruct an `Error` from the serialized `error` produced by [[serializeIpcError]] on the frontend side of a
- * backend-to-frontend Ipc invoke, so the backend caller can `throw` it. If the serialized error carries
- * `BentleyError` identity it is rebuilt as a [FrontendError]($common) (preserving `errorNumber`,
- * `name`/`iTwinErrorId`, message, and logging metadata); otherwise a plain `Error` is produced. This mirrors how the
- * frontend rebuilds a [BackendError]($common) for the reverse (frontend-to-backend) direction. Remaining
- * own-enumerable properties are copied onto the result.
+ * Reconstruct an `Error` from the serialized `error` produced by [[serializeIpcError]], so the Ipc caller can
+ * `throw` it. If the serialized error carries `BentleyError` identity it is rebuilt via `typedErrorClass`
+ * (preserving `errorNumber`, `name`/`iTwinErrorId`, message, and logging metadata); otherwise a plain `Error` is
+ * produced. Remaining own-enumerable properties are copied onto the result.
+ *
+ * Both Ipc directions share this helper, passing the typed-error class appropriate for the caller: the backend
+ * rebuilds a [FrontendError]($common) for errors thrown by a frontend handler, while the frontend rebuilds a
+ * [BackendError]($common) for the reverse (frontend-to-backend) direction.
  * @param err The serialized error object (must be an object; callers should forward non-object values as-is).
+ * @param typedErrorClass Constructor for the typed error to build when `err` carries `BentleyError` identity
+ * (e.g. [FrontendError]($common) on the backend, [BackendError]($common) on the frontend).
  * @returns The reconstructed `Error` to throw.
  * @internal
  */
-export function rebuildIpcError(err: any): Error {
-  // for backwards compatibility, if the exception was a BentleyError on the frontend, rebuild a typed FrontendError.
+export function rebuildIpcError(
+  err: any,
+  typedErrorClass: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error,
+): Error {
+  // if the exception was a BentleyError, rebuild it as the caller's typed error; otherwise produce a plain Error.
   if (!BentleyError.isError(err))
     return Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
 
   const trimErr: any = { ...err };
-  delete trimErr.iTwinErrorId;    // getter on FrontendError; assigning would throw
-  delete trimErr.loggingMetadata; // getter on FrontendError; assigning would throw
+  delete trimErr.iTwinErrorId;    // getter on the typed error; assigning would throw
+  delete trimErr.loggingMetadata; // getter on the typed error; assigning would throw
   // restores original `name` (and thus iTwinErrorId.key) plus any custom fields
-  return Object.assign(new FrontendError(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata), trimErr);
+  return Object.assign(new typedErrorClass(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata), trimErr);
 }

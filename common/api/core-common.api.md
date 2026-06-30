@@ -8041,7 +8041,7 @@ export class RealityModelDisplaySettings {
 }
 
 // @internal
-export function rebuildIpcError(err: any): Error;
+export function rebuildIpcError(err: any, typedErrorClass: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;

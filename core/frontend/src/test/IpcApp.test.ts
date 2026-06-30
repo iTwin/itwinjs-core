@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { IpcInvokeReturn } from "@itwin/core-common";
+import { BackendError, IpcInvokeReturn, serializeIpcError } from "@itwin/core-common";
 import { IpcApp, IpcHandler } from "../IpcApp";
 
 interface MockIpcInterface {
@@ -142,6 +142,45 @@ describe("IpcApp", () => {
       expect(error.iTwinErrorId.scope).to.equal("bentley-error"); // BentleyError identity is preserved for typed reconstruction
       expect(error.iTwinErrorId.key).to.be.a("string");
       expect(error.loggingMetadata).to.deep.equal({ detail: 42 });
+    });
+  });
+
+  describe("makeIpcProxy error reconstruction", () => {
+    // Drives the caller side (_callIpcChannel): mocks the backend's reply with an {error} envelope and asserts
+    // how the frontend rebuilds and rethrows it via the shared rebuildIpcError(err, BackendError) helper.
+    async function invokeExpectingThrow(envelope: IpcInvokeReturn): Promise<any> {
+      socket.invoke.mockResolvedValue(envelope);
+      const proxy = IpcApp.makeIpcProxy<MockIpcInterface>("mock-channel");
+      try {
+        await proxy.mockMethod();
+        expect.fail("proxy call should have rejected");
+      } catch (err) {
+        return err;
+      }
+    }
+
+    it("rebuilds a thrown BentleyError as a BackendError preserving identity and metadata", async () => {
+      const original = new BentleyError(IModelStatus.NotFound, "boom", () => ({ detail: 42 }));
+      const err = await invokeExpectingThrow(serializeIpcError(original, true));
+      expect(err).to.be.instanceOf(BackendError);
+      expect(BentleyError.isError(err, IModelStatus.NotFound)).to.be.true; // same iTwinErrorId identity
+      expect(err.errorNumber).to.equal(IModelStatus.NotFound);
+      expect(err.message).to.equal("boom");
+      expect(err.loggingMetadata).to.deep.equal({ detail: 42 });
+    });
+
+    it("rebuilds a thrown plain Error as a plain Error with message and own properties", async () => {
+      const original = Object.assign(new Error("plain failure"), { custom: "field" });
+      const err = await invokeExpectingThrow(serializeIpcError(original, true));
+      expect(err).to.be.instanceOf(Error);
+      expect(err).to.not.be.instanceOf(BackendError);
+      expect(err.message).to.equal("plain failure");
+      expect(err.custom).to.equal("field");
+    });
+
+    it("forwards a non-object error verbatim", async () => {
+      const err = await invokeExpectingThrow({ error: "just a string" });
+      expect(err).to.equal("just a string");
     });
   });
 });

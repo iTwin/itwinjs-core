@@ -6,10 +6,10 @@
  * @module NativeApp
  */
 
-import { BentleyError, expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
+import { expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction, serializeIpcError,
+  rebuildIpcError, RemoveFunction, serializeIpcError,
 } from "@itwin/core-common";
 import { _callIpcChannel } from "./common/internal/Symbols";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -120,14 +120,8 @@ export class IpcApp {
       throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
-    // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
-    if (!BentleyError.isError(err))
-      throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
-
-    const trimErr = { ...err } as any;
-    delete trimErr.iTwinErrorId // these are methods on BackendError and will cause Object.assign to fail.
-    delete trimErr.loggingMetadata;
-    throw Object.assign(new BackendError(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata), trimErr);
+    // for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
+    throw rebuildIpcError(err, BackendError);
   }
 
   /** @internal

@@ -10,7 +10,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BriefcaseConnectionProps,
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, FrontendError, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, rebuildIpcError, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, serializeIpcError, SnapshotOpenOptions,
   StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
@@ -169,7 +169,7 @@ export class IpcHost {
       throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
-    throw rebuildIpcError(err);
+    throw rebuildIpcError(err, FrontendError);
   }
 
   /**
