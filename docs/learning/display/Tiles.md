@@ -5,7 +5,7 @@ The [iTwin.js display system](./index.md) is responsible for visualizing vast am
 The display system can aggregate different types of tiles from a broad variety of sources, including:
 
 - iModels, in the form of [tiles produced by the iTwin.js backend](./TileFormat.md);
-- Reality meshes and point clouds in standard [3d tile formats](https://github.com/CesiumGS/3d-tiles) such as those produced by [Bentley ContextCapture](https://www.bentley.com/en/products/product-line/reality-modeling-software/contextcapture);
+- Reality meshes and point clouds in standard [3d tile formats](https://github.com/CesiumGS/3d-tiles) such as those produced by [iTwin Capture Modeler](https://www.bentley.com/software/itwin-capture-modeler/);
 - Point clouds in [OrbitGT](https://orbitgt.com/) format;
 - Map imagery from a wide variety of sources including [Bing](https://www.microsoft.com/en-us/maps) and [MapBox](https://www.mapbox.com/);
 - 3d world-wide terrain meshes from [Cesium ION](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/);
