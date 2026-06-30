@@ -104,6 +104,8 @@ function main(args: string[]): void {
   console.log(`Generated Units artifacts from @bentley/units-schema ${schemaVersion} into ${resolvedDestinationRoot}`);
 }
 
+// tsx provides CommonJS globals for this package's .ts entrypoint.
+// If this script moves to strict ESM, use a dedicated CLI wrapper instead.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require.main === module)
   main(process.argv.slice(2));

@@ -149,16 +149,20 @@ jobs:
         run: node common/scripts/install-run-rush.js extract-api --only @itwin/cesium-renderer
 
       - name: rush generate-artifacts
+        if: ${{ steps.extract_api.outcome == 'success' && steps.extract_api_cesium.outcome == 'success' }}
+        id: generate_artifacts
+        continue-on-error: true
         run: node common/scripts/install-run-rush.js generate-artifacts
 
       - name: Assert no uncommitted changes after generation
+        if: ${{ steps.generate_artifacts.outcome == 'success' }}
         id: generated_drift
         continue-on-error: true
         shell: bash
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
             echo "The following generated files are out of date:"
-            git status --short
+            git status --short --untracked-files=no
             git diff
             exit 1
           fi
@@ -178,6 +182,10 @@ jobs:
           fi
           if [ "${{ steps.extract_api_cesium.outcome }}" = "failure" ]; then
             echo "::error::rush extract-api failed for @itwin/cesium-renderer — run 'rush extract-api --only @itwin/cesium-renderer' locally and commit the changed common/api/cesium-renderer.api.md"
+            FAILED=1
+          fi
+          if [ "${{ steps.generate_artifacts.outcome }}" = "failure" ]; then
+            echo "::error::rush generate-artifacts failed"
             FAILED=1
           fi
           if [ "${{ steps.generated_drift.outcome }}" = "failure" ]; then

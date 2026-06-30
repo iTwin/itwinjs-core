@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
@@ -143,7 +143,7 @@ describe("Generated Units artifacts", () => {
     const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
 
     try {
-      generateUnitsArtifacts(destinationRoot);
+      const result = generateUnitsArtifacts(destinationRoot);
 
       const generatedArtifactPaths = {
         unitsJson: join(destinationRoot, "src/assets/Units.json"),
@@ -152,10 +152,24 @@ describe("Generated Units artifacts", () => {
         defaultPersistenceTs: join(destinationRoot, "src/internal/DefaultPersistenceUnits.generated.ts"),
       };
 
+      expect(result.anyChanged).toBe(true);
+      expect(result.destinationRoot).toBe(resolve(destinationRoot));
+      expect(result.schemaVersion).toMatch(/^\d+\.\d+\.\d+$/);
       expect(readFileSync(generatedArtifactPaths.unitsJson, "utf8")).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
       expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.generatedTs, "utf8"))).toBe(normalizeLineEndings(generatedIdentifiersSource));
       expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.basicConversionTs, "utf8"))).toBe(normalizeLineEndings(generatedBasicConversionsSource));
       expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.defaultPersistenceTs, "utf8"))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+    } finally {
+      rmSync(destinationRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("does not rewrite unchanged artifacts when rerun in the same destination", () => {
+    const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
+
+    try {
+      expect(generateUnitsArtifacts(destinationRoot).anyChanged).toBe(true);
+      expect(generateUnitsArtifacts(destinationRoot).anyChanged).toBe(false);
     } finally {
       rmSync(destinationRoot, { recursive: true, force: true });
     }

@@ -20,8 +20,7 @@
     "lint-deprecation": "",
     "test": "",
     "extract-api": "npm run -s generate",
-    "generate": "node ./codeGen/generate-exports.js",
-    "generate-artifacts": "npm run -s generate"
+    "generate": "node ./codeGen/generate-exports.js"
   },
   "keywords": [
     "Bentley",
