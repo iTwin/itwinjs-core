@@ -240,7 +240,10 @@ export abstract class IpcHandler {
    * Register this class as the handler for methods on its channel. This static method creates a new instance
    * that becomes the handler and is `this` when its methods are called.
    * @returns A function that can be called to remove the handler.
-   * @note Call this only once per channel. Each call registers an *additional* handler rather than replacing a previous one, so registering the same channel more than once causes every registered handler to run and reply to an invocation. To replace a handler, first call the [[RemoveFunction]] returned by the previous `register`.
+   * @note Call this only once per channel. Each call registers an *additional* handler rather than
+   * replacing a previous one, so registering the same channel more than once causes every registered
+   * handler to run and reply to an invocation. To replace a handler, first call the [[RemoveFunction]]
+   * returned by the previous `register`.
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
