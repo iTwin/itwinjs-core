@@ -48,9 +48,9 @@ class SettingsSchemasImpl implements SettingsSchemas {
     return value;
   }
 
-  public getResolvedSettingDef(settingName: string): SettingSchema | undefined {
+  public getResolvedSettingDef(settingName: string, options?: { preserveExtends?: boolean }): SettingSchema | undefined {
     const schema = this.settingDefs.get(settingName);
-    return schema ? this.resolveSchema(schema, settingName) : undefined;
+    return schema ? this.resolveSchema(schema, settingName, [], options?.preserveExtends === true) : undefined;
   }
 
   /** @internal */
@@ -185,8 +185,9 @@ class SettingsSchemasImpl implements SettingsSchemas {
     this.onSchemaChanged.raiseEvent();
   }
 
-  private resolveSchema(schema: Readonly<SettingSchema>, scope = "", visited: string[] = []): SettingSchema {
-    const { extends: _extends, ...resolved } = schema;
+  private resolveSchema(schema: Readonly<SettingSchema>, scope = "", visited: string[] = [], preserveExtends = false): SettingSchema {
+    const { extends: _extends, ...resolvedWithoutExtends } = schema;
+    const resolved = preserveExtends ? { ...schema } : resolvedWithoutExtends;
 
     switch (schema.type) {
       case "object": {
@@ -198,7 +199,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
           properties: Object.fromEntries(
             Object.entries(properties).map(([key, value]) => [
               key,
-              this.resolveSchema(value, scope ? `${scope}.${key}` : key, resolvedVisited),
+              this.resolveSchema(value, scope ? `${scope}.${key}` : key, resolvedVisited, preserveExtends),
             ])
           ),
         };
@@ -216,13 +217,13 @@ class SettingsSchemasImpl implements SettingsSchemas {
           if (undefined === typeDef)
             throw new Error(`typeDef ${schema.extends} does not exist${scope ? ` for ${scope}` : ""}`);
 
-          const inheritedProps = this.resolveSchema(typeDef, scope ? `${scope}.${schema.extends}` : schema.extends, [...visited, schema.extends]);
+          const inheritedProps = this.resolveSchema(typeDef, scope ? `${scope}.${schema.extends}` : schema.extends, [...visited, schema.extends], preserveExtends);
           resolvedSchema = { ...inheritedProps, ...resolvedSchema };
         }
 
         return {
           ...resolvedSchema,
-          items: this.resolveSchema(items, scope ? `${scope}.items` : "items", visited),
+          items: this.resolveSchema(items, scope ? `${scope}.items` : "items", visited, preserveExtends),
         };
       }
 

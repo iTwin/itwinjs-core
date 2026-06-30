@@ -154,6 +154,8 @@ export interface SettingsSchemas {
   /**
    * Looks up a setting schema in [[settingDefs]] and returns its resolved form.
    * Resolution uses the [[typeDefs]] currently registered with this [[SettingsSchemas]] instance.
+   * By default, `extends` metadata is removed from the resolved schema. Pass `options.preserveExtends`
+   * to preserve `extends` members on resolved schemas that originally declared them.
    * @returns The resolved schema for `settingName`, or `undefined` if no schema has been registered for that setting.
    * @throws Error if a registered setting schema cannot be resolved because a referenced type definition is missing or circular.
    * @example
@@ -161,6 +163,6 @@ export interface SettingsSchemas {
    * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef("app/font");
    * ```
    */
-  getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
+  getResolvedSettingDef(settingName: SettingName, options?: { preserveExtends?: boolean }): SettingSchema | undefined;
 
 }
