@@ -19,6 +19,7 @@
     "clean": "rimraf -g lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "generate": "tsx scripts/generateUnitsJson.ts",
+    "generate-artifacts": "npm run -s generate",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "vitest --run",
