@@ -9,7 +9,7 @@
 import { BentleyError, expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction,
+  RemoveFunction, serializeIpcError,
 } from "@itwin/core-common";
 import { _callIpcChannel } from "./common/internal/Symbols";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -263,24 +263,7 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: unknown) {
-
-        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
-          return { error: err as any };
-
-        const ret = { error: { ...err } };
-        if (typeof err.message === "string") // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
-          ret.error.message = err.message;
-        if (typeof err.stack === "string")
-          ret.error.stack = err.stack;
-
-        if (BentleyError.isError(err)) {
-          ret.error.iTwinErrorId = err.iTwinErrorId;
-          if (err.hasMetaData)
-            ret.error.loggingMetadata = err.loggingMetadata;
-          delete ret.error._metaData;
-        }
-
-        return ret;
+        return serializeIpcError(err, true);
       }
     });
   }

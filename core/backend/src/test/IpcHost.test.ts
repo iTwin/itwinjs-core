@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { IpcInvokeReturn, IpcSocketBackend } from "@itwin/core-common";
+import { FrontendError, IpcInvokeReturn, IpcSocketBackend, serializeIpcError } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "../IpcHost";
 
 interface MockIpcInterface {
@@ -102,11 +102,6 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
 describe("IpcHost", () => {
   let socket: sinon.SinonStubbedInstance<IpcSocketBackend>;
 
-  interface IpcHostTestInternals {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    _nextInvokeId: number;
-  }
-
   beforeEach(async () => {
     socket = {
       send: sinon.stub(),
@@ -119,8 +114,9 @@ describe("IpcHost", () => {
   });
 
   afterEach(() => {
-    const host = IpcHost as unknown as IpcHostTestInternals;
-    host._nextInvokeId = 0;
+    (IpcHost as any)._nextInvokeId = 0;
+    (IpcHost as any)._pendingInvokes.clear();
+    IpcHost.invokeTimeout = undefined;
   });
 
   describe("IpcHandler", () => {
@@ -283,6 +279,8 @@ describe("IpcHost", () => {
       });
 
       return {
+        listeners,
+        responseChannel: (callIndex: number) => socket.send.getCall(callIndex).args[1] as string,
         respond: (callIndex: number, result: unknown) => {
           const responseChannel = socket.send.getCall(callIndex).args[1] as string;
           const listener = listeners.get(responseChannel);
@@ -298,6 +296,8 @@ describe("IpcHost", () => {
       const promise = IpcHost.invoke("ch", "a", "b");
       frontend.respond(0, "hello");
       expect(await promise).to.equal("hello");
+      // the pending-invoke entry must be removed so the map does not grow unboundedly
+      expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
     });
 
     it("should route concurrent invokes to the correct caller", async () => {
@@ -311,6 +311,97 @@ describe("IpcHost", () => {
 
       expect(await p1).to.equal("first");
       expect(await p2).to.equal("second");
+    });
+
+    it("should remove the response listener after a response", async () => {
+      const frontend = mockFrontend();
+      const promise = IpcHost.invoke("ch");
+      const responseChannel = frontend.responseChannel(0);
+      expect(frontend.listeners.has(responseChannel)).to.be.true;
+
+      frontend.respond(0, "done");
+      await promise;
+      expect(frontend.listeners.has(responseChannel)).to.be.false;
+    });
+
+    it("should reject pending invokes when IpcHost is shut down", async () => {
+      const frontend = mockFrontend();
+      const promise = IpcHost.invoke("ch");
+      const responseChannel = frontend.responseChannel(0);
+      // attach handler immediately so the rejection is observed (and not "unhandled")
+      const caught = promise.then(() => undefined, (e: Error) => e);
+
+      await IpcHost.shutdown();
+
+      const err = await caught;
+      expect(err).to.be.instanceOf(Error);
+      expect((err as Error).message).to.contain("shut down");
+      // the listener must be cleaned up so it does not leak past shutdown
+      expect(frontend.listeners.has(responseChannel)).to.be.false;
+    });
+
+    it("should reject after invokeTimeout elapses without a response", async () => {
+      const frontend = mockFrontend();
+      IpcHost.invokeTimeout = 10;
+      const promise = IpcHost.invoke("ch");
+      const responseChannel = frontend.responseChannel(0);
+
+      let message = "";
+      try {
+        await promise;
+        expect.fail("invoke should have rejected on timeout");
+      } catch (err) {
+        message = (err as Error).message;
+      }
+      expect(message).to.contain("timed out");
+      expect(frontend.listeners.has(responseChannel)).to.be.false;
+      // the pending-invoke entry must be removed so the map does not grow unboundedly
+      expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
+    });
+
+    it("should rethrow a typed FrontendError from makeIpcProxy preserving identity and metadata", async () => {
+      const frontend = mockFrontend();
+      const proxy = IpcHost.makeIpcProxy<{ doIt: () => Promise<void> }>("ch");
+      const promise = proxy.doIt();
+
+      // simulate the frontend handler serializing a thrown BentleyError into the invoke-response envelope
+      const thrown = new BentleyError(IModelStatus.NotFound, "boom", () => ({ detail: 42 }));
+      thrown.name = "MyFrontendError";
+      const serialized = serializeIpcError(thrown, true);
+      frontend.respond(0, serialized);
+
+      let caught: any;
+      try {
+        await promise;
+        expect.fail("proxy call should have rejected");
+      } catch (err) {
+        caught = err;
+      }
+      expect(caught).to.be.instanceOf(FrontendError);
+      expect(caught.name).to.equal("MyFrontendError"); // mirrors how the frontend rethrows a typed BackendError
+      expect(BentleyError.isError(caught, IModelStatus.NotFound)).to.be.true;
+      expect(caught.message).to.equal("boom");
+      expect(caught.loggingMetadata).to.deep.equal({ detail: 42 });
+    });
+
+    it("should rethrow a plain Error from makeIpcProxy when the frontend threw a non-BentleyError", async () => {
+      const frontend = mockFrontend();
+      const proxy = IpcHost.makeIpcProxy<{ doIt: () => Promise<void> }>("ch");
+      const promise = proxy.doIt();
+
+      const serialized = serializeIpcError(new Error("plain failure"), true);
+      frontend.respond(0, serialized);
+
+      let caught: any;
+      try {
+        await promise;
+        expect.fail("proxy call should have rejected");
+      } catch (err) {
+        caught = err;
+      }
+      expect(caught).to.be.instanceOf(Error);
+      expect(BentleyError.isError(caught)).to.be.false;
+      expect(caught.message).to.equal("plain failure");
     });
   });
 });

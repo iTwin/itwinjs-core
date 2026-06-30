@@ -7,12 +7,12 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
+import { assert, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BriefcaseConnectionProps,
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, rebuildIpcError, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, serializeIpcError, SnapshotOpenOptions,
   StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
@@ -89,6 +89,14 @@ export class IpcHost {
   }
 
   private static _nextInvokeId = 0;
+  private static _pendingInvokes = new Map<number, () => void>();
+
+  /**
+   * The number of milliseconds [[invoke]] waits for the frontend to respond before rejecting. When `undefined`
+   * (the default), invokes wait indefinitely. Set a value to guard against a frontend that never responds.
+   * @alpha
+   */
+  public static invokeTimeout?: number;
 
   /**
    * Send a message to the frontend via `channel` and expect a result asynchronously. The handler must be established on the frontend via [[IpcApp.handle]]
@@ -99,17 +107,44 @@ export class IpcHost {
    * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
    * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
    * primitive types and `ArrayBuffers` are allowed.
+   * @note The returned Promise rejects if [[shutdown]] is called or [[invokeTimeout]] elapses before the frontend responds.
    * @alpha
    */
   public static async invoke(channel: string, ...args: any[]): Promise<any> {
+    // Electron has no main->renderer `invoke` (see https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-3-main-to-renderer),
+    // so we synthesize request/response from the universally-available `send`/`addListener` primitives: push the request via
+    // `send` together with a unique per-request response channel, and resolve when the frontend handler replies on that channel.
+    // This works across all transports (Electron, mobile, web sockets) without changing any `@public` IpcSocket interface.
     const requestId = ++this._nextInvokeId % Number.MAX_SAFE_INTEGER;
     const responseChannel = iTwinChannel(`${channel}-invoke_response-${requestId}`);
 
-    return new Promise((resolve) => {
-      const removeListener = this.ipc.addListener(responseChannel, (_evt: Event, result: any) => {
+    return new Promise((resolve, reject) => {
+      let removeListener: RemoveFunction = () => { };
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const cleanup = () => {
         removeListener();
+        this._pendingInvokes.delete(requestId);
+        if (timer !== undefined)
+          clearTimeout(timer);
+      };
+
+      removeListener = this.ipc.addListener(responseChannel, (_evt: Event, result: any) => {
+        cleanup();
         resolve(result);
       });
+
+      // allow [[shutdown]] to reject any in-flight invoke rather than leaking its listener forever.
+      this._pendingInvokes.set(requestId, () => {
+        cleanup();
+        reject(new Error(`IpcHost was shut down before the frontend responded on channel "${channel}"`));
+      });
+
+      if (undefined !== this.invokeTimeout) {
+        timer = setTimeout(() => {
+          cleanup();
+          reject(new Error(`IpcHost.invoke timed out after ${this.invokeTimeout}ms on channel "${channel}"`));
+        }, this.invokeTimeout);
+      }
 
       this.send(channel, responseChannel, ...args);
     });
@@ -134,7 +169,7 @@ export class IpcHost {
       throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
-    throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
+    throw rebuildIpcError(err);
   }
 
   /**
@@ -191,6 +226,13 @@ export class IpcHost {
   /** Shutdown IpcHost backend. Also calls [[IModelHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._ipc = undefined;
+
+    // reject any in-flight invokes so their callers don't hang forever after the socket is gone.
+    const pending = [...this._pendingInvokes.values()];
+    this._pendingInvokes.clear();
+    for (const rejectPending of pending)
+      rejectPending();
+
     await IModelHost.shutdown();
   }
 }
@@ -238,62 +280,7 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: unknown) {
-
-        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
-          return { error: err };
-
-        const serializeError = (e: any, includeStack: boolean, visited = new WeakSet<object>()): any => {
-          if (visited.has(e))
-            return undefined;
-          visited.add(e);
-          try {
-            const serialized: any = { ...e };
-
-            for (const sym of Object.getOwnPropertySymbols(serialized))
-              delete serialized[sym]; // symbol-keyed properties cannot be structured-cloned
-
-            if (e instanceof Error) {
-              serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
-              if (includeStack)
-                serialized.stack = e.stack;
-
-              // Error.cause is typically non-enumerable and must be copied explicitly.
-              if (Object.prototype.hasOwnProperty.call(e, "cause"))
-                serialized.cause = (e as { cause?: unknown }).cause;
-            }
-
-            if (e instanceof BentleyError) {
-              serialized.iTwinErrorId = e.iTwinErrorId;
-              if (e.hasMetaData)
-                serialized.loggingMetadata = e.loggingMetadata;
-              delete serialized._metaData;
-            }
-
-            // Only recurse into Error instances and plain objects — not class instances like Date or Buffer.
-            const shouldRecurse = (val: any) => val instanceof Error || (JsonUtils.isObject(val) && Object.getPrototypeOf(val) === Object.prototype);
-            const isSerializableLeaf = (val: unknown): boolean => {
-              const t = typeof val;
-              return val === null || val === undefined || val instanceof Date
-                || t === "string" || t === "number" || t === "boolean";
-            };
-            for (const key of Object.keys(serialized)) {
-              const val = serialized[key];
-              if (Array.isArray(val))
-                serialized[key] = val.map((item) => shouldRecurse(item) ? serializeError(item, includeStack, visited) : isSerializableLeaf(item) ? item : undefined);
-              else if (shouldRecurse(val))
-                serialized[key] = serializeError(val, includeStack, visited);
-              else if (!isSerializableLeaf(val))
-                delete serialized[key]; // strip non-cloneable values (functions, class instances, etc.)
-            }
-
-            return serialized;
-          } finally {
-            // Remove from the stack so a sibling branch can still serialize this object.
-            visited.delete(e);
-          }
-        };
-
-        return { error: serializeError(err, !IpcHost.noStack) };
+        return serializeIpcError(err, !IpcHost.noStack);
       }
     });
   }

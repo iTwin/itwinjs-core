@@ -349,6 +349,7 @@ beta;class;FractionRun
 beta;interface;FractionRunProps
 public;class;FresnelSettings
 public;interface;FresnelSettingsProps
+alpha;class;FrontendError
 public;class;Frustum
 public;class;FrustumPlanes
 public;namespace;FrustumPlanes
@@ -745,6 +746,7 @@ beta;namespace;RealityDataSourceKey
 beta;interface;RealityDataSourceProps
 beta;interface;RealityModelDisplayProps
 beta;class;RealityModelDisplaySettings
+internal;function;rebuildIpcError
 internal;const;REGISTRY
 beta;interface;ReinstateTxnArgs
 public;class;RelatedElement
@@ -867,6 +869,7 @@ preview;enum;SectionType
 public;interface;SerializedRpcActivity
 internal;interface;SerializedRpcOperation
 internal;interface;SerializedRpcRequest
+internal;function;serializeIpcError
 beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError

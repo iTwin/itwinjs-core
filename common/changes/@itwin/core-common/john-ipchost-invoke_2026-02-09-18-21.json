@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added FrontendError, thrown on the backend when a frontend Ipc handler throws.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

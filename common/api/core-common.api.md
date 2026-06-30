@@ -3863,6 +3863,11 @@ export interface FresnelSettingsProps {
     invert?: boolean;
 }
 
+// @alpha
+export class FrontendError extends IModelError {
+    constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
+}
+
 // @public
 export class Frustum {
     constructor();
@@ -8035,6 +8040,9 @@ export class RealityModelDisplaySettings {
     toJSON(): RealityModelDisplayProps | undefined;
 }
 
+// @internal
+export function rebuildIpcError(err: any): Error;
+
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
@@ -9547,6 +9555,9 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     protocolVersion?: number;
 }
+
+// @internal
+export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvokeReturn;
 
 // @beta
 export namespace ServerBasedLocksError {

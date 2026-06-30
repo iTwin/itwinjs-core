@@ -14,5 +14,6 @@ export enum BackendTestCallbacks {
   startIpcTest = "startIpcTest",
   startMockMobileTest = "startMockMobileTest",
   sendIpcMessage = "sendIpcMessage",
-  invokeIpcApp = "invokeIpcApp"
+  invokeIpcApp = "invokeIpcApp",
+  invokeIpcAppProxy = "invokeIpcAppProxy"
 }

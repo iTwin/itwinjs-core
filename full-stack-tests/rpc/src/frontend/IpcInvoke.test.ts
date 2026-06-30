@@ -110,6 +110,35 @@ if (ProcessDetector.isElectronAppFrontend) {
         assert.isTrue(BentleyError.isError(bentley, IModelStatus.NotFound));
         assert.deepEqual(bentley.loggingMetadata, { foo: 42, nested: { bar: "bar" } });
       });
+
+      // Drives the call through IpcHost.makeIpcProxy so the backend rebuilds the thrown error,
+      // and returns the backend's view of the reconstructed error.
+      const invokeViaProxyAndGetErrorInfo = async (methodName: string) => {
+        const responseChannel = `test-proxy-error-channel-${methodName}`;
+        const response = new Promise<any>((resolve) => {
+          const off = IpcApp.addListener(responseChannel, (_e, r: any) => { off(); resolve(r); });
+        });
+
+        await executeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-error-forwarding-test", responseChannel, methodName);
+        const callbackResult = await response;
+        assert.isFalse(callbackResult.ok, "expected the proxy call to reject on the backend");
+        return callbackResult.errorInfo;
+      };
+
+      it("backend proxy rebuilds a typed BentleyError with metadata", async () => {
+        const info = await invokeViaProxyAndGetErrorInfo("throwBentleyError");
+        assert.isTrue(info.isBentleyError, "backend should rebuild a BentleyError");
+        assert.isTrue(info.isFrontendError, "backend should rebuild a typed FrontendError (mirror of frontend's BackendError)");
+        assert.equal(info.errorNumber, IModelStatus.NotFound);
+        assert.equal(info.message, "m");
+        assert.deepEqual(info.loggingMetadata, { foo: 42, nested: { bar: "bar" } });
+      });
+
+      it("backend proxy rebuilds a plain Error for a non-BentleyError", async () => {
+        const info = await invokeViaProxyAndGetErrorInfo("throwBasicError");
+        assert.isFalse(info.isBentleyError, "a basic Error must not be rebuilt as a BentleyError");
+        assert.equal(info.message, "basic");
+      });
     });
   });
 } else {
@@ -139,6 +168,24 @@ if (ProcessDetector.isElectronAppFrontend) {
       try {
         const result = await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-handle-test", "ping");
         assert.equal(result, "pong:ping");
+      } finally {
+        remove();
+      }
+    });
+
+    it("can invoke via makeIpcProxy in websocket mode", async () => {
+      if (!isWebsocketEnvironment())
+        return;
+
+      class WsHandler extends IpcHandler {
+        public get channelName() { return "ipc-app-proxy-test"; }
+        public async echo(msg: string) { return `pong:${msg}`; }
+      }
+      const remove = WsHandler.register();
+      try {
+        const callbackResult = JSON.parse(await executeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-proxy-test", "echo", "ping") as string);
+        assert.isTrue(callbackResult.ok);
+        assert.equal(callbackResult.result, "pong:ping");
       } finally {
         remove();
       }
