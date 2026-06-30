@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "khanaffan@users.noreply.github.com"
+}
