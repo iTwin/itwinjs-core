@@ -155,7 +155,7 @@ jobs:
         run: node common/scripts/install-run-rush.js generate-artifacts
 
       - name: Assert no uncommitted changes after generation
-        if: ${{ steps.generate_artifacts.outcome == 'success' }}
+        if: ${{ steps.extract_api.outcome == 'success' }}
         id: generated_drift
         continue-on-error: true
         shell: bash
@@ -185,7 +185,7 @@ jobs:
             FAILED=1
           fi
           if [ "${{ steps.generate_artifacts.outcome }}" = "failure" ]; then
-            echo "::error::rush generate-artifacts failed"
+            echo "::error::rush generate-artifacts failed — run 'rush generate-artifacts' locally, fix any errors, and commit any resulting tracked artifact changes"
             FAILED=1
           fi
           if [ "${{ steps.generated_drift.outcome }}" = "failure" ]; then
