@@ -16,7 +16,7 @@ import {
   buildSerializedUnitsJson,
   formatGeneratedNumber,
 } from "../../scripts/generatedModuleBuilders";
-import { generateUnitsArtifacts, generatedArtifactRelativePaths } from "../../scripts/generateUnitsJson";
+import { generatedArtifactRelativePaths, generateUnitsArtifacts } from "../../scripts/generateUnitsJson";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
