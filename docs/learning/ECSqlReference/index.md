@@ -49,3 +49,4 @@
   - [Escaping keywords](./ECSqlKeywords.md#escaping-keywords)
 - [Views](./Views.md)
 - [IdSet Virtual Table](./IdSet.md)
+- [relations() Virtual Table](./RelationsVTab.md)

@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [ECSQL](#ecsql)
+    - [`relations()` virtual table for fast relationship traversal](#relations-virtual-table-for-fast-relationship-traversal)
   - [@itwin/core-bentley](#itwincore-bentley)
     - [`CompressedId64Set.isValid` type guard](#compressedid64setisvalid-type-guard)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -20,6 +22,77 @@ publish: false
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
   - [@itwin/build-tools](#itwinbuild-tools)
     - [`mocha` is now an optional peer dependency](#mocha-is-now-an-optional-peer-dependency)
+
+## ECSQL
+
+### `relations()` virtual table for fast relationship traversal
+
+> **Experimental** — This feature is experimental and disabled by default. Append `ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES` to each query, or enable it for the connection with `PRAGMA experimental_features_enabled=true`.
+
+A new `relations()` built-in virtual table is now available for high-performance relationship traversal. Registered under the `ECVLib` schema, it discovers all applicable relationships for a seed instance and returns one row per related instance — bypassing ECSQL entirely for **3–10× faster** traversal.
+
+**Key capabilities:**
+
+- **Automatic relationship discovery**: Given a seed `(ECInstanceId, ECClassId)`, the virtual table finds all applicable link-table and navigation-property relationships without requiring you to know the relationship class names.
+- **Directional control**: Pass `'forward'`, `'backward'`, or `'both'` (default) as the optional third argument.
+- **Polymorphic support**: Derived classes on either side of a relationship constraint are automatically discovered.
+- **JOIN-friendly**: Combine with JOINs, cross-joins, subqueries, and recursive CTEs to enrich results or traverse multi-hop paths.
+
+**Basic usage:**
+
+```sql
+SELECT RelatedECInstanceId, RelatedECClassId, Direction, RelationshipECClassId
+FROM ECVLib.Relations(0x1A, 0x38)
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+**Forward-only traversal (parent → children):**
+
+```sql
+SELECT RelatedECInstanceId, RelatedECClassId
+FROM ECVLib.Relations(0x1A, 0x38, 'forward')
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+**JOIN with element data:**
+
+```sql
+SELECT e.ECInstanceId, e.UserLabel, r.Direction
+FROM bis.Element e
+JOIN ECVLib.Relations(0x1A, 0x38) r
+  ON r.RelatedECInstanceId = e.ECInstanceId
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+**Multi-hop recursive CTE:**
+
+```sql
+WITH RECURSIVE graph(ECInstanceId, ECClassId, Depth) AS (
+    VALUES (0x1A, 0x38, 0)
+    UNION
+    SELECT r.RelatedECInstanceId, r.RelatedECClassId, g.Depth + 1
+    FROM graph g, ECVLib.Relations(g.ECInstanceId, g.ECClassId, 'forward') r
+    WHERE g.Depth < 3
+)
+SELECT DISTINCT ECInstanceId, ECClassId, Depth FROM graph
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+**TypeScript usage:**
+
+```typescript
+for await (const row of iModel.createQueryReader(
+  `SELECT RelatedECInstanceId, RelatedECClassId, Direction
+   FROM ECVLib.Relations(${seedId}, ${seedClassId})
+   ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
+  undefined,
+  { rowFormat: QueryRowFormat.UseJsPropertyNames }
+)) {
+  console.log(`Related: ${row.toRow().relatedECInstanceId}`);
+}
+```
+
+See the [relations() virtual table reference]($docs/learning/ECSqlReference/RelationsVTab.md) for full syntax documentation and the [Relationship Traversal guide]($docs/learning/backend/RelationshipTraversal.md) for practical patterns including multi-hop BFS traversal, graph intersection, union, impact analysis, and performance tips.
 
 ## @itwin/core-bentley
 

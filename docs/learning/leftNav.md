@@ -30,6 +30,7 @@ matchChildUrls:
 - [iModels for Developers](./iModelsForDevelopers.md)
 - [API support policies](./api-support-policies.md)
 - [ECSQL](./ECSQL.md)
+- [Relationship Traversal](./backend/RelationshipTraversal.md)
 - [Display system](./display/index.md)
 - [iModelHub](./iModelHub/index.md)
 - [Wire format](./WireFormat.md)
