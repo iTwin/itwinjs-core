@@ -14,6 +14,8 @@ publish: false
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
     - [Graphics no longer disappear when a new category is inserted](#graphics-no-longer-disappear-when-a-new-category-is-inserted)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
@@ -192,6 +194,25 @@ if (iModel.isGeoLocated) {
 Inserting a new `Category` also inserts that category's default `SubCategory`. The frontend's subcategory cache previously responded to *any* `SubCategory` insertion by clearing its entire contents, as the change notification does not identify which category the new subcategory belongs to. Because [Viewport]($frontend) rendering derives the set of visible subcategories from that cache, clearing it made every already-viewed category appear to have no subcategories, so all graphics disappeared until an unrelated action (such as toggling a category in the [CategorySelectorState]($frontend)) repopulated the cache.
 
 The cache now keeps serving the previously-loaded data and instead marks the affected categories as stale, reloading them in the background. Already-viewed graphics remain visible throughout, and the [Viewport]($frontend) automatically reloads and repaints the affected categories.
+
+## @itwin/core-backend
+
+### ECSQL `IS` / `IS NOT` operator now works between two operands
+
+The ECSQL `IS` and `IS NOT` operators can now be used between two operands — for example `prop1 IS [NOT] prop2`, where each operand may be any value expression: a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, etc. These map to SQLite's **null-safe** comparison operators, so `NULL IS NULL` is `TRUE` and `1 IS NULL` is `FALSE`, unlike `=`/`<>` which treat a `NULL` operand as _unknown_.
+
+Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized *unqualified* name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison.
+
+For multi-column operands (such as `Point2d`/`Point3d` and navigation properties) the comparison is expanded column-wise, consistent with `=` and `<>`: `IS` joins the per-column comparisons with `AND`, and `IS NOT` joins them with `OR`.
+
+**Example** — find elements whose code value differs from their user label, or from a value extracted from JSON, treating `NULL` as a comparable value:
+
+```sql
+SELECT * FROM bis.Element WHERE CodeValue IS NOT UserLabel
+SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.code')
+```
+
+See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
 
 ## @itwin/core-geometry
 

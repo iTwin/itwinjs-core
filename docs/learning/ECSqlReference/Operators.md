@@ -37,8 +37,44 @@
 | `<=`     | Less or equal to    | `(3 <= 5)` _output `TRUE`_      |
 | `<>`     | Not equal           | `(1 <> 3)` _output `TRUE`_      |
 | `!=`     | Not equal           | `(1 != 3)` _output `TRUE`_      |
+| `IS`     | Null-safe equal     | `(NULL IS NULL)` _output `TRUE`_   |
+| `IS NOT` | Null-safe not equal | `(1 IS NOT NULL)` _output `TRUE`_  |
 | `OR`     | OR op               | `(1=2 OR 1=1)` _output `TRUE`_  |
 | `AND`    | AND op              | `(1=1 AND 1=1)` _output `TRUE`_ |
 | `NOT`    | NOT unary op        | `NOT (1=1)` _output `FALSE`_    |
+
+## `IS` / `IS NOT` operator (null-safe comparison)
+
+The `IS` and `IS NOT` operators compare two operands using **null-safe** semantics, mapping to SQLite's [`IS` / `IS NOT`](https://www.sqlite.org/lang_expr.html) operators. Unlike `=` and `<>`, a `NULL` operand never makes the result _unknown_:
+
+- `NULL IS NULL` is `TRUE` (whereas `NULL = NULL` is _unknown_, so the row is filtered out).
+- `<value> IS NULL` is `FALSE` when `<value>` is not `NULL`.
+
+Each operand may be any value expression — a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, and so on — and the `NULL` literal may appear on either side.
+
+```sql
+-- Rows where CodeValue and UserLabel differ, treating NULL as a comparable value
+SELECT * FROM [bis].[Element] WHERE [CodeValue] IS NOT [UserLabel]
+
+-- Equivalent to "CodeValue IS NULL"
+SELECT * FROM [bis].[Element] WHERE NULL IS [CodeValue]
+
+-- The right-hand side can be any value expression, e.g. a function call
+SELECT * FROM [bis].[Element] WHERE [CodeValue] IS json_extract([JsonProperties], '$.code')
+```
+
+For multi-column operands such as `Point2d`/`Point3d` and navigation properties, the comparison is expanded column-wise (consistent with `=` and `<>`): `IS` joins the per-column comparisons with `AND`, while `IS NOT` joins them with `OR`.
+
+```sql
+-- TRUE only when Origin and BBoxLow match on every coordinate (X, Y and Z)
+SELECT * FROM [bis].[GeometricElement3d] WHERE [Origin] IS [BBoxLow]
+
+-- TRUE when the two navigation properties differ on either the related Id or the relationship class
+SELECT * FROM [ts].[Child] WHERE [ParentA] IS NOT [ParentB]
+```
+
+Both operands must be type-compatible, following the same rules as `=` and `<>`: comparable primitive types (for example two strings, or numeric types compared with each other) or composite types of the same shape (`Point2d` with `Point2d`, a navigation property with a navigation property), with the `NULL` literal allowed against any type. Comparing unrelated types — for example a `string` against a `Point3d` — is rejected when the statement is prepared.
+
+> Note: `IS [NOT]` is also used by the unrelated [ECClass filter](./ECClassFilter.md) predicate (`<classId> IS [NOT] (<class-name>, ...)`) and by the boolean truth tests `IS [NOT] TRUE`/`FALSE`/`UNKNOWN`. These keep their original meaning and take precedence only when the right-hand operand matches their shape: a bare `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name — optionally with an `ONLY`/`ALL` prefix or written as a comma-separated list (for example `(bis.Element)`, `(ONLY bis.Element)`, or `(bis.Element, bis.Model)`). Any other parenthesized right-hand operand is a value expression: a parenthesized *unqualified* name such as `(MyProperty)` is read as that property (if a name is both a class and a property, the property reading wins), so `prop1 IS (prop2)` and `x IS (y + 1)` are null-safe value comparisons, while `ECClassId IS (bis.Element)` stays a type predicate.
 
 [ECSql Syntax](./index.md)
