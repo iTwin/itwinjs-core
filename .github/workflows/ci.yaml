@@ -159,6 +159,17 @@ jobs:
             exit 1
           fi
 
+      - name: Assert no uncommitted changes to generated unit files
+        id: unit_drift
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain core/quantity/src/assets/Units.json core/quantity/src/generated/Units.generated.ts core/quantity/src/internal/BasicUnitConversions.generated.ts core/quantity/src/internal/DefaultPersistenceUnits.generated.ts)" ]; then
+            echo "The following generated unit files are out of date:"
+            git diff core/quantity/src/assets/Units.json core/quantity/src/generated/Units.generated.ts core/quantity/src/internal/BasicUnitConversions.generated.ts core/quantity/src/internal/DefaultPersistenceUnits.generated.ts
+            exit 1
+          fi
+
       - name: Report results
         if: always()
         shell: bash
@@ -178,6 +189,10 @@ jobs:
           fi
           if [ "${{ steps.ext_drift.outcome }}" = "failure" ]; then
             echo "::error::Generated extension files are out of date — run 'rush extract-api' locally and commit core/extension/index.d.ts, core/extension/index.js, and core/frontend/src/extension/ExtensionRuntime.ts"
+            FAILED=1
+          fi
+          if [ "${{ steps.unit_drift.outcome }}" = "failure" ]; then
+            echo "::error::Generated unit files are out of date — run 'rush build --only @itwin/core-quantity' locally and commit core/quantity/src/assets/Units.json, core/quantity/src/generated/Units.generated.ts, core/quantity/src/internal/BasicUnitConversions.generated.ts, and core/quantity/src/internal/DefaultPersistenceUnits.generated.ts"
             FAILED=1
           fi
           exit $FAILED

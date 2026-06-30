@@ -8,15 +8,17 @@ import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
   Helmert2DWithZOffset,
 } from "@itwin/core-common";
-import { IModelNative } from "../../internal/NativePlatform";
+import { GeoCoordConfig, getAvailableCoordinateReferenceSystems, getAvailableCRSUnits, IModelNative } from "@itwin/core-backend";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
-import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { getAvailableCoordinateReferenceSystems, getAvailableCRSUnits } from "../../GeographicCRSServices";
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 // spell-checker: disable
 
 describe("GeoServices", () => {
-  before(() => {
+  before(async () => {
+    // These tests exercise GCS data loaded from cloud workspaces, so ensure the default GCS
+    // databases are loaded. They run as integration tests because they make network requests
+    // to download GCS workspaces from cloud containers.
     GeoCoordConfig.loadDefaultDatabases();
   });
 

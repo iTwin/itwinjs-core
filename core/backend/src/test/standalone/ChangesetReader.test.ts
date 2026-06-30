@@ -17,6 +17,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ChangeUnifierCache, PartialChangeUnifier } from "../../PartialChangeUnifier";
 import { ChangeInstance, PropertyFilter, RowFormatOptions } from "../../ChangesetReaderTypes";
 import { EditTxn } from "../../EditTxn";
+import { DisableNativeAssertions } from "../TestUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */ // disabling it because the property names are not in camelcase, and we want to test them as-is
 
@@ -4345,6 +4346,9 @@ describe("ChangesetReader: invalid inputs", () => {
       fs.unlinkSync(txtFile);
     // Write a small non-changeset file and expect the reader to reject it.
     fs.writeFileSync(txtFile, "this is not a changeset");
+
+    // The native code asserts on an invalid changeset file. Suppress this.
+    using _disableAssertions = new DisableNativeAssertions();
 
     using reader = ChangesetReader.openFile({ db: iModel, fileName: txtFile });
     assert.equal(reader.step(), false, "Expected step() to return false for an invalid changeset file");
