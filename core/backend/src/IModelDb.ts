@@ -1790,9 +1790,11 @@ export abstract class IModelDb extends IModel {
     // Otherwise serialize onto any in-flight load so concurrent callers cannot double-merge a schema.
     // What is actually missing is recomputed inside the continuation (an earlier queued load may have
     // covered it). Failures are isolated so one rejected load does not poison later callers.
-    const run = this._schemaLoad.then(async () => this._ensureSchemasLoaded(schemas));
-    this._schemaLoad = run.then(() => undefined, () => undefined);
-    return run;
+    const loadSchemasPromise = this._schemaLoad.then(async () => this._ensureSchemasLoaded(schemas));
+    // The next caller chains its load onto `_schemaLoad`, so our stored promise must never reject.
+    // The current caller gets `loadSchemasPromise` which can reject, but our stored promise always resolves.
+    this._schemaLoad = loadSchemasPromise.then(() => undefined, () => undefined);
+    return loadSchemasPromise;
   }
 
   /** The body of [[getSchemaView]], run serialized behind `_schemaLoad`. Ensures the requested schemas
