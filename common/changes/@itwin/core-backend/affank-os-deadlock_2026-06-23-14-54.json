@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add performance test for concurrent query",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -2200,6 +2200,7 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;

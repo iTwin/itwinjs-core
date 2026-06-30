@@ -1,0 +1,20 @@
+{
+  "elementsPerClass": 5000,
+  "classNames": [
+    "PerfElement",
+    "PerfElementSub1",
+    "PerfElementSub2",
+    "PerfElementSub3"
+  ],
+  "workerThreadCounts": [1, 2, 4, 8],
+  "maxConcurrentRequestsCases": [16, 64],
+  "varyStatementsCases": [true],
+  "totalQueries": 500,
+  "warmupQueries": 32,
+  "repeatsPerCase": 3,
+  "randomSeed": 42,
+  "statementCacheSizePerWorker": 40,
+  "requestQueueSize": 2000,
+  "queryQuotaSeconds": 60,
+  "queryQuotaMemoryBytes": 8388608
+}
