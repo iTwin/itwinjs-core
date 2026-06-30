@@ -17,7 +17,7 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const schemaPath = require.resolve("@bentley/units-schema/Units.ecschema.json");
-const generatedArtifactRelativePaths = {
+export const generatedArtifactRelativePaths = {
   unitsJson: "src/assets/Units.json",
   generatedTs: "src/generated/Units.generated.ts",
   basicConversionTs: "src/internal/BasicUnitConversions.generated.ts",
@@ -88,7 +88,7 @@ function main(args: string[]): void {
   // content actually changed, which avoids churn while still letting partial artifact updates
   // land when a change is scoped to one generated output.
   const requestedDestinationRoot = args[0];
-  const destinationRoot = requestedDestinationRoot ? resolve(requestedDestinationRoot) : join(__dirname, "..");
+  const destinationRoot = requestedDestinationRoot ? resolve(requestedDestinationRoot) : undefined;
   const { anyChanged, destinationRoot: resolvedDestinationRoot, schemaVersion } = generateUnitsArtifacts(destinationRoot);
 
   if (!anyChanged) {

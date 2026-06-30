@@ -149,7 +149,7 @@ jobs:
         run: node common/scripts/install-run-rush.js extract-api --only @itwin/cesium-renderer
 
       - name: rush generate-artifacts
-        if: ${{ steps.extract_api.outcome == 'success' && steps.extract_api_cesium.outcome == 'success' }}
+        if: ${{ steps.extract_api.outcome == 'success' }}
         id: generate_artifacts
         continue-on-error: true
         run: node common/scripts/install-run-rush.js generate-artifacts
@@ -189,7 +189,7 @@ jobs:
             FAILED=1
           fi
           if [ "${{ steps.generated_drift.outcome }}" = "failure" ]; then
-            echo "::error::Generated files are out of date — run 'rush generate-artifacts' locally and commit any resulting tracked file changes"
+            echo "::error::Generated files are out of date — run 'rush generate-artifacts' for quantity artifacts or 'rush extract-api' for extension files, then commit any resulting tracked file changes"
             FAILED=1
           fi
           exit $FAILED

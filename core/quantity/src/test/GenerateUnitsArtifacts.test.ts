@@ -16,7 +16,7 @@ import {
   buildSerializedUnitsJson,
   formatGeneratedNumber,
 } from "../../scripts/generatedModuleBuilders";
-import { generateUnitsArtifacts } from "../../scripts/generateUnitsJson";
+import { generateUnitsArtifacts, generatedArtifactRelativePaths } from "../../scripts/generateUnitsJson";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
@@ -145,12 +145,9 @@ describe("Generated Units artifacts", () => {
     try {
       const result = generateUnitsArtifacts(destinationRoot);
 
-      const generatedArtifactPaths = {
-        unitsJson: join(destinationRoot, "src/assets/Units.json"),
-        generatedTs: join(destinationRoot, "src/generated/Units.generated.ts"),
-        basicConversionTs: join(destinationRoot, "src/internal/BasicUnitConversions.generated.ts"),
-        defaultPersistenceTs: join(destinationRoot, "src/internal/DefaultPersistenceUnits.generated.ts"),
-      };
+      const generatedArtifactPaths = Object.fromEntries(
+        Object.entries(generatedArtifactRelativePaths).map(([artifactName, relativePath]) => [artifactName, join(destinationRoot, relativePath)]),
+      ) as { [key in keyof typeof generatedArtifactRelativePaths]: string };
 
       expect(result.anyChanged).toBe(true);
       expect(result.destinationRoot).toBe(resolve(destinationRoot));
