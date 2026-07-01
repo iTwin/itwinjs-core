@@ -2531,6 +2531,10 @@ describe("iModel", () => {
     const element2 = db.elements.getElementProps(id2);
     expect(element2).to.not.equal(element1);
 
+    // Exercise the ECSqlStatement cache directly - nothing in the normal insert/read path above uses it anymore.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    db.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { });
+
     // Make sure that the statement caches are not cleared
     expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
     expect((db as any)._statementCache.size).to.be.greaterThan(0);
@@ -2555,6 +2559,9 @@ describe("iModel", () => {
     const id = txn.insertElement(props);
     db.elements.getElementProps(id);
     db.models.getModelProps(IModel.dictionaryId);
+    // Exercise the ECSqlStatement cache directly - nothing in the normal insert/read path above uses it anymore.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    db.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { });
 
     expect(db.elements[_cache].size).to.be.greaterThan(0);
     expect(db.models[_cache].size).to.be.greaterThan(0);
