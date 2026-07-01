@@ -934,6 +934,18 @@ export class ChangedElementsDb implements Disposable {
 }
 
 // @beta
+export interface ChangeElementModelProps {
+    id: Id64String;
+    modelId: Id64String;
+}
+
+// @beta
+export interface ChangeElementParentProps {
+    id: Id64String;
+    parentId: Id64String;
+}
+
+// @beta
 export interface ChangeFormatArgs {
     includeNullColumns?: true;
     includeOpCode?: true;
@@ -2735,6 +2747,8 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 export class EditTxn {
     constructor(iModel: IModelDb, description: string);
     abandonChanges(): void;
+    changeElementModel(props: ChangeElementModelProps): void;
+    changeElementParent(props: ChangeElementParentProps): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
@@ -4220,6 +4234,10 @@ export namespace IModelDb {
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
+        // @beta @deprecated
+        changeElementModel(props: ChangeElementModelProps): void;
+        // @beta @deprecated
+        changeElementParent(props: ChangeElementParentProps): void;
         createElement<T extends Element_2>(elProps: ElementProps): T;
         // @deprecated
         deleteAspect(aspectInstanceIds: Id64Arg): void;
