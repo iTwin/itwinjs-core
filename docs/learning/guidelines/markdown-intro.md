@@ -151,15 +151,17 @@ The markdown will not be processed and will not be present in the final output.
 
 We have implemented a math typesetting library with a syntax similar to LaTex, called [KaTex](https://katex.org/). To insert an equation, add a source code snippet with the language `math` or `equation`.
 
-```md
+````md
+```equation
 f(x) = \int_{-\infty}^\infty
     \hat f(\xi)\,e^{2 \pi i \xi x}
     \,d\xi
 ```
+````
 
 Results in
 
-```equation
+```math
 f(x) = \int_{-\infty}^\infty
     \hat f(\xi)\,e^{2 \pi i \xi x}
     \,d\xi

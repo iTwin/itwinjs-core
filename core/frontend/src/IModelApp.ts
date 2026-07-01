@@ -51,6 +51,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import * as setupCameraTool from "./tools/SetupCameraTools";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
@@ -435,6 +436,7 @@ export class IModelApp {
       selectTool,
       idleTool,
       viewTool,
+      setupCameraTool,
       clipViewTool,
       measureTool,
       accudrawTool,
