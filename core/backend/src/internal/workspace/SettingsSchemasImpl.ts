@@ -12,7 +12,7 @@ import { extname, join } from "path";
 import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
-import { SettingGroupSchema, SettingSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
+import { GetResolvedSettingDefOptions, SettingGroupSchema, SettingSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { _implementationProhibited } from "../Symbols";
 
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
@@ -48,7 +48,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     return value;
   }
 
-  public getResolvedSettingDef(settingName: string, options?: { preserveExtends?: boolean }): SettingSchema | undefined {
+  public getResolvedSettingDef(settingName: string, options?: GetResolvedSettingDefOptions): SettingSchema | undefined {
     const schema = this.settingDefs.get(settingName);
     return schema ? this.resolveSchema(schema, settingName, [], options?.preserveExtends === true) : undefined;
   }

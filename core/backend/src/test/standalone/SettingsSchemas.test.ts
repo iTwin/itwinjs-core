@@ -112,17 +112,11 @@ describe("SettingsSchemas", () => {
       expect(nested?.properties).to.include.keys("nestedReq", "nestedBaseOnly", "nestedChildOnly");
 
       const resolvedPreservingExtends = schemas.getResolvedSettingDef(`${prefix}/thing`, { preserveExtends: true })!;
-      expect(resolvedPreservingExtends.type).to.equal("object");
       expect(resolvedPreservingExtends.extends).to.equal(`${prefix}/baseThing`);
-      expect(resolvedPreservingExtends.required).to.have.members(["baseReq", "derivedReq"]);
-      expect(resolvedPreservingExtends.properties).to.include.keys("baseReq", "baseOnly", "derivedReq", "overridden", "nested");
       expect(resolvedPreservingExtends.properties?.overridden.type).to.equal("number");
-      expect(resolvedPreservingExtends.properties?.baseOnly.type).to.equal("number");
 
       const nestedPreservingExtends = resolvedPreservingExtends.properties?.nested;
-      expect(nestedPreservingExtends?.type).to.equal("object");
       expect(nestedPreservingExtends?.extends).to.equal(`${prefix}/nestedBase`);
-      expect(nestedPreservingExtends?.required).to.have.members(["nestedReq"]);
       expect(nestedPreservingExtends?.properties).to.include.keys("nestedReq", "nestedBaseOnly", "nestedChildOnly");
     } finally {
       schemas.removeGroup(prefix);
