@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Migrate LinearReferencingElements off the deprecated ECSqlStatement/withPreparedStatement API to ECSqlReader (withQueryReader).",
+      "comment": "",
       "type": "none",
       "packageName": "@itwin/linear-referencing-backend"
     }

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Migrate internal query methods off the deprecated ECSqlStatement/withPreparedStatement API to ECSqlReader (withQueryReader/createQueryReader).",
+      "comment": "",
       "type": "none",
       "packageName": "@itwin/core-backend"
     }
