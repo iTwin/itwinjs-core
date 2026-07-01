@@ -7,13 +7,13 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
+import { assert, IModelStatus, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BriefcaseConnectionProps,
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, FrontendError, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, createIpcDispatcher, createIpcProxy, EditingScopeNotifications, FrontendError, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, rebuildIpcError, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, serializeIpcError, SnapshotOpenOptions,
-  StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
+  StandaloneOpenOptions, TileTreeContentIds, TxnNotifications, unwrapIpcInvokeReturn,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
@@ -159,17 +159,8 @@ export class IpcHost {
    */
   private static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = await this.invoke(channelName, methodName, ...args) as IpcInvokeReturn;
-
-    if (retVal.error === undefined) return retVal.result;
-
-    // frontend threw an exception, rethrow one on backend
-    const err = retVal.error;
-    if (!JsonUtils.isObject(err)) {
-      // Exception wasn't an object?
-      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
-    }
-
-    throw rebuildIpcError(err, FrontendError);
+    // frontend threw an exception, rethrow one on backend as a `FrontendError`.
+    return unwrapIpcInvokeReturn(retVal, FrontendError);
   }
 
   /**
@@ -178,12 +169,7 @@ export class IpcHost {
    * @alpha
    */
   public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
-    return new Proxy({} as PickAsyncMethods<K>, {
-      get(_target, methodName: string) {
-        return async (...invokeArgs: any[]) =>
-          IpcHost.callIpcChannel(channelName, methodName, ...invokeArgs);
-      },
-    });
+    return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcHost.callIpcChannel(channelName, methodName, ...args));
   }
 
   private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
@@ -267,22 +253,8 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
-    const prohibitedFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-
-    return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
-      try {
-        if (prohibitedFunctions.includes(funcName))
-          throw new Error(`Method "${funcName}" not available for channel: ${impl.channelName}`);
-
-        const func = (impl as any)[funcName];
-        if (typeof func !== "function")
-          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
-
-        return { result: await func.call(impl, ...args) };
-      } catch (err: unknown) {
-        return serializeIpcError(err, !IpcHost.noStack);
-      }
-    });
+    const dispatch = createIpcDispatcher(impl, impl.channelName, () => !IpcHost.noStack);
+    return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => dispatch(funcName, ...args));
   }
 }
 

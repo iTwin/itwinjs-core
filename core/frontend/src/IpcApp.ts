@@ -6,10 +6,10 @@
  * @module NativeApp
  */
 
-import { expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
+import { expectDefined, IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  rebuildIpcError, RemoveFunction, serializeIpcError,
+  BackendError, createIpcDispatcher, createIpcProxy, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
+  RemoveFunction, unwrapIpcInvokeReturn,
 } from "@itwin/core-common";
 import { _callIpcChannel } from "./common/internal/Symbols";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -109,19 +109,8 @@ export class IpcApp {
    */
   public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-
-    if (retVal.error === undefined)
-      return retVal.result; // method was successful
-
-    // backend threw an exception, rethrow one on frontend
-    const err = retVal.error;
-    if (!JsonUtils.isObject(err)) {
-      // Exception wasn't an object?
-      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
-    }
-
     // for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
-    throw rebuildIpcError(err, BackendError);
+    return unwrapIpcInvokeReturn(retVal, BackendError);
   }
 
   /** @internal
@@ -135,12 +124,7 @@ export class IpcApp {
    * @param channelName the channel registered by the backend handler.
    */
   public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
-    return new Proxy({} as PickAsyncMethods<K>, {
-      get(_target, methodName: string) {
-        return async (...args: any[]) =>
-          IpcApp[_callIpcChannel](channelName, methodName, ...args);
-      },
-    });
+    return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcApp[_callIpcChannel](channelName, methodName, ...args));
   }
 
   /** Create a type safe Proxy object to call an IPC function on a of registered backend handler that accepts a "methodName" argument followed by optional arguments
@@ -148,12 +132,7 @@ export class IpcApp {
    * @param functionName the function to call on the handler.
    */
   public static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K> {
-    return new Proxy({} as PickAsyncMethods<K>, {
-      get(_target, methodName: string) {
-        return async (...args: any[]) =>
-          IpcApp[_callIpcChannel](channelName, functionName, methodName, ...args);
-      },
-    });
+    return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcApp[_callIpcChannel](channelName, functionName, methodName, ...args));
   }
 
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
@@ -247,21 +226,6 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
-    const prohibitedFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-
-    return IpcApp.handle(impl.channelName, async (funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
-      try {
-        if (prohibitedFunctions.includes(funcName))
-          throw new Error(`Method "${funcName}" not available for channel: ${impl.channelName}`);
-
-        const func = (impl as any)[funcName];
-        if (typeof func !== "function")
-          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
-
-        return { result: await func.call(impl, ...args) };
-      } catch (err: unknown) {
-        return serializeIpcError(err, true);
-      }
-    });
+    return IpcApp.handle(impl.channelName, createIpcDispatcher(impl, impl.channelName, true));
   }
 }

@@ -179,6 +179,8 @@ public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
+internal;function;createIpcDispatcher
+internal;function;createIpcProxy
 public;interface;CreateSnapshotIModelProps
 public;interface;CreateStandaloneIModelProps
 internal;const;CURRENT_INVOCATION
@@ -1039,6 +1041,7 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+internal;function;unwrapIpcInvokeReturn
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
