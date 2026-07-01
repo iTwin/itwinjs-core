@@ -1303,12 +1303,12 @@ export namespace IModelConnection {
 
       const select3d = `
         SELECT
-          ECInstanceId,
+          ECInstanceId as id,
           Origin.x as x, Origin.y as y, Origin.z as z,
           BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
           BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-          Yaw, Pitch, Roll,
-          NULL as Rotation
+          Yaw as yaw, Pitch as pitch, Roll as roll,
+          NULL as rotation
         FROM bis.GeometricElement3d
         WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
@@ -1316,12 +1316,12 @@ export namespace IModelConnection {
       // must match those in select3d.
       const select2d = `
         SELECT
-          ECInstanceId,
+          ECInstanceId as id,
           Origin.x as x, Origin.y as y, NULL as z,
           BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
           BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
           NULL as yaw, NULL as pitch, NULL as roll,
-          Rotation
+          Rotation as rotation
         FROM bis.GeometricElement2d
         WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
@@ -1346,8 +1346,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {

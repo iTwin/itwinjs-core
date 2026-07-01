@@ -1090,8 +1090,7 @@ export abstract class IModelDb extends IModel {
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -1112,8 +1111,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {

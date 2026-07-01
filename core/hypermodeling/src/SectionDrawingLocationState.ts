@@ -204,8 +204,7 @@ export class SectionDrawingLocationState {
   public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
         states.push(new SectionDrawingLocationState(row.toRow() as SectionDrawingLocationStateData, iModel));
     } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.
