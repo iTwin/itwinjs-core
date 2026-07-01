@@ -2133,15 +2133,10 @@ describe("BsplineCloseApproach", () => {
   ]);
   interpOptions.order = 4;
   const interpCurve0 = InterpolationCurve3d.create(interpOptions)!;
-  const cloneInterpProxy = (t: Transform): BSplineCurve3dBase => {
-    const c = interpCurve0.clone();
-    c.tryTransformInPlace(t);
-    return c.proxyCurve as BSplineCurve3dBase;
-  };
-  const interpProxy1 = cloneInterpProxy(rotationTransform0);
-  const interpProxy2 = cloneInterpProxy(rotationTransform1);
-  const interpProxy3 = cloneInterpProxy(moveTransform);
-  const interpProxy4 = cloneInterpProxy(compositeTransform);
+  const interpProxy1 = interpCurve0.cloneTransformed(rotationTransform0)!;
+  const interpProxy2 = interpCurve0.cloneTransformed(rotationTransform1)!;
+  const interpProxy3 = interpCurve0.cloneTransformed(moveTransform)!;
+  const interpProxy4 = interpCurve0.cloneTransformed(compositeTransform)!;
 
   const normalBsplines = [normalBspline1, normalBspline2, normalBspline3, normalBspline4];
   const periodicBsplines = [periodicBspline1, periodicBspline2, periodicBspline3, periodicBspline4];
@@ -2159,11 +2154,11 @@ describe("BsplineCloseApproach", () => {
     activeInterval,
     rotationTransform0,
     "clothoid",
-  ) as TransitionSpiral3d;
+  )!;
   const length = 100;
   const directSpiral = DirectSpiral3d.createFromLengthAndRadius(
     "JapaneseCubic", r0, r1, undefined, undefined, length, activeInterval, rotationTransform0,
-  ) as TransitionSpiral3d;
+  )!;
   const lineSegment0 = LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30));
   const lineSegment1 = LineSegment3d.create(Point3d.create(20, -40), Point3d.create(130, 30));
   const lineSegment2 = LineSegment3d.create(Point3d.create(-20, 0), Point3d.create(100, 0));
