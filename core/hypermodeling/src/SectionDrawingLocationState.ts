@@ -9,7 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Placement3d, QueryRowFormat, SectionType } from "@itwin/core-common";
 import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
-import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
+import { ClipVector, Transform } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT
@@ -17,12 +17,18 @@ const selectSectionDrawingLocationStatesECSql = `
     bis.SectionDrawingLocation.Model.Id as sectionLocationModelId,
     bis.SectionDrawingLocation.SectionView.Id as sectionViewId,
     bis.SectionDrawingLocation.Category.Id as categoryId,
-    bis.SectionDrawingLocation.Origin as origin,
+    bis.SectionDrawingLocation.Origin.x as originX,
+    bis.SectionDrawingLocation.Origin.y as originY,
+    bis.SectionDrawingLocation.Origin.z as originZ,
     bis.SectionDrawingLocation.Yaw as yaw,
     bis.SectionDrawingLocation.Pitch as pitch,
     bis.SectionDrawingLocation.Roll as roll,
-    bis.SectionDrawingLocation.BBoxLow as bboxLow,
-    bis.SectionDrawingLocation.BBoxHigh as bboxHigh,
+    bis.SectionDrawingLocation.BBoxLow.x as bboxLowX,
+    bis.SectionDrawingLocation.BBoxLow.y as bboxLowY,
+    bis.SectionDrawingLocation.BBoxLow.z as bboxLowZ,
+    bis.SectionDrawingLocation.BBoxHigh.x as bboxHighX,
+    bis.SectionDrawingLocation.BBoxHigh.y as bboxHighY,
+    bis.SectionDrawingLocation.BBoxHigh.z as bboxHighZ,
     bis.SectionDrawingLocation.UserLabel as userLabel,
 
     bis.SectionDrawing.SectionType as sectionType,
@@ -59,12 +65,18 @@ export interface SectionDrawingLocationStateData {
   sectionLocationModelId: Id64String;
   sectionViewId: Id64String;
   categoryId: Id64String;
-  origin?: XYZProps;
+  originX?: number;
+  originY?: number;
+  originZ?: number;
   yaw?: number;
   pitch?: number;
   roll?: number;
-  bboxLow?: XYZProps;
-  bboxHigh?: XYZProps;
+  bboxLowX?: number;
+  bboxLowY?: number;
+  bboxLowZ?: number;
+  bboxHighX?: number;
+  bboxHighY?: number;
+  bboxHighZ?: number;
   userLabel: string;
 }
 
@@ -144,13 +156,20 @@ export class SectionDrawingLocationState {
     this.clip = extractClip(props.clipJSON) ?? ClipVector.createEmpty();
 
     const placementProps = {
-      origin: props.origin ?? {},
+      origin: (undefined !== props.originX && undefined !== props.originY && undefined !== props.originZ)
+        ? { x: props.originX, y: props.originY, z: props.originZ }
+        : {},
       angles: {
         yaw: props.yaw,
         pitch: props.pitch,
         roll: props.roll,
       },
-      placement: (props.bboxLow && props.bboxHigh) ? { low: props.bboxLow, high: props.bboxHigh } : undefined,
+      placement: (undefined !== props.bboxLowX && undefined !== props.bboxLowY && undefined !== props.bboxLowZ
+        && undefined !== props.bboxHighX && undefined !== props.bboxHighY && undefined !== props.bboxHighZ)
+        ? {
+          low: { x: props.bboxLowX, y: props.bboxLowY, z: props.bboxLowZ },
+          high: { x: props.bboxHighX, y: props.bboxHighY, z: props.bboxHighZ },
+        } : undefined,
     };
     this.placement = Placement3d.fromJSON(placementProps);
 

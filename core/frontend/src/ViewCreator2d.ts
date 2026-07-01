@@ -292,7 +292,7 @@ export class ViewCreator2d {
    */
   private async _getViewDefinitionsIdForModel(modelId: Id64String): Promise<Id64String | undefined> {
 
-    const query = `SELECT ECInstanceId from Bis.ViewDefinition2D WHERE BaseModel.Id = ${modelId} AND isPrivate = false LIMIT 1`;
+    const query = `SELECT ECInstanceId as id from Bis.ViewDefinition2D WHERE BaseModel.Id = ${modelId} AND isPrivate = false LIMIT 1`;
     const viewDefinitionsId = await this._executeQuery(query);
 
     return (viewDefinitionsId.length) > 0 ? viewDefinitionsId[0] : undefined;
@@ -303,7 +303,7 @@ export class ViewCreator2d {
    */
   private async _getAllCategories(): Promise<Id64Array> {
 
-    const query = "SELECT ECInstanceId from BisCore.DrawingCategory";
+    const query = "SELECT ECInstanceId as id from BisCore.DrawingCategory";
     const categories = await this._executeQuery(query);
 
     return categories;

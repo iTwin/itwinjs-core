@@ -26,7 +26,6 @@ import { TiledGraphicsProvider } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
-import { XYZProps } from '@itwin/core-geometry';
 
 // @public
 export function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider>;
@@ -124,9 +123,17 @@ export class SectionDrawingLocationState {
 // @internal
 export interface SectionDrawingLocationStateData {
     // (undocumented)
-    bboxHigh?: XYZProps;
+    bboxHighX?: number;
     // (undocumented)
-    bboxLow?: XYZProps;
+    bboxHighY?: number;
+    // (undocumented)
+    bboxHighZ?: number;
+    // (undocumented)
+    bboxLowX?: number;
+    // (undocumented)
+    bboxLowY?: number;
+    // (undocumented)
+    bboxLowZ?: number;
     // (undocumented)
     categoryId: Id64String;
     // (undocumented)
@@ -134,7 +141,11 @@ export interface SectionDrawingLocationStateData {
     // (undocumented)
     drawingToSpatialTransform: string;
     // (undocumented)
-    origin?: XYZProps;
+    originX?: number;
+    // (undocumented)
+    originY?: number;
+    // (undocumented)
+    originZ?: number;
     // (undocumented)
     pitch?: number;
     // (undocumented)
