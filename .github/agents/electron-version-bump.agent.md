@@ -21,15 +21,19 @@ Obtain inputs from one of the following sources, in priority order:
 
 1. **GitHub Issue** — If triggered from an issue, parse the issue body for the Electron version number and starting branch.
 2. **Invoker prompt** — If no issue context is available, ask the invoker for the version number and starting branch.
-3. **Auto-detection** — If no version is provided, determine the latest stable Electron release by fetching `https://releases.electronjs.org/releases/stable` or checking `https://www.electronjs.org/blog` for the latest major release announcement.
+3. **Auto-detection** — If no version is provided, determine the latest stable Electron release from the npm registry:
+   ```bash
+   npm view electron version
+   ```
+   This returns the latest stable version (e.g., `43.0.0`). Extract the major number from the result.
 
 The **starting branch** defaults to `master` when not specified.
 
-Derive the following values from the version number (using `41` as the example):
+Derive the following values from the version number (using `43` as the example):
 
-- `NEW_MAJOR`: `41`
-- `NEW_RANGE`: `^41.0.0` (the caret range for the new major)
-- `BLOG_URL`: `https://www.electronjs.org/blog/electron-41-0`
+- `NEW_MAJOR`: `43`
+- `NEW_DEV_RANGE`: `^43.0.0` (the caret range for dev dependencies)
+- `BLOG_URL`: `https://www.electronjs.org/blog/electron-43-0`
 
 ## Pre-flight
 
@@ -72,26 +76,30 @@ Only proceed with commits after confirming the current branch is an `electron-` 
 
 ## Execution Flow
 
+**General rule:** Always use `rush` commands directly (e.g., `rush update`, `rush build`). Do not use `node common/scripts/install-run-rush.js` — it is an internal bootstrapping mechanism not intended for direct invocation.
+
 ### Step 1: Update peer dependency ranges
 
-Two packages declare Electron as a `peerDependency` with a multi-range string. Append `|| ^<NEW_MAJOR>.0.0` to the existing range in each:
+Two packages declare Electron as a `peerDependency`. Update the range to use a compact format `>=MIN.0.0 <(NEW_MAJOR+1).0.0` instead of appending individual caret ranges:
 
 | File | JSON path |
 | --- | --- |
 | `core/electron/package.json` | `peerDependencies.electron` |
 | `tools/certa/package.json` | `peerDependencies.electron` |
 
-For example, if the current value is:
+Read the current range to determine the minimum supported version (`MIN`). Then replace the entire range with:
 
 ```
-"^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0 || ^39.0.0 || ^40.0.0"
+">=MIN.0.0 <(NEW_MAJOR+1).0.0"
 ```
 
-Change it to:
+For example, if the minimum is `35` and you're adding Electron `43`, the result is:
 
 ```
-"^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0 || ^39.0.0 || ^40.0.0 || ^41.0.0"
+">=35.0.0 <44.0.0"
 ```
+
+This is equivalent to the previous multi-range format but stays compact as new versions are added.
 
 ### Step 2: Update dev dependency versions
 
@@ -110,10 +118,8 @@ Update the pinned `electron` dev dependency version to `^<NEW_MAJOR>.0.0` in eve
 **Important:** This list may change over time. Before editing, run a workspace-wide search to find ALL `package.json` files containing `"electron":` to ensure none are missed:
 
 ```bash
-grep -r '"electron":' --include='package.json' -l .
+grep -r '"electron":' --include='package.json' -l . | grep -v node_modules
 ```
-
-Compare the results with the list above and include any additional files found.
 
 ### Step 3: Review breaking changes and get approval
 
@@ -215,7 +221,7 @@ If `rush update` fails because the new Electron version is not yet published to 
 
 Edit `docs/changehistory/NextVersion.md`:
 
-1. Add an entry to the table of contents (if one exists) pointing to the new section.
+1. Add an entry to the table of contents pointing to the new section. The TOC uses markdown link format — check existing version files (e.g., `5.10.0.md`) for the expected structure.
 2. Add a new section at the end of the file:
 
 ```markdown
@@ -271,15 +277,7 @@ If `rush build` fails:
 2. Investigate whether the failure is related to the Electron update or a pre-existing issue.
 3. If related to the Electron update, report the issue and stop — if triggered from a GitHub issue, add a comment with the failure details.
 
-### Step 8: Verify change files
-
-```bash
-rush change --verify -b origin/<starting-branch>
-```
-
-If verification fails, create any missing change files as described in Step 6.
-
-## Commit Guidance
+### Step 8: Commit and verify change files
 
 **Pre-commit branch check (Required):** Before running `git commit`, verify the current branch is a feature branch:
 
@@ -289,12 +287,20 @@ git branch --show-current
 
 If the output is `main`, `master`, or any default/protected branch — **do not commit**. Create and switch to the feature branch first (see Pre-flight section).
 
-Commit all changes with a clear message:
+Commit all changes (including the change files from Step 6):
 
 ```bash
 git add -A
 git commit -m "Add support for Electron <NEW_MAJOR>"
 ```
+
+Then verify change files pass (this check requires changes to be committed):
+
+```bash
+rush change --verify -b origin/<starting-branch>
+```
+
+If verification fails, create any missing change files as described in Step 6, amend the commit, and re-verify.
 
 ## Optional Final Step: Create PR (Only If Requested)
 
