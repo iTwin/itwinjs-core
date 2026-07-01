@@ -50,7 +50,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
 
   public getResolvedSettingDef(settingName: string, options?: GetResolvedSettingDefOptions): SettingSchema | undefined {
     const schema = this.settingDefs.get(settingName);
-    return schema ? this.resolveSchema(schema, settingName, [], options?.preserveExtends === true) : undefined;
+    return schema ? this.resolveSchema(schema, settingName, [], options?.preserveExtends) : undefined;
   }
 
   /** @internal */
