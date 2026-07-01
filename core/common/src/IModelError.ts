@@ -109,17 +109,6 @@ export class BackendError extends IModelError {
   }
 }
 
-/** An error rethrown on the backend when a frontend Ipc handler invoked via [IpcHost.makeIpcProxy]($backend) throws a `BentleyError`.
- * It mirrors [[BackendError]], which is rethrown on the frontend for the reverse (frontend-to-backend) direction.
- * @alpha
- */
-export class FrontendError extends IModelError {
-  public constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) {
-    super(errorNumber, message, getMetaData);
-    this.name = name;
-  }
-}
-
 /** Intended for API "no content" semantics where the error case should not trigger application failure monitoring systems.
  * @public
  */

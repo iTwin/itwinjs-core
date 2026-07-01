@@ -13,21 +13,22 @@ import { IpcInvokeReturn } from "./IpcSocket";
 
 /**
  * Unwrap an [[IpcInvokeReturn]] produced by an Ipc handler: return its `result` on success, or rethrow the
- * serialized `error` on failure. If the error carries `BentleyError` identity it is rebuilt via [[rebuildIpcError]];
- * otherwise the raw value is rethrown.
+ * serialized `error` on failure (rebuilt via [[rebuildIpcError]]; non-object values are rethrown as-is).
  *
- * Shared by both Ipc directions so the frontend (`IpcApp`, throwing [BackendError]($common)) and the backend
- * (`IpcHost`, throwing [FrontendError]($common)) unwrap invocation results identically.
+ * Shared by both Ipc directions. By default the error is rebuilt as a plain `Error` following the `ITwinError`
+ * paradigm (identify via [ITwinError.isError]($bentley)); the backend (`IpcHost`) uses this. A caller may pass
+ * `typedErrorClass` to rebuild a legacy typed error instead — the frontend (`IpcApp`) passes [BackendError]($common)
+ * to preserve `instanceof BackendError` for existing consumers.
  * @param retVal The [[IpcInvokeReturn]] returned by the remote handler.
- * @param typedErrorClass Constructor for the typed error to build when the serialized error carries `BentleyError`
- * identity (e.g. [BackendError]($common) on the frontend, [FrontendError]($common) on the backend).
+ * @param typedErrorClass Optional constructor for a legacy typed error to build when the serialized error carries
+ * `BentleyError` identity (e.g. [BackendError]($common) on the frontend). Omit it for the ITwinError paradigm.
  * @returns The handler's `result` value, typed as `T` (defaults to `unknown`, so untyped callers must narrow).
  * @throws The reconstructed error when `retVal` carries an `error`.
  * @internal
  */
 export function unwrapIpcInvokeReturn<T = unknown>(
   retVal: IpcInvokeReturn,
-  typedErrorClass: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error,
+  typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error,
 ): T {
   if (retVal.error === undefined)
     return retVal.result as T; // method was successful

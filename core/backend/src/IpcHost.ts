@@ -10,7 +10,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, IModelStatus, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BriefcaseConnectionProps,
-  ChangesetIndex, ChangesetIndexAndId, createIpcDispatcher, createIpcProxy, EditingScopeNotifications, FrontendError, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, createIpcDispatcher, createIpcProxy, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
   StandaloneOpenOptions, TileTreeContentIds, TxnNotifications, unwrapIpcInvokeReturn,
@@ -159,8 +159,9 @@ export class IpcHost {
    */
   private static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = await this.invoke(channelName, methodName, ...args) as IpcInvokeReturn;
-    // frontend threw an exception, rethrow one on backend as a `FrontendError`.
-    return unwrapIpcInvokeReturn(retVal, FrontendError);
+    // The frontend handler threw: rethrow it on the backend following the ITwinError paradigm (see rebuildIpcError).
+    // Callers identify it via ITwinError.isError / BentleyError.isError rather than instanceof.
+    return unwrapIpcInvokeReturn(retVal);
   }
 
   /**

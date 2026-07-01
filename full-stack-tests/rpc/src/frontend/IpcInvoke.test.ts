@@ -128,7 +128,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       it("backend proxy rebuilds a typed BentleyError with metadata", async () => {
         const info = await invokeViaProxyAndGetErrorInfo("throwBentleyError");
         assert.isTrue(info.isBentleyError, "backend should rebuild a BentleyError");
-        assert.isTrue(info.isFrontendError, "backend should rebuild a typed FrontendError (mirror of frontend's BackendError)");
+        assert.isTrue(info.isITwinError, "backend should rebuild an error identifiable via ITwinError.isError");
         assert.equal(info.errorNumber, IModelStatus.NotFound);
         assert.equal(info.message, "m");
         assert.deepEqual(info.loggingMetadata, { foo: 42, nested: { bar: "bar" } });

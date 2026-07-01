@@ -3883,11 +3883,6 @@ export interface FresnelSettingsProps {
     invert?: boolean;
 }
 
-// @alpha
-export class FrontendError extends IModelError {
-    constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
-}
-
 // @public
 export class Frustum {
     constructor();
@@ -8061,7 +8056,7 @@ export class RealityModelDisplaySettings {
 }
 
 // @internal
-export function rebuildIpcError(err: any, typedErrorClass: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
+export function rebuildIpcError(err: any, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
@@ -11445,7 +11440,7 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @internal
-export function unwrapIpcInvokeReturn<T = unknown>(retVal: IpcInvokeReturn, typedErrorClass: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): T;
+export function unwrapIpcInvokeReturn<T = unknown>(retVal: IpcInvokeReturn, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): T;
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;

@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { IpcHost } from "@itwin/core-backend";
-import { BentleyError } from "@itwin/core-bentley";
-import { FrontendError, IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
+import { BentleyError, ITwinError } from "@itwin/core-bentley";
+import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
 /**
  * Describe an error the backend received (and rebuilt) from a frontend handler via [[IpcHost.makeIpcProxy]].
- * Returns a structured-clone-safe summary so the frontend test can assert the backend reconstructed a typed error.
+ * Returns a structured-clone-safe summary so the frontend test can assert the backend reconstructed the error
+ * following the ITwinError paradigm (identifiable via ITwinError.isError, not a cross-process class instance).
  */
 function describeRebuiltError(error: any) {
   return {
     isBentleyError: BentleyError.isError(error),
-    isFrontendError: error instanceof FrontendError,
+    isITwinError: ITwinError.isError(error, BentleyError.iTwinErrorScope),
     errorNumber: BentleyError.isError(error) ? error.errorNumber : undefined,
     name: error?.name,
     message: error?.message,

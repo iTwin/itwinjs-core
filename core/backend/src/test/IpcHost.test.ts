@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { FrontendError, IpcInvokeReturn, IpcSocketBackend, serializeIpcError } from "@itwin/core-common";
+import { BentleyError, IModelStatus, ITwinError } from "@itwin/core-bentley";
+import { IpcInvokeReturn, IpcSocketBackend, serializeIpcError } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "../IpcHost";
 
 interface MockIpcInterface {
@@ -359,7 +359,7 @@ describe("IpcHost", () => {
       expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
     });
 
-    it("should rethrow a typed FrontendError from makeIpcProxy preserving identity and metadata", async () => {
+    it("should rethrow a frontend-thrown BentleyError from makeIpcProxy preserving ITwinError identity and metadata", async () => {
       const frontend = mockFrontend();
       const proxy = IpcHost.makeIpcProxy<{ doIt: () => Promise<void> }>("ch");
       const promise = proxy.doIt();
@@ -377,8 +377,10 @@ describe("IpcHost", () => {
       } catch (err) {
         caught = err;
       }
-      expect(caught).to.be.instanceOf(FrontendError);
-      expect(caught.name).to.equal("MyFrontendError"); // mirrors how the frontend rethrows a typed BackendError
+      // Following the ITwinError paradigm, the backend rebuilds a plain Error (no cross-process class identity)
+      // that callers identify via ITwinError.isError / BentleyError.isError rather than instanceof.
+      expect(ITwinError.isError(caught, BentleyError.iTwinErrorScope, "MyFrontendError")).to.be.true;
+      expect(caught.name).to.equal("MyFrontendError");
       expect(BentleyError.isError(caught, IModelStatus.NotFound)).to.be.true;
       expect(caught.message).to.equal("boom");
       expect(caught.loggingMetadata).to.deep.equal({ detail: 42 });

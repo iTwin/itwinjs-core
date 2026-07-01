@@ -352,7 +352,6 @@ beta;class;FractionRun
 beta;interface;FractionRunProps
 public;class;FresnelSettings
 public;interface;FresnelSettingsProps
-alpha;class;FrontendError
 public;class;Frustum
 public;class;FrustumPlanes
 public;namespace;FrustumPlanes

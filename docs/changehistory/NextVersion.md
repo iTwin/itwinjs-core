@@ -18,7 +18,6 @@ The new `@alpha` APIs are:
 - `IpcHost.invoke` and `IpcHost.makeIpcProxy` on the backend to call frontend handlers.
 - `IpcApp.handle` and a new `IpcHandler` base class on the frontend to implement them.
 - `IpcHost.invokeTimeout` to optionally bound how long an invocation waits for a response.
-- [FrontendError]($common) to represent a `BentleyError` thrown by a frontend handler, surfaced to the backend caller.
 
 ```typescript
 // common: the shared interface
@@ -46,4 +45,4 @@ Because Electron provides no native main-to-renderer `invoke` (only one-way `web
 
 Pending invocations are rejected if [IpcHost.shutdown]($backend) is called before a response arrives, so promises never leak past shutdown. You can also set the optional `IpcHost.invokeTimeout` (milliseconds) to reject calls whose frontend handler never responds; it is unset by default, meaning calls wait indefinitely.
 
-Mirroring the existing frontend-to-backend direction (where a backend `BentleyError` surfaces to the frontend caller as a [BackendError]($common)), a `BentleyError` thrown by a frontend handler surfaces to the backend caller as the new `@alpha` [FrontendError]($common), preserving the error number, name, message, and logging metadata. A non-`BentleyError` (e.g. a plain `Error`) is re-thrown to the caller as a plain `Error` with its message and any own-enumerable properties preserved.
+When a frontend handler throws, the error is surfaced to the backend caller following the [ITwinError]($bentley) paradigm: it is rebuilt as an `Error` preserving the message, `iTwinErrorId`, error number, logging metadata, and any custom properties, so the caller can identify it with [ITwinError.isError]($bentley) (or [BentleyError.isError]($bentley) for legacy error numbers) rather than relying on a class identity that cannot survive marshalling across the Ipc boundary. A non-`BentleyError` (e.g. a plain `Error`) is re-thrown with its message and any own-enumerable properties preserved. (The existing frontend-to-backend direction continues to rethrow a backend `BentleyError` as the pre-existing [BackendError]($common) for backwards compatibility.)

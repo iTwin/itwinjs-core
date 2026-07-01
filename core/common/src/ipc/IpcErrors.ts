@@ -84,27 +84,33 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
 
 /**
  * Reconstruct an `Error` from the serialized `error` produced by [[serializeIpcError]], so the Ipc caller can
- * `throw` it. If the serialized error carries `BentleyError` identity it is rebuilt via `typedErrorClass`
- * (preserving `errorNumber`, `name`/`iTwinErrorId`, message, and logging metadata); otherwise a plain `Error` is
- * produced. Remaining own-enumerable properties are copied onto the result.
+ * `throw` it.
  *
- * Both Ipc directions share this helper, passing the typed-error class appropriate for the caller: the backend
- * rebuilds a [FrontendError]($common) for errors thrown by a frontend handler, while the frontend rebuilds a
- * [BackendError]($common) for the reverse (frontend-to-backend) direction.
+ * By default (no `typedErrorClass`) a plain `Error` is produced with the serialized `message`, `iTwinErrorId`,
+ * `errorNumber`, logging metadata, and any custom properties copied onto it. This follows the `ITwinError`
+ * paradigm: callers identify the error with [ITwinError.isError]($bentley) (or [BentleyError.isError]($bentley) for
+ * legacy error numbers) rather than `instanceof`, which cannot survive marshalling across the Ipc boundary.
+ *
+ * For backwards compatibility, a caller may pass `typedErrorClass`; when the serialized error carries
+ * `BentleyError` identity it is rebuilt as that class (preserving `errorNumber`, `name`/`iTwinErrorId`, message, and
+ * logging metadata). The frontend uses this to keep rethrowing the pre-existing `@public` [BackendError]($common)
+ * for the backend-to-frontend direction, so existing `instanceof BackendError` consumers keep working.
  * @param err The serialized error object (must be an object; callers should forward non-object values as-is).
- * @param typedErrorClass Constructor for the typed error to build when `err` carries `BentleyError` identity
- * (e.g. [FrontendError]($common) on the backend, [BackendError]($common) on the frontend).
+ * @param typedErrorClass Optional constructor for the typed error to build when `err` carries `BentleyError`
+ * identity (e.g. [BackendError]($common) on the frontend). Omit it to rebuild a plain `Error` (ITwinError paradigm).
  * @returns The reconstructed `Error` to throw.
  * @internal
  */
 export function rebuildIpcError(
   err: any,
-  typedErrorClass: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error,
+  typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error,
 ): Error {
-  // if the exception was a BentleyError, rebuild it as the caller's typed error; otherwise produce a plain Error.
-  if (!BentleyError.isError(err))
+  // Default (ITwinError paradigm) or a non-BentleyError value: rebuild a plain Error, preserving iTwinErrorId,
+  // errorNumber, message, and any custom fields so callers can identify it via ITwinError.isError / BentleyError.isError.
+  if (typedErrorClass === undefined || !BentleyError.isError(err))
     return Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
 
+  // Backwards compatibility: rebuild the caller's typed BentleyError subclass (e.g. BackendError).
   const trimErr: any = { ...err };
   delete trimErr.iTwinErrorId;    // getter on the typed error; assigning would throw
   delete trimErr.loggingMetadata; // getter on the typed error; assigning would throw
