@@ -33,7 +33,7 @@ import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { DisableNativeAssertions } from "../TestUtils";
+import { DisableNativeAssertions, TestUtils } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
 import { _cache, _hubAccess, _instanceKeyCache } from "../../internal/Symbols";
@@ -77,6 +77,12 @@ describe("iModel", () => {
   before(async () => {
     originalEnv = { ...process.env };
 
+    // Several tests in this suite (ECEF location, geolocation, and coordinate reprojection) rely on
+    // GCS data loaded from cloud workspaces, so restart the backend with GCS workspaces enabled
+    // (the test harness disables them by default to avoid network calls).
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend({ loadGcsWorkspaces: true });
+
     IModelTestUtils.registerTestBimSchema();
     imodel1 = await generateTestSnapshot("test.bim", "test.bim");
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
@@ -85,13 +91,17 @@ describe("iModel", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
-  after(() => {
+  after(async () => {
     process.env = originalEnv;
     imodel1.close();
     imodel2.close();
     imodel3.close();
     imodel4.close();
     imodel5.close();
+
+    // Restore the default test backend so subsequent test suites aren't left with GCS enabled.
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
   });
 
   afterEach(() => {
