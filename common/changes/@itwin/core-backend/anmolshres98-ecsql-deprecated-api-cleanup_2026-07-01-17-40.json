@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrate internal query methods off the deprecated ECSqlStatement/withPreparedStatement API to the modern ECSqlReader (withQueryReader/createQueryReader). This includes IModelDb (queryEntityIds, querySchemaVersion, queryChildren, queryParent, hasSubModel, queryLastModifiedTime, _queryAspects, _queryAspect, getAspect, runInstanceQuery, Elements.getAspects), IModelReadRpcImpl.getAllCodeSpecs, ExternalSourceAspect.findAllBySource, Relationships.tryGetInstanceProps, ModelSelector/CategorySelector.deserialize, ViewStore.querySelectorValues, ElementTreeWalker helpers, ElementDrivesTextAnnotation.updateFieldDependencies, the annotations field-value helper, ChangeSummaryManager, and ChangesetECAdaptor's instanceOf check.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "anmolshres98@users.noreply.github.com"
+}

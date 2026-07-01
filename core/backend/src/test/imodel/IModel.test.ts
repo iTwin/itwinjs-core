@@ -3518,7 +3518,7 @@ describe("iModel", () => {
     expect(() => testImodel.prepareStatement("SELECT 1")).to.throw(closedDbError);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { })).to.throw(closedDbError);
-    expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
+    expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw("db not open");
     expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
     expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
   });

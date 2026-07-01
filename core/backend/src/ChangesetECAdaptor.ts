@@ -7,7 +7,7 @@
  */
 import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
-import { Base64EncodedString } from "@itwin/core-common";
+import { Base64EncodedString, QueryBinder } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { _nativeDb } from "./internal/Symbols";
 
@@ -716,13 +716,10 @@ export class PartialECChangeUnifier implements Disposable {
    * @returns `true` if `rhsClassId` is an instance of `lhsClassId`, `false` otherwise.
    */
   private instanceOf(rhsClassId: Id64String, lhsClassId: Id64String): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
-      stmt.bindId(1, rhsClassId);
-      stmt.bindId(2, lhsClassId);
-      stmt.step();
-      return stmt.getValue(0).getInteger() === 1;
-    });
+    return this._db.withQueryReader("SELECT ec_instanceof(?,?)", (reader) => {
+      reader.step();
+      return reader.current[0] === 1;
+    }, new QueryBinder().bindId(1, rhsClassId).bindId(2, lhsClassId));
   }
 
   /**

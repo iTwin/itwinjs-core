@@ -6,14 +6,14 @@
  * @module ViewDefinitions
  */
 
-import { DbResult, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
-  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement, RelatedElementProps,
-  resolveNavProp, resolveNavPropId, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, QueryBinder, RelatedElement,
+  RelatedElementProps, resolveNavProp, resolveNavPropId, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
@@ -62,15 +62,13 @@ export class ModelSelector extends DefinitionElement {
   public static override deserialize(props: DeserializeEntityArgs): ModelSelectorProps {
     const elProps = super.deserialize(props) as ModelSelectorProps;
     const instance = props.row;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    elProps.models = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement) => {
-      statement.bindId(1, instance.id);
+    elProps.models = props.iModel.withQueryReader("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (reader): Id64Array => {
       const ids: Id64Array = [];
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        ids.push(statement.getValue(0).getId());
+      for (const row of reader) {
+        ids.push(row[0]);
       }
       return ids;
-    });
+    }, new QueryBinder().bindId(1, instance.id));
     return elProps;
   }
 
@@ -166,15 +164,13 @@ export class CategorySelector extends DefinitionElement {
   public static override deserialize(props: DeserializeEntityArgs): CategorySelectorProps {
     const elProps = super.deserialize(props) as CategorySelectorProps;
     const instance = props.row;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    elProps.categories = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement) => {
-      statement.bindId(1, instance.id);
+    elProps.categories = props.iModel.withQueryReader("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (reader): Id64Array => {
       const ids: Id64Array = [];
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        ids.push(statement.getValue(0).getId());
+      for (const row of reader) {
+        ids.push(row[0]);
       }
       return ids;
-    });
+    }, new QueryBinder().bindId(1, instance.id));
     return elProps;
   }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrate internal query methods off the deprecated ECSqlStatement/withPreparedStatement API to the modern ECSqlReader (withQueryReader) in LinearReferencingElements.",
+      "type": "none",
+      "packageName": "@itwin/linear-referencing-backend"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-backend",
+  "email": "anmolshres98@users.noreply.github.com"
+}

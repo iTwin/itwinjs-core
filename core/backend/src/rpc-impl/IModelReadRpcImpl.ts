@@ -16,7 +16,7 @@ import {
   GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  ModelExtentsProps, ModelProps, NoContentError, QueryRowFormat, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
   SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
   ViewStoreRpc,
 } from "@itwin/core-common";
@@ -247,11 +247,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
     const iModelDb = await getIModelForRpc(tokenProps);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModelDb.withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
-      for (const row of statement)
-        codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
-    });
+    for await (const row of iModelDb.createQueryReader("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
+      codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
     return codeSpecs;
   }
 
