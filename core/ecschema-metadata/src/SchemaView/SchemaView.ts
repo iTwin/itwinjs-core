@@ -185,21 +185,13 @@ export class SchemaView {
     return parseSchemaViewBlob(blob, schemaToken);
   }
 
-  /** Build from a pre-populated builder (used by the binary parser).
-   * @internal
-   */
-  public static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView {
-    return builder.build(schemaToken);
-  }
-
   /** Create an empty, *mergeable* view (a "husk"). It contains no schemas until
    * `mergeFragment` is called with one or more fragment blobs. Each merged fragment is appended
    * into the same view instance, so flyweights and cached cross-references obtained earlier stay
    * valid (indices are append-only and never reordered).
    *
    * Fragments must be merged in dependency order: a fragment may reference schemas in fragments
-   * already merged, but not ones merged later (forward references resolve to "not present",
-   * indistinguishable from an excluded schema).
+   * already merged.
    * @internal
    */
   public static createMergeable(schemaToken?: string): SchemaView {

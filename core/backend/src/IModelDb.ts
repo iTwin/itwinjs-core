@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestEntry, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -422,19 +422,25 @@ export interface CloseIModelArgs {
  * @beta
  */
 export interface GetSchemaViewArgs {
-  /** When provided, return a view incrementally loaded with only these schemas plus their
-   * transitive reference closure, instead of every schema in the iModel.
+  /** When provided, return a view incrementally loaded with at least these schemas plus their
+   * references, instead of every schema in the iModel.
+   * The parameter means "I need these schemas to be present".
    *
-   * The view accumulates: it is one instance reused across calls, so a later request with different
+   * The view accumulates: one instance reused across calls, so a later request with different
    * schemas - or a later call with no filter at all - merges any still-missing schemas into the same
-   * view, and schemas requested earlier remain available. Schemas that are not loaded (and that the
-   * request did not pull in) are simply absent - `findClass` and friends return `undefined` for
-   * them, the same as for a schema the iModel does not contain.
+   * view, and schemas requested earlier remain available. Resets when schemas in the iModel change.
    *
-   * Names the iModel does not contain are ignored. Omitting this option ensures every schema is
+   * Names the iModel does not contain are ignored. Omitting this option ensures all schemas are
    * loaded, identical to calling `getSchemaView()` with no arguments.
    */
   readonly schemas?: readonly string[];
+
+  /** When `true`, discard whatever is currently loaded and rebuild the view from scratch before
+   * returning it. The previously returned view instance (if any) is marked outdated. Like every other
+   * request, this is serialized behind any in-flight load, so it waits for pending work to finish before
+   * resetting - never leaving the view in an invalid intermediate state.
+   */
+  readonly forceReload?: boolean;
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
@@ -465,20 +471,24 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  // Single, accumulating schema view ("husk") - we never hold more than one SchemaView. The strategy
-  // is fixed by the first getSchemaView call: a no-filter first call loads every schema as one full
-  // `PRAGMA schema_view` blob and sets `_allSchemasLoaded` (the manifest and loaded-name set are never
-  // touched); a filtered first call loads only the requested reference closure as a
-  // `PRAGMA schema_view_fragment` blob and uses the manifest + `_loadedSchemaNames` to extend the same
-  // view on later calls. `_schemaManifestPromise` is the cheap reference graph (incremental mode only);
-  // `_loadedSchemaNames` is the synchronous "already loaded" gate (incremental mode only);
-  // `_allSchemasLoaded` short-circuits once everything is in; `_schemaLoad` serializes loads so
-  // overlapping requests cannot double-merge a schema.
-  private _schemaManifestPromise?: Promise<SchemaManifest>;
-  private _schemaHusk?: SchemaView;
+  // Single accumulating schema view, exposed as a promise to serialize all access. Every getSchemaView
+  // call chains onto this promise, so the state transitions never overlap and the view can never
+  // be double-merged. A `undefined` field, or a promise that resolves to `undefined` (signals reset
+  // continuation queued by clearCaches), both mean "nothing loaded - start over". A promise
+  // resolving to a `SchemaView` is the accumulating or fully loaded view; a later call merges any still-missing
+  // schemas into the same instance.
+  private _schemaViewPromise?: Promise<SchemaView | undefined>;
+  // Cheap reference graph (names, versions, ids, reference edges) of every schema in the iModel, loaded
+  // lazily the first time an incremental (filtered) load is needed. `undefined` means the view is 
+  // fully loaded, so no manifest is needed, or we didn't load anything yet, in which case _schemaViewPromise is undefined as well.
+  private _schemaManifest?: SchemaManifest;
+  // Lower-cased schema name -> its `ec_Schema` ECInstanceId, built alongside `_schemaManifest`. The
+  // manifest itself carries no ids; this is how an incremental load turns the schemas it must fetch
+  // into the decimal id list `PRAGMA schema_view_fragment` expects. Cleared with the manifest.
+  private _schemaECInstanceIdsByName?: ReadonlyMap<string, number>;
+  // Lower-cased names already merged into the SchemaView. Used only in incremental mode to decide what a later
+  // filtered request still needs.
   private readonly _loadedSchemaNames = new Set<string>();
-  private _allSchemasLoaded = false;
-  private _schemaLoad: Promise<void> = Promise.resolve();
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1187,14 +1197,15 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      // Drop the schema view and its manifest so the next request rebuilds against the new schema
-      // state. The loaded-set must be cleared too, or a stale entry would suppress a reload.
-      if (this._schemaHusk)
-        this._schemaHusk.markOutdated();
-      this._schemaHusk = undefined;
-      this._schemaManifestPromise = undefined;
-      this._loadedSchemaNames.clear();
-      this._allSchemasLoaded = false;
+      // Throw away the current schema view. Chain the reset onto any in-flight load so it runs
+      // after that load finishes mutating the shared state, then marks the view outdated and clears
+      // the incremental bookkeeping. The next getSchemaView chains after this and starts over.
+      if (this._schemaViewPromise) {
+        this._schemaViewPromise = this._schemaViewPromise.then(
+          (view) => { view?.markOutdated(); this._resetSchemaState(); return undefined; },
+          () => { this._resetSchemaState(); return undefined; },
+        );
+      }
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1762,9 +1773,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the schema view for this iModel. The view is built lazily on
-   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
-   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
-   * concurrent callers share a single in-flight build.
+   * first call by fetching compact binary schema data through
+   * the ConcurrentQuery thread pool. Subsequent calls return the cached view.
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
@@ -1772,122 +1782,180 @@ export abstract class IModelDb extends IModel {
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
    * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
    *
-   * Pass `args.schemas` to load only a subset (plus its reference closure) instead of every schema.
-   * The view accumulates: a later call merges any still-missing schemas into the same instance; see
+   * Pass `args.schemas` to request only a subset (plus its references) instead of every schema.
+   * The view accumulates: a later call merges any still-missing schemas into the same instance. Pass
+   * `args.forceReload` to discard everything loaded so far and rebuild from scratch. See
    * [[GetSchemaViewArgs]].
    * @beta
    */
   public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
     const schemas = args?.schemas;
+    const forceReload = args?.forceReload === true;
 
-    // Synchronous fast path: the single view already holds everything this caller needs. A no-filter
-    // request is satisfied only once every schema is loaded; a filtered request as soon as each
-    // requested name is present. No I/O, no manifest, no flyweight allocation.
-    if (this._schemaHusk !== undefined &&
-      (this._allSchemasLoaded || (schemas !== undefined && schemas.every((name) => this._loadedSchemaNames.has(name.toLowerCase())))))
-      return this._schemaHusk;
-
-    // Otherwise serialize onto any in-flight load so concurrent callers cannot double-merge a schema.
-    // What is actually missing is recomputed inside the continuation (an earlier queued load may have
-    // covered it). Failures are isolated so one rejected load does not poison later callers.
-    const loadSchemasPromise = this._schemaLoad.then(async () => this._ensureSchemasLoaded(schemas));
-    // The next caller chains its load onto `_schemaLoad`, so our stored promise must never reject.
-    // The current caller gets `loadSchemasPromise` which can reject, but our stored promise always resolves.
-    this._schemaLoad = loadSchemasPromise.then(() => undefined, () => undefined);
-    return loadSchemasPromise;
+    // Every request chains onto the previous one, so loads run strictly one at a time and the shared
+    // state (manifest, and loaded-name set) is only ever mutated by a single in-flight load.
+    // The continuation swallows the previous load's failure - each caller observes its own outcome
+    // through the promise returned here.
+    const previous = this._schemaViewPromise;
+    const next = this._loadSchemaView(previous, schemas, forceReload);
+    this._schemaViewPromise = next;
+    return next;
   }
 
-  /** The body of [[getSchemaView]], run serialized behind `_schemaLoad`. Ensures the requested schemas
-   * (or all schemas, when no filter is given) are loaded into the single accumulating view and returns
-   * it.
-   *
-   * The strategy is fixed by the *first* call:
-   *  - First call with no filter -> load every schema as one full `schema_view` blob. The manifest and
-   *    loaded-name tracking are never needed; `_allSchemasLoaded` is set and all later calls short-circuit.
-   *  - First call with a filter -> load only the requested reference closure as a `schema_view_fragment`
-   *    blob, and keep the manifest + loaded-name set to extend the *same* view on later calls. A later
-   *    no-filter call in this mode completes the view by fetching all remaining schemas as one fragment.
+  /** Serialized body of [[getSchemaView]]. Waits for the prior load, optionally discards everything
+   * (`forceReload`), then ensures the requested schemas (or all schemas, when no filter is given) are
+   * present in the single accumulating view. On failure it resets and rejects, so the next call retries from scratch.
    */
-  private async _ensureSchemasLoaded(schemas: readonly string[] | undefined): Promise<SchemaView> {
-    // Re-check the fast-path condition now that earlier queued loads have settled.
-    if (this._schemaHusk !== undefined &&
-      (this._allSchemasLoaded || (schemas !== undefined && schemas.every((name) => this._loadedSchemaNames.has(name.toLowerCase())))))
-      return this._schemaHusk;
+  private async _loadSchemaView(previous: Promise<SchemaView | undefined> | undefined, schemas: readonly string[] | undefined, forceReload: boolean): Promise<SchemaView> {
+    // Wait for any prior load (or reset) to settle so state transitions stay serialized. A prior
+    // failure or reset leaves no usable view, so we simply start over.
+    let currentView: SchemaView | undefined;
+    if (previous !== undefined) {
+      try {
+        currentView = await previous;
+      } catch {
+        currentView = undefined;
+      }
+    }
 
-    const isFirstLoad = this._schemaHusk === undefined;
-    const husk = this._schemaHusk ?? (this._schemaHusk = SchemaView.createMergeable());
+    // forceReload throws away whatever is currently loaded and rebuilds from scratch.
+    if (forceReload) {
+      currentView?.markOutdated();
+      currentView = undefined;
+      this._resetSchemaState();
+    }
+
+    try {
+      return await this._ensureSchemasLoaded(currentView, schemas);
+    } catch (err) {
+      // Reset so the next call starts clean. We deliberately leave `_schemaViewPromise` pointing at
+      // this (now rejected) promise: the next call chains onto it, catches the rejection above, and
+      // rebuilds - which also avoids stomping any newer queued load.
+      this._resetSchemaState();
+      throw err;
+    }
+  }
+
+  /** Clear the incremental schema-view bookkeeping. */
+  private _resetSchemaState(): void {
+    this._schemaManifest = undefined;
+    this._schemaECInstanceIdsByName = undefined;
+    this._loadedSchemaNames.clear();
+  }
+
+  /** The body of [[getSchemaView]], run serialized behind the accumulating view promise. Ensures the
+   * requested schemas (or all schemas, when no filter is given) are present in `currentView` (or a
+   * freshly created view when nothing is loaded yet) and returns it.
+   *
+   * The strategy is fixed by the *first* load:
+   *  - First load with no filter -> fetch every schema as one full `schema_view` blob. The manifest and
+   *    loaded-name tracking are never needed; `_schemaManifest` stays `undefined` and all
+   *    later calls short-circuit.
+   *  - First load with a filter -> fetch only the requested schemas and references as a `schema_view_fragment`
+   *    blob, and keep the manifest + loaded-name set to extend the *same* view on later calls. Once every
+   *    schema has been loaded this way, `_schemaManifest` is cleared to collapse back to full mode.
+   */
+  private async _ensureSchemasLoaded(currentView: SchemaView | undefined, schemas: readonly string[] | undefined): Promise<SchemaView> {
+    const isFirstLoad = currentView === undefined;
+    // Already satisfied? No mainfest means everything is loaded already; incremental mode covers a filtered
+    // request as soon as every requested name is present. No I/O, no manifest, no allocation.
+    if (!isFirstLoad &&
+        (this._schemaManifest === undefined ||
+        (schemas !== undefined && schemas.every((name) => this._loadedSchemaNames.has(name.toLowerCase())))))
+      return currentView;
 
     // Full strategy: the very first request wants everything. Fetch the whole iModel as one blob (one
     // round trip, best cross-schema dedup) and skip the manifest and closure walk entirely.
     if (isFirstLoad && schemas === undefined) {
       const { data, token } = await this._fetchSchemaBlob("PRAGMA schema_view");
-      husk.mergeFragment(data);
-      husk.setSchemaToken(token);
-      this._allSchemasLoaded = true;
-      return husk;
+      const schemaView = SchemaView.fromBinary(data, token);
+      this._resetSchemaState(); // full mode: no manifest needed
+      return schemaView;
     }
 
     // Incremental strategy: a filter was given, or the first call established this mode and the caller
-    // now wants more. The manifest and loaded-name set are only ever used here. Compute the
-    // still-missing reference closure and fetch just those schemas as a fragment.
-    const manifest = await this._getSchemaManifest();
-    const loadedIndices = new Set<number>();
-    for (const name of this._loadedSchemaNames) {
-      const entry = manifest.findByName(name);
-      if (entry !== undefined)
-        loadedIndices.add(entry.index);
+    // now wants more. Load the manifest once, then compute the still-missing references and fetch just those schemas as a fragment.
+    let manifest = this._schemaManifest;
+    let ecInstanceIdsByName = this._schemaECInstanceIdsByName;
+    if (manifest === undefined || ecInstanceIdsByName === undefined) {
+      const loaded = await this._loadSchemaManifest();
+      manifest = this._schemaManifest = loaded.manifest;
+      ecInstanceIdsByName = this._schemaECInstanceIdsByName = loaded.ecInstanceIdsByName;
     }
 
     // No filter in incremental mode means "load whatever is left" - the closure of every schema.
     const requested = schemas ?? manifest.getAvailableSchemaNames();
-    const order = manifest.computeLoadOrder(requested, loadedIndices);
-    if (order.length > 0) {
-      const ids = order.map((entry) => entry.ecInstanceId);
-      const idList = ids.map((id) => Math.trunc(id).toString(10)).join(",");
-      const { data, token } = await this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${idList}')`);
+    // The manifest returns the whole reference closure of the request; dropping the already-loaded
+    // schemas is our concern, not the manifest's. Fragment load order does not matter (see the writer).
+    const namesToLoad = manifest.getSchemaClosure(requested).filter((name) => !this._loadedSchemaNames.has(name.toLowerCase()));
+    // Reuse the accumulating view from an earlier incremental load, or start a fresh mergeable husk
+    // that later fragments merge into. Either way we return this same instance.
+    const husk = currentView ?? SchemaView.createMergeable();
+    if (namesToLoad.length > 0) {
+      // The manifest carries no ids, so translate each schema back to its ec_Schema id here. Every
+      // name is in the map (both come from the same query), so no id can be missing.
+      const ids: number[] = [];
+      for (const name of namesToLoad) {
+        const id = ecInstanceIdsByName.get(name.toLowerCase());
+        if (id !== undefined)
+          ids.push(id);
+      }
+      const { data, token } = await this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${ids.join(",")}')`);
       husk.mergeFragment(data);
       husk.setSchemaToken(token);
       // Record every closure entry as loaded - including *excluded* schemas (e.g. CoreCustomAttributes)
       // that the writer emits no rows for and so never appear in the view. Tracking names (not view
       // contents) is what lets a later request's gate and closure prune them instead of re-fetching.
-      for (const entry of order)
-        this._loadedSchemaNames.add(entry.name.toLowerCase());
+      for (const name of namesToLoad)
+        this._loadedSchemaNames.add(name.toLowerCase());
     }
+    // Everything loaded? Collapse back to full mode so future requests hit the fast path above.
     if (schemas === undefined || this._loadedSchemaNames.size === manifest.schemaCount)
-      this._allSchemasLoaded = true;
+      this._resetSchemaState();
     return husk;
   }
 
-  /** Load (once) the cheap reference graph of every schema in the iModel from ECDbMeta. No schema
-   * data is hydrated - just names, versions, ids, and the reference edges. */
-  private async _getSchemaManifest(): Promise<SchemaManifest> {
-    if (this._schemaManifestPromise === undefined) {
-      this._schemaManifestPromise = (async (): Promise<SchemaManifest> => {
-        const schemaRows: SchemaManifestSchemaRow[] = [];
-        const schemaSql = "SELECT ECInstanceId as id, Name as name, VersionMajor as versionMajor, VersionWrite as versionWrite, VersionMinor as versionMinor FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(schemaSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
-          schemaRows.push({
-            id: Number(row.id), // ECInstanceId comes back as a hex Id64String; schemas are few with small ids
-            name: row.name,
-            versionMajor: row.versionMajor,
-            versionWrite: row.versionWrite,
-            versionMinor: row.versionMinor,
-          });
-        }
+  /** Load the cheap reference graph of every schema in the iModel from ECDbMeta. No schema data is
+   * hydrated - just names, versions, and the reference edges. Runs serialized behind [[getSchemaView]].
+   * Returns the manifest plus a lower-cased-name -> `ec_Schema` id map: the manifest carries no ids,
+   * so this is what later turns the schemas a fragment must fetch into the id list the pragma expects. */
+  private async _loadSchemaManifest(): Promise<{ manifest: SchemaManifest, ecInstanceIdsByName: ReadonlyMap<string, number> }> {
+    // Mutable during the wiring walk below; the manifest treats entries as read-only once handed over.
+    type MutableEntry = Omit<SchemaManifestEntry, "references"> & { references: SchemaManifestEntry[] };
 
-        const referenceRows: SchemaManifestReferenceRow[] = [];
-        const referenceSql = "SELECT SourceECInstanceId as sourceId, TargetECInstanceId as targetId FROM meta.SchemaHasSchemaReferences";
-        for await (const row of this.createQueryReader(referenceSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
-          referenceRows.push({ schemaId: Number(row.sourceId), referencedSchemaId: Number(row.targetId) });
-        }
+    const entries: MutableEntry[] = [];
+    // ec_Schema ECInstanceId -> entry, so the reference walk can look up both endpoints by id.
+    const entryByEcInstanceId = new Map<number, MutableEntry>();
+    const ecInstanceIdsByName = new Map<string, number>();
 
-        return SchemaManifest.fromRows(schemaRows, referenceRows);
-      })();
-      this._schemaManifestPromise.catch(() => {
-        this._schemaManifestPromise = undefined; // let a later call retry on failure
-      });
+    const schemaSql = "SELECT ECInstanceId as id, Name as name, VersionMajor as versionMajor, VersionWrite as versionWrite, VersionMinor as versionMinor FROM meta.ECSchemaDef";
+    for await (const row of this.createQueryReader(schemaSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+      const ecInstanceId = Number(row.id); // ECInstanceId comes back as a hex Id64String; schemas are few with small ids
+      const entry: MutableEntry = {
+        name: row.name,
+        readVersion: row.versionMajor,
+        writeVersion: row.versionWrite,
+        minorVersion: row.versionMinor,
+        references: [],
+      };
+      entries.push(entry);
+      entryByEcInstanceId.set(ecInstanceId, entry);
+      ecInstanceIdsByName.set(row.name.toLowerCase(), ecInstanceId);
     }
-    return this._schemaManifestPromise;
+
+    // SchemaHasSchemaReferences is a flat (source id, target id) table. Look up both endpoints and add
+    // the target to the source's references. Rows whose endpoints are unknown or self-referential are
+    // skipped - a defensive guard that cannot happen for a well-formed iModel.
+    const referenceSql = "SELECT SourceECInstanceId as sourceId, TargetECInstanceId as targetId FROM meta.SchemaHasSchemaReferences";
+    for await (const row of this.createQueryReader(referenceSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+      const source = entryByEcInstanceId.get(Number(row.sourceId));
+      const target = entryByEcInstanceId.get(Number(row.targetId));
+      if (source === undefined || target === undefined || source === target || source.references.includes(target))
+        continue;
+      source.references.push(target);
+    }
+
+    return { manifest: new SchemaManifest(entries), ecInstanceIdsByName };
   }
 
   /** Fetch one schema-view blob (full or fragment) and return its data and cache-invalidation token.

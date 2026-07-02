@@ -181,7 +181,7 @@ export class SchemaViewMergeContext {
 
   // Cross-reference maps. Persist across fragments: a row id / name from a later fragment resolves
   // against a class, enum, koq, or category merged by an earlier fragment.
-  public readonly schemaEcIdToIdx = new Map<number, number>();
+  public readonly schemaECIdToIdx = new Map<number, number>();
   public readonly enumRowIdToIdx = new Map<number, number>();
   public readonly koqRowIdToIdx = new Map<number, number>();
   public readonly catRowIdToIdx = new Map<number, number>();
@@ -237,7 +237,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   const schemaBaseIdx = builder.schemaCount;
 
   // Cross-reference maps that persist across fragments live on the context.
-  const { schemaEcIdToIdx, enumRowIdToIdx, koqRowIdToIdx, catRowIdToIdx, classRowIdToIdx, classResolver } = ctx;
+  const { schemaECIdToIdx: schemaEcIdToIdx, enumRowIdToIdx, koqRowIdToIdx, catRowIdToIdx, classRowIdToIdx, classResolver } = ctx;
 
   // Per-schema item range tracking, indexed by LOCAL schema index (0-based within this fragment).
   const schemaEnumStarts: number[] = [];

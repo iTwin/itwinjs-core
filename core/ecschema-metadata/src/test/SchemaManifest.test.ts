@@ -4,123 +4,143 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { SchemaManifest, SchemaManifestReferenceRow, SchemaManifestSchemaRow } from "../SchemaView/SchemaManifest";
+import { SchemaManifest, SchemaManifestEntry } from "../SchemaView/SchemaManifest";
+
+/** Spec for one schema in a test manifest: its name, minor version, and the names it references. */
+interface EntrySpec {
+  name: string;
+  minorVersion?: number;
+  refs?: string[];
+}
+
+/** Builds a {@link SchemaManifest} from name-based specs, wiring each entry's references to the
+ * entry objects named in `refs`. Unknown reference names are ignored. */
+function makeManifest(specs: EntrySpec[]): SchemaManifest {
+  const byName = new Map<string, SchemaManifestEntry & { references: SchemaManifestEntry[] }>();
+  const entries = specs.map((spec) => {
+    const entry = {
+      name: spec.name,
+      readVersion: 1,
+      writeVersion: 0,
+      minorVersion: spec.minorVersion ?? 0,
+      references: [] as SchemaManifestEntry[],
+    };
+    byName.set(spec.name.toLowerCase(), entry);
+    return entry;
+  });
+  for (const spec of specs) {
+    const entry = byName.get(spec.name.toLowerCase())!;
+    for (const ref of spec.refs ?? []) {
+      const target = byName.get(ref.toLowerCase());
+      if (target !== undefined)
+        entry.references.push(target);
+    }
+  }
+  return new SchemaManifest(entries);
+}
 
 /** A small reference graph mirroring a real iModel's shape: standard schemas at the bottom, domain
- * schemas on top. ECInstanceIds are deliberately not equal to manifest indices so the id<->index
- * mapping is exercised.
+ * schemas on top.
  *
- *   Units(10)      CoreCustomAttributes(30)
- *     ^                    ^
- *   Formats(20)->Units     |
- *     ^      ^             |
- *      \      \            |
- *       BisCore(40) -> Units, Formats, CoreCustomAttributes
+ *   Units      CoreCustomAttributes
+ *     ^                 ^
+ *   Formats->Units      |
+ *     ^      ^          |
+ *      \      \         |
+ *       BisCore -> Units, Formats, CoreCustomAttributes
  *         ^      ^
- *   Generic(50)  Functional(60)   (both -> BisCore)
+ *   Generic  Functional   (both -> BisCore)
  */
-function makeRows(): { schemaRows: SchemaManifestSchemaRow[], referenceRows: SchemaManifestReferenceRow[] } {
-  const schemaRows: SchemaManifestSchemaRow[] = [
-    { id: 10, name: "Units", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-    { id: 20, name: "Formats", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-    { id: 30, name: "CoreCustomAttributes", versionMajor: 1, versionWrite: 0, versionMinor: 1 },
-    { id: 40, name: "BisCore", versionMajor: 1, versionWrite: 0, versionMinor: 15 },
-    { id: 50, name: "Generic", versionMajor: 1, versionWrite: 0, versionMinor: 2 },
-    { id: 60, name: "Functional", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
+function makeSpecs(): EntrySpec[] {
+  return [
+    { name: "Units" },
+    { name: "Formats", refs: ["Units"] },
+    { name: "CoreCustomAttributes", minorVersion: 1 },
+    { name: "BisCore", minorVersion: 15, refs: ["Units", "Formats", "CoreCustomAttributes"] },
+    { name: "Generic", minorVersion: 2, refs: ["BisCore"] },
+    { name: "Functional", refs: ["BisCore"] },
   ];
-  const referenceRows: SchemaManifestReferenceRow[] = [
-    { schemaId: 20, referencedSchemaId: 10 }, // Formats -> Units
-    { schemaId: 40, referencedSchemaId: 10 }, // BisCore -> Units
-    { schemaId: 40, referencedSchemaId: 20 }, // BisCore -> Formats
-    { schemaId: 40, referencedSchemaId: 30 }, // BisCore -> CoreCustomAttributes
-    { schemaId: 50, referencedSchemaId: 40 }, // Generic -> BisCore
-    { schemaId: 60, referencedSchemaId: 40 }, // Functional -> BisCore
-  ];
-  return { schemaRows, referenceRows };
 }
 
 /** Asserts `before` appears at an earlier position than `after` in a load order. */
-function expectOrder(order: readonly { name: string }[], before: string, after: string): void {
-  const beforeIndex = order.findIndex((entry) => entry.name === before);
-  const afterIndex = order.findIndex((entry) => entry.name === after);
+function expectOrder(order: readonly string[], before: string, after: string): void {
+  const beforeIndex = order.indexOf(before);
+  const afterIndex = order.indexOf(after);
   expect(beforeIndex, `${before} should be present`).to.be.greaterThanOrEqual(0);
   expect(afterIndex, `${after} should be present`).to.be.greaterThanOrEqual(0);
   expect(beforeIndex, `${before} should load before ${after}`).to.be.lessThan(afterIndex);
 }
 
-describe("SchemaManifest.fromRows", () => {
-  it("assigns dense indices in schema-row order and maps name and ecInstanceId", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
+describe("SchemaManifest", () => {
+  it("exposes schema count, names, and per-schema identity", () => {
+    const manifest = makeManifest(makeSpecs());
 
     expect(manifest.schemaCount).to.equal(6);
     expect(manifest.getAvailableSchemaNames()).to.deep.equal(["Units", "Formats", "CoreCustomAttributes", "BisCore", "Generic", "Functional"]);
 
     const bisCore = manifest.findByName("BisCore");
-    expect(bisCore?.index).to.equal(3);
-    expect(bisCore?.ecInstanceId).to.equal(40);
+    expect(bisCore?.name).to.equal("BisCore");
     expect(bisCore?.minorVersion).to.equal(15);
-    expect(manifest.findByEcInstanceId(40)).to.equal(bisCore);
-    expect(manifest.getEntry(3)).to.equal(bisCore);
   });
 
   it("looks up schemas case-insensitively", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
+    const manifest = makeManifest(makeSpecs());
     expect(manifest.findByName("biscore")?.name).to.equal("BisCore");
     expect(manifest.findByName("BISCORE")?.name).to.equal("BisCore");
+    expect(manifest.findByName("NotASchema")).to.be.undefined;
   });
 
-  it("resolves references to manifest indices", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
+  it("wires references to the referenced entry objects", () => {
+    const manifest = makeManifest(makeSpecs());
     const bisCore = manifest.findByName("BisCore")!;
-    const refNames = bisCore.references.map((index) => manifest.getEntry(index)!.name).sort();
+    const refNames = bisCore.references.map((entry) => entry.name).sort();
     expect(refNames).to.deep.equal(["CoreCustomAttributes", "Formats", "Units"]);
+    expect(bisCore.references).to.include(manifest.findByName("Units"));
     expect(manifest.findByName("Units")!.references).to.deep.equal([]);
-  });
-
-  it("ignores reference rows whose endpoints are unknown or self-referential", () => {
-    const schemaRows: SchemaManifestSchemaRow[] = [
-      { id: 10, name: "Units", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-    ];
-    const referenceRows: SchemaManifestReferenceRow[] = [
-      { schemaId: 10, referencedSchemaId: 999 }, // unknown target
-      { schemaId: 888, referencedSchemaId: 10 }, // unknown source
-      { schemaId: 10, referencedSchemaId: 10 },  // self
-    ];
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    expect(manifest.findByName("Units")!.references).to.deep.equal([]);
-  });
-
-  it("deduplicates repeated reference rows", () => {
-    const schemaRows: SchemaManifestSchemaRow[] = [
-      { id: 10, name: "Units", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-      { id: 20, name: "Formats", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-    ];
-    const referenceRows: SchemaManifestReferenceRow[] = [
-      { schemaId: 20, referencedSchemaId: 10 },
-      { schemaId: 20, referencedSchemaId: 10 },
-    ];
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    expect(manifest.findByName("Formats")!.references).to.have.length(1);
   });
 });
 
-describe("SchemaManifest.computeLoadOrder", () => {
+describe("SchemaManifest.getSchemaClosure", () => {
   it("returns only the requested schema when it has no references", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    const order = manifest.computeLoadOrder(["Units"]);
-    expect(order.map((entry) => entry.name)).to.deep.equal(["Units"]);
+    const manifest = makeManifest(makeSpecs());
+    expect(manifest.getSchemaClosure(["Units"])).to.deep.equal(["Units"]);
   });
 
-  it("returns the transitive closure in dependency order", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    const order = manifest.computeLoadOrder(["Generic"]);
-    const names = order.map((entry) => entry.name).sort();
+  it("returns the requested schema plus its transitive references", () => {
+    const manifest = makeManifest(makeSpecs());
+    const names = manifest.getSchemaClosure(["Generic"]).sort();
     expect(names).to.deep.equal(["BisCore", "CoreCustomAttributes", "Formats", "Generic", "Units"]);
+  });
+
+  it("merges the closures of multiple requested schemas without duplicates", () => {
+    const manifest = makeManifest(makeSpecs());
+    const names = manifest.getSchemaClosure(["Generic", "Functional"]);
+    expect(new Set(names).size).to.equal(names.length); // no duplicates
+    expect([...names].sort()).to.deep.equal(["BisCore", "CoreCustomAttributes", "Formats", "Functional", "Generic", "Units"]);
+  });
+
+  it("ignores requested names the iModel does not contain", () => {
+    const manifest = makeManifest(makeSpecs());
+    const names = manifest.getSchemaClosure(["Generic", "NotASchema"]);
+    expect(names).to.include("Generic");
+    expect(names).to.not.include("NotASchema");
+  });
+
+  it("terminates on a reference cycle rather than looping", () => {
+    // EC prohibits reference cycles, but the walk must still be defensive.
+    const manifest = makeManifest([
+      { name: "A", refs: ["B"] },
+      { name: "B", refs: ["A"] },
+    ]);
+    expect(manifest.getSchemaClosure(["A"]).sort()).to.deep.equal(["A", "B"]);
+  });
+});
+
+describe("SchemaManifest.sortInDependencyOrder", () => {
+  it("orders each schema after the schemas it references", () => {
+    const manifest = makeManifest(makeSpecs());
+    const order = manifest.sortInDependencyOrder(["Generic", "Units", "Formats", "BisCore", "CoreCustomAttributes"]);
+    expect(order.slice().sort()).to.deep.equal(["BisCore", "CoreCustomAttributes", "Formats", "Generic", "Units"]);
     expectOrder(order, "Units", "Formats");
     expectOrder(order, "Units", "BisCore");
     expectOrder(order, "Formats", "BisCore");
@@ -128,58 +148,50 @@ describe("SchemaManifest.computeLoadOrder", () => {
     expectOrder(order, "BisCore", "Generic");
   });
 
-  it("merges the closures of multiple requested schemas without duplicates", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    const order = manifest.computeLoadOrder(["Generic", "Functional"]);
-    const names = order.map((entry) => entry.name);
-    expect(new Set(names).size).to.equal(names.length); // no duplicates
-    expect(names.sort()).to.deep.equal(["BisCore", "CoreCustomAttributes", "Formats", "Functional", "Generic", "Units"]);
+  it("returns only the given names, not their references", () => {
+    const manifest = makeManifest(makeSpecs());
+    // BisCore's references (Units, Formats, CoreCustomAttributes) are not in the input, so they are
+    // not added - only the two requested names come back.
+    const order = manifest.sortInDependencyOrder(["Generic", "BisCore"]);
+    expect(order.slice().sort()).to.deep.equal(["BisCore", "Generic"]);
     expectOrder(order, "BisCore", "Generic");
-    expectOrder(order, "BisCore", "Functional");
   });
 
-  it("excludes already-loaded schemas and does not re-walk their closure", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    // Pretend BisCore and its whole closure are already loaded.
-    const loaded = new Set([
-      manifest.findByName("Units")!.index,
-      manifest.findByName("Formats")!.index,
-      manifest.findByName("CoreCustomAttributes")!.index,
-      manifest.findByName("BisCore")!.index,
+  it("honors dependencies that run through a schema left out of the input", () => {
+    const manifest = makeManifest(makeSpecs());
+    // Generic -> BisCore -> Units. With BisCore excluded, Units must still come before Generic.
+    const order = manifest.sortInDependencyOrder(["Generic", "Units"]);
+    expect(order.slice().sort()).to.deep.equal(["Generic", "Units"]);
+    expectOrder(order, "Units", "Generic");
+  });
+
+  it("emits a schema shared through two omitted intermediates once, ahead of both requesters", () => {
+    // A -> B -> C and F -> D -> C. With B and D excluded from the input, C is reached along two
+    // separate paths but must appear exactly once and before both A and F, giving C, A, F or C, F, A.
+    const manifest = makeManifest([
+      { name: "C" },
+      { name: "B", refs: ["C"] },
+      { name: "D", refs: ["C"] },
+      { name: "A", refs: ["B"] },
+      { name: "F", refs: ["D"] },
     ]);
-    const order = manifest.computeLoadOrder(["Generic"], loaded);
-    expect(order.map((entry) => entry.name)).to.deep.equal(["Generic"]);
+    const order = manifest.sortInDependencyOrder(["A", "C", "F"]);
+    expect(order.slice().sort()).to.deep.equal(["A", "C", "F"]); // no duplicate C
+    expectOrder(order, "C", "A");
+    expectOrder(order, "C", "F");
   });
 
-  it("returns nothing when everything requested is already loaded", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    const loaded = new Set([manifest.findByName("Units")!.index]);
-    expect(manifest.computeLoadOrder(["Units"], loaded)).to.deep.equal([]);
-  });
-
-  it("ignores requested names the iModel does not contain", () => {
-    const { schemaRows, referenceRows } = makeRows();
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    const order = manifest.computeLoadOrder(["Generic", "NotASchema"]);
-    expect(order.some((entry) => entry.name === "Generic")).to.be.true;
-    expect(order.some((entry) => entry.name === "NotASchema")).to.be.false;
+  it("ignores names the iModel does not contain", () => {
+    const manifest = makeManifest(makeSpecs());
+    const order = manifest.sortInDependencyOrder(["Generic", "NotASchema"]);
+    expect(order).to.deep.equal(["Generic"]);
   });
 
   it("terminates on a reference cycle rather than looping", () => {
-    // EC prohibits reference cycles, but the walk must still be defensive.
-    const schemaRows: SchemaManifestSchemaRow[] = [
-      { id: 10, name: "A", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-      { id: 20, name: "B", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
-    ];
-    const referenceRows: SchemaManifestReferenceRow[] = [
-      { schemaId: 10, referencedSchemaId: 20 },
-      { schemaId: 20, referencedSchemaId: 10 },
-    ];
-    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
-    const order = manifest.computeLoadOrder(["A"]);
-    expect(order.map((entry) => entry.name).sort()).to.deep.equal(["A", "B"]);
+    const manifest = makeManifest([
+      { name: "A", refs: ["B"] },
+      { name: "B", refs: ["A"] },
+    ]);
+    expect(manifest.sortInDependencyOrder(["A", "B"]).slice().sort()).to.deep.equal(["A", "B"]);
   });
 });
