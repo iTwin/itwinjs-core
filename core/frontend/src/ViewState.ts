@@ -15,7 +15,7 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
   HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
-  ModelClipGroups, Npc, RenderSchedule, resolveNavPropId, SubCategoryOverride,
+  ModelClipGroups, Npc, NpcCenter, RenderSchedule, resolveNavPropId, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -1030,12 +1030,10 @@ export abstract class ViewState extends ElementState {
 
     switch (orientation) {
       case GridOrientationType.View: {
-        const centerWorld = Point3d.create(0.5, 0.5, 0.5);
-        vp.npcToWorld(centerWorld, centerWorld);
-
+        const center = vp.npcToView(NpcCenter);
         rMatrix.setFrom(vp.rotation);
-        rMatrix.multiplyXYZtoXYZ(origin, origin);
-        origin.z = centerWorld.z;
+        rMatrix.multiplyVectorInPlace(origin);
+        origin.z = center.z;
         rMatrix.multiplyTransposeVectorInPlace(origin);
         break;
       }
