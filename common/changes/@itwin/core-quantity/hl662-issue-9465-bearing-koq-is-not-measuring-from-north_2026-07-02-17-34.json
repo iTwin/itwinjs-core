@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Fixed Bearing/Azimuth formatting and parsing to only apply the \"measured from north\" conversion when the persistence unit's phenomenon is `Units.ANGLE` (a raw mathematical angle). Persistence units with phenomenon `Units.HORIZONTAL_DIRECTION` are already true azimuths and are no longer double-converted.",
+      "comment": "Bearing/Azimuth formatting and parsing now only apply the north-measured conversion when the persistence unit's phenomenon is `Units.ANGLE`. `Units.HORIZONTAL_DIRECTION` values are already true azimuths and are left unconverted.",
       "type": "none",
       "packageName": "@itwin/core-quantity"
     }

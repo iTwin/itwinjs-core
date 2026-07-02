@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Removed AccuDraw's manual bearing \"measured from north\" correction, since `@itwin/core-quantity` now applies this conversion automatically based on the persistence unit's phenomenon. Fixes a double-conversion bug where bearings displayed in AccuDraw's plane-fixed bearing mode were incorrect.",
+      "comment": "Removed AccuDraw's manual bearing north-correction, now redundant since `@itwin/core-quantity` applies it automatically. Fixes a double-conversion bug in plane-fixed bearing mode.",
       "type": "none",
       "packageName": "@itwin/core-frontend"
     }
