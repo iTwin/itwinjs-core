@@ -10,7 +10,7 @@ PRAGMA help
 
 | pragma                        | type   | descr                                                                           |
 | ----------------------------- | ------ | ------------------------------------------------------------------------------- |
-| checksum                      | global | checksum([ecdb_schema\|ecdb_map\|sqlite_schema]) return sha3 checksum for data. |
+| checksum                      | global | checksum([ecdb_schema\|ecdb_map\|sqlite_schema\|schema_token]) return sha3 checksum for data. |
 | ecdb_ver                      | global | return current and file profile versions                                        |
 | experimental_features_enabled | global | enable/disable experimental features                                            |
 | validate_ecsql_writes         | global | enable/disable validation for values in an ecsql statement                      |
@@ -19,6 +19,7 @@ PRAGMA help
 | integrity_check               | global | performs integrity checks on ECDb                                               |
 | parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                                   |
 | schema_view                   | global | returns a curated subset of schema metadata as a binary blob                    |
+| schema_view_fragment          | global | returns a chosen subset of schemas as a binary blob, for incremental loading    |
 | disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                          |
 
 ## `PRAGMA checksum`
@@ -34,6 +35,7 @@ PRAGMA checksum('ecdb_map')
 - **ecdb_map** - Includes only the ec mapping tables but not the ec definition tables
   > `ec_PropertyPath`, `ec_ClassMap`, `ec_Table`, `ec_Column`, `ec_Index`, `ec_IndexColumn`, `ec_PropertyMap`
 - **sqlite_schema** - Includes information in the `sqlite_master` table
+- **schema_token** - A cheap schema-**identity** hash (every schema's name and version only, one tiny row per schema), intended as a cache-invalidation key for [`SchemaView`](../metadata/SchemaView.md).
 
 ## `PRAGMA ecdb_ver`
 
@@ -226,7 +228,7 @@ The result is a single row with the following columns:
 | format        | string  | Format identifier (currently `binary`)                                        |
 | formatVersion | integer | The format version of the returned blob                                       |
 | data          | binary  | The schema metadata blob                                                      |
-| schemaToken   | string  | SHA3-256 hash of the `ecdb_schema` tables, usable as a cache-invalidation key |
+| schemaToken   | string  | Cheap schema-identity hash (see [`checksum(schema_token)`](#using-schema_token-for-cache-invalidation)), usable as a cache-invalidation key |
 
 The pragma is read-only. Attempting to set a value returns an error.
 
@@ -238,5 +240,43 @@ PRAGMA schema_view(99)
 ```
 
 The pragma works against any ECDb profile from `4.0.0.1` onward; older files do not need to be upgraded first. On profile `4.0.0.1` only, `KindOfQuantity` persistence and presentation strings are returned in legacy FUS format rather than EC3.2; all other data is unaffected. See [SchemaViewBinaryFormat - ECDb Profile Compatibility](../metadata/SchemaViewBinaryFormat.md#ecdb-profile-compatibility) for details.
+
+## `PRAGMA schema_view_fragment`
+
+Returns the same binary format as [`schema_view`](#pragma-schema_view), but for a chosen **subset** of the connection's schemas instead of all of them. This backs incremental loading of a `SchemaView`: a consumer can hydrate only the schemas it needs - for example `BisCore` and its references - rather than every schema in the iModel. A fragment is a content subset of the *identical* format, not a different format, so the blob it returns is parsed exactly like a `schema_view` blob. See [SchemaViewBinaryFormat - Fragments](../metadata/SchemaViewBinaryFormat.md#fragments-partial-blobs).
+
+The single string argument is a comma-separated list of `ec_Schema` ECInstanceIds in decimal, optionally prefixed with a `v<N>;` format-version token:
+
+```sql
+-- Latest format version; schemas with ec_Schema.Id 131, 145, 150
+PRAGMA schema_view_fragment('131,145,150')
+```
+
+```sql
+-- Explicitly request binary format version 1
+PRAGMA schema_view_fragment('v1;131,145,150')
+```
+
+The caller must pass a **dependency-closed** id set - every schema referenced by a requested schema is also in the list - computed from the schema reference graph (`meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`). The pragma does not expand references itself.
+
+The result row has the same columns as [`schema_view`](#pragma-schema_view): `format`, `formatVersion`, `data`, `schemaToken`.
+
+The pragma is read-only. It fails (returning no blob, not a partial one) on an empty list, a non-integer or non-existent schema id, or a malformed or unsupported `v<N>;` prefix.
+
+### Why the format version is embedded in the argument string
+
+The fragment pragma needs two independent inputs - the blob format version and the set of schema ids - but the ECSQL pragma infrastructure today only supports exactly **one** scalar argument (`pragma_value` is a single token). Putting the version inside that one string, as an optional self-tagged `v<N>;` prefix, is deliberate. The alternatives are worse or require refactoring the pragma infrastructure.
+
+The embedded `v<N>;` prefix is self-describing (`v1` reads as "version 1"), cannot collide with the id list (`v`, `;`, and `,` never appear in a decimal id), and is read **first** so a future format that changes the id-list encoding can dispatch on the version before parsing the rest - the role a leading version byte plays in any binary wire format. It also keeps this pragma consistent with `schema_view`, where the format version is likewise the single optional leading argument; the common case `schema_view_fragment('131,145,150')` stays clean and means "latest version." The choice is reversible: if pragmas ever gain real multi-argument support, the prefix can be promoted to a proper second argument while the string form is accepted during a deprecation window.
+
+## Using `schema_token` for cache invalidation
+
+`PRAGMA checksum(schema_token)` returns a cheap hash that identifies the current set of schemas - their **names and versions only**. It is intended as a cache-invalidation key for a [`SchemaView`](../metadata/SchemaView.md): hold onto the `schemaToken` column returned by [`schema_view`](#pragma-schema_view) / [`schema_view_fragment`](#pragma-schema_view_fragment), and later compare it against `PRAGMA checksum(schema_token)` to decide whether the cached view is stale.
+
+```sql
+PRAGMA checksum(schema_token)
+```
+
+Like the other `checksum` keys, the result is a single row whose `sha3_256` column holds the SHA3-256 hash - here, of every schema's name and version digits.
 
 [ECSql Syntax](./index.md)

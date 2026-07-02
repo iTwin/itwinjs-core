@@ -12,9 +12,9 @@ Foreign-key references to `ec_` table rows use uint32 row IDs. A value of 0 mean
 
 ## Version History
 
-| Version | Description                                                                                      |
-| ------- | ------------------------------------------------------------------------------------------------ |
-| 1       | Initial format. Flat count-prefixed tables with string interning and property-def deduplication. |
+| Version | Description                                                                                       |
+| ------- | ------------------------------------------------------------------------------------------------- |
+| 1       | Initial format. Flat count-prefixed tables with string interning and property-def deduplication. The same format also carries [fragments](#fragments-partial-blobs) (a subset of schemas) - a fragment is a content variation, not a format change. |
 
 ---
 
@@ -73,7 +73,7 @@ Each PropertyDef record:
 | uint8  | isHidden         | 1 if HiddenProperty CA is present (with Show != true), 0 otherwise                 |
 | uint32 | descriptionSid   | Description (SRef)                                                                 |
 
-Record size: **38 bytes** fixed.
+Record size: **46 bytes** fixed.
 
 ### SchemaTable (tag 0x10)
 
@@ -109,16 +109,16 @@ Each enumeration record:
 
 | Type   | Field          | Description                             |
 | ------ | -------------- | --------------------------------------- |
-| uint32 | schemaEcId     | ec_Schema.Id of the owning schema       |
+| uint32 | schemaECId     | ec_Schema.Id of the owning schema       |
 | uint32 | nameSid        | Enumeration name (SRef)                 |
-| uint8  | primitiveType  | Underlying primitive type               |
+| uint16 | primitiveType  | Underlying primitive type               |
 | uint8  | isStrict       | 1 if strict, 0 otherwise                |
 | uint32 | labelSid       | Display label (SRef)                    |
 | uint32 | descriptionSid | Description (SRef)                      |
 | uint32 | enumValuesSid  | Enumerator values as JSON string (SRef) |
 | uint32 | ecInstanceId   | ec_Enumeration.Id                       |
 
-Record size: **24 bytes** fixed.
+Record size: **26 bytes** fixed.
 
 The `enumValuesSid` field references a JSON array string stored in the string table. Each element has the shape: `{"Name":"...","IntValue":...,"StringValue":"...","DisplayLabel":"...","Description":"..."}`. The reader is responsible for parsing this JSON to extract individual enumerators.
 
@@ -133,7 +133,7 @@ Each KoQ record:
 
 | Type    | Field                  | Description                        |
 | ------- | ---------------------- | ---------------------------------- |
-| uint32  | schemaEcId             | ec_Schema.Id of the owning schema  |
+| uint32  | schemaECId             | ec_Schema.Id of the owning schema  |
 | uint32  | nameSid                | KoQ name (SRef)                    |
 | uint32  | labelSid               | Display label (SRef)               |
 | uint32  | descriptionSid         | Description (SRef)                 |
@@ -155,7 +155,7 @@ Each property category record:
 
 | Type   | Field          | Description                       |
 | ------ | -------------- | --------------------------------- |
-| uint32 | schemaEcId     | ec_Schema.Id of the owning schema |
+| uint32 | schemaECId     | ec_Schema.Id of the owning schema |
 | uint32 | nameSid        | Category name (SRef)              |
 | uint32 | labelSid       | Display label (SRef)              |
 | uint32 | descriptionSid | Description (SRef)                |
@@ -177,7 +177,7 @@ Each class record:
 
 | Type   | Field             | Description                                                            |
 | ------ | ----------------- | ---------------------------------------------------------------------- |
-| uint32 | schemaEcId        | ec_Schema.Id of the owning schema                                      |
+| uint32 | schemaECId        | ec_Schema.Id of the owning schema                                      |
 | uint32 | nameSid           | Class name (SRef)                                                      |
 | uint8  | classType         | 0=Entity, 1=Relationship, 2=Struct, 3=CustomAttribute, 4=Mixin, 5=View |
 | uint8  | modifier          | 0=None, 1=Abstract, 2=Sealed                                           |
@@ -284,6 +284,34 @@ Index 0 is always the empty string.
 
 ---
 
+## Fragments (partial blobs)
+
+A **fragment** is a blob carrying only a requested subset of the iModel's schemas rather than all of them, so a consumer can load just what it needs (e.g. `BisCore` and its references) instead of hydrating every schema up front. This is what makes incremental loading of a `SchemaView` possible.
+
+A fragment is **not a different format** - it uses the exact same layout described above, byte for byte. "Whole-schema" versus "fragment" is a difference in *which schemas the blob contains*, not in how it is encoded, so there is no format-version distinction and the reader needs no flag in the blob to parse it. What differs is **reference resolution** (see below), and the consumer already knows which kind it is holding because it chose which pragma to call.
+
+No encoding change is needed because the format already addresses every cross-schema reference globally: row-id references carry `ec_` row ids (unique within the iModel) and class references carry schema-name/class-name string pairs. Neither is a blob-local index, so both already point at a row in any blob, whole or partial. The one blob-local index, `defIdx`, never crosses a fragment boundary (see below).
+
+### Producing a fragment
+
+- `PRAGMA schema_view(N)` emits a whole-schema blob: every non-excluded schema in the iModel.
+- `PRAGMA schema_view_fragment('id,id,...')` emits a fragment containing exactly the schemas whose `ec_Schema.Id` appears in the comma-delimited list. The caller passes a dependency-closed set of schema ids (computed from the schema reference graph - `meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`, outside the blob). Unknown or unparseable ids fail the pragma rather than emit a partial blob. The format version is an optional `v<N>;` prefix on the same string (e.g. `'v1;131,145,150'`); omitted means the latest version. See [PRAGMA schema_view_fragment](../ECSqlReference/Pragmas.md#pragma-schema_view_fragment) for the argument grammar and why the version is carried inside the string.
+
+Both pragmas produce identical byte layout; a fragment that happens to contain every schema is byte-for-byte the same as the whole-schema blob.
+
+### Fragment containment (no leakage)
+
+A fragment contains only the rows **owned** by the requested schemas - their classes, properties, enumerations, KoQs, categories, and constraints. It contains **zero** rows owned by a schema that is referenced but not requested. References that cross the fragment boundary use the encodings the format already defines for any cross-schema reference:
+
+- **Row-id references** (`schemaECId`, `structClassRowId`, `enumRowId`, `koqRowId`, `catRowId`, `navRelClassRowId`) carry the target's `ec_` row id. Row ids are unique within the iModel, so they address a row in any blob unambiguously.
+- **Name references** (base classes, constraint classes, abstract constraint classes) carry the target's schema-name and class-name string refs.
+
+Neither encoding marks a target as in-fragment versus cross-fragment, and it does not need to - resolution is the consumer's responsibility (see below).
+
+`defIdx` (the PropertyRef index into the PropertyDefTable) is the one **blob-local** index. A class and its deduplicated property definitions always ship in the same blob, so `defIdx` is always resolvable within the blob it came from and never crosses a boundary. A consumer merging fragments must **re-base / re-deduplicate** these defs into its accumulated PropertyDefTable as it applies each fragment: the `defIdx` value is relative to its own blob's table, so the merge step maps it to the corresponding index in the combined table. This is the one place fragment merging needs care.
+
+---
+
 ## Excluded Schemas
 
 The writer silently skips schemas that provide no value at runtime. Excluded schemas and all their items (classes, properties, enumerations, etc.) are omitted from the blob. The exclusion is the union of two sets:
@@ -313,7 +341,13 @@ Note: **ECDbMeta is NOT excluded** - consumers use it for metadata ECSQL queries
 
 ## Cross-Reference Resolution
 
-Row IDs (`schemaEcId`, `enumRowId`, `structClassRowId`, etc.) and name-based references (base classes, constraint classes) must be resolved by the reader after parsing. The writer does not scrub references to excluded schemas. Readers should handle unresolved references gracefully - see the TS reader for the resolution strategy (drop properties with broken structural refs, skip dangling mixin/constraint entries).
+Row IDs (`schemaECId`, `enumRowId`, `structClassRowId`, etc.) and name-based references (base classes, constraint classes) must be resolved by the reader after parsing. The writer does not scrub references to excluded schemas. The resolution strategy depends on whether the blob is a whole-schema blob or a [fragment](#fragments-partial-blobs) - and the consumer always knows which, because it chose the pragma.
+
+**Whole-schema blob** is self-contained: every non-excluded schema is present, so references resolve against the blob's own row-id and name maps. A reference whose target is absent points at an excluded schema and is dropped gracefully - drop properties with broken structural refs, skip dangling mixin/constraint entries. See the TS reader for the resolution strategy.
+
+**Fragment** is not self-contained: a reference may target a schema carried by another fragment. The consumer applies fragments into one accumulated view and resolves references against the **merged** row-id and name maps spanning every fragment applied so far, not against the single blob. Fragments are applied in dependency order - a fragment is never applied before the schemas it references - so a cross-fragment target is already present when its reference is resolved. A target still absent after the requested closure has been applied points at an *excluded* schema and is dropped, exactly as for a whole-schema blob. Cross-fragment references and excluded-schema references thus share a single resolution path: look the target up in the merged maps, drop on a miss.
+
+Because the byte layout is identical, the reader cannot - and need not - tell a fragment from a whole-schema blob by inspecting it. The caller selects the resolution mode (resolve standalone vs. resolve against accumulated maps) from which pragma it issued.
 
 ## ECDb Profile Compatibility
 
@@ -326,5 +360,5 @@ In practice any iModel that has been opened by iTwin.js since mid-2018 has alrea
 ## Implementation References
 
 - **Writer (C++)**: `iModelCore/ECDb/ECDb/SchemaViewWriter.cpp` / `.h`
-- **Reader (TS)**: `core/ecschema-metadata/src/SchemaViewBinaryReader.ts`
-- **Pragma handler**: `PRAGMA schema_view(N)` where N is the requested format version
+- **Reader (TS)**: `core/ecschema-metadata/src/SchemaView/SchemaViewBinaryReader.ts`
+- **Pragma handlers**: `PRAGMA schema_view(N)` (whole-schema blob) and `PRAGMA schema_view_fragment('id,id,...')` (fragment - same format, subset of schemas)

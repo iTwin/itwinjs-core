@@ -34,6 +34,22 @@ describe("SchemaView Examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
+  it("obtaining a subset schema view", async () => {
+    // __PUBLISH_EXTRACT_START__ SchemaView.obtain-subset
+    // Load only a subset of schemas (plus their reference closure) instead of every schema.
+    // This is a separate, accumulating view that only carries the schemas you ask for.
+    const bisOnly = await iModel.getSchemaView({ schemas: ["BisCore"] });
+    assert.isDefined(bisOnly.getSchema("BisCore"));
+    assert.isDefined(bisOnly.findClass("BisCore:Element"));
+
+    // A later request for more schemas merges them into the SAME accumulating instance - schemas
+    // requested earlier remain available. Schemas that were never requested are simply absent.
+    const withGeneric = await iModel.getSchemaView({ schemas: ["Generic"] });
+    assert.strictEqual(withGeneric, bisOnly);
+    assert.isDefined(withGeneric.getSchema("BisCore")); // still here
+    // __PUBLISH_EXTRACT_END__
+  });
+
   it("navigating schemas and classes", async () => {
     const view = await iModel.getSchemaView();
 

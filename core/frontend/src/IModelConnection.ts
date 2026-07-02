@@ -34,7 +34,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import { SchemaContext, SchemaView, schemaViewFormatVersion } from "@itwin/ecschema-metadata";
+import { type GetSchemaViewArgs, SchemaContext, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, schemaViewFormatVersion, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 
@@ -160,7 +160,10 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
-  private _schemasPromise?: Promise<SchemaView>;
+  // Owns the lifetime of this iModel's SchemaView: lazy loading, incremental (filtered) hydration,
+  // serialization of concurrent requests, and invalidation. Created lazily on the first
+  // getSchemaView call; all data access goes through the SchemaViewDataProvider implemented below.
+  private _schemaViewManager?: SchemaViewManager;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -667,27 +670,16 @@ export abstract class IModelConnection extends IModel {
    * It is the recommended default for runtime read-only metadata access and is significantly
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for custom-attribute
    * deserialization or anywhere you need the full ecschema-metadata object graph.
+   *
+   * Pass `args.schemas` to request only a subset (plus its references) instead of every schema.
+   * The view accumulates: a later call merges any still-missing schemas into the same instance.
+   * See [GetSchemaViewArgs]($ecschema-metadata).
    * @beta
    */
-  public async getSchemaView(): Promise<SchemaView> {
-    if (this._schemasPromise) {
-      const ctx = await this._schemasPromise;
-      if (!ctx.isOutdated)
-        return ctx;
-    }
-    // Capture the in-flight promise locally so the rejection handler only clears
-    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
-    // re-fetch could otherwise replace the field before our fetch fails, and a naive
-    // `_schemasPromise = undefined` would clobber that newer reference.
-    const inflight = this._fetchSchemas();
-    this._schemasPromise = inflight;
-    inflight.catch(() => {
-      if (this._schemasPromise === inflight)
-        this._schemasPromise = undefined;
-    });
-    return inflight;
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
+    this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
+    return this._schemaViewManager.getSchemaView(args);
   }
-
 
   /**
    * Checks whether the iModel's schemas have changed since the current cached [[SchemaView]] was
@@ -699,7 +691,7 @@ export abstract class IModelConnection extends IModel {
    * returns only the new changeset id, not the list of applied changesets with their types.
    * Unconditionally discarding the cached [[SchemaView]] after every such operation would cause
    * unnecessary reloads in the common case where schemas are unchanged. This method avoids that
-   * cost by fetching a lightweight schema checksum via `PRAGMA checksum(ecdb_schema)` and
+   * cost by fetching a lightweight schema token via `PRAGMA checksum(schema_token)` and
    * comparing it against the token stored in the cached view. Only when the token differs is the
    * cache discarded.
    *
@@ -708,60 +700,76 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   protected async invalidateSchemaViewIfChanged(): Promise<void> {
-    if (!this._schemasPromise)
-      return;
-    const existingPromise = this._schemasPromise;
-    let existing: SchemaView;
-    try {
-      existing = await existingPromise;
-    } catch {
-      // The cached promise itself failed; drop it so the next getSchemaView() retries.
-      if (this._schemasPromise === existingPromise)
-        this._schemasPromise = undefined;
-      return;
-    }
-    if (!existing.schemaToken)
-      return;
-    try {
-      const reader = this.createQueryReader("PRAGMA checksum(ecdb_schema)");
-      const result = await reader.next();
-      if (result.done)
-        throw new Error("PRAGMA checksum(ecdb_schema) returned no rows");
-      const liveToken = result.value.sha3_256 as string;
-      if (liveToken !== existing.schemaToken) {
-        if (this._schemasPromise === existingPromise)
-          this._schemasPromise = undefined;
-        existing.markOutdated();
-      }
-    } catch {
-      // The checksum check is called right after operations that may have changed schemas
-      // (e.g., pullChanges). If we cannot verify the cached view is still current, drop it
-      // rather than risk returning stale metadata indefinitely. The next getSchemaView() call
-      // will reload. We also mark the existing view outdated so any retained references can
-      // observe the invalidation.
-      if (this._schemasPromise === existingPromise) {
-        this._schemasPromise = undefined;
-        existing.markOutdated();
-      }
-    }
+    await this._schemaViewManager?.invalidateIfChanged();
   }
 
-  private async _fetchSchemas(): Promise<SchemaView> {
-    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
-    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
-    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
-    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
-    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
-    // don't support OFFSET-based pagination.
-    const reader = this.createQueryReader(`PRAGMA schema_view(${schemaViewFormatVersion})`);
+  /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
+   * transport-specific half of schema-view loading, issued through the queryRows RPC
+   * (ConcurrentQuery). Unlike the backend, the frontend *pins* the blob format version in both
+   * pragmas: the backend it talks to can be older or newer than this frontend, and the pin ensures
+   * it returns a blob this code can parse (or fails cleanly) instead of an unreadable newer format.
+   */
+  private _createSchemaViewDataProvider(): SchemaViewDataProvider {
+    return {
+      fetchFullBlob: async () => this._fetchSchemaBlob(`PRAGMA schema_view(${schemaViewFormatVersion})`),
+      fetchFragmentBlob: async (schemaNames) => {
+        // The pragma wants `ec_Schema` ECInstanceIds in decimal, so resolve the names first. Schemas
+        // are few, so fetching all id/name pairs and filtering here beats building dynamic SQL.
+        // Names come from the manifest's closure walk; a name that no longer resolves means the
+        // iModel's schemas changed under us, so it is simply dropped - the schema-token comparison
+        // governs staleness, not this lookup.
+        const requestedNames = new Set(schemaNames.map((name) => name.toLowerCase()));
+        const ids: number[] = [];
+        const sql = "SELECT ECInstanceId as id, Name as name FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(sql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+          if (requestedNames.has((row.name as string).toLowerCase()))
+            ids.push(Number(row.id)); // ECInstanceId comes back as a hex Id64String; schemas are few with small ids
+        }
+        if (ids.length === 0)
+          throw new IModelError(IModelStatus.BadRequest, "None of the requested schemas exist in the iModel; its schemas changed during the load");
+        // Ids originate from our own query and are formatted strictly as decimal digits (native
+        // re-validates) as defense in depth. The `v<N>;` prefix pins the blob format version.
+        return this._fetchSchemaBlob(`PRAGMA schema_view_fragment('v${schemaViewFormatVersion};${ids.join(",")}')`);
+      },
+      fetchManifest: async () => {
+        const schemaRows: SchemaManifestSchemaRow[] = [];
+        const schemaSql = "SELECT ECInstanceId as id, Name as name, VersionMajor as versionMajor, VersionWrite as versionWrite, VersionMinor as versionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
+          schemaRows.push({ ecInstanceId: Number(row.id), name: row.name, versionMajor: row.versionMajor, versionWrite: row.versionWrite, versionMinor: row.versionMinor });
+
+        const referenceRows: SchemaManifestReferenceRow[] = [];
+        const referenceSql = "SELECT SourceECInstanceId as sourceId, TargetECInstanceId as targetId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
+          referenceRows.push({ sourceECInstanceId: Number(row.sourceId), targetECInstanceId: Number(row.targetId) });
+
+        return SchemaManifest.fromRows(schemaRows, referenceRows);
+      },
+      fetchSchemaToken: async () => {
+        const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
+        const result = await reader.next();
+        if (result.done)
+          throw new IModelError(IModelStatus.BadRequest, "PRAGMA checksum(schema_token) returned no rows");
+        return result.value.sha3_256 as string;
+      },
+    };
+  }
+
+  /** Fetch one schema-view blob (full or fragment). Both `PRAGMA schema_view` and
+   * `PRAGMA schema_view_fragment` return a single row with the same columns. */
+  private async _fetchSchemaBlob(pragma: string): Promise<SchemaViewBlob> {
+    // Only call reader.next() once - do NOT use `for await` on PRAGMA results. ConcurrentQuery wraps
+    // regular ECSQL in LIMIT/OFFSET for pagination but skips this for PRAGMAs; if the serialized
+    // result exceeds the memory threshold, the response is marked "Partial", and a `for await` loop
+    // would re-issue the same PRAGMA forever since PRAGMAs don't support OFFSET-based pagination.
+    const reader = this.createQueryReader(pragma);
     const result = await reader.next();
     if (result.done)
-      throw new IModelError(IModelStatus.BadRequest, "PRAGMA schema_view returned no rows");
+      throw new IModelError(IModelStatus.BadRequest, `${pragma} returned no rows`);
     const data = result.value.data as Uint8Array | undefined;
     const token = result.value.schemaToken as string | undefined;
     if (data === undefined || data === null)
-      throw new IModelError(IModelStatus.BadRequest, "PRAGMA schema_view returned null data column");
-    return SchemaView.fromBinary(data, token ?? "");
+      throw new IModelError(IModelStatus.BadRequest, `${pragma} returned null data column`);
+    return { data, schemaToken: token ?? "" };
   }
 }
 

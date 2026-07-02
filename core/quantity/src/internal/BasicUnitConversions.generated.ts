@@ -386,7 +386,7 @@ export const basicUnitConversionData = {
   "Units.N": ["Units.FORCE", 1, 0],
   "Units.N_CM": ["Units.TORQUE", 100, 0],
   "Units.N_CM_PER_CM": ["Units.LINEAR_TORQUE", 1, 0],
-  "Units.N_CM_PER_SQ_CM": ["Units.AREA_TORQUE", 0.01, 0],
+  "Units.N_CM_PER_SQ_CM": ["Units.AREA_TORQUE", 0.009999999999999998, 0],
   "Units.N_M": ["Units.TORQUE", 1, 0],
   "Units.N_M_PER_DEG": ["Units.ROTATIONAL_SPRING_CONSTANT", 0.0174532925199433, 0],
   "Units.N_M_PER_M": ["Units.LINEAR_TORQUE", 1, 0],
