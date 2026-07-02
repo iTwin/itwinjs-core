@@ -522,12 +522,8 @@ export class Formatter {
     const revolution = this.getRevolution(spec);
     const quarterRevolution = revolution / 4;
 
-    // If the persisted value is a raw mathematical angle (measured counter-clockwise from east)
-    // rather than a true azimuth (measured clockwise from north), convert it to azimuth convention
-    // before running the Bearing/Azimuth logic below. This is intentionally NOT done via the
-    // generic unit-conversion pipeline (Quantity.convertTo) -- the ANGLE and HORIZONTAL_DIRECTION
-    // phenomena are deliberately not convertible to each other there, because this is a convention
-    // transform (reflection + phase shift), not a unit scale factor.
+    // Raw math angles (ANGLE phenomenon) need the north-measured conversion; true azimuths
+    // (HORIZONTAL_DIRECTION) don't. Not a unit conversion, so it's applied here, not via convertTo.
     if (spec.persistenceUnit.phenomenon === Phenomena.ANGLE)
       magnitude = quarterRevolution - magnitude;
 

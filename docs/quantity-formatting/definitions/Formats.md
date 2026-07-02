@@ -103,8 +103,8 @@ Displays angular values as compass bearings (e.g., `N45°00'00"E`) or azimuths (
 
 **Persistence unit matters.** These format types interpret the persisted magnitude differently depending on `persistenceUnit.phenomenon`:
 
-- **`Units.HORIZONTAL_DIRECTION`** (e.g. `Units.HORIZONTAL_DIR_RAD`): the value is already a true azimuth (measured clockwise from north) and is formatted/parsed as-is.
-- **`Units.ANGLE`** (e.g. `Units.RAD`): the value is a raw mathematical angle (measured counter-clockwise from east) and is automatically converted (`90° − θ`) before formatting, and inverse-converted after parsing.
+- **`Units.HORIZONTAL_DIRECTION`** (a phenomenon; e.g. its `Units.HORIZONTAL_DIR_RAD` unit): the value is already a true azimuth (measured clockwise from north) and is formatted/parsed as-is.
+- **`Units.ANGLE`** (a phenomenon; e.g. its `Units.RAD` unit): the value is a raw mathematical angle (measured counter-clockwise from east) and is automatically converted (`90° − θ`) before formatting, and inverse-converted after parsing.
 
 Pick the persistence unit that matches how the value was computed — do not apply the `90° − θ` conversion yourself before or after calling the formatter/parser, since that would double-convert the value.
 

@@ -1158,11 +1158,7 @@ export class AccuDraw {
       if (point.y < 0.0)
         adjustment = -adjustment;
       angle += adjustment; // This is the angle measured from design x...
-
-      // NOTE: The "measured from north" (90-theta) bearing/azimuth direction convention is no longer
-      // applied here -- @itwin/core-quantity's Formatter now applies it automatically whenever the
-      // active format's persistence unit belongs to the `Units.ANGLE` phenomenon (see itwinjs-core#9465).
-      // Applying it here too would double-transform the value.
+      // core-quantity now applies the north-measured conversion itself (#9465); don't do it here too.
     }
 
     const formatterSpec = this.getAngleFormatter();
@@ -1209,10 +1205,7 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          // NOTE: `parseResult.value` is already in the persisted (math angle) convention -- core-quantity's
-          // Parser now applies the "measured from north" (90-theta) conversion itself for `Units.ANGLE`
-          // phenomenon persistence units (see itwinjs-core#9465). Applying it again here would double-transform
-          // the value.
+          // core-quantity's Parser applies the north-measured conversion itself now (#9465).
           this._angle = parseResult.value;
           break;
         }

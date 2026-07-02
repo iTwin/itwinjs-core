@@ -19,8 +19,7 @@ describe("Bearing format tests:", () => {
   beforeEach(async () => {
     unitsProvider = new TestUnitsProvider();
 
-    // Use HORIZONTAL_DIRECTION-phenomenon persistence units: these tests model values that are already
-    // true azimuth (measured clockwise from north), not raw math angles, so no north-transform should apply.
+    // These tests model already-true-azimuth values, so use HORIZONTAL_DIRECTION persistence units.
     degree = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_ARC_DEG");
     rad = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
 
@@ -635,8 +634,7 @@ describe("Azimuth format tests:", () => {
     await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson);
     expect(azimuthDecimal.hasUnits).to.be.true;
 
-    // Use a HORIZONTAL_DIRECTION-phenomenon persistence unit: this test models values that are already true
-    // azimuth (measured clockwise from north), not raw math angles, so no north-transform should apply.
+    // Use a HORIZONTAL_DIRECTION persistence unit: this value is already true azimuth.
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
     expect(rad.isValid).to.be.true;
     const azimuthDMSFormatter = await FormatterSpec.create("RadToAzimuthDMS", azimuthDMS, unitsProvider, rad);
@@ -710,7 +708,7 @@ describe("Azimuth format tests:", () => {
       const format = new Format(`azimuthWith${baseInDegrees}Base`);
       await format.fromJSON(unitsProvider, props);
       expect(format.hasUnits).to.be.true;
-      // Persist as already-true-azimuth (HORIZONTAL_DIRECTION), matching this test's pre-existing expectations.
+      // Already true azimuth (HORIZONTAL_DIRECTION).
       const deg: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_ARC_DEG");
       expect(deg.isValid).to.be.true;
       return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider, deg);
@@ -798,7 +796,7 @@ describe("Azimuth format tests:", () => {
     const format = new Format(`azimuth`);
     await format.fromJSON(unitsProvider, formatJson);
     expect(format.hasUnits).to.be.true;
-    // Persist as already-true-azimuth (HORIZONTAL_DIRECTION), matching this test's pre-existing expectations.
+    // Already true azimuth (HORIZONTAL_DIRECTION).
     const minutes: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_ARC_MINUTE");
     expect(minutes.isValid).to.be.true;
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, minutes);
@@ -831,7 +829,7 @@ describe("Azimuth format tests:", () => {
     const format = new Format(`azimuth`);
     await format.fromJSON(unitsProvider, formatJson);
     expect(format.hasUnits).to.be.true;
-    // Persist as already-true-azimuth (HORIZONTAL_DIRECTION), matching this test's pre-existing expectations.
+    // Already true azimuth (HORIZONTAL_DIRECTION).
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
     expect(rad.isValid).to.be.true;
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, rad);
@@ -949,13 +947,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
   });
 });
 
-// Regression coverage for itwinjs-core#9465: the *same* Bearing/Azimuth FormatProps must produce
-// different formatted output (and accept different persisted magnitudes on round trip) depending on
-// whether `persistenceUnit.phenomenon` is `Units.ANGLE` (a raw mathematical angle, measured
-// counter-clockwise from east -- gets the 90-theta "measured from north" conversion applied) or
-// `Units.HORIZONTAL_DIRECTION` (already a true azimuth, measured clockwise from north -- no
-// conversion applied). This is the phenomenon-based branch added to `Formatter.processBearingAndAzimuth`
-// and `Parser.convertAzimuthToPersistenceConvention`.
+// Regression coverage for itwinjs-core#9465: same FormatProps, ANGLE persistence gets the
+// north-transform (90-theta), HORIZONTAL_DIRECTION persistence does not.
 describe("Bearing/Azimuth phenomenon-based persistence convention:", () => {
   let unitsProvider: TestUnitsProvider;
 
@@ -1000,11 +993,8 @@ describe("Bearing/Azimuth phenomenon-based persistence convention:", () => {
     const format = new Format("bearingFormat");
     await format.fromJSON(unitsProvider, bearingFormat);
 
-    // 45 degrees (PI/4 rad), stored two different ways:
-    // - as a raw math angle (ANGLE phenomenon): 45 degrees CCW from east -> true azimuth is 90-45=45 -> N45:00:00E
-    // - as an already-true azimuth (HORIZONTAL_DIRECTION phenomenon): 45 degrees clockwise from north -> N45:00:00E
-    // Chosen so both produce the same output (45 is self-symmetric under 90-theta) -- the roundtrip parse below
-    // is what actually distinguishes the two conventions.
+    // 45 degrees is self-symmetric under 90-theta, so both conventions format the same; the
+    // round-trip parse below is what actually distinguishes them.
     const angleRad = await unitsProvider.findUnitByName("Units.RAD");
     const horizontalDirRad = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
 
@@ -1017,16 +1007,13 @@ describe("Bearing/Azimuth phenomenon-based persistence convention:", () => {
     expect(Formatter.formatQuantity(mathAngle, angleFormatterSpec)).toEqual("N45:00:00E");
     expect(Formatter.formatQuantity(trueAzimuth, horizontalDirFormatterSpec)).toEqual("N45:00:00E");
 
-    // Now use a non-symmetric angle (30 degrees) to prove the two persistence units genuinely diverge:
-    // math angle 30 (CCW from east) -> true azimuth 90-30=60 -> N60:00:00E
-    // true azimuth 30 (CW from north) is left untouched -> N30:00:00E
+    // 30 degrees (non-symmetric) proves the two persistence units genuinely diverge.
     const thirtyDegreesRad = Math.PI / 6;
     expect(Formatter.formatQuantity(thirtyDegreesRad, angleFormatterSpec)).toEqual("N60:00:00E");
     expect(Formatter.formatQuantity(thirtyDegreesRad, horizontalDirFormatterSpec)).toEqual("N30:00:00E");
 
-    // Round trip: parsing "N60:00:00E" back through the ANGLE-persistence parser should recover the
-    // original math angle (30 degrees), while parsing it through the HORIZONTAL_DIRECTION-persistence
-    // parser should recover 60 degrees (the azimuth itself, unconverted).
+    // Round trip: ANGLE-persistence parse recovers the original math angle; HORIZONTAL_DIRECTION
+    // recovers the azimuth itself, unconverted.
     const angleParserSpec = await ParserSpec.create(format, unitsProvider, angleRad);
     const horizontalDirParserSpec = await ParserSpec.create(format, unitsProvider, horizontalDirRad);
 
@@ -1050,8 +1037,7 @@ describe("Bearing/Azimuth phenomenon-based persistence convention:", () => {
     const angleFormatterSpec = await FormatterSpec.create("azimuthAngle", format, unitsProvider, angleRad);
     const horizontalDirFormatterSpec = await FormatterSpec.create("azimuthHorizontalDir", format, unitsProvider, horizontalDirRad);
 
-    // math angle 30 degrees (CCW from east) -> true azimuth 90-30=60 -> "60:00:00"
-    // true azimuth 30 degrees (CW from north), untouched -> "30:00:00"
+    // ANGLE persistence gets the north-transform; HORIZONTAL_DIRECTION doesn't.
     const thirtyDegreesRad = Math.PI / 6;
     expect(Formatter.formatQuantity(thirtyDegreesRad, angleFormatterSpec)).toEqual("60:00:00");
     expect(Formatter.formatQuantity(thirtyDegreesRad, horizontalDirFormatterSpec)).toEqual("30:00:00");

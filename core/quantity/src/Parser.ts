@@ -778,11 +778,8 @@ export class Parser {
     return this.parseAndProcessTokens(inString, format, unitsConversions);
   }
 
-  /** The value of special direction is always in degrees, try to find the unit conversion for that.
-   * `spec.unitConversions` is scoped to `spec.outUnit`'s phenomenon family (see `createUnitConversionSpecsForUnit`),
-   * so the "degrees" unit name must be resolved relative to that phenomenon rather than hardcoded to `Units.ARC_DEG`
-   * (which only exists in the `Units.ANGLE` family).
-   */
+  /** The value of special direction is always in degrees; resolve "degrees" relative to
+   * `spec.outUnit`'s phenomenon, since `Units.ARC_DEG` only exists in the `Units.ANGLE` family. */
   private static processSpecialBearingDirection(mag: number, spec: ParserSpec): QuantityParseResult {
     const degreeUnitName = spec.outUnit.phenomenon === Phenomena.HORIZONTAL_DIRECTION ? "Units.HORIZONTAL_DIR_ARC_DEG" : "Units.ARC_DEG";
     const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === degreeUnitName);
@@ -1078,14 +1075,9 @@ export class Parser {
     return converted.magnitude;
   }
 
-  /**
-   * If the target persistence unit (`spec.outUnit`) represents a raw mathematical angle (measured
-   * counter-clockwise from east) rather than a true azimuth (measured clockwise from north),
-   * converts the given azimuth-convention magnitude back into that convention. This mirrors the
-   * transform performed in `Formatter.processBearingAndAzimuth` and is intentionally not
-   * implemented as a generic unit conversion, since the `ANGLE` and `HORIZONTAL_DIRECTION`
-   * phenomena are deliberately not convertible to each other via `Quantity.convertTo`.
-   */
+  /** Converts an azimuth-convention magnitude back to a raw math angle when `spec.outUnit` is
+   * `ANGLE`-phenomenon (mirrors the transform in `Formatter.processBearingAndAzimuth`). No-op for
+   * `HORIZONTAL_DIRECTION`, which is already a true azimuth. */
   private static convertAzimuthToPersistenceConvention(magnitude: number, spec: ParserSpec, revolution: number): number {
     if (spec.outUnit.phenomenon !== Phenomena.ANGLE)
       return magnitude;

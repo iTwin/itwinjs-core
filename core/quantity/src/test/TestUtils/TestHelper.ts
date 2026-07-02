@@ -31,7 +31,9 @@ const unitData: UnitDefinition[] = [
   { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
   { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
   { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "grad", altDisplayLabels: ["gd"] },
-  // Horizontal direction (true azimuth, already measured clockwise from north; base unit radian). Mirrors the Angle conversion factors above.
+  // Horizontal direction (true azimuth) mock units -- TestUnitsProvider is a hand-built in-memory
+  // provider, not backed by the generated Units.generated.ts (which only has name constants, no
+  // conversion factors), so HORIZONTAL_DIRECTION units need their own entries here too.
   { name: "Units.HORIZONTAL_DIR_RAD", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
   { name: "Units.HORIZONTAL_DIR_REVOLUTION", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 1.0, denominator: 6.283185307179586, offset: 0.0 }, displayLabel: "r", altDisplayLabels: ["rev"] },
   { name: "Units.HORIZONTAL_DIR_ARC_DEG", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg", "^"] },
