@@ -4755,12 +4755,12 @@ export abstract class IpcHandler {
 export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
-    // @alpha
+    // @beta
     static invoke(channel: string, ...args: any[]): Promise<any>;
-    // @alpha
+    // @beta
     static invokeTimeout?: number;
     static get isValid(): boolean;
-    // @alpha
+    // @beta
     static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K>;
     // (undocumented)
     static noStack: boolean;

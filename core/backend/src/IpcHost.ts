@@ -94,7 +94,7 @@ export class IpcHost {
   /**
    * The number of milliseconds [[invoke]] waits for the frontend to respond before rejecting. When `undefined`
    * (the default), invokes wait indefinitely. Set a value to guard against a frontend that never responds.
-   * @alpha
+   * @beta
    */
   public static invokeTimeout?: number;
 
@@ -108,7 +108,7 @@ export class IpcHost {
    * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
    * primitive types and `ArrayBuffers` are allowed.
    * @note The returned Promise rejects if [[shutdown]] is called or [[invokeTimeout]] elapses before the frontend responds.
-   * @alpha
+   * @beta
    */
   public static async invoke(channel: string, ...args: any[]): Promise<any> {
     // Electron has no main->renderer `invoke` (see https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-3-main-to-renderer),
@@ -167,7 +167,7 @@ export class IpcHost {
   /**
    * Create a type safe Proxy object to make IPC calls to a registered frontend interface.
    * @param channelName the channel registered by the frontend handler.
-   * @alpha
+   * @beta
    */
   public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
     return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcHost.callIpcChannel(channelName, methodName, ...args));

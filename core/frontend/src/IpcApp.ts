@@ -87,7 +87,7 @@ export class IpcApp {
    * @param channel The name of the channel for this handler.
    * @param handler A function that supplies the implementation for `channel`
    * @returns A function to call to remove the handler.
-   * @alpha
+   * @beta
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
     const listener = async (_evt: Event, responseChannel: string, ...args: any[]) => {
@@ -209,7 +209,7 @@ class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotificat
  * to ensure all methods and signatures are correct.
  *
  * Then, call `MyClass.register` at startup to connect your class to your channel.
- * @alpha
+ * @beta
  */
 export abstract class IpcHandler {
   /* All subclasses must implement this method to specify their channel name. */

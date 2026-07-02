@@ -13,7 +13,7 @@ publish: false
 
 For apps with a dedicated backend, the backend can now invoke methods on the frontend and receive a return value, mirroring the existing frontend-to-backend pattern. Previously [IpcHost]($backend) could only `send` one-way messages to the frontend; the reverse request/response direction had no equivalent of [IpcSocketFrontend.invoke]($common).
 
-The new `@alpha` APIs are:
+The new `@beta` APIs are:
 
 - `IpcHost.invoke` and `IpcHost.makeIpcProxy` on the backend to call frontend handlers.
 - `IpcApp.handle` and a new `IpcHandler` base class on the frontend to implement them.

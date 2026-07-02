@@ -5597,7 +5597,7 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    // @alpha
+    // @beta
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
@@ -5616,7 +5616,7 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @alpha
+// @beta
 export abstract class IpcHandler {
     // (undocumented)
     abstract get channelName(): string;
