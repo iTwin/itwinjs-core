@@ -6,10 +6,10 @@
  * @module NativeApp
  */
 
-import { BentleyError, expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
+import { expectDefined, IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction,
+  BackendError, createIpcDispatcher, createIpcProxy, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
+  RemoveFunction, unwrapIpcInvokeReturn,
 } from "@itwin/core-common";
 import { _callIpcChannel } from "./common/internal/Symbols";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -83,6 +83,22 @@ export class IpcApp {
   }
 
   /**
+   * Establish a handler for an Ipc channel to receive [[IpcHost.invoke]] calls
+   * @param channel The name of the channel for this handler.
+   * @param handler A function that supplies the implementation for `channel`
+   * @returns A function to call to remove the handler.
+   * @alpha
+   */
+  public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
+    const listener = async (_evt: Event, responseChannel: string, ...args: any[]) => {
+      const response = await handler(...args);
+      this.ipc.send(responseChannel, response);
+    };
+
+    return this.addListener(channel, listener);
+  }
+
+  /**
    * Call a method on the backend through an Ipc channel.
    * @param channelName the channel registered by the backend handler.
    * @param methodName  the name of a method implemented by the backend handler.
@@ -93,25 +109,8 @@ export class IpcApp {
    */
   public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-
-    if (retVal.error === undefined)
-      return retVal.result; // method was successful
-
-    // backend threw an exception, rethrow one on frontend
-    const err = retVal.error;
-    if (!JsonUtils.isObject(err)) {
-      // Exception wasn't an object?
-      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
-    }
-
-    // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
-    if (!BentleyError.isError(err))
-      throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
-
-    const trimErr = { ...err } as any;
-    delete trimErr.iTwinErrorId // these are methods on BackendError and will cause Object.assign to fail.
-    delete trimErr.loggingMetadata;
-    throw Object.assign(new BackendError(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata), trimErr);
+    // for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
+    return unwrapIpcInvokeReturn(retVal, BackendError);
   }
 
   /** @internal
@@ -125,12 +124,7 @@ export class IpcApp {
    * @param channelName the channel registered by the backend handler.
    */
   public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
-    return new Proxy({} as PickAsyncMethods<K>, {
-      get(_target, methodName: string) {
-        return async (...args: any[]) =>
-          IpcApp[_callIpcChannel](channelName, methodName, ...args);
-      },
-    });
+    return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcApp[_callIpcChannel](channelName, methodName, ...args));
   }
 
   /** Create a type safe Proxy object to call an IPC function on a of registered backend handler that accepts a "methodName" argument followed by optional arguments
@@ -138,12 +132,7 @@ export class IpcApp {
    * @param functionName the function to call on the handler.
    */
   public static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K> {
-    return new Proxy({} as PickAsyncMethods<K>, {
-      get(_target, methodName: string) {
-        return async (...args: any[]) =>
-          IpcApp[_callIpcChannel](channelName, functionName, methodName, ...args);
-      },
-    });
+    return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcApp[_callIpcChannel](channelName, functionName, methodName, ...args));
   }
 
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
@@ -208,4 +197,35 @@ export abstract class NotificationHandler {
 class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
   public get channelName() { return ipcAppChannels.appNotify; }
   public notifyApp() { }
+}
+
+/**
+ * Base class for all implementations of an Ipc interface.
+ *
+ * Create a subclass to implement your Ipc interface. Your class should be declared like this:
+ * ```ts
+ * class MyHandler extends IpcHandler implements MyInterface
+ * ```
+ * to ensure all methods and signatures are correct.
+ *
+ * Then, call `MyClass.register` at startup to connect your class to your channel.
+ * @alpha
+ */
+export abstract class IpcHandler {
+  /* All subclasses must implement this method to specify their channel name. */
+  public abstract get channelName(): string;
+
+  /**
+   * Register this class as the handler for methods on its channel. This static method creates a new instance
+   * that becomes the handler and is `this` when its methods are called.
+   * @returns A function that can be called to remove the handler.
+   * @note Call this only once per channel. Each call registers an *additional* handler rather than
+   * replacing a previous one, so registering the same channel more than once causes every registered
+   * handler to run and reply to an invocation. To replace a handler, first call the [[RemoveFunction]]
+   * returned by the previous `register`.
+   */
+  public static register(): RemoveFunction {
+    const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
+    return IpcApp.handle(impl.channelName, createIpcDispatcher(impl, impl.channelName, true));
+  }
 }
