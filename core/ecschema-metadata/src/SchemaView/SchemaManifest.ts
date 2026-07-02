@@ -57,6 +57,10 @@ export class SchemaManifest {
     return this._entries.map((entry) => entry.name);
   }
 
+  public get entries(): readonly SchemaManifestEntry[] {
+    return this._entries;
+  }
+
   /** The entry for a schema by name (case-insensitive), or `undefined` if the iModel has no such schema. */
   public findByName(name: string): SchemaManifestEntry | undefined {
     return this._byLowerName.get(name.toLowerCase());

@@ -1909,8 +1909,8 @@ export abstract class IModelDb extends IModel {
       for (const name of namesToLoad)
         this._loadedSchemaNames.add(name.toLowerCase());
     }
-    // Everything loaded? Collapse back to full mode so future requests hit the fast path above.
-    if (schemas === undefined || this._loadedSchemaNames.size === manifest.schemaCount)
+    // Everything loaded? If yes, collapse the manifest fields which indicates a fully hydrated schema view so future requests hit the fast path above.
+    if (schemas === undefined || this._loadedSchemaNames.size >= manifest.schemaCount && manifest.entries.every((entry) => this._loadedSchemaNames.has(entry.name.toLowerCase())))
       this._resetSchemaState();
     return husk;
   }
@@ -1925,7 +1925,7 @@ export abstract class IModelDb extends IModel {
 
     const entries: MutableEntry[] = [];
     // ec_Schema ECInstanceId -> entry, so the reference walk can look up both endpoints by id.
-    const entryByEcInstanceId = new Map<number, MutableEntry>();
+    const entryByECInstanceId = new Map<number, MutableEntry>();
     const ecInstanceIdsByName = new Map<string, number>();
 
     const schemaSql = "SELECT ECInstanceId as id, Name as name, VersionMajor as versionMajor, VersionWrite as versionWrite, VersionMinor as versionMinor FROM meta.ECSchemaDef";
@@ -1939,7 +1939,7 @@ export abstract class IModelDb extends IModel {
         references: [],
       };
       entries.push(entry);
-      entryByEcInstanceId.set(ecInstanceId, entry);
+      entryByECInstanceId.set(ecInstanceId, entry);
       ecInstanceIdsByName.set(row.name.toLowerCase(), ecInstanceId);
     }
 
@@ -1948,8 +1948,8 @@ export abstract class IModelDb extends IModel {
     // skipped - a defensive guard that cannot happen for a well-formed iModel.
     const referenceSql = "SELECT SourceECInstanceId as sourceId, TargetECInstanceId as targetId FROM meta.SchemaHasSchemaReferences";
     for await (const row of this.createQueryReader(referenceSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
-      const source = entryByEcInstanceId.get(Number(row.sourceId));
-      const target = entryByEcInstanceId.get(Number(row.targetId));
+      const source = entryByECInstanceId.get(Number(row.sourceId));
+      const target = entryByECInstanceId.get(Number(row.targetId));
       if (source === undefined || target === undefined || source === target || source.references.includes(target))
         continue;
       source.references.push(target);
