@@ -813,7 +813,12 @@ export interface DbQueryConfig {
   requestQueueSize?: number;
   /** Number of worker thread, default to 4 */
   workerThreads?: number;
-  /** Use thread connection to prepare the statement */
+  /**
+   * @deprecated in 5.11.0. No longer used. Worker connections now prepare statements against a shared, dedicated
+   * schema-source connection (falling back to their own connection) to avoid an AB-BA lock-ordering deadlock with
+   * the primary connection. The value is retained only for backward-compatible config (de)serialization; setting it
+   * has no effect on behavior.
+   */
   doNotUsePrimaryConnToPrepare?: boolean;
   /** After no activity for given time concurrent query will automatically shutdown */
   autoShutdownWhenIdleForSeconds?: number;
