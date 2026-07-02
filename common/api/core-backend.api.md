@@ -5924,9 +5924,14 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 }>) => void;
 
 // @alpha
+export interface RebaseContext {
+    readonly idRemaps: Map<Id64String, Id64String>;
+}
+
+// @alpha
 export interface RebaseHandler {
     dispose?(): void;
-    recompute(txn: TxnProps): Promise<void>;
+    recompute(txn: TxnProps, context: RebaseContext): Promise<void>;
     shouldReinstate(txn: TxnProps): boolean;
 }
 

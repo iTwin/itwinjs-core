@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Updated iModel rebaser to handle cross-txn element id depenedence when new ids are generated as part of the rebase handler's recompute step.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
