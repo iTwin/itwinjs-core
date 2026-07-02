@@ -5,7 +5,7 @@
 
 import { Guid, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { GenericSchema, IModelHost, IModelJsFs, StandaloneDb } from "../../core-backend";
-import { type SchemaView, SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
+import { SchemaView, schemaViewFormatVersion, SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
@@ -424,6 +424,82 @@ describe("SchemaView fragment loading", () => {
         expect(view1.isOutdated, "the first load's view was discarded by the reload").to.be.true;
         expect(view2.isOutdated).to.be.false;
         expect(view2.findClass("FragA:AElement"), "the rebuilt view is fully usable").to.not.be.undefined;
+      } finally {
+        iModel.close();
+      }
+    });
+  });
+
+  describe("PRAGMA schema_view_fragment version prefix", () => {
+    // The frontend must pin the blob format version (frontend and backend can be version-skewed),
+    // so it will issue the pragma with the `v<N>;` prefix. These tests prove the prefix contract
+    // works end to end through ConcurrentQuery, not just in the native unit tests.
+
+    /** All `ec_Schema` ECInstanceIds in the iModel, in decimal. The full set is trivially
+     * dependency-closed, which the fragment pragma requires of its id list. */
+    async function queryAllSchemaIds(iModel: StandaloneDb): Promise<number[]> {
+      const ids: number[] = [];
+      for await (const row of iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef"))
+        ids.push(Number(row[0]));
+      return ids;
+    }
+
+    /** Fetch one fragment blob directly via the pragma. Calls `next()` exactly once - PRAGMA
+     * results must not be iterated, since ConcurrentQuery cannot paginate them. */
+    async function fetchFragmentBlob(iModel: StandaloneDb, argument: string): Promise<{ data: Uint8Array, formatVersion: number }> {
+      const reader = iModel.createQueryReader(`PRAGMA schema_view_fragment('${argument}')`);
+      const result = await reader.next();
+      expect(result.done, "pragma returned a row").to.be.false;
+      const data = result.value.data as Uint8Array | undefined;
+      if (data === undefined || data === null)
+        expect.fail("pragma returned no data column");
+      return { data, formatVersion: result.value.formatVersion as number };
+    }
+
+    it("accepts a v1; prefix and returns the same blob as the unprefixed form", async () => {
+      const iModel = await createIModelWithFragSchemas();
+      try {
+        const idList = (await queryAllSchemaIds(iModel)).join(",");
+
+        const prefixed = await fetchFragmentBlob(iModel, `v${schemaViewFormatVersion};${idList}`);
+        expect(prefixed.formatVersion, "reported format version matches the requested one").to.equal(schemaViewFormatVersion);
+
+        // Omitting the prefix means "latest", which today is the same version - identical blob bytes.
+        const unprefixed = await fetchFragmentBlob(iModel, idList);
+        expect(unprefixed.formatVersion).to.equal(schemaViewFormatVersion);
+        expect(Buffer.from(prefixed.data).equals(Buffer.from(unprefixed.data)), "explicit version and latest produce identical blobs").to.be.true;
+
+        // The prefixed blob is a valid fragment end to end: it merges into a husk and resolves classes.
+        const husk = SchemaView.createMergeable();
+        husk.mergeFragment(prefixed.data);
+        expect(husk.findClass("FragA:AElement")).to.not.be.undefined;
+        expect(husk.findClass("FragB:BElement")).to.not.be.undefined;
+      } finally {
+        iModel.close();
+      }
+    });
+
+    it("rejects malformed and unsupported version prefixes", async () => {
+      const iModel = await createIModelWithFragSchemas();
+      try {
+        const idList = (await queryAllSchemaIds(iModel)).join(",");
+        const invalidArguments = [
+          `v99;${idList}`, // unsupported version
+          `v;${idList}`,   // malformed version token (no digits)
+          `vx;${idList}`,  // malformed version token (non-digit)
+          "v1;",           // version present, empty id list
+        ];
+        // Native rejects these at prepare time; ConcurrentQuery surfaces that as a rejected read.
+        for (const argument of invalidArguments) {
+          const reader = iModel.createQueryReader(`PRAGMA schema_view_fragment('${argument}')`);
+          let rejected = false;
+          try {
+            await reader.next();
+          } catch {
+            rejected = true;
+          }
+          expect(rejected, `'${argument}' is rejected`).to.be.true;
+        }
       } finally {
         iModel.close();
       }

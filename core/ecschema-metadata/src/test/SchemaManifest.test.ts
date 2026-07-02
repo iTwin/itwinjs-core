@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { SchemaManifest, SchemaManifestEntry } from "../SchemaView/SchemaManifest";
+import { SchemaManifest, SchemaManifestEntry, SchemaManifestReferenceRow, SchemaManifestSchemaRow } from "../SchemaView/SchemaManifest";
 
 /** Spec for one schema in a test manifest: its name, minor version, and the names it references. */
 interface EntrySpec {
@@ -193,5 +193,80 @@ describe("SchemaManifest.sortInDependencyOrder", () => {
       { name: "B", refs: ["A"] },
     ]);
     expect(manifest.sortInDependencyOrder(["A", "B"]).slice().sort()).to.deep.equal(["A", "B"]);
+  });
+});
+
+describe("SchemaManifest.fromRows", () => {
+  /** Rows as the two ECDbMeta queries would return them for the makeSpecs graph, with deliberately
+   * non-contiguous ids to catch any assumption that ids are dense or ordered. */
+  function makeRows(): { schemaRows: SchemaManifestSchemaRow[], referenceRows: SchemaManifestReferenceRow[] } {
+    return {
+      schemaRows: [
+        { ecInstanceId: 3, name: "Units", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
+        { ecInstanceId: 17, name: "Formats", versionMajor: 1, versionWrite: 0, versionMinor: 0 },
+        { ecInstanceId: 5, name: "CoreCustomAttributes", versionMajor: 1, versionWrite: 0, versionMinor: 1 },
+        { ecInstanceId: 131, name: "BisCore", versionMajor: 1, versionWrite: 0, versionMinor: 15 },
+        { ecInstanceId: 145, name: "Generic", versionMajor: 1, versionWrite: 0, versionMinor: 2 },
+      ],
+      referenceRows: [
+        { sourceECInstanceId: 17, targetECInstanceId: 3 },    // Formats -> Units
+        { sourceECInstanceId: 131, targetECInstanceId: 3 },   // BisCore -> Units
+        { sourceECInstanceId: 131, targetECInstanceId: 17 },  // BisCore -> Formats
+        { sourceECInstanceId: 131, targetECInstanceId: 5 },   // BisCore -> CoreCustomAttributes
+        { sourceECInstanceId: 145, targetECInstanceId: 131 }, // Generic -> BisCore
+      ],
+    };
+  }
+
+  it("builds entries with identity and version fields from the schema rows", () => {
+    const { schemaRows, referenceRows } = makeRows();
+    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
+
+    expect(manifest.schemaCount).to.equal(5);
+    expect(manifest.getAvailableSchemaNames()).to.deep.equal(["Units", "Formats", "CoreCustomAttributes", "BisCore", "Generic"]);
+
+    const bisCore = manifest.findByName("BisCore")!;
+    expect(bisCore.readVersion).to.equal(1);
+    expect(bisCore.writeVersion).to.equal(0);
+    expect(bisCore.minorVersion).to.equal(15);
+  });
+
+  it("wires reference edges by id to the entry objects, carrying no ids into the manifest", () => {
+    const { schemaRows, referenceRows } = makeRows();
+    const manifest = SchemaManifest.fromRows(schemaRows, referenceRows);
+
+    const bisCore = manifest.findByName("BisCore")!;
+    expect(bisCore.references.map((entry) => entry.name).sort()).to.deep.equal(["CoreCustomAttributes", "Formats", "Units"]);
+    // Edges point at the same entry objects the manifest exposes, not copies.
+    expect(bisCore.references).to.include(manifest.findByName("Units"));
+    // The graph works end to end: closure over the wired edges.
+    expect(manifest.getSchemaClosure(["Generic"]).sort()).to.deep.equal(["BisCore", "CoreCustomAttributes", "Formats", "Generic", "Units"]);
+  });
+
+  it("skips reference rows with unknown endpoints", () => {
+    const { schemaRows } = makeRows();
+    const manifest = SchemaManifest.fromRows(schemaRows, [
+      { sourceECInstanceId: 999, targetECInstanceId: 3 },   // unknown source
+      { sourceECInstanceId: 131, targetECInstanceId: 999 }, // unknown target
+      { sourceECInstanceId: 131, targetECInstanceId: 3 },   // valid: BisCore -> Units
+    ]);
+    expect(manifest.findByName("BisCore")!.references.map((entry) => entry.name)).to.deep.equal(["Units"]);
+  });
+
+  it("skips self-referential and duplicate reference rows", () => {
+    const { schemaRows } = makeRows();
+    const manifest = SchemaManifest.fromRows(schemaRows, [
+      { sourceECInstanceId: 131, targetECInstanceId: 131 }, // self-reference
+      { sourceECInstanceId: 131, targetECInstanceId: 3 },   // BisCore -> Units
+      { sourceECInstanceId: 131, targetECInstanceId: 3 },   // exact duplicate
+    ]);
+    expect(manifest.findByName("BisCore")!.references.map((entry) => entry.name)).to.deep.equal(["Units"]);
+  });
+
+  it("builds an empty manifest from no rows", () => {
+    const manifest = SchemaManifest.fromRows([], []);
+    expect(manifest.schemaCount).to.equal(0);
+    expect(manifest.getAvailableSchemaNames()).to.deep.equal([]);
+    expect(manifest.getSchemaClosure(["Anything"])).to.deep.equal([]);
   });
 });

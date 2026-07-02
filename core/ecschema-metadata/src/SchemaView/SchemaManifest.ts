@@ -9,7 +9,7 @@
 /** One schema in a {@link SchemaManifest}: its identity, version, and the schemas it directly
  * references. References are held as direct entry objects, so closure and dependency-ordering walks
  * follow object links with no id or index indirection.
- * @internal
+ * @beta
  */
 export interface SchemaManifestEntry {
   readonly name: string;
@@ -18,6 +18,28 @@ export interface SchemaManifestEntry {
   readonly minorVersion: number;
   /** The schemas this schema directly references. */
   readonly references: readonly SchemaManifestEntry[];
+}
+
+/** One row of `SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM
+ * meta.ECSchemaDef`, as passed to {@link SchemaManifest.fromRows}. The id is used only to wire
+ * reference edges and is not retained in the manifest.
+ * @internal
+ */
+export interface SchemaManifestSchemaRow {
+  readonly ecInstanceId: number;
+  readonly name: string;
+  readonly versionMajor: number;
+  readonly versionWrite: number;
+  readonly versionMinor: number;
+}
+
+/** One row of `SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences`,
+ * as passed to {@link SchemaManifest.fromRows}.
+ * @internal
+ */
+export interface SchemaManifestReferenceRow {
+  readonly sourceECInstanceId: number;
+  readonly targetECInstanceId: number;
 }
 
 /** The reference graph of every schema in one iModel. It is the cheap stand-in a {@link SchemaView}
@@ -29,11 +51,11 @@ export interface SchemaManifestEntry {
  * a few hundred edges, so closure and topological walks are trivial; a heavier object graph would
  * buy nothing.
  *
- * The host (see `IModelDb`) builds the entries and wires their edges from ECDbMeta and hands them to
- * the constructor; this class keeps them free of any iModel or platform dependency and just indexes
- * them by name and answers closure queries. It knows nothing about which schemas are already loaded;
- * a caller that tracks that filters the result of {@link getSchemaClosure} itself.
- * @internal
+ * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link fromRows}; this class
+ * keeps the entries free of any iModel or platform dependency and just indexes them by name and
+ * answers closure queries. It knows nothing about which schemas are already loaded; the
+ * `SchemaViewManager` tracks that and filters the result of {@link getSchemaClosure} itself.
+ * @beta
  */
 export class SchemaManifest {
   private readonly _entries: readonly SchemaManifestEntry[];
@@ -46,6 +68,45 @@ export class SchemaManifest {
     for (const entry of entries)
       byLowerName.set(entry.name.toLowerCase(), entry);
     this._byLowerName = byLowerName;
+  }
+
+  /** Build a manifest from raw ECDbMeta query rows. This is the one place the row-to-graph wiring
+   * walk lives, so every `SchemaViewDataProvider` implementation just runs the two queries and hands
+   * the rows over. The `ec_Schema` ids in the rows are used only to connect reference edges; the
+   * manifest itself carries no ids.
+   *
+   * Reference rows whose endpoints are unknown or self-referential are skipped - a defensive guard
+   * that cannot happen for a well-formed iModel.
+   * @internal
+   */
+  public static fromRows(schemaRows: readonly SchemaManifestSchemaRow[], referenceRows: readonly SchemaManifestReferenceRow[]): SchemaManifest {
+    // Mutable during the wiring walk below; the manifest treats entries as read-only once handed over.
+    type MutableEntry = Omit<SchemaManifestEntry, "references"> & { references: SchemaManifestEntry[] };
+
+    const entries: MutableEntry[] = [];
+    // ec_Schema ECInstanceId -> entry, so the reference walk can look up both endpoints by id.
+    const entryByECInstanceId = new Map<number, MutableEntry>();
+    for (const row of schemaRows) {
+      const entry: MutableEntry = {
+        name: row.name,
+        readVersion: row.versionMajor,
+        writeVersion: row.versionWrite,
+        minorVersion: row.versionMinor,
+        references: [],
+      };
+      entries.push(entry);
+      entryByECInstanceId.set(row.ecInstanceId, entry);
+    }
+
+    for (const row of referenceRows) {
+      const source = entryByECInstanceId.get(row.sourceECInstanceId);
+      const target = entryByECInstanceId.get(row.targetECInstanceId);
+      if (source === undefined || target === undefined || source === target || source.references.includes(target))
+        continue;
+      source.references.push(target);
+    }
+
+    return new SchemaManifest(entries);
   }
 
   /** The number of schemas in the iModel. */
