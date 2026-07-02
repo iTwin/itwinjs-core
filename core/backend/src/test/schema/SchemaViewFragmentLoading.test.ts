@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
-import { GenericSchema, IModelHost, SnapshotDb } from "../../core-backend";
+import { Guid, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { GenericSchema, IModelHost, IModelJsFs, StandaloneDb } from "../../core-backend";
 import { type SchemaView, SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import * as path from "path";
@@ -96,23 +96,57 @@ const schemaC = `<?xml version="1.0" encoding="UTF-8"?>
  * TS reader/merge), which is where the fragment mechanism actually has to work. The blob format
  * itself is an internal C++-writer-to-TS-reader contract.
  */
-describe.only("SchemaView fragment loading", () => {
+describe("SchemaView fragment loading", () => {
+  // Building an empty iModel and importing schemas into it dominates this suite's runtime, so each
+  // seed below is created once in `before`. Each test then just needs a writable file of its own -
+  // a raw file copy plus `StandaloneDb.openFile` - rather than paying for createEmpty + schema import
+  // again, or for the checkpoint/vacuum overhead that `SnapshotDb.createFrom` adds on top of the copy.
+  let fragSeedDb: StandaloneDb;
+  let genericSeedDb: StandaloneDb;
+
   before(async () => {
     if (!IModelHost.isValid)
       await TestUtils.startBackend();
+
+    const fragSeedPath = path.join(KnownTestLocations.outputDir, `SchemaViewFragmentSeed-${Guid.createValue()}.bim`);
+    fragSeedDb = StandaloneDb.createEmpty(fragSeedPath, { rootSubject: { name: "SchemaViewFragmentLoadingSeed" } });
+    await fragSeedDb.importSchemaStrings([schemaB, schemaA]);
+    fragSeedDb.performCheckpoint(); // flush + truncate the WAL so the raw file copy below is consistent
+
+    GenericSchema.registerSchema();
+    const genericSeedPath = path.join(KnownTestLocations.outputDir, `SchemaViewFragmentGenericSeed-${Guid.createValue()}.bim`);
+    genericSeedDb = StandaloneDb.createEmpty(genericSeedPath, { rootSubject: { name: "SchemaViewFragmentGenericSeed" } });
+    await genericSeedDb.importSchemas([GenericSchema.schemaFilePath]);
+    genericSeedDb.performCheckpoint();
   });
 
-  /** Create a fresh writable snapshot with FragA + FragB (and BisCore) imported. */
-  async function createIModelWithFragSchemas(): Promise<SnapshotDb> {
-    const filePath = path.join(KnownTestLocations.outputDir, `SchemaViewFragment-${Guid.createValue()}.bim`);
-    const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "SchemaViewFragmentLoading" } });
-    await iModel.importSchemaStrings([schemaB, schemaA]);
-    return iModel;
+  after(() => {
+    fragSeedDb.close();
+    genericSeedDb.close();
+  });
+
+  /** Clone a writable iModel from a seed's file via a raw file copy - no checkpoint/vacuum. Only
+   * needed by the handful of tests that mutate the iModel (e.g. importing another schema); every
+   * other test just opens a second read-only connection directly onto the seed's file below. */
+  function cloneSeed(seedDb: StandaloneDb, namePrefix: string): StandaloneDb {
+    const filePath = path.join(KnownTestLocations.outputDir, `${namePrefix}-${Guid.createValue()}.bim`);
+    IModelJsFs.copySync(seedDb.pathName, filePath);
+    return StandaloneDb.openFile(filePath, OpenMode.ReadWrite);
+  }
+
+  /** Get an iModel backed by the FragA/FragB (and BisCore) seed. Read-only by default - just another
+   * connection onto the same file, no copy - since most tests only read a `SchemaView` off it. Pass
+   * `writable: true` for the rare test that needs to mutate the iModel (e.g. import another schema),
+   * which gets its own private copy so it can't affect the shared seed or other tests. */
+  async function createIModelWithFragSchemas(options?: { writable?: boolean }): Promise<StandaloneDb> {
+    if (options?.writable)
+      return cloneSeed(fragSeedDb, "SchemaViewFragment");
+    return StandaloneDb.openFile(fragSeedDb.pathName, OpenMode.Readonly);
   }
 
   /** Every schema name in the iModel, straight from ECDbMeta - the same source the schema manifest
    * is built from - so tests never hardcode the schema inventory of an empty snapshot. */
-  async function queryAllSchemaNames(iModel: SnapshotDb): Promise<string[]> {
+  async function queryAllSchemaNames(iModel: StandaloneDb): Promise<string[]> {
     const schemaNames: string[] = [];
     for await (const row of iModel.createQueryReader("SELECT Name FROM meta.ECSchemaDef"))
       schemaNames.push(row[0] as string);
@@ -236,7 +270,7 @@ describe.only("SchemaView fragment loading", () => {
   });
 
   it("invalidates the subset husk after a schema import", async () => {
-    const iModel = await createIModelWithFragSchemas();
+    const iModel = await createIModelWithFragSchemas({ writable: true });
     try {
       const view1 = await iModel.getSchemaView({ schemas: ["FragB"] });
       expect(view1.getSchema("FragB")).to.not.be.undefined;
@@ -401,12 +435,8 @@ describe.only("SchemaView fragment loading", () => {
     // exclusion list. BisCore in turn references four schemas that are ALL excluded.
     // So requesting Generic must yield a view containing exactly Generic + BisCore - the walk
     // pulls BisCore, and every excluded reference contributes no rows.
-    GenericSchema.registerSchema();
-    const filePath = path.join(KnownTestLocations.outputDir, `SchemaViewFragmentGeneric-${Guid.createValue()}.bim`);
-    const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "SchemaViewFragmentGeneric" } });
+    const iModel = StandaloneDb.openFile(genericSeedDb.pathName, OpenMode.Readonly);
     try {
-      await iModel.importSchemas([GenericSchema.schemaFilePath]);
-
       // Capture native warnings and errors while the fragment blob is written + parsed.
       // assert nothing was logged as a safeguard against regressions.
       let schemaView: Awaited<ReturnType<typeof iModel.getSchemaView>> | undefined;
