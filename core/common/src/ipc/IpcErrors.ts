@@ -62,14 +62,26 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
         return val === null || val === undefined || val instanceof Date
           || t === "string" || t === "number" || t === "boolean";
       };
-      for (const key of Object.keys(serialized)) {
-        const val = serialized[key];
+      // Recursively sanitize a value for structured-clone: arrays (including nested arrays) are walked
+      // element-by-element, Errors/plain objects are recursed into, primitives/Dates pass through unchanged,
+      // and anything else non-cloneable (functions, RegExp, Map, Set, typed arrays, other class instances, etc.)
+      // is stripped to `undefined`.
+      const serializeValue = (val: any): any => {
         if (Array.isArray(val))
-          serialized[key] = val.map((item) => shouldRecurse(item) ? serialize(item, visited) : isSerializableLeaf(item) ? item : undefined);
-        else if (shouldRecurse(val))
-          serialized[key] = serialize(val, visited);
-        else if (!isSerializableLeaf(val))
-          delete serialized[key]; // strip non-cloneable values (functions, class instances, etc.)
+          return val.map((item) => serializeValue(item));
+        if (shouldRecurse(val))
+          return serialize(val, visited);
+        return isSerializableLeaf(val) ? val : undefined;
+      };
+      // `loggingMetadata` was deliberately captured above from `BentleyError.loggingMetadata` (which may be an
+      // arbitrary object shape returned by a `GetMetaDataFunction`, not necessarily a plain-object literal) — skip
+      // it here so the generic sanitization pass above doesn't silently strip it for not matching the plain-object
+      // heuristic.
+      const genericStripExcludedKeys = new Set(["loggingMetadata"]);
+      for (const key of Object.keys(serialized)) {
+        if (genericStripExcludedKeys.has(key))
+          continue;
+        serialized[key] = serializeValue(serialized[key]);
       }
 
       return serialized;
@@ -107,8 +119,13 @@ export function rebuildIpcError(
 ): Error {
   // Default (ITwinError paradigm) or a non-BentleyError value: rebuild a plain Error, preserving iTwinErrorId,
   // errorNumber, message, and any custom fields so callers can identify it via ITwinError.isError / BentleyError.isError.
-  if (typedErrorClass === undefined || !BentleyError.isError(err))
-    return Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
+  if (typedErrorClass === undefined || !BentleyError.isError(err)) {
+    const rebuilt = Object.assign(new Error(), err);
+    // Object.assign above re-copies `err`'s own `message` (even a non-string one, e.g. `throw { message: 123 }`),
+    // so guard/normalize the final message *after* the assign rather than before, or this would be silently overwritten.
+    rebuilt.message = typeof err.message === "string" ? err.message : "unknown error";
+    return rebuilt;
+  }
 
   // Backwards compatibility: rebuild the caller's typed BentleyError subclass (e.g. BackendError).
   const trimErr: any = { ...err };

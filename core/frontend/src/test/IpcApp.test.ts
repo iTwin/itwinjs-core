@@ -80,6 +80,33 @@ describe("IpcApp", () => {
       socket.addListener.mockReturnValue(remove);
       expect(IpcApp.handle("my-channel", async () => "x")).to.equal(remove);
     });
+
+    it("sends a serialized error response instead of hanging when the handler throws", async () => {
+      const handler = vi.fn(async () => { throw new Error("handler-failure"); });
+      IpcApp.handle("my-channel", handler);
+      const listener = socket.addListener.mock.calls[0][1];
+
+      await listener(undefined, "itwin.resp-1", "hello");
+
+      expect(socket.send).toHaveBeenCalledOnce();
+      const [responseChannel, response] = socket.send.mock.calls[0];
+      expect(responseChannel).to.equal("itwin.resp-1");
+      // response is the serialized-error envelope (see serializeIpcError), not left unsent - otherwise
+      // the corresponding IpcHost.invoke on the backend would hang until invokeTimeout/shutdown.
+      expect(response.error).to.exist;
+      expect(response.error.message).to.equal("handler-failure");
+    });
+
+    it("sends a serialized error response when the handler rejects", async () => {
+      const handler = vi.fn(async () => Promise.reject(new Error("rejected")));
+      IpcApp.handle("my-channel", handler);
+      const listener = socket.addListener.mock.calls[0][1];
+
+      await listener(undefined, "itwin.resp-1");
+
+      const [, response] = socket.send.mock.calls[0];
+      expect(response.error.message).to.equal("rejected");
+    });
   });
 
   describe("IpcHandler", () => {

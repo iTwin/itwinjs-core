@@ -9,7 +9,7 @@
 import { expectDefined, IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, createIpcDispatcher, createIpcProxy, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
-  RemoveFunction, unwrapIpcInvokeReturn,
+  RemoveFunction, serializeIpcError, unwrapIpcInvokeReturn,
 } from "@itwin/core-common";
 import { _callIpcChannel } from "./common/internal/Symbols";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -87,12 +87,21 @@ export class IpcApp {
    * @param channel The name of the channel for this handler.
    * @param handler A function that supplies the implementation for `channel`
    * @returns A function to call to remove the handler.
+   * @note If `handler` throws, or its returned Promise rejects, the thrown value is serialized (see
+   * [[serializeIpcError]]) and sent as the response instead of being rethrown here. Without this, the
+   * corresponding [[IpcHost.invoke]] call on the backend would never receive a reply and would hang (leaking
+   * its listener and `_pendingInvokes` entry) until [[IpcHost.invokeTimeout]] elapses or [[IpcHost.shutdown]]
+   * is called.
    * @beta
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
     const listener = async (_evt: Event, responseChannel: string, ...args: any[]) => {
-      const response = await handler(...args);
-      this.ipc.send(responseChannel, response);
+      try {
+        const response = await handler(...args);
+        this.ipc.send(responseChannel, response);
+      } catch (err) {
+        this.ipc.send(responseChannel, serializeIpcError(err, true));
+      }
     };
 
     return this.addListener(channel, listener);

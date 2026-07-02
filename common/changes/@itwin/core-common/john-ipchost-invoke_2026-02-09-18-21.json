@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Added FrontendError, thrown on the backend when a frontend Ipc handler throws.",
+      "comment": "Added support for backend-to-frontend Ipc invoke calls (IpcHost.invoke/IpcApp.handle).",
       "type": "none"
     }
   ],

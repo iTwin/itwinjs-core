@@ -153,13 +153,6 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isTrue(IpcApp.isValid, "Expected IpcApp to be initialized by LocalhostIpcApp");
     });
 
-    it("websocket invoke is not applicable outside websocket mode", () => {
-      if (isWebsocketEnvironment())
-        return;
-
-      assert.notEqual(currentEnvironment, "websocket");
-    });
-
     it("can handle invoke in websocket mode", async () => {
       if (!isWebsocketEnvironment())
         return;
@@ -189,6 +182,56 @@ if (ProcessDetector.isElectronAppFrontend) {
       } finally {
         remove();
       }
+    });
+
+    describe("forwards frontend-thrown error details to backend via makeIpcProxy (websocket)", () => {
+      class WsErrorIpcHandler extends IpcHandler {
+        public get channelName() { return "ipc-app-ws-error-forwarding-test"; }
+
+        public async throwBasicError() { throw new Error("basic"); }
+        public async throwBentleyError() {
+          throw new BentleyError(IModelStatus.NotFound, "m", () => ({ foo: 42, nested: { bar: "bar" } }));
+        }
+      }
+
+      let remove: (() => void) | undefined;
+
+      before(() => {
+        if (!isWebsocketEnvironment())
+          return;
+        remove = WsErrorIpcHandler.register();
+      });
+
+      after(() => {
+        remove?.();
+      });
+
+      const invokeViaProxyAndGetErrorInfo = async (methodName: string) => {
+        const callbackResult = JSON.parse(await executeBackendCallback(BackendTestCallbacks.invokeIpcAppProxy, "ipc-app-ws-error-forwarding-test", methodName) as string);
+        assert.isFalse(callbackResult.ok, "expected the proxy call to reject on the backend");
+        return callbackResult.errorInfo;
+      };
+
+      it("backend proxy rebuilds a typed BentleyError with metadata (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const info = await invokeViaProxyAndGetErrorInfo("throwBentleyError");
+        assert.isTrue(info.isBentleyError, "backend should rebuild a BentleyError");
+        assert.isTrue(info.isITwinError, "backend should rebuild an error identifiable via ITwinError.isError");
+        assert.equal(info.errorNumber, IModelStatus.NotFound);
+        assert.equal(info.message, "m");
+        assert.deepEqual(info.loggingMetadata, { foo: 42, nested: { bar: "bar" } });
+      });
+
+      it("backend proxy rebuilds a plain Error for a non-BentleyError (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const info = await invokeViaProxyAndGetErrorInfo("throwBasicError");
+        assert.isFalse(info.isBentleyError, "a basic Error must not be rebuilt as a BentleyError");
+        assert.equal(info.message, "basic");
+      });
     });
   });
 }

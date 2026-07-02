@@ -140,13 +140,21 @@ export class IpcHost {
       });
 
       if (undefined !== this.invokeTimeout) {
+        const timeoutMs = this.invokeTimeout; // capture the delay actually armed, in case invokeTimeout changes before the timer fires
         timer = setTimeout(() => {
           cleanup();
-          reject(new Error(`IpcHost.invoke timed out after ${this.invokeTimeout}ms on channel "${channel}"`));
-        }, this.invokeTimeout);
+          reject(new Error(`IpcHost.invoke timed out after ${timeoutMs}ms on channel "${channel}"`));
+        }, timeoutMs);
       }
 
-      this.send(channel, responseChannel, ...args);
+      try {
+        this.send(channel, responseChannel, ...args);
+      } catch (err) {
+        // `send` can throw synchronously (e.g. a destroyed Electron window, or a closed websocket). Without this,
+        // the listener and _pendingInvokes entry registered above would leak for the life of the process.
+        cleanup();
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
     });
   }
 
