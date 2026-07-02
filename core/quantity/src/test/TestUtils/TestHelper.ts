@@ -95,6 +95,7 @@ export class ConversionData implements UnitConversionProps {
   public inversion?: UnitConversionInvert = undefined;
 }
 
+// TODO: derive unitData from BasicUnitConversions.generated.ts instead of hand-maintaining it here.
 export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProvider {
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {

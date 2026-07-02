@@ -708,7 +708,6 @@ describe("Azimuth format tests:", () => {
       const format = new Format(`azimuthWith${baseInDegrees}Base`);
       await format.fromJSON(unitsProvider, props);
       expect(format.hasUnits).to.be.true;
-      // Already true azimuth (HORIZONTAL_DIRECTION).
       const deg: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_ARC_DEG");
       expect(deg.isValid).to.be.true;
       return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider, deg);
@@ -796,7 +795,6 @@ describe("Azimuth format tests:", () => {
     const format = new Format(`azimuth`);
     await format.fromJSON(unitsProvider, formatJson);
     expect(format.hasUnits).to.be.true;
-    // Already true azimuth (HORIZONTAL_DIRECTION).
     const minutes: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_ARC_MINUTE");
     expect(minutes.isValid).to.be.true;
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, minutes);
@@ -829,7 +827,6 @@ describe("Azimuth format tests:", () => {
     const format = new Format(`azimuth`);
     await format.fromJSON(unitsProvider, formatJson);
     expect(format.hasUnits).to.be.true;
-    // Already true azimuth (HORIZONTAL_DIRECTION).
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
     expect(rad.isValid).to.be.true;
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, rad);
