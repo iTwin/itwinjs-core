@@ -1650,7 +1650,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
     for (const provider of this.tiledGraphicsProviders) {
-      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+      yield* TiledGraphicsProvider.getTileTreeRefs(provider, this);
     }
   }
 
@@ -1679,9 +1679,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.view.getTileTreeRefs();
-    yield * this.mapTileTreeRefs;
-    yield * this.tiledGraphicsProviderRefs();
+    yield* this.view.getTileTreeRefs();
+    yield* this.mapTileTreeRefs;
+    yield* this.tiledGraphicsProviderRefs();
   }
 
   /**
@@ -2406,11 +2406,11 @@ export abstract class Viewport implements Disposable, TileUser {
 
     switch (this.view.getGridOrientation()) {
       case GridOrientationType.View: {
-        const center = this.view.getCenter();
-        this.toViewOrientation(center);
-        this.toViewOrientation(origin);
+        const center = this.npcToView(NpcCenter);
+        rMatrix.setFrom(this.rotation);
+        rMatrix.multiplyVectorInPlace(origin);
         origin.z = center.z;
-        this.fromViewOrientation(origin);
+        rMatrix.multiplyTransposeVectorInPlace(origin);
         break;
       }
 
@@ -2441,28 +2441,28 @@ export abstract class Viewport implements Disposable, TileUser {
     eyeVec.normalizeInPlace();
     linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
-    // // get origin and point in view coordinate system
-    const pointView = point.clone();
-    const originView = origin.clone();
-    this.toViewOrientation(pointView);
-    this.toViewOrientation(originView);
+    // Get origin and point in the grid's local coordinate system.
+    const pointGrid = point.clone();
+    const originGrid = origin.clone();
+    rMatrix.multiplyXYZtoXYZ(pointGrid, pointGrid);
+    rMatrix.multiplyXYZtoXYZ(originGrid, originGrid);
 
     // subtract off the origin
-    pointView.y -= originView.y;
-    pointView.x -= originView.x;
+    pointGrid.y -= originGrid.y;
+    pointGrid.x -= originGrid.x;
 
     // round off the remainder to the grid distances
     const gridSpacing = this.view.getGridSpacing();
-    pointView.x = Viewport.roundGrid(pointView.x, gridSpacing.x);
-    pointView.y = Viewport.roundGrid(pointView.y, gridSpacing.y);
+    pointGrid.x = Viewport.roundGrid(pointGrid.x, gridSpacing.x);
+    pointGrid.y = Viewport.roundGrid(pointGrid.y, gridSpacing.y);
 
     // add the origin back in
-    pointView.x += originView.x;
-    pointView.y += originView.y;
+    pointGrid.x += originGrid.x;
+    pointGrid.y += originGrid.y;
 
     // go back to root coordinate system
-    this.fromViewOrientation(pointView);
-    point.setFrom(pointView);
+    rMatrix.multiplyTransposeVectorInPlace(pointGrid);
+    point.setFrom(pointGrid);
   }
 
   /** @internal */
