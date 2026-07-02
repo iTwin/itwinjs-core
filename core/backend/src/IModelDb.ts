@@ -31,6 +31,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
+import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
@@ -3071,16 +3072,21 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
-      const sql = `SELECT *, ec_classname(ECClassId, 's:c') classFullName FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      // `SELECT *` targets a caller/runtime-determined ElementAspect subclass, so its shape can't be decomposed
+      // ahead of time. Query using the non-deprecated UseECSqlPropertyNames format and reshape the row into the
+      // legacy UseJsPropertyNames shape using ECSchema metadata (see ECSqlInstanceReshaper for why a naive,
+      // non-schema-aware rename isn't safe here).
+      const ecClass = getRuntimeClass(this._iModel, aspectClassName);
+      const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
       const aspect: ElementAspectProps | undefined = this._iModel.withQueryReader(sql, (reader): ElementAspectProps | undefined => {
         if (reader.step()) {
-          const aspectProps: ElementAspectProps = { ...reader.current.toRow() }; // start with everything that SELECT * returned; classFullName is supplied by the ec_classname alias
-          (aspectProps as any).className = undefined; // clear the raw ECClassId-derived property from SELECT * that we don't want in the final instance
+          const aspectProps = reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as ElementAspectProps;
+          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
+          (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
           return aspectProps;
         }
         return undefined;
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
       if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`);
       }
