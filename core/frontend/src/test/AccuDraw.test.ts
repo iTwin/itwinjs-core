@@ -11,17 +11,8 @@ import { ItemField } from "../AccuDraw";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
-// Regression coverage for itwinjs-core#9465: AccuDraw historically applied its own
-// "measured from north" (90-theta) conversion in `stringFromAngle` whenever `bearingFixedToPlane2d`
-// is enabled, because `@itwin/core-quantity`'s Bearing/Azimuth formatting used to always assume the
-// persisted magnitude was a raw mathematical angle (measured counter-clockwise from east). Now that
-// core-quantity applies that conversion itself -- but only when `persistenceUnit.phenomenon` is
-// `Units.ANGLE`, leaving `Units.HORIZONTAL_DIRECTION`-persisted values untouched -- AccuDraw's manual
-// correction is redundant and must be removed to avoid double-applying the transform.
-//
-// `QuantityType.Angle`'s persistence unit is `Units.RAD` (an `Units.ANGLE` phenomenon unit), so this
-// suite asserts the *end-to-end* formatted output for a raw math angle in bearing/plane-fixed mode,
-// independent of whether the 90-theta conversion happens inside AccuDraw or inside core-quantity.
+// Regression test for itwinjs-core#9465: bearing formatting must be measured from north
+// exactly once, whether that conversion happens in AccuDraw or in core-quantity.
 describe("AccuDraw bearing formatting (plane-fixed)", () => {
   const bearingFormatProps: FormatProps = {
     type: "Bearing",
