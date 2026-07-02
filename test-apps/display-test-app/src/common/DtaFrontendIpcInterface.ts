@@ -23,8 +23,7 @@ export interface DtaFrontendInfoResult {
 
 /**
  * An Ipc interface implemented by the frontend and invoked by the backend via [IpcHost.makeIpcProxy]($backend).
- * This exists purely as a minimal example/smoke-test for backend-to-frontend Ipc invoke support - the backend
- * asks the frontend for information (like window dimensions) that only the frontend knows.
+ * The backend asks the frontend for information (like window dimensions) that only the frontend knows.
  */
 export interface DtaFrontendIpcInterface {
   /** Returns information about the frontend that the backend cannot otherwise obtain. */
