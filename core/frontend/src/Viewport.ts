@@ -2406,12 +2406,10 @@ export abstract class Viewport implements Disposable, TileUser {
 
     switch (this.view.getGridOrientation()) {
       case GridOrientationType.View: {
+        const center = this.npcToView(NpcCenter);
         rMatrix.setFrom(this.rotation);
-        const centerWorld = Point3d.create(0.5, 0.5, 0.5);
-        this.npcToWorld(centerWorld, centerWorld);
-
-        rMatrix.multiplyXYZtoXYZ(origin, origin);
-        origin.z = centerWorld.z;
+        rMatrix.multiplyVectorInPlace(origin);
+        origin.z = center.z;
         rMatrix.multiplyTransposeVectorInPlace(origin);
         break;
       }
