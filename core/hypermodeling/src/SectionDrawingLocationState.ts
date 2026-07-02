@@ -9,7 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Placement3d, QueryRowFormat, SectionType } from "@itwin/core-common";
 import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
-import { ClipVector, Transform } from "@itwin/core-geometry";
+import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT
@@ -155,21 +155,20 @@ export class SectionDrawingLocationState {
 
     this.clip = extractClip(props.clipJSON) ?? ClipVector.createEmpty();
 
+    const xyzFromRow = (x?: number, y?: number, z?: number): XYZProps | undefined =>
+      (undefined !== x && undefined !== y && undefined !== z) ? { x, y, z } : undefined;
+
     const placementProps = {
-      origin: (undefined !== props.originX && undefined !== props.originY && undefined !== props.originZ)
-        ? { x: props.originX, y: props.originY, z: props.originZ }
-        : {},
+      origin: xyzFromRow(props.originX, props.originY, props.originZ) ?? {},
       angles: {
         yaw: props.yaw,
         pitch: props.pitch,
         roll: props.roll,
       },
-      placement: (undefined !== props.bboxLowX && undefined !== props.bboxLowY && undefined !== props.bboxLowZ
-        && undefined !== props.bboxHighX && undefined !== props.bboxHighY && undefined !== props.bboxHighZ)
-        ? {
-          low: { x: props.bboxLowX, y: props.bboxLowY, z: props.bboxLowZ },
-          high: { x: props.bboxHighX, y: props.bboxHighY, z: props.bboxHighZ },
-        } : undefined,
+      placement: {
+        low: xyzFromRow(props.bboxLowX, props.bboxLowY, props.bboxLowZ),
+        high: xyzFromRow(props.bboxHighX, props.bboxHighY, props.bboxHighZ),
+      },
     };
     this.placement = Placement3d.fromJSON(placementProps);
 
