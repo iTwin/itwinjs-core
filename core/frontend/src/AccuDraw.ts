@@ -1158,10 +1158,11 @@ export class AccuDraw {
       if (point.y < 0.0)
         adjustment = -adjustment;
       angle += adjustment; // This is the angle measured from design x...
-      angle = (Math.PI / 2) - angle; // Account for bearing direction convention...
 
-      if (angle < 0)
-        angle = (Math.PI * 2) + angle; // Negative bearings aren't valid?
+      // NOTE: The "measured from north" (90-theta) bearing/azimuth direction convention is no longer
+      // applied here -- @itwin/core-quantity's Formatter now applies it automatically whenever the
+      // active format's persistence unit belongs to the `Units.ANGLE` phenomenon (see itwinjs-core#9465).
+      // Applying it here too would double-transform the value.
     }
 
     const formatterSpec = this.getAngleFormatter();
@@ -1208,10 +1209,11 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          if (this.isBearingMode && this.flags.bearingFixToPlane2D)
-            this._angle = (Math.PI / 2) - parseResult.value;
-          else
-            this._angle = parseResult.value;
+          // NOTE: `parseResult.value` is already in the persisted (math angle) convention -- core-quantity's
+          // Parser now applies the "measured from north" (90-theta) conversion itself for `Units.ANGLE`
+          // phenomenon persistence units (see itwinjs-core#9465). Applying it again here would double-transform
+          // the value.
+          this._angle = parseResult.value;
           break;
         }
         return BentleyStatus.ERROR;

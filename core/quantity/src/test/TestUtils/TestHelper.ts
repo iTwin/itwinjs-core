@@ -31,6 +31,12 @@ const unitData: UnitDefinition[] = [
   { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
   { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
   { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "grad", altDisplayLabels: ["gd"] },
+  // Horizontal direction (true azimuth, already measured clockwise from north; base unit radian). Mirrors the Angle conversion factors above.
+  { name: "Units.HORIZONTAL_DIR_RAD", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
+  { name: "Units.HORIZONTAL_DIR_REVOLUTION", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 1.0, denominator: 6.283185307179586, offset: 0.0 }, displayLabel: "r", altDisplayLabels: ["rev"] },
+  { name: "Units.HORIZONTAL_DIR_ARC_DEG", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg", "^"] },
+  { name: "Units.HORIZONTAL_DIR_ARC_MINUTE", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
+  { name: "Units.HORIZONTAL_DIR_ARC_SECOND", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
   // Time ( base unit second )
   { name: "Units.S", phenomenon: "Units.TIME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "s", altDisplayLabels: ["sec"] },
   { name: "Units.MIN", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 60.0, offset: 0.0 }, displayLabel: "min", altDisplayLabels: [] },

@@ -11,6 +11,7 @@ import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, RatioType, ScientificType, ShowSignOption } from "./FormatEnums";
 import { applyConversion, Quantity } from "../Quantity";
+import { Phenomena } from "../generated/Units.generated";
 
 /**  rounding additive
  * @internal
@@ -519,8 +520,18 @@ export class Formatter {
       return {magnitude};
 
     const revolution = this.getRevolution(spec);
-    magnitude = this.normalizeAngle(magnitude, revolution);
     const quarterRevolution = revolution / 4;
+
+    // If the persisted value is a raw mathematical angle (measured counter-clockwise from east)
+    // rather than a true azimuth (measured clockwise from north), convert it to azimuth convention
+    // before running the Bearing/Azimuth logic below. This is intentionally NOT done via the
+    // generic unit-conversion pipeline (Quantity.convertTo) -- the ANGLE and HORIZONTAL_DIRECTION
+    // phenomena are deliberately not convertible to each other there, because this is a convention
+    // transform (reflection + phase shift), not a unit scale factor.
+    if (spec.persistenceUnit.phenomenon === Phenomena.ANGLE)
+      magnitude = quarterRevolution - magnitude;
+
+    magnitude = this.normalizeAngle(magnitude, revolution);
 
     if (type === FormatType.Bearing) {
       let quadrant = 0;
