@@ -439,6 +439,7 @@ export interface GetSchemaViewArgs {
    * returning it. The previously returned view instance (if any) is marked outdated. Like every other
    * request, this is serialized behind any in-flight load, so it waits for pending work to finish before
    * resetting - never leaving the view in an invalid intermediate state.
+   * @internal
    */
   readonly forceReload?: boolean;
 }
@@ -1831,6 +1832,9 @@ export abstract class IModelDb extends IModel {
       // Reset so the next call starts clean. We deliberately leave `_schemaViewPromise` pointing at
       // this (now rejected) promise: the next call chains onto it, catches the rejection above, and
       // rebuilds - which also avoids stomping any newer queued load.
+      // The current view (if any) is abandoned by that rebuild, so mark it outdated for callers still
+      // holding it - a failed merge may even have left it partially extended.
+      currentView?.markOutdated();
       this._resetSchemaState();
       throw err;
     }
@@ -1910,7 +1914,7 @@ export abstract class IModelDb extends IModel {
         this._loadedSchemaNames.add(name.toLowerCase());
     }
     // Everything loaded? If yes, collapse the manifest fields which indicates a fully hydrated schema view so future requests hit the fast path above.
-    if (schemas === undefined || this._loadedSchemaNames.size >= manifest.schemaCount && manifest.entries.every((entry) => this._loadedSchemaNames.has(entry.name.toLowerCase())))
+    if (schemas === undefined || (this._loadedSchemaNames.size >= manifest.schemaCount && manifest.entries.every((entry) => this._loadedSchemaNames.has(entry.name.toLowerCase()))))
       this._resetSchemaState();
     return husk;
   }

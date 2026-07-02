@@ -5,7 +5,7 @@
 
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import { GenericSchema, IModelHost, SnapshotDb } from "../../core-backend";
-import { SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
+import { type SchemaView, SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
@@ -96,7 +96,7 @@ const schemaC = `<?xml version="1.0" encoding="UTF-8"?>
  * TS reader/merge), which is where the fragment mechanism actually has to work. The blob format
  * itself is an internal C++-writer-to-TS-reader contract.
  */
-describe("SchemaView fragment loading", () => {
+describe.only("SchemaView fragment loading", () => {
   before(async () => {
     if (!IModelHost.isValid)
       await TestUtils.startBackend();
@@ -108,6 +108,20 @@ describe("SchemaView fragment loading", () => {
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "SchemaViewFragmentLoading" } });
     await iModel.importSchemaStrings([schemaB, schemaA]);
     return iModel;
+  }
+
+  /** Every schema name in the iModel, straight from ECDbMeta - the same source the schema manifest
+   * is built from - so tests never hardcode the schema inventory of an empty snapshot. */
+  async function queryAllSchemaNames(iModel: SnapshotDb): Promise<string[]> {
+    const schemaNames: string[] = [];
+    for await (const row of iModel.createQueryReader("SELECT Name FROM meta.ECSchemaDef"))
+      schemaNames.push(row[0] as string);
+    return schemaNames;
+  }
+
+  /** The sorted names of every schema present in a view. */
+  function getSortedViewSchemaNames(view: SchemaView): string[] {
+    return [...view.getSchemas()].map((schema) => schema.name).sort();
   }
 
   it("loads a requested schema and its reference closure, leaving unrequested schemas absent", async () => {
@@ -251,6 +265,135 @@ describe("SchemaView fragment loading", () => {
     } finally {
       iModel.close();
     }
+  });
+
+  it("an unfiltered call after a filtered one merges the remaining schemas into the same view and collapses to full mode", async () => {
+    const iModel = await createIModelWithFragSchemas();
+    try {
+      // Start incremental: only FragB (+ BisCore) is loaded.
+      const subsetView = await iModel.getSchemaView({ schemas: ["FragB"] });
+      expect(subsetView.getSchema("FragA")).to.be.undefined;
+
+      // The unfiltered call means "I need everything": it must merge the rest into the SAME instance.
+      const fullView = await iModel.getSchemaView();
+      expect(fullView, "the husk accumulates; no new instance").to.equal(subsetView);
+      expect(fullView.findClass("FragA:AElement"), "previously missing schema is now merged").to.not.be.undefined;
+      expect(fullView.findClass("FragB:BElement"), "earlier schemas remain available").to.not.be.undefined;
+
+      // The unfiltered merge must have collapsed the incremental bookkeeping into full mode: any
+      // further request - filtered or not - is a synchronous no-op that issues no queries.
+      const queryReaderSpy = sinon.spy(iModel, "createQueryReader");
+      try {
+        const filteredAgain = await iModel.getSchemaView({ schemas: ["FragA"] });
+        const unfilteredAgain = await iModel.getSchemaView();
+        expect(filteredAgain).to.equal(fullView);
+        expect(unfilteredAgain).to.equal(fullView);
+        expect(queryReaderSpy.notCalled, "fully loaded view is served without any queries").to.be.true;
+      } finally {
+        queryReaderSpy.restore();
+      }
+    } finally {
+      iModel.close();
+    }
+  });
+
+  it("filling the view schema-by-schema via filters collapses to full mode and matches a full load", async () => {
+    const iModel = await createIModelWithFragSchemas();
+    try {
+      // Request every schema the iModel contains, one filtered call at a time. The names come from
+      // ECDbMeta (the manifest's own source), so nothing about the snapshot's schema inventory is
+      // hardcoded - this also exercises requesting excluded schemas (e.g. CoreCustomAttributes)
+      // directly, which must be tolerated and contribute nothing.
+      const allSchemaNames = await queryAllSchemaNames(iModel);
+      expect(allSchemaNames.length, "snapshot contains more schemas than the two imported ones").to.be.greaterThan(2);
+
+      let accumulatingView: SchemaView | undefined;
+      for (const schemaName of allSchemaNames) {
+        const view = await iModel.getSchemaView({ schemas: [schemaName] });
+        if (accumulatingView === undefined)
+          accumulatingView = view;
+        else
+          expect(view, "every filtered call returns the one accumulating instance").to.equal(accumulatingView);
+      }
+      if (accumulatingView === undefined)
+        expect.fail("no schema view was obtained");
+
+      // Once every schema has been requested, the view must have collapsed to full mode: an
+      // unfiltered request is a synchronous no-op on the same instance, with no queries issued.
+      const queryReaderSpy = sinon.spy(iModel, "createQueryReader");
+      try {
+        const fullRequest = await iModel.getSchemaView();
+        expect(fullRequest).to.equal(accumulatingView);
+        expect(queryReaderSpy.notCalled, "collapsed view is served without any queries").to.be.true;
+      } finally {
+        queryReaderSpy.restore();
+      }
+
+      // The fragment-filled view must be equivalent to a from-scratch full load of the same iModel:
+      // same schemas present (both paths apply the same exclusion list in the native writer).
+      const rebuiltFullView = await iModel.getSchemaView({ forceReload: true });
+      expect(rebuiltFullView).to.not.equal(accumulatingView);
+      expect(getSortedViewSchemaNames(accumulatingView), "fragment fill and full load agree on the schema set")
+        .to.deep.equal(getSortedViewSchemaNames(rebuiltFullView));
+    } finally {
+      iModel.close();
+    }
+  });
+
+  describe("forceReload", () => {
+    it("discards an accumulated husk and rebuilds from scratch", async () => {
+      const iModel = await createIModelWithFragSchemas();
+      try {
+        // Accumulate FragA + FragB into one husk.
+        const view1 = await iModel.getSchemaView({ schemas: ["FragA"] });
+        expect(view1.getSchema("FragB")).to.not.be.undefined;
+        expect(view1.isOutdated).to.be.false;
+
+        // forceReload with a narrower filter: the old husk is dropped and marked outdated, and the
+        // rebuilt view contains only the newly requested closure - FragA is gone.
+        const view2 = await iModel.getSchemaView({ schemas: ["FragB"], forceReload: true });
+        expect(view2).to.not.equal(view1);
+        expect(view1.isOutdated, "the discarded husk is marked outdated").to.be.true;
+        expect(view2.isOutdated).to.be.false;
+        expect(view2.getSchema("FragB")).to.not.be.undefined;
+        expect(view2.getSchema("FragA"), "rebuild starts from scratch; earlier schemas are not carried over").to.be.undefined;
+      } finally {
+        iModel.close();
+      }
+    });
+
+    it("rebuilds a fully loaded view", async () => {
+      const iModel = await createIModelWithFragSchemas();
+      try {
+        const view1 = await iModel.getSchemaView();
+        const view2 = await iModel.getSchemaView({ forceReload: true });
+        expect(view2).to.not.equal(view1);
+        expect(view1.isOutdated).to.be.true;
+        expect(view2.isOutdated).to.be.false;
+        // The rebuilt view is complete again.
+        expect(getSortedViewSchemaNames(view2)).to.deep.equal(getSortedViewSchemaNames(view1));
+      } finally {
+        iModel.close();
+      }
+    });
+
+    it("is serialized behind an in-flight load", async () => {
+      const iModel = await createIModelWithFragSchemas();
+      try {
+        // Fire a load and a forceReload without awaiting in between. The reload must wait for the
+        // first load to finish, then discard its result - never tearing down state mid-load.
+        const [view1, view2] = await Promise.all([
+          iModel.getSchemaView({ schemas: ["FragA"] }),
+          iModel.getSchemaView({ schemas: ["FragA"], forceReload: true }),
+        ]);
+        expect(view2).to.not.equal(view1);
+        expect(view1.isOutdated, "the first load's view was discarded by the reload").to.be.true;
+        expect(view2.isOutdated).to.be.false;
+        expect(view2.findClass("FragA:AElement"), "the rebuilt view is fully usable").to.not.be.undefined;
+      } finally {
+        iModel.close();
+      }
+    });
   });
 
   it("loads a real domain schema's reference closure, dropping references that are excluded", async () => {

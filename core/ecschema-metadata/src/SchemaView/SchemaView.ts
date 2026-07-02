@@ -200,8 +200,10 @@ export class SchemaView {
   }
 
   /** Merge one fragment blob into this view. Only valid on a view created via `createMergeable`.
-   * Synchronous and atomic: on return the view reflects the merged schemas, and any flyweight or
-   * cached index obtained before the call remains valid. Throws if this view is not mergeable.
+   * Synchronous. On success the view reflects the merged schemas, and any flyweight or cached index
+   * obtained before the call remains valid. If the merge throws (e.g. on a malformed blob), the view
+   * may be left partially extended and must be discarded by the host. Throws if this view is not
+   * mergeable.
    * @internal
    */
   public mergeFragment(blob: Uint8Array): void {
