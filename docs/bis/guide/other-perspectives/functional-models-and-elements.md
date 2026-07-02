@@ -6,6 +6,8 @@ The functional domain allows defining objects that represent systems or processe
 
 The functional definition of a process is usually defined early in the design of a project. These objects show up in design diagrams and data sheets. The Functional objects eventually will be created in the Physical model. The physical objects will be related to the functional object with a *fulfills* relationship.
 
+It is helpful to read *fulfills* as an assignment or modeling assertion: it records which physical object is intended to satisfy which functional requirement. By itself, that relationship is not a verdict that the requirement has already been verified, tested, or approved. In other words, it answers **"what physical thing is meant to fulfill this functional thing?"** rather than **"has fulfillment been proven?"**
+
 ![Model Hierarchy](../media/Func-Phys-Graphic.png)
 
 ## Functional Elements

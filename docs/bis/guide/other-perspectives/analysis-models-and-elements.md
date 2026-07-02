@@ -4,11 +4,19 @@
 
 `AnalyticalModel`s are models used to facilitate analyses of infrastructure. Analyses that require an AnalyticalModel typically are specialized analytical perspectives that cannot be performed directly on `PhysicalModel`s as the physical world is too complex; these analyses require simplified geometry and other data. AnalyticalModels are often created in true world coordinates.
 
+In plain language, an `AnalyticalModel` is usually an *idealized* version of the physical world that is easier for a specific calculation to use. It is not just a second copy of the `PhysicalModel`. Instead, it keeps the pieces that matter for a given analysis and may replace detailed physical geometry with simpler representations such as lines, panels, zones, or network nodes.
+
 Typically each AnalyticalModel is relevant to only one type of analysis. A particular PhysicalModel (e.g. a building) may have multiple associated AnalyticalModels. Examples of the analyses facilitated by AnalyticalModels are Hydraulic analysis, Building energy analysis, Traffic analysis and Structural analysis.
 
 Any analysis involves one or more numerical solvers capable of predicting the behavior of a system (output) based on a set of initial conditions (input). While some analyses can be performed directly on the Physical Perspective data, there are many kinds of analyses that require a parallel representation of reality based on a custom perspective. In the latter case, input data of an analysis is captured in the corresponding analytical model perspective of the applicable `Subject` in a BIS repository.
 
 Note that a BIS repository is not appropriate to store results or output data from an analysis. Analytical resultsets are usually transient and large in size, created frequently or in-bulk as a specialized modeler tries out several sets of initial conditions.
+
+A helpful beginner distinction is:
+
+- the **schema** defines what kinds of analytical objects and properties can exist;
+- the **repository data** stores the particular analytical inputs, assumptions, and links for one project; and
+- the **external analysis software** performs the solver-specific computation, and usually manages the large, frequently changing output data outside BIS.
 
 ## Analytical Elements
 
