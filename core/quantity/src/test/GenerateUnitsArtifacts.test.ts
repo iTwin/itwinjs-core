@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
@@ -14,6 +16,7 @@ import {
   buildSerializedUnitsJson,
   formatGeneratedNumber,
 } from "../../scripts/generatedModuleBuilders";
+import { generatedArtifactRelativePaths, generateUnitsArtifacts } from "../../scripts/generateUnitsJson";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
@@ -134,5 +137,38 @@ describe("Generated Units artifacts", () => {
 
   it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
     expect(normalizeLineEndings(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+  });
+
+  it("generates the tracked artifacts exactly into a temporary destination", () => {
+    const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
+
+    try {
+      const result = generateUnitsArtifacts(destinationRoot);
+
+      const generatedArtifactPaths = Object.fromEntries(
+        Object.entries(generatedArtifactRelativePaths).map(([artifactName, relativePath]) => [artifactName, join(destinationRoot, relativePath)]),
+      ) as { [key in keyof typeof generatedArtifactRelativePaths]: string };
+
+      expect(result.anyChanged).toBe(true);
+      expect(result.destinationRoot).toBe(resolve(destinationRoot));
+      expect(result.schemaVersion).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(readFileSync(generatedArtifactPaths.unitsJson, "utf8")).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.generatedTs, "utf8"))).toBe(normalizeLineEndings(generatedIdentifiersSource));
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.basicConversionTs, "utf8"))).toBe(normalizeLineEndings(generatedBasicConversionsSource));
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.defaultPersistenceTs, "utf8"))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+    } finally {
+      rmSync(destinationRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("does not rewrite unchanged artifacts when rerun in the same destination", () => {
+    const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
+
+    try {
+      expect(generateUnitsArtifacts(destinationRoot).anyChanged).toBe(true);
+      expect(generateUnitsArtifacts(destinationRoot).anyChanged).toBe(false);
+    } finally {
+      rmSync(destinationRoot, { recursive: true, force: true });
+    }
   });
 });
