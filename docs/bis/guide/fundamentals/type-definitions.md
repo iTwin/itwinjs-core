@@ -17,7 +17,7 @@ If the primary `Element` instance has an ECProperty with the same name as one in
 
 ## Choosing between a Type, an ElementAspect, and an element-level override
 
-These three tools solve different modeling problems:
+These three tools solve different problems:
 
 Option | Use it when
 --- | ---
@@ -29,7 +29,7 @@ Rule of thumb:
 
 - If you want **reuse across many Elements**, start with a type.
 - If you want **extra information attached to one Element**, start with an aspect.
-- If you already have a type and just need **an exception for one instance**, use an override instead of creating a brand-new type for that one case.
+- If you already have a type and just need **one exception**, use an override instead of creating a new type just for that instance.
 
 For example, let's say that we are modeling a double-hung window using ECEntityClass `DoubleHungWindow`. Most double-hung windows are ordered from a catalog, and the only permutations of height and width of window that you can get are those that are listed in the catalog. The author of the DoubleHungWindow ECEntityClass with also define a subclass of `TypeDefinition` (or its subclass `PhysicalType`) `DoubleHungWindowType` that has ECProperties for all properties of double-hung windows that vary per-type (per catalog-entry) rather than per instance, e.g. `Height`, `Width` and `IsInsulated`. For many products, not much other than the spatial placement of the entity will vary per instance. For our double-hung window, there might be 4 types, where each has a `CodeValue` that is its product-model-number: 2x4I, 2x3I, 2x4U, 2x3U. In a GUI, the list of `TypeDefinitionElement` instances that are applicable to a given primary `Element` ECEntityClass can be used to populate a drop-down list of available "types" for the given ECEntityClass. The list of available types can be narrowed-down by defining specializations of the `PhysicalElementIsOfType` relationship.
 

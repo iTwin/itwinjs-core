@@ -278,9 +278,9 @@ See also [ECRelationshipClasses](#ecrelationshipclasses).
 
 ECSQL | Description
 --- | ---
-`SELECT Parent FROM bis.Element WHERE ECInstanceId=?` | Returns the Parent navigation property as a whole (including Id and RelECClassId)
-`SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=?` | Returns just the Id member of the Parent navigation property
-`SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId=?` | Returns the Id, and the RelECClassId member of the Parent navigation property as two separate columns
+`SELECT Model FROM bis.Element WHERE ECInstanceId=?` | Given a light fixture element, returns the Model navigation property as a whole (including Id and RelECClassId)
+`SELECT Model.Id FROM bis.Element WHERE ECInstanceId=?` | Given a light fixture element, returns just the Id of the Model that contains it
+`SELECT Model.Id, Model.RelECClassId FROM bis.Element WHERE ECInstanceId=?` | Given a light fixture element, returns the Model Id together with the relationship class behind that navigation property
 
 ## ECRelationshipClasses
 
@@ -293,17 +293,20 @@ Property | Description
 `TargetECInstanceId` | ECInstanceId of the instance on the *target* end of the relationship
 `TargetECClassId` | ECClassId of the instance on the *target* end of the relationship
 
-> - If the ECRelationshipClass is backed by a [Navigation property](#navigation-properties), it is usually much easier to use the navigation property in your ECSQL than the ECRelationshipClass.
+> - If the schema exposes a [Navigation property](#navigation-properties) for the traversal you need, that navigation property is often the simpler way to write the query.
 > - `SourceECClassId` and `TargetECClassId` are skipped when performing a `SELECT * FROM` statement or an `INSERT INTO` statement without a property name list.
 
 In plain SQL terms, an ECRelationshipClass is the logical "middle layer" between two classes. For many-to-many data, you can think of it like the link table that stores one row per related pair. ECSQL lets you work with that relationship directly, without needing to know whether the underlying persistence uses a separate link table, a foreign key, or another physical layout.
+
+The examples below start with one built-in BIS relationship that will run on many iModels, then continue one walkthrough scenario: a school gym has a functional requirement called *Light the Gym*, and several physical light fixtures may be assigned to fulfill it.
 
 ### Examples
 
 ECSQL | Description
 --- | ---
-`SELECT SourceECInstanceId FROM func.PhysicalElementFulfillsFunction WHERE TargetECInstanceId=?` | Given the `FunctionalElement` for *Illuminate the Gym*, returns the ECInstanceId of each `PhysicalElement` assigned to fulfill it
-`SELECT TargetECInstanceId FROM func.PhysicalElementFulfillsFunction WHERE SourceECInstanceId=?` | Given a specific light fixture, returns the ECInstanceId of each `FunctionalElement` that the fixture is assigned to fulfill
+`SELECT SourceECInstanceId FROM bis.ModelContainsElements WHERE TargetECInstanceId=?` | Given an element, returns the ECInstanceId of the `Model` that contains it. This built-in BIS example shows the same source/target pattern without depending on a custom functional schema.
+`SELECT SourceECInstanceId FROM func.PhysicalElementFulfillsFunction WHERE TargetECInstanceId=?` | Given the `FunctionalElement` for *Light the Gym*, returns the ECInstanceId of each light fixture assigned to fulfill it
+`SELECT TargetECInstanceId FROM func.PhysicalElementFulfillsFunction WHERE SourceECInstanceId=?` | Given a specific light fixture, returns the ECInstanceId of each functional requirement that the fixture is assigned to fulfill
 
 ## Joins
 
@@ -311,15 +314,15 @@ Joins between ECClasses are specified with the standard SQL join syntax (either 
 
 In ECSchemas ECRelationshipClasses are used to relate two ECClasses. ECRelationshipClasses can therefore be seen as virtual link tables between those two classes. A useful beginner mental model is: **start at one class, step through the relationship rows, then step to the related class**. If you want to join two ECClasses via their ECRelationshipClass, you need to join the first class to the relationship class and then the relationship class to the second class.
 
-For example, imagine a school gym with a functional requirement called *Illuminate the Gym*. Several physical light fixtures may fulfill that one requirement, and one fixture might also fulfill another requirement such as *Provide Emergency Egress Lighting*. That is a many-to-many relationship, so the relationship rows record the fixture-to-requirement pairings.
+In this gym example, one fixture might also fulfill another requirement such as *Provide Emergency Egress Lighting*. That is a many-to-many relationship, so the relationship rows record the fixture-to-requirement pairings.
 
-If [navigation properties](#navigation-properties) are defined for the ECRelationship class, use the navigation property instead of a join.
+Some traversals are also exposed through [navigation properties](#navigation-properties), which give you another way to reach the related data.
 
 ### Examples
 
-Without navigation property (2 JOINs needed):
+Using an ECRelationshipClass directly (2 JOINs needed):
 
-Scenario: given the `FunctionalElement` for *Illuminate the Gym*, return the `PhysicalElement`s assigned to fulfill it.
+Scenario: given the `FunctionalElement` for *Light the Gym*, return the `PhysicalElement`s assigned to fulfill it.
 
 ```sql
 SELECT phys.CodeValue, phys.UserLabel
@@ -328,10 +331,21 @@ JOIN func.PhysicalElementFulfillsFunction rel
   ON phys.ECInstanceId = rel.SourceECInstanceId   -- step 1: find relationship rows for each fixture
 JOIN func.FunctionalElement fn
   ON fn.ECInstanceId = rel.TargetECInstanceId     -- step 2: hop from the relationship row to the requirement
-WHERE fn.ECInstanceId = ?                         -- the bound parameter is the "Illuminate the Gym" requirement
+WHERE fn.ECInstanceId = ?                         -- the bound parameter is the "Light the Gym" requirement
 ```
 
-When a relationship *does* expose a navigation property, the query can be shorter. The gym example above uses an `ECRelationshipClass` directly; the examples below show the same general idea with the built-in `Element.Model` navigation property.
+The result might look like this:
+
+| CodeValue | UserLabel |
+| --- | --- |
+| `GYM-LT-001` | `North court light bank` |
+| `GYM-LT-002` | `South court light bank` |
+
+Each row is one lighting fixture assigned to the *Light the Gym* requirement. The query lists assigned fixtures, not proof that the requirement has been satisfied.
+
+The gym query above is an example. It assumes a schema with functional data such as `func.PhysicalElementFulfillsFunction`. The next examples stay in the same gym walkthrough, but switch to the built-in `Element.Model` navigation property to show a different case. Here, the schema already exposes a navigation path from an element to its containing model, so ECSQL can express that traversal more directly.
+
+Using a navigation property (`Element.Model`):
 
 Return the CodeValue and UserLabel of all Elements in the Model named *Gym Lighting Model* (1 JOIN needed):
 
@@ -339,7 +353,7 @@ Return the CodeValue and UserLabel of all Elements in the Model named *Gym Light
 SELECT e.CodeValue,e.UserLabel FROM bis.Element e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.Name=?
 ```
 
-Return the Model for a specific light fixture element (No join needed):
+Return the Model for a specific light fixture element (navigation property only, no join needed):
 
 ```sql
 SELECT Model FROM bis.Element WHERE ECInstanceId=?

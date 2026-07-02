@@ -4,7 +4,9 @@
 
 `AnalyticalModel`s are models used to facilitate analyses of infrastructure. Analyses that require an AnalyticalModel typically are specialized analytical perspectives that cannot be performed directly on `PhysicalModel`s as the physical world is too complex; these analyses require simplified geometry and other data. AnalyticalModels are often created in true world coordinates.
 
-In plain language, an `AnalyticalModel` is usually an *idealized* version of the physical world that is easier for a specific calculation to use. It is not just a second copy of the `PhysicalModel`. Instead, it keeps the pieces that matter for a given analysis and may replace detailed physical geometry with simpler representations such as lines, panels, zones, or network nodes.
+An `AnalyticalModel` is usually an *idealized* version of the physical world for a specific calculation. It is not just a second copy of the `PhysicalModel`. It keeps the pieces that matter for that analysis and may replace detailed physical geometry with simpler representations such as lines, panels, zones, or network nodes.
+
+For example, a physical power line may be modeled in detail as wires, supports, and fittings in a `PhysicalModel`, while an analytical model may represent that same run as a simpler line with sag, loading, and tolerance inputs for a structural check. In other cases, the analytical content may have little or no direct physical representation at all. It may primarily consist of nodes, zones, coefficients, or other numeric inputs assembled for a solver.
 
 Typically each AnalyticalModel is relevant to only one type of analysis. A particular PhysicalModel (e.g. a building) may have multiple associated AnalyticalModels. Examples of the analyses facilitated by AnalyticalModels are Hydraulic analysis, Building energy analysis, Traffic analysis and Structural analysis.
 
@@ -12,7 +14,7 @@ Any analysis involves one or more numerical solvers capable of predicting the be
 
 Note that a BIS repository is not appropriate to store results or output data from an analysis. Analytical resultsets are usually transient and large in size, created frequently or in-bulk as a specialized modeler tries out several sets of initial conditions.
 
-A helpful beginner distinction is:
+A useful beginner distinction is:
 
 - the **schema** defines what kinds of analytical objects and properties can exist;
 - the **repository data** stores the particular analytical inputs, assumptions, and links for one project; and
