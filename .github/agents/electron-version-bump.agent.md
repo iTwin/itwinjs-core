@@ -76,7 +76,7 @@ Only proceed with commits after confirming the current branch is an `electron-` 
 
 ## Execution Flow
 
-**General rule:** Always use `rush` commands directly (e.g., `rush update`, `rush build`). Do not use `node common/scripts/install-run-rush.js` — it is an internal bootstrapping mechanism not intended for direct invocation.
+**General rule:** Prefer `rush` commands directly (e.g., `rush update`, `rush build`) when `rush` is available on PATH. In environments where Rush may not be installed globally (including this repo’s CI), use `node common/scripts/install-run-rush.js <command>`.
 
 ### Step 1: Update peer dependency ranges
 
