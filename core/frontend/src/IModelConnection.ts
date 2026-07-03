@@ -712,35 +712,26 @@ export abstract class IModelConnection extends IModel {
   private _createSchemaViewDataProvider(): SchemaViewDataProvider {
     return {
       fetchFullBlob: async () => this._fetchSchemaBlob(`PRAGMA schema_view(${schemaViewFormatVersion})`),
-      fetchFragmentBlob: async (schemaNames) => {
-        // The pragma wants `ec_Schema` ECInstanceIds in decimal, so resolve the names first. Schemas
-        // are few, so fetching all id/name pairs and filtering here beats building dynamic SQL.
-        // Names come from the manifest's closure walk; a name that no longer resolves means the
-        // iModel's schemas changed under us, so it is simply dropped - the schema-token comparison
-        // governs staleness, not this lookup.
-        const requestedNames = new Set(schemaNames.map((name) => name.toLowerCase()));
-        const ids: number[] = [];
-        const sql = "SELECT ECInstanceId as id, Name as name FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(sql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
-          if (requestedNames.has((row.name as string).toLowerCase()))
-            ids.push(Number(row.id)); // ECInstanceId comes back as a hex Id64String; schemas are few with small ids
-        }
-        if (ids.length === 0)
-          throw new IModelError(IModelStatus.BadRequest, "None of the requested schemas exist in the iModel; its schemas changed during the load");
-        // Ids originate from our own query and are formatted strictly as decimal digits (native
-        // re-validates) as defense in depth. The `v<N>;` prefix pins the blob format version.
-        return this._fetchSchemaBlob(`PRAGMA schema_view_fragment('v${schemaViewFormatVersion};${ids.join(",")}')`);
-      },
+      // The pragma takes the schema names directly (comma-separated; names are ECNames, so a comma
+      // can never occur in one). Names come from the manifest's closure walk, i.e. from our own
+      // ECSchemaDef query; native re-validates each token as an ECName and fails on unknown names,
+      // which the schema-token comparison then resolves by invalidating the view. The `v<N>;`
+      // prefix pins the blob format version.
+      fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('v${schemaViewFormatVersion};${schemaNames.join(",")}')`),
       fetchManifest: async () => {
         const schemaRows: SchemaManifestSchemaRow[] = [];
-        const schemaSql = "SELECT ECInstanceId as id, Name as name, VersionMajor as versionMajor, VersionWrite as versionWrite, VersionMinor as versionMinor FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(schemaSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
-          schemaRows.push({ ecInstanceId: Number(row.id), name: row.name, versionMajor: row.versionMajor, versionWrite: row.versionWrite, versionMinor: row.versionMinor });
+        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql)) {
+          // ECInstanceId arrives as a hex Id64String. Schema rows are plain `ec_` metadata rowids
+          // with no briefcase prefix, so the local id is the full value; Id64.getLocalId is the
+          // codebase's precision-safe hex-to-number extraction.
+          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
+        }
 
         const referenceRows: SchemaManifestReferenceRow[] = [];
-        const referenceSql = "SELECT SourceECInstanceId as sourceId, TargetECInstanceId as targetId FROM meta.SchemaHasSchemaReferences";
-        for await (const row of this.createQueryReader(referenceSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
-          referenceRows.push({ sourceECInstanceId: Number(row.sourceId), targetECInstanceId: Number(row.targetId) });
+        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql))
+          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
 
         return SchemaManifest.fromRows(schemaRows, referenceRows);
       },

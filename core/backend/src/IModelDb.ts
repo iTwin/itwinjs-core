@@ -1186,9 +1186,6 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      // Throw away the current schema view. The manager chains the teardown onto any in-flight load,
-      // marks the discarded view outdated, and clears the incremental bookkeeping; the next
-      // getSchemaView starts over.
       this._schemaViewManager?.reset();
       this[_nativeDb].clearECDbCache();
     }
@@ -1778,43 +1775,31 @@ export abstract class IModelDb extends IModel {
   }
 
   /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
-   * transport-specific half of schema-view loading. The backend deliberately uses the *non-pinned*
-   * pragma forms - it is strictly coupled with native code, so the latest blob format version is
-   * always the right one (unlike the frontend, which can be version-skewed against the backend and
-   * must pin).
+   * transport-specific half of schema-view loading. The backend always uses the latest blob version
+   * since it is strictly coupled with native code.
    */
   private _createSchemaViewDataProvider(): SchemaViewDataProvider {
     return {
       fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
-      fetchFragmentBlob: async (schemaNames) => {
-        // The pragma wants `ec_Schema` ECInstanceIds in decimal, so resolve the names first. Schemas
-        // are few, so fetching all id/name pairs and filtering here beats building dynamic SQL.
-        // Names come from the manifest's closure walk; a name that no longer resolves means the
-        // iModel's schemas changed under us, so it is simply dropped - the schema-token comparison
-        // governs staleness, not this lookup.
-        const requestedNames = new Set(schemaNames.map((name) => name.toLowerCase()));
-        const ids: number[] = [];
-        const sql = "SELECT ECInstanceId as id, Name as name FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(sql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
-          if (requestedNames.has((row.name as string).toLowerCase()))
-            ids.push(Number(row.id)); // ECInstanceId comes back as a hex Id64String; schemas are few with small ids
-        }
-        if (ids.length === 0)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "None of the requested schemas exist in the iModel; its schemas changed during the load");
-        // Ids originate from our own query and are formatted strictly as decimal digits (native
-        // re-validates) as defense in depth.
-        return this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${ids.join(",")}')`);
-      },
+      // The pragma takes the schema names directly (comma-separated; names are ECNames, so a comma
+      // can never occur in one). Names come from the manifest's closure walk, i.e. from our own
+      // ECSchemaDef query; native re-validates each token as an ECName and fails on unknown names,
+      // which the schema-token comparison then resolves by invalidating the view.
+      fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
       fetchManifest: async () => {
         const schemaRows: SchemaManifestSchemaRow[] = [];
-        const schemaSql = "SELECT ECInstanceId as id, Name as name, VersionMajor as versionMajor, VersionWrite as versionWrite, VersionMinor as versionMinor FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(schemaSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
-          schemaRows.push({ ecInstanceId: Number(row.id), name: row.name, versionMajor: row.versionMajor, versionWrite: row.versionWrite, versionMinor: row.versionMinor });
+        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql)) {
+          // ECInstanceId arrives as a hex Id64String. Schema rows are plain `ec_` metadata rowids
+          // with no briefcase prefix, so the local id is the full value; Id64.getLocalId is the
+          // codebase's precision-safe hex-to-number extraction.
+          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
+        }
 
         const referenceRows: SchemaManifestReferenceRow[] = [];
-        const referenceSql = "SELECT SourceECInstanceId as sourceId, TargetECInstanceId as targetId FROM meta.SchemaHasSchemaReferences";
-        for await (const row of this.createQueryReader(referenceSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
-          referenceRows.push({ sourceECInstanceId: Number(row.sourceId), targetECInstanceId: Number(row.targetId) });
+        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql))
+          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
 
         return SchemaManifest.fromRows(schemaRows, referenceRows);
       },

@@ -36,7 +36,7 @@ export interface SchemaViewDataProvider {
 
   /** Fetch one blob containing exactly the given schemas (`PRAGMA schema_view_fragment`). The
    * requested set is always dependency-closed - the manager computes the reference closure from the
-   * manifest before calling. Resolving the names to the ids the pragma expects is the provider's job. */
+   * manifest before calling. The pragma takes the schema names directly. */
   fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
 
   /** Fetch the reference graph of every schema in the iModel, built from ECDbMeta

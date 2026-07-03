@@ -21,7 +21,9 @@ export interface SchemaManifestEntry {
 }
 
 /** One row of `SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM
- * meta.ECSchemaDef`, as passed to {@link SchemaManifest.fromRows}. The id is used only to wire
+ * meta.ECSchemaDef`, as passed to {@link SchemaManifest.fromRows}. The id is a plain number,
+ * matching SchemaView's convention for schema-related rows: `ec_` metadata rowids carry no
+ * briefcase prefix, so they are small and exactly representable. It is used only to wire
  * reference edges and is not retained in the manifest.
  * @internal
  */

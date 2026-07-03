@@ -295,7 +295,7 @@ No encoding change is needed because the format already addresses every cross-sc
 ### Producing a fragment
 
 - `PRAGMA schema_view(N)` emits a whole-schema blob: every non-excluded schema in the iModel.
-- `PRAGMA schema_view_fragment('id,id,...')` emits a fragment containing exactly the schemas whose `ec_Schema.Id` appears in the comma-delimited list. The caller passes a dependency-closed set of schema ids (computed from the schema reference graph - `meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`, outside the blob). Unknown or unparseable ids fail the pragma rather than emit a partial blob. The format version is an optional `v<N>;` prefix on the same string (e.g. `'v1;131,145,150'`); omitted means the latest version. See [PRAGMA schema_view_fragment](../ECSqlReference/Pragmas.md#pragma-schema_view_fragment) for the argument grammar and why the version is carried inside the string.
+- `PRAGMA schema_view_fragment('name,name,...')` emits a fragment containing exactly the named schemas. The caller passes a dependency-closed set of schema names (computed from the schema reference graph - `meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`, outside the blob). Names are matched case-insensitively; malformed or unknown names fail the pragma rather than emit a partial blob. The format version is an optional `v<N>;` prefix on the same string (e.g. `'v1;BisCore,Generic'`); omitted means the latest version. Schema names are ECNames, so neither `,` nor `;` can occur in one. See [PRAGMA schema_view_fragment](../ECSqlReference/Pragmas.md#pragma-schema_view_fragment) for the argument grammar and why the version is carried inside the string.
 
 Both pragmas produce identical byte layout; a fragment that happens to contain every schema is byte-for-byte the same as the whole-schema blob.
 
@@ -361,4 +361,4 @@ In practice any iModel that has been opened by iTwin.js since mid-2018 has alrea
 
 - **Writer (C++)**: `iModelCore/ECDb/ECDb/SchemaViewWriter.cpp` / `.h`
 - **Reader (TS)**: `core/ecschema-metadata/src/SchemaView/SchemaViewBinaryReader.ts`
-- **Pragma handlers**: `PRAGMA schema_view(N)` (whole-schema blob) and `PRAGMA schema_view_fragment('id,id,...')` (fragment - same format, subset of schemas)
+- **Pragma handlers**: `PRAGMA schema_view(N)` (whole-schema blob) and `PRAGMA schema_view_fragment('name,name,...')` (fragment - same format, subset of schemas)
