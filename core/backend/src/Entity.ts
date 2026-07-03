@@ -193,7 +193,7 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and iterate `view.findClass(entity.classFullName)?.getProperties()` instead. (`forEach` is also deprecated.)
+   * @deprecated in 5.0 - might be removed in next major version. Obtain a `SchemaView` via `iModel.getSchemaView()` and iterate `view.findClass(entity.classFullName)?.getProperties()` instead. (`forEach` is also deprecated.)
    *
    * @example
    * ```typescript

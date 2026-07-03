@@ -2,6 +2,18 @@
   "name": "@itwin/editor-frontend",
   "entries": [
     {
+      "version": "5.11.0",
+      "tag": "@itwin/editor-frontend_v5.11.0",
+      "date": "Fri, 03 Jul 2026 13:05:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Migrate project geolocation tool settings off deprecated quantity description classes to use createQuantityDescription."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.10.3",
       "tag": "@itwin/editor-frontend_v5.10.3",
       "date": "Tue, 16 Jun 2026 12:58:32 GMT",
