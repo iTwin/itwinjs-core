@@ -474,6 +474,57 @@ export class RebaseManager {
     this.onDownloadChangesetsEnd.clear();
   }
 
+  public async resumeInteractive(/*args: {
+    // TODO: receive description of EC-level conflicts
+    // TODO: where does the propagate / recompute / validate happen?
+    // TODO: are we resolving each Txn in turn? Potential for changes made here to impact subsequent Txns. Do we care?
+    //resolveConflicts: () => Promise<void>
+  }*/): Promise<void> {
+    const nativeDb = this._iModel[_nativeDb];
+    const txns = this._iModel.txns;
+    try {
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      const reversedTxnProps = reversedTxns.map((_) => txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+      this.notifyRebaseBegin(reversedTxnProps);
+
+      let txnId = nativeDb.pullMergeRebaseNext();
+      while (txnId) {
+        const txnProps = txns.getTxnProps(txnId);
+        if (!txnProps) {
+          throw new Error(`Transaction ${txnId} not found`);
+        }
+        this.notifyRebaseTxnBegin(txnProps);
+        Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
+        // const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
+        // if (shouldReinstate) {
+        nativeDb.pullMergeRebaseReinstateTxn();
+        Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+        // }
+
+        // if (this._customHandler) {
+        //   await this._customHandler.recompute(txnProps);
+        // }
+
+        nativeDb.pullMergeRebaseUpdateTxn();
+        this.notifyRebaseTxnEnd(txnProps);
+        txnId = nativeDb.pullMergeRebaseNext();
+      }
+
+      nativeDb.pullMergeRebaseEnd();
+      this.notifyRebaseEnd(reversedTxnProps);
+      if (!nativeDb.isReadonly) {
+        nativeDb.saveChanges("Merge.");
+      }
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      }
+      this.notifyPullMergeEnd(this._iModel.changeset);
+    } catch (err) {
+      nativeDb.pullMergeRebaseAbortTxn();
+      throw err;
+    }
+  }
+
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
    * on top of the latest pulled changes from the remote source.

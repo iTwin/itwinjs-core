@@ -30,8 +30,11 @@ import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
 import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
+import { RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { InteractiveRebase } from "./InteractiveRebase";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
+const INTERACTIVE_REBASE_CONFLICT_HANDLER_ID = "InteractiveRebaseConflictHandler";
 
 /** The argument for patch instances during semantic rebase
  * @internal
@@ -547,6 +550,140 @@ export class BriefcaseManager {
     db.notifyChangesetApplied();
   }
 
+  public static async pullAndApplyChangesetsInteractive(db: BriefcaseDb, arg: PullChangesArgs): Promise<InteractiveRebase | undefined> {
+    const nativeDb = db[_nativeDb];
+
+    if (!db.isOpen || nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
+
+    let currentIndex = db.changeset.index;
+    if (currentIndex === undefined)
+      currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+
+    const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
+    if (reverse) {
+      throw new IModelError(ChangeSetStatus.InvalidId, "pullAndApplyChangesetsInteractive does not support reversing changesets.");
+    }
+
+    if (db.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
+    }
+    if (db.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
+    }
+
+    db.txns.rebaser.notifyPullMergeBegin(db.changeset);
+    db.txns.rebaser.notifyDownloadChangesetsBegin();
+
+    // Download change sets
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({
+      accessToken: arg.accessToken,
+      iModelId: db.iModelId,
+      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
+      progressCallback: arg.onProgress,
+    });
+
+    db.txns.rebaser.notifyDownloadChangesetsEnd();
+
+    if (changesets.length === 0) {
+      db.txns.rebaser.notifyPullMergeEnd(db.changeset);
+      return undefined; // nothing to apply
+    }
+
+    if (db.txns.hasPendingTxns && !db.txns.hasPendingSchemaChanges && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
+      Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+      await this.createRestorePoint(db, this.PULL_MERGE_RESTORE_POINT_NAME);
+    }
+
+    // Assumption: if there are schema changes, they've already been sorted out via SchemaSync.
+    // The local and remote changesets are both compatible with our current schema.
+
+    let rebaseChangesets = changesets;
+
+    db.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
+
+    // Attempt a "fast-forward" merge where we apply the incoming changesets directly on top of the
+    // briefcase without reversing any local changes first. Any conflicts - including in indirect
+    // changes - will cause this process to fail, and a rebase will be required.
+    rebaseChangesets = await db.withFastForwardOnlyMerge(async () => {
+      for (const changeset of changesets) {
+        const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+        Logger.logInfo(loggerCategory, `Starting fast-forward application of changeset with id ${stopwatch.description}`);
+        try {
+          // Pass false for the fastForward parameter because the native layer's idea of a fast forward is different.
+          // We need to abort the fast forward if there are any conflicts, including in indirect changes. This is handled by
+          // `withFastForwardOnlyMerge`.
+          await this.applySingleChangeset(db, changeset, false);
+          nativeDb.saveChanges(`Fast-forward merge changeset with id ${changeset.id}.`);
+          Logger.logInfo(loggerCategory, `Fast-forwarded changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+        } catch (err: any) {
+          // A failure to fast-forward means we need to rebase, starting with the failed changeset.
+          Logger.logInfo(loggerCategory, `Fast-forward failed for changeset with id ${stopwatch.description}, starting rebase`);
+          nativeDb.abandonChanges();
+
+          // Return the remaining changesets starting from the failed one. These are the changesets that will need to
+          // be applied after reversing local changes.
+          return changesets.slice(changesets.indexOf(changeset));
+        }
+      }
+
+      // All changesets have been successfully fast-forwarded. No rebase is required.
+      return [];
+    });
+
+    // If we need to rebase, reverse the local changes first.
+    if (rebaseChangesets.length > 0) {
+      db.txns.rebaser.notifyReverseLocalChangesBegin();
+      const reversedTxns = nativeDb.pullMergeReverseLocalChanges(false);
+      const reversedTxnProps = reversedTxns.map((txn) => db.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
+      db.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
+      Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+    }
+
+    // Apply the incoming changesets that weren't successfully fast-forwarded. This should now succeed because we reversed all local changes first.
+    for (const changeset of rebaseChangesets) {
+      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
+      try {
+        await this.applySingleChangeset(db, changeset, false);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
+        }
+        nativeDb.abandonChanges();
+        throw err;
+      }
+    }
+
+    db.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
+
+    const reversedTxns = nativeDb.pullMergeRebaseBegin();
+    const reversedTxnProps = reversedTxns.map((_) => db.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
+
+    return new InteractiveRebase(db, reversedTxnProps);
+
+    // if (rebaseChangesets.length > 0) {
+    //   db.txns.rebaser.addConflictHandler({
+    //     id: INTERACTIVE_REBASE_CONFLICT_HANDLER_ID,
+    //     handler: (_conflict: RebaseChangesetConflictArgs) => {
+    //       return undefined;
+    //     },
+    //   });
+    //   await db.txns.rebaser.resumeInteractive();
+    //   db.txns.rebaser.removeConflictHandler(INTERACTIVE_REBASE_CONFLICT_HANDLER_ID);
+    // }
+
+    // if (this.containsRestorePoint(db, this.PULL_MERGE_RESTORE_POINT_NAME)) {
+    //   Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+    //   this.dropRestorePoint(db, this.PULL_MERGE_RESTORE_POINT_NAME);
+    // }
+
+    // // notify listeners
+    // db.notifyChangesetApplied();
+  }
+
   /**
    * @internal
    * Pulls and applies changesets from the iModelHub to the specified IModelDb instance.
@@ -642,7 +779,7 @@ export class BriefcaseManager {
           const stopwatch = new StopWatch(`[${changeset.id}]`, true);
           Logger.logInfo(loggerCategory, `Starting fast-forward application of changeset with id ${stopwatch.description}`);
           try {
-            await this.applySingleChangeset(db, changeset, true, arg.noUpdateLoop);
+            await this.applySingleChangeset(db, changeset, false, arg.noUpdateLoop);
             nativeDb.saveChanges(`Fast-forward merge changeset with id ${changeset.id}.`);
             Logger.logInfo(loggerCategory, `Fast-forwarded changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
           } catch (err: any) {
