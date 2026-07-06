@@ -77,6 +77,7 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
+import { InteractiveRebase } from "./InteractiveRebase";
 
 // spell:ignore fontid fontmap
 
@@ -4036,6 +4037,20 @@ export class BriefcaseDb extends IModelDb {
     });
 
     this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
+  }
+
+  public async pullChangesInteractive(arg?: PullChangesArgs): Promise<InteractiveRebase | undefined> {
+    let interactive: InteractiveRebase | undefined;
+    await this.executeWritable(async () => {
+      interactive = await BriefcaseManager.pullAndApplyChangesetsInteractive(this, arg ?? {});
+      // if (!this.skipSyncSchemasOnPullAndPush)
+      //   await SchemaSync.pull(this);
+      // this.initializeIModelDb("pullMerge");
+    });
+
+    // this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
+
+    return interactive;
   }
 
   public async enableChangesetStatTracking(): Promise<void> {

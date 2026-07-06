@@ -30,11 +30,9 @@ import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
 import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
-import { RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { InteractiveRebase } from "./InteractiveRebase";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
-const INTERACTIVE_REBASE_CONFLICT_HANDLER_ID = "InteractiveRebaseConflictHandler";
 
 /** The argument for patch instances during semantic rebase
  * @internal
