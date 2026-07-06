@@ -9,6 +9,9 @@ beta;function;appendFrameToBuilder
 beta;function;appendLeadersToBuilder
 beta;function;appendTextAnnotationGeometry
 beta;interface;AppendTextAnnotationGeometryArgs
+internal;interface;AppModelChangesetProps
+internal;enum;AppModelChangesetType
+internal;class;AppModelDb
 public;class;AuxCoordSystem
 preview;class;AuxCoordSystem
 public;class;AuxCoordSystem2d

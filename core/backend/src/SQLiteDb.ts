@@ -26,8 +26,17 @@ import { _nativeDb } from "./internal/Symbols";
  */
 export class SQLiteDb {
   /** @internal */
-  public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
+  public readonly [_nativeDb] = this.createNativeDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
+
+  /** Construct the native db object that backs this `SQLiteDb`. Subclasses backed by a specialized native
+   * db override this so that exactly one native object is created per instance: the base class field
+   * initializer above invokes the most-derived override, avoiding a second, orphaned native db.
+   * @internal
+   */
+  protected createNativeDb(): IModelJsNative.SQLiteDb {
+    return new IModelNative.platform.SQLiteDb();
+  }
 
   /** @internal */
   public static createBlobIO(): SQLiteDb.BlobIO {

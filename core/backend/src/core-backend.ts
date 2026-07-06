@@ -67,6 +67,7 @@ export * from "./NavigationRelationship";
 export * from "./PropertyStore";
 export * from "./Relationship";
 export * from "./rpc/tracing";
+export * from "./AppModelDb";
 export * from "./Schema";
 export * from "./SchemaUtils";
 export * from "./SheetIndex";

@@ -380,6 +380,36 @@ export interface AppendTextAnnotationGeometryArgs {
     wantDebugGeometry?: boolean;
 }
 
+// @internal
+export interface AppModelChangesetProps {
+    readonly changesetType: AppModelChangesetType;
+    readonly dbGuid: string;
+    readonly fileName: LocalFileName;
+    readonly id: string;
+    readonly parentId: string;
+}
+
+// @internal
+export enum AppModelChangesetType {
+    Regular = 0,
+    Schema = 1
+}
+
+// @internal
+export class AppModelDb extends SQLiteDb {
+    // (undocumented)
+    readonly [_nativeDb]: IModelJsNative.AppModelDb;
+    applyChangeset(props: AppModelChangesetProps): void;
+    beginCreateChangeset(changesetFileName: LocalFileName): AppModelChangesetProps;
+    // (undocumented)
+    protected createNativeDb(): IModelJsNative.AppModelDb;
+    endCreateChangeset(): void;
+    getParentChangesetId(): string;
+    get hasPendingTxns(): boolean;
+    saveChanges(description?: string): void;
+    setTxnProps(propsJson: string): void;
+}
+
 // @public @preview
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
@@ -6978,6 +7008,8 @@ export class SQLiteDb {
     createDb(dbName: string): void;
     // @beta (undocumented)
     createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+    // @internal
+    protected createNativeDb(): IModelJsNative.SQLiteDb;
     protected createTable(args: {
         tableName: string;
         columns: string;
