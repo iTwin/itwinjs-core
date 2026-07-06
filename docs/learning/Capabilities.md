@@ -69,7 +69,7 @@ Create 2d and 3d views on HTML pages that show graphics from multiple sources.
   - ️On-screen and off-screen rendering
   - Multiple simultaneously-open viewports, all sharing WebGL resources
 - Non-iModel data
-  - ✔️️ Reality (ContextCapture) Models
+  - ✔️️ Reality Models
     - Classification of reality models using [SpatialClassificationProps]($common)
   - ✔️️ Point Clouds
   - ✔️️ Maps

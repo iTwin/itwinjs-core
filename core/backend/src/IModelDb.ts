@@ -475,7 +475,7 @@ export abstract class IModelDb extends IModel {
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
   private _schemasPromise?: Promise<SchemaView>;
-  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
@@ -565,7 +565,7 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].restartDefaultTxn();
   }
 
-  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
@@ -894,7 +894,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -925,7 +925,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -1288,7 +1288,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use `txns.reverseTxns`.
+   * @deprecated in 4.8 - might be removed in next major version. Use `txns.reverseTxns`.
    */
   public reverseTxns(numOperations: number): IModelStatus {
     return this[_nativeDb].reverseTxns(numOperations);
@@ -1690,7 +1690,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1816,7 +1816,7 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
@@ -1829,7 +1829,7 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
@@ -1880,7 +1880,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1908,7 +1908,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1937,7 +1937,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1965,7 +1965,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1998,7 +1998,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from `iModel` instead to get metadata.
+   * @deprecated in 5.0 - might be removed in next major version. Please use `schemaContext` from `iModel` instead to get metadata.
    */
   private loadMetaData(classFullName: string) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -3436,7 +3436,7 @@ export namespace IModelDb {
 
     /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * @deprecated in 4.2.0 - might be removed in next major version. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
      * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {
