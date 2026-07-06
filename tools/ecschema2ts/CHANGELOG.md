@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecschema2ts
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Fri, 03 Jul 2026 13:05:21 GMT and should not be manually modified.
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+_Version update only_
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT
