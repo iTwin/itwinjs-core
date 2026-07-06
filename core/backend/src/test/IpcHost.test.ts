@@ -134,7 +134,6 @@ describe("IpcHost", () => {
   afterEach(() => {
     (IpcHost as any)._nextInvokeId = 0;
     (IpcHost as any)._pendingInvokes.clear();
-    IpcHost.invokeTimeout = undefined;
   });
 
   describe("IpcHandler", () => {
@@ -414,42 +413,6 @@ describe("IpcHost", () => {
       // the listener and _pendingInvokes entry must not leak when `send` throws synchronously
       expect(frontend.listeners.size).to.equal(0);
       expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
-    });
-
-    it("should reject after invokeTimeout elapses without a response", async () => {
-      const frontend = mockFrontend();
-      IpcHost.invokeTimeout = 10;
-      const promise = IpcHost.invoke("ch");
-      const responseChannel = frontend.responseChannel(0);
-
-      let message = "";
-      try {
-        await promise;
-        expect.fail("invoke should have rejected on timeout");
-      } catch (err) {
-        message = (err as Error).message;
-      }
-      expect(message).to.contain("timed out");
-      expect(frontend.listeners.has(responseChannel)).to.be.false;
-      // the pending-invoke entry must be removed so the map does not grow unboundedly
-      expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
-    });
-
-    it("should report the invokeTimeout value captured when the timer was armed, even if invokeTimeout changes before it fires", async () => {
-      mockFrontend();
-      IpcHost.invokeTimeout = 10;
-      const promise = IpcHost.invoke("ch");
-      IpcHost.invokeTimeout = 99999; // changed after arming; the error message should still report the originally-armed delay
-
-      let message = "";
-      try {
-        await promise;
-        expect.fail("invoke should have rejected on timeout");
-      } catch (err) {
-        message = (err as Error).message;
-      }
-      expect(message).to.contain("10ms");
-      expect(message).to.not.contain("99999ms");
     });
 
     it("should rethrow a frontend-thrown BentleyError from makeIpcProxy preserving ITwinError identity and metadata", async () => {

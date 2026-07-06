@@ -92,7 +92,7 @@ describe("IpcApp", () => {
       const [responseChannel, response] = socket.send.mock.calls[0];
       expect(responseChannel).to.equal("itwin.resp-1");
       // response is the serialized-error envelope (see serializeIpcError), not left unsent - otherwise
-      // the corresponding IpcHost.invoke on the backend would hang until invokeTimeout/shutdown.
+      // the corresponding IpcHost.invoke on the backend would hang until shutdown.
       expect(response.error).to.exist;
       expect(response.error.message).to.equal("handler-failure");
     });

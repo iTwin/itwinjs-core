@@ -92,13 +92,6 @@ export class IpcHost {
   private static _pendingInvokes = new Map<number, () => void>();
 
   /**
-   * The number of milliseconds [[invoke]] waits for the frontend to respond before rejecting. When `undefined`
-   * (the default), invokes wait indefinitely. Set a value to guard against a frontend that never responds.
-   * @beta
-   */
-  public static invokeTimeout?: number;
-
-  /**
    * Send a message to the frontend via `channel` and expect a result asynchronously. The handler must be established on the frontend via [[IpcApp.handle]]
    * @param channel The name of the channel for the method.
    * @see Electron [ipcRenderer.send](https://www.electronjs.org/docs/api/ipc-renderer) documentation for details.
@@ -107,7 +100,7 @@ export class IpcHost {
    * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
    * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
    * primitive types and `ArrayBuffers` are allowed.
-   * @note The returned Promise rejects if [[shutdown]] is called or [[invokeTimeout]] elapses before the frontend responds.
+   * @note The returned Promise rejects if [[shutdown]] is called before the frontend responds.
    * @beta
    */
   public static async invoke(channel: string, ...args: any[]): Promise<any> {
@@ -120,12 +113,9 @@ export class IpcHost {
 
     return new Promise((resolve, reject) => {
       let removeListener: RemoveFunction = () => { };
-      let timer: ReturnType<typeof setTimeout> | undefined;
       const cleanup = () => {
         removeListener();
         this._pendingInvokes.delete(requestId);
-        if (timer !== undefined)
-          clearTimeout(timer);
       };
 
       removeListener = this.ipc.addListener(responseChannel, (_evt: Event, result: any) => {
@@ -138,14 +128,6 @@ export class IpcHost {
         cleanup();
         reject(new Error(`IpcHost was shut down before the frontend responded on channel "${channel}"`));
       });
-
-      if (undefined !== this.invokeTimeout) {
-        const timeoutMs = this.invokeTimeout; // capture the delay actually armed, in case invokeTimeout changes before the timer fires
-        timer = setTimeout(() => {
-          cleanup();
-          reject(new Error(`IpcHost.invoke timed out after ${timeoutMs}ms on channel "${channel}"`));
-        }, timeoutMs);
-      }
 
       try {
         this.send(channel, responseChannel, ...args);

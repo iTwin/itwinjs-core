@@ -90,8 +90,7 @@ export class IpcApp {
    * @note If `handler` throws, or its returned Promise rejects, the thrown value is serialized (see
    * [[serializeIpcError]]) and sent as the response instead of being rethrown here. Without this, the
    * corresponding [[IpcHost.invoke]] call on the backend would never receive a reply and would hang (leaking
-   * its listener and `_pendingInvokes` entry) until [[IpcHost.invokeTimeout]] elapses or [[IpcHost.shutdown]]
-   * is called.
+   * its listener and `_pendingInvokes` entry) until [[IpcHost.shutdown]] is called.
    * @beta
    */
   public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
