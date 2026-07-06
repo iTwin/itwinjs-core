@@ -247,8 +247,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
     const iModelDb = await getIModelForRpc(tokenProps);
-    for await (const row of iModelDb.createQueryReader("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
-      codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
+    iModelDb.withQueryReader("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (reader) => {
+      for (const row of reader)
+        codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
+    }, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     return codeSpecs;
   }
 
