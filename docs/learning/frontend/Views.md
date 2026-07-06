@@ -164,7 +164,7 @@ Auxiliary Coordinate Systems can be named and shared among many ViewDefinitions.
 
 ## Reality Data
 
-Reality Data (e.g. [ContextCapture](https://www.bentley.com/en/products/brands/contextcapture) models, Point Cloud models, Maps, etc.) are stored external to iModels, and are accessed via Reality Data Servers. However, in an iModel
+Reality Data (e.g. [iTwin Capture Modeler](https://www.bentley.com/software/itwin-capture-modeler/) models, Point Cloud models, Maps, etc.) are stored external to iModels, and are accessed via Reality Data Servers. However, in an iModel
 you can create `RealityDataModel`s that hold the URL of the Reality Data.
 
 These models are subclasses of [SpatialModel]($backend), and can therefore be included in a `ModelSelector` and can easily be made visible in any SpatialView.
