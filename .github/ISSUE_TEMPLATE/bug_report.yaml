@@ -6,14 +6,6 @@ body:
     attributes:
       value: |
         Thanks for helping us improve iTwin.js! Please provide as much detail as possible so we can reproduce and fix the issue quickly.
-  - type: input
-    id: title-hint
-    attributes:
-      label: Clear title
-      description: "State the problem concisely (e.g., \"Crash in v2.0 when passing null to `user.update()`\"). Your issue title above should reflect this."
-      placeholder: "Brief summary of the bug"
-    validations:
-      required: false
   - type: textarea
     id: what-happened
     attributes:
