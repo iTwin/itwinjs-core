@@ -3013,6 +3013,18 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 // @beta
+export namespace ElementError {
+    const scope = "itwin-Element";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The element's model type does not match the expected model type for the operation */
+    "model-type-mismatch" |
+    /** Invalid arguments were provided to an element operation */
+    "invalid-arguments";
+    export function throwError(key: Key, message: string): never;
+}
+
+// @beta
 export namespace ElementGeometry {
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
