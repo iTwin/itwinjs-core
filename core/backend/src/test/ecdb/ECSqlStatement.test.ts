@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { NavigationBindingValue, NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, ECSqlWriteStatement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -3598,6 +3598,154 @@ describe("ECSqlStatement", () => {
       // Valid multiple RelClassName values with binders
       testECSqlWithBinders(10, "SELECT * from test.Child where Parent = ? and Friends = ?", "Test.ParentHasChildren", "Test.ChildHasFriends", true, "", false, DbResult.BE_SQLITE_ROW);
       testECSqlWithBinders(11, "SELECT * from test.Child where Friends = ? and Parent = ?", "Test.ParentHasChildren", "Test.ChildHasFriends", true, "", false);
+    });
+  });
+
+  describe("IS / IS NOT operators between operands", () => {
+    it("compares primitive operands with null-safe semantics", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "isOperatorNullSafe.ecdb",
+        `<ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECEntityClass typeName="Foo" modifier="None">
+            <ECProperty propertyName="S1" typeName="string"/>
+            <ECProperty propertyName="S2" typeName="string"/>
+            <ECProperty propertyName="P1" typeName="point3d"/>
+          </ECEntityClass>
+        </ECSchema>`);
+      assert.isTrue(ecdb.isOpen);
+
+      const insert = (ecsql: string) => {
+        const res = ecdb.withCachedWriteStatement(ecsql, (stmt: ECSqlWriteStatement) => stmt.stepForInsert());
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      };
+      // (S1, S2): equal-nonnull, different, both-null, one-null, the-other-null
+      insert("INSERT INTO ts.Foo(S1,S2) VALUES('a','a')");
+      insert("INSERT INTO ts.Foo(S1,S2) VALUES('a','b')");
+      insert("INSERT INTO ts.Foo(S1,S2) VALUES(NULL,NULL)");
+      insert("INSERT INTO ts.Foo(S1,S2) VALUES(NULL,'b')");
+      insert("INSERT INTO ts.Foo(S1,S2) VALUES('a',NULL)");
+      ecdb.saveChanges();
+
+      // null-safe equality: matches ('a','a') and (NULL,NULL)
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS S2"), 2);
+      // null-safe inequality: matches ('a','b'), (NULL,'b'), ('a',NULL)
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT S2"), 3);
+      // contrast: regular '=' treats NULL comparisons as unknown -> only ('a','a')
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 = S2"), 1);
+      // NULL literal operand on either side keeps the existing IS NULL / IS NOT NULL behavior
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NULL"), 2);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT NULL"), 3);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE NULL IS S2"), 2);
+
+      // The operands may be ANY value expression, not just a property or the NULL literal.
+      // String literal operand: matches rows where S1 IS 'a' (null-safe).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS 'a'"), 3);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT 'a'"), 2);
+      // Function call operand (LOWER(S2) equals S2 for these lowercase values).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS LOWER(S2)"), 2);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS NOT LOWER(S2)"), 3);
+      // Function call on the left-hand side.
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE LOWER(S1) IS S2"), 2);
+      // A parenthesized *unqualified* name is a value expression here, not an IS (ClassName) type predicate:
+      // `S2` is a property, so `S1 IS (S2)` is the null-safe value comparison `S1 IS S2` and matches the same
+      // 2 rows. The type-predicate form is taken only for a *qualified* class name (e.g. `ts.Foo`), an ONLY/ALL
+      // prefix, or a comma-separated class list, as in the `ECClassId IS (ts.Foo)` regression check below; when a
+      // name is both a class and a property, the property (value-expression) reading wins.
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS (S2)"), 2);
+      // Parameter operand, bound to a value and to NULL (null-safe either way).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS ?", new QueryBinder().bindString(1, "a")), 3);
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS ?", new QueryBinder().bindNull(1)), 2);
+      // Regression: the IS (ClassName) type predicate is unaffected (all rows are ts.Foo).
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE ECClassId IS (ts.Foo)"), 5);
+
+      // Operands of incompatible types are rejected at prepare time (string vs point) — assert the
+      // specific type-mismatch failure so the test proves IS was rejected for the intended reason
+      // rather than passing on any unrelated error (e.g. a typo or schema-setup failure).
+      let error: any;
+      try {
+        await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS P1");
+      } catch (err) {
+        error = err;
+      }
+      assert.isDefined(error, "IS between incompatible types (string vs point) should fail to prepare");
+      assert.match(error.message, /Type mismatch in expression '\[S1\] IS \[P1\]'/, "IS should be rejected for the type mismatch, not an unrelated failure");
+    });
+
+    it("expands point operands column-wise (IS joins with AND, IS NOT with OR)", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "isOperatorPoints.ecdb",
+        `<ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECEntityClass typeName="Foo" modifier="None">
+            <ECProperty propertyName="P1" typeName="point3d"/>
+            <ECProperty propertyName="P2" typeName="point3d"/>
+          </ECEntityClass>
+        </ECSchema>`);
+      assert.isTrue(ecdb.isOpen);
+
+      const insertPoints = (p1?: Point3d, p2?: Point3d) => {
+        ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(P1,P2) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
+          if (p1) stmt.bindPoint3d(1, p1); else stmt.bindNull(1);
+          if (p2) stmt.bindPoint3d(2, p2); else stmt.bindNull(2);
+          assert.equal(stmt.stepForInsert().status, DbResult.BE_SQLITE_DONE);
+        });
+      };
+      insertPoints(new Point3d(1, 2, 3), new Point3d(1, 2, 3)); // all columns equal
+      insertPoints(new Point3d(1, 2, 3), new Point3d(1, 2, 9)); // differ in Z only
+      insertPoints(undefined, undefined);                       // both NULL (all columns NULL)
+      insertPoints(new Point3d(1, 2, 3), undefined);            // one operand NULL
+      ecdb.saveChanges();
+
+      // IS is true only when every column matches (null-safe): equal point + both-null
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE P1 IS P2"), 2);
+      // IS NOT is true when any column differs: differ-in-Z + one-null
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE P1 IS NOT P2"), 2);
+    });
+
+    it("expands navigation operands column-wise over Id and RelECClassId", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "isOperatorNav.ecdb",
+        `<ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECEntityClass typeName="Parent" modifier="None">
+            <ECProperty propertyName="Name" typeName="string"/>
+          </ECEntityClass>
+          <ECEntityClass typeName="Child" modifier="None">
+            <ECNavigationProperty propertyName="ParentA" relationshipName="ParentAOwnsChildren" direction="Backward"/>
+            <ECNavigationProperty propertyName="ParentB" relationshipName="ParentBRefsChildren" direction="Backward"/>
+          </ECEntityClass>
+          <ECRelationshipClass typeName="ParentAOwnsChildren" strength="embedding" modifier="None">
+            <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="true"><Class class="Parent"/></Source>
+            <Target multiplicity="(0..*)" roleLabel="owned by" polymorphic="true"><Class class="Child"/></Target>
+          </ECRelationshipClass>
+          <ECRelationshipClass typeName="ParentBRefsChildren" strength="referencing" modifier="None">
+            <Source multiplicity="(0..1)" roleLabel="refs" polymorphic="true"><Class class="Parent"/></Source>
+            <Target multiplicity="(0..*)" roleLabel="ref by" polymorphic="true"><Class class="Child"/></Target>
+          </ECRelationshipClass>
+        </ECSchema>`);
+      assert.isTrue(ecdb.isOpen);
+
+      const parentId = ecdb.withCachedWriteStatement("INSERT INTO ts.Parent(Name) VALUES('P')", (stmt: ECSqlWriteStatement) => {
+        const res = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        return res.id!;
+      });
+      const parentA: NavigationBindingValue = { id: parentId, relClassName: "TestSchema.ParentAOwnsChildren" };
+      const parentB: NavigationBindingValue = { id: parentId, relClassName: "TestSchema.ParentBRefsChildren" };
+
+      const insertChild = (a?: NavigationBindingValue, b?: NavigationBindingValue) => {
+        ecdb.withCachedWriteStatement("INSERT INTO ts.Child(ParentA,ParentB) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
+          if (a) stmt.bindNavigation(1, a); else stmt.bindNull(1);
+          if (b) stmt.bindNavigation(2, b); else stmt.bindNull(2);
+          assert.equal(stmt.stepForInsert().status, DbResult.BE_SQLITE_DONE);
+        });
+      };
+      insertChild(undefined, undefined); // both nav values fully NULL
+      insertChild(parentA, undefined);   // only ParentA set
+      insertChild(parentA, parentB);     // same target Id but different RelECClassId
+      ecdb.saveChanges();
+
+      // IS requires both Id AND RelECClassId to match: only the both-NULL child qualifies.
+      // The (parentA, parentB) child points at the same parent Id but via different
+      // relationship classes, so its RelECClassId values differ and it is not "equal".
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Child WHERE ParentA IS ParentB"), 1);
+      // IS NOT matches when either Id OR RelECClassId differs: the other two children.
+      assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Child WHERE ParentA IS NOT ParentB"), 2);
     });
   });
 });
