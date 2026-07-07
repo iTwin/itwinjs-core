@@ -135,6 +135,28 @@ export async function deleteText(iModelKey: string, elementId: Id64String): Prom
 }
 
 /**
+ * Retrieves the TextAnnotationProps, category id, model id, placement, and default text style id for an existing text annotation element.
+ * @param iModelKey - Key to identify the iModel.
+ * @param elementId - Id of the annotation element to read.
+ * @returns The annotation's props, category id, model id, placement, and default text style id, or `undefined` if the element has no annotation set.
+ */
+export async function getText(iModelKey: string, elementId: Id64String): Promise<{ annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String } | undefined> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
+  const annotation = text.getAnnotation();
+  if (!annotation) {
+    return undefined;
+  }
+  return {
+    annotationProps: annotation.toJSON(),
+    categoryId: text.category,
+    modelId: text.model,
+    placement: text.placement,
+    defaultTextStyleId: text.defaultTextStyle?.id ?? Id64.invalid,
+  };
+}
+
+/**
  * Sets the scale factor for a drawing element in the iModel.
  * @param iModelKey - Key to identify the iModel.
  * @param modelId - Id of the drawing model.
