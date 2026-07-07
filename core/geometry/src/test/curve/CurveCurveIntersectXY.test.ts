@@ -35,6 +35,8 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder";
+import { CurveFactory } from "../../curve/CurveFactory";
 
 /**
  * This function creates some sample Map4ds. The transform0 of the Map4d is passed as "worldToLocal" transform to
@@ -2863,7 +2865,7 @@ describe("CurveCurveIntersectXY", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("FilletLineIntersection", () => {
+  it("FilletLineIntersection1", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
@@ -2906,7 +2908,90 @@ describe("CurveCurveIntersectXY", () => {
     testFilletLineIntersection(lineSegment0, Point3d.create(207148.09137608396, 503380.8318704772), 1);
     testFilletLineIntersection(lineSegment1, Point3d.create(207158.75937608397, 503370.1638704772), 1);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it.only("FilletLineIntersection2", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const points = [
+      Point3d.create(295519.78205572785, 143501.74170085153, 0),
+      Point3d.create(295519.78205572785, 143509.1638620432, 0),
+      Point3d.create(295524.9566610657, 143509.1638620432, 0),
+    ];
+    const radius = 0.9144000000000001;
+
+    const path = CurveFactory.createFilletsInLineString(points, radius)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path.getChild(1));
+    const fillet1 = path.getChild(1) as Arc3d;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fillet1);
+    // const fillet1 = Arc3d.create(
+    //   Point3d.create(295520.69645572786, 143508.2494620432, 0),
+    //   Vector3d.create(-0.6465784407169791, 0.6465784407169792, 0),
+    //   Vector3d.create(0.6465784407169791, 0.6465784407169791, 0),
+    //   AngleSweep.createStartEndRadians(-0.7853981633974484, 0.7853981633974484) // -45.000000000111633369, 45.000000000111633369
+    // );
+
+    const lineSegment0 = LineString3d.create(
+      Point3d.create(295519.78205572785, 143501.74170085153, 0),
+      Point3d.create(295519.78205572785, 143509.1638620432, 0)
+    );
+    const lineSegment1 = LineString3d.create(
+      Point3d.create(295519.78205572785, 143509.1638620432, 0),
+      Point3d.create(295524.9566610657, 143509.1638620432, 0)
+    );
+    const fillet2 = Arc3d.create(
+      Point3d.create(295520.69645572786, 143508.2494620432, 0),
+      Vector3d.create(0.9144000000000001, 0, 0),
+      Vector3d.create(0, 0.9144000000000001, 0),
+      AngleSweep.createStartEndDegrees(180, 90)
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fillet2);
+
+    const getWorldToLocal = (lineSegment: LineString3d): Matrix4d | undefined => {
+      const localToWorld = FrameBuilder.createRightHandedFrame(Vector3d.create(0, 0, 1), lineSegment);
+      if (undefined === localToWorld)
+        return undefined;
+      const worldToLocal = localToWorld.inverse();
+      if (undefined === worldToLocal)
+        return undefined;
+      return Matrix4d.createTransform(worldToLocal);
+    };
+
+    const testFilletLineIntersection = (
+      lineSegment: LineString3d, fillet: Arc3d, expectedNumIntersections: number, expectedPoint?: Point3d, tol?: number
+    ) => {
+      const worldToLocal = getWorldToLocal(lineSegment);
+      if (!worldToLocal) {
+        return;
+      }
+      const intersections = CurveCurve.intersectionProjectedXYPairs(worldToLocal, lineSegment, true, fillet, true, tol);
+      if (ck.testExactNumber(expectedNumIntersections, intersections.length, "computed expected number of intersections between the fillet and line")) {
+        if (expectedNumIntersections > 0) {
+          const intersection = intersections[0].detailA.point;
+          if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both fillet and line")) {
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 0.1);
+            if (expectedPoint)
+              ck.testPoint3d(expectedPoint, intersection, "expected intersection point");
+          }
+        }
+      }
+    };
+    testFilletLineIntersection(lineSegment0, fillet1, 0); // no intersection with default tolerance
+    testFilletLineIntersection(lineSegment1, fillet1, 0); // no intersection with default tolerance
+    testFilletLineIntersection(lineSegment0, fillet1, 1, Point3d.create(295519.78205572785, 143508.2494620432, 0), 1e-5);
+    testFilletLineIntersection(lineSegment1, fillet1, 1, Point3d.create(295520.69645572786, 143509.1638620432, 0), 1e-5);
+
+    testFilletLineIntersection(lineSegment0, fillet2, 0); // no intersection with default tolerance
+    testFilletLineIntersection(lineSegment1, fillet2, 0); // no intersection with default tolerance
+    testFilletLineIntersection(lineSegment0, fillet2, 1, Point3d.create(295519.78205572785, 143508.2494620432, 0), 1e-5);
+    testFilletLineIntersection(lineSegment1, fillet2, 1, Point3d.create(295520.69645572786, 143509.1638620432, 0), 1e-5);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection2");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
