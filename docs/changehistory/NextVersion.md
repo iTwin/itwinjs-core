@@ -3,6 +3,11 @@ publish: false
 ---
 # NextVersion
 
+- [NextVersion](#nextversion)
+  - [Quantity formatting](#quantity-formatting)
+    - [Bearing and Azimuth formatting now respects the persistence unit's phenomenon](#bearing-and-azimuth-formatting-now-respects-the-persistence-units-phenomenon)
+  - [Electron 43 support](#electron-43-support)
+
 ## Quantity formatting
 
 ### Bearing and Azimuth formatting now respects the persistence unit's phenomenon
@@ -17,3 +22,7 @@ Previously, [Bearing and Azimuth format types]($docs/quantity-formatting/definit
 For code that persists Bearing/Azimuth values as `ANGLE`-phenomenon units and previously worked around the bug by manually applying its own `90° − θ` correction: **that manual correction must now be removed**, or values will be double-converted. For example, `AccuDraw`'s manual correction for its `QuantityType.Angle` bearing display (persisted as `Units.RAD`) has been removed as part of this change.
 
 If your KindOfQuantity persists true azimuth values directly, switch its persistence unit to a `Units.HORIZONTAL_DIRECTION` unit (e.g. `Units.HORIZONTAL_DIR_RAD`) to opt out of the conversion entirely.
+
+## Electron 43 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 43](https://www.electronjs.org/blog/electron-43-0).
