@@ -35,6 +35,9 @@ export interface ReservationControl {
   /** @internal*/
   readonly [_implementationProhibited]: unknown;
 
+  /** @internal true if this ReservationControl uses a server-based concurrency approach. */
+  readonly isServerBased: boolean;
+
   /**
    * Close the local reservation database
    * @internal
