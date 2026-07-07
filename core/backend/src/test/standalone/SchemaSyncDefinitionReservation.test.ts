@@ -16,7 +16,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 const fedGuidA = "8b33a6ec-1a6f-4ae2-8ad4-c426276d1f30";
 const fedGuidB = "1f0e5b96-1234-4abc-9def-0123456789ab";
 
-describe.only("SchemaSync definition-element reservation", () => {
+describe("SchemaSync definition-element reservation", () => {
   let iModel: StandaloneDb;
   let iModelFileName: string;
   let schemaDb: SchemaSync.SchemaSyncDb;

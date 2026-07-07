@@ -36,7 +36,7 @@ interface TestIModel {
  * these run against an Azurite-emulated cloud container so that the CloudSqlite write-lock actually
  * serializes concurrent reservations from multiple briefcases (simulated users).
  */
-describe.only("SchemaSync definition-element reservations (concurrent users)", function (this: Suite) {
+describe("SchemaSync definition-element reservations (concurrent users)", function (this: Suite) {
   this.timeout(0);
 
   const openBriefcases: BriefcaseDb[] = [];

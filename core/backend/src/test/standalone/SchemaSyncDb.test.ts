@@ -10,7 +10,7 @@ import { IModelJsFs, SchemaSync } from "../../core-backend";
 import { _nativeDb } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("SchemaSyncDb", () => {
+describe("SchemaSyncDb", () => {
   let schemaDb: SchemaSync.SchemaSyncDb;
   let schemaDbFileName: string;
 
