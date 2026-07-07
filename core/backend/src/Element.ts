@@ -589,7 +589,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` instead.
    *
    * @example
    * ```typescript

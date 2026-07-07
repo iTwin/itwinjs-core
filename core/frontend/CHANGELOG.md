@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Fri, 03 Jul 2026 13:06:57 GMT and should not be manually modified.
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Add CesiumAccessClient interface to allow applications to plug in custom Cesium Ion authentication, with CesiumIonClient as the built-in fallback.
+- Stop clearing SubCategoriesCache on subcategory insert; reload instead
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
+- ECSqlReader now returns no rows instead of throwing when an IModelConnection is closed before query iteration.
+- Deprecate legacy quantity description classes and add createQuantityDescription as the migration path for tool settings and other appui-based property flows, with guidance for the SurveyLengthDescription exception.
+- Move focus Home after installing LookAndMoveTool so keyboard navigation works through the existing focus handling.
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+- Added `GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold` to configure the world-space coordinate magnitude (default 10km) beyond which graphics for elements modified during the scope use `rtcCenter` centering instead of absolute float32 positions, preventing precision artifacts like jagged curves for projects far from the coordinate system origin.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Reality model tiles whose content is plain-text JSON glTF (a `.gltf` file) are now rendered, with their externally-referenced textures (e.g. `.webp` images) resolved against the tile's content URL. Previously such tiles were silently discarded, or rendered untextured/white.
+- Remove dormant internal Azure Maps imagery provider code from core frontend.
+- Deprecate Bing Maps imagery format and provider. `MapLayerOptions.BingMaps` is retained (non-deprecated) for elevation and location services.
+- Deprecate BingElevationProvider and BingLocationProvider; add ElevationProvider, GeoidProvider, and LocationProvider interfaces
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT

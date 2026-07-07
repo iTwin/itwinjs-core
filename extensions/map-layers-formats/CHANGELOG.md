@@ -1,6 +1,13 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Fri, 03 Jul 2026 13:06:57 GMT and should not be manually modified.
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Add Azure Maps basemap support and Azure-specific helper APIs to @itwin/map-layers-formats.
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT

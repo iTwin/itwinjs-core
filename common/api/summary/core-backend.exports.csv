@@ -325,6 +325,7 @@ preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
 beta;function;getAvailableCRSUnits
+beta;interface;GetResolvedSettingDefOptions
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
 public;class;Graphic3d
