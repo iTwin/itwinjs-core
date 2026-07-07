@@ -69,6 +69,8 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
       return undefined;
     }
 
+    console.log("rootValue", rootValue);
+
     switch (rootValue.columnInfo.getType()) {
       case ECSqlValueType.Blob:
         return { primitive: rootValue.getBlob() };

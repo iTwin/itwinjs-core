@@ -33,7 +33,7 @@ import {
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { DecorateContext, Decorator, EmphasizeElements, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -51,6 +51,7 @@ class TextEditor implements Decorator {
   public categoryId: Id64String = Id64.invalid;
   public modelId: Id64String = Id64.invalid;
   public defaultTextStyleId: Id64String = Id64.invalid;
+  public emphasizeElements = new EmphasizeElements();
 
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
@@ -138,6 +139,9 @@ class TextEditor implements Decorator {
 
   public clear(): void {
     IModelApp.viewManager.dropDecorator(this);
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) this.emphasizeElements.clearHiddenElements(vp);
 
     this._iModel = undefined;
     this._graphic?.disposeGraphic();
@@ -290,19 +294,24 @@ class TextEditor implements Decorator {
 
     const rpcProps = this._iModel.getRpcProps();
 
-    const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
-      rpcProps,
-      this.annotationProps,
-      Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
-      this.categoryId,
-      this.modelId,
-      this.placementProps,
-      this.debugAnchorPointAndRange,
-      { annotation: 100, annotationLabels: 110 }
-    );
+    try {
+      const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
+        rpcProps,
+        this.annotationProps,
+        Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
+        this.categoryId,
+        this.modelId,
+        this.placementProps,
+        this.debugAnchorPointAndRange,
+        { annotation: 100, annotationLabels: 110 }
+      );
 
-    const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
-    this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
+      const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
+      this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
+    } catch (err) {
+      console.error("Error generating text annotation graphics:", err, "\nAnnotation props:", this.annotationProps, "\nPlacement props:", this.placementProps, "\nCategory ID:", this.categoryId, "\nModel ID:", this.modelId);
+      throw (err);
+    }
 
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
@@ -605,6 +614,31 @@ export class TextDecorationTool extends Tool {
       case "applystyle": {
         editor.defaultTextStyleId = arg;
         editor.textBlock.clearStyleOverrides();
+        break;
+      }
+      case "load": {
+        if (!arg) {
+          throw new Error("Expected annotation ID");
+        }
+
+        const result = await dtaIpc.getText(vp.iModel.key, arg);
+
+        if (!result) {
+          throw new Error(`No text annotation found with id ${arg}`);
+        }
+
+        const anno = TextAnnotation.fromJSON(result.annotationProps);
+        editor.textBlock = anno.textBlock;
+        editor.anchor = anno.anchor;
+        editor.rotation = YawPitchRollAngles.fromJSON(anno.orientation).yaw.degrees;
+        editor.offset = anno.offset;
+        editor.leaders = anno.leaders ?? [];
+        editor.categoryId = result.categoryId;
+        editor.modelId = result.modelId;
+        editor.defaultTextStyleId = result.defaultTextStyleId;
+        editor.origin = Point3d.fromJSON(result.placement.origin);
+
+        editor.emphasizeElements.hideElements(arg, vp);
         break;
       }
       case "insert": {

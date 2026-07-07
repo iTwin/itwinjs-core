@@ -868,7 +868,6 @@
       ],
       "env": {
         "IMJS_LOG_LEVEL": "TRACE",
-        "IMJS_NO_DEV_TOOLS": "1",
         "NODE_ENV": "development"
       },
       "envFile": "${workspaceFolder}/test-apps/display-test-app/.env",
