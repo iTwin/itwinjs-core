@@ -3431,8 +3431,14 @@ describe("ECSqlStatement", () => {
       parentHasChildrenClassId = reader.current.ECInstanceId;
       assert.isTrue(Id64.isValidId64(parentHasChildrenClassId));
 
-      // When the ECSql insert validation is set to true, the invalid relClassId is detected and an error is thrown.
-      assert.isTrue(await (ecdb.createQueryReader("PRAGMA validate_ecsql_writes=true")).step());
+      // Enable ECSql write-value validation so invalid relClassIds are detected and an error is thrown.
+      // This must be set synchronously on the primary connection (the connection on which the write
+      // statements below are prepared and validated). It cannot be set via `createQueryReader`, whose
+      // concurrent-query path executes the pragma on a separate worker connection that does not affect
+      // the primary connection's write validation.
+      ecdb.withWriteStatement("PRAGMA validate_ecsql_writes=true", (stmt: ECSqlWriteStatement) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      });
 
       reader = ecdb.createQueryReader("SELECT ECInstanceId FROM meta.ECClassDef WHERE Name='ParentHasChildren'");
       assert.isTrue(await reader.step());
