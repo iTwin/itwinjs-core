@@ -115,7 +115,7 @@ describe.only("SchemaSync definition-element reservation", () => {
 
   // eslint-disable-next-line @typescript-eslint/dot-notation
   const readNextDefinitionLocalId = () => schemaDb["getNextDefinitionLocalId"]();
-  const nonEmptyCode = (value: string) => ({ spec: "0x01", scope: "0x02", value })
+  const nonEmptyCode = (value: string) => ({ spec: "0x01", scope: "0x02", value });
 
   describe("reservation control initialization", () => {
     it("uses NoReservations when SchemaSync is disabled", async () => {
