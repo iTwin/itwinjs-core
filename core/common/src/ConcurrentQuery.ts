@@ -27,7 +27,7 @@ export enum QueryRowFormat {
   UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
    * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
+   * @deprecated in 4.11 - might be removed in next major version. Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
    */
   UseJsPropertyNames,
 }
@@ -63,7 +63,7 @@ export interface QueryPropertyMetaData {
   /** The name is the property's alias if the property is a generated one, otherwise, it is the name of the property. */
   name: string;
   /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extend type is set to an empty string.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use extendedType instead
+   * @deprecated in 4.11 - might be removed in next major version. Use extendedType instead
    */
   extendType: string;
   /** If this property is a PrimitiveECProperty, extended type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type will be undefined. */
@@ -147,7 +147,7 @@ export interface QueryOptions extends BaseReaderOptions {
   /**
    * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
    * When true, XXXXClassId property will be returned as className.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use ecsql function ec_classname to get class name instead.
    * */
   convertClassIdsToClassNames?: boolean;
   /**
@@ -228,7 +228,7 @@ export class QueryOptionsBuilder {
    * If set ECClassId, SourceECClassId and TargetECClassId system properties will return qualified name of class instead of a @typedef Id64String.
    * @param val A boolean value.
    * @returns @type QueryOptionsBuilder for fluent interface.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use ecsql function ec_classname to get class name instead.
    */
   public setConvertClassIdsToNames(val: boolean) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -813,7 +813,12 @@ export interface DbQueryConfig {
   requestQueueSize?: number;
   /** Number of worker thread, default to 4 */
   workerThreads?: number;
-  /** Use thread connection to prepare the statement */
+  /**
+   * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. No longer used. Worker connections now prepare statements against a shared, dedicated
+   * schema-source connection (falling back to their own connection) to avoid an AB-BA lock-ordering deadlock with
+   * the primary connection. The value is retained only for backward-compatible config (de)serialization; setting it
+   * has no effect on behavior.
+   */
   doNotUsePrimaryConnToPrepare?: boolean;
   /** After no activity for given time concurrent query will automatically shutdown */
   autoShutdownWhenIdleForSeconds?: number;

@@ -8,13 +8,13 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, OpenMode } from "@itwin/core-bentley";
-import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
+import { EcefLocation, EcefLocationProps, EditTxnError, ElementAspectProps, ElementError, ElementProps, FilePropertyProps, IModelError, ModelProps, RelationshipProps, SaveChangesArgs } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import type { CloudSqlite } from "./CloudSqlite";
 import type { ImplicitWriteEnforcement } from "./IModelHost";
-import type { IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
+import type { ChangeElementModelProps, ChangeElementParentProps, IModelDb, InsertElementOptions, UpdateModelOptions } from "./IModelDb";
 import type { SettingsContainer } from "./workspace/Settings";
-import { _activeTxn, _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _instanceKeyCache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Options for bulk deleting elements from an iModelDb.
  * @beta
@@ -272,6 +272,161 @@ export class EditTxn {
         throw err;
       }
     });
+  }
+
+  /** Change the parent of an element within its model.
+   *
+   * The new parent must be in the same model as the element. Cross-model reparenting is not allowed;
+   * use [[changeElementModel]] only to move root elements between models.
+   * Only the target element is reparented — its children and their model membership are unaffected.
+   *
+   * **Blocked cases** (will throw):
+   * - The new parent is in a different model than the element.
+   * - Element has a `ParentElement`-scoped code (code uniqueness is tied to the parent; use delete+insert instead).
+   *
+   * **Allowed cases**:
+   * - Element has a `Repository`-scoped code (unique across entire iModel — unaffected by the parent change).
+   * - Element has a `RelatedElement`-scoped code (scope element is independent of the parent).
+   * - Element has a `Model`-scoped code (the model does not change, so the code remains valid).
+   * - Element has no meaningful code (empty code).
+   *
+   * Channel verification is performed on the element's model.
+   * Lock enforcement: requires an exclusive lock on the element, and a shared lock on the new parent.
+   * @param props The reparent parameters: element id and new parent id.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws [[ITwinError]] if the operation fails.
+   * @beta
+   */
+  public changeElementParent(props: ChangeElementParentProps): void {
+    this.verifyWriteable();
+    const iModel = this.iModel;
+
+    // Lock enforcement: exclusive lock on the element being reparented, shared lock on the new parent.
+    iModel.locks.checkExclusiveLock(props.id, "element", "changeParent");
+    iModel.locks.checkSharedLock(props.parentId, "parent", "changeParent");
+
+    // The new parent must be in the same model as the element. Cross-model reparenting is not
+    // allowed here; changeElementModel only moves root elements between models. Check this up
+    // front so consumers get a clear error instead of the addon's lower-level "wrong model" status.
+    const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
+    const parentModelId = iModel.elements.getElementProps({ id: props.parentId }).model;
+    if (sourceModelId !== parentModelId)
+      ElementError.throwError("invalid-arguments", `cannot reparent element '${props.id}' to a parent in a different model ('${parentModelId}' != '${sourceModelId}'); changeElementModel only moves root elements between models`);
+
+    // Channel verification on the element's model.
+    iModel.channels[_verifyChannel](sourceModelId);
+
+    // Invalidate caches for the element being reparented.
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
+
+    try {
+      iModel[_nativeDb].changeElementParent({ id: props.id, parentId: props.parentId });
+    } catch (err: any) {
+      err.message = `Error changing element parent [${err.message}], id: ${props.id}, parentId: ${props.parentId}`;
+      err.metadata = { props };
+      throw err;
+    }
+
+    // The model is unchanged and descendants are not moved, so only the reparented element's cache is stale.
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
+  }
+
+  /** Change the model of a root element, making it a root element in the new model.
+   *
+   * The element must not have a parent.
+   * The element's entire subtree moves with it: BIS requires a parent and all of its children to reside
+   * in the same model, so every descendant of the element is relocated into the target model as well.
+   * The parent-child hierarchy is preserved. The whole subtree is validated before anything is moved, so
+   * a rejected change leaves the iModel untouched.
+   *
+   * **Blocked cases** (will throw):
+   * - Element has a parent (only root elements can be moved between models).
+   * - Any element in the subtree has a `Model`-scoped code (code uniqueness is tied to the source model; use delete+insert instead).
+   * - The moved (root) element has a `ParentElement`-scoped code (use delete+insert instead). A descendant's `ParentElement`-scoped code is allowed, because its parent moves with it.
+   *
+   * **Allowed cases** (for any element in the subtree):
+   * - A `Repository`-scoped code (unique across entire iModel — unaffected by the model change).
+   * - A `RelatedElement`-scoped code (scope element is independent of the model).
+   * - No meaningful code (empty code).
+   *
+   * The source and target models must be of the same class (classFullName must match exactly).
+   * Channel verification is performed on both the source and target models.
+   * Lock enforcement: requires an exclusive lock on every element in the moved subtree, and a shared lock on the target model.
+   * @param props The model change parameters: element id and target model id.
+   * @throws EditTxnError if this EditTxn is not active.
+   * @throws [[ITwinError]] if the operation fails.
+   * @beta
+   */
+  public changeElementModel(props: ChangeElementModelProps): void {
+    this.verifyWriteable();
+    const iModel = this.iModel;
+
+    // Resolve the source model
+    const sourceModelId = iModel.elements.getElementProps({ id: props.id }).model;
+
+    // Channel verification on the source model
+    iModel.channels[_verifyChannel](sourceModelId);
+
+    // Model type check: source and target models must be the same class
+    const sourceModel = iModel.models.getModel(sourceModelId);
+    const targetModel = iModel.models.getModel(props.modelId);
+    if (sourceModel.classFullName !== targetModel.classFullName)
+      ElementError.throwError("model-type-mismatch", `cannot move element from model of type '${sourceModel.classFullName}' to model of type '${targetModel.classFullName}'`);
+
+    // Shared lock on target model
+    iModel.locks.checkSharedLock(props.modelId, "model", "changeModel");
+
+    // Lock enforcement: every element in the subtree is updated by the native bulk move.
+    const subtreeIds = this.collectSubtreeIds(props.id);
+    for (const id of subtreeIds)
+      iModel.locks.checkExclusiveLock(id, "element", "changeModel");
+
+    // Channel verification on the target model
+    iModel.channels[_verifyChannel](props.modelId);
+
+    // Invalidate caches
+    iModel.elements[_cache].delete({ id: props.id });
+    iModel.elements[_instanceKeyCache].deleteById(props.id);
+
+    try {
+      iModel[_nativeDb].changeElementModel({ id: props.id, modelId: props.modelId });
+    } catch (err: any) {
+      err.message = `Error changing element model [${err.message}], id: ${props.id}, modelId: ${props.modelId}`;
+      err.metadata = { props };
+      throw err;
+    }
+
+    // The move relocates the element's entire subtree into the target model (BIS requires a parent and
+    // its children to reside in the same model). Every descendant's cached props therefore hold a stale
+    // `model`, so invalidate the whole subtree rather than just the target element.
+    for (const id of subtreeIds) {
+      iModel.elements[_cache].delete({ id });
+      iModel.elements[_instanceKeyCache].deleteById(id);
+    }
+
+    // Moving the subtree changes the membership - and therefore the geometry-derived state such as
+    // GeometricModel.geometryGuid - of both the source and target models. Element insert/update/delete
+    // invalidate models[_cache] via Element.onInserted/onUpdated/onDeleted for the same reason, but the
+    // native changeElementModel does not fire those element callbacks, so invalidate both affected models
+    // here to keep the model cache contract local to this wrapper.
+    iModel.models[_cache].delete(sourceModelId);
+    iModel.models[_cache].delete(props.modelId);
+  }
+
+  /** Collect an element together with all of its descendants by walking the `ElementOwnsChildElements`
+   * hierarchy depth-first. Used to invalidate the cached props of every element affected by a subtree move.
+   */
+  private collectSubtreeIds(rootId: Id64String): Id64String[] {
+    const ids: Id64String[] = [];
+    const stack: Id64String[] = [rootId];
+    for (let id = stack.pop(); undefined !== id; id = stack.pop()) {
+      ids.push(id);
+      for (const childId of this.iModel.elements.queryChildren(id))
+        stack.push(childId);
+    }
+    return ids;
   }
 
   /**

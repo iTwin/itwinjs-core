@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Fri, 03 Jul 2026 13:06:57 GMT and should not be manually modified.
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Fixed silent loss of CodeValue swaps when applying a changeset containing a single-transaction swap through a null intermediate; the unique-index conflict handler no longer skips the intermediate step during changeset application
+- Added regression coverage that the deprecated `doNotUsePrimaryConnToPrepare` concurrent query config option is a no-op that still round-trips for backward-compatible serialization.
+- Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.
+- Add performance test for concurrent query
+- Use `CompressedId64Set.isValid` in `DisplayStyle.deserialize` instead of an inline heuristic.
+- IModelHost.getITwinWorkspace() automatically gets settings for parent iTwins and treats those as a lower priority
+- Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline.
+- Document that an empty workspace baseUri uses a local WorkspaceDb.
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT
