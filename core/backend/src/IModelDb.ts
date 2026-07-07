@@ -4087,7 +4087,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     // If this pull enabled or disabled SchemaSync for this briefcase, its ReservationControl must now be re-initialized
-    if (SchemaSync.isConnected(this) !== SchemaSync.isEnabled(this))
+    if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
       await this.initializeReservationControl();
 
     this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
@@ -4293,7 +4293,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     // If this pull enabled or disabled SchemaSync for this briefcase, its ReservationControl must now be re-initialized
-    if (SchemaSync.isConnected(this) !== SchemaSync.isEnabled(this))
+    if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
       await this.initializeReservationControl();
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);

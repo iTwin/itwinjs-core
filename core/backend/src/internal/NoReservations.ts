@@ -13,6 +13,7 @@ import { _close, _implementationProhibited, _onDefinitionElementInsert } from ".
 /** A null-implementation of ReservationControl for iModels that don't use SchemaSync-backed reservations. */
 class NoReservations implements ReservationControl {
   public readonly [_implementationProhibited] = undefined;
+  public get isServerBased() { return false; }
   public [_close](): void { }
   public [_onDefinitionElementInsert](): void { }
   public needsDefinitionReservation(): boolean { return false; }

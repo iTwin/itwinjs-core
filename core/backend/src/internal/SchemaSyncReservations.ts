@@ -18,6 +18,7 @@ import { Category } from "../Category";
 
 class SchemaSyncReservations implements ReservationControl {
   public readonly [_implementationProhibited] = undefined;
+  public get isServerBased() { return true; }
   private readonly _iModel: IModelDb;
   private readonly _schemaSync: SchemaSync.CloudAccess;
 

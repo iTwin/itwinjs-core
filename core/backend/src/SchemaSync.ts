@@ -74,6 +74,9 @@ export namespace SchemaSync {
     }
 
     public findReservedDefinition(federationGuid: GuidString): ReservedDefinition | undefined {
+      if (!this._supportsDefinitions)
+        return undefined;
+
       return this.withPreparedSqliteStatement(
         `SELECT elementId, ecClassId, codeSpecId, codeScope, codeValue FROM ${definitionElementsTableName} WHERE federationGuid=?`,
         (stmt) => {
@@ -88,7 +91,7 @@ export namespace SchemaSync {
             code: new Code({
               spec: stmt.getValueId(2),
               scope: stmt.getValueString(3),
-              value: stmt.getValueString(4),
+              value: stmt.getValueStringMaybe(4),
             }),
           };
         },
@@ -237,11 +240,6 @@ export namespace SchemaSync {
 
   export const isEnabled = (iModel: IModelDb) => {
     return iModel[_nativeDb].schemaSyncEnabled();
-  };
-
-  export const isConnected = (iModel: IModelDb) => {
-    const cached = sharedAccessByIModel.get(iModel[_nativeDb]);
-    return cached?.container.isConnected && cached.getCloudDb().isOpen;
   };
 
   /** Synchronize local briefcase schemas with cloud container */
