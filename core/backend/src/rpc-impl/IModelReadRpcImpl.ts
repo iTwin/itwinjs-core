@@ -16,7 +16,7 @@ import {
   GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, NoContentError, QueryRowFormat, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
   SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
   ViewStoreRpc,
 } from "@itwin/core-common";
@@ -250,7 +250,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     iModelDb.withQueryReader("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (reader) => {
       for (const row of reader)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
-    }, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    });
     return codeSpecs;
   }
 
