@@ -92,6 +92,7 @@ import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadOptions } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
+import { ElementProps as ElementProps_2 } from '@itwin/core-common/lib/cjs/ElementProps';
 import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
@@ -2019,6 +2020,8 @@ export abstract class DefinitionElement extends InformationContentElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): DefinitionElementProps;
     isPrivate: boolean;
+    // (undocumented)
+    protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
     static serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -4092,6 +4095,8 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
+    // @internal (undocumented)
+    initializeReservationControl(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4156,6 +4161,10 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
+    // @beta
+    get reservations(): ReservationControl;
+    // @internal (undocumented)
+    protected _reservations?: ReservationControl;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -5550,6 +5559,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
+    options: InsertElementOptions;
     props: ElementProps;
 }
 
@@ -6273,14 +6283,46 @@ export class Schemas {
 
 // @internal (undocumented)
 export namespace SchemaSync {
-    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb, ReadMethods, WriteMethods> {
         constructor(props: CloudSqlite.ContainerAccessProps);
         // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
+    export interface ProposedDefinition {
+        // (undocumented)
+        readonly code: Code;
+        // (undocumented)
+        readonly ecClassId: Id64String;
+        // (undocumented)
+        readonly federationGuid: GuidString;
+        // (undocumented)
+        readonly isCategory?: boolean;
+    }
+    // (undocumented)
+    export interface ReadMethods {
+        findReservedDefinition(federationGuid: GuidString): ReservedDefinition | undefined;
+    }
+    export interface ReservedDefinition extends ProposedDefinition {
+        // (undocumented)
+        readonly elementId: Id64String;
+    }
+    export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        findReservedDefinition(federationGuid: GuidString): ReservedDefinition | undefined;
+        // (undocumented)
+        readonly myVersion = "4.1.0";
+        // (undocumented)
+        reserveDefinitionElements(elements: ProposedDefinition[]): Promise<void>;
+    }
     const // (undocumented)
     setTestCache: (iModel: IModelDb, cacheName?: string) => void;
+    const // (undocumented)
+    getCloudAccess: (arg: IModelDb | {
+        readonly fileName: LocalFileName;
+    }) => Promise<CloudAccess>;
     const // (undocumented)
     withLockedAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
@@ -6295,6 +6337,8 @@ export namespace SchemaSync {
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const // (undocumented)
     isEnabled: (iModel: IModelDb) => boolean;
+    const // (undocumented)
+    isConnected: (iModel: IModelDb) => boolean | undefined;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
@@ -6302,11 +6346,9 @@ export namespace SchemaSync {
         containerProps: CloudSqlite.ContainerProps;
         overrideContainer?: boolean;
     }) => Promise<void>;
-    export class SchemaSyncDb extends VersionedSqliteDb {
-        // (undocumented)
-        protected createDDL(): void;
-        // (undocumented)
-        readonly myVersion = "4.0.0";
+    // (undocumented)
+    export interface WriteMethods {
+        reserveDefinitionElements(identities: ProposedDefinition[]): Promise<void>;
     }
 }
 

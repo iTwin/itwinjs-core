@@ -35,6 +35,13 @@ export enum BriefcaseIdValue {
   LastValid = BriefcaseIdValue.Max - 11,
 
   /**
+   * Briefcase Id reserved for `DefinitionElement` Ids allocated by SchemaSync.
+   * Never assigned to a real briefcase by iModelHub.
+   * @internal
+   */
+  SchemaSyncDefinitionReserved = BriefcaseIdValue.Max - 10,
+
+  /**
    * The briefcase has not been assigned a unique Id by iModelHub. Only briefcases that have been assigned a unique BriefcaseId may create changesets,
    * because BriefcaseId is used to create unique ElementIds for new elements.
    *

@@ -874,6 +874,8 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
+    // @internal
+    SchemaSyncDefinitionReserved = 16777206,
     Unassigned = 0
 }
 

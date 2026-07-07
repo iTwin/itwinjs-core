@@ -67,8 +67,10 @@ import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
+import { createNoOpReservationControl } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
+import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
@@ -77,6 +79,7 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
+import { ReservationControl } from "./ReservationControl";
 
 // spell:ignore fontid fontmap
 
@@ -458,6 +461,9 @@ export abstract class IModelDb extends IModel {
   protected _locks?: LockControl = createNoOpLockControl();
 
   /** @internal */
+  protected _reservations?: ReservationControl = createNoOpReservationControl();
+
+  /** @internal */
   protected _codeService?: CodeService;
 
   /**
@@ -487,6 +493,19 @@ export abstract class IModelDb extends IModel {
 
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /** @beta The [[ReservationControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
+  public get reservations(): ReservationControl { return this._reservations!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /** @internal */
+  public async initializeReservationControl(): Promise<void> {
+    this._reservations?.[_close]();
+
+    if (SchemaSync.isEnabled(this))
+      this._reservations = await createSchemaSyncReservations(this);
+    else
+      this._reservations = createNoOpReservationControl();
+  }
 
   /** Provides methods for interacting with [font-related information]($docs/learning/backend/Fonts.md) stored in this iModel.
    * @beta
@@ -673,6 +692,8 @@ export abstract class IModelDb extends IModel {
     this._workspace?.close();
     this.locks[_close]();
     this._locks = undefined;
+    this.reservations[_close]();
+    this._reservations = undefined;
     this._codeService?.close();
     this._codeService = undefined;
     this[_nativeDb].closeFile();
@@ -1158,7 +1179,7 @@ export abstract class IModelDb extends IModel {
       if (this._schemasPromise) {
         const old = this._schemasPromise;
         this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => {});
+        old.then((view) => view.markOutdated()).catch(() => { });
       }
       this[_nativeDb].clearECDbCache();
     }
@@ -3773,6 +3794,7 @@ export class BriefcaseDb extends IModelDb {
 
     // load all of the settings from workspaces
     await briefcaseDb.loadWorkspaceSettings();
+    await briefcaseDb.initializeReservationControl();
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -4016,6 +4038,10 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
+    // If this pull enabled or disabled SchemaSync for this briefcase, its ReservationControl must now be re-initialized
+    if (SchemaSync.isConnected(this) !== SchemaSync.isEnabled(this))
+      await this.initializeReservationControl();
+
     this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
 
@@ -4218,6 +4244,10 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
+    // If this pull enabled or disabled SchemaSync for this briefcase, its ReservationControl must now be re-initialized
+    if (SchemaSync.isConnected(this) !== SchemaSync.isEnabled(this))
+      await this.initializeReservationControl();
+
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
     BriefcaseManager.deleteRebaseFolders(this);
   }
@@ -4419,6 +4449,7 @@ export class SnapshotDb extends IModelDb {
     const key = CheckpointManager.getKey(checkpoint);
     const db = SnapshotDb.openFile(dbName, { key, container });
     await db.loadWorkspaceSettings();
+    await db.initializeReservationControl();
     return db;
   }
 

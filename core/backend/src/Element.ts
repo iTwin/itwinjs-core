@@ -17,11 +17,11 @@ import {
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
 import { EditTxn } from "./EditTxn";
-import { IModelDb } from "./IModelDb";
+import { IModelDb, InsertElementOptions } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onDefinitionElementInsert, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
@@ -40,6 +40,10 @@ export interface OnElementPropsArg extends OnElementArg {
    * @note the properties may be modified. If so the modified values will be inserted/updated.
    */
   props: ElementProps;
+  /** Mutable options that will be supplied to the native insert/update operation.
+   * @beta
+   */
+  options: InsertElementOptions;
 }
 
 /** Argument for the `Element.onXxx` static methods that notify of operations to an existing Element supplying its Id, ModelId and FederationGuid.
@@ -1602,6 +1606,11 @@ export abstract class DefinitionElement extends InformationContentElement {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
     return val;
+  }
+
+  protected static override onInsert(arg: OnElementPropsArg): void {
+    super.onInsert(arg);
+    arg.iModel.reservations[_onDefinitionElementInsert](arg);
   }
 }
 
