@@ -92,7 +92,6 @@ import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadOptions } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
-import { ElementProps as ElementProps_2 } from '@itwin/core-common/lib/cjs/ElementProps';
 import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
@@ -2020,7 +2019,7 @@ export abstract class DefinitionElement extends InformationContentElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): DefinitionElementProps;
     isPrivate: boolean;
-    // (undocumented)
+    // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
     static serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow;

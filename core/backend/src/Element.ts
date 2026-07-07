@@ -1608,6 +1608,11 @@ export abstract class DefinitionElement extends InformationContentElement {
     return val;
   }
 
+  /**
+   * DefinitionElement checks reservations on insert.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
     arg.iModel.reservations[_onDefinitionElementInsert](arg);

@@ -8,7 +8,7 @@
 
 import { GuidString } from "@itwin/core-bentley";
 import { _close, _implementationProhibited, _onDefinitionElementInsert } from "./internal/Symbols";
-import { ElementProps } from "@itwin/core-common/lib/cjs/ElementProps";
+import { ElementProps } from "@itwin/core-common";
 import { OnElementPropsArg } from "./Element";
 
 /** Identifies a [[DefinitionElement]] to be pre-reserved by [[reserveDefinitionElements]].
