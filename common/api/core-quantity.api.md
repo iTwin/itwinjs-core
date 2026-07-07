@@ -374,6 +374,8 @@ export const formatStringRgx: RegExp;
 // @beta
 export class Formatter {
     static formatQuantity(magnitude: number, spec: FormatterSpec): string;
+    // @internal
+    static normalizeToAzimuth(magnitude: number, phenomenon: string, revolution: number): number;
 }
 
 // @beta
