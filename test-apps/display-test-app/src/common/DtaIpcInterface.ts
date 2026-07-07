@@ -72,6 +72,11 @@ export interface DtaIpcInterface {
   deleteText(iModelKey: string, elementId: Id64String): Promise<void>;
 
   /**
+   * Retrieves the TextAnnotationProps, category id, model id, placement, and default text style id for an existing text annotation element, or `undefined` if the element has no annotation set.
+   */
+  getText(iModelKey: string, elementId: Id64String): Promise<{ annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String } | undefined>;
+
+  /**
    * If the model is a DrawingModel, sets the scale factor on the Drawing element.
    */
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
