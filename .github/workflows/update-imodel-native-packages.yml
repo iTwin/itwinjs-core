@@ -1,0 +1,108 @@
+# This workflow triggers when a new release is published in itwinjs-core.
+# For minor/major releases (tag ending in .0), it creates a PR in iTwin/imodel-native
+# to bump the iTwin.js devDependency versions to the next dev version.
+#
+# Release tags in this repo use the format: release/X.Y.Z (e.g., release/5.11.0)
+#
+# Example: If release/5.11.0 is published:
+#   - Next dev version = 5.12.0-dev
+#   - Update imodel-native's package.json devDependencies to ^5.12.0-dev
+#   - Regenerate package-lock.json
+#   - Open a PR in iTwin/imodel-native targeting main
+
+name: Update imodel-native packages
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-imodel-native:
+    runs-on: ubuntu-latest
+
+    # Only run for minor/major releases (version ends with .0)
+    if: endsWith(github.event.release.tag_name, '.0')
+
+    steps:
+      - name: Extract version info
+        id: version
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+
+          # Tag format is "release/X.Y.Z" — strip the "release/" prefix
+          VERSION="${TAG#release/}"
+
+          # Parse major.minor
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+
+          # Compute next dev version: increment minor by 1
+          NEXT_MINOR=$((MINOR + 1))
+          NEXT_DEV_VERSION="${MAJOR}.${NEXT_MINOR}.0-dev"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "next_dev_version=$NEXT_DEV_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Released version: $VERSION"
+          echo "Next dev version: $NEXT_DEV_VERSION"
+
+      - name: Checkout imodel-native
+        uses: actions/checkout@v4
+        with:
+          repository: iTwin/imodel-native
+          token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Update package.json devDependencies
+        run: |
+          PACKAGE_JSON="iModelJsNodeAddon/api_package/ts/package.json"
+          NEXT_DEV="^${{ steps.version.outputs.next_dev_version }}"
+
+          echo "Updating devDependencies in $PACKAGE_JSON to $NEXT_DEV"
+
+          # Update the 4 iTwin.js devDependencies using jq
+          jq --arg ver "$NEXT_DEV" '
+            .devDependencies["@itwin/build-tools"] = $ver |
+            .devDependencies["@itwin/core-bentley"] = $ver |
+            .devDependencies["@itwin/core-common"] = $ver |
+            .devDependencies["@itwin/core-geometry"] = $ver
+          ' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
+      - name: Regenerate package-lock.json
+        working-directory: iModelJsNodeAddon/api_package/ts
+        run: npm install
+
+      - name: Commit changes and push branch
+        run: |
+          BRANCH="itwinjs-update/${{ steps.version.outputs.next_dev_version }}"
+
+          git config user.name "imodeljs-admin"
+          git config user.email "imodeljs-admin@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add iModelJsNodeAddon/api_package/ts/package.json iModelJsNodeAddon/api_package/ts/package-lock.json
+          git commit -m "Update iTwin.js packages to ^${{ steps.version.outputs.next_dev_version }}"
+          git push origin "$BRANCH"
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+        run: |
+          gh pr create \
+            --repo iTwin/imodel-native \
+            --base main \
+            --head "itwinjs-update/${{ steps.version.outputs.next_dev_version }}" \
+            --title "Update iTwin.js packages to ^${{ steps.version.outputs.next_dev_version }}" \
+            --body "Automated PR triggered by the release of [itwinjs-core ${{ github.event.release.tag_name }}](${{ github.event.release.html_url }}).
+
+          Updates the following devDependencies in \`iModelJsNodeAddon/api_package/ts/package.json\`:
+          - \`@itwin/build-tools\` → \`^${{ steps.version.outputs.next_dev_version }}\`
+          - \`@itwin/core-bentley\` → \`^${{ steps.version.outputs.next_dev_version }}\`
+          - \`@itwin/core-common\` → \`^${{ steps.version.outputs.next_dev_version }}\`
+          - \`@itwin/core-geometry\` → \`^${{ steps.version.outputs.next_dev_version }}\`
+
+          Also regenerated \`package-lock.json\` via \`npm install\`." \
+            --label "dependencies"
