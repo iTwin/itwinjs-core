@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Changed error messages for \"createQueryReader\" and \"withQueryReader\" api for iModelDb and ECDb",
+      "comment": "Changed error codes for \"createQueryReader\" and \"withQueryReader\" api and made error messages consistent across the native node add-on apis for the case of db being closed",
       "type": "none"
     }
   ],
