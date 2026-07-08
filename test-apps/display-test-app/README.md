@@ -238,7 +238,7 @@ You can use these environment variables to alter the default behavior of various
 
 ## Adding a key-in
 
-A key-in is a convenient way to invoke iTwin.js APIs from display-test-app - for example, to reproduce a bug or demonstrate a feature gap using code that others can easily run. A key-in is implemented as a subclass of [Tool](https://www.itwinjs.org/reference/core-frontend/tools/tool/) from `@itwin/core-frontend`, registered at startup, and invoked by typing its key-in string into the key-in field (press the backtick key to focus it).
+A key-in is a convenient way to invoke iTwin.js APIs from display-test-app. A key-in can be used, for example, to reproduce a bug or demonstrate a feature gap using code that others can easily run. A key-in is implemented as a subclass of [Tool](https://www.itwinjs.org/reference/core-frontend/tools/tool/) from `@itwin/core-frontend`, registered at startup, and invoked by typing its key-in string into the key-in field (press the backtick key to focus it).
 
 To add one:
 
