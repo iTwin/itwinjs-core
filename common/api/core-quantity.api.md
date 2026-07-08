@@ -57,7 +57,6 @@ export class BaseFormat {
     set azimuthBase(azimuthBase: number | undefined);
     // (undocumented)
     protected _azimuthBase?: number;
-    // (undocumented)
     get azimuthBaseUnit(): UnitProps | undefined;
     set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined);
     // (undocumented)
@@ -115,7 +114,6 @@ export class BaseFormat {
     set ratioType(ratioType: RatioType | undefined);
     // (undocumented)
     protected _ratioType?: RatioType;
-    // (undocumented)
     get revolutionUnit(): UnitProps | undefined;
     set revolutionUnit(revolutionUnit: UnitProps | undefined);
     // (undocumented)
