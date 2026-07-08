@@ -131,7 +131,11 @@ describe("Quantity", () => {
         throw new Error(`Expected a parsed from bearing DMS input string ${inputString}`);
       }
       const value = parseResult.value;
-      expect(value).toBe(2.6149395518005045);
+      // This format's persistence unit (Units.RAD) is `ANGLE`-phenomenon, not `HORIZONTAL_DIRECTION`, so
+      // per the fix for itwinjs-core#9465, the parsed true-azimuth value (149.825 degrees measuring from
+      // north) is converted to raw-math-angle convention (measuring counter-clockwise from east) before
+      // being returned as the persisted value.
+      expect(value).toBe(5.239042082173978);
 
       const formatterResult = Formatter.formatQuantity(value, bearingDMSFormatter);
       expect(formatterResult).toBe(inputString);
