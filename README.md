@@ -66,7 +66,7 @@ The following instructions will quickly set the repo up for you to edit the sour
 
 ## Interactive Testing and Feature Development
 
-This repository includes [display-test-app](./test-apps/display-test-app/README.md) (DTA), a desktop-style test application built as part of the monorepo. It is the easiest way to exercise iTwin.js APIs directly against the source code in this repository — for example, to reproduce a bug, demonstrate a feature gap, or test a local change. Because it runs against the code in your working tree (not a published release), it is often a better vehicle for reproductions than online sandboxes, and as an Electron app it can also exercise desktop-only workflows such as editing.
+This repository includes [display-test-app](./test-apps/display-test-app/README.md) (DTA), a desktop-style test application built as part of the monorepo. It is the easiest way to exercise iTwin.js APIs directly against the source code in this repository. It can be used, for example, to reproduce a bug, demonstrate a feature gap, or test a local change. Because it runs against the code in your working tree (not a published release), this can often be a better vehicle for reproductions than online sandboxes, and as an Electron app it can also exercise desktop-only workflows such as editing.
 
 ### Build and run
 
@@ -79,7 +79,7 @@ npm run start            # run as an Electron app
 npm run start:servers    # run in a browser at http://localhost:3000
 ```
 
-display-test-app opens iModel snapshot and briefcase files from the local file system — use the toolbar's open-file button, or set the `IMJS_STANDALONE_FILENAME` environment variable to the absolute path of an iModel to open it automatically at startup (e.g., in `test-apps/display-test-app/.env.local`). If you don't have an iModel handy, a small sample is included in the repository at [test-apps/display-test-app/test-models/JoesHouse.bim](./test-apps/display-test-app/test-models/JoesHouse.bim). See the [display-test-app README](./test-apps/display-test-app/README.md) for the full list of environment variables, UI documentation, and debugging instructions.
+display-test-app opens iModel snapshot and briefcase files from the local file system; use the toolbar's open-file button, or set the `IMJS_STANDALONE_FILENAME` environment variable to the absolute path of an iModel to open it automatically at startup (e.g., in `test-apps/display-test-app/.env` or your local environment). If you don't have an iModel handy, a small sample is included in the repository at [test-apps/display-test-app/test-models/JoesHouse.bim](./test-apps/display-test-app/test-models/JoesHouse.bim). See the [display-test-app README](./test-apps/display-test-app/README.md) for the full list of environment variables, UI documentation, and debugging instructions.
 
 ### Calling iTwin.js APIs from display-test-app
 
