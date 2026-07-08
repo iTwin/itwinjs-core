@@ -3858,6 +3858,11 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 export function getAvailableCRSUnits(): string[];
 
 // @beta
+export interface GetResolvedSettingDefOptions {
+    readonly preserveExtends?: boolean;
+}
+
+// @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
     accessToken: AccessToken;
 }
@@ -6525,7 +6530,7 @@ export interface SettingsSchemas {
     addFile(fileName: LocalFileName): void;
     addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
     addJson(settingSchema: string): void;
-    getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
+    getResolvedSettingDef(settingName: SettingName, options?: GetResolvedSettingDefOptions): SettingSchema | undefined;
     readonly groups: ReadonlyMap<string, SettingGroupSchema>;
     readonly onSchemaChanged: BeEvent<() => void>;
     removeGroup(schemaPrefix: string): void;

@@ -50,7 +50,7 @@ export class DisableNativeAssertions implements Disposable {
     this._native = undefined;
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }
