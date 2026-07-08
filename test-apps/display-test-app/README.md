@@ -40,7 +40,7 @@ npm run start:servers
 ## Using display-test-app
 
 display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
-The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
+The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup. If you don't have an iModel handy, a small sample is included in the repository at [test-models/JoesHouse.bim](./test-models/JoesHouse.bim).
 
 display-test-app's UI consists of:
 
@@ -235,6 +235,61 @@ You can use these environment variables to alter the default behavior of various
   * If defined, decoding of iMdl content is performed in the main thread instead of in a web worker. This makes debugging easier.
 * IMJS_GOOGLEMAPS_UI
   * Enable the Google Maps toolbar button
+
+## Adding a key-in
+
+A key-in is a convenient way to invoke iTwin.js APIs from display-test-app - for example, to reproduce a bug or demonstrate a feature gap using code that others can easily run. A key-in is implemented as a subclass of [Tool](https://www.itwinjs.org/reference/core-frontend/tools/tool/) from `@itwin/core-frontend`, registered at startup, and invoked by typing its key-in string into the key-in field (press the backtick key to focus it).
+
+To add one:
+
+1. Create a new file in [test-apps/display-test-app/src/frontend](./src/frontend) (alongside the existing tool files such as `FrameStatsTool.ts` - the directory is intentionally flat; note this is display-test-app's own frontend directory, not the `core/frontend` package) defining your tool. A skeletal example:
+
+    ```ts
+    import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+
+    /** Executes via the key-in `dta my example` with 0 or 1 argument(s). */
+    export class MyExampleTool extends Tool {
+      public static override toolId = "MyExample"; // must match the key in SVTTools.json
+      public static override get minArgs() { return 0; }
+      public static override get maxArgs() { return 1; }
+
+      public override async run(arg?: string): Promise<boolean> {
+        // Call whatever iTwin.js APIs you want to test here.
+        // e.g., inspect the selected viewport:
+        const vp = IModelApp.viewManager.selectedView;
+        if (vp)
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `view is ${vp.view.id}, arg is ${arg}`));
+
+        return true;
+      }
+
+      /** Parses raw arguments typed after the key-in, then invokes run. */
+      public override async parseAndRun(...args: string[]): Promise<boolean> {
+        return this.run(args[0]);
+      }
+    }
+    ```
+
+    See [FrameStatsTool.ts](./src/frontend/FrameStatsTool.ts) for a complete real-world example, or browse the other tools in [src/frontend](./src/frontend) for more advanced patterns (interactive tools, decorators, etc.).
+
+2. Define the key-in string in [public/locales/en/SVTTools.json](./public/locales/en/SVTTools.json), under `tools`, keyed by your `toolId`:
+
+    ```json
+    "MyExample": {
+      "keyin": "dta my example"
+    }
+    ```
+
+3. Register the tool at startup by adding it to the list of tools registered in the `svtToolNamespace` in [src/frontend/App.ts](./src/frontend/App.ts):
+
+    ```ts
+    [
+      // ...existing tools...
+      MyExampleTool,
+    ].forEach((tool) => tool.register(svtToolNamespace));
+    ```
+
+4. Rebuild and run (`npm run build` then `npm run start` from this directory - see [Getting Started](#getting-started)), press backtick, and type `dta my example`.
 
 ## Key-ins
 
