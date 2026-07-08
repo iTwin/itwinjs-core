@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Changed error messages for \"createQueryReader\" and \"withQueryReader\" api for iModelDb and ECDb",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
