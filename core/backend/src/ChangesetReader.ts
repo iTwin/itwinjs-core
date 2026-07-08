@@ -55,6 +55,9 @@ export class ChangesetReader implements Disposable, ChangeSource {
   /** Cached result of the `deleted` getter for the current row. `undefined` when not yet computed or not applicable. */
   private _cachedDeleted: ChangeInstance | undefined = undefined;
 
+  /** The db used for EC schema resolution. */
+  public readonly db: AnyDb;
+
   /** Returns the active cached row, throwing if no row is current.
    * @internal */
   private get _currentRow(): IModelJsNative.ChangesetRowData {
@@ -156,7 +159,9 @@ export class ChangesetReader implements Disposable, ChangeSource {
   }
 
   // Private — callers use static factory methods.
-  private constructor() { }
+  private constructor(db: AnyDb) {
+    this.db = db;
+  }
 
   /** Map public RowFormatOptions to the native adaptor options.
    * @internal */
@@ -183,7 +188,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
    * @beta
    */
   public static openFile(args: { readonly fileName: string } & ChangesetReaderArgs): ChangesetReader {
-    const reader = new ChangesetReader();
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -215,7 +220,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openGroup(args: { readonly changesetFiles: string[], spillThresholdInBytes?: number } & ChangesetReaderArgs): ChangesetReader {
     if (args.changesetFiles.length === 0)
       throw new IModelError(IModelStatus.BadArg, "changesetFiles must contain at least one file.");
-    const reader = new ChangesetReader();
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -247,7 +252,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openLocalChanges(
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; includeInMemoryChanges?: boolean, spillThresholdInBytes?: number },
   ): ChangesetReader {
-    const reader = new ChangesetReader();
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -276,7 +281,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openInMemoryChanges(
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb, spillThresholdInBytes?: number },
   ): ChangesetReader {
-    const reader = new ChangesetReader();
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
@@ -307,7 +312,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
   public static openTxn(
     args: Omit<ChangesetReaderArgs, "db"> & { db: IModelDb; txnId: Id64String, spillThresholdInBytes?: number },
   ): ChangesetReader {
-    const reader = new ChangesetReader();
+    const reader = new ChangesetReader(args.db);
     reader._rowOptions = args.rowOptions;
     const propFilter = args.propFilter ?? PropertyFilter.All;
     reader._propFilter = propFilter;
