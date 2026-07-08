@@ -6359,8 +6359,6 @@ export namespace SchemaSync {
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const // (undocumented)
     isEnabled: (iModel: IModelDb) => boolean;
-    const // (undocumented)
-    isConnected: (iModel: IModelDb) => boolean | undefined;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
