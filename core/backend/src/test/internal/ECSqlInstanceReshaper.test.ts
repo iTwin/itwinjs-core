@@ -253,23 +253,56 @@ describe("ECSqlInstanceReshaper", () => {
     assert.equal(reshaped.className, unresolvableClassId);
   });
 
-  it("reshapePropertyValue preserves a null struct-array element as an empty object, matching the native row adaptor", () => {
+  it("reshapePropertyValue preserves a null/undefined struct-array element as an empty object, matching the native row adaptor", () => {
     const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
     const arrayStProp = ecClass.getPropertySync("ArraySt")!;
     assert.exists(arrayStProp);
 
     // A null struct-array element is rendered by the native row adaptor as an empty object placeholder
     // (unlike primitive arrays, where null elements are dropped entirely), preserving the array's length
-    // and the positions of surrounding elements.
+    // and the positions of surrounding elements. The underlying query reader already normalizes a null
+    // struct-array element to `{}` before it reaches the reshaper, but the reshaper is also exercised
+    // directly here against raw `null`/`undefined` inputs to keep it robust regardless of caller.
     const reshaped = reshapePropertyValue(
-      [{ Label: "arr-0", P3d: { X: 1, Y: 2, Z: 3 } }, {}, { Label: "arr-2", P3d: { X: 4, Y: 5, Z: 6 } }],
+      [{ Label: "arr-0", P3d: { X: 1, Y: 2, Z: 3 } }, null, undefined, { Label: "arr-3", P3d: { X: 4, Y: 5, Z: 6 } }],
       arrayStProp,
       iModel,
     );
     assert.deepEqual(reshaped, [
       { label: "arr-0", p3d: { x: 1, y: 2, z: 3 } },
       {},
-      { label: "arr-2", p3d: { x: 4, y: 5, z: 6 } },
+      {},
+      { label: "arr-3", p3d: { x: 4, y: 5, z: 6 } },
     ]);
+  });
+
+  it("reshapePropertyValue drops null/undefined elements from a primitive array, matching the native row adaptor", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const arrayIProp = ecClass.getPropertySync("ArrayI")!;
+    assert.exists(arrayIProp);
+
+    const reshaped = reshapePropertyValue([10, null, undefined, 30], arrayIProp, iModel);
+    assert.deepEqual(reshaped, [10, 30]);
+  });
+
+  it("reshapeInstanceRow reshapes a row containing null array elements without throwing, matching the native row adaptor", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    let probeAspectId: string;
+    withEditTxn(iModel, (txn) => {
+      probeAspectId = txn.insertAspect({
+        classFullName: `${schemaName}:ReshaperAspect`,
+        element: { id: element1Id },
+        arrayI: [10, null, 30],
+        arraySt: [{ label: "a" }, null, { label: "c" }],
+      } as any);
+    });
+    const row = iModel.withQueryReader(`SELECT * FROM ${schemaAlias}.ReshaperAspect WHERE ECInstanceId=:id`, (reader) => {
+      assert.isTrue(reader.step());
+      return reader.current.toRow();
+    }, new QueryBinder().bindId("id", probeAspectId!), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+
+    const reshaped = reshapeInstanceRow(row, ecClass, iModel);
+    assert.deepEqual(reshaped.arrayI, [10, 30]);
+    assert.deepEqual(reshaped.arraySt, [{ label: "a" }, {}, { label: "c" }]);
   });
 });

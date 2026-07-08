@@ -96,9 +96,11 @@ export function reshapePropertyValue(value: any, prop: Property, iModel: IModelD
     if (!Array.isArray(value)) {
       return value;
     }
+    // Matches the native row adaptor: null/undefined elements are dropped from primitive arrays, but
+    // preserved as an empty object placeholder in struct arrays (array length/index is kept intact).
     return prop.isStruct()
-      ? value.map((element) => reshapeStruct(element, prop.structClass, iModel))
-      : value.map((element) => reshapeScalar(element, prop));
+      ? value.map((element) => (undefined === element || null === element) ? {} : reshapeStruct(element, prop.structClass, iModel))
+      : value.filter((element) => undefined !== element && null !== element).map((element) => reshapeScalar(element, prop));
   }
 
   if (prop.isStruct()) {
