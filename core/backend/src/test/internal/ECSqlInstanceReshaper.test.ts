@@ -224,4 +224,52 @@ describe("ECSqlInstanceReshaper", () => {
     const reshaped = reshapePropertyValue(row.Element, elementProp, iModel);
     expect(reshaped).to.deep.equal({ id: element1Id, relClassName: "BisCore.ElementOwnsUniqueAspect" });
   });
+
+  it("reshapePropertyValue falls back to the raw classId instead of throwing when a navigation property's relationship class can't be resolved", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const elementProp = ecClass.getPropertySync("Element")!;
+    assert.exists(elementProp);
+
+    const unresolvableClassId = "0xdeadbeef";
+    const reshaped = reshapePropertyValue({ Id: element1Id, RelECClassId: unresolvableClassId }, elementProp, iModel);
+    assert.deepEqual(reshaped, { id: element1Id, relClassName: unresolvableClassId });
+  });
+
+  it("reshapePropertyValue omits relClassName entirely when a navigation property's relationship class Id is unset", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const elementProp = ecClass.getPropertySync("Element")!;
+    assert.exists(elementProp);
+
+    const reshaped = reshapePropertyValue({ Id: element1Id, RelECClassId: undefined }, elementProp, iModel);
+    assert.deepEqual(reshaped, { id: element1Id });
+    assert.isFalse("relClassName" in reshaped);
+  });
+
+  it("reshapeInstanceRow falls back to the raw classId instead of throwing when a system ECClassId column can't be resolved", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const unresolvableClassId = "0xdeadbeef";
+    const reshaped = reshapeInstanceRow({ ECInstanceId: aspectId, ECClassId: unresolvableClassId }, ecClass, iModel);
+    assert.equal(reshaped.id, aspectId);
+    assert.equal(reshaped.className, unresolvableClassId);
+  });
+
+  it("reshapePropertyValue preserves a null struct-array element as an empty object, matching the native row adaptor", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const arrayStProp = ecClass.getPropertySync("ArraySt")!;
+    assert.exists(arrayStProp);
+
+    // A null struct-array element is rendered by the native row adaptor as an empty object placeholder
+    // (unlike primitive arrays, where null elements are dropped entirely), preserving the array's length
+    // and the positions of surrounding elements.
+    const reshaped = reshapePropertyValue(
+      [{ Label: "arr-0", P3d: { X: 1, Y: 2, Z: 3 } }, {}, { Label: "arr-2", P3d: { X: 4, Y: 5, Z: 6 } }],
+      arrayStProp,
+      iModel,
+    );
+    assert.deepEqual(reshaped, [
+      { label: "arr-0", p3d: { x: 1, y: 2, z: 3 } },
+      {},
+      { label: "arr-2", p3d: { x: 4, y: 5, z: 6 } },
+    ]);
+  });
 });

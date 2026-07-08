@@ -24,7 +24,14 @@ function lowerFirstChar(name: string): string {
 }
 
 function classIdToDotClassName(iModel: IModelDb, classId: string): string {
-  return iModel.getClassNameFromId(classId).replace(":", ".");
+  try {
+    return iModel.getClassNameFromId(classId).replace(":", ".");
+  } catch {
+    // Mirrors the native UseJsPropertyNames row adaptor: if a classId can't be resolved to a class (e.g. a
+    // stale or otherwise unresolvable class reference), fall back to the raw classId instead of throwing
+    // and aborting the entire row/query.
+    return classId;
+  }
 }
 
 /** Recursively reshape a struct value - each of whose members was queried with the non-deprecated
@@ -71,7 +78,13 @@ function reshapeScalar(value: any, prop: Property): any {
 export function reshapePropertyValue(value: any, prop: Property, iModel: IModelDb): any {
   // ECStructClass cannot declare navigation properties, so this only ever applies to a top-level property.
   if (prop.isNavigation()) {
-    return { id: value.Id, relClassName: classIdToDotClassName(iModel, value.RelECClassId) };
+    const result: { id: any, relClassName?: string } = { id: value.Id };
+    // As in the native row adaptor, omit relClassName entirely if the relationship class Id is unset,
+    // rather than including it with an unresolvable/undefined value.
+    if (undefined !== value.RelECClassId && null !== value.RelECClassId) {
+      result.relClassName = classIdToDotClassName(iModel, value.RelECClassId);
+    }
+    return result;
   }
 
   if (prop.isArray()) {
