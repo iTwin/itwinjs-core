@@ -125,7 +125,10 @@ export class BaseFormat {
   public get azimuthBase(): number | undefined { return this._azimuthBase; }
   public set azimuthBase(azimuthBase: number | undefined) { this._azimuthBase = azimuthBase; }
 
-  // must share the same phenomenon as the eventual persistence unit (see FormatProps.azimuthBaseUnit)
+  /**
+   * Must share the same phenomenon as the eventual persistence unit.
+   * @see FormatProps.azimuthBaseUnit
+   */
   public get azimuthBaseUnit(): UnitProps | undefined { return this._azimuthBaseUnit; }
   public set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined) { this._azimuthBaseUnit = azimuthBaseUnit; }
 
@@ -133,7 +136,10 @@ export class BaseFormat {
   public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) { this._azimuthCounterClockwise = azimuthCounterClockwise; }
   public get azimuthClockwiseOrDefault(): boolean { return !this._azimuthCounterClockwise; }
 
-  // must share the same phenomenon as the eventual persistence unit (see FormatProps.revolutionUnit)
+  /**
+   * Must share the same phenomenon as the eventual persistence unit.
+   * @see FormatProps.revolutionUnit
+   */
   public get revolutionUnit(): UnitProps | undefined { return this._revolutionUnit; }
   public set revolutionUnit(revolutionUnit: UnitProps | undefined) { this._revolutionUnit = revolutionUnit; }
 
