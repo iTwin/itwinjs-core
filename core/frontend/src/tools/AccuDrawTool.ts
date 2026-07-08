@@ -1404,7 +1404,7 @@ class RotatePointsImplementation extends AccuDrawShortcutImplementation {
     if (undefined === currentPoint)
       return;
 
-    if (2 === this._points.length) { // && CoordSource.User !== ev.coordsFrom) {
+    if (2 === this._points.length) {
       const xVec = Vector3d.createNormalizedStartEnd(this._points[0], this._points[1]);
       if (undefined === xVec)
         return;
