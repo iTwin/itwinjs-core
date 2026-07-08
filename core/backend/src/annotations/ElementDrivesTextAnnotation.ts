@@ -6,8 +6,8 @@
  * @module Elements
  */
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
@@ -88,11 +88,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
         return false;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return iModel.withPreparedStatement("SELECT CodeValue FROM BisCore.Element WHERE ECInstanceId=?", (stmt) => {
-        stmt.bindId(1, id);
-        return DbResult.BE_SQLITE_ROW === stmt.step();
-      });
+      return iModel.withQueryReader("SELECT CodeValue FROM BisCore.Element WHERE ECInstanceId=?", (reader): boolean => {
+        return reader.step();
+      }, new QueryBinder().bindId(1, id));
     }
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
@@ -117,18 +115,21 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     const staleRelationships = new Set<Id64String>();
     if (this.isSupportedForIModel(iModel)) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
-        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          const relationshipId = stmt.getValue(0).getId();
-          const sourceId = stmt.getValue(1).getId();
-          if (sourceToRelationship.has(sourceId)) {
-            sourceToRelationship.set(sourceId, relationshipId);
-          } else {
-            staleRelationships.add(relationshipId);
+      annotationElement.iModel.withQueryReader(
+        "SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=:targetId",
+        (reader) => {
+          for (const row of reader) {
+            const relationshipId: Id64String = row[0];
+            const sourceId: Id64String = row[1];
+            if (sourceToRelationship.has(sourceId)) {
+              sourceToRelationship.set(sourceId, relationshipId);
+            } else {
+              staleRelationships.add(relationshipId);
+            }
           }
-        }
-      });
+        },
+        new QueryBinder().bindId("targetId", annotationElement.id),
+      );
     }
 
     for (const [sourceId, relationshipId] of sourceToRelationship) {
