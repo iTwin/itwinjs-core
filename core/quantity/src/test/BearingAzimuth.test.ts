@@ -19,7 +19,6 @@ describe("Bearing format tests:", () => {
   beforeEach(async () => {
     unitsProvider = new TestUnitsProvider();
 
-    // These tests model already-true-azimuth values, so use HORIZONTAL_DIRECTION persistence units.
     degree = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_ARC_DEG");
     rad = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
 
@@ -634,7 +633,6 @@ describe("Azimuth format tests:", () => {
     await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson);
     expect(azimuthDecimal.hasUnits).to.be.true;
 
-    // Use a HORIZONTAL_DIRECTION persistence unit: this value is already true azimuth.
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_DIR_RAD");
     expect(rad.isValid).to.be.true;
     const azimuthDMSFormatter = await FormatterSpec.create("RadToAzimuthDMS", azimuthDMS, unitsProvider, rad);
