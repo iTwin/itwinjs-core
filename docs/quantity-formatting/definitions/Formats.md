@@ -108,6 +108,8 @@ Displays angular values as compass bearings (e.g., `N45°00'00"E`) or azimuths (
 
 Pick the persistence unit that matches how the value was computed — do not apply the `90° − θ` conversion yourself before or after calling the formatter/parser, since that would double-convert the value.
 
+**`revolutionUnit` (and `azimuthBaseUnit`, if set) must share the same phenomenon as the persistence unit.** These units are resolved against the persistence unit when a `FormatterSpec`/`ParserSpec` is created, and the units provider cannot convert between different phenomena. If your persistence unit's phenomenon is `Units.HORIZONTAL_DIRECTION`, `revolutionUnit` must also be a `Units.HORIZONTAL_DIRECTION` unit (e.g. `Units.HORIZONTAL_DIR_REVOLUTION`, not `Units.REVOLUTION`). A mismatch will fail to resolve and cause incorrect or missing formatting/parsing of bearing/azimuth values.
+
 ## Composite Formats
 
 Format definitions that utilize composite units allow quantity values to be displayed across multiple units. Typical examples:
