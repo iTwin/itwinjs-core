@@ -9,8 +9,8 @@
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
-  DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, resolveNavPropId, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
+  DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, QueryBinder,
+  RenderSchedule, RenderTimelineProps, resolveNavPropId, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinition2dProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -21,7 +21,6 @@ import { Model } from "./Model";
 import { Entity } from "./Entity";
 import { BlobContainer } from "./BlobContainerService";
 import { _nativeDb } from "./internal/Symbols";
-import { ECSqlStatement } from "./ECSqlStatement";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -867,15 +866,13 @@ export namespace ViewStore {
 
       const ids = new Set<string>();
       try {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        this.iModel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
-          if (bindings)
-            stmt.bindValues(bindings);
-          for (const el of stmt) {
-            if (typeof el.id === "string")
-              ids.add(el.id);
+        this.iModel.withQueryReader(sql, (reader) => {
+          for (const row of reader) {
+            const id = row[0];
+            if (typeof id === "string")
+              ids.add(id);
           }
-        });
+        }, bindings ? QueryBinder.from(bindings) : undefined);
         this.iterateCompressedGuidRows(props.query.adds, (id) => ids.add(id));
         this.iterateCompressedGuidRows(props.query.removes, (id) => ids.delete(id)); // removes take precedence over adds
       } catch (err: any) {

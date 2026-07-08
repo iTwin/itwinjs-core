@@ -1150,19 +1150,17 @@ export abstract class IModelDb extends IModel {
       sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this.withPreparedStatement(sql, (stmt) => {
-      if (params.bindings)
-        stmt.bindValues(params.bindings);
-      for (const row of stmt) {
-        if (row.id !== undefined) {
-          ids.add(row.id);
+    this.withQueryReader(sql, (reader) => {
+      for (const row of reader) {
+        const id = row[0];
+        if (id !== undefined) {
+          ids.add(id);
           if (ids.size > IModelDb.maxLimit) {
             throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
           }
         }
       }
-    });
+    }, QueryBinder.from(params.bindings));
     return ids;
   }
 
@@ -2060,17 +2058,15 @@ export abstract class IModelDb extends IModel {
    */
   public querySchemaVersionNumbers(schemaName: string): ECVersion | undefined {
     const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.withPreparedStatement(sql, (statement: ECSqlStatement): ECVersion | undefined => {
-      statement.bindString("schemaName", schemaName);
-      if (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const read: number = statement.getValue(0).getInteger(); // ECSchemaDef.VersionMajor --> semver.major
-        const write: number = statement.getValue(1).getInteger(); // ECSchemaDef.VersionWrite --> semver.minor
-        const minor: number = statement.getValue(2).getInteger(); // ECSchemaDef.VersionMinor --> semver.patch
+    return this.withQueryReader(sql, (reader): ECVersion | undefined => {
+      if (reader.step()) {
+        const read: number = reader.current[0]; // ECSchemaDef.VersionMajor --> semver.major
+        const write: number = reader.current[1]; // ECSchemaDef.VersionWrite --> semver.minor
+        const minor: number = reader.current[2]; // ECSchemaDef.VersionMinor --> semver.patch
         return new ECVersion(read, write, minor);
       }
       return undefined;
-    });
+    }, new QueryBinder().bindString("schemaName", schemaName));
   }
 
   /** Returns true if the specified schema exists in the iModel and is no older than the specified minimum version.
@@ -2567,14 +2563,12 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement) => {
-        statement.bindId("modelId", modelId);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
-          return statement.getValue(0).getDateTime();
+      return this._iModel.withQueryReader(sql, (reader) => {
+        if (reader.step()) {
+          return reader.current[0];
         }
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Model ${modelId}`);
-      });
+      }, new QueryBinder().bindId("modelId", modelId));
     }
 
     /** Get the Model with the specified identifier.
@@ -2927,13 +2921,11 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
-        statement.bindId("elementId", elementId);
-        if (DbResult.BE_SQLITE_ROW === statement.step())
-          return statement.getValue(0).getDateTime();
+      return this._iModel.withQueryReader<string>(sql, (reader): string => {
+        if (reader.step())
+          return reader.current[0];
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Create a new instance of an element.
@@ -3015,15 +3007,13 @@ export namespace IModelDb {
      */
     public queryChildren(elementId: Id64String): Id64String[] {
       const sql = "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
-        statement.bindId("elementId", elementId);
+      return this._iModel.withQueryReader(sql, (reader): Id64String[] => {
         const childIds: Id64String[] = [];
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          childIds.push(statement.getValue(0).getId());
+        for (const row of reader) {
+          childIds.push(row[0]);
         }
         return childIds;
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Query for the parent of the specified element.
@@ -3032,14 +3022,12 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element does not exist
      */
     public queryParent(elementId: Id64String): Id64String | undefined {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (stmt) => {
-        stmt.bindId(1, elementId);
-        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+      return this._iModel.withQueryReader(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (reader) => {
+        if (!reader.step())
           throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
-        const value = stmt.getValue(0);
-        return value.isNull ? undefined : value.getId();
-      });
+        const value = reader.current[0];
+        return value ?? undefined;
+      }, new QueryBinder().bindId(1, elementId));
     }
 
     /** Returns true if the specified Element has a sub-model.
@@ -3051,11 +3039,9 @@ export namespace IModelDb {
 
       // A sub-model will have the same Id value as the element it is describing
       const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
-        statement.bindId("elementId", elementId);
-        return DbResult.BE_SQLITE_ROW === statement.step();
-      });
+      return this._iModel.withQueryReader(sql, (reader): boolean => {
+        return reader.step();
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Get the root subject element. */
@@ -3067,38 +3053,34 @@ export namespace IModelDb {
      * @internal
      */
     public _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
-      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
-        statement.bindId("elementId", elementId);
+      const sql = `SELECT ECInstanceId, ec_classname(ECClassId, 's:c') FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
+      return this._iModel.withQueryReader(sql, (reader): ElementAspect[] => {
         const aspects: ElementAspect[] = [];
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const aspectInstanceId: Id64String = statement.getValue(0).getId();
-          const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
+        for (const row of reader) {
+          const aspectInstanceId: Id64String = row[0];
+          const aspectClassFullName: string = row[1];
           if ((undefined === excludedClassFullNames) || (!excludedClassFullNames.has(aspectClassFullName))) {
             aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
           }
         }
         return aspects;
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Query for aspect by ECInstanceId
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
-      const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspectProps | undefined => {
-        statement.bindId("aspectInstanceId", aspectInstanceId);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
-          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-          (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
+      const sql = `SELECT *, ec_classname(ECClassId, 's:c') classFullName FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      const aspect: ElementAspectProps | undefined = this._iModel.withQueryReader(sql, (reader): ElementAspectProps | undefined => {
+        if (reader.step()) {
+          const aspectProps: ElementAspectProps = { ...reader.current.toRow() }; // start with everything that SELECT * returned; classFullName is supplied by the ec_classname alias
+          (aspectProps as any).className = undefined; // clear the raw ECClassId-derived property from SELECT * that we don't want in the final instance
           return aspectProps;
         }
         return undefined;
-      });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseJsPropertyNames });
       if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`);
       }
@@ -3109,12 +3091,10 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
-      const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
-        statement.bindId("aspectInstanceId", aspectInstanceId);
-        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
-      });
+      const sql = "SELECT ec_classname(ECClassId, 's:c') FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
+      const aspectClassFullName = this._iModel.withQueryReader(sql, (reader): string | undefined => {
+        return reader.step() ? reader.current[0] : undefined;
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId));
       if (undefined === aspectClassFullName) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}`);
       }
@@ -3124,13 +3104,12 @@ export namespace IModelDb {
     private static classMap = new Map<string, string>();
 
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-        statement.bindId("elementId", elementId);
+      return this._iModel.withQueryReader(sql, (reader) => {
         const aspects: ElementAspect[] = [];
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        for (const queryRow of reader) {
           const row: object = {};
-          const parsedRow = JSON.parse(statement.getValue(0).getString());
+          const rawInstance = queryRow[0];
+          const parsedRow = typeof rawInstance === "string" ? JSON.parse(rawInstance) : rawInstance;
           // eslint-disable-next-line guard-for-in
           for (const key in parsedRow) {
             const jsName = ECJsNames.toJsName(key[0].toUpperCase() + key.substring(1));
@@ -3143,7 +3122,7 @@ export namespace IModelDb {
             aspects.push(this._iModel.constructEntity<ElementAspect>(aspectProps));
         }
         return aspects;
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Get the ElementAspect instances that are owned by the specified element.
@@ -3176,14 +3155,15 @@ export namespace IModelDb {
       let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
       if (classIdList === undefined) {
         const classIds: string[] = [];
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        this._iModel.withPreparedStatement(`select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name='${fullClassName[1]}'
-        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          (statement: ECSqlStatement) => {
-            while (statement.step() === DbResult.BE_SQLITE_ROW)
-              classIds.push(statement.getValue(0).getId());
-          });
+        const sql = `select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name=:className
+        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name=:schemaName)) and SourceECInstanceId != TargetECInstanceId`;
+        this._iModel.withQueryReader(sql, (reader) => {
+          for (const row of reader) {
+            classIds.push(row[0]);
+          }
+        }, new QueryBinder()
+          .bindString("className", fullClassName[1])
+          .bindString("schemaName", fullClassName[0]));
         if (classIds.length > 0) {
           classIdList = classIds.join(",");
           IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
