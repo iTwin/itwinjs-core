@@ -9,7 +9,7 @@ body:
   - type: input
     id: title-hint
     attributes:
-      label: Brief Summary
+      label: Brief summary
       description: "State the problem concisely (e.g., \"Crash in v2.0 when passing null to `user.update()`\"). Your issue title above should reflect this (or even be identical)."
       placeholder: "Brief summary of the bug"
     validations:
