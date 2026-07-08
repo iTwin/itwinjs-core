@@ -5,6 +5,11 @@
 import { AnyClass, PrimitiveType, Property, StructClass } from "@itwin/ecschema-metadata";
 import { IModelDb } from "../IModelDb";
 
+// This module reimplements the value-shaping behavior of the deprecated `QueryRowFormat.UseJsPropertyNames`
+// row format in order to preserve existing `@public`/`@beta` output shapes. This is a deliberate bridge, not
+// a permanent architecture - see https://github.com/iTwin/itwinjs-core/issues/9489 for the follow-up to
+// revisit/remove the need for it.
+
 /** Maps the ECSQL system properties/pseudo-columns implicitly included by a bare `SELECT *` to the
  * JavaScript-style property name historically produced by the deprecated `QueryRowFormat.UseJsPropertyNames`
  * row format. `*ClassId` columns require resolving a raw class Id to a fully-qualified, dot-separated
