@@ -993,7 +993,11 @@ export class AccuDrawShortcuts {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle AccuDraw's availability for the current session.
+ * @note AccuDraw is enabled by default
+ * @beta
+ */
 export class AccuDrawSessionToggleTool extends Tool {
   public static override toolId = "AccuDraw.SessionToggle";
   public override async run() {
@@ -1002,7 +1006,11 @@ export class AccuDrawSessionToggleTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle AccuDraw on/off temporarily for the current interactive tool.
+ * @note Typically used to disable AccuDraw for a single data button.
+ * @beta
+ */
 export class AccuDrawSuspendToggleTool extends Tool {
   public static override toolId = "AccuDraw.SuspendToggle";
   public override async run() {
@@ -1011,7 +1019,11 @@ export class AccuDrawSuspendToggleTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to enable AccuDraw and position it at the current AccuSnap or Tentative snap location.
+ * @note When not snapped, AccuDraw is activated at the last data button location when inactive, or moved to the current cursor location when active.
+ * @beta
+ */
 export class AccuDrawSetOriginTool extends Tool {
   public static override toolId = "AccuDraw.SetOrigin";
   public override async run() {
@@ -1020,7 +1032,11 @@ export class AccuDrawSetOriginTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to lock the closer of the x or y axis based on the current cursor location.
+ * @note When an axis is locked, points are projected onto the axis line.
+ * @beta
+ */
 export class AccuDrawSetLockSmartTool extends Tool {
   public static override toolId = "AccuDraw.LockSmart";
   public override async run() {
@@ -1029,7 +1045,10 @@ export class AccuDrawSetLockSmartTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle the locked state of an indexed axis of the AccuDraw compass.
+ * @beta
+ */
 export class AccuDrawSetLockIndexTool extends Tool {
   public static override toolId = "AccuDraw.LockIndex";
   public override async run() {
@@ -1038,7 +1057,10 @@ export class AccuDrawSetLockIndexTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle the locked state of the X text field.
+ * @beta
+ */
 export class AccuDrawSetLockXTool extends Tool {
   public static override toolId = "AccuDraw.LockX";
   public override async run(): Promise<boolean> {
@@ -1047,7 +1069,10 @@ export class AccuDrawSetLockXTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle the locked state of the Y text field.
+ * @beta
+ */
 export class AccuDrawSetLockYTool extends Tool {
   public static override toolId = "AccuDraw.LockY";
   public override async run(): Promise<boolean> {
@@ -1056,7 +1081,10 @@ export class AccuDrawSetLockYTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle the locked state of the Z text field.
+ * @beta
+ */
 export class AccuDrawSetLockZTool extends Tool {
   public static override toolId = "AccuDraw.LockZ";
   public override async run(): Promise<boolean> {
@@ -1065,7 +1093,10 @@ export class AccuDrawSetLockZTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle the locked state of the Distance text field.
+ * @beta
+ */
 export class AccuDrawSetLockDistanceTool extends Tool {
   public static override toolId = "AccuDraw.LockDistance";
   public override async run(): Promise<boolean> {
@@ -1074,7 +1105,10 @@ export class AccuDrawSetLockDistanceTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle the locked state of the Angle text field.
+ * @beta
+ */
 export class AccuDrawSetLockAngleTool extends Tool {
   public static override toolId = "AccuDraw.LockAngle";
   public override async run(): Promise<boolean> {
@@ -1083,7 +1117,10 @@ export class AccuDrawSetLockAngleTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to toggle between polar and rectangular compass modes.
+ * @beta
+ */
 export class AccuDrawChangeModeTool extends Tool {
   public static override toolId = "AccuDraw.ChangeMode";
   public override async run(): Promise<boolean> {
@@ -1092,7 +1129,10 @@ export class AccuDrawChangeModeTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to cycle between XY, XZ, and YZ planes for the current AccuDraw rotation.
+ * @beta
+ */
 export class AccuDrawRotateCycleTool extends Tool {
   public static override toolId = "AccuDraw.RotateCycle";
   public override async run(): Promise<boolean> {
@@ -1101,7 +1141,11 @@ export class AccuDrawRotateCycleTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to a standard Top view.
+ * @note When IModelApp.toolAdmin.acsContextLock is true, rotation is set relative to the view's ACS.
+ * @beta
+ */
 export class AccuDrawRotateTopTool extends Tool {
   public static override toolId = "AccuDraw.RotateTop";
   public override async run(): Promise<boolean> {
@@ -1110,7 +1154,11 @@ export class AccuDrawRotateTopTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to a standard Front view.
+ * @note When IModelApp.toolAdmin.acsContextLock is true, rotation is set relative to the view's ACS.
+ * @beta
+ */
 export class AccuDrawRotateFrontTool extends Tool {
   public static override toolId = "AccuDraw.RotateFront";
   public override async run(): Promise<boolean> {
@@ -1119,7 +1167,11 @@ export class AccuDrawRotateFrontTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to a standard Side view.
+ * @note When IModelApp.toolAdmin.acsContextLock is true, rotation is set relative to the view's ACS.
+ * @beta
+ */
 export class AccuDrawRotateSideTool extends Tool {
   public static override toolId = "AccuDraw.RotateSide";
   public override async run(): Promise<boolean> {
@@ -1128,7 +1180,10 @@ export class AccuDrawRotateSideTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to match the rotation of the current view.
+ * @beta
+ */
 export class AccuDrawRotateViewTool extends Tool {
   public static override toolId = "AccuDraw.RotateView";
   public override async run(): Promise<boolean> {
@@ -1137,7 +1192,10 @@ export class AccuDrawRotateViewTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to be a 90 degree rotation about the current x axis.
+ * @beta
+ */
 export class AccuDrawRotate90AboutXTool extends Tool {
   public static override toolId = "AccuDraw.Rotate90AboutX";
   public override async run(): Promise<boolean> {
@@ -1146,7 +1204,10 @@ export class AccuDrawRotate90AboutXTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to be a 90 degree rotation about the current y axis.
+ * @beta
+ */
 export class AccuDrawRotate90AboutYTool extends Tool {
   public static override toolId = "AccuDraw.Rotate90AboutY";
   public override async run(): Promise<boolean> {
@@ -1155,7 +1216,10 @@ export class AccuDrawRotate90AboutYTool extends Tool {
   }
 }
 
-/** @beta */
+/**
+ * Immediate tool to set the AccuDraw rotation to be a 90 degree rotation about the current z axis.
+ * @beta
+ */
 export class AccuDrawRotate90AboutZTool extends Tool {
   public static override toolId = "AccuDraw.Rotate90AboutZ";
   public override async run(): Promise<boolean> {
@@ -1207,7 +1271,11 @@ class RotateAxesImplementation extends AccuDrawShortcutImplementation {
   }
 }
 
-/** @beta */
+/**
+ * Interactive tool to set the AccuDraw rotation by rotating about the current z axis to a point on the x axis.
+ * @note When AccuSnap or Tentative snap is active, the snap point is immediately used to define the x axis and not further input is required.
+ * @beta
+ */
 export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
   public static override toolId = "AccuDraw.RotateAxes";
   public static override get maxArgs(): number { return 1; }
@@ -1283,7 +1351,10 @@ class RotateElementImplementation extends AccuDrawShortcutImplementation {
   }
 }
 
-/** @beta */
+/**
+ * Interactive tool to set the AccuDraw rotation using the snapped to geometry under the cursor.
+ * @beta
+ */
 export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
   public static override toolId = "AccuDraw.RotateElement";
 
@@ -1430,7 +1501,10 @@ class RotatePointsImplementation extends AccuDrawShortcutImplementation {
   }
 }
 
-/** @beta */
+/**
+ * Interactive tool to set the AccuDraw rotation by 3 points: x axis origin, x axis direction, and y axis direction.
+ * @beta
+ */
 export class AccuDrawRotatePointsTool extends AccuDrawShortcutTool {
   public static override toolId = "AccuDraw.RotatePoints";
 
@@ -1492,7 +1566,10 @@ class DefineACSByElementImplementation extends AccuDrawShortcutImplementation {
   }
 }
 
-/** @beta */
+/**
+ * Interactive tool to set the view's ACS rotation by 3 points: x axis origin, x axis direction, and y axis direction/
+ * @beta
+ */
 export class DefineACSByElementTool extends AccuDrawShortcutTool {
   public static override toolId = "AccuDraw.DefineACSByElement";
 
@@ -1581,7 +1658,10 @@ class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
   }
 }
 
-/** @beta */
+/**
+ * Interactive tool to set the view's ACS rotation by 3 points: x axis origin, x axis direction, and y axis direction.
+ * @beta
+ */
 export class DefineACSByPointsTool extends AccuDrawShortcutTool {
   public static override toolId = "AccuDraw.DefineACSByPoints";
 
