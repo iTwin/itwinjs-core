@@ -40,7 +40,7 @@ const proxy = IpcHost.makeIpcProxy<EchoInterface>("echo-channel");
 const result = await proxy.echo("hello"); // "echo: hello!"
 ```
 
-Because Electron provides no native main-to-renderer `invoke` (only one-way `webContents.send`), this is implemented on top of the existing `send`/`addListener` primitives, so it works across all transports (Electron, mobile, and web sockets).
+Because Electron provides no native main-to-renderer `invoke` (only one-way `webContents.send`), this is implemented on top of the existing `send`/`addListener` primitives, so it works over both the Electron IPC and web socket transports (mobile included, since it runs over web sockets).
 
 Pending invocations are rejected if [IpcHost.shutdown]($backend) is called before a response arrives, so promises never leak past shutdown.
 
