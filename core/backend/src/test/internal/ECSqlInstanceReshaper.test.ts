@@ -41,9 +41,11 @@ describe("ECSqlInstanceReshaper", () => {
         </ECEntityClass>
         <ECEntityClass typeName="ReshaperAspect" modifier="None">
           <BaseClass>bis:ElementUniqueAspect</BaseClass>
+          <ECProperty propertyName="P2d" typeName="point2d"/>
           <ECProperty propertyName="P3d" typeName="point3d"/>
           <ECStructProperty propertyName="St" typeName="PointStruct"/>
           <ECArrayProperty propertyName="ArrayI" typeName="int" minOccurs="0" maxOccurs="unbounded"/>
+          <ECArrayProperty propertyName="ArrayP3d" typeName="point3d" minOccurs="0" maxOccurs="unbounded"/>
           <ECStructArrayProperty propertyName="ArraySt" typeName="PointStruct" minOccurs="0" maxOccurs="unbounded"/>
         </ECEntityClass>
         <ECRelationshipClass typeName="ReshaperRelatesToElement" strength="referencing" modifier="Sealed">
@@ -82,9 +84,11 @@ describe("ECSqlInstanceReshaper", () => {
       aspectId = txn.insertAspect({
         classFullName: `${schemaName}:ReshaperAspect`,
         element: { id: element1Id },
+        p2d: { x: 100, y: 200 },
         p3d: { x: 1, y: 2, z: 3 },
         st: { label: "struct-label", p3d: { x: 4, y: 5, z: 6 } },
         arrayI: [10, 20, 30],
+        arrayP3d: [{ x: 13, y: 14, z: 15 }, { x: 16, y: 17, z: 18 }],
         arraySt: [{ label: "arr-0", p3d: { x: 7, y: 8, z: 9 } }, { label: "arr-1", p3d: { x: 10, y: 11, z: 12 } }],
       } as any);
       assert.isTrue(Id64.isValidId64(aspectId));
@@ -111,7 +115,7 @@ describe("ECSqlInstanceReshaper", () => {
     assert.throws(() => getRuntimeClass(iModel, `${schemaName}:DoesNotExist`), /Class not found/);
   });
 
-  it("reshapeInstanceRow reshapes an ElementAspect row: system properties, point, struct, primitive array, and struct array", () => {
+  it("reshapeInstanceRow reshapes an ElementAspect row: system properties, points, struct, primitive array, point array, and struct array", () => {
     const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
     const row = iModel.withQueryReader(`SELECT * FROM ${schemaAlias}.ReshaperAspect WHERE ECInstanceId=:aspectId`, (reader) => {
       assert.isTrue(reader.step());
@@ -127,14 +131,20 @@ describe("ECSqlInstanceReshaper", () => {
     // inherited navigation property from ElementUniqueAspect
     assert.deepEqual(reshaped.element, { id: element1Id, relClassName: "BisCore.ElementOwnsUniqueAspect" });
 
-    // point property: first letter lowercased, X/Y/Z -> x/y/z
+    // point2d property: first letter lowercased, X/Y -> x/y
+    assert.deepEqual(reshaped.p2d, { x: 100, y: 200 });
+
+    // point3d property: first letter lowercased, X/Y/Z -> x/y/z
     assert.deepEqual(reshaped.p3d, { x: 1, y: 2, z: 3 });
 
     // struct property: first letter lowercased, and its members recursively reshaped (including nested point)
     assert.deepEqual(reshaped.st, { label: "struct-label", p3d: { x: 4, y: 5, z: 6 } });
 
-    // primitive array: values pass through unchanged, only the key is lowercased
+    // primitive (non-point) array: values pass through unchanged, only the key is lowercased
     assert.deepEqual(reshaped.arrayI, [10, 20, 30]);
+
+    // point3d array: each scalar element reshaped like a standalone point, not just key-renamed
+    assert.deepEqual(reshaped.arrayP3d, [{ x: 13, y: 14, z: 15 }, { x: 16, y: 17, z: 18 }]);
 
     // struct array: each element recursively reshaped like a standalone struct
     assert.deepEqual(reshaped.arraySt, [
@@ -173,18 +183,31 @@ describe("ECSqlInstanceReshaper", () => {
     assert.deepEqual(reshaped.arrayI, [10, 20, 30]);
   });
 
-  it("reshapePropertyValue reshapes a single Point3d and struct property value in isolation", () => {
+  it("reshapePropertyValue reshapes a single Point2d, Point3d, and struct property value in isolation", () => {
     const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const p2dProp = ecClass.getPropertySync("P2d")!;
     const p3dProp = ecClass.getPropertySync("P3d")!;
     const stProp = ecClass.getPropertySync("St")!;
+    assert.exists(p2dProp);
     assert.exists(p3dProp);
     assert.exists(stProp);
 
+    assert.deepEqual(reshapePropertyValue({ X: 100, Y: 200 }, p2dProp, iModel), { x: 100, y: 200 });
     assert.deepEqual(reshapePropertyValue({ X: 1, Y: 2, Z: 3 }, p3dProp, iModel), { x: 1, y: 2, z: 3 });
     assert.deepEqual(
       reshapePropertyValue({ Label: "hello", P3d: { X: 1, Y: 2, Z: 3 } }, stProp, iModel),
       { label: "hello", p3d: { x: 1, y: 2, z: 3 } },
     );
+  });
+
+  it("reshapePropertyValue reshapes an array of Point3d scalars, not just a key rename", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const arrayP3dProp = ecClass.getPropertySync("ArrayP3d")!;
+    assert.exists(arrayP3dProp);
+    assert.isTrue(arrayP3dProp.isArray());
+
+    const reshaped = reshapePropertyValue([{ X: 13, Y: 14, Z: 15 }, { X: 16, Y: 17, Z: 18 }], arrayP3dProp, iModel);
+    assert.deepEqual(reshaped, [{ x: 13, y: 14, z: 15 }, { x: 16, y: 17, z: 18 }]);
   });
 
   it("reshapePropertyValue reshapes a navigation property value into {id, relClassName}", () => {
