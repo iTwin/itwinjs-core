@@ -7,7 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
@@ -17,6 +17,7 @@ import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { BeButtonEvent, CoreTools, Tool } from "./Tool";
 import { AccuDrawShortcutImplementation, AccuDrawShortcutTool } from "./AccuDrawShortcutTool";
+import { GraphicType } from "../common/render/GraphicType";
 
 // cSpell:ignore dont unlockedz
 
@@ -98,16 +99,13 @@ export class AccuDrawShortcuts {
 
   public static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return false;
-
     let accept = false;
     const vec = [new Vector3d(), new Vector3d(), new Vector3d()];
     acs.setOrigin(points[0]);
     switch (points.length) {
       case 1:
         acs.setRotation(vp.rotation);
-        if (!isDynamics) {
+        if (!isDynamics && accudraw.isEnabled) {
           accudraw.published.origin.setFrom(points[0]);
           accudraw.published.flags = AccuDrawFlags.SetOrigin;
           accudraw.flags.fixedOrg = true;
@@ -121,7 +119,7 @@ export class AccuDrawShortcuts {
         }
 
         if (vp.view.is3d()) {
-          if (normalizedCrossProduct(accudraw.axes.y, vec[0], vec[1]) < 0.00001) {
+          if (accudraw.isEnabled && normalizedCrossProduct(accudraw.axes.y, vec[0], vec[1]) < 0.00001) {
             vec[2].set(0.0, 0.0, 1.0);
 
             if (normalizedCrossProduct(vec[2], vec[0], vec[1]) < 0.00001) {
@@ -133,7 +131,7 @@ export class AccuDrawShortcuts {
           normalizedCrossProduct(vec[0], vec[1], vec[2]);
           acs.setRotation(Matrix3d.createRows(vec[0], vec[1], vec[2]));
 
-          if (!isDynamics) {
+          if (!isDynamics && accudraw.isEnabled) {
             accudraw.published.origin.setFrom(points[0]);
             accudraw.published.flags = AccuDrawFlags.SetOrigin | AccuDrawFlags.SetNormal;
             accudraw.published.vector.setFrom(vec[0]);
@@ -1296,6 +1294,153 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
 }
 
 /** @internal */
+class RotatePointsImplementation extends AccuDrawShortcutImplementation {
+  private readonly _points: Point3d[] = [];
+  private _origin = IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint().clone() : undefined;
+  private _moveOrigin = !IModelApp.accuDraw.isActive || IModelApp.tentativePoint.isActive; // Preserve current origin if AccuDraw already active and not tentative snap...
+  private _lastPoint?: Point3d;
+
+  protected override onProvideToolAssistance(): void {
+    switch (this._points.length) {
+      case 0:
+        CoreTools.outputPromptByKey("AccuDraw.RotatePoints.Prompts.FirstPoint");
+        break;
+
+      case 1:
+        CoreTools.outputPromptByKey("AccuDraw.RotatePoints.Prompts.SecondPoint");
+        break;
+
+      default:
+        CoreTools.outputPromptByKey("AccuDraw.RotatePoints.Prompts.NextPoint");
+        break;
+    }
+  }
+
+  protected override onInitialize(): void {
+    if (undefined === this._origin)
+      return;
+
+    this._points.push(this._origin);
+    IModelApp.tentativePoint.clear(true); // Necessary when installed as an InputCollector...
+
+    IModelApp.accuDraw.activate();
+    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, this._origin);
+    IModelApp.accuDraw.refreshDecorationsAndDynamics();
+  }
+
+  protected override onComplete(): AccuDrawFlags {
+    let ignoreFlags = AccuDrawFlags.SetRMatrix | AccuDrawFlags.Disable; // If AccuDraw wasn't active when the shortcut started, let it remain active for suspended tool when shortcut completes...
+    if (this._moveOrigin)
+      ignoreFlags |= AccuDrawFlags.SetOrigin;
+    return ignoreFlags;
+  }
+
+  public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
+    if (!ev || !ev.viewport)
+      return false;
+
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+    if (isMotion) {
+      this._lastPoint = ev.point.clone();
+      return false;
+    }
+
+    const accuDraw = IModelApp.accuDraw;
+    accuDraw.activate();
+
+    switch (this._points.length) {
+      case 0: {
+        this._points.push(ev.point.clone());
+        accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, this._points[0]);
+        break;
+      }
+
+      case 1: {
+        const xVec = Vector3d.createNormalizedStartEnd(this._points[0], ev.point);
+        if (undefined === xVec)
+          return false;
+
+        if (!ev.viewport.view.is3d() || !ev.viewport.view.allow3dManipulations()) {
+          accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.SetXAxis, this._points[0], xVec);
+          return true; // Complete
+        }
+
+        this._points.push(ev.point.clone());
+        accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin | AccuDrawFlags.SetNormal, this._points[0], xVec);
+        break;
+      }
+
+      case 2: {
+        const xVec = Vector3d.createNormalizedStartEnd(this._points[0], this._points[1]);
+        if (undefined === xVec)
+          return false;
+
+        const yVec = Vector3d.createNormalizedStartEnd(this._points[0], ev.point);
+        if (undefined === yVec)
+          return false;
+
+        const matrix = Matrix3d.createRigidFromColumns(xVec, yVec, AxisOrder.XYZ);
+        if (undefined === matrix)
+          return false;
+
+        const invMatrix = matrix.inverse();
+        if (undefined === invMatrix)
+          return false;
+
+        accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.SetRMatrix, this._points[0], invMatrix);
+        return true; // Complete
+      }
+    }
+
+    this.onProvideToolAssistance();
+    return false;
+  }
+
+  public override doDecorate(context: DecorateContext): void {
+    if (0 === this._points.length)
+      return;
+
+    const currentPoint = this._lastPoint;
+    if (undefined === currentPoint)
+      return;
+
+    if (2 === this._points.length) { // && CoordSource.User !== ev.coordsFrom) {
+      const xVec = Vector3d.createNormalizedStartEnd(this._points[0], this._points[1]);
+      if (undefined === xVec)
+        return;
+
+      const plane = Plane3dByOriginAndUnitNormal.create(this._points[0], xVec);
+      if (undefined === plane)
+        return;
+
+      plane.projectPointToPlane(currentPoint, currentPoint);
+    }
+
+    const tmpPoints = this._points.slice(0, 1);
+    tmpPoints.push(currentPoint);
+
+    const vp = context.viewport;
+    const color = vp.getContrastToBackgroundColor();
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+
+    builder.setSymbology(color, color, 2);
+    builder.addLineString(tmpPoints);
+
+    context.addDecorationFromBuilder(builder);
+  }
+}
+
+/** @beta */
+export class AccuDrawRotatePointsTool extends AccuDrawShortcutTool {
+  public static override toolId = "AccuDraw.RotatePoints";
+
+  /** @internal */
+  protected override createImplementation(): AccuDrawShortcutImplementation {
+    return new RotatePointsImplementation();
+  }
+}
+
+/** @internal */
 class DefineACSByElementImplementation extends AccuDrawShortcutImplementation {
   private _origin = Point3d.create();
   private _rMatrix = Matrix3d.createIdentity();
@@ -1362,6 +1507,7 @@ class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
   private readonly _points: Point3d[] = [];
   private _acs?: AuxCoordSystemState;
   private _origin = IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint().clone() : undefined;
+  private _lastPoint?: Point3d;
 
   protected override onProvideToolAssistance(): void {
     switch (this._points.length) {
@@ -1383,9 +1529,12 @@ class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
     if (undefined === this._origin)
       return;
 
-    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, this._origin);
     this._points.push(this._origin);
     IModelApp.tentativePoint.clear(true); // Necessary when installed as an InputCollector...
+
+    IModelApp.accuDraw.activate();
+    IModelApp.accuDraw.setContext(AccuDrawFlags.SetOrigin | AccuDrawFlags.FixedOrigin, this._origin);
+    IModelApp.accuDraw.refreshDecorationsAndDynamics();
   }
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
@@ -1393,8 +1542,10 @@ class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
       return false;
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    if (isMotion)
+    if (isMotion) {
+      this._lastPoint = ev.point.clone();
       return false;
+    }
 
     IModelApp.accuDraw.activate();
     this._points.push(ev.point.clone());
@@ -1414,12 +1565,12 @@ class DefineACSByPointsImplementation extends AccuDrawShortcutImplementation {
   }
 
   public override doDecorate(context: DecorateContext): void {
+    if (undefined === this._lastPoint)
+      return;
+
     const tmpPoints: Point3d[] = [];
     this._points.forEach((pt) => tmpPoints.push(pt));
-
-    const ev = new BeButtonEvent();
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-    tmpPoints.push(ev.point);
+    tmpPoints.push(this._lastPoint);
 
     const vp = context.viewport;
     if (!this._acs)

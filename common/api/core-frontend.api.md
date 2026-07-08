@@ -765,6 +765,14 @@ export class AccuDrawRotateFrontTool extends Tool {
 }
 
 // @beta (undocumented)
+export class AccuDrawRotatePointsTool extends AccuDrawShortcutTool {
+    // @internal (undocumented)
+    protected createImplementation(): AccuDrawShortcutImplementation;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta (undocumented)
 export class AccuDrawRotateSideTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
