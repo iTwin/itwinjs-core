@@ -7,8 +7,9 @@
  * @module SQLiteDb
  */
 
+import * as semver from "semver";
 import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
+import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
@@ -52,6 +53,11 @@ export namespace SchemaSync {
     public override readonly myVersion = "4.1.0";
     protected override createDDL() {
       this.ensureDefinitionElementsTable();
+    }
+
+    public override openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer) {
+      super.openDb(dbName, openMode, container);
+      this._supportsDefinitions = semver.lte(this.myVersion, semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0");
     }
 
     private ensureDefinitionElementsTable(): void {
