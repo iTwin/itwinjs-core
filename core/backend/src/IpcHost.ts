@@ -94,10 +94,6 @@ export class IpcHost {
   /**
    * Send a message to the frontend via `channel` and expect a result asynchronously. The handler must be established on the frontend via [[IpcApp.handle]]
    * @param channel The name of the channel for the method.
-   * @see Electron [ipcRenderer.send](https://www.electronjs.org/docs/api/ipc-renderer) documentation for details.
-   * Note that this interface may be implemented via Electron for desktop apps, or via
-   * [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) for mobile or web-based
-   * Ipc connections. In either case, the Electron documentation provides the specifications for how it works.
    * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
    * primitive types and `ArrayBuffers` are allowed.
    * @note The returned Promise rejects if [[shutdown]] is called before the frontend responds.

@@ -18,7 +18,6 @@ interface MockIpcInterface {
   throwErrorWithClassInstanceProperty: () => never;
   throwErrorWithMixedArray: () => never;
   throwErrorWithNestedArrayProperty: () => never;
-  throwNonErrorWithNumericMessage: () => never;
   throwBentleyErrorWithMapMetaData: () => never;
 }
 
@@ -103,11 +102,6 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
     const err = new Error("nested-array") as any;
     err.matrix = [[1, 2], [3, 4]];
     throw err;
-  }
-
-  public throwNonErrorWithNumericMessage(): never {
-    // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
-    throw { message: 123 };
   }
 
   public throwBentleyErrorWithMapMetaData(): never {
