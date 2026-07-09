@@ -88,7 +88,7 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
   };
 
   // Enable SchemaSync on the very first briefcase. `initializeForIModel` pushes the enabling changeset
-  // and (correctly) re-initializes this briefcase's ReservationControl, so `first` can reserve immediately.
+  // and (correctly) re-initializes this briefcase's SharedDefinitionReservations, so `first` can reserve immediately.
   const enableSchemaSyncOnFirst = async (first: BriefcaseDb, ctx: TestIModel): Promise<void> => {
     await SchemaSync.initializeForIModel({ iModel: first, containerProps: ctx.containerProps });
     assert.isTrue(SchemaSync.isEnabled(first));
@@ -231,7 +231,7 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
       expect(rejected).to.have.length(1);
 
       // Exactly one of the two federationGuids ended up reserved.
-      await b1.initializeReservationControl();
+      await b1.initializeSharedDefinitionReservations();
       const reservedA = !b1.reservations.needsDefinitionReservation(guidA);
       const reservedB = !b1.reservations.needsDefinitionReservation(guidB);
       expect(reservedA).to.not.equal(reservedB);
@@ -278,7 +278,7 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
       await b1.reservations.reserveDefinitionElements({ elements: [catReservation(b1, guidA, "Visible-Cat")] });
 
       // b2 learns about the reservation straight from the container (fresh sync), no changeset involved.
-      await b2.initializeReservationControl();
+      await b2.initializeSharedDefinitionReservations();
       expect(b2.reservations.needsDefinitionReservation(guidA)).to.be.false;
       expect(b2.reservations.needsDefinitionReservation(Guid.createValue())).to.be.true;
     });
@@ -368,9 +368,9 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
   });
 
   // A briefcase that gets SchemaSync enabled by a *pull* (rather than by `initializeForIModel`) must have its
-  // ReservationControl re-initialized automatically: it was created as a no-op at open, before SchemaSync was
-  // enabled. `IModelDb.pullChanges` detects that transition and rebuilds the control.
-  describe("pull that enables SchemaSync activates the ReservationControl", () => {
+  // reservations re-initialized automatically: it was created as a no-op at open, before SchemaSync was enabled.
+  // `IModelDb.pullChanges` detects that transition and rebuilds the control.
+  describe("pull that enables SchemaSync activates the SharedDefinitionReservations", () => {
     it("reserves through a briefcase that enabled SchemaSync via pull", async () => {
       const ctx = await createTestIModel();
       const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
@@ -388,7 +388,7 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
 
       // ...and reserveDefinitionElements reaches the container, so b1 sees the reservation after a fresh sync.
       await b2.reservations.reserveDefinitionElements({ elements: [catReservation(b2, guid, "Pull-Cat")] });
-      await b1.initializeReservationControl();
+      await b1.initializeSharedDefinitionReservations();
       expect(b1.reservations.needsDefinitionReservation(guid)).to.be.false;
     });
 

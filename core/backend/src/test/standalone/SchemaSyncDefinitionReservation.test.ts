@@ -89,7 +89,7 @@ describe("SchemaSync definition-element reservation", () => {
   async function setupSchemaSyncReservations() {
     const access = stubCloudAccess();
     enableSchemaSync();
-    await iModel.initializeReservationControl();
+    await iModel.initializeSharedDefinitionReservations();
     return access;
   }
 
@@ -119,7 +119,7 @@ describe("SchemaSync definition-element reservation", () => {
 
   describe("reservation control initialization", () => {
     it("uses NoReservations when SchemaSync is disabled", async () => {
-      await iModel.initializeReservationControl();
+      await iModel.initializeSharedDefinitionReservations();
       expect(iModel.reservations.needsDefinitionReservation(fedGuidA)).to.be.false;
       await expect(iModel.reservations.reserveDefinitionElements({
         elements: [{ federationGuid: fedGuidA, classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat-A") }],
@@ -137,7 +137,7 @@ describe("SchemaSync definition-element reservation", () => {
       sinon.stub(iModel, "pullChanges").resolves();
       sinon.stub(iModel, "pushChanges").resolves();
 
-      await iModel.initializeReservationControl();
+      await iModel.initializeSharedDefinitionReservations();
       expect(iModel.reservations.needsDefinitionReservation(fedGuidA)).to.be.false;
 
       const previousEnforcement = EditTxn.implicitWriteEnforcement;
@@ -298,7 +298,7 @@ describe("SchemaSync definition-element reservation", () => {
     });
   });
 
-  describe("ReservationControl _onDefinitionElementInsert hook", () => {
+  describe("SharedDefinitionReservations _onDefinitionElementInsert hook", () => {
     it("is a no-op when SchemaSync is not enabled", () => {
       // schemaSyncEnabled returns false by default.
       const arg = {

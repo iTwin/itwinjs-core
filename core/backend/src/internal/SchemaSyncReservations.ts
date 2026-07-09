@@ -11,12 +11,12 @@ import { Guid, GuidString, Id64, IModelStatus } from "@itwin/core-bentley";
 import { Code, IModelError } from "@itwin/core-common";
 import { OnElementPropsArg } from "../Element";
 import { IModelDb, InsertElementOptions } from "../IModelDb";
-import { ReservationControl, ReserveDefinitionElementsArgs } from "../ReservationControl";
+import { ReserveDefinitionElementsArgs, SharedDefinitionReservations } from "../SharedDefinitionReservations";
 import { SchemaSync } from "../SchemaSync";
 import { _close, _implementationProhibited, _nativeDb, _onDefinitionElementInsert } from "./Symbols";
 import { Category } from "../Category";
 
-class SchemaSyncReservations implements ReservationControl {
+class SchemaSyncReservations implements SharedDefinitionReservations {
   public readonly [_implementationProhibited] = undefined;
   public get isServerBased() { return true; }
   private readonly _iModel: IModelDb;
@@ -76,7 +76,7 @@ class SchemaSyncReservations implements ReservationControl {
     const existing = this._schemaSync.reader.findReservedDefinition(fedGuid ?? code);
     if (!existing) {
       throw new IModelError(IModelStatus.NotFound,
-        `No SchemaSync reservation found for DefinitionElement ${fedGuid ? `federationGuid ${fedGuid}` : `code '${code.value}'`} — include it in a ReservationControl.reserveDefinitionElements call before inserting`);
+        `No SchemaSync reservation found for DefinitionElement ${fedGuid ? `federationGuid ${fedGuid}` : `code '${code.value}'`} — include it in a SharedDefinitionReservations.reserveDefinitionElements call before inserting`);
     }
 
     const expectedClassId = arg.iModel[_nativeDb].classNameToId(arg.props.classFullName);
@@ -138,6 +138,6 @@ class SchemaSyncReservations implements ReservationControl {
   }
 }
 
-export async function createSchemaSyncReservations(iModel: IModelDb): Promise<ReservationControl> {
+export async function createSchemaSyncReservations(iModel: IModelDb): Promise<SharedDefinitionReservations> {
   return SchemaSyncReservations.create(iModel);
 }

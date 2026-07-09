@@ -329,7 +329,7 @@ export namespace SchemaSync {
         await briefcase.pushChanges({ description: `Enable SchemaSync for iModel with container-id: ${props.containerId}` });
     }
 
-    await iModel.initializeReservationControl();
+    await iModel.initializeSharedDefinitionReservations();
   };
 
   /** Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.  */

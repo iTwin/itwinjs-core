@@ -7,11 +7,11 @@
  * @module iModels
  */
 
-import { ReservationControl } from "../ReservationControl";
+import { SharedDefinitionReservations } from "../SharedDefinitionReservations";
 import { _close, _implementationProhibited, _onDefinitionElementInsert } from "./Symbols";
 
-/** A null-implementation of ReservationControl for iModels that don't use SchemaSync-backed reservations. */
-class NoReservations implements ReservationControl {
+/** A null-implementation of SharedDefinitionReservations for iModels that don't use SchemaSync-backed reservations. */
+class NoReservations implements SharedDefinitionReservations {
   public readonly [_implementationProhibited] = undefined;
   public get isServerBased() { return false; }
   public [_close](): void { }
@@ -20,6 +20,6 @@ class NoReservations implements ReservationControl {
   public async reserveDefinitionElements(): Promise<void> { }
 }
 
-export function createNoOpReservationControl(): ReservationControl {
+export function createNoOpReservations(): SharedDefinitionReservations {
   return new NoReservations();
 }

@@ -38,11 +38,11 @@ export interface ReserveDefinitionElementsArgs {
  * @see [[IModelDb.locks]] to access the locks for an iModel.
  * @beta
  */
-export interface ReservationControl {
+export interface SharedDefinitionReservations {
   /** @internal*/
   readonly [_implementationProhibited]: unknown;
 
-  /** @internal true if this ReservationControl uses a server-based concurrency approach. */
+  /** @internal true if this SharedDefinitionReservations uses a server-based concurrency approach. */
   readonly isServerBased: boolean;
 
   /**
