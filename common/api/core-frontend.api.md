@@ -587,7 +587,7 @@ export class AccuDraw {
     protected readonly _yColor: ColorDef;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawChangeModeTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -701,7 +701,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutXTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -709,7 +709,7 @@ export class AccuDrawRotate90AboutXTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutYTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -717,7 +717,7 @@ export class AccuDrawRotate90AboutYTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutZTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -725,7 +725,7 @@ export class AccuDrawRotate90AboutZTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     constructor(aboutCurrentZ?: boolean);
     // (undocumented)
@@ -740,7 +740,7 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateCycleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -748,7 +748,7 @@ export class AccuDrawRotateCycleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
     protected createImplementation(): AccuDrawShortcutImplementation;
@@ -756,7 +756,7 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateFrontTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -764,7 +764,15 @@ export class AccuDrawRotateFrontTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
+export class AccuDrawRotatePointsTool extends AccuDrawShortcutTool {
+    // @internal (undocumented)
+    protected createImplementation(): AccuDrawShortcutImplementation;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AccuDrawRotateSideTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -772,7 +780,7 @@ export class AccuDrawRotateSideTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateTopTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -780,7 +788,7 @@ export class AccuDrawRotateTopTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateViewTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -788,7 +796,7 @@ export class AccuDrawRotateViewTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSessionToggleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -796,7 +804,7 @@ export class AccuDrawSessionToggleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockAngleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -804,7 +812,7 @@ export class AccuDrawSetLockAngleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockDistanceTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -812,7 +820,7 @@ export class AccuDrawSetLockDistanceTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockIndexTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -820,7 +828,7 @@ export class AccuDrawSetLockIndexTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockSmartTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -828,7 +836,7 @@ export class AccuDrawSetLockSmartTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockXTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -836,7 +844,7 @@ export class AccuDrawSetLockXTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockYTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -844,7 +852,7 @@ export class AccuDrawSetLockYTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockZTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -852,7 +860,7 @@ export class AccuDrawSetLockZTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetOriginTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -935,7 +943,7 @@ export class AccuDrawShortcuts {
     static writeACS(_acsName: string): BentleyStatus;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSuspendToggleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -2581,7 +2589,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class DefineACSByElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
     protected createImplementation(): AccuDrawShortcutImplementation;
@@ -2589,7 +2597,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class DefineACSByPointsTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
     protected createImplementation(): AccuDrawShortcutImplementation;

@@ -3305,6 +3305,61 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.equal(elemNew!.$meta.isIndirectChange, false);
     }
   });
+
+  it("openGroup: insert in one changeset then delete in another yields no instances for the element (net no-op)", async () => {
+    const adminToken = "super manager token";
+    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
+
+    // Record how many changesets already exist so we can identify the new ones by index
+    let changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    const baseCount = changesets.length;
+
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the insert txn
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // --- Push baseCount+1: insert a brand-new element ---
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    const noOpElementId: Id64String = txn.insertElement({
+      classFullName: "TestDomain:SimpleElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      BinProp: new Uint8Array([0xde, 0xad, 0xbe, 0xef]),
+    } as any);
+    txn.saveChanges("insert no-op element");
+    await rwIModel.pushChanges({ description: "insert no-op element", accessToken: adminToken });
+
+    changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    expect(changesets.length).to.equal(baseCount + 1);
+    const insertCs = changesets[baseCount];
+
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the delete txn
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // --- Push baseCount+2: delete the same element ---
+    await rwIModel.locks.acquireLocks({ exclusive: noOpElementId });
+    txn.deleteElement(noOpElementId);
+    txn.saveChanges("delete no-op element");
+    await rwIModel.pushChanges({ description: "delete no-op element", accessToken: adminToken });
+
+    changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    expect(changesets.length).to.equal(baseCount + 2);
+    const deleteCs = changesets[baseCount + 1];
+
+    // === openGroup: insert + delete streamed together — element never existed net, so no instances ===
+    {
+      using reader = ChangesetReader.openGroup({ db: rwIModel, changesetFiles: [insertCs.pathname, deleteCs.pathname] });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step())
+        pcu.appendFrom(reader);
+      const instances = Array.from(pcu.instances);
+
+      // Insert followed immediately by delete cancels out: the unifier must produce zero instances
+      // for this element because the net effect on the database is nothing changed.
+      const elemInstances = instances.filter((i) => i.ECInstanceId === noOpElementId);
+      expect(elemInstances).to.have.length(0, `expected no-op for element ${noOpElementId} but got ${elemInstances.length} instance(s)`);
+    }
+  });
 });
 
 describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
@@ -3854,7 +3909,7 @@ describe("ChangesetReader: overflow table graceful recovery when ExclusiveRootCl
 describe("ChangesetReader: instance reused with a different class (class change in Updated row)", () => {
   it("openFile() correctly identifies ECClassId change from T1 to T2 in a buggy changeset", async () => {
     /**
-     * Same scenario as ChangesetReader.test.ts: "Instance update to a different class (bug)".
+     * Same scenario as SQliteChangesetReaderAndChangesetECAdaptor.test.ts: "Instance update to a different class (bug)".
      * Verifies ChangesetReader behaviour when an instance ID is reused with a different class.
      *
      * Steps:
@@ -5122,6 +5177,414 @@ describe("ChangesetReader: strict mode (column-count mismatch)", () => {
       txn1.end();
       b1.close();
       HubMock.shutdown();
+    }
+  });
+});
+
+describe("ChangesetReader: throwIfAlreadyStepped guard", () => {
+  let iModel: BriefcaseDb;
+  let txn: EditTxn;
+  let txnId: string;
+
+  before(async () => {
+    HubMock.startup("ChangesetReaderThrowGuard", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "throwGuard", accessToken: adminToken });
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    txn = startTestTxn(iModel, "throwGuard setup");
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await iModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+    txn.saveChanges("setup");
+    txnId = iModel.txns.getLastSavedTxnProps()!.id;
+  });
+
+  after(() => {
+    txn.end();
+    iModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("setTableNameFilters throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.setTableNameFilters(new Set(["bis_Element"]))).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("setOpCodeFilters throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.setOpCodeFilters(new Set(["Inserted"]))).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("setClassNameFilters throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.setClassNameFilters(new Set(["BisCore:Element"]))).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("clearTableNameFilters throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.clearTableNameFilters()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("clearOpCodeFilters throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.clearOpCodeFilters()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("clearClassNameFilters throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.clearClassNameFilters()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("enableStrictMode throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.enableStrictMode()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("disableStrictMode throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.disableStrictMode()).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("setBatchSize throws after step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isTrue(reader.step());
+    expect(() => reader.setBatchSize(10)).to.throw("filters and strict mode and batch size must be configured before the first call to step()");
+  });
+
+  it("setBatchSize throws with zero or negative value", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    expect(() => reader.setBatchSize(0)).to.throw("batchSize must be a positive integer");
+    expect(() => reader.setBatchSize(-1)).to.throw("batchSize must be a positive integer");
+  });
+
+  it("filters can be set before any step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    // None of these should throw before step() is called
+    expect(() => reader.setTableNameFilters(new Set(["bis_Element"]))).to.not.throw();
+    expect(() => reader.setOpCodeFilters(new Set(["Inserted"]))).to.not.throw();
+    expect(() => reader.setClassNameFilters(new Set(["BisCore:Element"]))).to.not.throw();
+    expect(() => reader.clearTableNameFilters()).to.not.throw();
+    expect(() => reader.clearOpCodeFilters()).to.not.throw();
+    expect(() => reader.clearClassNameFilters()).to.not.throw();
+    expect(() => reader.enableStrictMode()).to.not.throw();
+    expect(() => reader.disableStrictMode()).to.not.throw();
+    expect(() => reader.setBatchSize(5)).to.not.throw();
+  });
+});
+
+describe("ChangesetReader: batched stepping behavior", () => {
+  let iModel: BriefcaseDb;
+  let txn: EditTxn;
+  let txnId: string;
+
+  before(async () => {
+    HubMock.startup("ChangesetReaderBatchStep", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "batchStep", accessToken: adminToken });
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    txn = startTestTxn(iModel, "batchStep setup");
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await iModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+    txn.saveChanges("setup");
+    txnId = iModel.txns.getLastSavedTxnProps()!.id;
+  });
+
+  after(() => {
+    txn.end();
+    iModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("step() returns false when no rows remain", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    // Drain all rows
+    while (reader.step()) { /* consume */ }
+    // The next call must also return false
+    assert.isFalse(reader.step());
+  });
+
+  it("step() returns false repeatedly after exhaustion", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    while (reader.step()) { /* consume */ }
+    assert.isFalse(reader.step());
+    assert.isFalse(reader.step());
+    assert.isFalse(reader.step());
+  });
+
+  it("inserted/deleted are undefined after exhaustion", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    while (reader.step()) { /* consume */ }
+    assert.isUndefined(reader.inserted);
+    assert.isUndefined(reader.deleted);
+  });
+
+  it("op throws after exhaustion", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    while (reader.step()) { /* consume */ }
+    expect(() => reader.op).to.throw("no current row");
+  });
+
+  it("setBatchSize(1) produces same instances as default batch size", () => {
+    const defaultInstances: string[] = [];
+    {
+      using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step()) pcu.appendFrom(reader);
+      for (const inst of pcu.instances)
+        defaultInstances.push(inst.ECInstanceId as string);
+    }
+    defaultInstances.sort();
+
+    const batchOneInstances: string[] = [];
+    {
+      using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+      reader.setBatchSize(1);
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+      while (reader.step()) pcu.appendFrom(reader);
+      for (const inst of pcu.instances)
+        batchOneInstances.push(inst.ECInstanceId as string);
+    }
+    batchOneInstances.sort();
+
+    assert.deepEqual(batchOneInstances, defaultInstances);
+  });
+});
+
+describe("ChangesetReader: lazy inserted/deleted getters", () => {
+  let iModel: BriefcaseDb;
+  let txn: EditTxn;
+  let txnId: string;
+
+  before(async () => {
+    HubMock.startup("ChangesetReaderLazyGetters", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "lazyGetters", accessToken: adminToken });
+    iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: adminToken });
+    txn = startTestTxn(iModel, "lazyGetters setup");
+    iModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await iModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, Code.createEmpty(), true);
+    txn.saveChanges("setup");
+    txnId = iModel.txns.getLastSavedTxnProps()!.id;
+  });
+
+  after(() => {
+    txn.end();
+    iModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("inserted is undefined before step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isUndefined(reader.inserted);
+  });
+
+  it("deleted is undefined before step()", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    assert.isUndefined(reader.deleted);
+  });
+
+  it("inserted returns a fresh object on first access, cached object on subsequent access", () => {
+    using reader = ChangesetReader.openTxn({ db: iModel, txnId });
+    // Find an Inserted row
+    let found = false;
+    while (reader.step()) {
+      if (reader.inserted) {
+        const first = reader.inserted;
+        const second = reader.inserted;
+        assert.strictEqual(first, second);
+        assert.deepEqual(first, second);
+        found = true;
+        break;
+      }
+    }
+    assert.isTrue(found, "Expected at least one row with an inserted value");
+  });
+});
+
+describe("ChangesetReader insert-many (53 elements)", () => {
+  let rwIModel: BriefcaseDb;
+  const elementIds: Id64String[] = [];
+  let drawingModelId: Id64String;
+  let drawingCategoryId: Id64String;
+  let txnId: string;
+  let txn: EditTxn;
+  const ELEMENT_COUNT = 53;
+
+  before(async () => {
+    HubMock.startup("ECChangesetInsertMany", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "insertMany", description: "insertMany", accessToken: adminToken });
+    rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    txn = startTestTxn(rwIModel, "ChangesetReader insert-many setup");
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+  <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+      <ECStructClass typeName="RichPoint" modifier="Sealed">
+          <ECProperty propertyName="X"     typeName="double"/>
+          <ECProperty propertyName="Y"     typeName="double"/>
+          <ECProperty propertyName="Z"     typeName="double"/>
+          <ECProperty propertyName="Label" typeName="string"/>
+      </ECStructClass>
+      <ECEntityClass typeName="Test2dElement">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="StrProp"        typeName="string"/>
+          <ECProperty propertyName="IntProp"        typeName="int"/>
+          <ECProperty propertyName="DblProp"        typeName="double"/>
+          <ECStructProperty propertyName="StructProp" typeName="RichPoint"/>
+          <ECArrayProperty propertyName="IntArrProp"  typeName="int" minOccurs="0" maxOccurs="unbounded"/>
+      </ECEntityClass>
+  </ECSchema>`;
+    await importSchemaStrings(txn, [schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrillDownDrawing";
+    [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true);
+
+    const foundCat = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "DrillDownCategory");
+    drawingCategoryId = foundCat ?? DrawingCategory.insert(txn, IModel.dictionaryId, "DrillDownCategory",
+      new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    txn.saveChanges("setup");
+
+    // Wait so that LastMod on bis_Model gets a distinct timestamp before the insert txn
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // Txn 2: insert 53 elements
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    for (let i = 0; i < ELEMENT_COUNT; i++) {
+      const id = txn.insertElement({
+        classFullName: "TestDomain:Test2dElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        StrProp: `element_${i}`,
+        IntProp: i,
+        DblProp: i * 1.5,
+        StructProp: { X: i, Y: i + 1, Z: i + 2, Label: `pt_${i}` },
+        IntArrProp: [i, i * 10, i * 100],
+      } as any);
+      elementIds.push(id);
+    }
+    txn.saveChanges("insert 53 elements");
+    txnId = rwIModel.txns.getLastSavedTxnProps()!.id;
+  });
+
+  after(() => {
+    txn.end();
+    rwIModel?.close();
+    HubMock.shutdown();
+  });
+
+  it("All_Properties: returns all 53 inserted elements", () => {
+    const instances = readTxn(rwIModel, txnId);
+    // 53 inserted elements (New) + 1 model update (New + Old) = 55
+    const elemInstances = instances.filter((i) => i.$meta.op === "Inserted" && i.$meta.stage === "New");
+    assert.equal(elemInstances.length, ELEMENT_COUNT);
+
+    // Verify the model indirect change is present
+    const modelNew = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "New");
+    const modelOld = instances.find((i) => i.ECInstanceId === drawingModelId && i.$meta.stage === "Old");
+    expect(modelNew).to.exist;
+    expect(modelOld).to.exist;
+    assert.equal(modelNew!.$meta.op, "Updated");
+    assert.equal(modelOld!.$meta.op, "Updated");
+    assert.equal(modelNew!.$meta.isIndirectChange, true);
+    assert.equal(modelOld!.$meta.isIndirectChange, true);
+
+    // Total: 53 elements + 2 model entries
+    assert.equal(instances.length, ELEMENT_COUNT + 2);
+
+    // Verify each element is present and has the correct props
+    for (let i = 0; i < ELEMENT_COUNT; i++) {
+      const elem = elemInstances.find((inst) => inst.ECInstanceId === elementIds[i]);
+      expect(elem, `element ${i} not found`).to.exist;
+      assert.equal(elem!.$meta.op, "Inserted");
+      assert.equal(elem!.$meta.stage, "New");
+      assert.equal(elem!.$meta.propFilter, PropertyFilter.All);
+      assert.equal(elem!.$meta.isIndirectChange, false);
+      assert.equal(elem!.StrProp, `element_${i}`);
+      assert.equal(elem!.IntProp, i);
+      assert.closeTo(elem!.DblProp as number, i * 1.5, 1e-10);
+      assert.deepEqual(elem!.StructProp, { X: i, Y: i + 1, Z: i + 2, Label: `pt_${i}` });
+      assert.deepEqual(elem!.IntArrProp, [i, i * 10, i * 100]);
+      assert.equal(elem!.Model.Id, drawingModelId);
+      assert.equal(elem!.Category.Id, drawingCategoryId);
+    }
+  });
+
+  it("BisCoreElement: returns all 53 elements without custom props", () => {
+    const instances = readTxn(rwIModel, txnId, PropertyFilter.BisCoreElement, { classIdsToClassNames: true });
+    const elemInstances = instances.filter((i) => i.$meta.op === "Inserted" && i.$meta.stage === "New");
+    assert.equal(elemInstances.length, ELEMENT_COUNT);
+    assert.equal(instances.length, ELEMENT_COUNT + 2);
+
+    for (let i = 0; i < ELEMENT_COUNT; i++) {
+      const elem = elemInstances.find((inst) => inst.ECInstanceId === elementIds[i]);
+      expect(elem, `element ${i} not found`).to.exist;
+      assert.equal(elem!.$meta.op, "Inserted");
+      assert.equal(elem!.$meta.stage, "New");
+      assert.equal(elem!.$meta.propFilter, PropertyFilter.BisCoreElement);
+      assert.equal(elem!.$meta.isIndirectChange, false);
+      assert.equal(elem!.ECClassId, "TestDomain.Test2dElement");
+      assert.equal(elem!.Model.Id, drawingModelId);
+      // BisCoreElement filter: no custom domain props
+      assert.isUndefined(elem!.StrProp);
+      assert.isUndefined(elem!.IntProp);
+      assert.isUndefined(elem!.DblProp);
+      assert.isUndefined(elem!.StructProp);
+      assert.isUndefined(elem!.IntArrProp);
+      // BIS core element props are present
+      expect(elem!.Model).to.exist;
+      expect(elem!.LastMod).to.exist;
+      expect(elem!.CodeSpec).to.exist;
+      expect(elem!.CodeScope).to.exist;
+      expect(elem!.FederationGuid).to.exist;
+    }
+  });
+
+  it("InstanceKey: returns all 53 elements with only ECInstanceId and ECClassId", () => {
+    const instances = readTxn(rwIModel, txnId, PropertyFilter.InstanceKey);
+    const elemInstances = instances.filter((i) => i.$meta.op === "Inserted" && i.$meta.stage === "New");
+    assert.equal(elemInstances.length, ELEMENT_COUNT);
+    assert.equal(instances.length, ELEMENT_COUNT + 2);
+
+    for (let i = 0; i < ELEMENT_COUNT; i++) {
+      const elem = elemInstances.find((inst) => inst.ECInstanceId === elementIds[i]);
+      expect(elem, `element ${i} not found`).to.exist;
+      assert.equal(elem!.$meta.op, "Inserted");
+      assert.equal(elem!.$meta.stage, "New");
+      assert.equal(elem!.$meta.propFilter, PropertyFilter.InstanceKey);
+      assert.equal(elem!.$meta.isIndirectChange, false);
+      assert.equal("TestDomain:Test2dElement", rwIModel.getClassNameFromId(elem!.ECClassId));
+      // InstanceKey: only ECInstanceId + ECClassId, no other props
+      assert.isUndefined(elem!.StrProp);
+      assert.isUndefined(elem!.IntProp);
+      assert.isUndefined(elem!.DblProp);
+      assert.isUndefined(elem!.StructProp);
+      assert.isUndefined(elem!.IntArrProp);
+      assert.isUndefined(elem!.Model);
+      assert.isUndefined(elem!.Category);
+      assert.isUndefined(elem!.LastMod);
+      assert.deepEqual(Object.keys(elem!).sort(), ["ECInstanceId", "ECClassId", "$meta"].sort());
     }
   });
 });

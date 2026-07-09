@@ -960,7 +960,7 @@ export abstract class IModelDb extends IModel {
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this[_nativeDb].isOpen())
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
@@ -987,7 +987,7 @@ export abstract class IModelDb extends IModel {
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
     const reader = new ECSqlSyncReader(executor, ecsql, params, config);
@@ -1184,7 +1184,7 @@ export abstract class IModelDb extends IModel {
       if (this._schemasPromise) {
         const old = this._schemasPromise;
         this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => {});
+        old.then((view) => view.markOutdated()).catch(() => { });
       }
       this[_nativeDb].clearECDbCache();
     }
