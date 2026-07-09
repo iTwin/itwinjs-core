@@ -11,6 +11,15 @@ import { DbChangeStage, DbConflictCause, DbOpcode, DbValueType, Id64String } fro
 import { SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "../SqliteChangesetReader";
 import { IModelDb } from "../IModelDb";
 
+export interface ConflictEcRow {
+  [key: string]: any;
+}
+export interface ConflictEcChange {
+  originalValues: ConflictEcRow;
+  theirValues: ConflictEcRow;
+  myValues: ConflictEcRow;
+}
+
 export interface DbChangesetConflictArgs {
   cause: DbConflictCause;
   opcode: DbOpcode;
@@ -29,6 +38,7 @@ export interface DbChangesetConflictArgs {
   getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
   isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
   getColumnNames(): string[];
+  getEcChange(): ConflictEcChange;
 }
 
 export interface DbMergeChangesetConflictArgs extends DbChangesetConflictArgs {
@@ -48,8 +58,8 @@ export interface DbRebaseChangesetConflictArgs extends DbChangesetConflictArgs {
 export type SqliteConflictCause = "Conflict" | "Data" | "Constraint" | "ForeignKey" | "NotFound";
 
 export class RebaseChangesetConflictArgs {
-  constructor(private _dbConflictArg: DbRebaseChangesetConflictArgs, private _iModel: IModelDb){}
-  public get cause() : SqliteConflictCause {
+  constructor(private _dbConflictArg: DbRebaseChangesetConflictArgs, private _iModel: IModelDb) { }
+  public get cause(): SqliteConflictCause {
     switch (this._dbConflictArg.cause) {
       case DbConflictCause.Conflict: return "Conflict";
       case DbConflictCause.Data: return "Data";
@@ -67,7 +77,7 @@ export class RebaseChangesetConflictArgs {
     }
   }
   public openTxn(): SqliteChangesetReader {
-    return SqliteChangesetReader.openTxn({txnId: this._dbConflictArg.txn.id, db: this._iModel});
+    return SqliteChangesetReader.openTxn({ txnId: this._dbConflictArg.txn.id, db: this._iModel });
   }
   public get indirect(): boolean {
     return this._dbConflictArg.indirect;
@@ -88,25 +98,25 @@ export class RebaseChangesetConflictArgs {
     return this._dbConflictArg.getPrimaryKeyColumns();
   }
   public getValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | null | undefined {
-    return this._dbConflictArg.getValueType(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.getValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public getValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined {
-    return this._dbConflictArg.getValueBinary(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.getValueBinary(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public getValueId(columnIndex: number, stage: SqliteValueStage): Id64String | null | undefined {
-    return this._dbConflictArg.getValueId(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.getValueId(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public getValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined {
-    return this._dbConflictArg.getValueText(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.getValueText(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public getValueInteger(columnIndex: number, stage: SqliteValueStage): number | null | undefined {
-    return this._dbConflictArg.getValueInteger(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.getValueInteger(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public getValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined {
-    return this._dbConflictArg.getValueDouble(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.getValueDouble(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public isValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined {
-    return this._dbConflictArg.isValueNull(columnIndex, stage=== "New" ? DbChangeStage.New : DbChangeStage.Old);
+    return this._dbConflictArg.isValueNull(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   public getColumnNames(): string[] {
     return this._dbConflictArg.getColumnNames();

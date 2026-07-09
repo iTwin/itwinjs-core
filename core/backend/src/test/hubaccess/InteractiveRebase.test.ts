@@ -83,6 +83,7 @@ describe("InteractiveRebase", () => {
       txn.updateElement<SomeGraphicalElementProps>({
         id,
         foo: "User2",
+        userLabel: "Wat"
       });
     });
 
