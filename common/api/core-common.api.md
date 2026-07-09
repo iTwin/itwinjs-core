@@ -2376,6 +2376,31 @@ export interface DefinitionElementProps extends ElementProps {
     isPrivate?: boolean;
 }
 
+// @beta
+export interface DefinitionError extends ITwinError {
+    readonly federationGuid?: GuidString;
+}
+
+// @beta (undocumented)
+export namespace DefinitionError {
+    const scope = "itwin-Definition";
+    export function isError(error: unknown, key?: Key): error is DefinitionError;
+    export type Key =
+    /** A proposed or inserted definition is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or neither a federationGuid nor a non-empty code. */
+    "invalid-definition" |
+    /** The requested definition conflicts with an existing reservation (a different class or code). */
+    "reservation-conflict" |
+    /** No reservation exists for the definition being inserted; it must be reserved first. */
+    "reservation-not-found" |
+    /** The DefinitionElement cannot be inserted because the SchemaSync container has un-pushed local changes. */
+    "container-has-local-changes" |
+    /** The pool of element ids available for reserved definitions has been exhausted. */
+    "id-sequence-exhausted" |
+    /** The persisted reservation bookkeeping data is corrupt. */
+    "corrupt-reservation-data";
+    export function throwError<T extends DefinitionError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
+
 // @public
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;

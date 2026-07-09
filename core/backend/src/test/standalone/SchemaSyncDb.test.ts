@@ -4,11 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, Guid, Id64, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, DefinitionError } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelJsFs, SchemaSync } from "../../core-backend";
 import { _nativeDb } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
+
+/** Assert that `promise` rejects with a `DefinitionError` carrying the given key. */
+async function expectDefinitionError(promise: Promise<unknown>, key: DefinitionError.Key): Promise<void> {
+  try {
+    await promise;
+  } catch (err) {
+    expect(DefinitionError.isError(err, key), `expected DefinitionError '${key}', got: ${JSON.stringify(err)}`).to.be.true;
+    return;
+  }
+  expect.fail(`expected promise to reject with DefinitionError '${key}'`);
+}
 
 describe("SchemaSyncDb", () => {
   let schemaDb: SchemaSync.SchemaSyncDb;
@@ -115,9 +126,9 @@ describe("SchemaSyncDb", () => {
         schemaDb[_nativeDb].saveFileProperty({ namespace: "schemasync", name: "nextDefinitionLocalId" }, corruptValue);
         schemaDb.saveChanges();
 
-        await expect(schemaDb.reserveDefinitionElements([
+        await expectDefinitionError(schemaDb.reserveDefinitionElements([
           makeDefinition(Guid.createValue(), "cat"),
-        ])).to.be.rejectedWith(/Corrupt SchemaSync DefinitionElement local-id counter/);
+        ]), "corrupt-reservation-data");
       }
     });
 
@@ -202,9 +213,9 @@ describe("SchemaSyncDb", () => {
     it("throws when an existing reservation has a different class", async () => {
       const federationGuid = Guid.createValue();
       await schemaDb.reserveDefinitionElements([makeDefinition(federationGuid, "Cat-A", "0x1")]);
-      await expect(schemaDb.reserveDefinitionElements([
+      await expectDefinitionError(schemaDb.reserveDefinitionElements([
         makeDefinition(federationGuid, "Cat-A", "0x2"),
-      ])).to.be.rejectedWith(/conflict/);
+      ]), "reservation-conflict");
     });
 
     it("throws when federationGuid and code resolve to different existing rows", async () => {
@@ -215,20 +226,20 @@ describe("SchemaSyncDb", () => {
         makeDefinition(federationGuidB, "Cat-B"),
       ]);
       // fedGuid lookup returns the A row, code lookup returns the B row.
-      await expect(schemaDb.reserveDefinitionElements([
+      await expectDefinitionError(schemaDb.reserveDefinitionElements([
         makeDefinition(federationGuidA, "Cat-B"),
-      ])).to.be.rejectedWith(/conflict/);
+      ]), "reservation-conflict");
     });
 
     it("throws when the local-id sequence is exhausted", async () => {
       // eslint-disable-next-line @typescript-eslint/dot-notation
       schemaDb["setNextDefinitionLocalId"](Math.pow(2, 40) - 2); // Seed counter near the 2^40 ceiling.
       schemaDb.saveChanges();
-      await expect(schemaDb.reserveDefinitionElements([
+      await expectDefinitionError(schemaDb.reserveDefinitionElements([
         makeDefinition(Guid.createValue(), "Cat-A"),
         makeDefinition(Guid.createValue(), "Cat-B"),
         makeDefinition(Guid.createValue(), "Cat-C"),
-      ])).to.be.rejectedWith(/exhausted|2\^40/);
+      ]), "id-sequence-exhausted");
       expect(readReservedRows()).to.be.empty;
     });
   });
@@ -277,15 +288,15 @@ describe("SchemaSyncDb", () => {
     it("throws conflict when a code-resolved existing reservation has a different class", async () => {
       await schemaDb.reserveDefinitionElements([{ ...makeNoGuidDefinition("Cat-A"), ecClassId: "0x1" }]);
 
-      await expect(schemaDb.reserveDefinitionElements([
+      await expectDefinitionError(schemaDb.reserveDefinitionElements([
         { ...makeNoGuidDefinition("Cat-A"), ecClassId: "0x2" },
-      ])).to.be.rejectedWith(/conflict/);
+      ]), "reservation-conflict");
     });
 
     it("throws when neither federationGuid nor a non-empty code value is provided", async () => {
-      await expect(schemaDb.reserveDefinitionElements([
+      await expectDefinitionError(schemaDb.reserveDefinitionElements([
         makeNoGuidDefinition(""),
-      ])).to.be.rejectedWith(/requires either a federationGuid or a non-empty code value/);
+      ]), "invalid-definition");
       expect(readReservedRows()).to.be.empty;
     });
   });

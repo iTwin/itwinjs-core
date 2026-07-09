@@ -214,6 +214,8 @@ beta;enum;DefaultSupportedTypes
 internal;const;defaultTileOptions
 public;interface;DefinitionElementProps
 preview;interface;DefinitionElementProps
+beta;interface;DefinitionError
+beta;namespace;DefinitionError
 public;interface;DeletedElementGeometryChange
 public;interface;DeprecatedBackgroundMapProps
 internal;class;DevToolsRpcInterface

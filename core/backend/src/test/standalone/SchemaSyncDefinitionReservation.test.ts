@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, IModel } from "@itwin/core-common";
+import { BriefcaseIdValue, DefinitionError, IModel } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { CloudSqlite, IModelJsFs, SchemaSync, StandaloneDb } from "../../core-backend";
@@ -12,6 +12,17 @@ import { DrawingCategory } from "../../Category";
 import { _nativeDb, _onDefinitionElementInsert } from "../../internal/Symbols";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import { IModelTestUtils } from "../IModelTestUtils";
+
+/** Assert that `promise` rejects with a `DefinitionError` carrying the given key. */
+async function expectDefinitionError(promise: Promise<unknown>, key: DefinitionError.Key): Promise<void> {
+  try {
+    await promise;
+  } catch (err) {
+    expect(DefinitionError.isError(err, key), `expected DefinitionError '${key}', got: ${JSON.stringify(err)}`).to.be.true;
+    return;
+  }
+  expect.fail(`expected promise to reject with DefinitionError '${key}'`);
+}
 
 const fedGuidA = "8b33a6ec-1a6f-4ae2-8ad4-c426276d1f30";
 const fedGuidB = "1f0e5b96-1234-4abc-9def-0123456789ab";
@@ -224,7 +235,7 @@ describe("SchemaSync definition-element reservation", () => {
 
     it("aggregates validation errors and reserves nothing on failure", async () => {
       await setupSchemaSyncReservations();
-      await expect(iModel.reservations.reserveDefinitionElements({
+      await expectDefinitionError(iModel.reservations.reserveDefinitionElements({
         elements: [
           { federationGuid: "not-a-guid", classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat") },
           { federationGuid: fedGuidA, classFullName: "BisCore:NonexistentClassXYZ", code: nonEmptyCode("Cat") },
@@ -232,7 +243,7 @@ describe("SchemaSync definition-element reservation", () => {
           // No federationGuid and empty code: ambiguous identity.
           { classFullName: "BisCore:DrawingCategory", code: { spec: "0x01", scope: "0x02", value: "" } },
         ],
-      })).to.be.rejected;
+      }), "invalid-definition");
       expect(readAllRows()).to.be.empty;
       expect(readNextDefinitionLocalId()).to.equal(1);
     });
@@ -292,9 +303,9 @@ describe("SchemaSync definition-element reservation", () => {
 
     it("rejects entries with a present-but-invalid federationGuid string", async () => {
       await setupSchemaSyncReservations();
-      await expect(iModel.reservations.reserveDefinitionElements({
+      await expectDefinitionError(iModel.reservations.reserveDefinitionElements({
         elements: [{ federationGuid: "not-a-guid", classFullName: "BisCore:DrawingCategory", code: { spec: "0x01", scope: "0x02", value: "Cat" } }],
-      })).to.be.rejected;
+      }), "invalid-definition");
     });
   });
 
@@ -338,7 +349,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Cat-A"),
         },
         options: {},
-      })).to.throw(/No SchemaSync reservation found/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "reservation-not-found"));
     });
 
     it("throws 'No SchemaSync reservation found' for an unreserved federationGuid", async () => {
@@ -356,7 +367,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Cat-B"),
         },
         options: {},
-      })).to.throw(/No SchemaSync reservation found/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "reservation-not-found"));
     });
 
     it("throws when federationGuid is present but malformed", async () => {
@@ -373,7 +384,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Cat-A"),
         },
         options: {},
-      })).to.throw(/valid federationGuid/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "invalid-definition"));
     });
 
     it("throws when SchemaSync container has local changes", async () => {
@@ -389,7 +400,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Cat-A"),
         },
         options: {},
-      })).to.throw(/local changes in the SchemaSync container/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "container-has-local-changes"));
     });
 
     it("sets props.id and options.forceUseId when the reservation matches", async () => {
@@ -425,7 +436,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Cat-A"),
         },
         options: {},
-      })).to.throw(/reserved as a different class/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "reservation-conflict"));
     });
 
     it("throws when the insert's code does not match the reserved code", async () => {
@@ -442,7 +453,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Cat-DIFFERENT"),
         },
         options: {},
-      })).to.throw(/different Code/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "reservation-conflict"));
     });
 
     it("applies reserved element id during a real DrawingCategory insert", async () => {
@@ -472,7 +483,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: { spec: "0x01", scope: "0x02", value: "" },
         },
         options: {},
-      })).to.throw(/require either a valid federationGuid or a non-empty code value/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "invalid-definition"));
     });
 
     it("resolves reservation by code and stamps federationGuid onto props when fedGuid is undefined", async () => {
@@ -508,7 +519,7 @@ describe("SchemaSync definition-element reservation", () => {
           code: nonEmptyCode("Unknown-Cat"),
         },
         options: {},
-      })).to.throw(/No SchemaSync reservation found/);
+      })).to.throw().that.satisfies((err: unknown) => DefinitionError.isError(err, "reservation-not-found"));
     });
 
     it("applies reserved element id during a real no-fedGuid DrawingCategory insert", async () => {

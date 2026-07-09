@@ -7,8 +7,8 @@
  * @module iModels
  */
 
-import { Guid, GuidString, Id64, IModelStatus } from "@itwin/core-bentley";
-import { Code, IModelError } from "@itwin/core-common";
+import { Guid, GuidString, Id64 } from "@itwin/core-bentley";
+import { Code, DefinitionError } from "@itwin/core-common";
 import { OnElementPropsArg } from "../Element";
 import { IModelDb, InsertElementOptions } from "../IModelDb";
 import { ReserveDefinitionElementsArgs, SharedDefinitionReservations } from "../SharedDefinitionReservations";
@@ -62,31 +62,38 @@ class SchemaSyncReservations implements SharedDefinitionReservations {
 
     const fedGuid = arg.props.federationGuid;
     if (fedGuid !== undefined && !Guid.isGuid(fedGuid))
-      throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts require an undefined or valid federationGuid when SchemaSync is enabled");
+      DefinitionError.throwError("invalid-definition", { message: "DefinitionElement inserts require an undefined or valid federationGuid when SchemaSync is enabled" });
 
     // It should be impossible for us to still have local changes, but check just in case,
     // since we can't trust the contents of the SchemaSyncDb until they've been successfully pushed.
     if (this._schemaSync.container.hasLocalChanges)
-      throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts are not allowed when there are local changes in the SchemaSync container");
+      DefinitionError.throwError("container-has-local-changes", { message: "DefinitionElement inserts are not allowed when there are local changes in the SchemaSync container" });
 
     const code = Code.fromJSON(arg.props.code);
     if (!fedGuid && !code.value)
-      throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts require either a valid federationGuid or a non-empty code value when SchemaSync is enabled");
+      DefinitionError.throwError("invalid-definition", { message: "DefinitionElement inserts require either a valid federationGuid or a non-empty code value when SchemaSync is enabled" });
 
     const existing = this._schemaSync.reader.findReservedDefinition(fedGuid ?? code);
     if (!existing) {
-      throw new IModelError(IModelStatus.NotFound,
-        `No SchemaSync reservation found for DefinitionElement ${fedGuid ? `federationGuid ${fedGuid}` : `code '${code.value}'`} — include it in a SharedDefinitionReservations.reserveDefinitionElements call before inserting`);
+      DefinitionError.throwError("reservation-not-found", {
+        message: `No SchemaSync reservation found for DefinitionElement ${fedGuid ? `federationGuid ${fedGuid}` : `code '${code.value}'`} — include it in a SharedDefinitionReservations.reserveDefinitionElements call before inserting`,
+        federationGuid: fedGuid,
+      });
     }
 
     const expectedClassId = arg.iModel[_nativeDb].classNameToId(arg.props.classFullName);
     if (existing.ecClassId !== expectedClassId) {
-      throw new IModelError(IModelStatus.BadArg,
-        `DefinitionElement ${existing.federationGuid} reserved as a different class than the insert (${existing.ecClassId} vs ${expectedClassId})`);
+      DefinitionError.throwError("reservation-conflict", {
+        message: `DefinitionElement ${existing.federationGuid} reserved as a different class than the insert (${existing.ecClassId} vs ${expectedClassId})`,
+        federationGuid: existing.federationGuid,
+      });
     }
 
     if (!existing.code.equals(code))
-      throw new IModelError(IModelStatus.BadArg, `DefinitionElement ${existing.federationGuid} insert uses a different Code than was reserved`);
+      DefinitionError.throwError("reservation-conflict", {
+        message: `DefinitionElement ${existing.federationGuid} insert uses a different Code than was reserved`,
+        federationGuid: existing.federationGuid,
+      });
 
     // Stamp the resolved federationGuid onto props when the caller did not supply one.
     if (!fedGuid)
@@ -132,7 +139,7 @@ class SchemaSyncReservations implements SharedDefinitionReservations {
     }
 
     if (errors.length > 0)
-      throw new IModelError(IModelStatus.BadRequest, `Invalid DefinitionElement(s) for reservation:\n  ${errors.join("\n  ")}`);
+      DefinitionError.throwError("invalid-definition", { message: `Invalid DefinitionElement(s) for reservation:\n  ${errors.join("\n  ")}` });
 
     return out;
   }

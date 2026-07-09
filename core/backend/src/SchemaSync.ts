@@ -11,8 +11,8 @@ import * as semver from "semver";
 import { CloudSqlite } from "./CloudSqlite";
 import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
-import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
+import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, DefinitionError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
@@ -169,15 +169,18 @@ export namespace SchemaSync {
         const existing = this.findReservedDefinition(def.federationGuid ?? def.code);
         if (existing) {
           if (!this.existingMatches(existing, { ...def, federationGuid: existing.federationGuid })) {
-            throw new IModelError(IModelStatus.BadRequest,
-              `SchemaSync DefinitionElement reservation conflict for federationGuid ${existing.federationGuid}: existing row does not match requested class/code`);
+            DefinitionError.throwError("reservation-conflict", {
+              message: `SchemaSync DefinitionElement reservation conflict for federationGuid ${existing.federationGuid}: existing row does not match requested class/code`,
+              federationGuid: existing.federationGuid,
+            });
           }
           continue;
         }
 
         if (!def.federationGuid && !def.code.value) {
-          throw new IModelError(IModelStatus.BadRequest,
-            "SchemaSync DefinitionElement reservation requires either a federationGuid or a non-empty code value");
+          DefinitionError.throwError("invalid-definition", {
+            message: "SchemaSync DefinitionElement reservation requires either a federationGuid or a non-empty code value",
+          });
         }
 
         const elementId = Id64.fromLocalAndBriefcaseIds(nextLocalId, BriefcaseIdValue.SchemaSyncDefinitionReserved);
@@ -186,7 +189,7 @@ export namespace SchemaSync {
         nextLocalId += def.isCategory ? 2 : 1;
         if (nextLocalId >= maxLocalIdExclusive) {
           this.abandonChanges();
-          throw new IModelError(IModelStatus.BadRequest, `SchemaSync DefinitionElement local-id sequence exhausted`);
+          DefinitionError.throwError("id-sequence-exhausted", { message: `SchemaSync DefinitionElement local-id sequence exhausted` });
         }
       }
 
@@ -204,7 +207,7 @@ export namespace SchemaSync {
       const stored = this[_nativeDb].queryFileProperty(idSequenceProp, true) as string | undefined;
       const current = stored ? Number(stored) : 1;
       if (!Number.isInteger(current) || current < 1)
-        throw new IModelError(IModelStatus.BadRequest, `Corrupt SchemaSync DefinitionElement local-id counter: '${stored}'`);
+        DefinitionError.throwError("corrupt-reservation-data", { message: `Corrupt SchemaSync DefinitionElement local-id counter: '${stored}'` });
 
       return current;
     }
