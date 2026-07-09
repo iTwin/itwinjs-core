@@ -61,8 +61,16 @@ export interface SharedDefinitionReservations {
    * Determine whether an ID has already been reserved for a future definition element with the given federationGuid.
    * @note Due to local caching, a return value of `true` cannot be taken as a guarantee that no other briefcase has already reserved the same
    * definition, only that no reservation for the definition with the given federationGuid was seen as of the last call to [[reserveDefinitionElements]].
+   * @throws [DefinitionError]($common) if the federationGuid is not a valid GUID.
    */
   needsDefinitionReservation(federationGuid: GuidString): boolean;
+  /**
+   * Determine whether an ID has already been reserved for a future definition element with the given Code.
+   * @note Due to local caching, a return value of `true` cannot be taken as a guarantee that no other briefcase has already reserved the same
+   * definition, only that no reservation for the definition with the given Code was seen as of the last call to [[reserveDefinitionElements]].
+   * @throws [DefinitionError]($common) if the code is invalid or empty.
+   */
+  needsDefinitionReservation(code: CodeProps): boolean;
 
   /**
    * Acquire reservations for one or more elements from the reservation service, if required and not already reserved by another user.

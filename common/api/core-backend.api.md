@@ -6336,7 +6336,7 @@ export namespace SchemaSync {
     }
     // (undocumented)
     export interface ReadMethods {
-        findReservedDefinition(key: GuidString | Code): ReservedDefinition | undefined;
+        findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
     }
     export interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
         // (undocumented)
@@ -6346,7 +6346,7 @@ export namespace SchemaSync {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
-        findReservedDefinition(key: GuidString | Code): ReservedDefinition | undefined;
+        findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
         // (undocumented)
         readonly myVersion = "4.1.0";
         // (undocumented)
@@ -6604,6 +6604,7 @@ export interface SharedDefinitionReservations {
     // @internal
     readonly isServerBased: boolean;
     needsDefinitionReservation(federationGuid: GuidString): boolean;
+    needsDefinitionReservation(code: CodeProps): boolean;
     reserveDefinitionElements(args: ReserveDefinitionElementsArgs): Promise<void>;
 }
 

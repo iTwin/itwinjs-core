@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, DefinitionError, IModel } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, DefinitionError, IModel } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { CloudSqlite, IModelJsFs, SchemaSync, StandaloneDb } from "../../core-backend";
@@ -126,7 +126,8 @@ describe("SchemaSync definition-element reservation", () => {
 
   // eslint-disable-next-line @typescript-eslint/dot-notation
   const readNextDefinitionLocalId = () => schemaDb["getNextDefinitionLocalId"]();
-  const nonEmptyCode = (value: string) => ({ spec: "0x01", scope: "0x02", value });
+  const nonEmptyCode = (value: string) => ({ spec: "0x1", scope: "0x2", value });
+  const invalidCode = () => ({ spec: "", scope: "", value: "BAD" });
 
   describe("reservation control initialization", () => {
     it("uses NoReservations when SchemaSync is disabled", async () => {
@@ -177,7 +178,9 @@ describe("SchemaSync definition-element reservation", () => {
       await setupSchemaSyncReservations();
 
       expect(iModel.reservations.needsDefinitionReservation(fedGuidA)).to.be.true;
-      expect(iModel.reservations.needsDefinitionReservation("not-a-guid")).to.be.false;
+      expect(() => iModel.reservations.needsDefinitionReservation("not-a-guid")).to.throw().that.satisfies(
+        (err: unknown) => DefinitionError.isError(err, "invalid-definition")
+      );
 
       await iModel.reservations.reserveDefinitionElements({
         elements: [{ federationGuid: fedGuidA, classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat-A") }],
@@ -185,6 +188,25 @@ describe("SchemaSync definition-element reservation", () => {
 
       expect(iModel.reservations.needsDefinitionReservation(fedGuidA)).to.be.false;
       expect(iModel.reservations.needsDefinitionReservation(fedGuidB)).to.be.true;
+    });
+
+    it("reports needsDefinitionReservation only for valid non-empty codes when SchemaSync is enabled", async () => {
+      await setupSchemaSyncReservations();
+
+      expect(iModel.reservations.needsDefinitionReservation(nonEmptyCode("Cat-A"))).to.be.true;
+      expect(() => iModel.reservations.needsDefinitionReservation(invalidCode())).to.throw().that.satisfies(
+        (err: unknown) => DefinitionError.isError(err, "invalid-definition")
+      );
+      expect(() => iModel.reservations.needsDefinitionReservation(Code.createEmpty())).to.throw().that.satisfies(
+        (err: unknown) => DefinitionError.isError(err, "invalid-definition")
+      );
+
+      await iModel.reservations.reserveDefinitionElements({
+        elements: [{ federationGuid: fedGuidA, classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat-A") }],
+      });
+
+      expect(iModel.reservations.needsDefinitionReservation(nonEmptyCode("Cat-A"))).to.be.false;
+      expect(iModel.reservations.needsDefinitionReservation(nonEmptyCode("Cat-B"))).to.be.true;
     });
   });
 

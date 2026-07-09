@@ -12,7 +12,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, DefinitionError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, CodeProps, DefinitionError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
@@ -46,7 +46,7 @@ export namespace SchemaSync {
      * Look up an existing DefinitionElement reservation by federationGuid or Code.
      * When a `Code` is supplied, returns `undefined` for empty `codeValue`s (they are not unique).
      */
-    findReservedDefinition(key: GuidString | Code): ReservedDefinition | undefined;
+    findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
   }
 
   export interface WriteMethods {
@@ -86,7 +86,7 @@ export namespace SchemaSync {
       this._supportsDefinitions = true;
     }
 
-    public findReservedDefinition(key: GuidString | Code): ReservedDefinition | undefined {
+    public findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined {
       if (!this._supportsDefinitions)
         return undefined;
 
@@ -115,7 +115,7 @@ export namespace SchemaSync {
       );
     }
 
-    private _findByCode(code: Code): ReservedDefinition | undefined {
+    private _findByCode(code: CodeProps): ReservedDefinition | undefined {
       if (!code.value)
         return undefined;
 
@@ -124,7 +124,7 @@ export namespace SchemaSync {
         (stmt) => {
           stmt.bindId(1, code.spec);
           stmt.bindString(2, code.scope);
-          stmt.bindString(3, code.value);
+          stmt.bindString(3, code.value ?? "");
           if (!stmt.nextRow())
             return undefined;
 
@@ -132,7 +132,7 @@ export namespace SchemaSync {
             federationGuid: stmt.getValueGuid(0),
             elementId: stmt.getValueId(1),
             ecClassId: stmt.getValueId(2),
-            code,
+            code: new Code(code),
           };
         },
       );

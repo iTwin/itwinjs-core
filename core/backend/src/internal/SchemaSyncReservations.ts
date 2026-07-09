@@ -8,7 +8,7 @@
  */
 
 import { Guid, GuidString, Id64 } from "@itwin/core-bentley";
-import { Code, DefinitionError } from "@itwin/core-common";
+import { Code, CodeProps, DefinitionError } from "@itwin/core-common";
 import { OnElementPropsArg } from "../Element";
 import { IModelDb, InsertElementOptions } from "../IModelDb";
 import { ReserveDefinitionElementsArgs, SharedDefinitionReservations } from "../SharedDefinitionReservations";
@@ -41,14 +41,20 @@ class SchemaSyncReservations implements SharedDefinitionReservations {
     }
   }
 
-  public needsDefinitionReservation(federationGuid: GuidString): boolean {
+  public needsDefinitionReservation(arg: CodeProps | GuidString): boolean {
     if (!SchemaSync.isEnabled(this._iModel))
       return false;
 
-    if (!Guid.isGuid(federationGuid))
-      return false;
+    if (typeof arg === "object") {
+      if (!Code.isValid(arg))
+        DefinitionError.throwError("invalid-definition", { message: "Invalid code" });
+      if (Code.isEmpty(arg))
+        DefinitionError.throwError("invalid-definition", { message: "Code value cannot be empty" });
+    } else if (!Guid.isGuid(arg)) {
+      DefinitionError.throwError("invalid-definition", { message: "Invalid federationGuid" });
+    }
 
-    return !this._schemaSync.reader.findReservedDefinition(federationGuid);
+    return !this._schemaSync.reader.findReservedDefinition(arg);
   }
 
   public async reserveDefinitionElements(args: ReserveDefinitionElementsArgs): Promise<void> {
