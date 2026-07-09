@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { Id64, OpenMode } from "@itwin/core-bentley";
+import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModel } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -54,7 +54,7 @@ describe("SchemaSync definition-element reservation", () => {
       getUri: () => `${schemaDbFileName}?vfs=test`,
       container: { hasLocalChanges: false } as CloudSqlite.CloudContainer, // these tests use local-only SchemaSyncDb, no need to mock a real CloudContainer
       reader: {
-        findReservedDefinition: (federationGuid) => schemaDb.findReservedDefinition(federationGuid),
+        findReservedDefinition: (key) => schemaDb.findReservedDefinition(key),
       },
       writeLocker: {
         reserveDefinitionElements: async (ids) => {
@@ -229,6 +229,8 @@ describe("SchemaSync definition-element reservation", () => {
           { federationGuid: "not-a-guid", classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat") },
           { federationGuid: fedGuidA, classFullName: "BisCore:NonexistentClassXYZ", code: nonEmptyCode("Cat") },
           { federationGuid: fedGuidB, classFullName: "BisCore:DrawingCategory", code: { spec: "not-an-id", scope: IModel.dictionaryId, value: "Cat" } },
+          // No federationGuid and empty code: ambiguous identity.
+          { classFullName: "BisCore:DrawingCategory", code: { spec: "0x01", scope: "0x02", value: "" } },
         ],
       })).to.be.rejected;
       expect(readAllRows()).to.be.empty;
@@ -261,6 +263,38 @@ describe("SchemaSync definition-element reservation", () => {
       const rows = readAllRows();
       expect(rows.map((r) => r.federationGuid)).to.deep.equal([fedGuidA]);
       expect(readNextDefinitionLocalId()).to.equal(2);
+    });
+  });
+
+  describe("reserveDefinitionElements (no federationGuid)", () => {
+    it("reserves and allocates an id when no federationGuid is provided", async () => {
+      await setupSchemaSyncReservations();
+      await iModel.reservations.reserveDefinitionElements({
+        elements: [{ classFullName: "BisCore:DrawingCategory", code: { spec: "0x01", scope: "0x02", value: "No-Guid-Cat" } }],
+      });
+      const rows = readAllRows();
+      expect(rows).to.have.lengthOf(1);
+      expect(Guid.isGuid(rows[0].federationGuid)).to.be.true;
+    });
+
+    it("is idempotent when called twice for the same code without a federationGuid", async () => {
+      await setupSchemaSyncReservations();
+      const code = { spec: "0x01", scope: "0x02", value: "Idempotent-Cat" };
+      await iModel.reservations.reserveDefinitionElements({ elements: [{ classFullName: "BisCore:DrawingCategory", code }] });
+      const firstRows = readAllRows();
+      const firstGuid = firstRows[0].federationGuid;
+
+      await iModel.reservations.reserveDefinitionElements({ elements: [{ classFullName: "BisCore:DrawingCategory", code }] });
+      const secondRows = readAllRows();
+      expect(secondRows).to.have.lengthOf(1);
+      expect(secondRows[0].federationGuid).to.equal(firstGuid);
+    });
+
+    it("rejects entries with a present-but-invalid federationGuid string", async () => {
+      await setupSchemaSyncReservations();
+      await expect(iModel.reservations.reserveDefinitionElements({
+        elements: [{ federationGuid: "not-a-guid", classFullName: "BisCore:DrawingCategory", code: { spec: "0x01", scope: "0x02", value: "Cat" } }],
+      })).to.be.rejected;
     });
   });
 
@@ -325,7 +359,7 @@ describe("SchemaSync definition-element reservation", () => {
       })).to.throw(/No SchemaSync reservation found/);
     });
 
-    it("throws when federationGuid is missing or malformed", async () => {
+    it("throws when federationGuid is present but malformed", async () => {
       await setupSchemaSyncReservations();
       await iModel.reservations.reserveDefinitionElements({
         elements: [{ federationGuid: fedGuidA, classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat-A") }],
@@ -334,7 +368,7 @@ describe("SchemaSync definition-element reservation", () => {
         iModel,
         props: {
           classFullName: "BisCore:DrawingCategory",
-          federationGuid: undefined,
+          federationGuid: "not-a-valid-guid",
           model: IModel.dictionaryId,
           code: nonEmptyCode("Cat-A"),
         },
@@ -426,6 +460,79 @@ describe("SchemaSync definition-element reservation", () => {
       expect(insertedId).to.equal(expectedId);
       expect(Id64.getBriefcaseId(insertedId)).to.equal(BriefcaseIdValue.SchemaSyncDefinitionReserved);
     });
-  });
 
+    it("throws when neither federationGuid nor a non-empty code value is provided", async () => {
+      await setupSchemaSyncReservations();
+      expect(() => iModel.reservations[_onDefinitionElementInsert]({
+        iModel,
+        props: {
+          classFullName: "BisCore:DrawingCategory",
+          federationGuid: undefined,
+          model: IModel.dictionaryId,
+          code: { spec: "0x01", scope: "0x02", value: "" },
+        },
+        options: {},
+      })).to.throw(/require either a valid federationGuid or a non-empty code value/);
+    });
+
+    it("resolves reservation by code and stamps federationGuid onto props when fedGuid is undefined", async () => {
+      await setupSchemaSyncReservations();
+      await iModel.reservations.reserveDefinitionElements({
+        elements: [{ federationGuid: fedGuidA, classFullName: "BisCore:DrawingCategory", code: nonEmptyCode("Cat-A") }],
+      });
+
+      const props: any = {
+        classFullName: "BisCore:DrawingCategory",
+        federationGuid: undefined,
+        model: IModel.dictionaryId,
+        code: nonEmptyCode("Cat-A"),
+      };
+      const options: any = {};
+      iModel.reservations[_onDefinitionElementInsert]({ iModel, props, options });
+
+      // The hook must have resolved the federationGuid from the existing reservation.
+      expect(props.federationGuid).to.equal(fedGuidA);
+      // And must have forced the reserved element id.
+      expect(props.id).to.equal(readAllRows()[0].elementId);
+      expect(options.forceUseId).to.be.true;
+    });
+
+    it("throws 'No SchemaSync reservation found' when no fedGuid and no code match", async () => {
+      await setupSchemaSyncReservations();
+      expect(() => iModel.reservations[_onDefinitionElementInsert]({
+        iModel,
+        props: {
+          classFullName: "BisCore:DrawingCategory",
+          federationGuid: undefined,
+          model: IModel.dictionaryId,
+          code: nonEmptyCode("Unknown-Cat"),
+        },
+        options: {},
+      })).to.throw(/No SchemaSync reservation found/);
+    });
+
+    it("applies reserved element id during a real no-fedGuid DrawingCategory insert", async () => {
+      await setupSchemaSyncReservations();
+      const categoryName = "ReservedNoGuidCategory";
+      const categoryCode = DrawingCategory.createCode(iModel, IModel.dictionaryId, categoryName);
+      // Reserve by code only (no federationGuid).
+      await iModel.reservations.reserveDefinitionElements({
+        elements: [{ classFullName: "BisCore:DrawingCategory", code: categoryCode }],
+      });
+
+      const reservation = readAllRows()[0];
+      const expectedId = reservation.elementId;
+      const expectedFedGuid = reservation.federationGuid;
+
+      // Insert without federationGuid — the hook resolves it.
+      const category = DrawingCategory.create(iModel, IModel.dictionaryId, categoryName);
+      const insertedId = withEditTxn(iModel, (txn) => category.insert(txn));
+      expect(insertedId).to.equal(expectedId);
+      expect(Id64.getBriefcaseId(insertedId)).to.equal(BriefcaseIdValue.SchemaSyncDefinitionReserved);
+
+      const inserted = iModel.elements.getElement(insertedId);
+      expect(inserted.federationGuid).to.equal(expectedFedGuid);
+      expect(inserted.code.equals(categoryCode)).to.be.true;
+    });
+  });
 });

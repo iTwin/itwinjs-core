@@ -61,29 +61,36 @@ class SchemaSyncReservations implements ReservationControl {
       return;
 
     const fedGuid = arg.props.federationGuid;
-    if (!fedGuid || !Guid.isGuid(fedGuid))
-      throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts require a valid federationGuid when SchemaSync is enabled");
+    if (fedGuid !== undefined && !Guid.isGuid(fedGuid))
+      throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts require an undefined or valid federationGuid when SchemaSync is enabled");
 
     // It should be impossible for us to still have local changes, but check just in case,
     // since we can't trust the contents of the SchemaSyncDb until they've been successfully pushed.
     if (this._schemaSync.container.hasLocalChanges)
       throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts are not allowed when there are local changes in the SchemaSync container");
 
-    const existing = this._schemaSync.reader.findReservedDefinition(fedGuid);
+    const code = Code.fromJSON(arg.props.code);
+    if (!fedGuid && !code.value)
+      throw new IModelError(IModelStatus.BadRequest, "DefinitionElement inserts require either a valid federationGuid or a non-empty code value when SchemaSync is enabled");
+
+    const existing = this._schemaSync.reader.findReservedDefinition(fedGuid ?? code);
     if (!existing) {
       throw new IModelError(IModelStatus.NotFound,
-        `No SchemaSync reservation found for DefinitionElement federationGuid ${fedGuid} — include it in a ReservationControl.reserveDefinitionElements call before inserting`);
+        `No SchemaSync reservation found for DefinitionElement ${fedGuid ? `federationGuid ${fedGuid}` : `code '${code.value}'`} — include it in a ReservationControl.reserveDefinitionElements call before inserting`);
     }
 
     const expectedClassId = arg.iModel[_nativeDb].classNameToId(arg.props.classFullName);
     if (existing.ecClassId !== expectedClassId) {
       throw new IModelError(IModelStatus.BadArg,
-        `DefinitionElement ${fedGuid} reserved as a different class than the insert (${existing.ecClassId} vs ${expectedClassId})`);
+        `DefinitionElement ${existing.federationGuid} reserved as a different class than the insert (${existing.ecClassId} vs ${expectedClassId})`);
     }
 
-    const code = Code.fromJSON(arg.props.code);
     if (!existing.code.equals(code))
-      throw new IModelError(IModelStatus.BadArg, `DefinitionElement ${fedGuid} insert uses a different Code than was reserved`);
+      throw new IModelError(IModelStatus.BadArg, `DefinitionElement ${existing.federationGuid} insert uses a different Code than was reserved`);
+
+    // Stamp the resolved federationGuid onto props when the caller did not supply one.
+    if (!fedGuid)
+      arg.props.federationGuid = existing.federationGuid;
 
     arg.props.id = existing.elementId;
     const options = arg.options ?? (arg.options = {} as InsertElementOptions);
@@ -94,20 +101,25 @@ class SchemaSyncReservations implements ReservationControl {
     const out: SchemaSync.ProposedDefinition[] = [];
     const errors: string[] = [];
     for (const props of args.elements) {
-      if (!props.federationGuid || !Guid.isGuid(props.federationGuid)) {
+      // Only validate federationGuid format when one is actually provided; undefined means "resolve by Code".
+      if (props.federationGuid !== undefined && !Guid.isGuid(props.federationGuid)) {
         errors.push(`invalid federationGuid '${props.federationGuid}'`);
         continue;
       }
 
       const code = Code.fromJSON(props.code);
+      if (!props.federationGuid && !code.value) {
+        errors.push(`definition requires either a federationGuid or a non-empty code value (got neither)`);
+        continue;
+      }
       if (!Code.isValid(code)) {
-        errors.push(`(${props.federationGuid}): invalid code '${code.toString()}'`);
+        errors.push(`(${props.federationGuid ?? "<no guid>"}): invalid code '${code.toString()}'`);
         continue;
       }
 
       const ecClassId = this._iModel[_nativeDb].classNameToId(props.classFullName);
       if (!Id64.isValidId64(ecClassId)) {
-        errors.push(`(${props.federationGuid}): unknown class '${props.classFullName}'`);
+        errors.push(`(${props.federationGuid ?? code.toString()}): unknown class '${props.classFullName}'`);
         continue;
       }
 

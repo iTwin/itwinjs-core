@@ -17,6 +17,14 @@ import { OnElementPropsArg } from "./Element";
 export interface ReserveDefinitionElementsArgs {
   /** The DefinitionElements to reserve. The whole batch succeeds or fails together. */
   elements: Iterable<{
+    /**
+     * When provided, the reservation is created with this guid (if one does not already exist).
+     * When omitted, the reservation is resolved by `code` instead:
+     *   - If a reservation already exists with this code, it's federationGuid will be used.
+     *   - If no reservation with this code exists, a new guid is generated automatically and reserved.
+     *
+     * A DefinitionElement **MUST** specify either a `federationGuid` or a non-empty `code.value` to be reserved.
+     */
     federationGuid?: GuidString;
     classFullName: string;
     code: CodeProps;

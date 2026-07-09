@@ -102,7 +102,7 @@ describe("SchemaSyncDb", () => {
   });
 
   describe("reserveDefinitionElements", () => {
-    function makeDefinition(federationGuid: string, codeValue: string, ecClassId = "0x1"): SchemaSync.ProposedDefinition {
+    function makeDefinition(federationGuid: string | undefined, codeValue: string, ecClassId = "0x1"): SchemaSync.ProposedDefinition {
       return {
         federationGuid,
         ecClassId,
@@ -229,6 +229,63 @@ describe("SchemaSyncDb", () => {
         makeDefinition(Guid.createValue(), "Cat-B"),
         makeDefinition(Guid.createValue(), "Cat-C"),
       ])).to.be.rejectedWith(/exhausted|2\^40/);
+      expect(readReservedRows()).to.be.empty;
+    });
+  });
+
+  describe("reserveDefinitionElements (no federationGuid)", () => {
+    function makeNoGuidDefinition(codeValue: string, ecClassId = "0x1"): SchemaSync.ProposedDefinition {
+      return {
+        ecClassId,
+        code: Code.fromJSON({ spec: "0x1", scope: "0x2", value: codeValue }),
+      };
+    }
+
+    it("generates a federationGuid when none is provided", async () => {
+      await schemaDb.reserveDefinitionElements([makeNoGuidDefinition("Cat-A")]);
+      const rows = readReservedRows();
+      expect(rows).to.have.lengthOf(1);
+      // A guid was auto-generated and stored.
+      expect(Guid.isGuid(rows[0].federationGuid)).to.be.true;
+      expect(readNextDefinitionLocalId()).to.equal(2);
+    });
+
+    it("reuses existing reservation by code when no federationGuid is provided (idempotent)", async () => {
+      await schemaDb.reserveDefinitionElements([makeNoGuidDefinition("Cat-A")]);
+      const firstRows = readReservedRows();
+      const firstGuid = firstRows[0].federationGuid;
+      const firstId = firstRows[0].elementId;
+
+      // Second call with same code but still no fedGuid — should reuse the same row.
+      await schemaDb.reserveDefinitionElements([makeNoGuidDefinition("Cat-A")]);
+      const secondRows = readReservedRows();
+      expect(secondRows).to.have.lengthOf(1);
+      expect(secondRows[0].federationGuid).to.equal(firstGuid);
+      expect(secondRows[0].elementId).to.equal(firstId);
+      expect(readNextDefinitionLocalId()).to.equal(2);
+    });
+
+    it("deduplicates within a batch when two no-fedGuid entries share a code", async () => {
+      await schemaDb.reserveDefinitionElements([
+        makeNoGuidDefinition("Cat-A"),
+        makeNoGuidDefinition("Cat-A"),
+      ]);
+      expect(readReservedRows()).to.have.lengthOf(1);
+      expect(readNextDefinitionLocalId()).to.equal(2);
+    });
+
+    it("throws conflict when a code-resolved existing reservation has a different class", async () => {
+      await schemaDb.reserveDefinitionElements([{ ...makeNoGuidDefinition("Cat-A"), ecClassId: "0x1" }]);
+
+      await expect(schemaDb.reserveDefinitionElements([
+        { ...makeNoGuidDefinition("Cat-A"), ecClassId: "0x2" },
+      ])).to.be.rejectedWith(/conflict/);
+    });
+
+    it("throws when neither federationGuid nor a non-empty code value is provided", async () => {
+      await expect(schemaDb.reserveDefinitionElements([
+        makeNoGuidDefinition(""),
+      ])).to.be.rejectedWith(/requires either a federationGuid or a non-empty code value/);
       expect(readReservedRows()).to.be.empty;
     });
   });

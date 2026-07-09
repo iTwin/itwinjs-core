@@ -107,6 +107,12 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
     code: DrawingCategory.createCode(bc, IModel.dictionaryId, name),
   });
 
+  // A DrawingCategory reservation without a federationGuid (resolved by Code).
+  const catReservationNoGuid = (bc: BriefcaseDb, name: string) => ({
+    classFullName: DrawingCategory.classFullName,
+    code: DrawingCategory.createCode(bc, IModel.dictionaryId, name),
+  });
+
   // A LineStyle reservation identity. Using the same `name` yields the same Code (for conflict tests).
   const styleReservation = (bc: BriefcaseDb, federationGuid: GuidString, name: string) => ({
     federationGuid,
@@ -123,6 +129,16 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
       model: IModel.dictionaryId,
       code: DrawingCategory.createCode(bc, IModel.dictionaryId, name),
       federationGuid,
+    }));
+  };
+
+  // Insert a DrawingCategory without a federationGuid. The insert hook resolves the reservation by Code.
+  const insertCategoryNoGuid = async (bc: BriefcaseDb, name: string): Promise<Id64String> => {
+    await bc.locks.acquireLocks({ shared: IModel.dictionaryId });
+    return withEditTxn(bc, (txn) => txn.insertElement({
+      classFullName: DrawingCategory.classFullName,
+      model: IModel.dictionaryId,
+      code: DrawingCategory.createCode(bc, IModel.dictionaryId, name),
     }));
   };
 
@@ -173,25 +189,23 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
       const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
       await enableSchemaSyncOnFirst(b1, ctx);
       await enableSchemaSyncViaPull(b2, "token 2");
-
       const guid = Guid.createValue();
-      const identity1 = catReservation(b1, guid, "Shared-Cat");
-      const identity2 = catReservation(b2, guid, "Shared-Cat");
 
       // Same federationGuid + class + code from both users: whole batch must converge on one reservation.
       await Promise.all([
-        b1.reservations.reserveDefinitionElements({ elements: [identity1] }),
-        b2.reservations.reserveDefinitionElements({ elements: [identity2] }),
+        b1.reservations.reserveDefinitionElements({ elements: [catReservation(b1, guid, "Shared-Cat")] }),
+        b2.reservations.reserveDefinitionElements({ elements: [catReservation(b2, guid, "Shared-Cat")] }),
       ]);
 
-      // Both briefcases now see the reservation (b2 via a fresh sync).
+      // Both briefcases now see the reservation
       expect(b1.reservations.needsDefinitionReservation(guid)).to.be.false;
-      await b2.initializeReservationControl();
       expect(b2.reservations.needsDefinitionReservation(guid)).to.be.false;
 
       // Only one element id was allocated: inserting on either briefcase yields the same reserved id.
-      const id = await insertReservedCategory(b1, guid, "Shared-Cat");
-      expect(isReservedId(id)).to.be.true;
+      const id1 = await insertReservedCategory(b1, guid, "Shared-Cat");
+      const id2 = await insertReservedCategory(b2, guid, "Shared-Cat");
+      expect(isReservedId(id1)).to.be.true;
+      expect(id1).to.equal(id2);
     });
 
     it("rejects one caller when two briefcases reserve the same Code for different definitions", async () => {
@@ -390,6 +404,82 @@ describe("SchemaSync definition-element reservations (concurrent users)", functi
       await b2.reservations.reserveDefinitionElements({ elements: [catReservation(b2, guid, "Pull-Insert-Cat")] });
       const id = await insertReservedCategory(b2, guid, "Pull-Insert-Cat");
       expect(isReservedId(id)).to.be.true;
+    });
+  });
+
+  describe("code-only reservations (no federationGuid)", () => {
+    it("reserves and inserts without a federationGuid, using a generated guid", async () => {
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      await enableSchemaSyncOnFirst(b1, ctx);
+
+      // Reserve by code only — no federationGuid.
+      await b1.reservations.reserveDefinitionElements({ elements: [catReservationNoGuid(b1, "NoGuid-Cat")] });
+
+      // Insert without a federationGuid; the insert hook resolves it by code.
+      const id = await insertCategoryNoGuid(b1, "NoGuid-Cat");
+      expect(isReservedId(id)).to.be.true;
+      const props = b1.elements.getElementProps(id);
+      expect(Guid.isGuid(props.federationGuid ?? "")).to.be.true;
+    });
+
+    it("two briefcases reserve the same code without a federationGuid and converge on the same element id and same federationGuid", async () => {
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
+      await enableSchemaSyncOnFirst(b1, ctx);
+      await enableSchemaSyncViaPull(b2, "token 2");
+
+      const name = "Shared-NoGuid-Cat";
+
+      // Both race to reserve the same code with no guid; the write-lock serializes them so exactly one
+      // row is created and both callers end up with the same reserved id.
+      await Promise.all([
+        b1.reservations.reserveDefinitionElements({ elements: [catReservationNoGuid(b1, name)] }),
+        b2.reservations.reserveDefinitionElements({ elements: [catReservationNoGuid(b2, name)] }),
+      ]);
+
+      // b1 inserts and gets the reserved id.
+      const id = await insertCategoryNoGuid(b1, name);
+      expect(isReservedId(id)).to.be.true;
+
+      // b2 would also resolve to the same code-only reservation.
+      const id2 = await insertCategoryNoGuid(b2, name);
+      expect(isReservedId(id2)).to.be.true;
+      expect(id2).to.equal(id);
+
+      // Verify that both briefcases inserted the same valid auto-generated federationGuid.
+      const props1 = b1.elements.getElementProps(id);
+      const props2 = b2.elements.getElementProps(id2);
+      expect(Guid.isGuid(props1.federationGuid ?? "")).to.be.true;
+      expect(props1.federationGuid).to.equal(props2.federationGuid);
+    });
+
+    it("two briefcases reserve different codes without a federationGuid and both insert with distinct reserved ids", async () => {
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
+      await enableSchemaSyncOnFirst(b1, ctx);
+      await enableSchemaSyncViaPull(b2, "token 2");
+
+      // Each briefcase reserves a different code with no guid, concurrently.
+      await Promise.all([
+        b1.reservations.reserveDefinitionElements({ elements: [catReservationNoGuid(b1, "NoGuid-Cat-A")] }),
+        b2.reservations.reserveDefinitionElements({ elements: [catReservationNoGuid(b2, "NoGuid-Cat-B")] }),
+      ]);
+
+      const id1 = await insertCategoryNoGuid(b1, "NoGuid-Cat-A");
+      expect(isReservedId(id1)).to.be.true;
+
+      const id2 = await insertCategoryNoGuid(b2, "NoGuid-Cat-B");
+      expect(isReservedId(id2)).to.be.true;
+      expect(id1).to.not.equal(id2);
+
+      const props1 = b1.elements.getElementProps(id1);
+      const props2 = b2.elements.getElementProps(id2);
+      expect(Guid.isGuid(props1.federationGuid ?? "")).to.be.true;
+      expect(Guid.isGuid(props2.federationGuid ?? "")).to.be.true;
+      expect(props1.federationGuid).not.to.equal(props2.federationGuid);
     });
   });
 });

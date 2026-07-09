@@ -1414,6 +1414,9 @@ describe("Schema synchronization", function (this: Suite) {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    await b1.reservations.reserveDefinitionElements({
+      elements: [{ classFullName: DrawingCategory.classFullName, code: DrawingCategory.createCode(b1, IModel.dictionaryId, "MyDrawingCategory") }],
+    });
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
       drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
