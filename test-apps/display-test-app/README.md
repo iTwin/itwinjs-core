@@ -22,7 +22,8 @@ The application contained within this directory provides a test environment for 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
 * To get started, follow the instructions to setup the entire repository, located [here](../../README.md#developer-quick-start). This automatically builds all test apps.
-  * Tip: after `rush install`, you can build only display-test-app and the packages it depends on - skipping the rest of the monorepo - with `rush build -t display-test-app`.
+> [!TIP]
+> After `rush install`, you can build only display-test-app and the packages it depends on - skipping the rest of the monorepo - with `rush build -t display-test-app`.
 
 * Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
