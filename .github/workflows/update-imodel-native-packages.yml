@@ -1,6 +1,6 @@
 # This workflow triggers when a new release is published in itwinjs-core.
-# For minor/major releases (tag ending in .0), it creates a PR in iTwin/imodel-native
-# to bump the iTwin.js devDependency versions to the next dev version.
+# For minor/major releases (tag matching release/X.Y.0), it creates a PR in
+# iTwin/imodel-native to bump the iTwin.js devDependency versions to the next dev version.
 #
 # Release tags in this repo use the format: release/X.Y.Z (e.g., release/5.11.0)
 #
@@ -15,20 +15,36 @@ name: Update imodel-native packages
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to process (e.g. release/5.11.0)"
+        required: true
 
 jobs:
   update-imodel-native:
     runs-on: ubuntu-latest
 
-    # Only run for minor/major releases (version ends with .0)
-    if: endsWith(github.event.release.tag_name, '.0')
+    permissions:
+      contents: read
+
+    concurrency:
+      group: update-imodel-native-${{ github.event.inputs.tag_name || github.event.release.tag_name }}
+      cancel-in-progress: false
+
+    # Only run for minor/major releases (tag matches release/X.Y.0 pattern)
+    if: >-
+      startsWith(github.event.inputs.tag_name || github.event.release.tag_name, 'release/')
+      && endsWith(github.event.inputs.tag_name || github.event.release.tag_name, '.0')
+      && (github.event.release.prerelease == false || github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Extract version info
         id: version
+        env:
+          TAG: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url || '' }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
-
           # Tag format is "release/X.Y.Z" — strip the "release/" prefix
           VERSION="${TAG#release/}"
 
@@ -42,6 +58,7 @@ jobs:
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "next_dev_version=$NEXT_DEV_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
           echo "Released version: $VERSION"
           echo "Next dev version: $NEXT_DEV_VERSION"
 
@@ -55,12 +72,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "20"
 
       - name: Update package.json devDependencies
+        env:
+          NEXT_DEV_VERSION: ${{ steps.version.outputs.next_dev_version }}
         run: |
           PACKAGE_JSON="iModelJsNodeAddon/api_package/ts/package.json"
-          NEXT_DEV="^${{ steps.version.outputs.next_dev_version }}"
+          NEXT_DEV="^${NEXT_DEV_VERSION}"
 
           echo "Updating devDependencies in $PACKAGE_JSON to $NEXT_DEV"
 
@@ -74,35 +93,47 @@ jobs:
 
       - name: Regenerate package-lock.json
         working-directory: iModelJsNodeAddon/api_package/ts
-        run: npm install
+        run: npm install --ignore-scripts
 
       - name: Commit changes and push branch
+        env:
+          NEXT_DEV_VERSION: ${{ steps.version.outputs.next_dev_version }}
         run: |
-          BRANCH="itwinjs-update/${{ steps.version.outputs.next_dev_version }}"
+          BRANCH="itwinjs-update/${NEXT_DEV_VERSION}"
 
           git config user.name "imodeljs-admin"
           git config user.email "imodeljs-admin@users.noreply.github.com"
-          git checkout -b "$BRANCH"
+          git checkout -B "$BRANCH"
           git add iModelJsNodeAddon/api_package/ts/package.json iModelJsNodeAddon/api_package/ts/package-lock.json
-          git commit -m "Update iTwin.js packages to ^${{ steps.version.outputs.next_dev_version }}"
-          git push origin "$BRANCH"
+          git commit -m "Update iTwin.js packages to ^${NEXT_DEV_VERSION}"
+          git push --force-with-lease origin "$BRANCH"
 
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          NEXT_DEV_VERSION: ${{ steps.version.outputs.next_dev_version }}
+          RELEASE_URL: ${{ steps.version.outputs.release_url }}
+          TAG: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
         run: |
+          BRANCH="itwinjs-update/${NEXT_DEV_VERSION}"
+
+          # Skip PR creation if one already exists for this branch
+          if gh pr view --repo iTwin/imodel-native --head "$BRANCH" &>/dev/null; then
+            echo "PR already exists for branch $BRANCH — skipping creation."
+            exit 0
+          fi
+
           gh pr create \
             --repo iTwin/imodel-native \
             --base main \
-            --head "itwinjs-update/${{ steps.version.outputs.next_dev_version }}" \
-            --title "Update iTwin.js packages to ^${{ steps.version.outputs.next_dev_version }}" \
-            --body "Automated PR triggered by the release of [itwinjs-core ${{ github.event.release.tag_name }}](${{ github.event.release.html_url }}).
+            --head "$BRANCH" \
+            --title "Update iTwin.js packages to ^${NEXT_DEV_VERSION}" \
+            --body "Automated PR triggered by the release of [itwinjs-core ${TAG}](${RELEASE_URL}).
 
           Updates the following devDependencies in \`iModelJsNodeAddon/api_package/ts/package.json\`:
-          - \`@itwin/build-tools\` → \`^${{ steps.version.outputs.next_dev_version }}\`
-          - \`@itwin/core-bentley\` → \`^${{ steps.version.outputs.next_dev_version }}\`
-          - \`@itwin/core-common\` → \`^${{ steps.version.outputs.next_dev_version }}\`
-          - \`@itwin/core-geometry\` → \`^${{ steps.version.outputs.next_dev_version }}\`
+          - \`@itwin/build-tools\` → \`^${NEXT_DEV_VERSION}\`
+          - \`@itwin/core-bentley\` → \`^${NEXT_DEV_VERSION}\`
+          - \`@itwin/core-common\` → \`^${NEXT_DEV_VERSION}\`
+          - \`@itwin/core-geometry\` → \`^${NEXT_DEV_VERSION}\`
 
-          Also regenerated \`package-lock.json\` via \`npm install\`." \
-            --label "dependencies"
+          Also regenerated \`package-lock.json\` via \`npm install\`."
