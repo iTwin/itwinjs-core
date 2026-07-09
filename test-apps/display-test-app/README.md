@@ -22,6 +22,7 @@ The application contained within this directory provides a test environment for 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
 * To get started, follow the instructions to setup the entire repository, located [here](../../README.md#developer-quick-start). This automatically builds all test apps.
+  * Tip: after `rush install`, you can build only display-test-app and the packages it depends on - skipping the rest of the monorepo - with `rush build -t display-test-app`.
 
 * Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
@@ -39,8 +40,9 @@ npm run start:servers
 
 ## Using display-test-app
 
-display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
-The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup. If you don't have an iModel handy, a small sample is included in the repository at [test-models/JoesHouse.bim](./test-models/JoesHouse.bim).
+display-test-app's toolbar provides a button to open an iModel from the local file system and a drop-down to download and open an iModel from iModelHub (requires signing in). If the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
+
+The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup. If you don't have an iModel handy, a small sample is included in the repository at [test-models/JoesHouse.bim](./test-models/JoesHouse.bim). When working only with local files in the Electron app, also define `IMJS_NO_ELECTRON_AUTH` to avoid repeated authorization exceptions caused by a known bug (see [Environment Variables](#environment-variables)).
 
 display-test-app's UI consists of:
 
@@ -90,7 +92,7 @@ A more advanced debug experience will give you more quick turn around time for b
 1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
     * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
     * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
-1. Run `npm run start:webserver` in a separate terminal (`nmp run start:mobile` for Android and iOS)
+1. Run `npm run start:webserver` in a separate terminal (`npm run start:mobile` for Android and iOS)
     * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
@@ -412,6 +414,6 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 The steps to run the display test app in an iOS app:
 
-1. Run `npm run build:ios`
+1. Run `npm run build:mobile`
 2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
 3. Start the XCode Project to an iPad
