@@ -8,20 +8,19 @@
 
 import { GuidString } from "@itwin/core-bentley";
 import { _close, _implementationProhibited, _onDefinitionElementInsert } from "./internal/Symbols";
-import { ElementProps } from "@itwin/core-common";
+import { CodeProps } from "@itwin/core-common";
 import { OnElementPropsArg } from "./Element";
-
-/** Identifies a [[DefinitionElement]] to be pre-reserved by [[reserveDefinitionElements]].
- * @beta
- */
-export type PartialDefinitionElementProps = Pick<ElementProps, "federationGuid" | "classFullName" | "code">;
 
 /** Arguments for [[reserveDefinitionElements]].
  * @beta
  */
 export interface ReserveDefinitionElementsArgs {
   /** The DefinitionElements to reserve. The whole batch succeeds or fails together. */
-  elements: PartialDefinitionElementProps[];
+  elements: Iterable<{
+    federationGuid?: GuidString;
+    classFullName: string;
+    code: CodeProps;
+  }>;
 }
 
 /**

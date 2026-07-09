@@ -11,7 +11,7 @@ import { Guid, GuidString, Id64, IModelStatus } from "@itwin/core-bentley";
 import { Code, IModelError } from "@itwin/core-common";
 import { OnElementPropsArg } from "../Element";
 import { IModelDb, InsertElementOptions } from "../IModelDb";
-import { PartialDefinitionElementProps, ReservationControl, ReserveDefinitionElementsArgs } from "../ReservationControl";
+import { ReservationControl, ReserveDefinitionElementsArgs } from "../ReservationControl";
 import { SchemaSync } from "../SchemaSync";
 import { _close, _implementationProhibited, _nativeDb, _onDefinitionElementInsert } from "./Symbols";
 import { Category } from "../Category";
@@ -52,7 +52,7 @@ class SchemaSyncReservations implements ReservationControl {
   }
 
   public async reserveDefinitionElements(args: ReserveDefinitionElementsArgs): Promise<void> {
-    const validated = this.validateProposedDefinitions(args.elements);
+    const validated = this.validateProposedDefinitions(args);
     await this._schemaSync.writeLocker.reserveDefinitionElements(validated);
   }
 
@@ -90,10 +90,10 @@ class SchemaSyncReservations implements ReservationControl {
     options.forceUseId = true;
   }
 
-  private validateProposedDefinitions(elements: PartialDefinitionElementProps[]): SchemaSync.ProposedDefinition[] {
+  private validateProposedDefinitions(args: ReserveDefinitionElementsArgs): SchemaSync.ProposedDefinition[] {
     const out: SchemaSync.ProposedDefinition[] = [];
     const errors: string[] = [];
-    for (const props of elements) {
+    for (const props of args.elements) {
       if (!props.federationGuid || !Guid.isGuid(props.federationGuid)) {
         errors.push(`invalid federationGuid '${props.federationGuid}'`);
         continue;
