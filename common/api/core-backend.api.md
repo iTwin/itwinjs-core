@@ -4114,7 +4114,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @internal (undocumented)
-    initializeReservationControl(): Promise<void>;
+    initializeSharedDefinitionReservations(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4180,9 +4180,9 @@ export abstract class IModelDb extends IModel {
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
     // @beta
-    get reservations(): ReservationControl;
+    get reservations(): SharedDefinitionReservations;
     // @internal (undocumented)
-    protected _reservations?: ReservationControl;
+    protected _reservations?: SharedDefinitionReservations;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -6175,6 +6175,15 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
     onProgress?: ProgressFunction;
 }
 
+// @beta
+export interface ReserveDefinitionElementsArgs {
+    elements: Iterable<{
+        federationGuid?: GuidString;
+        classFullName: string;
+        code: CodeProps;
+    }>;
+}
+
 // @public
 export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
@@ -6316,16 +6325,20 @@ export namespace SchemaSync {
         readonly code: Code;
         // (undocumented)
         readonly ecClassId: Id64String;
-        // (undocumented)
-        readonly federationGuid: GuidString;
+        readonly federationGuid?: GuidString;
         // (undocumented)
         readonly isCategory?: boolean;
     }
     // (undocumented)
-    export interface ReadMethods {
-        findReservedDefinition(federationGuid: GuidString): ReservedDefinition | undefined;
+    export interface ProposedDefinitionWithFedGuid extends ProposedDefinition {
+        // (undocumented)
+        readonly federationGuid: GuidString;
     }
-    export interface ReservedDefinition extends ProposedDefinition {
+    // (undocumented)
+    export interface ReadMethods {
+        findReservedDefinition(key: GuidString | Code): ReservedDefinition | undefined;
+    }
+    export interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
         // (undocumented)
         readonly elementId: Id64String;
     }
@@ -6333,9 +6346,11 @@ export namespace SchemaSync {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
-        findReservedDefinition(federationGuid: GuidString): ReservedDefinition | undefined;
+        findReservedDefinition(key: GuidString | Code): ReservedDefinition | undefined;
         // (undocumented)
         readonly myVersion = "4.1.0";
+        // (undocumented)
+        openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
         // (undocumented)
         reserveDefinitionElements(elements: ProposedDefinition[]): Promise<void>;
     }
@@ -6370,6 +6385,7 @@ export namespace SchemaSync {
     export interface WriteMethods {
         reserveDefinitionElements(identities: ProposedDefinition[]): Promise<void>;
     }
+    export {};
 }
 
 // @public
@@ -6576,6 +6592,20 @@ export interface SettingsSchemas {
 
 // @internal
 export const settingsWorkspaceDbName: WorkspaceDbName;
+
+// @beta
+export interface SharedDefinitionReservations {
+    // @internal
+    [_close]: () => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_onDefinitionElementInsert]: (id: OnElementPropsArg) => void;
+    // @internal
+    readonly isServerBased: boolean;
+    needsDefinitionReservation(federationGuid: GuidString): boolean;
+    reserveDefinitionElements(args: ReserveDefinitionElementsArgs): Promise<void>;
+}
 
 // @public @preview
 export class Sheet extends Document_2 {

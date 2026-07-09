@@ -37,7 +37,7 @@ export namespace SchemaSync {
   }
 
   /** A DefinitionElement reservation that has been persisted in a `SchemaSyncDb`. @internal */
-  export interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
+  interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
     readonly elementId: Id64String;
   }
 
