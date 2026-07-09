@@ -59,6 +59,7 @@ export * from "./LineStyle";
 export * from "./LocalhostIpcHost";
 export * from "./LocalHub";
 export * from "./LockControl";
+export * from "./ReservationControl";
 export * from "./Material";
 export * from "./Model";
 export * from "./NativeAppStorage";
