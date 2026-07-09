@@ -188,7 +188,7 @@ export namespace SchemaSync {
       iModel[_nativeDb].deleteLocalValue(testSyncCachePropKey);
   };
 
-  const sharedAccessByIModel = new WeakMap<IModelJsNative.DgnDb, CloudAccess>();
+  const sharedAccessByIModel = new Map<string, CloudAccess>();
   export const getCloudAccess = async (arg: IModelDb | { readonly fileName: LocalFileName }) => {
     let nativeDb: IModelJsNative.DgnDb | undefined;
     const argIsIModelDb = arg instanceof IModelDb;
@@ -199,23 +199,25 @@ export namespace SchemaSync {
       nativeDb.openIModel(arg.fileName, OpenMode.Readonly);
     }
 
-    // Reuse the existing access for this iModel so there is only ever one CloudAccess per iModelDB.
-    const cached = sharedAccessByIModel.get(nativeDb);
-    if (cached)
-      return cached;
-
+    const testSyncCache = nativeDb.queryLocalValue(testSyncCachePropKey);
     const propsString = nativeDb.queryFileProperty(syncProperty, true) as string | undefined;
     if (!propsString)
       throw new Error("iModel does not have a SchemaSyncDb");
+
+    // Reuse the existing access for this container so there is only ever one CloudAccess per container (per cache).
+    const sharedAccessKey = propsString + (testSyncCache ?? "");
+    const cached = sharedAccessByIModel.get(sharedAccessKey);
+    if (cached)
+      return cached;
+
     try {
       const props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       const accessToken = await CloudSqlite.requestToken(props);
       const access = new CloudAccess({ ...props, accessToken });
       Object.assign(access.lockParams, lockParams);
-      const testSyncCache = nativeDb.queryLocalValue(testSyncCachePropKey);
       if (testSyncCache)
         access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testSyncCache }));
-      sharedAccessByIModel.set(nativeDb, access);
+      sharedAccessByIModel.set(sharedAccessKey, access);
       return access;
     } finally {
       if (!argIsIModelDb) {
