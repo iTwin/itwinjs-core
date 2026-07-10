@@ -15,9 +15,9 @@ export interface ConflictEcRow {
   [key: string]: any;
 }
 export interface ConflictEcChange {
-  originalValues: ConflictEcRow;
-  theirValues: ConflictEcRow;
-  myValues: ConflictEcRow;
+  original: ConflictEcRow;
+  theirs: ConflictEcRow;
+  ours: ConflictEcRow;
 }
 
 export interface DbChangesetConflictArgs {
