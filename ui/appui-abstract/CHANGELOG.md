@@ -1,6 +1,11 @@
 # Change Log - @itwin/appui-abstract
 
-This log was last generated on Wed, 08 Jul 2026 19:05:13 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
 
 ## 5.11.1
 Wed, 08 Jul 2026 19:03:45 GMT
