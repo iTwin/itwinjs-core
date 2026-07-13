@@ -195,6 +195,14 @@ export abstract class CurveCollection extends GeometryQuery {
       curve.reverseInPlace();
   }
   /**
+   * Reverse the collection's data so that each child curve's fractional stroking moves in the opposite direction.
+   * @returns the instance, reversed
+  */
+  public reverse(): this {
+    this.reverseInPlace();
+    return this;
+  }
+  /**
    * Return the max gap between adjacent primitives in Path and Loop collections.
    * * In a Path, gaps are computed between consecutive primitives.
    * * In a Loop, gaps are computed between consecutive primitives and between last and first.

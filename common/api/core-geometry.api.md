@@ -1694,6 +1694,7 @@ export abstract class CurveCollection extends GeometryQuery {
     isPath(): this is Path;
     maxGap(): number;
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
+    reverse(): this;
     reverseInPlace(): void;
     sumLengths(): number;
     abstract tryAddChild(child: AnyCurve | undefined): boolean;
@@ -1920,6 +1921,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     rangeBetweenFractionsByCount(fraction0: number, fraction1: number, count: number, transform?: Transform, extrapolationFactor?: number): Range3d;
+    reverse(): this;
     abstract reverseInPlace(): void;
     // @internal
     static snapAndRestrictDetails(details: CurveLocationDetail[], allowExtend?: boolean, applySnappedCoordinates?: boolean, startEndFractionTolerance?: number, startEndXYZTolerance?: number): void;
